@@ -5,7 +5,7 @@
 
 #VERSION_DEFINES
 
-#include "cubemap_roughness_inc.glsl"
+#include "octmap_roughness_inc.glsl"
 
 layout(location = 0) out vec2 uv_interp;
 /* clang-format on */
@@ -23,26 +23,24 @@ void main() {
 
 #VERSION_DEFINES
 
-#include "cubemap_roughness_inc.glsl"
+#include "../oct_inc.glsl"
+#include "octmap_roughness_inc.glsl"
 
 layout(location = 0) in vec2 uv_interp;
 
-layout(set = 0, binding = 0) uniform samplerCube source_cube;
+layout(set = 0, binding = 0) uniform sampler2D source_oct;
 
 layout(location = 0) out vec4 frag_color;
 /* clang-format on */
 
 void main() {
-	vec3 N = texelCoordToVec(uv_interp * 2.0 - 1.0, params.face_id);
-
-	//vec4 color = color_interp;
-
 	if (params.use_direct_write) {
-		frag_color = vec4(texture(source_cube, N).rgb, 1.0);
+		frag_color = vec4(texture(source_oct, uv_interp).rgb, 1.0);
 	} else {
+		vec2 inv_size = 1.0 / vec2(params.size);
+		vec3 N = oct_to_vec3_with_border(uv_interp, params.border_size.y);
 		vec4 sum = vec4(0.0, 0.0, 0.0, 0.0);
-
-		float solid_angle_texel = 4.0 * M_PI / (6.0 * params.face_size * params.face_size);
+		float solid_angle_texel = 4.0 * M_PI / (params.size * params.size);
 		float roughness2 = params.roughness * params.roughness;
 		float roughness4 = roughness2 * roughness2;
 		vec3 UpVector = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
@@ -68,12 +66,12 @@ void main() {
 
 				float mipLevel = params.roughness == 0.0 ? 0.0 : 0.5 * log2(solid_angle_sample / solid_angle_texel);
 
-				sum.rgb += textureLod(source_cube, L, mipLevel).rgb * ndotl;
+				vec2 sample_uv = vec3_to_oct_with_border(L, params.border_size);
+				sum.rgb += textureLod(source_oct, sample_uv, mipLevel).rgb * ndotl;
 				sum.a += ndotl;
 			}
 		}
-		sum /= sum.a;
 
-		frag_color = vec4(sum.rgb, 1.0);
+		frag_color = vec4(sum.rgb / sum.a, 1.0);
 	}
 }

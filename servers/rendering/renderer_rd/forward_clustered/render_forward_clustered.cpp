@@ -1347,7 +1347,7 @@ void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_
 		RendererRD::Fog::VolumetricFogSettings settings;
 		settings.rb_size = size;
 		settings.time = time;
-		settings.is_using_radiance_cubemap_array = is_using_radiance_cubemap_array();
+		settings.is_using_radiance_octmap_array = is_using_radiance_octmap_array();
 		settings.max_cluster_elements = RendererRD::LightStorage::get_singleton()->get_max_cluster_elements();
 		settings.volumetric_fog_filter_active = get_volumetric_fog_filter_active();
 
@@ -3306,7 +3306,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		if (p_radiance_texture.is_valid()) {
 			radiance_texture = p_radiance_texture;
 		} else {
-			radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+			radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_octmap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 		}
 		RD::Uniform u;
 		u.binding = 3;
@@ -3672,7 +3672,7 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 	}
 	{
 		// No radiance texture.
-		RID radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+		RID radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_octmap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 		RD::Uniform u;
 		u.binding = 3;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
@@ -4436,13 +4436,13 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	return RD::get_singleton()->framebuffer_format_create_multipass(attachments, passes, p_view_count);
 }
 
-static RD::FramebufferFormatID _get_reflection_probe_color_framebuffer_format_for_pipeline() {
+static RD::FramebufferFormatID _get_reflection_probe_color_framebuffer_format_for_pipeline(bool p_storage) {
 	RD::AttachmentFormat attachment;
 	thread_local Vector<RD::AttachmentFormat> attachments;
 	attachments.clear();
 
 	attachment.format = RendererRD::LightStorage::get_reflection_probe_color_format();
-	attachment.usage_flags = RendererRD::LightStorage::get_reflection_probe_color_usage_bits();
+	attachment.usage_flags = RendererRD::LightStorage::get_reflection_probe_color_usage_bits(p_storage);
 	attachments.push_back(attachment);
 
 	attachment.format = RendererRD::LightStorage::get_reflection_probe_depth_format();
@@ -4543,6 +4543,7 @@ void RenderForwardClustered::_mesh_compile_pipeline_for_surface(SceneShaderForwa
 
 void RenderForwardClustered::_mesh_compile_pipelines_for_surface(const SurfacePipelineData &p_surface, const GlobalPipelineData &p_global, RS::PipelineSource p_source, Vector<ShaderPipelinePair> *r_pipeline_pairs) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	bool octmap_use_storage = !copy_effects->get_raster_effects().has_flag(RendererRD::CopyEffects::RASTER_EFFECT_OCTMAP);
 
 	// Retrieve from the scene shader which groups are currently enabled.
 	const bool multiview_enabled = p_global.use_multiview && scene_shader.is_multiview_shader_group_enabled();
@@ -4578,7 +4579,7 @@ void RenderForwardClustered::_mesh_compile_pipelines_for_surface(const SurfacePi
 					pipeline_key.color_pass_flags |= SceneShaderForwardClustered::PIPELINE_COLOR_PASS_FLAG_MULTIVIEW;
 				} else if (p_global.use_reflection_probes) {
 					// Reflection probe can't be rendered in multiview.
-					pipeline_key.framebuffer_format_id = _get_reflection_probe_color_framebuffer_format_for_pipeline();
+					pipeline_key.framebuffer_format_id = _get_reflection_probe_color_framebuffer_format_for_pipeline(octmap_use_storage);
 					_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, true, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
 				}
 
@@ -4978,8 +4979,8 @@ RenderForwardClustered::RenderForwardClustered() {
 	{
 		String defines;
 		defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
-		if (is_using_radiance_cubemap_array()) {
-			defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
+		if (is_using_radiance_octmap_array()) {
+			defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY \n";
 		}
 		defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
 		defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";

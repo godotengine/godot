@@ -10,6 +10,7 @@
 
 #include "../cluster_data_inc.glsl"
 #include "../decal_data_inc.glsl"
+#include "../oct_inc.glsl"
 #include "../scene_data_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
@@ -352,17 +353,17 @@ layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer
 }
 instances;
 
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 
-layout(set = 1, binding = 3) uniform textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 3) uniform texture2DArray radiance_octmap;
 
 #else
 
-layout(set = 1, binding = 3) uniform textureCube radiance_cubemap;
+layout(set = 1, binding = 3) uniform texture2D radiance_octmap;
 
 #endif
 
-layout(set = 1, binding = 4) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 4) uniform texture2DArray reflection_atlas;
 
 layout(set = 1, binding = 5) uniform texture2D shadow_atlas;
 

@@ -78,13 +78,6 @@ layout(location = 13) in vec4 previous_normal_attrib;
 
 #endif // MODE_RENDER_MOTION_VECTORS
 
-vec3 oct_to_vec3(vec2 e) {
-	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
-	float t = max(-v.z, 0.0);
-	v.xy += t * -sign(v.xy);
-	return normalize(v);
-}
-
 void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binormal, out vec3 normal) {
 	float c = cos(angle);
 	float s = sin(angle);
@@ -1048,14 +1041,19 @@ hvec4 fog_process(vec3 vertex) {
 		vec3 cube_view = scene_data_block.data.radiance_inverse_xform * vertex;
 		// mip_level always reads from the second mipmap and higher so the fog is always slightly blurred
 		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, 1.0 - (abs(vertex.z) - scene_data_block.data.z_near) / (scene_data_block.data.z_far - scene_data_block.data.z_near));
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-		float lod, blend;
-		blend = modf(mip_level * MAX_ROUGHNESS_LOD, lod);
-		sky_fog_color = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(cube_view, lod)).rgb;
-		sky_fog_color = mix(sky_fog_color, texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(cube_view, lod + 1)).rgb, blend);
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+		float roughness_lod, blend;
+		blend = modf(mip_level * MAX_ROUGHNESS_LOD, roughness_lod);
+		float cube_lod = vec3_to_oct_lod(dFdx(cube_view), dFdy(cube_view), scene_data_block.data.radiance_pixel_size);
+		vec2 cube_uv = vec3_to_oct_with_border(cube_view, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 sky_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cube_uv, roughness_lod), cube_lod).rgb;
+		vec3 sky_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cube_uv, roughness_lod + 1), cube_lod).rgb;
+		sky_fog_color = mix(sky_sample_a, sky_sample_b, blend);
 #else
-		sky_fog_color = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_view, mip_level * MAX_ROUGHNESS_LOD).rgb;
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+		float roughness_lod = mip_level * MAX_ROUGHNESS_LOD;
+		vec2 cube_uv = vec3_to_oct_with_border(cube_view, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		sky_fog_color = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_uv, roughness_lod).rgb;
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 		fog_color = mix(fog_color, sky_fog_color, scene_data_block.data.fog_aerial_perspective);
 	}
 
@@ -1595,20 +1593,20 @@ void main() {
 #endif
 		half horizon = min(half(1.0) + dot(ref_vec, indirect_normal), half(1.0));
 		ref_vec = hvec3(scene_data.radiance_inverse_xform * vec3(ref_vec));
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 		float lod;
-		half blend = half(modf(float(sqrt(roughness) * half(MAX_ROUGHNESS_LOD)), lod));
+		half blend = half(modf(float(sqrt(roughness) * MAX_ROUGHNESS_LOD), lod));
 
-		hvec3 indirect_sample_a = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(vec3(ref_vec), float(lod))).rgb);
-		hvec3 indirect_sample_b = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(vec3(ref_vec), float(lod) + 1.0)).rgb);
+		float ref_lod = vec3_to_oct_lod(dFdx(ref_vec), dFdy(ref_vec), scene_data_block.data.radiance_pixel_size);
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		hvec3 indirect_sample_a = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, float(lod)), ref_lod).rgb);
+		hvec3 indirect_sample_b = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, float(lod) + 1.0), ref_lod).rgb);
 		indirect_specular_light = mix(indirect_sample_a, indirect_sample_b, blend);
-
-#else // USE_RADIANCE_CUBEMAP_ARRAY
-		float lod = sqrt(roughness) * half(MAX_ROUGHNESS_LOD);
-		indirect_specular_light = hvec3(textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_vec), lod).rgb);
-
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+#else // USE_RADIANCE_OCTMAP_ARRAY
+		float lod = sqrt(roughness) * MAX_ROUGHNESS_LOD;
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		indirect_specular_light = hvec3(textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, lod).rgb);
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 		indirect_specular_light *= REFLECTION_MULTIPLIER;
 		indirect_specular_light *= half(scene_data.IBL_exposure_normalization);
 		indirect_specular_light *= horizon * horizon;
@@ -1626,14 +1624,18 @@ void main() {
 
 		if (sc_scene_use_ambient_cubemap()) {
 			vec3 ambient_dir = scene_data.radiance_inverse_xform * indirect_normal;
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-			hvec3 cubemap_ambient = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ambient_dir, MAX_ROUGHNESS_LOD)).rgb);
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+			float ambient_lod = vec3_to_oct_lod(dFdx(ambient_dir), dFdy(ambient_dir), scene_data_block.data.radiance_pixel_size);
+			vec2 ambient_uv = vec3_to_oct_with_border(ambient_dir, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+			hvec3 octmap_ambient = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ambient_uv, MAX_ROUGHNESS_LOD), ambient_lod).rgb);
 #else
-			hvec3 cubemap_ambient = hvec3(textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ambient_dir, MAX_ROUGHNESS_LOD).rgb);
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
-			cubemap_ambient *= REFLECTION_MULTIPLIER;
-			cubemap_ambient *= half(scene_data.IBL_exposure_normalization);
-			ambient_light = mix(ambient_light, cubemap_ambient * half(scene_data.ambient_light_color_energy.a), half(scene_data.ambient_color_sky_mix));
+			float roughness_lod = MAX_ROUGHNESS_LOD;
+			vec2 ambient_uv = vec3_to_oct_with_border(ambient_dir, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+			hvec3 octmap_ambient = hvec3(textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ambient_uv, roughness_lod).rgb);
+#endif //USE_RADIANCE_OCTMAP_ARRAY
+			octmap_ambient *= REFLECTION_MULTIPLIER;
+			octmap_ambient *= half(scene_data.IBL_exposure_normalization);
+			ambient_light = mix(ambient_light, octmap_ambient * half(scene_data.ambient_light_color_energy.a), half(scene_data.ambient_color_sky_mix));
 		}
 	}
 #endif // !USE_LIGHTMAP
@@ -1656,18 +1658,19 @@ void main() {
 		half horizon = min(half(1.0) + dot(ref_vec, indirect_normal), half(1.0));
 		ref_vec = hvec3(scene_data.radiance_inverse_xform * vec3(ref_vec));
 		float roughness_lod = mix(0.001, 0.1, sqrt(float(clearcoat_roughness))) * MAX_ROUGHNESS_LOD;
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 		float lod;
 		half blend = half(modf(roughness_lod, lod));
-		hvec3 clearcoat_sample_a = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod)).rgb);
-		hvec3 clearcoat_sample_b = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod + 1)).rgb);
+
+		float ref_lod = vec3_to_oct_lod(dFdx(ref_vec), dFdy(ref_vec), scene_data_block.data.radiance_pixel_size);
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		hvec3 clearcoat_sample_a = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, lod), ref_lod).rgb);
+		hvec3 clearcoat_sample_b = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, lod + 1), ref_lod).rgb);
 		hvec3 clearcoat_light = mix(clearcoat_sample_a, clearcoat_sample_b, blend);
-
 #else
-		hvec3 clearcoat_light = hvec3(textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_vec), roughness_lod).rgb);
-
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		hvec3 clearcoat_light = hvec3(textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb);
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 		indirect_specular_light += clearcoat_light * horizon * horizon * Fc * half(scene_data.ambient_light_color_energy.a);
 	}
 #endif // LIGHT_CLEARCOAT_USED
