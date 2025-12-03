@@ -37,7 +37,6 @@
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -483,6 +482,7 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 		editor->open();
 	} else {
 		editor->close();
+		TileSetEditor::get_singleton()->close();
 	}
 }
 
