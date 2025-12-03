@@ -94,18 +94,18 @@ public:
 #endif
 	bool real_is_double = false;
 
-	virtual BitField<UnixPermissionFlags> _get_unix_permissions(const String &p_file) = 0;
-	virtual Error _set_unix_permissions(const String &p_file, BitField<UnixPermissionFlags> p_permissions) = 0;
+	virtual BitField<UnixPermissionFlags> _get_unix_permissions(const String &p_path) = 0;
+	virtual Error _set_unix_permissions(const String &p_path, BitField<UnixPermissionFlags> p_permissions) = 0;
 
-	virtual bool _get_hidden_attribute(const String &p_file) = 0;
-	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) = 0;
-	virtual bool _get_read_only_attribute(const String &p_file) = 0;
-	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) = 0;
+	virtual bool _get_hidden_attribute(const String &p_path) = 0;
+	virtual Error _set_hidden_attribute(const String &p_path, bool p_hidden) = 0;
+	virtual bool _get_read_only_attribute(const String &p_path) = 0;
+	virtual Error _set_read_only_attribute(const String &p_path, bool p_ro) = 0;
 
-	virtual PackedByteArray _get_extended_attribute(const String &p_file, const String &p_attribute_name) { return PackedByteArray(); }
-	virtual Error _set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data) { return ERR_UNAVAILABLE; }
-	virtual Error _remove_extended_attribute(const String &p_file, const String &p_attribute_name) { return ERR_UNAVAILABLE; }
-	virtual PackedStringArray _get_extended_attributes_list(const String &p_file) { return PackedStringArray(); }
+	virtual PackedByteArray _get_extended_attribute(const String &p_path, const String &p_attribute_name) { return PackedByteArray(); }
+	virtual Error _set_extended_attribute(const String &p_path, const String &p_attribute_name, const PackedByteArray &p_data) { return ERR_UNAVAILABLE; }
+	virtual Error _remove_extended_attribute(const String &p_path, const String &p_attribute_name) { return ERR_UNAVAILABLE; }
+	virtual PackedStringArray _get_extended_attributes_list(const String &p_path) { return PackedStringArray(); }
 
 protected:
 	static void _bind_methods();
@@ -113,9 +113,9 @@ protected:
 	AccessType get_access_type() const;
 	virtual String fix_path(const String &p_path) const;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) = 0; ///< open a file
-	virtual uint64_t _get_modified_time(const String &p_file) = 0;
-	virtual uint64_t _get_access_time(const String &p_file) = 0;
-	virtual int64_t _get_size(const String &p_file) = 0;
+	virtual uint64_t _get_modified_time(const String &p_path) = 0;
+	virtual uint64_t _get_access_time(const String &p_path) = 0;
+	virtual int64_t _get_size(const String &p_path) = 0;
 	virtual void _set_access_type(AccessType p_access);
 
 	static inline FileCloseFailNotify close_fail_notify = nullptr;
@@ -234,7 +234,7 @@ public:
 
 	virtual void close() = 0;
 
-	virtual bool file_exists(const String &p_name) = 0; ///< return true if a file exists
+	virtual bool file_exists(const String &p_path) = 0; ///< return true if a file exists
 
 	virtual Error reopen(const String &p_path, int p_mode_flags); ///< does not change the AccessType
 
@@ -250,30 +250,30 @@ public:
 
 	static CreateFunc get_create_func(AccessType p_access);
 	static bool exists(const String &p_name); ///< return true if a file exists
-	static uint64_t get_modified_time(const String &p_file);
-	static uint64_t get_access_time(const String &p_file);
-	static int64_t get_size(const String &p_file);
-	static BitField<FileAccess::UnixPermissionFlags> get_unix_permissions(const String &p_file);
-	static Error set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions);
+	static uint64_t get_modified_time(const String &p_path);
+	static uint64_t get_access_time(const String &p_path);
+	static int64_t get_size(const String &p_path);
+	static BitField<FileAccess::UnixPermissionFlags> get_unix_permissions(const String &p_path);
+	static Error set_unix_permissions(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions);
 
-	static bool get_hidden_attribute(const String &p_file);
-	static Error set_hidden_attribute(const String &p_file, bool p_hidden);
-	static bool get_read_only_attribute(const String &p_file);
-	static Error set_read_only_attribute(const String &p_file, bool p_ro);
+	static bool get_hidden_attribute(const String &p_path);
+	static Error set_hidden_attribute(const String &p_path, bool p_hidden);
+	static bool get_read_only_attribute(const String &p_path);
+	static Error set_read_only_attribute(const String &p_path, bool p_ro);
 
-	static PackedByteArray get_extended_attribute(const String &p_file, const String &p_attribute_name);
-	static String get_extended_attribute_string(const String &p_file, const String &p_attribute_name);
-	static Error set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data);
-	static Error set_extended_attribute_string(const String &p_file, const String &p_attribute_name, const String &p_data);
-	static Error remove_extended_attribute(const String &p_file, const String &p_attribute_name);
-	static PackedStringArray get_extended_attributes_list(const String &p_file);
+	static PackedByteArray get_extended_attribute(const String &path, const String &p_attribute_name);
+	static String get_extended_attribute_string(const String &path, const String &p_attribute_name);
+	static Error set_extended_attribute(const String &p_path, const String &p_attribute_name, const PackedByteArray &p_data);
+	static Error set_extended_attribute_string(const String &p_path, const String &p_attribute_name, const String &p_data);
+	static Error remove_extended_attribute(const String &p_path, const String &p_attribute_name);
+	static PackedStringArray get_extended_attributes_list(const String &path);
 
 	static void set_backup_save(bool p_enable) { backup_save = p_enable; }
 	static bool is_backup_save_enabled() { return backup_save; }
 
-	static String get_md5(const String &p_file);
-	static String get_sha256(const String &p_file);
-	static String get_multiple_md5(const Vector<String> &p_file);
+	static String get_md5(const String &p_path);
+	static String get_sha256(const String &p_path);
+	static String get_multiple_md5(const Vector<String> &p_paths);
 
 	static Vector<uint8_t> get_file_as_bytes(const String &p_path, Error *r_error = nullptr);
 	static String get_file_as_string(const String &p_path, Error *r_error = nullptr);

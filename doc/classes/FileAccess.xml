@@ -126,9 +126,9 @@
 		</method>
 		<method name="get_access_time" qualifiers="static">
 			<return type="int" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Returns the last time the [param file] was accessed in Unix timestamp format, or [code]0[/code] on error. This Unix timestamp can be converted to another format using the [Time] singleton.
+				Returns the last time the file at the given [param path] was accessed, in Unix timestamp format, or [code]0[/code] on error. This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_as_text" qualifiers="const">
@@ -173,10 +173,10 @@
 		</method>
 		<method name="get_extended_attribute" qualifiers="static">
 			<return type="PackedByteArray" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<param index="1" name="attribute_name" type="String" />
 			<description>
-				Reads the file extended attribute with name [param attribute_name] as a byte array.
+				Returns the extended attribute named [param attribute_name] of the file at the given [param path], as a byte array.
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
 				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
@@ -185,10 +185,10 @@
 		</method>
 		<method name="get_extended_attribute_string" qualifiers="static">
 			<return type="String" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<param index="1" name="attribute_name" type="String" />
 			<description>
-				Reads the file extended attribute with name [param attribute_name] as a UTF-8 encoded string.
+				Returns the extended attribute named [param attribute_name] of the file at the given [param path], as a UTF-8 encoded string.
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
 				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
@@ -197,9 +197,9 @@
 		</method>
 		<method name="get_extended_attributes_list" qualifiers="static">
 			<return type="PackedStringArray" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Returns a list of file extended attributes.
+				Returns the list of extended attributes names of the file at the given [param path].
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
 				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
@@ -236,9 +236,9 @@
 		</method>
 		<method name="get_hidden_attribute" qualifiers="static">
 			<return type="bool" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Returns [code]true[/code], if file [code]hidden[/code] attribute is set.
+				Returns [code]true[/code] if the [b]hidden[/b] attribute is set on the file at the given [param path].
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -264,9 +264,9 @@
 		</method>
 		<method name="get_modified_time" qualifiers="static">
 			<return type="int" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Returns the last time the [param file] was modified in Unix timestamp format, or [code]0[/code] on error. This Unix timestamp can be converted to another format using the [Time] singleton.
+				Returns the last time the file at the given [param path] was modified, in Unix timestamp format, or [code]0[/code] on error. This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_open_error" qualifiers="static">
@@ -302,9 +302,9 @@
 		</method>
 		<method name="get_read_only_attribute" qualifiers="static">
 			<return type="bool" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Returns [code]true[/code], if file [code]read only[/code] attribute is set.
+				Returns [code]true[/code] if the [b]read only[/b] attribute is set on the file at the given [param path].
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -324,16 +324,16 @@
 		</method>
 		<method name="get_size" qualifiers="static">
 			<return type="int" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Returns the size of the file at the given path, in bytes, or [code]-1[/code] on error.
+				Returns the size of the file at the given [param path], in bytes, or [code]-1[/code] on error.
 			</description>
 		</method>
 		<method name="get_unix_permissions" qualifiers="static">
 			<return type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Returns the UNIX permissions of the file at the given path.
+				Returns the UNIX permissions of the file at the given [param path].
 				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
@@ -396,10 +396,10 @@
 		</method>
 		<method name="remove_extended_attribute" qualifiers="static">
 			<return type="int" enum="Error" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<param index="1" name="attribute_name" type="String" />
 			<description>
-				Removes file extended attribute with name [param attribute_name].
+				Removes the extended attribute named [param attribute_name] from the file at the given [param path].
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
 				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
@@ -430,11 +430,11 @@
 		</method>
 		<method name="set_extended_attribute" qualifiers="static">
 			<return type="int" enum="Error" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<param index="1" name="attribute_name" type="String" />
 			<param index="2" name="data" type="PackedByteArray" />
 			<description>
-				Writes file extended attribute with name [param attribute_name] as a byte array.
+				Writes the extended attribute named [param attribute_name] to the file at the given [param path].
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
 				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
@@ -443,11 +443,11 @@
 		</method>
 		<method name="set_extended_attribute_string" qualifiers="static">
 			<return type="int" enum="Error" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<param index="1" name="attribute_name" type="String" />
-			<param index="2" name="_data" type="String" />
+			<param index="2" name="data" type="String" />
 			<description>
-				Writes file extended attribute with name [param attribute_name] as a UTF-8 encoded string.
+				Writes the extended attribute named [param attribute_name] to the file at the given [param path], as a UTF-8 encoded string.
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
 				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
@@ -456,28 +456,28 @@
 		</method>
 		<method name="set_hidden_attribute" qualifiers="static">
 			<return type="int" enum="Error" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<param index="1" name="hidden" type="bool" />
 			<description>
-				Sets file [b]hidden[/b] attribute.
+				Sets the [b]hidden[/b] attribute on the file at the given [param path].
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
 		<method name="set_read_only_attribute" qualifiers="static">
 			<return type="int" enum="Error" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<param index="1" name="ro" type="bool" />
 			<description>
-				Sets file [b]read only[/b] attribute.
+				Sets the [b]read only[/b] attribute on the file at the given [param path].
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
 		<method name="set_unix_permissions" qualifiers="static">
 			<return type="int" enum="Error" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
 			<description>
-				Sets file UNIX permissions.
+				Sets the UNIX permissions of the file at the given [param path] to [param permissions].
 				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
