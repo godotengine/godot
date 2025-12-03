@@ -955,6 +955,7 @@ void EditorDockManager::register_dock_slot(DockConstants::DockSlot p_dock_slot, 
 	slot.container = p_tab_container;
 	p_tab_container->set_popup(dock_context_popup);
 	p_tab_container->connect("pre_popup_pressed", callable_mp(dock_context_popup, &DockContextPopup::select_current_dock_in_dock_slot).bind(p_dock_slot));
+	p_tab_container->get_tab_bar()->set_switch_on_release(true);
 	p_tab_container->get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &EditorDockManager::_dock_container_popup).bind(p_tab_container));
 	p_tab_container->set_drag_to_rearrange_enabled(true);
 	p_tab_container->set_tabs_rearrange_group(1);

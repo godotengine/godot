@@ -119,6 +119,7 @@ private:
 
 	bool select_with_rmb = false;
 	bool deselect_enabled = false;
+	bool switch_on_release = false;
 
 	int cb_hover = -1;
 	bool cb_pressing = false;
@@ -328,6 +329,8 @@ public:
 
 	void set_max_tab_width(int p_width);
 	int get_max_tab_width() const;
+
+	void set_switch_on_release(bool p_switch) { switch_on_release = p_switch; }
 
 	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const override;
