@@ -55,6 +55,7 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/text_edit.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
@@ -157,8 +158,32 @@ EditorPropertyVariant::EditorPropertyVariant() {
 
 ///////////////////// TEXT /////////////////////////
 
+void EditorPropertyText::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
+		} break;
+	}
+}
+
 void EditorPropertyText::_set_read_only(bool p_read_only) {
 	text->set_editable(!p_read_only);
+}
+
+void EditorPropertyText::_update_theme() {
+	Ref<Font> font;
+	int font_size;
+
+	if (monospaced) {
+		font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+		font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
+	} else {
+		font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
+		font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+	}
+
+	text->add_theme_font_override(SceneStringName(font), font);
+	text->add_theme_font_size_override(SceneStringName(font_size), font_size);
 }
 
 void EditorPropertyText::_text_submitted(const String &p_string) {
@@ -227,6 +252,14 @@ void EditorPropertyText::set_placeholder(const String &p_string) {
 	text->set_placeholder(p_string);
 }
 
+void EditorPropertyText::set_monospaced(bool p_monospaced) {
+	if (p_monospaced == monospaced) {
+		return;
+	}
+	monospaced = p_monospaced;
+	_update_theme();
+}
+
 EditorPropertyText::EditorPropertyText() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -265,11 +298,11 @@ void EditorPropertyMultilineText::_open_big_text() {
 		big_text = memnew(TextEdit);
 		if (expression) {
 			big_text->set_syntax_highlighter(text->get_syntax_highlighter());
-			big_text->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
-			big_text->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 		}
 		big_text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
-		big_text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+		big_text->set_line_wrapping_mode(wrap_lines
+						? TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY
+						: TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
 		big_text_dialog = memnew(AcceptDialog);
 		big_text_dialog->add_child(big_text);
 		big_text_dialog->set_title(TTR("Edit Text:"));
@@ -279,6 +312,8 @@ void EditorPropertyMultilineText::_open_big_text() {
 	big_text_dialog->popup_centered_clamped(Size2(1000, 900) * EDSCALE, 0.8);
 	big_text->set_text(text->get_text());
 	big_text->grab_focus();
+
+	_update_theme();
 }
 
 void EditorPropertyMultilineText::update_property() {
@@ -292,34 +327,75 @@ void EditorPropertyMultilineText::update_property() {
 	}
 }
 
+void EditorPropertyMultilineText::_update_theme() {
+	Ref<Texture2D> df = get_editor_theme_icon(SNAME("DistractionFree"));
+	open_big_text->set_button_icon(df);
+
+	Ref<Font> font;
+	int font_size;
+	if (expression) {
+		font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
+		font_size = get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts));
+	} else {
+		// Non expression.
+		if (monospaced) {
+			font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+			font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
+		} else {
+			font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
+			font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
+		}
+	}
+	text->add_theme_font_override(SceneStringName(font), font);
+	text->add_theme_font_size_override(SceneStringName(font_size), font_size);
+	text->set_line_wrapping_mode(wrap_lines
+					? TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY
+					: TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+	if (big_text) {
+		big_text->add_theme_font_override(SceneStringName(font), font);
+		big_text->add_theme_font_size_override(SceneStringName(font_size), font_size);
+		big_text->set_line_wrapping_mode(wrap_lines
+						? TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY
+						: TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+	}
+
+	text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
+}
+
 void EditorPropertyMultilineText::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			Ref<Texture2D> df = get_editor_theme_icon(SNAME("DistractionFree"));
-			open_big_text->set_button_icon(df);
-
-			Ref<Font> font;
-			int font_size;
-			if (expression) {
-				font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
-				font_size = get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts));
-
-				text->add_theme_font_override(SceneStringName(font), font);
-				text->add_theme_font_size_override(SceneStringName(font_size), font_size);
-				if (big_text) {
-					big_text->add_theme_font_override(SceneStringName(font), font);
-					big_text->add_theme_font_size_override(SceneStringName(font_size), font_size);
-				}
-			} else {
-				font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
-				font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
-			}
-			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
+			_update_theme();
 		} break;
 	}
 }
 
-EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
+void EditorPropertyMultilineText::EditorPropertyMultilineText::set_monospaced(bool p_monospaced) {
+	if (p_monospaced == monospaced) {
+		return;
+	}
+	monospaced = p_monospaced;
+	_update_theme();
+}
+
+bool EditorPropertyMultilineText::EditorPropertyMultilineText::get_monospaced() {
+	return monospaced;
+}
+
+void EditorPropertyMultilineText::EditorPropertyMultilineText::set_wrap_lines(bool p_wrap_lines) {
+	if (p_wrap_lines == wrap_lines) {
+		return;
+	}
+	wrap_lines = p_wrap_lines;
+	_update_theme();
+}
+
+bool EditorPropertyMultilineText::EditorPropertyMultilineText::get_wrap_lines() {
+	return wrap_lines;
+}
+
+EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) :
+		expression(p_expression) {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_theme_constant_override("separation", 0);
 	add_child(hb);
@@ -337,8 +413,8 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;
 	big_text = nullptr;
-	if (p_expression) {
-		expression = true;
+
+	if (expression) {
 		Ref<EditorStandardSyntaxHighlighter> highlighter;
 		highlighter.instantiate();
 		text->set_syntax_highlighter(highlighter);
@@ -3889,7 +3965,14 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
 				return get_input_action_editor(p_hint_text, false);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
-				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
+				Vector<String> options = p_hint_text.split(",", false);
+				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(false));
+				if (options.has("monospace")) {
+					editor->set_monospaced(true);
+				}
+				if (options.has("no_wrap")) {
+					editor->set_wrap_lines(false);
+				}
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_EXPRESSION) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(true));
@@ -3916,6 +3999,12 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
+
+				Vector<String> hints = p_hint_text.split(",");
+				if (hints.has("monospace")) {
+					editor->set_monospaced(true);
+				}
+
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
 					editor->set_placeholder(p_hint_text);
 				} else if (p_hint == PROPERTY_HINT_PASSWORD) {
