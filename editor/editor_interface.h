@@ -174,6 +174,7 @@ public:
 	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
 	void open_scene_from_path(const String &scene_path, bool p_set_inherited = false);
 	void reload_scene_from_path(const String &scene_path);
+	void reload_all_scenes();
 
 	PackedStringArray get_open_scenes() const;
 	TypedArray<Node> get_open_scene_roots() const;
