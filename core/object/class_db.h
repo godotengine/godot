@@ -345,6 +345,7 @@ public:
 	static bool can_instantiate(const StringName &p_class);
 	static bool is_abstract(const StringName &p_class);
 	static bool is_virtual(const StringName &p_class);
+	static bool is_gdextension(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
 	static Object *instantiate_no_placeholders(const StringName &p_class);
 	static Object *instantiate_without_postinitialization(const StringName &p_class);
