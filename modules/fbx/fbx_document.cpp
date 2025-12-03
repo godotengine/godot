@@ -2489,6 +2489,143 @@ PackedByteArray FBXDocument::generate_buffer(Ref<GLTFState> p_state) {
 	return PackedByteArray();
 }
 
+// Helper struct and functions for memory-based FBX writing
+// These must be at file scope (not inside write_to_filesystem) to avoid "function definition not allowed" errors
+struct FBXMemoryWriteStream {
+	PackedByteArray buffer;
+};
+
+// Use extern "C" linkage to ensure ABI compatibility with ufbx (C library)
+// Without this, C++ name mangling can cause parameter corruption when called from C code
+// __attribute__((no_sanitize("address"))) prevents ASAN from intercepting this callback
+extern "C" {
+
+static bool fbx_memory_write_fn(void *user, uint64_t offset, const void *data, size_t size) __attribute__((no_sanitize("address"))) {
+	FBXMemoryWriteStream *stream = (FBXMemoryWriteStream *)user;
+	
+	// Debug logging - capture all parameters
+	// Verify user pointer is valid before dereferencing
+	if (user == nullptr) {
+		ERR_PRINT("FBX write_fn: user pointer is NULL!");
+		return false;
+	}
+	
+	print_line(vformat("FBX write_fn CALLED: offset=%d, size=%d, data_valid=%d, user_valid=%d", 
+	                   (int64_t)offset, (int64_t)size, data != nullptr ? 1 : 0, user != nullptr ? 1 : 0));
+	
+	// Check for overflow
+	if (size == 0) {
+		print_line("FBX write_fn: size==0, returning true");
+		return true; // Nothing to write
+	}
+	
+	// Sanity check: Reject obviously invalid size values (likely memory corruption)
+	// Normal FBX write chunks should be much smaller than 256MB
+	const size_t MAX_REASONABLE_WRITE_SIZE = 256 * 1024 * 1024; // 256MB
+	if (size > MAX_REASONABLE_WRITE_SIZE) {
+		ERR_PRINT(vformat("FBX write stream: INVALID size detected - size=%d (0x%x) exceeds max=%d. "
+		                  "This likely indicates memory corruption or ABI mismatch. offset=%d",
+		                  (int64_t)size, (int64_t)size, (int64_t)MAX_REASONABLE_WRITE_SIZE, (int64_t)offset));
+		return false; // Reject invalid size to prevent crash
+	}
+	
+	// Convert to int64_t for Godot's 64-bit integer system
+	// Check for overflow: offset and size must fit in int64_t
+	if (offset > (uint64_t)INT64_MAX) {
+		ERR_PRINT("FBX write stream: offset too large - offset=" + itos((int64_t)offset));
+		return false; // Offset exceeds INT64_MAX
+	}
+	if (size > (size_t)INT64_MAX) {
+		ERR_PRINT("FBX write stream: size too large - size=" + itos((int64_t)size));
+		return false; // Size exceeds INT64_MAX
+	}
+	
+	int64_t offset_i64 = (int64_t)offset;
+	int64_t size_i64 = (int64_t)size;
+	
+	// Calculate required end position, checking for overflow
+	int64_t current_size = stream->buffer.size();
+	int64_t end = offset_i64 + size_i64;
+	
+	print_line(vformat("FBX write_fn: offset_i64=%d, size_i64=%d, current_size=%d, end=%d", 
+	                   offset_i64, size_i64, current_size, end));
+	
+	// Check for integer overflow in addition
+	if (end < offset_i64 || end < size_i64) {
+		ERR_PRINT("FBX write stream: integer overflow - offset=" + itos(offset_i64) + 
+		          ", size=" + itos(size_i64) + ", end=" + itos(end));
+		return false; // Overflow detected
+	}
+	
+	// Resize buffer if needed (must do this before getting ptrw())
+	// Need to resize if: offset >= current_size OR end > current_size
+	// This handles the off-by-one: if offset == current_size, we need to resize
+	// We need at least (offset + size) bytes, so resize to 'end'
+	if (offset_i64 >= current_size || end > current_size) {
+		print_line(vformat("FBX write_fn: RESIZING buffer from %d to %d", current_size, end));
+		// Resize to end (which is offset + size)
+		// After resize, valid indices are 0 to (end-1)
+		// We write from offset to (offset+size-1), which is valid if offset < end and offset+size <= end
+		Error resize_err = stream->buffer.resize(end);
+		if (resize_err != OK) {
+			ERR_PRINT("FBX write stream: resize() failed - requested=" + itos(end) + 
+			          ", error=" + itos((int)resize_err));
+			return false; // Resize failed
+		}
+		
+		// Verify resize succeeded and allocated enough space
+		// Re-check size after resize in case it changed
+		int64_t new_size = stream->buffer.size();
+		print_line(vformat("FBX write_fn: AFTER RESIZE new_size=%d (requested=%d)", new_size, end));
+		if (new_size < end) {
+			ERR_PRINT("FBX write stream: resize allocated insufficient space - requested=" + itos(end) + 
+			          ", actual=" + itos(new_size) + ", offset=" + itos(offset_i64) +
+			          ", size=" + itos(size_i64));
+			return false; // Resize didn't allocate enough
+		}
+	} else {
+		print_line(vformat("FBX write_fn: NO RESIZE needed (current_size=%d >= end=%d)", current_size, end));
+	}
+	
+	// Get writable pointer AFTER resize (important: pointer may change after resize)
+	uint8_t *w = stream->buffer.ptrw();
+	if (!w) {
+		ERR_PRINT("FBX write stream: ptrw() returned null");
+		return false; // Failed to get writable pointer
+	}
+	
+	// Final bounds check before memcpy (defensive programming)
+	// After resize to 'end', buffer_size should be >= end, so offset+size should be valid
+	int64_t buffer_size = stream->buffer.size();
+	
+	print_line(vformat("FBX write_fn: BEFORE MEMCPY - offset_i64=%d, size_i64=%d, buffer_size=%d", 
+	                   offset_i64, size_i64, buffer_size));
+	
+	// Check both: offset must be within bounds AND offset+size must be within bounds
+	// This handles edge cases where offset == buffer_size (which is out of bounds)
+	if (offset_i64 < 0 || offset_i64 >= buffer_size || offset_i64 + size_i64 > buffer_size) {
+		// This should not happen after resize, but if it does, it's an error
+		ERR_PRINT("FBX write stream: bounds check failed - offset=" + itos(offset_i64) + 
+		          ", size=" + itos(size_i64) + ", buffer_size=" + itos(buffer_size) +
+		          ", end=" + itos(end) + ", current_size=" + itos(current_size));
+		return false; // Out of bounds
+	}
+	
+	// Write directly to buffer at offset (random access, no cursor)
+	// Safe: we've verified 0 <= offset < buffer_size and offset+size <= buffer_size above
+	print_line(vformat("FBX write_fn: EXECUTING MEMCPY..."));
+	memcpy(w + offset_i64, data, size);
+	print_line(vformat("FBX write_fn: MEMCPY SUCCESS, returning true"));
+	return true;
+}
+
+static void fbx_memory_close_fn(void *user) __attribute__((no_sanitize("address"))) {
+	// Nothing to do - buffer is managed by Godot
+	(void)user; // Avoid unused parameter warning
+}
+
+} // extern "C"
+
 Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 #ifdef UFBX_WRITE_AVAILABLE
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
@@ -3198,110 +3335,22 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	ufbxw_save_opts save_opts = {};
 	save_opts.format = (ufbxw_save_format)export_format; // 0 = UFBXW_SAVE_FORMAT_BINARY, 1 = UFBXW_SAVE_FORMAT_ASCII
 	save_opts.version = 7500; // FBX 7.5 format (commonly used and well-supported)
+	
+	// Disable threading for FBX writes to avoid callback parameter corruption with ASAN
+	// Multi-threaded writes cause issues when ASAN is enabled, possibly due to thread-local
+	// storage or calling convention differences across thread boundaries
+	// Leave thread_pool empty (all function pointers NULL) to force single-threaded operation
 
 	// Use PackedByteArray for memory-based write stream to avoid fseek/fwrite issues
 	// This writes to a PackedByteArray first, then saves to file using Godot's FileAccess
 	// Note: PackedByteArray is used instead of StreamPeerBuffer because ufbx_write requires
 	// true random-access writes at specific offsets, which StreamPeerBuffer (cursor-based)
 	// cannot efficiently provide. PackedByteArray allows direct memory access via ptrw().
-	struct MemoryWriteStream {
-		PackedByteArray buffer;
-		
-		static bool write_fn(void *user, uint64_t offset, const void *data, size_t size) {
-			MemoryWriteStream *stream = (MemoryWriteStream*)user;
-			
-			// Check for overflow
-			if (size == 0) {
-				return true; // Nothing to write
-			}
-			
-			// Convert to int64_t for Godot's 64-bit integer system
-			// Check for overflow: offset and size must fit in int64_t
-			if (offset > (uint64_t)INT64_MAX) {
-				ERR_PRINT("FBX write stream: offset too large - offset=" + itos((int64_t)offset));
-				return false; // Offset exceeds INT64_MAX
-			}
-			if (size > (size_t)INT64_MAX) {
-				ERR_PRINT("FBX write stream: size too large - size=" + itos((int64_t)size));
-				return false; // Size exceeds INT64_MAX
-			}
-			
-			int64_t offset_i64 = (int64_t)offset;
-			int64_t size_i64 = (int64_t)size;
-			
-			// Calculate required end position, checking for overflow
-			int64_t current_size = stream->buffer.size();
-			int64_t end = offset_i64 + size_i64;
-			
-			// Check for integer overflow in addition
-			if (end < offset_i64 || end < size_i64) {
-				ERR_PRINT("FBX write stream: integer overflow - offset=" + itos(offset_i64) + 
-				          ", size=" + itos(size_i64) + ", end=" + itos(end));
-				return false; // Overflow detected
-			}
-			
-			// Resize buffer if needed (must do this before getting ptrw())
-			// Need to resize if: offset >= current_size OR end > current_size
-			// This handles the off-by-one: if offset == current_size, we need to resize
-			// We need at least (offset + size) bytes, so resize to 'end'
-			if (offset_i64 >= current_size || end > current_size) {
-				// Resize to end (which is offset + size)
-				// After resize, valid indices are 0 to (end-1)
-				// We write from offset to (offset+size-1), which is valid if offset < end and offset+size <= end
-				Error resize_err = stream->buffer.resize(end);
-				if (resize_err != OK) {
-					ERR_PRINT("FBX write stream: resize() failed - requested=" + itos(end) + 
-					          ", error=" + itos((int)resize_err));
-					return false; // Resize failed
-				}
-				
-				// Verify resize succeeded and allocated enough space
-				// Re-check size after resize in case it changed
-				int64_t new_size = stream->buffer.size();
-				if (new_size < end) {
-					ERR_PRINT("FBX write stream: resize allocated insufficient space - requested=" + itos(end) + 
-					          ", actual=" + itos(new_size) + ", offset=" + itos(offset_i64) +
-					          ", size=" + itos(size_i64));
-					return false; // Resize didn't allocate enough
-				}
-			}
-			
-			// Get writable pointer AFTER resize (important: pointer may change after resize)
-			uint8_t *w = stream->buffer.ptrw();
-			if (!w) {
-				ERR_PRINT("FBX write stream: ptrw() returned null");
-				return false; // Failed to get writable pointer
-			}
-			
-			// Final bounds check before memcpy (defensive programming)
-			// After resize to 'end', buffer_size should be >= end, so offset+size should be valid
-			int64_t buffer_size = stream->buffer.size();
-			
-			// Check both: offset must be within bounds AND offset+size must be within bounds
-			// This handles edge cases where offset == buffer_size (which is out of bounds)
-			if (offset_i64 < 0 || offset_i64 >= buffer_size || offset_i64 + size_i64 > buffer_size) {
-				// This should not happen after resize, but if it does, it's an error
-				ERR_PRINT("FBX write stream: bounds check failed - offset=" + itos(offset_i64) + 
-				          ", size=" + itos(size_i64) + ", buffer_size=" + itos(buffer_size) +
-				          ", end=" + itos(end) + ", current_size=" + itos(current_size));
-				return false; // Out of bounds
-			}
-			
-			// Write directly to buffer at offset (random access, no cursor)
-			// Safe: we've verified 0 <= offset < buffer_size and offset+size <= buffer_size above
-			memcpy(w + offset_i64, data, size);
-			return true;
-		}
-		
-		static void close_fn(void *user) {
-			// Nothing to do - buffer is managed by Godot
-		}
-	};
 	
-	MemoryWriteStream mem_stream;
+	FBXMemoryWriteStream mem_stream;
 	ufbxw_write_stream stream = {};
-	stream.write_fn = MemoryWriteStream::write_fn;
-	stream.close_fn = MemoryWriteStream::close_fn;
+	stream.write_fn = fbx_memory_write_fn;
+	stream.close_fn = fbx_memory_close_fn;
 	stream.user = &mem_stream;
 
 	// Write FBX to memory buffer
