@@ -621,7 +621,7 @@ String CreateDialog::get_selected_type() {
 		return String();
 	}
 
-	String type = selected->get_text(0);
+	String type = selected->get_text(0).get_slicec(' ', 0);
 	return ClassDB::class_exists(type) ? type : String(selected->get_meta("_script_path", ""));
 }
 
