@@ -35,6 +35,13 @@ ERROR: Validate extension JSON: Missing field in current API 'classes/FileAccess
 Optional argument removed. Compatibility method registered.
 
 
+GH-107871
+---------
+Validate extension JSON: Error: Field 'classes/WebSocketPeer/methods/accept_stream/arguments': size changed value in new API, from 1 to 2.
+
+Optional argument removed. Compatibility method registered.
+
+
 GH-111117
 ---------
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/LineEdit/methods/edit': arguments
