@@ -2881,10 +2881,17 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			ufbxw_mesh_set_vertices(write_scene, fbx_mesh, vertices_buffer);
 
 			// Convert indices
+			// FBX uses counter-clockwise winding, but Godot uses clockwise
+			// Swap first and third index of each triangle to convert winding order
 			Vector<int32_t> fbx_indices;
 			fbx_indices.resize(indices.size());
-			for (int i = 0; i < indices.size(); i++) {
-				fbx_indices.write[i] = (int32_t)indices[i];
+			int triangle_count = indices.size() / 3;
+			for (int tri = 0; tri < triangle_count; tri++) {
+				int base = tri * 3;
+				// Swap index 0 and 2 to reverse winding order (Godot clockwise -> FBX counter-clockwise)
+				fbx_indices.write[base + 0] = (int32_t)indices[base + 2];
+				fbx_indices.write[base + 1] = (int32_t)indices[base + 1];
+				fbx_indices.write[base + 2] = (int32_t)indices[base + 0];
 			}
 			ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, fbx_indices.ptr(), fbx_indices.size());
 			ufbxw_mesh_set_triangles(write_scene, fbx_mesh, indices_buffer);
