@@ -43,8 +43,7 @@ class [[nodiscard]] NodePath {
 		StringName concatenated_path;
 		StringName concatenated_subpath;
 		bool absolute;
-		mutable bool hash_cache_valid;
-		mutable uint32_t hash_cache;
+		uint32_t hash_cache;
 	};
 
 	mutable Data *data = nullptr;
@@ -68,17 +67,7 @@ public:
 	NodePath rel_path_to(const NodePath &p_np) const;
 	NodePath get_as_property_path() const;
 
-	void prepend_period();
-
-	_FORCE_INLINE_ uint32_t hash() const {
-		if (!data) {
-			return 0;
-		}
-		if (!data->hash_cache_valid) {
-			_update_hash_cache();
-		}
-		return data->hash_cache;
-	}
+	_FORCE_INLINE_ uint32_t hash() const { return data ? data->hash_cache : 0; }
 
 	explicit operator String() const;
 	bool is_empty() const;
