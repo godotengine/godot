@@ -579,10 +579,7 @@ class AnimationTrackEditGroup : public Control {
 	AnimationTrackEditor *editor = nullptr;
 
 	bool hovered = false;
-	bool track_edits_visible = true;
 	LocalVector<AnimationTrackEdit *> track_edits;
-
-	void add_track_edit(AnimationTrackEdit *p_edit) { track_edits.append(p_edit); }
 	void _zoom_changed();
 
 protected:

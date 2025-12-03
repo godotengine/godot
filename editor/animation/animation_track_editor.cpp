@@ -3918,7 +3918,8 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), v_line_color, Math::round(EDSCALE));
 
 			int ofs = stylebox_header->get_margin(SIDE_LEFT);
-			Ref<Texture2D> collapse_icon = get_theme_icon(track_edits_visible ? SNAME("arrow") : SNAME("arrow_collapsed"), SNAME("Tree"));
+			bool group_collapsed = editor->get_current_animation()->get_group_collapsed(node_name);
+			Ref<Texture2D> collapse_icon = get_theme_icon(group_collapsed ? SNAME("arrow_collapsed") : SNAME("arrow"), SNAME("Tree"));
 			Size2 collapse_icon_size = collapse_icon->get_size();
 			draw_texture_rect(collapse_icon, Rect2(Point2(ofs, (get_size().height - collapse_icon_size.y) / 2 + v_margin_offset).round(), collapse_icon_size));
 
@@ -3954,12 +3955,12 @@ void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
 
 		Rect2 left_side_rect = Rect2(0, 0, get_size().height, get_size().height);
 		if (left_side_rect.has_point(pos)) {
-			track_edits_visible = !track_edits_visible;
+			bool current_group_collapsed = !editor->get_current_animation()->get_group_collapsed(node_name);
+			editor->get_current_animation()->set_group_collapsed(node_name, current_group_collapsed);
 			for (AnimationTrackEdit *i : track_edits) {
-				i->set_visible(track_edits_visible);
+				i->set_visible(!current_group_collapsed);
 			}
 
-			editor->get_current_animation()->set_group_collapsed(node_name, !track_edits_visible);
 			queue_redraw();
 		} else {
 			Rect2 node_name_rect = Rect2(0, 0, timeline->get_name_limit(), get_size().height);
@@ -5331,7 +5332,7 @@ void AnimationTrackEditor::_update_tracks() {
 
 			AnimationTrackEditGroup *g = Object::cast_to<AnimationTrackEditGroup>(group_sort[base_path]->get_child(0));
 			ERR_FAIL_NULL_MSG(g, "The first child of this group's VBoxContainer isn't an AnimationTrackEditGroup. Collapsing this animation group may not work.");
-			g->add_track_edit(track_edit);
+			g->track_edits.push_back(track_edit);
 
 		} else {
 			track_edit->set_in_group(false);
@@ -5384,9 +5385,8 @@ void AnimationTrackEditor::_update_tracks() {
 
 			AnimationTrackEditGroup *g = Object::cast_to<AnimationTrackEditGroup>(vb->get_child(0));
 			if (g) {
-				g->track_edits_visible = !animation->get_group_collapsed(g->node_name);
 				for (AnimationTrackEdit *i : g->track_edits) {
-					i->set_visible(g->track_edits_visible);
+					i->set_visible(!animation->get_group_collapsed(g->node_name));
 				}
 			}
 		}
