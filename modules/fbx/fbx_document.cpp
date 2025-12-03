@@ -3055,10 +3055,10 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			}
 
 			// Store per-face material indices (all faces in this surface use the same material)
-			int triangle_count = indices.size() / 3;
+			int face_count = indices.size() / 3;
 			Vector<int32_t> face_material_indices;
-			face_material_indices.resize(triangle_count);
-			for (int tri = 0; tri < triangle_count; tri++) {
+			face_material_indices.resize(face_count);
+			for (int tri = 0; tri < face_count; tri++) {
 				face_material_indices.write[tri] = surface_material_index;
 			}
 			if (face_material_indices.size() > 0) {
