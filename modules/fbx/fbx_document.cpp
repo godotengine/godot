@@ -2656,7 +2656,36 @@ static void fbx_memory_close_impl(FBXMemoryWriteStream *stream) {
 extern "C" {
 
 // C wrapper for write function - ensures proper parameter passing at C/C++ boundary
-static bool fbx_memory_write_fn(void *user, uint64_t offset, const void *data, size_t size) __attribute__((no_sanitize("address"))) {
+// Use __attribute__((noinline)) to prevent compiler from optimizing away parameter checks
+static bool __attribute__((noinline)) fbx_memory_write_fn(void *user, uint64_t offset, const void *data, size_t size) __attribute__((no_sanitize("address"))) {
+	// Log raw parameter values immediately upon entry (before any processing)
+	// This captures what the compiler actually received from the caller
+	uint64_t raw_user = (uint64_t)(uintptr_t)user;
+	uint64_t raw_offset = (uint64_t)offset;
+	uint64_t raw_data = (uint64_t)(uintptr_t)data;
+	uint64_t raw_size = (uint64_t)size;
+	
+	print_line(vformat("FBX write_fn RAW PARAMS: user=0x%x, offset=0x%x, data=0x%x, size=0x%x (size=%d)",
+	                   raw_user, raw_offset, raw_data, raw_size, (int64_t)raw_size));
+	
+	// Check if size looks like a pointer (high bit set, typical of heap addresses)
+	if (raw_size > 0x100000000ULL && raw_size < 0x8000000000000000ULL) {
+		ERR_PRINT(vformat("FBX write_fn: size parameter looks like a pointer! "
+		                  "size=0x%x (decimal: %d). This suggests parameter corruption at call site.",
+		                  raw_size, (int64_t)raw_size));
+		
+		// Check if size matches any of the other parameters (would indicate parameter shift)
+		if (raw_size == raw_data) {
+			ERR_PRINT("FBX write_fn: CRITICAL - size matches data pointer! Parameter shift detected.");
+		}
+		if (raw_size == raw_user) {
+			ERR_PRINT("FBX write_fn: CRITICAL - size matches user pointer! Parameter shift detected.");
+		}
+		if (raw_size == raw_offset) {
+			ERR_PRINT("FBX write_fn: CRITICAL - size matches offset! Parameter shift detected.");
+		}
+	}
+	
 	// Immediately validate and cast user pointer
 	if (user == nullptr) {
 		return false;
@@ -3404,7 +3433,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	ufbxw_write_stream stream = {};
 	stream.write_fn = fbx_memory_write_fn;
 	stream.close_fn = fbx_memory_close_fn;
-	stream.user = &mem_stream;
+	// Store raw pointer to mem_stream - explicitly use address-of operator (not C++ reference)
+	// mem_stream is a local variable that stays in scope for the entire function
+	stream.user = (void *)(&mem_stream);
 
 	// Write FBX to memory buffer
 	ufbxw_error error = {};
