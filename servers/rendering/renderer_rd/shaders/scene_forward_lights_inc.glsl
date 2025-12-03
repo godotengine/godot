@@ -1071,21 +1071,21 @@ vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
 	// float outside_max = max(outside.x, outside.y);
 	// float outmod = smoothstep(-0.1, 0.1, outside_max) * 2.5;
 	// float blend = 10.0 * 2.5 + outmod;
-	float max_lod = 11.0;
+	float max_lod = 5.0;
 	float low = min(max(floor(lod), 0.0), max_lod - 1.0);
 	float high = min(max(floor(lod + 1.0), 1.0), max_lod);
 	float margin = 0.125 / 8.0;
-	vec2 sample_pos = clamp(uv * 0.75 + 0.125, 0.0 + margin, 1.0 - margin) * texture_rect.zw; // take border into account
-	vec2 sample_pos1 = sample_pos * pow(0.5, low);
-	vec2 sample_pos2 = sample_pos * pow(0.5, high);
-	vec2 off1 = vec2(step(1.0, low) * texture_rect.z, texture_rect.w - texture_rect.w / pow(2.0, max(low - 1.0, 0.0)));
-	vec2 off2 = vec2(step(1.0, high) * texture_rect.z, texture_rect.w - texture_rect.w / pow(2.0, max(high - 1.0, 0.0)));
+	vec2 sample_pos = clamp(uv, 0.0 + margin, 1.0 - margin) * texture_rect.zw; // take border into account
+	// vec2 sample_pos1 = sample_pos * pow(0.5, low);
+	// vec2 sample_pos2 = sample_pos * pow(0.5, high);
+	// vec2 off1 = vec2(step(1.0, low) * texture_rect.z, texture_rect.w - texture_rect.w / pow(2.0, max(low - 1.0, 0.0)));
+	// vec2 off2 = vec2(step(1.0, high) * texture_rect.z, texture_rect.w - texture_rect.w / pow(2.0, max(high - 1.0, 0.0)));
 
-	vec4 sample_col1 = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + off1 + sample_pos1, 0.0);
-	vec4 sample_col2 = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + off2 + sample_pos2, 0.0);
+	vec4 sample_col_low = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + sample_pos, low);
+	vec4 sample_col_high = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + sample_pos, high);
 
 	float blend = high - lod;
-	vec4 sample_col = mix(sample_col2, sample_col1, blend);
+	vec4 sample_col = mix(sample_col_high, sample_col_low, blend);
 	return sample_col.rgb * sample_col.a; // premultiply alpha channel
 }
 

@@ -1070,7 +1070,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS) {
-		RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture();
+		RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_mip_texture();
 
 		if (decal_atlas.is_valid()) {
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);

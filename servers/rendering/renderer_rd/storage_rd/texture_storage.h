@@ -606,6 +606,7 @@ public:
 	bool owns_decal(RID p_rid) const { return decal_owner.owns(p_rid); }
 
 	RID decal_atlas_get_texture() const;
+	RID decal_atlas_get_mip_texture() const;
 	RID decal_atlas_get_texture_srgb() const;
 	_FORCE_INLINE_ Rect2 decal_atlas_get_texture_rect(RID p_texture) {
 		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);

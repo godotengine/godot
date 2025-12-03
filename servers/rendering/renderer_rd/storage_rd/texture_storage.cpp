@@ -2899,6 +2899,10 @@ RID TextureStorage::decal_atlas_get_texture() const {
 	return decal_atlas.texture;
 }
 
+RID TextureStorage::decal_atlas_get_mip_texture() const {
+	return decal_atlas.texture_mipmaps[4].texture;
+}
+
 RID TextureStorage::decal_atlas_get_texture_srgb() const {
 	return decal_atlas.texture_srgb;
 }
@@ -3267,36 +3271,35 @@ void TextureStorage::update_decal_atlas() {
 					if (t->area_light_users >= 0) { // TODO: if an area light texture, copy the filtered version.
 						Vector2 size = Vector2(t->uv_rect.size.x * 2.0 / 3.0, t->uv_rect.size.y);
 						const int max_lods = 11;
-						Vector2 size_pixels = size * decal_atlas.size;
-						int l2 = MIN(floor(log2(MIN(size.x * decal_atlas.size.x, size.y * decal_atlas.size.y))), max_lods);
-						for (int j = 0; j < l2; j++) {
-							Rect2 uv_rect = t->uv_rect;
-							float b = pow(2, j);
-							uv_rect.position.x += size.x;
-							uv_rect.position.y += size.y - size.y / b;
-							uv_rect.size = size / (b * 2);
+						//int l2 = MIN(floor(log2(MIN(size.x * decal_atlas.size.x, size.y * decal_atlas.size.y))), max_lods);
+						//for (int j = 0; j < l2; j++) {
+						Rect2 uv_rect = t->uv_rect;
+						//float b = pow(2, j);
+						//uv_rect.position.x += size.x;
+						//uv_rect.position.y += size.y - size.y / b;
+						uv_rect.size = size;// / (b * 2);
 
-							// TODO: should / could we use copy_to_fb_rect instead?
-							//copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, uv_rect, draw_list, false, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.RD::TextureFormat tf_temp;
+						// TODO: should / could we use copy_to_fb_rect instead?
+						//copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, uv_rect, draw_list, false, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.RD::TextureFormat tf_temp;
 
-							Vector2i mip_size = uv_rect.size * decal_atlas.size;
-							RD::TextureFormat tf_blur;
-							tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-							tf_blur.width = mip_size.width;
-							tf_blur.height = mip_size.height;
-							tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
-							tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-							tf_blur.mipmaps = 1;
-							RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
-							Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_size);
-							//copy_effects->copy_to_rect(src_tex->rd_texture, temp_textures[t], copy_rect, false, false, true);
-							copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_size, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
+						Vector2i mip_size = uv_rect.size * decal_atlas.size / pow(2, i+1);
+						RD::TextureFormat tf_blur;
+						tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+						tf_blur.width = mip_size.width;
+						tf_blur.height = mip_size.height;
+						tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
+						tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+						tf_blur.mipmaps = 1;
+						RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
+						Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_size);
+						//copy_effects->copy_to_rect(src_tex->rd_texture, temp_textures[t], copy_rect, false, false, true);
+						copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_size, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
 
-							copy_effects->copy_to_atlas_fb(blur_tex, mm.fb, uv_rect, draw_list, false, false);
-							temp_tex_count++;
-							RD::get_singleton()->free_rid(blur_tex);
-							// mm.texture does not work, since it does not have usage bit assigned. but we need to use a texture, not a framebuffer.
-						}
+						copy_effects->copy_to_atlas_fb(blur_tex, mm.fb, uv_rect, draw_list, false, false);
+						temp_tex_count++;
+						RD::get_singleton()->free_rid(blur_tex);
+						// mm.texture does not work, since it does not have usage bit assigned. but we need to use a texture, not a framebuffer.
+						//}
 					}
 				}
 
