@@ -1605,7 +1605,7 @@ void EditorProperty::_update_popup() {
 			menu->add_icon_item(theme_cache.revert_icon, TTR("Revert Value"), MENU_REVERT_VALUE);
 		}
 	}
-	if (!doc_path.is_empty()) {
+	if (!doc_path.is_empty() && ScriptEditor::get_singleton() && EditorNode::get_singleton()) {
 		menu->add_separator();
 		menu->add_icon_item(theme_cache.help_icon, TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
 	}
