@@ -581,7 +581,7 @@ vec3 ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4], vec4 texture_re
 		I += integrate_edge(L_proj[4], L_proj[0], L[4], L[0]);
 	}
 
-	return abs(I)*vec3(1.0) * light_texture;
+	return abs(I) * light_texture;
 }
 
 // implementation of area lights with Linearly Transformed Cosines (LTC): https://eheitzresearch.wordpress.com/415-2/
