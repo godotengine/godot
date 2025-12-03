@@ -308,8 +308,10 @@ void ProjectListItemControl::set_is_favorite(bool p_favorite) {
 	is_favorite = p_favorite;
 	if (p_favorite) {
 		favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
+		favorite_button->set_accessibility_name(TTRC("Remove from Favorites"));
 	} else {
 		favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Unfavorite")));
+		favorite_button->set_accessibility_name(TTRC("Add to Favorites"));
 	}
 }
 
