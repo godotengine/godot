@@ -39,8 +39,11 @@
 
 #include <audioclient.h>
 #include <mmdeviceapi.h>
+#include <wrl/client.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+using Microsoft::WRL::ComPtr;
 
 class AudioDriverWASAPI : public AudioDriver {
 	class AudioDeviceWASAPI {
@@ -91,6 +94,24 @@ class AudioDriverWASAPI : public AudioDriver {
 	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_input, bool p_reinit, bool p_no_audio_client_3 = false);
 	Error audio_device_finish(AudioDeviceWASAPI *p_device);
 	PackedStringArray audio_device_get_list(bool p_input);
+
+	// Helper functions for audio_device_init refactoring
+	ComPtr<IMMDevice> find_output_device(AudioDeviceWASAPI *p_device, bool p_input);
+	void register_notification_callback(ComPtr<IMMDeviceEnumerator> &enumerator);
+	HRESULT activate_audio_client(ComPtr<IMMDevice> &device, bool use_client3, IAudioClient **out_client);
+	WAVEFORMATEX *get_and_validate_mix_format(IAudioClient *audio_client, bool &used_closest);
+	bool validate_and_set_format(AudioDeviceWASAPI *p_device, WAVEFORMATEX *pwfex);
+	HRESULT initialize_audio_client(AudioDeviceWASAPI *p_device, WAVEFORMATEX *pwfex, bool p_input, bool use_client3);
+	void setup_buffer_and_latency(AudioDeviceWASAPI *p_device, bool p_input, bool use_client3, WAVEFORMATEX *pwfex);
+	HRESULT acquire_service_clients(AudioDeviceWASAPI *p_device, bool p_input);
+
+	// Helper functions for thread_func refactoring
+	void process_audio_output(uint32_t &avail_frames, uint32_t &write_ofs, uint32_t &written_frames);
+	void process_audio_input(uint32_t &read_frames);
+	void handle_output_device_changes();
+	void handle_input_device_changes();
+	void write_audio_buffer(BYTE *buffer, UINT32 write_frames, uint32_t &write_ofs);
+	void read_audio_buffer(BYTE *data, UINT32 num_frames_available, DWORD flags);
 
 public:
 	virtual const char *get_name() const override {
