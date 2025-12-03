@@ -782,6 +782,7 @@ public:
 			bool has_shadow;
 			RS::LightDirectionalSkyMode sky_mode;
 			Vector2 area_size;
+			RID area_texture;
 		};
 
 		Vector<LightCache> light_cache;

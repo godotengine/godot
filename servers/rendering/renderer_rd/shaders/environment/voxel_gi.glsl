@@ -63,12 +63,15 @@ struct Light {
 
 	vec4 area_width;
 	vec4 area_height;
+	vec4 area_projector_rect;
 };
 
 layout(set = 0, binding = 3, std140) uniform Lights {
 	Light data[MAX_LIGHTS];
 }
 lights;
+
+layout(set = 0, binding = 13) uniform texture2D area_light_atlas;
 
 #endif // MODE COMPUTE LIGHT
 
@@ -471,7 +474,60 @@ void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
 	}
 }
 
-float ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4]) {
+vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
+	float max_lod = 11.0;
+	float low = min(max(floor(lod), 0.0), max_lod - 1.0);
+	float high = min(max(floor(lod + 1.0), 1.0), max_lod);
+	vec2 sample_pos = clamp(uv, 0.0, 1.0) * texture_rect.zw; // take border into account
+	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, texture_sampler), texture_rect.xy + sample_pos, low);
+	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, texture_sampler), texture_rect.xy + sample_pos, high);
+
+	float blend = high - lod;
+	vec4 sample_col = mix(sample_col_high, sample_col_low, blend);
+	return sample_col.rgb * sample_col.a; // premultiply alpha channel
+}
+
+vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5]) {
+	vec3 L0 = normalize(L[0]);
+	vec3 L1 = normalize(L[1]);
+	vec3 L2 = normalize(L[2]);
+	vec3 L3 = normalize(L[3]);
+
+	vec3 F = vec3(0.0); // form factor
+	F += integrate_edge_hill(L0, L1);
+	F += integrate_edge_hill(L1, L2);
+	F += integrate_edge_hill(L2, L3);
+	F += integrate_edge_hill(L3, L0);
+
+	vec2 uv;
+	float lod = 0.0;
+
+	if (dot(F, F) < 1e-16) {
+		uv = vec2(0.5);
+	} else {
+		vec3 lx = L[1] - L[0];
+		vec3 ly = L[3] - L[0];
+		vec3 ln = cross(lx, ly);
+
+		float dist_x_area = dot(L[0], ln);
+		float d = dist_x_area / dot(F, ln);
+		vec3 isec = d * F;
+		vec3 li = isec - L[0]; // light to intersection
+
+		float dot_lxy = dot(lx, ly);
+		float inv_dot_lxlx = 1.0 / dot(lx, lx);
+		vec3 ly_ = ly - lx * dot_lxy * inv_dot_lxlx;
+
+		uv.y = dot(li, ly_) / dot(ly_, ly_);
+		uv.x = dot(li, lx) * inv_dot_lxlx - dot_lxy * inv_dot_lxlx * uv.y;
+
+		lod = abs(dist_x_area) / pow(dot(ln, ln), 0.75);
+		lod = log(2048.0 * lod) / log(3.0);
+	}
+	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod);
+}
+
+vec3 ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4], vec4 texture_rect) {
 	// construct the orthonormal basis around the normal vector
 	vec3 x, z;
 	vec3 eye_vec = vec3(0.0, 0.0, -1.0);
@@ -487,10 +543,15 @@ float ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4]) {
 	L[2] = basis * points[2];
 	L[3] = basis * points[3];
 
+	vec3 light_texture = vec3(1.0);
+	if (texture_rect != vec4(0.0)) {
+		light_texture = fetch_ltc_filtered_texture_with_form_factor(texture_rect, L);
+	}
+
 	int n = 0;
 	clip_quad_to_horizon(L, n);
 	if (n == 0) {
-		return 0.0;
+		return vec3(0.0);
 	}
 
 	vec3 L_proj[5];
@@ -506,7 +567,7 @@ float ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4]) {
 	if (abs(dot(pnorm, L_proj[0])) < 1e-10) {
 		// we could just return black, but that would lead to some black pixels in front of the light.
 		// for global illumination that shouldn't cause any visual artifacts
-		return 0.0;
+		return vec3(0.0);
 	}
 
 	float I;
@@ -520,7 +581,7 @@ float ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4]) {
 		I += integrate_edge(L_proj[4], L_proj[0], L[4], L[0]);
 	}
 
-	return abs(I);
+	return abs(I)*vec3(1.0) * light_texture;
 }
 
 // implementation of area lights with Linearly Transformed Cosines (LTC): https://eheitzresearch.wordpress.com/415-2/
@@ -572,7 +633,7 @@ bool compute_area_light(uint index, vec3 pos, vec3 normal, inout vec3 light) {
 		// in this case, the horizon clipping could actually be skipped, since it won't clip anything.
 		normal = -area_direction;
 	}
-	float ltc_diffuse = max(ltc_evaluate_diff(vertex, normal, points), 0);
+	vec3 ltc_diffuse = max(ltc_evaluate_diff(vertex, normal, points, lights.data[index].area_projector_rect), 0.0);
 
 	light = lights.data[index].color * ltc_diffuse / (2.0 * M_PI) * attenuation * lights.data[index].energy;
 
