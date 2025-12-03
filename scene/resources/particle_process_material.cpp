@@ -897,7 +897,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
 	code += "	}\n";
 	code += "	if (RESTART_VELOCITY) {\n";
-	code += "		VELOCITY = get_random_direction_from_spread(alt_seed, spread) * dynamic_params.initial_velocity_multiplier;\n";
+	code += "		USERDATA1.xyz = get_random_direction_from_spread(alt_seed, spread) * dynamic_params.initial_velocity_multiplier;\n";
 	if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 		code += "		int point = min(emission_texture_point_count - 1, int(params.emission_texture_position * float(emission_texture_point_count)));\n";
 		code += "		ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
@@ -907,7 +907,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "			mat2 rotm;\n";
 			code += "			rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;\n";
 			code += "			rotm[1] = rotm[0].yx * vec2(1.0, -1.0);\n";
-			code += "			VELOCITY.xy = rotm * VELOCITY.xy;\n";
+			code += "			USERDATA1.xy = rotm * USERDATA1.xy;\n";
 			code += "		}\n";
 		} else {
 			code += "		{\n";
@@ -915,16 +915,16 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
 			code += "			vec3 tangent = normalize(cross(v0, normal));\n";
 			code += "			vec3 bitangent = normalize(cross(tangent, normal));\n";
-			code += "			VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
+			code += "			USERDATA1.xyz = mat3(tangent, bitangent, normal) * USERDATA1.xyz;\n";
 			code += "		}\n";
 		}
 	}
 	code += "	}\n\n";
 	code += "	process_display_param(params, 0.0);\n\n";
-	code += "	VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY, 0.0)).xyz;\n";
-	code += "	VELOCITY += EMITTER_VELOCITY * inherit_emitter_velocity_ratio;\n";
+	code += "	USERDATA1.xyz = (EMISSION_TRANSFORM * vec4(USERDATA1.xyz, 0.0)).xyz;\n";
+	code += "	USERDATA1.xyz += EMITTER_VELOCITY * inherit_emitter_velocity_ratio;\n";
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		code += "	VELOCITY.z = 0.0;\n";
+		code += "	USERDATA1.z = 0.0;\n";
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
 	code += "}\n\n";
@@ -974,7 +974,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		vec3 pos = TRANSFORM[3].xyz;\n";
 	code += "		force = gravity;\n";
 	code += "		// Apply linear acceleration.\n";
-	code += "		force += length(VELOCITY) > 0.0 ? normalize(VELOCITY) * physics_params.linear_accel : vec3(0.0);\n";
+	code += "		force += length(USERDATA1.xyz) > 0.0 ? normalize(USERDATA1.xyz) * physics_params.linear_accel : vec3(0.0);\n";
 	code += "		// Apply radial acceleration.\n";
 	code += "		vec3 org = EMISSION_TRANSFORM[3].xyz;\n";
 	code += "		vec3 diff = pos - org;\n";
@@ -994,12 +994,12 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		force.z = 0.0;\n";
 	}
 	code += "		// Apply attractor forces.\n";
-	code += "		VELOCITY += force * DELTA;\n";
+	code += "		USERDATA1.xyz += force * DELTA;\n";
 	code += "	}\n";
 	code += "	{\n";
 	code += "		// Copied from previous version.\n";
 	code += "		if (physics_params.damping > 0.0) {\n";
-	code += "			float v = length(VELOCITY);\n";
+	code += "			float v = length(USERDATA1.xyz);\n";
 	if (!particle_flags[PARTICLE_FLAG_DAMPING_AS_FRICTION]) {
 		code += "			v -= physics_params.damping * DELTA;\n";
 	} else {
@@ -1010,24 +1010,24 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "			}\n";
 	}
 	code += "			if (v < 0.0) {\n";
-	code += "				VELOCITY = vec3(0.0);\n";
+	code += "				USERDATA1.xyz = vec3(0.0);\n";
 	code += "			} else {\n";
-	code += "				VELOCITY = normalize(VELOCITY) * v;\n";
+	code += "				USERDATA1.xyz = normalize(USERDATA1.xyz) * v;\n";
 	code += "			}\n";
 	code += "		}\n";
 	code += "	}\n\n";
 
 	if (collision_mode == COLLISION_RIGID) {
 		code += "	if (COLLIDED) {\n";
-		code += "		float collision_response = dot(COLLISION_NORMAL, VELOCITY);\n";
+		code += "		float collision_response = dot(COLLISION_NORMAL, USERDATA1.xyz);\n";
 		code += "		float slide_to_bounce_trigger = step(2.0 / clamp(collision_bounce + 1.0, 1.0, 2.0), abs(collision_response));\n";
 		code += "		TRANSFORM[3].xyz += COLLISION_NORMAL * COLLISION_DEPTH;\n";
-		code += "		// Remove all components of VELOCITY that are not tangential to COLLISION_NORMAL.\n";
-		code += "		VELOCITY -= COLLISION_NORMAL * collision_response;\n";
-		code += "		// Apply friction only to VELOCITY across the surface (effectively decouples friction and bounce behavior).\n";
-		code += "		VELOCITY = mix(VELOCITY, vec3(0.0), clamp(collision_friction, 0.0, 1.0));\n";
-		code += "		// Add bounce velocity to VELOCITY.\n";
-		code += "		VELOCITY -= COLLISION_NORMAL * collision_response * (collision_bounce * slide_to_bounce_trigger);\n";
+		code += "		// Remove all components of USERDATA1.xyz that are not tangential to COLLISION_NORMAL.\n";
+		code += "		USERDATA1.xyz -= COLLISION_NORMAL * collision_response;\n";
+		code += "		// Apply friction only to USERDATA1.xyz across the surface (effectively decouples friction and bounce behavior).\n";
+		code += "		USERDATA1.xyz = mix(USERDATA1.xyz, vec3(0.0), clamp(collision_friction, 0.0, 1.0));\n";
+		code += "		// Add bounce velocity to USERDATA1.xyz.\n";
+		code += "		USERDATA1.xyz -= COLLISION_NORMAL * collision_response * (collision_bounce * slide_to_bounce_trigger);\n";
 		code += "	}\n\n";
 	} else if (collision_mode == COLLISION_HIDE_ON_CONTACT) {
 		code += "	if (COLLIDED) {\n";
@@ -1052,14 +1052,14 @@ void ParticleProcessMaterial::_update_shader() {
 		} else {
 			code += "	{\n";
 		}
-		code += "		float vel_mag = length(VELOCITY);\n";
+		code += "		float vel_mag = length(USERDATA1.xyz);\n";
 		code += "		float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0, 1.0) * (DELTA <= 0.0 ? 0.0 : 1.0);\n";
-		code += "		VELOCITY = mix(VELOCITY, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
+		code += "		USERDATA1.xyz = mix(USERDATA1.xyz, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
 		code += "		vel_mag = length(controlled_displacement);\n";
 		code += "		controlled_displacement = mix(controlled_displacement, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
 		code += "	}\n";
 	}
-	code += "	vec3 final_velocity = controlled_displacement + VELOCITY;\n\n";
+	code += "	vec3 final_velocity = controlled_displacement + USERDATA1.xyz;\n\n";
 
 	if (velocity_limit_curve.is_valid()) {
 		code += "	// Limit velocity.\n";
@@ -1072,6 +1072,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	final_velocity.z = 0.0;\n\n";
 	}
 
+	code += "	VELOCITY = final_velocity;\n";
 	code += "	TRANSFORM[3].xyz += final_velocity * DELTA;\n\n";
 
 	code += "	process_display_param(params, lifetime_percent);\n\n";
