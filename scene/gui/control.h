@@ -674,9 +674,9 @@ public:
 	void begin_bulk_theme_override();
 	void end_bulk_theme_override();
 
-	void add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> p_icon);
-	void add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> p_style);
-	void add_theme_font_override(const StringName &p_name, RequiredParam<Font> p_font);
+	void add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> rp_icon);
+	void add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> rp_style);
+	void add_theme_font_override(const StringName &p_name, RequiredParam<Font> rp_font);
 	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);
