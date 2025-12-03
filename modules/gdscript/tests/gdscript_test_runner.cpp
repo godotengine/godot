@@ -44,7 +44,9 @@
 #include "core/string/string_builder.h"
 #include "scene/resources/packed_scene.h"
 
+#include "tests/core/config/test_project_settings.h"
 #include "tests/test_macros.h"
+#include "tests/test_utils.h"
 
 namespace GDScriptTests {
 
@@ -110,21 +112,88 @@ void init_autoloads() {
 	}
 }
 
-void init_language(const String &p_base_path) {
-	// Setup project settings since it's needed by the languages to get the global scripts.
-	// This also sets up the base resource path.
-	Error err = ProjectSettings::get_singleton()->setup(p_base_path, String(), true);
-	if (err) {
-		print_line("Could not load project settings.");
-		// Keep going since some scripts still work without this.
+void init_project_dir(const String &p_base_path, const String &p_test_name, const String &p_copy_target) {
+	Error err;
+
+	String base_path_godot_file = p_base_path.path_join("project.godot");
+
+	// Set up project settings since it's needed for the import process.
+	String project_folder = TestUtils::get_temp_path(vformat("gdscript_%s", p_test_name));
+	String project_godot_file = project_folder.path_join("project.godot");
+	String project_folder_dot_godot = project_folder.path_join(".godot");
+	String project_folder_imported = project_folder_dot_godot.path_join("imported");
+	String dot_godot_dir_backup = TestUtils::get_temp_path("gdscript_dot_godot_backup");
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	auto remove_dir = [&da, &err](const String &p_dir_to_remove) -> Error {
+		Ref<DirAccess> deletion_da = DirAccess::open(p_dir_to_remove);
+		if (deletion_da.is_null()) {
+			return FAILED;
+		}
+
+		err = deletion_da->erase_contents_recursive();
+		if (err != OK) {
+			return err;
+		}
+		return da->remove(p_dir_to_remove);
+	};
+
+	bool first_set_up = false;
+	if (!is_test_set_up.has(p_test_name) || !is_test_set_up[p_test_name]) {
+		// First set up.
+		is_test_set_up[p_test_name] = true;
+		first_set_up = true;
+		remove_dir(dot_godot_dir_backup);
+		remove_dir(project_folder);
+
+		err = da->make_dir_recursive(project_folder_imported);
+		CHECK_MESSAGE(err == OK, vformat(R"*(Couldn't create directory "%s".)*", project_folder_imported));
+
+		if (FileAccess::exists(base_path_godot_file)) {
+			err = da->copy(base_path_godot_file, project_godot_file);
+			CHECK_MESSAGE(err == OK, R"*(Couldn't copy "project.godot".)*");
+		}
 	}
 
+	// Initialize res:// to `project_folder`.
+	TestProjectSettingsInternalsAccessor::resource_path() = project_folder;
+	err = ProjectSettings::get_singleton()->setup(project_folder, String(), true);
+	CHECK_MESSAGE(err == OK, "Error while setting up the project.");
+
+#define CLEAN_UP_DOT_GODOT_DIR_BACKUP()                                                                    \
+	err = remove_dir(dot_godot_dir_backup);                                                                \
+	if (err != OK) {                                                                                       \
+		ERR_PRINT(vformat(R"*(Error while deleting "%s": %s.)*", dot_godot_dir_backup, error_names[err])); \
+	}                                                                                                      \
+	(void)0
+
+	if (!first_set_up || p_copy_target.is_empty()) {
+		CLEAN_UP_DOT_GODOT_DIR_BACKUP();
+		return;
+	}
+
+#define COPY_DIR(m_from, m_to)        \
+	err = da->copy_dir(m_from, m_to); \
+	CHECK_MESSAGE(err == OK, vformat(R"*(Error while copying directory "%s" to "%s".)*", m_from, m_to))
+
+	COPY_DIR(project_folder_dot_godot, dot_godot_dir_backup);
+	COPY_DIR(p_base_path, project_folder);
+	COPY_DIR(dot_godot_dir_backup, project_folder_dot_godot);
+
+#undef COPY_DIR
+
+	CLEAN_UP_DOT_GODOT_DIR_BACKUP();
+#undef CLEAN_UP_DOT_GODOT_DIR_BACKUP
+}
+
+void init_language() {
 	// Initialize the language for the test routine.
 	GDScriptLanguage::get_singleton()->init();
 	init_autoloads();
 }
 
 void finish_language() {
+	GDScriptCache::clear();
 	GDScriptLanguage::get_singleton()->finish();
 	ScriptServer::global_classes_clear();
 }
@@ -143,7 +212,8 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	}
 
 	if (do_init_languages) {
-		init_language(p_source_dir);
+		init_project_dir(p_source_dir, "gdscript_test_runner");
+		init_language();
 	}
 
 #ifdef DEBUG_ENABLED
@@ -270,23 +340,28 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 	dir->list_dir_begin();
 	String next = dir->get_next();
 
+#define CONTINUE()          \
+	next = dir->get_next(); \
+	continue
+
 	while (!next.is_empty()) {
 		if (dir->current_is_dir()) {
-			if (next == "." || next == ".." || next == "completion" || next == "lsp") {
-				next = dir->get_next();
-				continue;
+			if (next == "." || next == ".." || next == "completion" || next == "lsp" || next == "refactor") {
+				CONTINUE();
 			}
+			if (next == ".godot") {
+				CONTINUE();
+			}
+
 			if (!make_tests_for_dir(current_dir.path_join(next))) {
 				return false;
 			}
 		} else {
 			// `*.notest.gd` files are skipped.
 			if (next.ends_with(".notest.gd")) {
-				next = dir->get_next();
-				continue;
+				CONTINUE();
 			} else if (binary_tokens && next.ends_with(".textonly.gd")) {
-				next = dir->get_next();
-				continue;
+				CONTINUE();
 			} else if (next.has_extension("gd")) {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
@@ -294,12 +369,10 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				Ref<FileAccess> script_file(FileAccess::open(current_dir.path_join(next), FileAccess::READ, &open_err));
 				if (open_err != OK) {
 					ERR_PRINT(vformat(R"(Couldn't open test file "%s".)", next));
-					next = dir->get_next();
-					continue;
+					CONTINUE();
 				} else {
 					if (script_file->get_line() == "#debug-only") {
-						next = dir->get_next();
-						continue;
+						CONTINUE();
 					}
 				}
 #endif
@@ -325,8 +398,9 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 			}
 		}
 
-		next = dir->get_next();
+		CONTINUE();
 	}
+#undef CONTINUE
 
 	dir->list_dir_end();
 
@@ -359,17 +433,18 @@ static bool generate_class_index_recursive(const String &p_dir) {
 	StringName gdscript_name = GDScriptLanguage::get_singleton()->get_name();
 	while (!next.is_empty()) {
 		if (dir->current_is_dir()) {
-			if (next == "." || next == ".." || next == "completion" || next == "lsp") {
-				next = dir->get_next();
-				continue;
+			if (next == "." || next == ".." || next == "completion" || next == "lsp" || next == "refactor") {
+				goto next;
+			}
+			if (next == ".godot") {
+				goto next;
 			}
 			if (!generate_class_index_recursive(current_dir.path_join(next))) {
 				return false;
 			}
 		} else {
 			if (!next.ends_with(".gd")) {
-				next = dir->get_next();
-				continue;
+				goto next;
 			}
 			String base_type;
 			String source_file = current_dir.path_join(next);
@@ -377,8 +452,7 @@ static bool generate_class_index_recursive(const String &p_dir) {
 			bool is_tool = false;
 			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type, nullptr, &is_abstract, &is_tool);
 			if (class_name.is_empty()) {
-				next = dir->get_next();
-				continue;
+				goto next;
 			}
 			ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
 					"Class name '" + class_name + "' from " + source_file + " is already used in " + ScriptServer::get_global_class_path(class_name));
@@ -386,6 +460,7 @@ static bool generate_class_index_recursive(const String &p_dir) {
 			ScriptServer::add_global_class(class_name, base_type, gdscript_name, source_file, is_abstract, is_tool);
 		}
 
+	next:
 		next = dir->get_next();
 	}
 
@@ -627,7 +702,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		ERR_FAIL_V_MSG(result, "\nCould not find test function on: '" + source_file + "'");
 	}
 
-	// Setup output handlers.
+	// Set up output handlers.
 	ErrorHandlerData error_data(&result, this);
 
 	_print_handler.userdata = &result;
