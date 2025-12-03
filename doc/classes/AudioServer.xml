@@ -124,11 +124,32 @@
 				Returns the name of the current audio driver. The default usually depends on the operating system, but may be overridden via the [code]--audio-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. [code]--headless[/code] also automatically sets the audio driver to [code]Dummy[/code]. See also [member ProjectSettings.audio/driver/driver].
 			</description>
 		</method>
+		<method name="get_input_buffer_length_frames" experimental="">
+			<return type="int" />
+			<description>
+				Returns the absolute size of the microphone input buffer. This is set to a multiple of the audio latency and can be used to estimate the minimum rate at which the frames need to be fetched.
+			</description>
+		</method>
 		<method name="get_input_device_list">
 			<return type="PackedStringArray" />
 			<description>
 				Returns the names of all audio input devices detected on the system.
 				[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
+			</description>
+		</method>
+		<method name="get_input_frames" experimental="">
+			<return type="PackedVector2Array" />
+			<param index="0" name="frames" type="int" />
+			<description>
+				Returns a [PackedVector2Array] containing exactly [param frames] audio samples from the internal microphone buffer if available, otherwise returns an empty [PackedVector2Array].
+				The buffer is filled at the rate of [method get_input_mix_rate] frames per second when [method set_input_device_active] has successfully been set to [code]true[/code].
+				The samples are signed floating-point PCM values between [code]-1[/code] and [code]1[/code].
+			</description>
+		</method>
+		<method name="get_input_frames_available" experimental="">
+			<return type="int" />
+			<description>
+				Returns the number of frames available to read using [method get_input_frames].
 			</description>
 		</method>
 		<method name="get_input_mix_rate" qualifiers="const">
@@ -328,6 +349,14 @@
 			<description>
 				If set to [code]true[/code], all instances of [AudioStreamPlayback] will call [method AudioStreamPlayback._tag_used_streams] every mix step.
 				[b]Note:[/b] This is enabled by default in the editor, as it is used by editor plugins for the audio stream previews.
+			</description>
+		</method>
+		<method name="set_input_device_active" experimental="">
+			<return type="int" enum="Error" />
+			<param index="0" name="active" type="bool" />
+			<description>
+				If [param active] is [code]true[/code], starts the microphone input stream specified by [member input_device] or returns an error if it failed.
+				If [param active] is [code]false[/code], stops the input stream if it is running.
 			</description>
 		</method>
 		<method name="swap_bus_effects">
