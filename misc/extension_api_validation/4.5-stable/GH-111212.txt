@@ -1,0 +1,49 @@
+GH-111212
+---------
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/add_filter
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/add_option
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/add_side_menu
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/clear_filename_filter
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/clear_filters
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_access
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_current_dir
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_current_file
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_current_path
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_display_mode
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_file_mode
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_filename_filter
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_filters
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_line_edit
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_option_count
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_option_default
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_option_name
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_option_values
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_selected_options
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/get_vbox
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/invalidate
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/is_showing_hidden_files
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/popup_file_dialog
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_access
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_current_dir
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_current_file
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_current_path
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_display_mode
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_file_mode
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_filename_filter
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_filters
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_option_count
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_option_default
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_option_name
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_option_values
+Validate extension JSON: API was removed: classes/EditorFileDialog/methods/set_show_hidden_files
+Validate extension JSON: API was removed: classes/EditorFileDialog/properties/access
+Validate extension JSON: API was removed: classes/EditorFileDialog/properties/current_dir
+Validate extension JSON: API was removed: classes/EditorFileDialog/properties/current_file
+Validate extension JSON: API was removed: classes/EditorFileDialog/properties/current_path
+Validate extension JSON: API was removed: classes/EditorFileDialog/properties/display_mode
+Validate extension JSON: API was removed: classes/EditorFileDialog/properties/file_mode
+Validate extension JSON: API was removed: classes/EditorFileDialog/properties/filters
+Validate extension JSON: API was removed: classes/EditorFileDialog/properties/option_count
+Validate extension JSON: API was removed: classes/EditorFileDialog/properties/show_hidden_files
+
+The errors are false-positives. The removed methods are now part of the new parent class.

@@ -1,0 +1,12 @@
+GH-86907
+--------
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_buffer': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_length': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_offset': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_stride': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_indices': is_const changed value in new API, from false to true.
+
+Change AudioStreamPlayer* is_autoplay_enabled and GLTFBufferView getters to be const.

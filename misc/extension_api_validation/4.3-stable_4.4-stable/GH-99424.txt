@@ -1,0 +1,28 @@
+GH-99424
+--------
+Validate extension JSON: API was removed: builtin_classes/Projection/constants/PLANE_BOTTOM
+Validate extension JSON: API was removed: builtin_classes/Projection/constants/PLANE_FAR
+Validate extension JSON: API was removed: builtin_classes/Projection/constants/PLANE_LEFT
+Validate extension JSON: API was removed: builtin_classes/Projection/constants/PLANE_NEAR
+Validate extension JSON: API was removed: builtin_classes/Projection/constants/PLANE_RIGHT
+Validate extension JSON: API was removed: builtin_classes/Projection/constants/PLANE_TOP
+Validate extension JSON: API was removed: builtin_classes/Vector2/constants/AXIS_X
+Validate extension JSON: API was removed: builtin_classes/Vector2/constants/AXIS_Y
+Validate extension JSON: API was removed: builtin_classes/Vector2i/constants/AXIS_X
+Validate extension JSON: API was removed: builtin_classes/Vector2i/constants/AXIS_Y
+Validate extension JSON: API was removed: builtin_classes/Vector3/constants/AXIS_X
+Validate extension JSON: API was removed: builtin_classes/Vector3/constants/AXIS_Y
+Validate extension JSON: API was removed: builtin_classes/Vector3/constants/AXIS_Z
+Validate extension JSON: API was removed: builtin_classes/Vector3i/constants/AXIS_X
+Validate extension JSON: API was removed: builtin_classes/Vector3i/constants/AXIS_Y
+Validate extension JSON: API was removed: builtin_classes/Vector3i/constants/AXIS_Z
+Validate extension JSON: API was removed: builtin_classes/Vector4/constants/AXIS_W
+Validate extension JSON: API was removed: builtin_classes/Vector4/constants/AXIS_X
+Validate extension JSON: API was removed: builtin_classes/Vector4/constants/AXIS_Y
+Validate extension JSON: API was removed: builtin_classes/Vector4/constants/AXIS_Z
+Validate extension JSON: API was removed: builtin_classes/Vector4i/constants/AXIS_W
+Validate extension JSON: API was removed: builtin_classes/Vector4i/constants/AXIS_X
+Validate extension JSON: API was removed: builtin_classes/Vector4i/constants/AXIS_Y
+Validate extension JSON: API was removed: builtin_classes/Vector4i/constants/AXIS_Z
+
+These constants have been replaced with corresponding enum constants.

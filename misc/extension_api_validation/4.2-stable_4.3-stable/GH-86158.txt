@@ -1,0 +1,5 @@
+GH-86158
+--------
+Validate extension JSON: Error: Field 'classes/GraphEdit/methods/get_connection_line': is_const changed value in new API, from false to true.
+
+get_connection_line was made const.
