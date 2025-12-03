@@ -1067,22 +1067,12 @@ void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
 }
 
 vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
-	// vec2 outside = abs(uv - 0.5) - 0.5;
-	// float outside_max = max(outside.x, outside.y);
-	// float outmod = smoothstep(-0.1, 0.1, outside_max) * 2.5;
-	// float blend = 10.0 * 2.5 + outmod;
-	float max_lod = 5.0;
+	float max_lod = 11.0;
 	float low = min(max(floor(lod), 0.0), max_lod - 1.0);
 	float high = min(max(floor(lod + 1.0), 1.0), max_lod);
-	float margin = 0.125 / 8.0;
-	vec2 sample_pos = clamp(uv, 0.0 + margin, 1.0 - margin) * texture_rect.zw; // take border into account
-	// vec2 sample_pos1 = sample_pos * pow(0.5, low);
-	// vec2 sample_pos2 = sample_pos * pow(0.5, high);
-	// vec2 off1 = vec2(step(1.0, low) * texture_rect.z, texture_rect.w - texture_rect.w / pow(2.0, max(low - 1.0, 0.0)));
-	// vec2 off2 = vec2(step(1.0, high) * texture_rect.z, texture_rect.w - texture_rect.w / pow(2.0, max(high - 1.0, 0.0)));
-
-	vec4 sample_col_low = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + sample_pos, low);
-	vec4 sample_col_high = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + sample_pos, high);
+	vec2 sample_pos = clamp(uv, 0.0, 1.0) * texture_rect.zw; // take border into account
+	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, light_projector_sampler), texture_rect.xy + sample_pos, low);
+	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, light_projector_sampler), texture_rect.xy + sample_pos, high);
 
 	float blend = high - lod;
 	vec4 sample_col = mix(sample_col_high, sample_col_low, blend);
@@ -1116,56 +1106,18 @@ vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5]) {
 		float dist_x_area = dot(L[0], ln);
 		float d = dist_x_area / dot(F, ln);
 		vec3 isec = d * F;
+		vec3 li = isec - L[0]; // light to intersection
 
-		//uv = vec2(dot(li, lx) / dot(lx, lx), dot(li, ly) / dot(ly, ly));
-		//uv = uv * 2.0 + vec2(0.5);
+		float dot_lxy = dot(lx, ly);
+		float inv_dot_lxlx = 1.0 / dot(lx, lx);
+		vec3 ly_ = ly - lx * dot_lxy * inv_dot_lxlx;
 
-		vec3 li = isec - L[0]; // light to intersection // vec3 P = planeDistxPlaneArea * planeOrtho / planeAreaSquared - p1_;
-
-		float dot_lxy = dot(lx, ly); // float dot_V1_V2 = dot(V1,V2);
-		float inv_dot_lxlx = 1.0 / dot(lx, lx); // float inv_dot_V1_V1 = 1.0 / dot(V1, V1);
-		vec3 ly_ = ly - lx * dot_lxy * inv_dot_lxlx; // vec3 V2_ = V2 - V1 * dot_V1_V2 * inv_dot_V1_V1;
-
-		uv.y = dot(li, ly_) / dot(ly_, ly_); // Puv.y = dot(V2_, P) / dot(V2_, V2_);
-		uv.x = dot(li, lx) * inv_dot_lxlx - dot_lxy * inv_dot_lxlx * uv.y; // Puv.x = dot(V1, P)*inv_dot_V1_V1 - dot_V1_V2*inv_dot_V1_V1*Puv.y ;
+		uv.y = dot(li, ly_) / dot(ly_, ly_);
+		uv.x = dot(li, lx) * inv_dot_lxlx - dot_lxy * inv_dot_lxlx * uv.y;
 
 		lod = abs(dist_x_area) / pow(dot(ln, ln), 0.75);
 		lod = log(2048.0 * lod) / log(3.0);
 	}
-	//return clamp(abs(F), 0.0, 1.0);
-
-	float margin = 0.0; //0.25 / 4.0;
-	vec2 sample_pos = clamp(uv, 0.0 + margin, 1.0 - margin) * texture_rect.zw;
-	//return textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + sample_pos, 0.0).xyz; // todo: do we need a unique area_texture sampler?
-	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod);
-}
-
-vec3 fetch_ltc_filtered_texture(vec4 texture_rect, vec3 L[5], float roughness) {
-	vec3 lx = L[1] - L[0]; // vec3 V1 = p2_ - p1_;
-	vec3 ly = L[3] - L[0]; // vec3 V2 = p4_ - p1_;
-	vec3 ln = cross(lx, ly); // vec3 planeOrtho = (cross(V1, V2));
-
-	float d = dot(L[0], ln) / dot(ln, ln);
-	vec3 isec = d * ln;
-
-	vec3 li = isec - L[0]; // light to intersection // vec3 P = planeDistxPlaneArea * planeOrtho / planeAreaSquared - p1_;
-
-	float dot_lxy = dot(lx, ly); // float dot_V1_V2 = dot(V1,V2);
-	float inv_dot_lxlx = 1.0 / dot(lx, lx); // float inv_dot_V1_V1 = 1.0 / dot(V1, V1);
-	vec3 ly_ = ly - lx * dot_lxy * inv_dot_lxlx; // vec3 V2_ = V2 - V1 * dot_V1_V2 * inv_dot_V1_V1;
-
-	vec2 uv;
-	uv.y = dot(li, ly_) / dot(ly_, ly_); // Puv.y = dot(V2_, P) / dot(V2_, V2_);
-	uv.x = dot(li, lx) * inv_dot_lxlx - dot_lxy * inv_dot_lxlx * uv.y; // Puv.x = dot(V1, P)*inv_dot_V1_V1 - dot_V1_V2*inv_dot_V1_V1*Puv.y ;
-
-	//return textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + uv, 3.0).xyz;
-
-	// LOD, according to Heitz:
-	float lod = abs(dot(L[0], ln)) / pow(dot(ln, ln), 0.75);
-	lod = log(2048.0 * lod) / log(3.0);
-
-	//return clamp(vec3(1.0-uv.x, 1.0-uv.y, 0.0), 0.0, 1.0);
-
 	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod);
 }
 

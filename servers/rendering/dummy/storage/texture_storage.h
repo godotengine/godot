@@ -131,6 +131,10 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override { return RID(); }
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override { return 0; }
 
+	/* AREA LIGHT ATLAS API */
+	virtual void texture_add_to_area_light_atlas(RID p_texture) override {}
+	virtual void texture_remove_from_area_light_atlas(RID p_texture) override {}
+
 	/* DECAL API */
 	virtual RID decal_allocate() override { return RID(); }
 	virtual void decal_initialize(RID p_rid) override {}
@@ -149,8 +153,8 @@ public:
 	virtual AABB decal_get_aabb(RID p_decal) const override { return AABB(); }
 	virtual uint32_t decal_get_cull_mask(RID p_decal) const override { return 0; }
 
-	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false, bool is_area_light_texture = false) override {}
-	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false, bool p_is_area_light_texture = false) override {}
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 
 	/* DECAL INSTANCE */
 

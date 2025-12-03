@@ -331,6 +331,8 @@ layout(set = 0, binding = 15) uniform sampler2D ltc_lut1;
 
 layout(set = 0, binding = 16) uniform sampler2D ltc_lut2;
 
+layout(set = 0, binding = 17) uniform texture2D area_light_atlas;
+
 /* Set 1: Render Pass (changes per render pass) */
 
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {

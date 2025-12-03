@@ -3328,6 +3328,14 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 			u.append_id(RendererRD::TextureStorage::get_singleton()->texture_get_rd_texture(ltc.lut2_texture));
 			uniforms.push_back(u);
 		}
+		{
+			RD::Uniform u;
+			u.binding = 20;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			RID area_light_atlas = RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture();
+			u.append_id(area_light_atlas);
+			uniforms.push_back(u);
+		}
 
 		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET);
 	}

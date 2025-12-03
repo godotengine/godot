@@ -4258,6 +4258,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_DEBUG_SSIL:
 		case VIEW_DISPLAY_DEBUG_PSSM_SPLITS:
 		case VIEW_DISPLAY_DEBUG_DECAL_ATLAS:
+		case VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS:
 		case VIEW_DISPLAY_DEBUG_SDFGI:
 		case VIEW_DISPLAY_DEBUG_SDFGI_PROBES:
 		case VIEW_DISPLAY_DEBUG_GI_BUFFER:
@@ -4289,6 +4290,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_DISABLE_LOD,
 				VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
 				VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
+				VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS,
 				VIEW_DISPLAY_DEBUG_SDFGI,
 				VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 				VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
@@ -4320,6 +4322,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_DISABLE_LOD,
 				Viewport::DEBUG_DRAW_PSSM_SPLITS,
 				Viewport::DEBUG_DRAW_DECAL_ATLAS,
+				Viewport::DEBUG_DRAW_AREA_LIGHT_ATLAS,
 				Viewport::DEBUG_DRAW_SDFGI,
 				Viewport::DEBUG_DRAW_SDFGI_PROBES,
 				Viewport::DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
@@ -6140,6 +6143,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 			TTRC("Displays the shadow map used for directional shadow mapping.\nRequires a visible DirectionalLight3D node with shadows enabled to have a visible effect."));
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Decal Atlas"), VIEW_DISPLAY_DEBUG_DECAL_ATLAS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("AreaLight3D Atlas"), VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS, SupportedRenderingMethods::FORWARD_PLUS);
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI Lighting"), VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Requires a visible VoxelGI node that has been baked to have a visible effect."));

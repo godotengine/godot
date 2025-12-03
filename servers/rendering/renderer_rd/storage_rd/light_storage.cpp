@@ -457,13 +457,13 @@ void LightStorage::light_area_set_texture(RID p_light, RID p_texture) {
 	ERR_FAIL_COND(p_texture.is_valid() && !texture_storage->owns_texture(p_texture));
 
 	if (light->area_texture.is_valid()) {
-		texture_storage->texture_remove_from_decal_atlas(light->area_texture, false, true);
+		texture_storage->texture_remove_from_area_light_atlas(light->area_texture);
 	}
 
 	light->area_texture = p_texture;
 
 	if (light->area_texture.is_valid()) {
-		texture_storage->texture_add_to_decal_atlas(light->area_texture, false, true);
+		texture_storage->texture_add_to_area_light_atlas(light->area_texture);
 	}
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
 }
@@ -1130,10 +1130,10 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 		RID area_texture = light->area_texture;
 		if (area_texture.is_valid() && type == RS::LIGHT_AREA) {
-			Rect2 rect = texture_storage->decal_atlas_get_texture_rect(area_texture);
+			Rect2 rect = texture_storage->area_light_atlas_get_texture_rect(area_texture);
 			light_data.projector_rect[0] = rect.position.x;
 			light_data.projector_rect[1] = rect.position.y;
-			light_data.projector_rect[2] = rect.size.width / 3.0 * 2.0; // two thirds = original rect, rest is mipmaps
+			light_data.projector_rect[2] = rect.size.width;
 			light_data.projector_rect[3] = rect.size.height;
 		}
 
