@@ -1066,7 +1066,7 @@ void EditorSettingsPropertyWrapper::_setup_override_info() {
 void EditorSettingsPropertyWrapper::_update_override() {
 	// Don't allow overriding theme properties, because it causes problems. Overriding Project Manager settings makes no sense.
 	// TODO: Find a better way to define exception prefixes (if the list happens to grow).
-	if (property.begins_with("interface/theme") || property.begins_with("project_manager")) {
+	if (property.begins_with("interface/theme") || property.begins_with("project_manager") || Engine::get_singleton()->is_project_manager_hint()) {
 		can_override = false;
 		return;
 	}
