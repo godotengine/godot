@@ -1,0 +1,8 @@
+GH-92089
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/CPUParticles2D/methods/restart': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/CPUParticles3D/methods/restart': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/GPUParticles2D/methods/restart': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/GPUParticles3D/methods/restart': arguments
+
+Added an optional keep_seed parameter to restart particles, to avoid modifying the seed to do particle seeking.
