@@ -1159,6 +1159,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
 		VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER,
 		VIEWPORT_DEBUG_DRAW_CLUSTER_AREA_LIGHTS,
+		VIEWPORT_DEBUG_DRAW_AREA_LIGHT_ATLAS,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;

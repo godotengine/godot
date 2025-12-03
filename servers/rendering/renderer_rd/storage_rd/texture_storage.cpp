@@ -541,6 +541,32 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
+
+
+	{ // default area light atlas texture
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+
+		Vector<uint8_t> pv;
+		pv.resize(16 * 4);
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			area_light_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+	}
+
 	{
 		// Create default VRS texture.
 		bool vrs_supported = RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS);
@@ -621,6 +647,14 @@ TextureStorage::~TextureStorage() {
 
 	if (decal_atlas.texture.is_valid()) {
 		RD::get_singleton()->free_rid(decal_atlas.texture);
+	}
+
+	if (area_light_atlas.textures.size()) {
+		ERR_PRINT("Area Light Atlas: " + itos(area_light_atlas.textures.size()) + " textures were not removed from the atlas.");
+	}
+
+	if (area_light_atlas.texture.is_valid()) {
+		RD::get_singleton()->free_rid(area_light_atlas.texture);
 	}
 
 	//def textures
@@ -830,6 +864,7 @@ void TextureStorage::texture_free(RID p_texture) {
 	}
 
 	decal_atlas_remove_texture(p_texture);
+	area_light_atlas_remove_texture(p_texture);
 
 	for (int i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
@@ -1642,6 +1677,7 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	texture_owner.free(p_by_texture);
 
 	decal_atlas_mark_dirty_on_texture(p_texture);
+	area_light_atlas_mark_dirty_on_texture(p_texture);
 }
 
 void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p_height) {
@@ -2893,13 +2929,270 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 	}
 }
 
+/* AREA LIGHT ATLAS API */
+
+RID TextureStorage::area_light_atlas_get_texture() const {
+	return area_light_atlas.texture;
+}
+
+RID TextureStorage::area_light_atlas_get_mip_texture() const {
+	return area_light_atlas.texture_mipmaps[5].texture; // TODO: remove
+}
+
+void TextureStorage::area_light_atlas_mark_dirty_on_texture(RID p_texture) {
+	if (area_light_atlas.textures.has(p_texture)) {
+		//belongs to area light atlas..
+
+		area_light_atlas.dirty = true; //mark it dirty since it was most likely modified
+	}
+}
+
+void TextureStorage::area_light_atlas_remove_texture(RID p_texture) {
+	if (area_light_atlas.textures.has(p_texture)) {
+		area_light_atlas.textures.erase(p_texture);
+		//there is not much a point of making it dirty, just let it be.
+	}
+}
+
+void TextureStorage::update_area_light_atlas() {
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
+
+	if (!area_light_atlas.dirty) {
+		return; //nothing to do
+	}
+
+	area_light_atlas.dirty = false;
+
+	if (area_light_atlas.texture.is_valid()) {
+		RD::get_singleton()->free_rid(area_light_atlas.texture);
+		area_light_atlas.texture = RID();
+		area_light_atlas.texture_mipmaps.clear();
+	}
+
+	int border = 1 << area_light_atlas.mipmaps;
+
+	if (area_light_atlas.textures.size()) {
+		//generate atlas
+		Vector<AreaLightAtlas::SortItem> itemsv;
+		itemsv.resize(area_light_atlas.textures.size());
+		uint32_t base_size = 8;
+
+		int idx = 0;
+
+		for (const KeyValue<RID, AreaLightAtlas::Texture> &E : area_light_atlas.textures) {
+			AreaLightAtlas::SortItem &si = itemsv.write[idx];
+
+			Texture *src_tex = get_texture(E.key);
+
+			si.size.width = (src_tex->width / border) + 1;
+			si.size.height = (src_tex->height / border) + 1;
+			si.pixel_size = Size2i(src_tex->width, src_tex->height);
+
+			if (base_size < (uint32_t)si.size.width) {
+				base_size = nearest_power_of_2_templated(si.size.width);
+			}
+
+			si.texture = E.key;
+			idx++;
+		}
+
+		//sort items by size
+		itemsv.sort();
+
+		//attempt to create atlas
+		int item_count = itemsv.size();
+		AreaLightAtlas::SortItem *items = itemsv.ptrw();
+
+		int atlas_height = 0;
+
+		while (true) {
+			Vector<int> v_offsetsv;
+			v_offsetsv.resize(base_size);
+
+			int *v_offsets = v_offsetsv.ptrw();
+			memset(v_offsets, 0, sizeof(int) * base_size);
+
+			int max_height = 0;
+
+			for (int i = 0; i < item_count; i++) {
+				//best fit
+				AreaLightAtlas::SortItem &si = items[i];
+				int best_idx = -1;
+				int best_height = 0x7FFFFFFF;
+				for (uint32_t j = 0; j <= base_size - si.size.width; j++) {
+					int height = 0;
+					for (int k = 0; k < si.size.width; k++) {
+						int h = v_offsets[k + j];
+						if (h > height) {
+							height = h;
+							if (height > best_height) {
+								break; //already bad
+							}
+						}
+					}
+
+					if (height < best_height) {
+						best_height = height;
+						best_idx = j;
+					}
+				}
+
+				//update
+				for (int k = 0; k < si.size.width; k++) {
+					v_offsets[k + best_idx] = best_height + si.size.height;
+				}
+
+				si.pos.x = best_idx;
+				si.pos.y = best_height;
+
+				if (si.pos.y + si.size.height > max_height) {
+					max_height = si.pos.y + si.size.height;
+				}
+			}
+
+			if ((uint32_t)max_height <= base_size * 2) {
+				atlas_height = max_height;
+				break; //good ratio, break;
+			}
+
+			base_size *= 2;
+		}
+
+		area_light_atlas.size.width = base_size * border;
+		area_light_atlas.size.height = nearest_power_of_2_templated(atlas_height * border);
+
+		for (int i = 0; i < item_count; i++) {
+			AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(items[i].texture);
+			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+			t->uv_rect.size = items[i].pixel_size;
+
+			t->uv_rect.position /= Size2(area_light_atlas.size);
+			t->uv_rect.size /= Size2(area_light_atlas.size);
+		}
+	} else {
+		//use border as size, so it at least has enough mipmaps
+		area_light_atlas.size.width = border;
+		area_light_atlas.size.height = border;
+	}
+
+	//blit textures
+
+	RD::TextureFormat tformat;
+	tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	tformat.width = area_light_atlas.size.width;
+	tformat.height = area_light_atlas.size.height;
+	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+	tformat.texture_type = RD::TEXTURE_TYPE_2D;
+	tformat.mipmaps = area_light_atlas.mipmaps;
+	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
+	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
+
+	area_light_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+	RD::get_singleton()->texture_clear(area_light_atlas.texture, Color(0, 0, 0, 0), 0, area_light_atlas.mipmaps, 0, 1);
+
+	{
+		//create the framebuffer
+
+		Size2i s = area_light_atlas.size;
+
+		for (int i = 0; i < area_light_atlas.mipmaps; i++) {
+			AreaLightAtlas::MipMap mm;
+			mm.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), area_light_atlas.texture, 0, i);
+			Vector<RID> fb;
+			fb.push_back(mm.texture);
+			mm.fb = RD::get_singleton()->framebuffer_create(fb);
+			mm.size = s;
+			area_light_atlas.texture_mipmaps.push_back(mm);
+
+			s = Vector2i(s.width >> 1, s.height >> 1).maxi(1);
+		}
+	}
+
+	RID prev_texture;
+	for (int i = 0; i < area_light_atlas.texture_mipmaps.size(); i++) {
+		const AreaLightAtlas::MipMap &mm = area_light_atlas.texture_mipmaps[i];
+
+		Color clear_color(0, 0, 0, 0);
+
+		if (area_light_atlas.textures.size()) {
+			if (i == 0) {
+				Vector<Color> cc;
+				cc.push_back(clear_color);
+
+				// Make area light MIPs
+				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::DRAW_CLEAR_ALL, cc);
+				for (const KeyValue<RID, AreaLightAtlas::Texture> &E : area_light_atlas.textures) {
+					AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(E.key);
+					Texture *src_tex = get_texture(E.key);
+					Rect2 uv_rect = t->uv_rect;
+
+					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, uv_rect, draw_list);
+				}
+				RD::get_singleton()->draw_list_end();
+			} else {
+				for (const KeyValue<RID, AreaLightAtlas::Texture> &E : area_light_atlas.textures) {
+					AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(E.key);
+					Texture *src_tex = get_texture(E.key);
+					Rect2 uv_rect = t->uv_rect;
+					if (MIN(uv_rect.size.x * area_light_atlas.size.x, uv_rect.size.y * area_light_atlas.size.y) > pow(2, i)) {
+						Vector2i mip_size = area_light_atlas.size / pow(2, i);
+						Vector2i mip_tex_size = uv_rect.size * mip_size;
+						Rect2i uv_recti = Rect2i(uv_rect.position * mip_size, uv_rect.size * mip_size);
+						RD::TextureFormat tf_blur;
+						tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+						tf_blur.width = mip_tex_size.width;
+						tf_blur.height = mip_tex_size.height;
+						tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
+						tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+						tf_blur.mipmaps = 1;
+						RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
+						Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
+						copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_tex_size, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
+
+						copy_effects->copy_to_fb_rect(blur_tex, mm.fb, uv_recti);
+						RD::get_singleton()->free_rid(blur_tex);
+					}
+				}
+
+				//copy_effects->copy_to_fb_rect(prev_texture, mm.fb, Rect2i(Point2i(), mm.size));
+			}
+			prev_texture = mm.texture;
+		} else {
+			RD::get_singleton()->texture_clear(mm.texture, clear_color, 0, 1, 0, 1);
+		}
+	}
+}
+
+void TextureStorage::texture_add_to_area_light_atlas(RID p_texture) {
+	if (!area_light_atlas.textures.has(p_texture)) {
+		AreaLightAtlas::Texture t;
+		t.users = 1;
+		area_light_atlas.textures[p_texture] = t;
+		area_light_atlas.dirty = true;
+	} else {
+		AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(p_texture);
+		t->users++;
+	}
+}
+
+void TextureStorage::texture_remove_from_area_light_atlas(RID p_texture) {
+	AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(p_texture);
+	ERR_FAIL_NULL(t);
+	t->users--;
+	if (t->users == 0) {
+		area_light_atlas.textures.erase(p_texture);
+		//do not mark it dirty, there is no need to since it remains working
+	}
+}
+
 /* DECAL API */
 
 RID TextureStorage::decal_atlas_get_texture() const {
 	return decal_atlas.texture;
 }
 
-RID TextureStorage::decal_atlas_get_mip_texture() const {
+RID TextureStorage::decal_atlas_get_mip_texture() const { // TODO: remove
 	return decal_atlas.texture_mipmaps[4].texture;
 }
 
@@ -3075,11 +3368,6 @@ void TextureStorage::update_decal_atlas() {
 			si.size.height = (src_tex->height / border) + 1;
 			si.pixel_size = Size2i(src_tex->width, src_tex->height);
 
-			if (E.value.area_light_users > 0) { // reserve additional size for gaussian-filtered mipmaps
-				si.size.width = (src_tex->width * 3 / 2 / border) + 2;
-				si.pixel_size = Size2i(src_tex->width * 3 / 2, src_tex->height);
-			}
-
 			if (base_size < (uint32_t)si.size.width) {
 				base_size = nearest_power_of_2_templated(si.size.width);
 			}
@@ -3206,44 +3494,6 @@ void TextureStorage::update_decal_atlas() {
 		}
 	}
 
-	//HashMap<void*, Vector<RID>> temp_textures;
-	//for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
-	//	DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
-	//	if (t->area_light_users >= 0) { // TODO: if an area light texture, copy the filtered version.
-	//		Vector2 size = Vector2(t->uv_rect.size.x * 2.0 / 3.0, t->uv_rect.size.y);
-	//		const int max_lods = 11;
-	//		Texture *src_tex = get_texture(E.key);
-	//		Vector<RID> blurred_textures;
-
-	//		int l2 = MIN(floor(log2(MIN(size.x * decal_atlas.size.x, size.y * decal_atlas.size.y))), max_lods);
-	//		for (int j = 0; j < l2; j++) {
-	//			Rect2 uv_rect = t->uv_rect;
-	//			float b = pow(2, j);
-	//			uv_rect.position.x += size.x;
-	//			uv_rect.position.y += size.y - size.y / b;
-	//			uv_rect.size = size / (b * 2);
-	//			Vector2i blur = Vector2i(b, b);
-
-	//			RD::TextureFormat tf_temp;
-	//			Vector2i mip_size = uv_rect.size * decal_atlas.size;
-	//			tf_temp.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-	//			tf_temp.width = mip_size.width;
-	//			tf_temp.height = mip_size.height;
-	//			tf_temp.texture_type = RD::TEXTURE_TYPE_2D;
-	//			tf_temp.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-	//			tf_temp.mipmaps = 1;
-	//			RID blur_tex = RD::get_singleton()->texture_create(tf_temp, RD::TextureView());
-	//			blurred_textures.push_back(blur_tex);
-	//			Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_size);
-	//			//copy_effects->copy_to_rect(src_tex->rd_texture, temp_textures[t], copy_rect, false, false, true);
-	//			copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_size, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
-	//		}
-	//		temp_textures[t] = blurred_textures;
-
-	//	}
-
-	//}
-
 	RID prev_texture;
 	for (int i = 0; i < decal_atlas.texture_mipmaps.size(); i++) {
 		const DecalAtlas::MipMap &mm = decal_atlas.texture_mipmaps[i];
@@ -3257,57 +3507,14 @@ void TextureStorage::update_decal_atlas() {
 
 				// Make area light MIPs
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::DRAW_CLEAR_ALL, cc);
-				int temp_tex_count = 0;
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					Texture *src_tex = get_texture(E.key);
 
-					if (t->area_light_users == 0) {
-						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
-					} else {
-						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, Rect2(t->uv_rect.position.x, t->uv_rect.position.y, t->uv_rect.size.x * 2.0 / 3.0, t->uv_rect.size.y), draw_list, false, t->panorama_to_dp_users > 0);
-					}
-
-					if (t->area_light_users >= 0) { // TODO: if an area light texture, copy the filtered version.
-						Vector2 size = Vector2(t->uv_rect.size.x * 2.0 / 3.0, t->uv_rect.size.y);
-						const int max_lods = 11;
-						//int l2 = MIN(floor(log2(MIN(size.x * decal_atlas.size.x, size.y * decal_atlas.size.y))), max_lods);
-						//for (int j = 0; j < l2; j++) {
-						Rect2 uv_rect = t->uv_rect;
-						//float b = pow(2, j);
-						//uv_rect.position.x += size.x;
-						//uv_rect.position.y += size.y - size.y / b;
-						uv_rect.size = size;// / (b * 2);
-
-						// TODO: should / could we use copy_to_fb_rect instead?
-						//copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, uv_rect, draw_list, false, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.RD::TextureFormat tf_temp;
-
-						Vector2i mip_size = uv_rect.size * decal_atlas.size / pow(2, i+1);
-						RD::TextureFormat tf_blur;
-						tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-						tf_blur.width = mip_size.width;
-						tf_blur.height = mip_size.height;
-						tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
-						tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-						tf_blur.mipmaps = 1;
-						RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
-						Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_size);
-						//copy_effects->copy_to_rect(src_tex->rd_texture, temp_textures[t], copy_rect, false, false, true);
-						copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_size, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
-
-						copy_effects->copy_to_atlas_fb(blur_tex, mm.fb, uv_rect, draw_list, false, false);
-						temp_tex_count++;
-						RD::get_singleton()->free_rid(blur_tex);
-						// mm.texture does not work, since it does not have usage bit assigned. but we need to use a texture, not a framebuffer.
-						//}
-					}
+					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
 				}
 
 				RD::get_singleton()->draw_list_end();
-
-				for (int i = 0; i < temp_tex_count; i++) {
-					//RD::get_singleton()->free_rid(temp_textures[i]);
-				}
 
 				prev_texture = mm.texture;
 			} else {
@@ -3320,12 +3527,11 @@ void TextureStorage::update_decal_atlas() {
 	}
 }
 
-void TextureStorage::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp, bool p_is_area_light_texture) {
+void TextureStorage::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
 	if (!decal_atlas.textures.has(p_texture)) {
 		DecalAtlas::Texture t;
 		t.users = 1;
 		t.panorama_to_dp_users = p_panorama_to_dp ? 1 : 0;
-		t.area_light_users = p_is_area_light_texture ? 1 : 0;
 		decal_atlas.textures[p_texture] = t;
 		decal_atlas.dirty = true;
 	} else {
@@ -3334,23 +3540,16 @@ void TextureStorage::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_t
 		if (p_panorama_to_dp) {
 			t->panorama_to_dp_users++;
 		}
-		if (p_is_area_light_texture) {
-			t->area_light_users++;
-		}
 	}
 }
 
-void TextureStorage::texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp, bool p_is_area_light_texture) {
+void TextureStorage::texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
 	DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
 	ERR_FAIL_NULL(t);
 	t->users--;
 	if (p_panorama_to_dp) {
 		ERR_FAIL_COND(t->panorama_to_dp_users == 0);
 		t->panorama_to_dp_users--;
-	}
-	if (p_is_area_light_texture) {
-		ERR_FAIL_COND(t->area_light_users == 0);
-		t->area_light_users--;
 	}
 	if (t->users == 0) {
 		decal_atlas.textures.erase(p_texture);

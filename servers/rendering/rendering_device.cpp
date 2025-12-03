@@ -1255,7 +1255,9 @@ RID RenderingDevice::texture_create_from_extension(TextureType p_type, DataForma
 
 RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type, uint32_t p_layers) {
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
-	ERR_FAIL_NULL_V(src_texture, RID());
+	if (src_texture == nullptr) {
+		ERR_FAIL_NULL_V(src_texture, RID());
+	}
 
 	if (src_texture->owner.is_valid()) { // // Ahh this is a share. The RenderingDeviceDriver needs the actual owner.
 		p_with_texture = src_texture->owner;

@@ -244,12 +244,50 @@ private:
 
 	void _texture_format_from_rd(RD::DataFormat p_rd_format, TextureFromRDFormat &r_format);
 
+	/* AREA LIGHT ATLAS API */
+
+	struct AreaLightAtlas {
+		struct Texture {
+			int users;
+			Rect2 uv_rect;
+		};
+
+		struct SortItem {
+			RID texture;
+			Size2i pixel_size;
+			Size2i size;
+			Point2i pos;
+
+			bool operator<(const SortItem &p_item) const {
+				//sort larger to smaller
+				if (size.height == p_item.size.height) {
+					return size.width > p_item.size.width;
+				} else {
+					return size.height > p_item.size.height;
+				}
+			}
+		};
+
+		HashMap<RID, Texture> textures;
+		bool dirty = true;
+		int mipmaps = 8;
+
+		RID texture;
+		struct MipMap {
+			RID fb;
+			RID texture;
+			Size2i size;
+		};
+		Vector<MipMap> texture_mipmaps;
+
+		Size2i size;
+	} area_light_atlas;
+
 	/* DECAL API */
 
 	struct DecalAtlas {
 		struct Texture {
 			int panorama_to_dp_users;
-			int area_light_users;
 			int users;
 			Rect2 uv_rect;
 		};
@@ -599,6 +637,27 @@ public:
 		return Size2i(tex->width_2d, tex->height_2d);
 	}
 
+	/* AREA LIGHT API */
+	void update_area_light_atlas();
+
+	RID area_light_atlas_get_texture() const;
+	RID area_light_atlas_get_mip_texture() const; // TODO: remove
+
+	_FORCE_INLINE_ Rect2 area_light_atlas_get_texture_rect(RID p_texture) {
+		AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(p_texture);
+		if (!t) {
+			return Rect2();
+		}
+
+		return t->uv_rect;
+	}
+
+	void area_light_atlas_mark_dirty_on_texture(RID p_texture);
+	void area_light_atlas_remove_texture(RID p_texture);
+
+	virtual void texture_add_to_area_light_atlas(RID p_texture) override;
+	virtual void texture_remove_from_area_light_atlas(RID p_texture) override;
+
 	/* DECAL API */
 
 	void update_decal_atlas();
@@ -606,7 +665,7 @@ public:
 	bool owns_decal(RID p_rid) const { return decal_owner.owns(p_rid); }
 
 	RID decal_atlas_get_texture() const;
-	RID decal_atlas_get_mip_texture() const;
+	RID decal_atlas_get_mip_texture() const; // TODO: remove
 	RID decal_atlas_get_texture_srgb() const;
 	_FORCE_INLINE_ Rect2 decal_atlas_get_texture_rect(RID p_texture) {
 		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
@@ -634,8 +693,8 @@ public:
 	void decal_atlas_mark_dirty_on_texture(RID p_texture);
 	void decal_atlas_remove_texture(RID p_texture);
 
-	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false, bool p_is_area_light_texture = false) override;
-	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false, bool p_is_area_light_texture = false) override;
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
 
 	_FORCE_INLINE_ Vector3 decal_get_size(RID p_decal) {
 		const Decal *decal = decal_owner.get_or_null(p_decal);

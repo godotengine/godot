@@ -992,6 +992,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_
 		case RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS:
 		case RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS:
 		case RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS:
+		case RS::VIEWPORT_DEBUG_DRAW_AREA_LIGHT_ATLAS:
 		case RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS:
 		// Modes that draws a buffer over viewport needs camera effects because if the buffer is not available it will be equivalent to normal draw mode.
 		case RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
@@ -1076,6 +1077,16 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 
 			copy_effects->copy_to_fb_rect(decal_atlas, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), rtsize / 2), false, false, true);
+		}
+	}
+
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_AREA_LIGHT_ATLAS) {
+		RID area_light_atlas = RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture();
+
+		if (area_light_atlas.is_valid()) {
+			Size2i rtsize = texture_storage->render_target_get_size(render_target);
+
+			copy_effects->copy_to_fb_rect(area_light_atlas, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), rtsize / 2), false, false, true);
 		}
 	}
 
