@@ -3148,7 +3148,12 @@ void TextureStorage::update_area_light_atlas() {
 						tf_blur.mipmaps = 1;
 						RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
 						Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
-						copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_tex_size, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
+
+						if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+							copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_tex_size, false);
+						} else {
+							copy_effects->gaussian_blur_raster(src_tex->rd_texture, blur_tex, copy_rect, mip_tex_size);
+						}
 
 						copy_effects->copy_to_fb_rect(blur_tex, mm.fb, uv_recti);
 						RD::get_singleton()->free_rid(blur_tex);
