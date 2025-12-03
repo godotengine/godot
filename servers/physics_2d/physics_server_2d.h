@@ -124,12 +124,12 @@ class PhysicsShapeQueryParameters2D;
 class PhysicsDirectSpaceState2D : public Object {
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
 
-	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> p_ray_query);
-	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters2D> p_point_query, int p_max_results = 32);
-	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, int p_max_results = 32);
-	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query);
-	TypedArray<Vector2> _collide_shape(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, int p_max_results = 32);
-	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query);
+	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query);
+	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results = 32);
+	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
+	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
+	TypedArray<Vector2> _collide_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
+	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
 
 protected:
 	static void _bind_methods();
@@ -216,7 +216,7 @@ class PhysicsServer2D : public Object {
 
 	static PhysicsServer2D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters2D> p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
+	virtual bool _body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters2D> rp_parameters, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
 
 protected:
 	static void _bind_methods();

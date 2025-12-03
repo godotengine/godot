@@ -126,12 +126,12 @@ class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
 
 private:
-	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> p_ray_query);
-	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters3D> p_point_query, int p_max_results = 32);
-	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, int p_max_results = 32);
-	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query);
-	TypedArray<Vector3> _collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, int p_max_results = 32);
-	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query);
+	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query);
+	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results = 32);
+	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
+	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
+	TypedArray<Vector3> _collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
+	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
 
 protected:
 	static void _bind_methods();
@@ -238,7 +238,7 @@ class PhysicsServer3D : public Object {
 
 	static PhysicsServer3D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters3D> p_parameters, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>());
+	virtual bool _body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters3D> rp_parameters, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>());
 
 protected:
 	static void _bind_methods();
@@ -576,7 +576,7 @@ public:
 
 	virtual RID soft_body_create() = 0;
 
-	virtual void soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> p_rendering_server_handler) = 0;
+	virtual void soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) = 0;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) = 0;
 	virtual RID soft_body_get_space(RID p_body) const = 0;
