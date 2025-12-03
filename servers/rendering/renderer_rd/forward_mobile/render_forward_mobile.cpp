@@ -2008,6 +2008,15 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			uniforms.push_back(u);
 		}
 
+		{
+			RD::Uniform u;
+			u.binding = 17;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			RID decal_atlas = RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture();
+			u.append_id(decal_atlas);
+			uniforms.push_back(u);
+		}
+
 		render_base_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(scene_shader.default_shader_rd, SCENE_UNIFORM_SET, uniforms);
 	}
 }
