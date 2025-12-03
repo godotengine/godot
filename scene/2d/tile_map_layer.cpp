@@ -1266,16 +1266,16 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 
 			if (face_index_array.size() > 2) {
 				Array face_mesh_array;
-				face_mesh_array.resize(Mesh::ARRAY_MAX);
-				face_mesh_array[Mesh::ARRAY_VERTEX] = Vector<Vector2>(face_vertex_array);
-				face_mesh_array[Mesh::ARRAY_INDEX] = Vector<int32_t>(face_index_array);
-				face_mesh_array[Mesh::ARRAY_COLOR] = Vector<Color>(face_color_array);
+				face_mesh_array.resize(RS::ARRAY_MAX);
+				face_mesh_array[RS::ARRAY_VERTEX] = Vector<Vector2>(face_vertex_array);
+				face_mesh_array[RS::ARRAY_INDEX] = Vector<int32_t>(face_index_array);
+				face_mesh_array[RS::ARRAY_COLOR] = Vector<Color>(face_color_array);
 				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 
 				Array line_mesh_array;
-				line_mesh_array.resize(Mesh::ARRAY_MAX);
-				line_mesh_array[Mesh::ARRAY_VERTEX] = Vector<Vector2>(line_vertex_array);
-				line_mesh_array[Mesh::ARRAY_COLOR] = Vector<Color>(line_color_array);
+				line_mesh_array.resize(RS::ARRAY_MAX);
+				line_mesh_array[RS::ARRAY_VERTEX] = Vector<Vector2>(line_vertex_array);
+				line_mesh_array[RS::ARRAY_COLOR] = Vector<Color>(line_color_array);
 
 				rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 			}
