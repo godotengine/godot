@@ -100,6 +100,7 @@ private:
 	void _assign_node_names(Ref<FBXState> p_state);
 	Error _parse_cameras(Ref<FBXState> p_state);
 	Error _parse_lights(Ref<FBXState> p_state);
+	void _apply_scale_to_gltf_state(Ref<GLTFState> p_state, const Vector3 &p_scale);
 
 public:
 	Error _parse_fbx_state(Ref<FBXState> p_state, const String &p_search_path);

@@ -2489,6 +2489,194 @@ PackedByteArray FBXDocument::generate_buffer(Ref<GLTFState> p_state) {
 	return PackedByteArray();
 }
 
+void FBXDocument::_apply_scale_to_gltf_state(Ref<GLTFState> p_state, const Vector3 &p_scale) {
+	ERR_FAIL_COND(p_state.is_null());
+
+	// Scale all node transforms (translation/origin)
+	for (int i = 0; i < p_state->nodes.size(); i++) {
+		Ref<GLTFNode> node = p_state->nodes[i];
+		if (node.is_null()) {
+			continue;
+		}
+		Transform3D transform = node->transform;
+		transform.origin = p_scale * transform.origin;
+		node->transform = transform;
+	}
+
+	// Scale all mesh vertices
+	for (int i = 0; i < p_state->meshes.size(); i++) {
+		Ref<GLTFMesh> gltf_mesh = p_state->meshes[i];
+		if (gltf_mesh.is_null()) {
+			continue;
+		}
+		Ref<ImporterMesh> importer_mesh = gltf_mesh->get_mesh();
+		if (importer_mesh.is_null()) {
+			continue;
+		}
+
+		// Scale vertices in each surface
+		// Use the same approach as _rescale_importer_mesh in resource_importer_scene.cpp
+		const int surf_count = importer_mesh->get_surface_count();
+		const int blendshape_count = importer_mesh->get_blend_shape_count();
+		
+		struct LocalSurfData {
+			Mesh::PrimitiveType prim = {};
+			Array arr;
+			Array bsarr;
+			Dictionary lods;
+			String name;
+			Ref<Material> mat;
+			uint64_t fmt_compress_flags = 0;
+		};
+		
+		Vector<LocalSurfData> surf_data_by_mesh;
+		Vector<String> blendshape_names;
+		
+		for (int bsidx = 0; bsidx < blendshape_count; bsidx++) {
+			blendshape_names.append(importer_mesh->get_blend_shape_name(bsidx));
+		}
+		
+		for (int surf_idx = 0; surf_idx < surf_count; surf_idx++) {
+			Mesh::PrimitiveType prim = importer_mesh->get_surface_primitive_type(surf_idx);
+			const uint64_t fmt_compress_flags = importer_mesh->get_surface_format(surf_idx);
+			Array arr = importer_mesh->get_surface_arrays(surf_idx);
+			String name = importer_mesh->get_surface_name(surf_idx);
+			Dictionary lods;
+			// Get LODs
+			for (int lod_i = 0; lod_i < importer_mesh->get_surface_lod_count(surf_idx); lod_i++) {
+				float lod_distance = importer_mesh->get_surface_lod_size(surf_idx, lod_i);
+				Vector<int> lod_indices = importer_mesh->get_surface_lod_indices(surf_idx, lod_i);
+				lods[lod_distance] = lod_indices;
+			}
+			Ref<Material> mat = importer_mesh->get_surface_material(surf_idx);
+			
+			// Scale vertices
+			{
+				Vector<Vector3> vertex_array = arr[Mesh::ARRAY_VERTEX];
+				for (int vert_arr_i = 0; vert_arr_i < vertex_array.size(); vert_arr_i++) {
+					vertex_array.write[vert_arr_i] = vertex_array[vert_arr_i] * p_scale;
+				}
+				arr[Mesh::ARRAY_VERTEX] = vertex_array;
+			}
+			
+			// Scale blend shape vertices
+			Array blendshapes;
+			for (int bsidx = 0; bsidx < blendshape_count; bsidx++) {
+				Array current_bsarr = importer_mesh->get_surface_blend_shape_arrays(surf_idx, bsidx);
+				Vector<Vector3> current_bs_vertex_array = current_bsarr[Mesh::ARRAY_VERTEX];
+				int current_bs_vert_arr_len = current_bs_vertex_array.size();
+				for (int32_t bs_vert_arr_i = 0; bs_vert_arr_i < current_bs_vert_arr_len; bs_vert_arr_i++) {
+					current_bs_vertex_array.write[bs_vert_arr_i] = current_bs_vertex_array[bs_vert_arr_i] * p_scale;
+				}
+				current_bsarr[Mesh::ARRAY_VERTEX] = current_bs_vertex_array;
+				blendshapes.push_back(current_bsarr);
+			}
+			
+			LocalSurfData surf_data_dictionary = LocalSurfData();
+			surf_data_dictionary.prim = prim;
+			surf_data_dictionary.arr = arr;
+			surf_data_dictionary.bsarr = blendshapes;
+			surf_data_dictionary.lods = lods;
+			surf_data_dictionary.fmt_compress_flags = fmt_compress_flags;
+			surf_data_dictionary.name = name;
+			surf_data_dictionary.mat = mat;
+			
+			surf_data_by_mesh.push_back(surf_data_dictionary);
+		}
+		
+		// Clear and re-add surfaces (following _rescale_importer_mesh pattern)
+		importer_mesh->clear();
+		
+		for (int bsidx = 0; bsidx < blendshape_count; bsidx++) {
+			importer_mesh->add_blend_shape(blendshape_names[bsidx]);
+		}
+		
+		for (int surf_idx = 0; surf_idx < surf_count; surf_idx++) {
+			const Mesh::PrimitiveType prim = surf_data_by_mesh[surf_idx].prim;
+			const Array arr = surf_data_by_mesh[surf_idx].arr;
+			const Array bsarr = surf_data_by_mesh[surf_idx].bsarr;
+			const Dictionary lods = surf_data_by_mesh[surf_idx].lods;
+			const uint64_t fmt_compress_flags = surf_data_by_mesh[surf_idx].fmt_compress_flags;
+			const String name = surf_data_by_mesh[surf_idx].name;
+			const Ref<Material> mat = surf_data_by_mesh[surf_idx].mat;
+			
+			importer_mesh->add_surface(prim, arr, bsarr, lods, mat, name, fmt_compress_flags);
+		}
+	}
+
+	// Scale all animation position tracks
+	for (int i = 0; i < p_state->animations.size(); i++) {
+		Ref<GLTFAnimation> gltf_anim = p_state->animations[i];
+		if (gltf_anim.is_null()) {
+			continue;
+		}
+
+		// Get node tracks (HashMap<int, NodeTrack>)
+		HashMap<int, GLTFAnimation::NodeTrack> &node_tracks = gltf_anim->get_node_tracks();
+		for (HashMap<int, GLTFAnimation::NodeTrack>::Iterator it = node_tracks.begin(); it != node_tracks.end(); ++it) {
+			GLTFAnimation::NodeTrack &track = it->value;
+			
+			// Scale position track values
+			for (int key_i = 0; key_i < track.position_track.values.size(); key_i++) {
+				track.position_track.values.write[key_i] = p_scale * track.position_track.values[key_i];
+			}
+		}
+	}
+
+	// Scale all skin inverse bind poses
+	for (int i = 0; i < p_state->skins.size(); i++) {
+		Ref<GLTFSkin> gltf_skin = p_state->skins[i];
+		if (gltf_skin.is_null()) {
+			continue;
+		}
+
+		TypedArray<Transform3D> inverse_binds = gltf_skin->get_inverse_binds();
+		for (int bind_i = 0; bind_i < inverse_binds.size(); bind_i++) {
+			Transform3D bind = inverse_binds[bind_i];
+			bind.origin = p_scale * bind.origin;
+			inverse_binds[bind_i] = bind;
+		}
+		gltf_skin->set_inverse_binds(inverse_binds);
+	}
+
+	// Scale all camera properties that are in meters
+	for (int i = 0; i < p_state->cameras.size(); i++) {
+		Ref<GLTFCamera> gltf_camera = p_state->cameras[i];
+		if (gltf_camera.is_null()) {
+			continue;
+		}
+
+		// Scale depth_near, depth_far, and size_mag (all in meters)
+		real_t depth_near = gltf_camera->get_depth_near();
+		real_t depth_far = gltf_camera->get_depth_far();
+		real_t size_mag = gltf_camera->get_size_mag();
+
+		// Use uniform scale (assuming p_scale is uniform)
+		real_t scale_factor = p_scale.x; // Use x component for uniform scaling
+		gltf_camera->set_depth_near(depth_near * scale_factor);
+		gltf_camera->set_depth_far(depth_far * scale_factor);
+		gltf_camera->set_size_mag(size_mag * scale_factor);
+	}
+
+	// Scale all light properties that are in meters
+	for (int i = 0; i < p_state->lights.size(); i++) {
+		Ref<GLTFLight> gltf_light = p_state->lights[i];
+		if (gltf_light.is_null()) {
+			continue;
+		}
+
+		// Scale range (in meters)
+		// Note: range can be INF, so check for that
+		float range = gltf_light->get_range();
+		if (range != Math::INF && range > 0.0f) {
+			// Use uniform scale (assuming p_scale is uniform)
+			real_t scale_factor = p_scale.x; // Use x component for uniform scaling
+			gltf_light->set_range(range * scale_factor);
+		}
+		// Note: inner_cone_angle and outer_cone_angle are in radians, not meters, so no scaling needed
+	}
+}
+
 // Helper struct and functions for memory-based FBX writing
 // These must be at file scope (not inside write_to_filesystem) to avoid "function definition not allowed" errors
 //
@@ -2530,6 +2718,12 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		return err;
 	}
 
+	// Apply scale to convert from meters (Godot) to centimeters (FBX default)
+	// This uses the same approach as Godot's import scale application
+	// Scale factor: 1 meter = 100 centimeters
+	const Vector3 scale_factor = Vector3(100.0, 100.0, 100.0);
+	_apply_scale_to_gltf_state(state, scale_factor);
+
 	// Convert GLTFState to FBX using ufbx_write
 
 	// Create FBX write scene
@@ -2566,7 +2760,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		CharString node_name_utf8 = node_name.utf8();
 		ufbxw_set_name_len(write_scene, fbx_node.id, node_name_utf8.get_data(), node_name_utf8.length());
 
-		// Set transform
+		// Set transform (already scaled to centimeters in _apply_scale_to_gltf_state)
 		Transform3D transform = gltf_node->transform;
 		Vector3 translation = transform.origin;
 		Quaternion rotation = transform.basis.get_rotation_quaternion();
@@ -2677,7 +2871,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			CharString mesh_name_utf8 = mesh_name.utf8();
 			ufbxw_set_name_len(write_scene, fbx_mesh.id, mesh_name_utf8.get_data(), mesh_name_utf8.length());
 
-			// Convert vertices
+			// Convert vertices (already scaled to centimeters in _apply_scale_to_gltf_state)
 			Vector<ufbxw_vec3> fbx_vertices;
 			fbx_vertices.resize(vertices.size());
 			for (int i = 0; i < vertices.size(); i++) {
@@ -3390,7 +3584,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 						if (value_idx >= track.position_track.values.size()) {
 							continue;
 						}
-						Vector3 pos = track.position_track.values[value_idx];
+						Vector3 pos = track.position_track.values[value_idx]; // Already scaled to centimeters
 						ufbxw_ktime fbx_time = (ufbxw_ktime)(track.position_track.times[key_i] * FBX_TIME_UNIT);
 						ufbxw_vec3 fbx_pos = { (ufbxw_real)pos.x, (ufbxw_real)pos.y, (ufbxw_real)pos.z };
 						uint32_t interp_type = map_interpolation_type(track.position_track.interpolation);
