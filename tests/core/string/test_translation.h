@@ -55,7 +55,7 @@ TEST_CASE("[Translation] Messages") {
 	// The message no longer exists, so it returns an empty string instead.
 	CHECK(translation->get_message("Hello") == "");
 
-	List<StringName> messages;
+	List<Translation::MessageKey> messages;
 	translation->get_message_list(&messages);
 	CHECK(translation->get_message_count() == 0);
 	CHECK(messages.size() == 0);
@@ -67,8 +67,8 @@ TEST_CASE("[Translation] Messages") {
 	CHECK(translation->get_message_count() == 2);
 	CHECK(messages.size() == 2);
 	// Messages are stored in a Map, don't assume ordering.
-	CHECK(messages.find("Hello2"));
-	CHECK(messages.find("Hello3"));
+	CHECK(messages.find(Translation::MessageKey{ StringName(), "Hello2" }));
+	CHECK(messages.find(Translation::MessageKey{ StringName(), "Hello3" }));
 }
 
 TEST_CASE("[Translation] Messages with context") {
@@ -88,7 +88,7 @@ TEST_CASE("[Translation] Messages with context") {
 	CHECK(translation->get_message("Hello", "friendly") == "Salut");
 	CHECK(translation->get_message("Hello", "nonexistent_context") == "");
 
-	List<StringName> messages;
+	List<Translation::MessageKey> messages;
 	translation->get_message_list(&messages);
 
 	CHECK(translation->get_message_count() == 1);
@@ -103,10 +103,9 @@ TEST_CASE("[Translation] Messages with context") {
 	CHECK(translation->get_message_count() == 4);
 	CHECK(messages.size() == 4);
 	// Messages are stored in a Map, don't assume ordering.
-	CHECK(messages.find("Hello2"));
-	CHECK(messages.find("Hello3"));
-	// Context and untranslated string are separated by EOT.
-	CHECK(messages.find("friendly\x04Hello2"));
+	CHECK(messages.find(Translation::MessageKey{ StringName(), "Hello2" }));
+	CHECK(messages.find(Translation::MessageKey{ "friendly", "Hello2" }));
+	CHECK(messages.find(Translation::MessageKey{ StringName(), "Hello3" }));
 }
 
 TEST_CASE("[Translation] Plural messages") {
@@ -207,11 +206,54 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 	CHECK(optimized_translation->get_message("Hello3") == "Bonjour3");
 	CHECK(optimized_translation->get_message("DoesNotExist") == "");
 
-	List<StringName> messages;
+	List<Translation::MessageKey> messages;
 	// `get_message_list()` can't return the list of messages stored in an OptimizedTranslation.
+	ERR_PRINT_OFF;
 	optimized_translation->get_message_list(&messages);
 	CHECK(optimized_translation->get_message_count() == 0);
+	ERR_PRINT_ON;
 	CHECK(messages.size() == 0);
+}
+
+TEST_CASE("[Translation] Hints") {
+	Ref<Translation> translation;
+	translation.instantiate();
+
+	// Hints can only be set for existing messages.
+	ERR_PRINT_OFF;
+	translation->set_hint("Hello", StringName(), Translation::HINT_COMMENTS, "A friendly greeting");
+	CHECK(translation->get_hint("Hello", StringName(), Translation::HINT_COMMENTS).is_empty());
+	ERR_PRINT_ON;
+
+	translation->add_message("Hello", "Hello");
+	translation->set_hint("Hello", StringName(), Translation::HINT_COMMENTS, "A friendly greeting");
+	translation->set_hint("Hello", StringName(), Translation::HINT_LOCATIONS, "test.tscn");
+	CHECK(translation->get_hint("Hello", StringName(), Translation::HINT_COMMENTS) == "A friendly greeting");
+	CHECK(translation->get_hint("Hello", StringName(), Translation::HINT_LOCATIONS) == "test.tscn");
+
+	translation->add_message("Letter", "Letter", "Alphabet");
+	translation->set_hint("Letter", "Alphabet", Translation::HINT_LOCATIONS, "alphabet.gd:42");
+	CHECK(translation->get_hint("Letter", "Alphabet", Translation::HINT_LOCATIONS) == "alphabet.gd:42");
+
+	// How the hints are saved.
+	const Dictionary d = translation->call("_get_messages");
+	CHECK(d.has(0)); // The integer key constant is internal, not exposed.
+	const Dictionary expected = {
+		{
+				StringName("Hello"),
+				Dictionary{
+						{ Translation::HINT_COMMENTS, "A friendly greeting" },
+						{ Translation::HINT_LOCATIONS, "test.tscn" },
+				},
+		},
+		{
+				Array{ StringName("Alphabet"), StringName("Letter") },
+				Dictionary{
+						{ Translation::HINT_LOCATIONS, "alphabet.gd:42" },
+				},
+		}
+	};
+	CHECK(d[0] == expected);
 }
 
 TEST_CASE("[TranslationCSV] CSV import") {

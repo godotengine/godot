@@ -59,6 +59,15 @@
 				Erases a message.
 			</description>
 		</method>
+		<method name="get_hint" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="context" type="StringName" />
+			<param index="2" name="type" type="int" enum="Translation.HintType" />
+			<description>
+				Returns the hint of type [param type] for the given message. Hints default to an empty string.
+			</description>
+		</method>
 		<method name="get_message" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="src_message" type="StringName" />
@@ -91,6 +100,15 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_plural_forms" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="context" type="StringName" />
+			<description>
+				Returns the array of plural translations for a given message. The array is empty on failure.
+				[b]Note:[/b] The message should be added by [method add_plural_message], otherwise the behavior is undefined.
+			</description>
+		</method>
 		<method name="get_plural_message" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="src_message" type="StringName" />
@@ -100,13 +118,30 @@
 			<description>
 				Returns a message's translation involving plurals.
 				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
-				[b]Note:[/b] Plurals are only supported in [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]gettext-based translations (PO)[/url], not CSV.
 			</description>
 		</method>
 		<method name="get_translated_message_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 				Returns all the translated strings.
+			</description>
+		</method>
+		<method name="has_message" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="context" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given message exists.
+			</description>
+		</method>
+		<method name="set_hint">
+			<return type="void" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="context" type="StringName" />
+			<param index="2" name="type" type="int" enum="Translation.HintType" />
+			<param index="3" name="value" type="String" />
+			<description>
+				Sets the hint of type [param type] for the given message to [param value].
 			</description>
 		</method>
 	</methods>
@@ -119,4 +154,19 @@
 			If empty or invalid, default plural rules from [method TranslationServer.get_plural_rules] are used. The English plural rules are used as a fallback.
 		</member>
 	</members>
+	<constants>
+		<constant name="HINT_PLURAL" value="0" enum="HintType">
+			Hint type for the untranslated string's plural form. If non-empty, hints that the message is intended to be translated by [method get_plural_message].
+			[b]Note:[/b] Hints don't affect how translation works. Whether a message should be translated by [method get_message] or [method get_plural_message] still depends on whether it was added by [method add_message] or [method add_plural_message].
+		</constant>
+		<constant name="HINT_COMMENTS" value="1" enum="HintType">
+			Hint type for the message's comments.
+		</constant>
+		<constant name="HINT_LOCATIONS" value="2" enum="HintType">
+			Hint type for the message's references to the program's source code. Each line should be of the form [code]file_name:line_number[/code] or just [code]file_name[/code].
+		</constant>
+		<constant name="HINT_MAX" value="3" enum="HintType">
+			Represents the size of the [enum HintType] enum.
+		</constant>
+	</constants>
 </class>
