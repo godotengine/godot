@@ -3756,13 +3756,17 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Connect albedo/diffuse texture
 		Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
 		if (albedo_texture.is_valid()) {
-			// Find image index directly using find() like GLTF export does
-			GLTFImageIndex image_idx = state->images.find(albedo_texture);
-			if (image_idx >= 0) {
-				// Find texture index that references this image
-				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
-					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
-					if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+			// Find texture by comparing RID (texture objects may be different instances)
+			RID albedo_rid = albedo_texture->get_rid();
+			for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+				Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+				if (gltf_texture.is_null()) {
+					continue;
+				}
+				GLTFImageIndex image_idx = gltf_texture->get_src_image();
+				if (image_idx >= 0 && image_idx < state->images.size()) {
+					Ref<Texture2D> state_texture = state->images[image_idx];
+					if (state_texture.is_valid() && state_texture->get_rid() == albedo_rid) {
 						if (gltf_to_fbx_textures.has(tex_i)) {
 							ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
 							// Connect texture to material's DiffuseColor property
@@ -3777,13 +3781,17 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Connect normal texture
 		Ref<Texture2D> normal_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
 		if (normal_texture.is_valid()) {
-			// Find image index directly using find() like GLTF export does
-			GLTFImageIndex image_idx = state->images.find(normal_texture);
-			if (image_idx >= 0) {
-				// Find texture index that references this image
-				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
-					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
-					if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+			// Find texture by comparing RID (texture objects may be different instances)
+			RID normal_rid = normal_texture->get_rid();
+			for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+				Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+				if (gltf_texture.is_null()) {
+					continue;
+				}
+				GLTFImageIndex image_idx = gltf_texture->get_src_image();
+				if (image_idx >= 0 && image_idx < state->images.size()) {
+					Ref<Texture2D> state_texture = state->images[image_idx];
+					if (state_texture.is_valid() && state_texture->get_rid() == normal_rid) {
 						if (gltf_to_fbx_textures.has(tex_i)) {
 							ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
 							ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "NormalMap");
@@ -3797,11 +3805,16 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Connect metallic texture
 		Ref<Texture2D> metallic_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
 		if (metallic_texture.is_valid()) {
-			GLTFImageIndex image_idx = state->images.find(metallic_texture);
-			if (image_idx >= 0) {
-				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
-					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
-					if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+			RID metallic_rid = metallic_texture->get_rid();
+			for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+				Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+				if (gltf_texture.is_null()) {
+					continue;
+				}
+				GLTFImageIndex image_idx = gltf_texture->get_src_image();
+				if (image_idx >= 0 && image_idx < state->images.size()) {
+					Ref<Texture2D> state_texture = state->images[image_idx];
+					if (state_texture.is_valid() && state_texture->get_rid() == metallic_rid) {
 						if (gltf_to_fbx_textures.has(tex_i)) {
 							ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
 							ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "ReflectionFactor");
@@ -3815,11 +3828,16 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Connect roughness texture
 		Ref<Texture2D> roughness_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
 		if (roughness_texture.is_valid()) {
-			GLTFImageIndex image_idx = state->images.find(roughness_texture);
-			if (image_idx >= 0) {
-				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
-					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
-					if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+			RID roughness_rid = roughness_texture->get_rid();
+			for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+				Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+				if (gltf_texture.is_null()) {
+					continue;
+				}
+				GLTFImageIndex image_idx = gltf_texture->get_src_image();
+				if (image_idx >= 0 && image_idx < state->images.size()) {
+					Ref<Texture2D> state_texture = state->images[image_idx];
+					if (state_texture.is_valid() && state_texture->get_rid() == roughness_rid) {
 						if (gltf_to_fbx_textures.has(tex_i)) {
 							ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
 							ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "Shininess");
@@ -3834,11 +3852,16 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION)) {
 			Ref<Texture2D> ao_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION);
 			if (ao_texture.is_valid()) {
-				GLTFImageIndex image_idx = state->images.find(ao_texture);
-				if (image_idx >= 0) {
-					for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
-						Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
-						if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+				RID ao_rid = ao_texture->get_rid();
+				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+					if (gltf_texture.is_null()) {
+						continue;
+					}
+					GLTFImageIndex image_idx = gltf_texture->get_src_image();
+					if (image_idx >= 0 && image_idx < state->images.size()) {
+						Ref<Texture2D> state_texture = state->images[image_idx];
+						if (state_texture.is_valid() && state_texture->get_rid() == ao_rid) {
 							if (gltf_to_fbx_textures.has(tex_i)) {
 								ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
 								ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "AmbientFactor");
@@ -3854,13 +3877,16 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 			if (emission_texture.is_valid()) {
-				// Find image index directly using find() like GLTF export does
-				GLTFImageIndex image_idx = state->images.find(emission_texture);
-				if (image_idx >= 0) {
-					// Find texture index that references this image
-					for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
-						Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
-						if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+				RID emission_rid = emission_texture->get_rid();
+				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+					if (gltf_texture.is_null()) {
+						continue;
+					}
+					GLTFImageIndex image_idx = gltf_texture->get_src_image();
+					if (image_idx >= 0 && image_idx < state->images.size()) {
+						Ref<Texture2D> state_texture = state->images[image_idx];
+						if (state_texture.is_valid() && state_texture->get_rid() == emission_rid) {
 							if (gltf_to_fbx_textures.has(tex_i)) {
 								ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
 								ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "EmissiveColor");
