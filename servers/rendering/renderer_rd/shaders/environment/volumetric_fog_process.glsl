@@ -19,6 +19,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #include "../oct_inc.glsl"
 
 #define M_TAU 6.28318530718
+#define M_PI 3.14159265359
 
 #define DENSITY_SCALE 1024.0
 
@@ -217,6 +218,8 @@ layout(set = 0, binding = 20) uniform texture2D sky_texture;
 #endif
 #endif // MODE_COPY
 
+layout(set = 0, binding = 21) uniform texture2D area_light_atlas;
+
 float get_depth_at_pos(float cell_depth_size, int z) {
 	float d = float(z) * cell_depth_size + cell_depth_size * 0.5; //center of voxels
 	d = pow(d, params.detail_spread);
@@ -303,6 +306,108 @@ const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
 
 // Higher values will make light in volumetric fog fade out sooner when it's occluded by shadow.
 const float INV_FOG_FADE = 10.0;
+
+
+vec3 integrate_edge_hill(vec3 p0, vec3 p1) {
+	// Approximation suggested by Hill and Heitz, calculating the integral of the spherical cosine distribution over the line between p0 and p1.
+	// Runs faster than the exact formula of Baum et al. (1989).
+	float cosTheta = dot(p0, p1);
+
+	float x = cosTheta;
+	float y = abs(x);
+	float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+	float b = 3.45068 + (4.18814 + y) * y;
+	float theta_sintheta = a / b;
+
+	if (x < 0.0) {
+		theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta; // original paper: 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - theta_sintheta
+	}
+	return theta_sintheta * cross(p0, p1);
+}
+
+float integrate_edge(vec3 p_proj0, vec3 p_proj1, vec3 p0, vec3 p1) {
+	float epsilon = 0.00001;
+	bool opposite_sides = dot(p_proj0, p_proj1) < -1.0 + epsilon;
+	if (opposite_sides) {
+		// calculate the point on the line p0 to p1 that is closest to the vertex (origin)
+		vec3 half_point_t = p0 + normalize(p1 - p0) * dot(p0, normalize(p0 - p1));
+		vec3 half_point = normalize(half_point_t);
+		return integrate_edge_hill(p_proj0, half_point).y + integrate_edge_hill(half_point, p_proj1).y;
+	}
+	return integrate_edge_hill(p_proj0, p_proj1).y;
+}
+
+vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
+	float max_lod = 11.0;
+	float low = min(max(floor(lod), 0.0), max_lod - 1.0);
+	float high = min(max(floor(lod + 1.0), 1.0), max_lod);
+	vec2 sample_pos = clamp(uv, 0.0, 1.0) * texture_rect.zw; // take border into account
+	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, linear_sampler), texture_rect.xy + sample_pos, low);
+	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, linear_sampler), texture_rect.xy + sample_pos, high);
+
+	float blend = high - lod;
+	vec4 sample_col = mix(sample_col_high, sample_col_low, blend);
+	return sample_col.rgb * sample_col.a; // premultiply alpha channel
+}
+
+vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[4]) {
+	vec3 L0 = normalize(L[0]);
+	vec3 L1 = normalize(L[1]);
+	vec3 L2 = normalize(L[2]);
+	vec3 L3 = normalize(L[3]);
+
+	vec3 F = vec3(0.0); // form factor
+	F += integrate_edge_hill(L0, L1);
+	F += integrate_edge_hill(L1, L2);
+	F += integrate_edge_hill(L2, L3);
+	F += integrate_edge_hill(L3, L0);
+
+	vec2 uv;
+	float lod = 0.0;
+
+	if (dot(F, F) < 1e-16) {
+		uv = vec2(0.5);
+	} else {
+		vec3 lx = L[1] - L[0];
+		vec3 ly = L[3] - L[0];
+		vec3 ln = cross(lx, ly);
+
+		float dist_x_area = dot(L[0], ln);
+		float d = dist_x_area / dot(F, ln);
+		vec3 isec = d * F;
+		vec3 li = isec - L[0]; // light to intersection
+
+		float dot_lxy = dot(lx, ly);
+		float inv_dot_lxlx = 1.0 / dot(lx, lx);
+		vec3 ly_ = ly - lx * dot_lxy * inv_dot_lxlx;
+
+		uv.y = dot(li, ly_) / dot(ly_, ly_);
+		uv.x = dot(li, lx) * inv_dot_lxlx - dot_lxy * inv_dot_lxlx * uv.y;
+
+		lod = abs(dist_x_area) / pow(dot(ln, ln), 0.75);
+		lod = log(2048.0 * lod) / log(3.0);
+	}
+	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod);
+}
+
+vec3 ltc_get_texture(vec3 normal, vec3 eye_vec, vec3 points[4], vec4 texture_rect) {
+	// construct the orthonormal basis around the normal vector
+	vec3 x, z;
+	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector
+	x = cross(normal, z);
+
+	// rotate area light in (T1, normal, T2) basis
+	mat3 M_inv = transpose(mat3(x, normal, z));
+
+	vec3 L[4];
+	L[0] = M_inv * points[0];
+	L[1] = M_inv * points[1];
+	L[2] = M_inv * points[2];
+	L[3] = M_inv * points[3];
+
+	return fetch_ltc_filtered_texture_with_form_factor(texture_rect, L);
+}
+
 
 void main() {
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
@@ -669,6 +774,31 @@ void main() {
 							float normalization = 7.801015826317776; // inverse ratio of solid angle of a 1mx1m quad at 1m distance
 							attenuation *= solid_angle / M_TAU * normalization * cosine;
 							vec3 light = area_lights.data[light_index].color;
+
+							if (area_lights.data[light_index].projector_rect != vec4(0.0)) {
+								vec3 area_light_center = area_lights.data[light_index].position + (area_width + area_height) * 0.5;
+								vec3 light_to_view = view_pos - area_light_center;
+								vec3 light_corner = vec3(a_len * 0.5, 0.0, b_len * 0.5);
+								vec3 light_normal = vec3(0.0, 1.0, 0.0);
+								vec3 vpos = vec3(dot(area_width_norm, light_to_view), dot(area_direction, light_to_view), dot(area_height_norm, light_to_view));
+								vec3 view_pos_signs = sign(vpos);
+								vec3 surface_normal_light_space = -light_normal;
+								if(abs(vpos.x) > light_corner.x && abs(vpos.z) > light_corner.z) {
+									// we are in the corner region (normal of inner surface of sphere)
+									surface_normal_light_space = normalize(light_corner - vpos);
+								}
+								else if(abs(vpos.x) > light_corner.x && abs(vpos.z) <= light_corner.z) {
+									// we are in the side region (normal of inner surface of cylinder)
+									surface_normal_light_space = normalize(vec3(light_corner.x - vpos.x, 0.0, light_corner.z - vpos.z));
+								}
+								else if(abs(vpos.x) <= light_corner.x && abs(vpos.z) > light_corner.z) {
+									// we are in the side region (normal of inner surface of cylinder)
+									surface_normal_light_space = normalize(vec3(0.0, light_corner.y - vpos.y, light_corner.z - vpos.z));
+								}
+								surface_normal_light_space = surface_normal_light_space * view_pos_signs;
+								vec3 view_normal = mat3(area_width_norm, area_direction, area_height_norm) * surface_normal_light_space;
+								light *= ltc_get_texture(view_normal, view_pos, light_points, area_lights.data[light_index].projector_rect);
+							}
 
 							if (area_lights.data[light_index].shadow_opacity > 0.001) {
 								//has shadow
