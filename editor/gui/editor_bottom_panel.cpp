@@ -82,7 +82,6 @@ void EditorBottomPanel::_editor_settings_changed() {
 	_update_center_split_offset();
 }
 
-
 void EditorBottomPanel::set_bottom_panel_offset(int p_offset) {
 	if (EditorNode::get_singleton()->is_bottom_dock_tab_individual_height()) {
 		// Store the individual offsets
