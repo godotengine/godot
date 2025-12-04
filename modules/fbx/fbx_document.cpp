@@ -2856,10 +2856,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 	// Third pass: Export meshes
 	// This converts GLTF meshes to FBX meshes and attaches them to nodes
-	// Create one FBX mesh per surface (avoid combining surfaces)
-	HashMap<GLTFMeshIndex, Vector<ufbxw_mesh>> gltf_to_fbx_meshes; // Multiple meshes per GLTF mesh (one per surface)
-	// Store material index for each FBX mesh (one material per surface)
-	HashMap<ufbxw_id, int32_t> fbx_mesh_material_indices;
+	// Combine all surfaces from a GLTF mesh into a single FBX mesh with material parts
+	// This matches FBX import behavior: one FBX mesh with multiple material_parts -> multiple surfaces
+	HashMap<GLTFMeshIndex, ufbxw_mesh> gltf_to_fbx_meshes; // One FBX mesh per GLTF mesh (with multiple material parts)
+	// Store per-face material indices for each FBX mesh (for material parts)
+	HashMap<ufbxw_id, Vector<int32_t>> fbx_mesh_face_material_indices;
 
 	for (int mesh_i = 0; mesh_i < state->meshes.size(); mesh_i++) {
 		Ref<GLTFMesh> gltf_mesh = state->meshes[mesh_i];
@@ -2875,7 +2876,30 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Get instance materials to map surface indices to material indices
 		TypedArray<Material> instance_materials = gltf_mesh->get_instance_materials();
 
-		// Process each surface as a separate FBX mesh
+		// Create a single FBX mesh for all surfaces
+		ufbxw_mesh fbx_mesh = ufbxw_create_mesh(write_scene);
+		if (fbx_mesh.id == 0) {
+			continue; // Skip if creation failed
+		}
+
+		// Set mesh name
+		String mesh_name = gltf_mesh->get_original_name();
+		if (mesh_name.is_empty()) {
+			mesh_name = "Mesh" + itos(mesh_i);
+		}
+		CharString mesh_name_utf8 = mesh_name.utf8();
+		ufbxw_set_name_len(write_scene, fbx_mesh.id, mesh_name_utf8.get_data(), mesh_name_utf8.length());
+
+		// Collect all data from all surfaces
+		Vector<ufbxw_vec3> all_vertices;
+		Vector<int32_t> all_indices;
+		Vector<int32_t> face_material_indices; // Material index per triangle
+		Vector<ufbxw_vec3> all_normals;
+		Vector<ufbxw_vec2> all_uvs[8]; // One array per UV set (up to 8)
+		Vector<ufbxw_vec4> all_colors;
+		int vertex_offset = 0;
+
+		// Process each surface and combine into single mesh
 		for (int surface_i = 0; surface_i < importer_mesh->get_surface_count(); surface_i++) {
 			Array surface_arrays = importer_mesh->get_surface_arrays(surface_i);
 
@@ -2919,194 +2943,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				}
 			}
 
-			// Create a separate FBX mesh for this surface
-			ufbxw_mesh fbx_mesh = ufbxw_create_mesh(write_scene);
-			if (fbx_mesh.id == 0) {
-				continue; // Skip if creation failed
-			}
-
-			// Set mesh name with surface index
-			String mesh_name = gltf_mesh->get_original_name();
-			if (mesh_name.is_empty()) {
-				mesh_name = "Mesh" + itos(mesh_i);
-			}
-			if (importer_mesh->get_surface_count() > 1) {
-				mesh_name += "_Surface" + itos(surface_i);
-			}
-			CharString mesh_name_utf8 = mesh_name.utf8();
-			ufbxw_set_name_len(write_scene, fbx_mesh.id, mesh_name_utf8.get_data(), mesh_name_utf8.length());
-
-			// Convert vertices (already scaled to centimeters in _apply_scale_to_gltf_state)
-			Vector<ufbxw_vec3> fbx_vertices;
-			fbx_vertices.resize(vertices.size());
-			for (int i = 0; i < vertices.size(); i++) {
-				fbx_vertices.write[i] = { (ufbxw_real)vertices[i].x, (ufbxw_real)vertices[i].y, (ufbxw_real)vertices[i].z };
-			}
-			ufbxw_vec3_buffer vertices_buffer = ufbxw_copy_vec3_array(write_scene, fbx_vertices.ptr(), fbx_vertices.size());
-			ufbxw_mesh_set_vertices(write_scene, fbx_mesh, vertices_buffer);
-
-			// Convert indices
-			// FBX uses counter-clockwise winding, but Godot uses clockwise
-			// Swap first and third index of each triangle to convert winding order
-			Vector<int32_t> fbx_indices;
-			fbx_indices.resize(indices.size());
-			int triangle_count = indices.size() / 3;
-			for (int tri = 0; tri < triangle_count; tri++) {
-				int base = tri * 3;
-				// Swap index 0 and 2 to reverse winding order (Godot clockwise -> FBX counter-clockwise)
-				fbx_indices.write[base + 0] = (int32_t)indices[base + 2];
-				fbx_indices.write[base + 1] = (int32_t)indices[base + 1];
-				fbx_indices.write[base + 2] = (int32_t)indices[base + 0];
-			}
-			ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, fbx_indices.ptr(), fbx_indices.size());
-			ufbxw_mesh_set_triangles(write_scene, fbx_mesh, indices_buffer);
-
-			// Get and set normals
-			Variant normal_var = surface_arrays[Mesh::ARRAY_NORMAL];
-			if (normal_var.get_type() == Variant::PACKED_VECTOR3_ARRAY) {
-				Vector<Vector3> normals = normal_var;
-				if (normals.size() == vertices.size()) {
-					Vector<ufbxw_vec3> fbx_normals;
-					fbx_normals.resize(normals.size());
-					for (int i = 0; i < normals.size(); i++) {
-						fbx_normals.write[i] = { (ufbxw_real)normals[i].x, (ufbxw_real)normals[i].y, (ufbxw_real)normals[i].z };
-					}
-					ufbxw_vec3_buffer normals_buffer = ufbxw_copy_vec3_array(write_scene, fbx_normals.ptr(), fbx_normals.size());
-					ufbxw_mesh_set_normals(write_scene, fbx_mesh, normals_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
-				}
-			}
-
-			// Get and set UVs (texture coordinates) - support up to 8 UV sets
-			// UV set 0: ARRAY_TEX_UV
-			Variant uv0_var = surface_arrays[Mesh::ARRAY_TEX_UV];
-			if (uv0_var.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
-				Vector<Vector2> uv0 = uv0_var;
-				if (uv0.size() == vertices.size()) {
-					Vector<ufbxw_vec2> fbx_uvs;
-					fbx_uvs.resize(uv0.size());
-					for (int i = 0; i < uv0.size(); i++) {
-						fbx_uvs.write[i] = { (ufbxw_real)uv0[i].x, (ufbxw_real)uv0[i].y };
-					}
-					ufbxw_vec2_buffer uvs_buffer = ufbxw_copy_vec2_array(write_scene, fbx_uvs.ptr(), fbx_uvs.size());
-					Vector<int32_t> uv_indices;
-					uv_indices.resize(uv0.size());
-					for (int i = 0; i < uv0.size(); i++) {
-						uv_indices.write[i] = i;
-					}
-					ufbxw_int_buffer uv_indices_buffer = ufbxw_copy_int_array(write_scene, uv_indices.ptr(), uv_indices.size());
-					ufbxw_mesh_set_uvs_indexed(write_scene, fbx_mesh, 0, uvs_buffer, uv_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
-				}
-			}
-
-			// UV set 1: ARRAY_TEX_UV2
-			Variant uv1_var = surface_arrays[Mesh::ARRAY_TEX_UV2];
-			if (uv1_var.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
-				Vector<Vector2> uv1 = uv1_var;
-				if (uv1.size() == vertices.size()) {
-					Vector<ufbxw_vec2> fbx_uvs;
-					fbx_uvs.resize(uv1.size());
-					for (int i = 0; i < uv1.size(); i++) {
-						fbx_uvs.write[i] = { (ufbxw_real)uv1[i].x, (ufbxw_real)uv1[i].y };
-					}
-					ufbxw_vec2_buffer uvs_buffer = ufbxw_copy_vec2_array(write_scene, fbx_uvs.ptr(), fbx_uvs.size());
-					Vector<int32_t> uv_indices;
-					uv_indices.resize(uv1.size());
-					for (int i = 0; i < uv1.size(); i++) {
-						uv_indices.write[i] = i;
-					}
-					ufbxw_int_buffer uv_indices_buffer = ufbxw_copy_int_array(write_scene, uv_indices.ptr(), uv_indices.size());
-					ufbxw_mesh_set_uvs_indexed(write_scene, fbx_mesh, 1, uvs_buffer, uv_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
-				}
-			}
-
-			// UV sets 2-7: Extract from ARRAY_CUSTOM0, ARRAY_CUSTOM1, ARRAY_CUSTOM2
-			// Each custom array can store 2 UV sets (RGBA format) or 1 UV set (RG format)
-			uint64_t surface_format = importer_mesh->get_surface_format(surface_i);
-			int fbx_uv_set = 2;
-			
-			for (int custom_i = 0; custom_i < 3 && fbx_uv_set < 8; custom_i++) {
-				Variant custom_var = surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_i];
-				if (custom_var.get_type() != Variant::PACKED_FLOAT32_ARRAY) {
-					continue;
-				}
-				
-				PackedFloat32Array custom_data = custom_var;
-				if (custom_data.size() == 0) {
-					continue;
-				}
-				
-				// Determine format: RG (2 channels) or RGBA (4 channels)
-				int custom_shift = Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT + custom_i * Mesh::ARRAY_FORMAT_CUSTOM_BITS;
-				uint64_t custom_format = (surface_format >> custom_shift) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
-				int num_channels = 0;
-				
-				if (custom_format == Mesh::ARRAY_CUSTOM_RG_FLOAT) {
-					num_channels = 2;
-				} else if (custom_format == Mesh::ARRAY_CUSTOM_RGBA_FLOAT) {
-					num_channels = 4;
-				} else {
-					continue; // Not a float format we can use for UVs
-				}
-				
-				int vertex_count = custom_data.size() / num_channels;
-				if (vertex_count != vertices.size()) {
-					continue; // Size mismatch
-				}
-				
-				// Extract first UV set from RG or first half of RGBA
-				Vector<ufbxw_vec2> fbx_uvs_first;
-				fbx_uvs_first.resize(vertex_count);
-				for (int i = 0; i < vertex_count; i++) {
-					fbx_uvs_first.write[i] = { (ufbxw_real)custom_data[i * num_channels + 0], (ufbxw_real)custom_data[i * num_channels + 1] };
-				}
-				ufbxw_vec2_buffer uvs_buffer_first = ufbxw_copy_vec2_array(write_scene, fbx_uvs_first.ptr(), fbx_uvs_first.size());
-				Vector<int32_t> uv_indices;
-				uv_indices.resize(vertex_count);
-				for (int i = 0; i < vertex_count; i++) {
-					uv_indices.write[i] = i;
-				}
-				ufbxw_int_buffer uv_indices_buffer = ufbxw_copy_int_array(write_scene, uv_indices.ptr(), uv_indices.size());
-				ufbxw_mesh_set_uvs_indexed(write_scene, fbx_mesh, fbx_uv_set, uvs_buffer_first, uv_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
-				fbx_uv_set++;
-				
-				// Extract second UV set from RGBA (if available)
-				if (num_channels == 4 && fbx_uv_set < 8) {
-					Vector<ufbxw_vec2> fbx_uvs_second;
-					fbx_uvs_second.resize(vertex_count);
-					for (int i = 0; i < vertex_count; i++) {
-						fbx_uvs_second.write[i] = { (ufbxw_real)custom_data[i * num_channels + 2], (ufbxw_real)custom_data[i * num_channels + 3] };
-					}
-					ufbxw_vec2_buffer uvs_buffer_second = ufbxw_copy_vec2_array(write_scene, fbx_uvs_second.ptr(), fbx_uvs_second.size());
-					ufbxw_mesh_set_uvs_indexed(write_scene, fbx_mesh, fbx_uv_set, uvs_buffer_second, uv_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
-					fbx_uv_set++;
-				}
-			}
-
-			// Get and set vertex colors if available (always indexed for consistency)
-			Variant color_var = surface_arrays[Mesh::ARRAY_COLOR];
-			if (color_var.get_type() == Variant::PACKED_COLOR_ARRAY) {
-				Vector<Color> colors = color_var;
-				if (colors.size() == vertices.size()) {
-					Vector<ufbxw_vec4> fbx_colors;
-					fbx_colors.resize(colors.size());
-					for (int i = 0; i < colors.size(); i++) {
-						fbx_colors.write[i] = { (ufbxw_real)colors[i].r, (ufbxw_real)colors[i].g, (ufbxw_real)colors[i].b, (ufbxw_real)colors[i].a };
-					}
-					ufbxw_vec4_buffer colors_buffer = ufbxw_copy_vec4_array(write_scene, fbx_colors.ptr(), fbx_colors.size());
-					// Create indices matching vertex order
-					Vector<int32_t> color_indices;
-					color_indices.resize(colors.size());
-					for (int i = 0; i < colors.size(); i++) {
-						color_indices.write[i] = i;
-					}
-					ufbxw_int_buffer color_indices_buffer = ufbxw_copy_int_array(write_scene, color_indices.ptr(), color_indices.size());
-					ufbxw_mesh_set_colors_indexed(write_scene, fbx_mesh, 0, colors_buffer, color_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
-				}
-			}
-
-			// Track material index for this surface
-			// Instance materials are the active materials from MeshInstance3D (primary source, like GLTF export)
-			// Surface materials from ImporterMesh are the mesh defaults (fallback)
+			// Get material index for this surface
 			int32_t surface_material_index = -1;
 			Ref<Material> surface_material;
 			
@@ -3130,21 +2967,292 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				}
 			}
 
-			// Store material index for this surface (per-surface, not per-face)
-			// Since we create one FBX mesh per surface, all faces share the same material
-			if (surface_material_index >= 0) {
-				fbx_mesh_material_indices[fbx_mesh.id] = surface_material_index;
+			// Add vertices to combined mesh
+			for (int i = 0; i < vertices.size(); i++) {
+				all_vertices.push_back({ (ufbxw_real)vertices[i].x, (ufbxw_real)vertices[i].y, (ufbxw_real)vertices[i].z });
 			}
 
-			// Store this FBX mesh for the GLTF mesh
-			if (!gltf_to_fbx_meshes.has(mesh_i)) {
-				gltf_to_fbx_meshes[mesh_i] = Vector<ufbxw_mesh>();
+			// Add indices with vertex offset (FBX uses counter-clockwise, Godot uses clockwise)
+			// Swap first and third index of each triangle to convert winding order
+			int triangle_count = indices.size() / 3;
+			for (int tri = 0; tri < triangle_count; tri++) {
+				int base = tri * 3;
+				// Swap index 0 and 2 to reverse winding order (Godot clockwise -> FBX counter-clockwise)
+				// Add vertex_offset to remap to combined vertex array
+				all_indices.push_back((int32_t)indices[base + 2] + vertex_offset);
+				all_indices.push_back((int32_t)indices[base + 1] + vertex_offset);
+				all_indices.push_back((int32_t)indices[base + 0] + vertex_offset);
+				// Track material index for this triangle
+				face_material_indices.push_back(surface_material_index);
 			}
-			gltf_to_fbx_meshes[mesh_i].push_back(fbx_mesh);
+
+			// Add normals
+			Variant normal_var = surface_arrays[Mesh::ARRAY_NORMAL];
+			if (normal_var.get_type() == Variant::PACKED_VECTOR3_ARRAY) {
+				Vector<Vector3> normals = normal_var;
+				if (normals.size() == vertices.size()) {
+					for (int i = 0; i < normals.size(); i++) {
+						all_normals.push_back({ (ufbxw_real)normals[i].x, (ufbxw_real)normals[i].y, (ufbxw_real)normals[i].z });
+					}
+				} else {
+					// Pad with zero normals if size doesn't match
+					for (int i = 0; i < vertices.size(); i++) {
+						all_normals.push_back({ 0.0, 0.0, 0.0 });
+					}
+				}
+			} else {
+				// Pad with zero normals if missing
+				for (int i = 0; i < vertices.size(); i++) {
+					all_normals.push_back({ 0.0, 0.0, 0.0 });
+				}
+			}
+
+			// Add UVs (texture coordinates) - support up to 8 UV sets
+			// UV set 0: ARRAY_TEX_UV
+			Vector<ufbxw_vec2> &uvs_0 = all_uvs[0];
+			Variant uv0_var = surface_arrays[Mesh::ARRAY_TEX_UV];
+			if (uv0_var.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
+				Vector<Vector2> uv0 = uv0_var;
+				if (uv0.size() == vertices.size()) {
+					for (int i = 0; i < uv0.size(); i++) {
+						uvs_0.push_back({ (ufbxw_real)uv0[i].x, (ufbxw_real)uv0[i].y });
+					}
+				} else {
+					// Pad with zero UVs if size doesn't match
+					for (int i = 0; i < vertices.size(); i++) {
+						uvs_0.push_back({ 0.0, 0.0 });
+					}
+				}
+			} else {
+				// Pad with zero UVs if missing
+				for (int i = 0; i < vertices.size(); i++) {
+					uvs_0.push_back({ 0.0, 0.0 });
+				}
+			}
+
+			// UV set 1: ARRAY_TEX_UV2
+			Vector<ufbxw_vec2> &uvs_1 = all_uvs[1];
+			Variant uv1_var = surface_arrays[Mesh::ARRAY_TEX_UV2];
+			if (uv1_var.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
+				Vector<Vector2> uv1 = uv1_var;
+				if (uv1.size() == vertices.size()) {
+					for (int i = 0; i < uv1.size(); i++) {
+						uvs_1.push_back({ (ufbxw_real)uv1[i].x, (ufbxw_real)uv1[i].y });
+					}
+				} else {
+					// Pad with zero UVs if size doesn't match
+					for (int i = 0; i < vertices.size(); i++) {
+						uvs_1.push_back({ 0.0, 0.0 });
+					}
+				}
+			} else {
+				// Pad with zero UVs if missing
+				for (int i = 0; i < vertices.size(); i++) {
+					uvs_1.push_back({ 0.0, 0.0 });
+				}
+			}
+
+			// UV sets 2-7: Extract from ARRAY_CUSTOM0, ARRAY_CUSTOM1, ARRAY_CUSTOM2
+			// Each custom array can store 2 UV sets (RGBA format) or 1 UV set (RG format)
+			uint64_t surface_format = importer_mesh->get_surface_format(surface_i);
+			int fbx_uv_set = 2;
+			
+			for (int custom_i = 0; custom_i < 3 && fbx_uv_set < 8; custom_i++) {
+				Variant custom_var = surface_arrays[Mesh::ARRAY_CUSTOM0 + custom_i];
+				if (custom_var.get_type() != Variant::PACKED_FLOAT32_ARRAY) {
+					// Pad with zero UVs if missing
+					Vector<ufbxw_vec2> &uvs_set = all_uvs[fbx_uv_set];
+					for (int i = 0; i < vertices.size(); i++) {
+						uvs_set.push_back({ 0.0, 0.0 });
+					}
+					fbx_uv_set++;
+					if (fbx_uv_set < 8) {
+						Vector<ufbxw_vec2> &uvs_set2 = all_uvs[fbx_uv_set];
+						for (int i = 0; i < vertices.size(); i++) {
+							uvs_set2.push_back({ 0.0, 0.0 });
+						}
+						fbx_uv_set++;
+					}
+					continue;
+				}
+				
+				PackedFloat32Array custom_data = custom_var;
+				if (custom_data.size() == 0) {
+					// Pad with zero UVs if empty
+					Vector<ufbxw_vec2> &uvs_set = all_uvs[fbx_uv_set];
+					for (int i = 0; i < vertices.size(); i++) {
+						uvs_set.push_back({ 0.0, 0.0 });
+					}
+					fbx_uv_set++;
+					if (fbx_uv_set < 8) {
+						Vector<ufbxw_vec2> &uvs_set2 = all_uvs[fbx_uv_set];
+						for (int i = 0; i < vertices.size(); i++) {
+							uvs_set2.push_back({ 0.0, 0.0 });
+						}
+						fbx_uv_set++;
+					}
+					continue;
+				}
+				
+				// Determine format: RG (2 channels) or RGBA (4 channels)
+				int custom_shift = Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT + custom_i * Mesh::ARRAY_FORMAT_CUSTOM_BITS;
+				uint64_t custom_format = (surface_format >> custom_shift) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+				int num_channels = 0;
+				
+				if (custom_format == Mesh::ARRAY_CUSTOM_RG_FLOAT) {
+					num_channels = 2;
+				} else if (custom_format == Mesh::ARRAY_CUSTOM_RGBA_FLOAT) {
+					num_channels = 4;
+				} else {
+					// Pad with zero UVs if not a float format
+					Vector<ufbxw_vec2> &uvs_set = all_uvs[fbx_uv_set];
+					for (int i = 0; i < vertices.size(); i++) {
+						uvs_set.push_back({ 0.0, 0.0 });
+					}
+					fbx_uv_set++;
+					if (fbx_uv_set < 8) {
+						Vector<ufbxw_vec2> &uvs_set2 = all_uvs[fbx_uv_set];
+						for (int i = 0; i < vertices.size(); i++) {
+							uvs_set2.push_back({ 0.0, 0.0 });
+						}
+						fbx_uv_set++;
+					}
+					continue;
+				}
+				
+				int vertex_count = custom_data.size() / num_channels;
+				if (vertex_count != vertices.size()) {
+					// Pad with zero UVs if size mismatch
+					Vector<ufbxw_vec2> &uvs_set = all_uvs[fbx_uv_set];
+					for (int i = 0; i < vertices.size(); i++) {
+						uvs_set.push_back({ 0.0, 0.0 });
+					}
+					fbx_uv_set++;
+					if (fbx_uv_set < 8) {
+						Vector<ufbxw_vec2> &uvs_set2 = all_uvs[fbx_uv_set];
+						for (int i = 0; i < vertices.size(); i++) {
+							uvs_set2.push_back({ 0.0, 0.0 });
+						}
+						fbx_uv_set++;
+					}
+					continue;
+				}
+				
+				// Extract first UV set from RG or first half of RGBA
+				Vector<ufbxw_vec2> &uvs_first = all_uvs[fbx_uv_set];
+				for (int i = 0; i < vertex_count; i++) {
+					uvs_first.push_back({ (ufbxw_real)custom_data[i * num_channels + 0], (ufbxw_real)custom_data[i * num_channels + 1] });
+				}
+				fbx_uv_set++;
+				
+				// Extract second UV set from RGBA (if available)
+				if (num_channels == 4 && fbx_uv_set < 8) {
+					Vector<ufbxw_vec2> &uvs_second = all_uvs[fbx_uv_set];
+					for (int i = 0; i < vertex_count; i++) {
+						uvs_second.push_back({ (ufbxw_real)custom_data[i * num_channels + 2], (ufbxw_real)custom_data[i * num_channels + 3] });
+					}
+					fbx_uv_set++;
+				} else if (num_channels == 2 && fbx_uv_set < 8) {
+					// Pad second UV set if only RG format
+					Vector<ufbxw_vec2> &uvs_second = all_uvs[fbx_uv_set];
+					for (int i = 0; i < vertex_count; i++) {
+						uvs_second.push_back({ 0.0, 0.0 });
+					}
+					fbx_uv_set++;
+				}
+			}
+
+			// Pad remaining UV sets with zeros
+			for (int uv_i = fbx_uv_set; uv_i < 8; uv_i++) {
+				Vector<ufbxw_vec2> &uvs_set = all_uvs[uv_i];
+				for (int i = 0; i < vertices.size(); i++) {
+					uvs_set.push_back({ 0.0, 0.0 });
+				}
+			}
+
+			// Add vertex colors
+			Variant color_var = surface_arrays[Mesh::ARRAY_COLOR];
+			if (color_var.get_type() == Variant::PACKED_COLOR_ARRAY) {
+				Vector<Color> colors = color_var;
+				if (colors.size() == vertices.size()) {
+					for (int i = 0; i < colors.size(); i++) {
+						all_colors.push_back({ (ufbxw_real)colors[i].r, (ufbxw_real)colors[i].g, (ufbxw_real)colors[i].b, (ufbxw_real)colors[i].a });
+					}
+				} else {
+					// Pad with white colors if size doesn't match
+					for (int i = 0; i < vertices.size(); i++) {
+						all_colors.push_back({ 1.0, 1.0, 1.0, 1.0 });
+					}
+				}
+			} else {
+				// Pad with white colors if missing
+				for (int i = 0; i < vertices.size(); i++) {
+					all_colors.push_back({ 1.0, 1.0, 1.0, 1.0 });
+				}
+			}
+
+			// Update vertex offset for next surface
+			vertex_offset += vertices.size();
 		}
+
+		// Now set all collected data on the combined FBX mesh
+		if (all_vertices.size() == 0 || all_indices.size() == 0) {
+			continue; // Skip if no valid data
+		}
+
+		// Set vertices
+		ufbxw_vec3_buffer vertices_buffer = ufbxw_copy_vec3_array(write_scene, all_vertices.ptr(), all_vertices.size());
+		ufbxw_mesh_set_vertices(write_scene, fbx_mesh, vertices_buffer);
+
+		// Set indices
+		ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, all_indices.ptr(), all_indices.size());
+		ufbxw_mesh_set_triangles(write_scene, fbx_mesh, indices_buffer);
+
+		// Set normals if available
+		if (all_normals.size() == all_vertices.size()) {
+			ufbxw_vec3_buffer normals_buffer = ufbxw_copy_vec3_array(write_scene, all_normals.ptr(), all_normals.size());
+			ufbxw_mesh_set_normals(write_scene, fbx_mesh, normals_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
+		}
+
+		// Set UVs for each UV set that has data
+		for (int uv_i = 0; uv_i < 8; uv_i++) {
+			if (all_uvs[uv_i].size() == all_vertices.size()) {
+				ufbxw_vec2_buffer uvs_buffer = ufbxw_copy_vec2_array(write_scene, all_uvs[uv_i].ptr(), all_uvs[uv_i].size());
+				// Create indices matching vertex order
+				Vector<int32_t> uv_indices;
+				uv_indices.resize(all_vertices.size());
+				for (int i = 0; i < all_vertices.size(); i++) {
+					uv_indices.write[i] = i;
+				}
+				ufbxw_int_buffer uv_indices_buffer = ufbxw_copy_int_array(write_scene, uv_indices.ptr(), uv_indices.size());
+				ufbxw_mesh_set_uvs_indexed(write_scene, fbx_mesh, uv_i, uvs_buffer, uv_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
+			}
+		}
+
+		// Set colors if available
+		if (all_colors.size() == all_vertices.size()) {
+			ufbxw_vec4_buffer colors_buffer = ufbxw_copy_vec4_array(write_scene, all_colors.ptr(), all_colors.size());
+			Vector<int32_t> color_indices;
+			color_indices.resize(all_vertices.size());
+			for (int i = 0; i < all_vertices.size(); i++) {
+				color_indices.write[i] = i;
+			}
+			ufbxw_int_buffer color_indices_buffer = ufbxw_copy_int_array(write_scene, color_indices.ptr(), color_indices.size());
+			ufbxw_mesh_set_colors_indexed(write_scene, fbx_mesh, 0, colors_buffer, color_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
+		}
+
+		// Set per-face materials (creates material parts)
+		if (face_material_indices.size() > 0) {
+			ufbxw_int_buffer material_indices_buffer = ufbxw_copy_int_array(write_scene, face_material_indices.ptr(), face_material_indices.size());
+			ufbxw_mesh_set_face_material(write_scene, fbx_mesh, material_indices_buffer);
+		}
+
+		// Store the combined FBX mesh for the GLTF mesh
+		gltf_to_fbx_meshes[mesh_i] = fbx_mesh;
+		fbx_mesh_face_material_indices[fbx_mesh.id] = face_material_indices;
 	}
 
-	// Attach meshes to nodes (one instance per FBX mesh)
+	// Attach meshes to nodes (one FBX mesh per GLTF mesh, with all surfaces combined)
 	for (int i = 0; i < state->nodes.size(); i++) {
 		Ref<GLTFNode> gltf_node = state->nodes[i];
 		if (gltf_node.is_null()) {
@@ -3158,11 +3266,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		GLTFMeshIndex mesh_idx = gltf_node->mesh;
 		if (mesh_idx >= 0 && mesh_idx < state->meshes.size() && gltf_to_fbx_meshes.has(mesh_idx)) {
 			ufbxw_node fbx_node = gltf_to_fbx_nodes[i];
-			Vector<ufbxw_mesh> fbx_meshes = gltf_to_fbx_meshes[mesh_idx];
-			// Attach all FBX meshes (one per surface) to the node
-			for (int j = 0; j < fbx_meshes.size(); j++) {
-				ufbxw_mesh_add_instance(write_scene, fbx_meshes[j], fbx_node);
-			}
+			ufbxw_mesh fbx_mesh = gltf_to_fbx_meshes[mesh_idx];
+			// Attach the combined FBX mesh (with all surfaces) to the node
+			ufbxw_mesh_add_instance(write_scene, fbx_mesh, fbx_node);
 		}
 	}
 
@@ -3217,29 +3323,8 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		}
 	}
 
-	// Assign materials to meshes (per-surface, one material per surface)
-	for (int mesh_i = 0; mesh_i < state->meshes.size(); mesh_i++) {
-		if (!gltf_to_fbx_meshes.has(mesh_i)) {
-			continue;
-		}
-
-		Ref<GLTFMesh> gltf_mesh = state->meshes[mesh_i];
-		if (gltf_mesh.is_null()) {
-			continue;
-		}
-
-		Vector<ufbxw_mesh> fbx_meshes = gltf_to_fbx_meshes[mesh_i];
-		// Assign materials to each FBX mesh (one per surface)
-		for (int j = 0; j < fbx_meshes.size(); j++) {
-			ufbxw_mesh fbx_mesh = fbx_meshes[j];
-			if (fbx_mesh_material_indices.has(fbx_mesh.id)) {
-				int32_t material_index = fbx_mesh_material_indices[fbx_mesh.id];
-				if (material_index >= 0) {
-					ufbxw_mesh_set_single_material(write_scene, fbx_mesh, material_index);
-				}
-			}
-		}
-	}
+	// Materials are already assigned per-face using ufbxw_mesh_set_face_material
+	// This creates material parts automatically, matching FBX import behavior
 
 	// Export cameras
 	for (int cam_i = 0; cam_i < state->cameras.size(); cam_i++) {
@@ -3415,53 +3500,85 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			GLTFMeshIndex associated_mesh_idx = it->key;
 			GLTFNodeIndex mesh_node_idx = it->value;
 
-			Vector<ufbxw_mesh> fbx_meshes = gltf_to_fbx_meshes[associated_mesh_idx];
-			if (fbx_meshes.size() == 0) {
+			if (!gltf_to_fbx_meshes.has(associated_mesh_idx)) {
 				continue;
 			}
 
-			// Get the mesh node's transform for the bind pose
+			ufbxw_mesh fbx_mesh = gltf_to_fbx_meshes[associated_mesh_idx];
+			if (fbx_mesh.id == 0) {
+				continue;
+			}
+
+			// Get the mesh node's rest transform for the bind pose
+			// Use GODOT_rest_transform if available, otherwise fall back to current transform
 			Transform3D mesh_bind_transform = Transform3D();
 			Ref<GLTFNode> mesh_node = state->nodes[mesh_node_idx];
 			if (mesh_node.is_valid()) {
-				mesh_bind_transform = mesh_node->transform;
+				Variant rest_transform_var = mesh_node->get_additional_data("GODOT_rest_transform");
+				if (rest_transform_var.get_type() == Variant::TRANSFORM3D) {
+					mesh_bind_transform = rest_transform_var;
+				} else {
+					mesh_bind_transform = mesh_node->transform;
+				}
 			}
 
-			// Create skin deformer for each surface of this mesh
-			for (int surface_idx = 0; surface_idx < fbx_meshes.size(); surface_idx++) {
-				ufbxw_mesh fbx_mesh = fbx_meshes[surface_idx];
-				ufbxw_skin_deformer fbx_skin_deformer = ufbxw_create_skin_deformer(write_scene, fbx_mesh);
-				if (fbx_skin_deformer.id == 0) {
-					continue; // Skip if creation failed
+			// Create skin deformer for the combined mesh (all surfaces)
+			ufbxw_skin_deformer fbx_skin_deformer = ufbxw_create_skin_deformer(write_scene, fbx_mesh);
+			if (fbx_skin_deformer.id == 0) {
+				continue; // Skip if creation failed
+			}
+			
+			// Set skin deformer properties
+			ufbxw_skin_deformer_set_skinning_type(write_scene, fbx_skin_deformer, UFBXW_SKINNING_TYPE_LINEAR);
+
+			// Set mesh bind transform (mesh's transform at bind time)
+			// Note: ufbxw_create_skin_deformer already creates the connection, so we don't need ufbxw_skin_deformer_add_mesh
+			ufbxw_matrix mesh_bind_matrix = _transform_to_ufbxw_matrix(mesh_bind_transform);
+			ufbxw_skin_deformer_set_mesh_bind_transform(write_scene, fbx_skin_deformer, mesh_bind_matrix);
+
+			// Set skin name if available
+			String skin_name = gltf_skin->get_name();
+			if (!skin_name.is_empty()) {
+				CharString skin_name_utf8 = skin_name.utf8();
+				ufbxw_set_name_len(write_scene, fbx_skin_deformer.id, skin_name_utf8.get_data(), skin_name_utf8.length());
+			}
+
+			// Store the first deformer as primary for reference
+			if (is_first_mesh) {
+				primary_skin_deformer = fbx_skin_deformer;
+			}
+
+			// Get bone indices and weights from all surfaces of the mesh
+			// Since we combined all surfaces, we need to collect bone data from all surfaces
+			Ref<GLTFMesh> gltf_mesh = state->meshes[associated_mesh_idx];
+			Ref<ImporterMesh> importer_mesh = gltf_mesh.is_valid() ? gltf_mesh->get_mesh() : Ref<ImporterMesh>();
+			PackedInt32Array all_bones;
+			PackedFloat32Array all_weights;
+			int num_weights_per_vertex = 4; // Will be updated by _get_mesh_bone_weights if mesh uses 8 weights
+			bool has_bone_data = false;
+			
+			if (importer_mesh.is_valid()) {
+				// Collect bone data from all surfaces (they should all have the same bone structure)
+				// Check all surfaces to find the maximum num_weights_per_vertex (4 or 8)
+				// Use the first surface that has bone data, but check all to determine if any use 8 weights
+				for (int surface_idx = 0; surface_idx < importer_mesh->get_surface_count(); surface_idx++) {
+					PackedInt32Array bones;
+					PackedFloat32Array weights;
+					int surface_weights_per_vertex = 4;
+					if (_get_mesh_bone_weights(state, associated_mesh_idx, surface_idx, bones, weights, surface_weights_per_vertex)) {
+						// Update to maximum weights per vertex (4 or 8)
+						if (surface_weights_per_vertex > num_weights_per_vertex) {
+							num_weights_per_vertex = surface_weights_per_vertex;
+						}
+						// Use first surface with bone data (but with correct num_weights_per_vertex)
+						if (!has_bone_data) {
+							all_bones = bones;
+							all_weights = weights;
+							has_bone_data = true;
+						}
+					}
 				}
-				
-				// Set skin deformer properties
-				ufbxw_skin_deformer_set_skinning_type(write_scene, fbx_skin_deformer, UFBXW_SKINNING_TYPE_LINEAR);
-
-				// Set mesh bind transform (mesh's transform at bind time)
-				// Note: ufbxw_create_skin_deformer already creates the connection, so we don't need ufbxw_skin_deformer_add_mesh
-				ufbxw_matrix mesh_bind_matrix = _transform_to_ufbxw_matrix(mesh_bind_transform);
-				ufbxw_skin_deformer_set_mesh_bind_transform(write_scene, fbx_skin_deformer, mesh_bind_matrix);
-
-				// Set skin name if available
-				String skin_name = gltf_skin->get_name();
-				if (!skin_name.is_empty()) {
-					CharString skin_name_utf8 = skin_name.utf8();
-					String mesh_suffix = fbx_meshes.size() > 1 ? "_Surface" + itos(surface_idx) : "";
-					CharString full_name_utf8 = (skin_name + mesh_suffix).utf8();
-					ufbxw_set_name_len(write_scene, fbx_skin_deformer.id, full_name_utf8.get_data(), full_name_utf8.length());
-				}
-
-				// Store the first deformer as primary for reference
-				if (is_first_mesh && surface_idx == 0) {
-					primary_skin_deformer = fbx_skin_deformer;
-				}
-
-				// Get bone indices and weights from mesh surface (for weight assignment)
-				PackedInt32Array bones;
-				PackedFloat32Array weights;
-				int num_weights_per_vertex = 4;
-				bool has_bone_data = _get_mesh_bone_weights(state, associated_mesh_idx, surface_idx, bones, weights, num_weights_per_vertex);
+			}
 
 				// Create clusters for each joint in joints_original (matching reader order)
 				// Reader: iterates over fbx_skin->clusters and stores in joints_original order
@@ -3509,11 +3626,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 					if (has_bone_data) {
 						Vector<int32_t> vertex_indices;
 						Vector<ufbxw_real> cluster_weights;
-						int vertex_count = bones.size() / num_weights_per_vertex;
+						int vertex_count = all_bones.size() / num_weights_per_vertex;
 						for (int vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
 							for (int weight_i = 0; weight_i < num_weights_per_vertex; weight_i++) {
-								int mesh_bone_idx = bones[vertex_i * num_weights_per_vertex + weight_i];
-								float weight = weights[vertex_i * num_weights_per_vertex + weight_i];
+								int mesh_bone_idx = all_bones[vertex_i * num_weights_per_vertex + weight_i];
+								float weight = all_weights[vertex_i * num_weights_per_vertex + weight_i];
 								if (weight > 0.0f && mesh_bone_idx >= 0 && mesh_bone_idx < joints.size()) {
 									// Map from joints index to cluster index (joints_original index)
 									GLTFNodeIndex mesh_joint_node = joints[mesh_bone_idx];
@@ -3531,7 +3648,6 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 						}
 					}
 				}
-			}
 			is_first_mesh = false;
 		}
 		// Store the primary skin deformer for reference
