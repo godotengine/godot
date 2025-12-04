@@ -2879,7 +2879,10 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		for (int surface_i = 0; surface_i < importer_mesh->get_surface_count(); surface_i++) {
 			Array surface_arrays = importer_mesh->get_surface_arrays(surface_i);
 
-			ERR_FAIL_INDEX_V(surface_arrays.size(), Mesh::ARRAY_MAX, ERR_INVALID_PARAMETER);
+			// Check if array is valid - get_surface_arrays should return exactly ARRAY_MAX elements
+			if (surface_arrays.size() != Mesh::ARRAY_MAX) {
+				continue; // Invalid array, try next surface
+			}
 
 			// Get vertices - meshes must have vertices
 			Variant vertex_var = surface_arrays[Mesh::ARRAY_VERTEX];
