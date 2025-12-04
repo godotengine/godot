@@ -212,7 +212,10 @@ public:
 
 	template <typename... VarArgs>
 	void instantiate(VarArgs... p_params) {
-		ref(memnew(T(p_params...)));
+		Ref<T> ref = memnew(T(p_params...));
+		// Appropriate the new Ref.
+		reference = ref.reference;
+		ref.reference = nullptr;
 	}
 
 	uint32_t hash() const { return HashMapHasherDefault::hash(reference); }
@@ -223,6 +226,16 @@ public:
 		unref();
 	}
 };
+
+template <typename T>
+struct memnew_result<T, std::enable_if_t<std::is_base_of_v<RefCounted, T>>> {
+	using class_name = Ref<T>;
+};
+
+template <typename T>
+void postinitialize_handler(Ref<T> &p_object) {
+	postinitialize_handler(p_object.ptr());
+}
 
 class WeakRef : public RefCounted {
 	GDCLASS(WeakRef, RefCounted);

@@ -126,12 +126,21 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #define memrealloc(m_mem, m_size) Memory::realloc_static(m_mem, m_size)
 #define memfree(m_mem) Memory::free_static(m_mem)
 
+template <typename T, typename Enable = void>
+struct memnew_result {
+	using class_name = T *;
+};
+
+template <typename T>
+using memnew_result_t = typename memnew_result<T>::class_name;
+
 _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
 
 template <typename T>
-_ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
-	postinitialize_handler(p_obj);
-	return p_obj;
+_ALWAYS_INLINE_ memnew_result_t<T> _post_initialize(T *p_obj) {
+	memnew_result_t<T> result{ p_obj };
+	postinitialize_handler(result);
+	return std::move(result);
 }
 
 #define memnew(m_class) _post_initialize(::new ("") m_class)

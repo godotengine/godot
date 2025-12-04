@@ -121,7 +121,6 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with no
 		CHECK(created->get_int_property() == 12);
 
 		root->queue_free();
-		memdelete(scene);
 	}
 
 	SUBCASE("with node value") {
@@ -151,7 +150,6 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with no
 		CHECK_FALSE(created->get_reference_property().identity_compare(referenced));
 
 		root->queue_free();
-		memdelete(scene);
 	}
 
 	SUBCASE("with node-array value") {
@@ -199,7 +197,6 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with no
 			CHECK(node_found);
 		}
 		root->queue_free();
-		memdelete(scene);
 	}
 }
 
@@ -228,7 +225,6 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with ov
 		CHECK(created->get_int_property() == 45);
 
 		root->queue_free();
-		memdelete(scene);
 	}
 
 	SUBCASE("with node values") {
@@ -261,7 +257,6 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with ov
 		CHECK_FALSE(created->get_reference_property().identity_compare(referenced));
 
 		root->queue_free();
-		memdelete(scene);
 	}
 
 	SUBCASE("with node-array value") {
@@ -328,7 +323,6 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with ov
 			CHECK(node_found);
 		}
 		root->queue_free();
-		memdelete(scene);
 	}
 }
 

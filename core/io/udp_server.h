@@ -42,7 +42,7 @@ protected:
 	};
 
 	struct Peer {
-		PacketPeerUDP *peer = nullptr;
+		Ref<PacketPeerUDP> peer;
 		IPAddress ip;
 		uint16_t port = 0;
 
