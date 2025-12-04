@@ -3522,7 +3522,6 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 					}
 				}
 			}
-			}
 		}
 		// Store the primary skin deformer for reference
 		if (primary_skin_deformer.id != 0) {
