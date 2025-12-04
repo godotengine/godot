@@ -42,4 +42,3 @@ ufbxw_add_blob(scene, texture_id, "Content", UFBXW_PROP_TYPE_BLOB, content_blob)
 
 ### Status
 Currently applied directly to thirdparty/ufbx/ufbx_write.h and ufbx_write.c in this repository.
-

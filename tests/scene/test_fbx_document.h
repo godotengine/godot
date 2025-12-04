@@ -117,7 +117,7 @@ void test_fbx_export_ascii(Node *p_node) {
 	REQUIRE(file.is_valid());
 	int64_t file_size = file->get_length();
 	CHECK(file_size > 0);
-	
+
 	// ASCII FBX files should start with specific header
 	// Binary FBX files start with specific bytes, ASCII files start with text
 	String first_line = file->get_line();
@@ -184,4 +184,3 @@ TEST_CASE("[SceneTree][FBXDocument] Export scene with mesh to FBX") {
 } // namespace TestFBXDocument
 
 #endif // UFBX_WRITE_AVAILABLE
-
