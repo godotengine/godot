@@ -72,6 +72,15 @@
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
 			</description>
 		</method>
+		<method name="intersect_ray_typed">
+			<return type="bool" />
+			<param index="0" name="parameters" type="PhysicsRayQueryParameters2D" />
+			<param index="1" name="result" type="PhysicsRayIntersectionResult2D" />
+			<description>
+				Intersects a ray in a given space. The ray origin, direction, and all other parameters are defined through [PhysicsRayQueryParameters2D].
+				If the ray hits a shape, this method returns [code]true[/code] and writes the intersection information into the [PhysicsRayIntersectionResult2D] object passed in [code skip-lint]result[/code]. If nothing is hit, it returns [code]false[/code].
+			</description>
+		</method>
 		<method name="intersect_shape">
 			<return type="Dictionary[]" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
