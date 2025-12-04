@@ -998,7 +998,7 @@ void FileDialog::update_file_list() {
 				thumbnail = vicon;
 			}
 			if (thumbnail.is_null()) {
-				thumbnail = theme_cache.file;
+				thumbnail = theme_cache.file_thumbnail;
 			}
 			file_list->set_item_icon(-1, thumbnail);
 			if (icon.is_valid()) {
