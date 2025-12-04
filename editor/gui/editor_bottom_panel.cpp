@@ -79,7 +79,7 @@ void EditorBottomPanel::_theme_changed() {
 }
 
 void EditorBottomPanel::set_bottom_panel_offset(int p_offset) {
-	if (EditorNode::get_singleton()->is_bottom_dock_tab_individual_height()){
+	if (EditorNode::get_singleton()->is_bottom_dock_tab_individual_height()) {
 		// Store the individual offsets
 		EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
 		if (current_tab) {
@@ -143,7 +143,7 @@ void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, con
 }
 
 void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section) {
-	if (EditorNode::get_singleton()->is_bottom_dock_tab_individual_height()){
+	if (EditorNode::get_singleton()->is_bottom_dock_tab_individual_height()) {
 		// Load the individual offsets
 		const Dictionary offsets = p_config_file->get_value(p_section, "bottom_panel_offsets", Dictionary());
 		const LocalVector<Variant> offset_list = offsets.get_key_list();

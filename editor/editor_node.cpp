@@ -9225,7 +9225,6 @@ EditorNode::EditorNode() {
 		}
 	}
 
-
 	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
 }
