@@ -3359,20 +3359,34 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Build bone index mappings once per skin (not per mesh surface)
 		// Strategy:
 		// 1. Build a map from GLTFNodeIndex to index in joints_original
-		// 2. Use Skin resource to map Skeleton3D bone index → bind_i (index in joints_original)
-		// 3. For bone indices that are indices into joints array, map to joints_original index
-		// 4. For bone indices that are GLTFNodeIndex values, map directly to joints_original index
+		// 2. Use joint_i_to_bone_i (primary) to map Skeleton3D bone index → joint index (bind_i = index in joints_original)
+		// 3. Use Skin resource (fallback) to map Skeleton3D bone index → bind_i
+		// 4. For bone indices that are indices into joints array, map to joints_original index
+		// 5. For bone indices that are GLTFNodeIndex values, map directly to joints_original index
 		HashMap<GLTFNodeIndex, int> joint_node_to_original_idx;
 		for (int orig_i = 0; orig_i < joints_original.size(); orig_i++) {
 			joint_node_to_original_idx[joints_original[orig_i]] = orig_i;
 		}
 		
+		// Primary mapping: Use joint_i_to_bone_i in reverse (bone_i → joint_i)
+		// joint_i_to_bone_i maps: joint index (bind_i, index in joints_original) → Skeleton3D bone index
+		// We need the reverse: Skeleton3D bone index → joint index (bind_i)
 		HashMap<int, int> bone_idx_to_joint_idx;
+		Dictionary joint_i_to_bone_i_dict = gltf_skin->get_joint_i_to_bone_i();
+		for (const KeyValue<Variant, Variant> &kv : joint_i_to_bone_i_dict) {
+			int joint_i = kv.key; // joint index (bind_i, index in joints_original)
+			int bone_i = kv.value; // Skeleton3D bone index
+			if (joint_i >= 0 && joint_i < joints_original.size() && bone_i >= 0) {
+				bone_idx_to_joint_idx[bone_i] = joint_i;
+			}
+		}
+		
+		// Fallback: Use Skin resource if joint_i_to_bone_i doesn't have all mappings
 		Ref<Skin> godot_skin = gltf_skin->get_godot_skin();
 		if (godot_skin.is_valid()) {
 			for (int bind_i = 0; bind_i < godot_skin->get_bind_count(); bind_i++) {
 				int bone_idx = godot_skin->get_bind_bone(bind_i);
-				if (bone_idx >= 0 && bind_i < joints_original.size()) {
+				if (bone_idx >= 0 && bind_i < joints_original.size() && !bone_idx_to_joint_idx.has(bone_idx)) {
 					// bind_i is the index in joints_original (cluster index)
 					bone_idx_to_joint_idx[bone_idx] = bind_i;
 				}
