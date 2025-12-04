@@ -132,6 +132,8 @@ int main(int argc, char **argv) {
 
 	os->run();
 
+	// Note: `os->run()` will never return if `OS_MacOS_NSApp` is used. Use `OS_MacOS_NSApp::cleanup()` for cleanup.
+
 	int exit_code = os->get_exit_code();
 
 	memdelete(os);
