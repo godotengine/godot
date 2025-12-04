@@ -617,6 +617,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	AnimationBezierTrackEdit *bezier_edit = nullptr;
 	VBoxContainer *timeline_vbox = nullptr;
 
+	Control *timeline_rtl_spacer = nullptr;
+	void _update_timeline_rtl_spacer();
+
 	VBoxContainer *info_message_vbox = nullptr;
 	Label *info_message = nullptr;
 	Button *add_animation_player = nullptr;

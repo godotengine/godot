@@ -36,6 +36,7 @@
 #include "editor/inspector/editor_inspector.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "servers/rendering/shader_language.h"
 
 static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
@@ -487,12 +488,17 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	add_menu_hb->add_child(variable_add);
 	variable_add->connect(SceneStringName(pressed), callable_mp(this, &ShaderGlobalsEditor::_variable_added));
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	inspector = memnew(EditorInspector);
-	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
-	add_child(inspector);
 	inspector->set_use_wide_editors(true);
 	inspector->set_property_name_style(EditorPropertyNameProcessor::STYLE_RAW);
 	inspector->set_use_deletable_properties(true);
+	inspector->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
+	mc->add_child(inspector);
 	inspector->connect("property_deleted", callable_mp(this, &ShaderGlobalsEditor::_variable_deleted), CONNECT_DEFERRED);
 
 	interface = memnew(ShaderGlobalsEditorInterface);

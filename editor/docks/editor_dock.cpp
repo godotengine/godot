@@ -105,7 +105,6 @@ void EditorDock::_bind_methods() {
 }
 
 EditorDock::EditorDock() {
-	set_clip_contents(true);
 	add_user_signal(MethodInfo("tab_style_changed"));
 }
 

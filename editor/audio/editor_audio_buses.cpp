@@ -1387,10 +1387,16 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb->add_child(_new);
 	_new->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_new_layout));
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(mc);
+
 	bus_scroll = memnew(ScrollContainer);
-	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	bus_scroll->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
-	main_vb->add_child(bus_scroll);
+	mc->add_child(bus_scroll);
+
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 	bus_scroll->add_child(bus_hb);
