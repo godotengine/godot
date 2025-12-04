@@ -2701,6 +2701,54 @@ void FBXDocument::_apply_scale_to_gltf_state(Ref<GLTFState> p_state, const Vecto
 // NOTE: We now use ufbxw_save_file() directly instead of stream callbacks
 // to avoid all callback parameter corruption issues.
 
+// Helper: Get bone/weight data from mesh surface
+static bool _get_mesh_bone_weights(Ref<GLTFState> state, GLTFMeshIndex mesh_idx, int surface_idx, 
+		PackedInt32Array &r_bones, PackedFloat32Array &r_weights, int &r_weights_per_vertex) {
+	if (mesh_idx < 0 || mesh_idx >= state->meshes.size()) {
+		return false;
+	}
+	Ref<GLTFMesh> gltf_mesh = state->meshes[mesh_idx];
+	if (gltf_mesh.is_null()) {
+		return false;
+	}
+	Ref<ImporterMesh> importer_mesh = gltf_mesh->get_mesh();
+	if (importer_mesh.is_null() || surface_idx >= importer_mesh->get_surface_count()) {
+		return false;
+	}
+	Array surface_arrays = importer_mesh->get_surface_arrays(surface_idx);
+	if (surface_arrays.size() <= Mesh::ARRAY_BONES || surface_arrays.size() <= Mesh::ARRAY_WEIGHTS) {
+		return false;
+	}
+	Variant bones_variant = surface_arrays[Mesh::ARRAY_BONES];
+	Variant weights_variant = surface_arrays[Mesh::ARRAY_WEIGHTS];
+	if (bones_variant.get_type() != Variant::PACKED_INT32_ARRAY || weights_variant.get_type() != Variant::PACKED_FLOAT32_ARRAY) {
+		return false;
+	}
+	r_bones = bones_variant;
+	r_weights = weights_variant;
+	if (r_bones.size() != r_weights.size() || r_bones.size() == 0) {
+		return false;
+	}
+	uint64_t format = importer_mesh->get_surface_format(surface_idx);
+	r_weights_per_vertex = (format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+	return true;
+}
+
+// Helper: Compute node world transform
+static Transform3D _compute_node_world_transform(Ref<GLTFState> state, GLTFNodeIndex node_idx) {
+	Transform3D world_transform = Transform3D();
+	GLTFNodeIndex current = node_idx;
+	while (current >= 0 && current < state->nodes.size()) {
+		Ref<GLTFNode> node = state->nodes[current];
+		if (node.is_null()) {
+			break;
+		}
+		world_transform = node->transform * world_transform;
+		current = node->parent;
+	}
+	return world_transform;
+}
+
 Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 #ifdef UFBX_WRITE_AVAILABLE
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
@@ -3394,43 +3442,20 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				primary_skin_deformer = fbx_skin_deformer;
 			}
 
-			// For FBX, we don't use skeletons - treat all nodes as regular nodes
-			// Create clusters only for nodes that actually have weights in the mesh
-			// First, collect all unique bone indices used in this mesh surface
+			// Collect bone indices and weights from mesh surface
 			HashSet<int> used_bone_indices;
-			if (associated_mesh_idx >= 0 && associated_mesh_idx < state->meshes.size()) {
-				Ref<GLTFMesh> gltf_mesh = state->meshes[associated_mesh_idx];
-				if (!gltf_mesh.is_null()) {
-					Ref<ImporterMesh> importer_mesh = gltf_mesh->get_mesh();
-					if (!importer_mesh.is_null() && mesh_idx < importer_mesh->get_surface_count()) {
-						Array surface_arrays = importer_mesh->get_surface_arrays(mesh_idx);
-						if (surface_arrays.size() > Mesh::ARRAY_BONES && surface_arrays.size() > Mesh::ARRAY_WEIGHTS) {
-							Variant bones_variant = surface_arrays[Mesh::ARRAY_BONES];
-							Variant weights_variant = surface_arrays[Mesh::ARRAY_WEIGHTS];
-
-							if (bones_variant.get_type() == Variant::PACKED_INT32_ARRAY && weights_variant.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
-								PackedInt32Array bones = bones_variant;
-								PackedFloat32Array weights = weights_variant;
-
-								if (bones.size() == weights.size() && bones.size() > 0) {
-									int num_weights_per_vertex = 4;
-									uint64_t format = importer_mesh->get_surface_format(mesh_idx);
-									if (format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) {
-										num_weights_per_vertex = 8;
-									}
-
-									int vertex_count = bones.size() / num_weights_per_vertex;
-									for (int vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
-										for (int weight_i = 0; weight_i < num_weights_per_vertex; weight_i++) {
-											int bone_idx = bones[vertex_i * num_weights_per_vertex + weight_i];
-											float weight = weights[vertex_i * num_weights_per_vertex + weight_i];
-											if (weight > 0.0f && bone_idx >= 0 && bone_idx < joints.size()) {
-												used_bone_indices.insert(bone_idx);
-											}
-										}
-									}
-								}
-							}
+			PackedInt32Array bones;
+			PackedFloat32Array weights;
+			int num_weights_per_vertex = 4;
+			bool has_bone_data = _get_mesh_bone_weights(state, associated_mesh_idx, mesh_idx, bones, weights, num_weights_per_vertex);
+			if (has_bone_data) {
+				int vertex_count = bones.size() / num_weights_per_vertex;
+				for (int vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+					for (int weight_i = 0; weight_i < num_weights_per_vertex; weight_i++) {
+						int bone_idx = bones[vertex_i * num_weights_per_vertex + weight_i];
+						float weight = weights[vertex_i * num_weights_per_vertex + weight_i];
+						if (weight > 0.0f && bone_idx >= 0 && bone_idx < joints.size()) {
+							used_bone_indices.insert(bone_idx);
 						}
 					}
 				}
@@ -3464,7 +3489,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				// Explicitly set the bone node for this cluster (ensures proper linking)
 				ufbxw_skin_cluster_set_node(write_scene, fbx_cluster, fbx_bone_node);
 
-				// Get inverse bind matrix - try to find it from joints_original, or compute from node transform
+				// Get inverse bind matrix
 				Transform3D inverse_bind = Transform3D();
 				if (node_to_inverse_bind_idx.has(joint_node_idx)) {
 					int bind_idx = node_to_inverse_bind_idx[joint_node_idx];
@@ -3472,26 +3497,10 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 						inverse_bind = inverse_binds[bind_idx];
 					}
 				}
-				
-				// If no inverse bind found, compute from node's world transform
+				// Compute from world transform if not found
 				if (inverse_bind == Transform3D()) {
-					Ref<GLTFNode> gltf_node = state->nodes[joint_node_idx];
-					if (!gltf_node.is_null()) {
-						// Compute world transform of the bone node
-						Transform3D bone_world_transform = gltf_node->transform;
-						GLTFNodeIndex parent = gltf_node->parent;
-						while (parent >= 0 && parent < state->nodes.size()) {
-							Ref<GLTFNode> parent_node = state->nodes[parent];
-							if (parent_node.is_null()) {
-								break;
-							}
-							bone_world_transform = parent_node->transform * bone_world_transform;
-							parent = parent_node->parent;
-						}
-						// inverse_bind = (mesh_bind_transform.inverse() * bone_world_transform).inverse()
-						// = bone_world_transform.inverse() * mesh_bind_transform
-						inverse_bind = bone_world_transform.inverse() * mesh_bind_transform;
-					}
+					Transform3D bone_world_transform = _compute_node_world_transform(state, joint_node_idx);
+					inverse_bind = bone_world_transform.inverse() * mesh_bind_transform;
 				}
 
 				Transform3D geometry_to_bone = inverse_bind.inverse();
@@ -3500,69 +3509,25 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				ufbxw_matrix fbx_matrix = _transform_to_ufbxw_matrix(geometry_to_bone);
 				ufbxw_skin_cluster_set_transform(write_scene, fbx_cluster, fbx_matrix);
 
-				// Extract and set vertex weights from mesh data for this cluster
-				// Use the surface corresponding to this mesh index
-				if (associated_mesh_idx >= 0 && associated_mesh_idx < state->meshes.size()) {
-					Ref<GLTFMesh> gltf_mesh = state->meshes[associated_mesh_idx];
-					if (!gltf_mesh.is_null()) {
-						Ref<ImporterMesh> importer_mesh = gltf_mesh->get_mesh();
-						if (!importer_mesh.is_null() && mesh_idx < importer_mesh->get_surface_count()) {
-							// Get bone and weight arrays from the surface corresponding to this mesh
-							Array surface_arrays = importer_mesh->get_surface_arrays(mesh_idx);
-							if (surface_arrays.size() > Mesh::ARRAY_BONES && surface_arrays.size() > Mesh::ARRAY_WEIGHTS) {
-								Variant bones_variant = surface_arrays[Mesh::ARRAY_BONES];
-								Variant weights_variant = surface_arrays[Mesh::ARRAY_WEIGHTS];
-
-								if (bones_variant.get_type() == Variant::PACKED_INT32_ARRAY && weights_variant.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
-									PackedInt32Array bones = bones_variant;
-									PackedFloat32Array weights = weights_variant;
-
-									if (bones.size() == weights.size() && bones.size() > 0) {
-										// Determine number of weights per vertex (4 or 8)
-										int num_weights_per_vertex = 4;
-										uint64_t format = importer_mesh->get_surface_format(mesh_idx);
-										if (format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) {
-											num_weights_per_vertex = 8;
-										}
-
-										int vertex_count = bones.size() / num_weights_per_vertex;
-
-										// Collect vertex indices and weights for this cluster
-										Vector<int32_t> vertex_indices;
-										Vector<ufbxw_real> cluster_weights;
-
-										for (int vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
-											for (int weight_i = 0; weight_i < num_weights_per_vertex; weight_i++) {
-												int mesh_bone_idx = bones[vertex_i * num_weights_per_vertex + weight_i];
-												float weight = weights[vertex_i * num_weights_per_vertex + weight_i];
-
-												if (weight <= 0.0f) {
-													continue;
-												}
-
-												// Direct match: bone index from mesh matches the cluster's bone index
-												if (mesh_bone_idx == bone_idx) {
-													vertex_indices.push_back(vertex_i);
-													cluster_weights.push_back((ufbxw_real)weight);
-												}
-											}
-										}
-
-										// Set weights if we have any
-										if (vertex_indices.size() > 0) {
-											if (vertex_indices.size() != cluster_weights.size()) {
-												ERR_PRINT("FBX export: Vertex indices and weights arrays size mismatch");
-												continue;
-											}
-											ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, vertex_indices.ptr(), vertex_indices.size());
-											ufbxw_real_buffer weights_buffer = ufbxw_copy_real_array(write_scene, cluster_weights.ptr(), cluster_weights.size());
-											ufbxw_skin_cluster_set_weights(write_scene, fbx_cluster, indices_buffer, weights_buffer);
-											print_verbose(vformat("FBX export: Set %d weights for cluster (bone_idx %d, node %d)", vertex_indices.size(), bone_idx, joint_node_idx));
-										}
-									}
-								}
+				// Extract and set vertex weights for this cluster
+				if (has_bone_data) {
+					Vector<int32_t> vertex_indices;
+					Vector<ufbxw_real> cluster_weights;
+					int vertex_count = bones.size() / num_weights_per_vertex;
+					for (int vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+						for (int weight_i = 0; weight_i < num_weights_per_vertex; weight_i++) {
+							int mesh_bone_idx = bones[vertex_i * num_weights_per_vertex + weight_i];
+							float weight = weights[vertex_i * num_weights_per_vertex + weight_i];
+							if (weight > 0.0f && mesh_bone_idx == bone_idx) {
+								vertex_indices.push_back(vertex_i);
+								cluster_weights.push_back((ufbxw_real)weight);
 							}
 						}
+					}
+					if (vertex_indices.size() > 0) {
+						ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, vertex_indices.ptr(), vertex_indices.size());
+						ufbxw_real_buffer weights_buffer = ufbxw_copy_real_array(write_scene, cluster_weights.ptr(), cluster_weights.size());
+						ufbxw_skin_cluster_set_weights(write_scene, fbx_cluster, indices_buffer, weights_buffer);
 					}
 				}
 			}
