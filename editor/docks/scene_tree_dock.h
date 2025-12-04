@@ -48,6 +48,7 @@ class ShaderMaterial;
 class StyleBoxFlat;
 class TextureRect;
 class VBoxContainer;
+class MultiNodeEdit;
 
 class SceneTreeDock : public EditorDock {
 	GDCLASS(SceneTreeDock, EditorDock);
@@ -182,7 +183,9 @@ class SceneTreeDock : public EditorDock {
 
 	void _create();
 	Node *_do_create(Node *p_parent);
+	Node *_do_create_multi(Ref<MultiNodeEdit> p_parent);
 	void _post_do_create(Node *p_child);
+	void _post_do_create_multi(Ref<MultiNodeEdit> p_child);
 	Node *scene_root = nullptr;
 	Node *edited_scene = nullptr;
 	Node *pending_click_select = nullptr;
