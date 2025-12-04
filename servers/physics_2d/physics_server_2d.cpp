@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "physics_server_2d.h"
+#include "physics_server_2d.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
@@ -219,6 +220,48 @@ void PhysicsRayQueryParameters2D::_bind_methods() {
 
 ///////////////////////////////////////////////////////
 
+Vector2 PhysicsRayIntersectionResult2D::get_position() const {
+	return result.position;
+}
+
+Vector2 PhysicsRayIntersectionResult2D::get_normal() const {
+	return result.normal;
+}
+
+RID PhysicsRayIntersectionResult2D::get_collider_rid() const {
+	return result.rid;
+}
+
+ObjectID PhysicsRayIntersectionResult2D::get_collider_id() const {
+	return result.collider_id;
+}
+
+Object *PhysicsRayIntersectionResult2D::get_collider() const {
+	return result.collider;
+}
+
+int PhysicsRayIntersectionResult2D::get_collider_shape() const {
+	return result.shape;
+}
+
+void PhysicsRayIntersectionResult2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_position"), &PhysicsRayIntersectionResult2D::get_position);
+	ClassDB::bind_method(D_METHOD("get_normal"), &PhysicsRayIntersectionResult2D::get_normal);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &PhysicsRayIntersectionResult2D::get_collider_rid);
+	ClassDB::bind_method(D_METHOD("get_collider_id"), &PhysicsRayIntersectionResult2D::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider"), &PhysicsRayIntersectionResult2D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_shape"), &PhysicsRayIntersectionResult2D::get_collider_shape);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "normal"), "", "get_normal");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "collider_rid"), "", "get_collider_rid");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id"), "", "get_collider_id");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
+}
+
+///////////////////////////////////////////////////////
+
 void PhysicsPointQueryParameters2D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
@@ -336,25 +379,11 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 
 ///////////////////////////////////////////////////////
 
-Dictionary PhysicsDirectSpaceState2D::_intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query) {
-	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, Dictionary());
+bool PhysicsDirectSpaceState2D::_intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult2D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
 
-	RayResult result;
-	bool res = intersect_ray(p_ray_query->get_parameters(), result);
-
-	if (!res) {
-		return Dictionary();
-	}
-
-	Dictionary d;
-	d["position"] = result.position;
-	d["normal"] = result.normal;
-	d["collider_id"] = result.collider_id;
-	d["collider"] = result.collider;
-	d["shape"] = result.shape;
-	d["rid"] = result.rid;
-
-	return d;
+	return intersect_ray(p_ray_query->get_parameters(), *p_result->get_result_ptr());
 }
 
 TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_point(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results) {
@@ -460,8 +489,8 @@ PhysicsDirectSpaceState2D::PhysicsDirectSpaceState2D() {
 }
 
 void PhysicsDirectSpaceState2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters", "result"), &PhysicsDirectSpaceState2D::_intersect_ray);
 	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_point, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState2D::_intersect_ray);
 	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState2D::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_collide_shape, DEFVAL(32));

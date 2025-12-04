@@ -118,13 +118,14 @@ public:
 };
 
 class PhysicsRayQueryParameters2D;
+class PhysicsRayIntersectionResult2D;
 class PhysicsPointQueryParameters2D;
 class PhysicsShapeQueryParameters2D;
 
 class PhysicsDirectSpaceState2D : public Object {
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
 
-	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query);
+	bool _intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult2D> rp_result);
 	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
@@ -133,6 +134,12 @@ class PhysicsDirectSpaceState2D : public Object {
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	Dictionary _intersect_ray_bind_compat_113970(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query);
+
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	struct RayParameters {
@@ -657,6 +664,25 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+};
+
+class PhysicsRayIntersectionResult2D : public RefCounted {
+	GDCLASS(PhysicsRayIntersectionResult2D, RefCounted);
+
+	PhysicsDirectSpaceState2D::RayResult result;
+
+protected:
+	static void _bind_methods();
+
+public:
+	PhysicsDirectSpaceState2D::RayResult *get_result_ptr() { return &result; }
+
+	Vector2 get_position() const;
+	Vector2 get_normal() const;
+	RID get_collider_rid() const;
+	ObjectID get_collider_id() const;
+	Object *get_collider() const;
+	int get_collider_shape() const;
 };
 
 class PhysicsPointQueryParameters2D : public RefCounted {

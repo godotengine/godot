@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsRayIntersectionResult2D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores the result of a ray intersection query.
+	</brief_description>
+	<description>
+		This object contains the intersection information produced by [method PhysicsDirectSpaceState2D.intersect_ray].
+		After calling [method PhysicsDirectSpaceState2D.intersect_ray], the fields of this object will be populated with the hit information if the ray intersects a shape. If no intersection occurred, the values remain unchanged from the previous state.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="collider" type="Object" setter="" getter="get_collider">
+			The intersected object instance.
+		</member>
+		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
+			The unique ID of the intersected object.
+		</member>
+		<member name="collider_rid" type="RID" setter="" getter="get_collider_rid" default="RID()">
+			The [RID] of the intersected object.
+		</member>
+		<member name="collider_shape" type="int" setter="" getter="get_collider_shape" default="0">
+			The shape index of the intersected object's shape.
+		</member>
+		<member name="normal" type="Vector2" setter="" getter="get_normal" default="Vector2(0, 0)">
+			The surface normal at the intersection point. If the ray starts inside a shape and [member PhysicsRayQueryParameters2D.hit_from_inside] is [code]true[/code], this value may be [code]Vector2(0, 0)[/code].
+		</member>
+		<member name="position" type="Vector2" setter="" getter="get_position" default="Vector2(0, 0)">
+			The intersection point.
+		</member>
+	</members>
+</class>
