@@ -33,6 +33,7 @@
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
 #include "editor/docks/editor_dock_manager.h"
+#include "editor/gui/window_wrapper.h"
 
 void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
 	ERR_FAIL_COND(p_slot < EditorPlugin::DOCK_SLOT_NONE || p_slot >= EditorPlugin::DOCK_SLOT_MAX);
@@ -107,6 +108,15 @@ void EditorDock::_bind_methods() {
 EditorDock::EditorDock() {
 	set_clip_contents(true);
 	add_user_signal(MethodInfo("tab_style_changed"));
+}
+
+void EditorDock::_restore_to_saved_window() {
+	ERR_FAIL_NULL(dock_window);
+
+	dock_window->restore_window_from_saved_position(
+			window_dump.get("window_rect", Rect2i()),
+			window_dump.get("window_screen", -1),
+			window_dump.get("window_screen_rect", Rect2i()));
 }
 
 void EditorDock::open() {
