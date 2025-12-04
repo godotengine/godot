@@ -65,9 +65,10 @@ layout(push_constant, std430) uniform Params {
 	uint motion_vectors_current_offset;
 	uint flags;
 
-	mat4 inv_emission_transform;
+	float inv_emission_transform[12];
 }
 params;
+
 
 #define TRANSFORM_ALIGN_DISABLED 0
 #define TRANSFORM_ALIGN_Z_BILLBOARD 1
@@ -206,6 +207,11 @@ void main() {
 		if (bool(params.flags & PARAMS_FLAG_COPY_MODE_2D)) {
 			// In global mode, bring 2D particles to local coordinates
 			// as they will be drawn with the node position as origin.
+			mat4 inv_emission_transform;
+			inv_emission_transform[0] = vec4(params.inv_emission_transform[0], params.inv_emission_transform[1], params.inv_emission_transform[2], 0.0);
+			inv_emission_transform[1] = vec4(params.inv_emission_transform[3], params.inv_emission_transform[4], params.inv_emission_transform[5], 0.0);
+			inv_emission_transform[2] = vec4(params.inv_emission_transform[6], params.inv_emission_transform[7], params.inv_emission_transform[8],0.0);
+			inv_emission_transform[3] = vec4(params.inv_emission_transform[9], params.inv_emission_transform[10], params.inv_emission_transform[11] ,1.0);
 			txform = params.inv_emission_transform * txform;
 		}
 	} else {

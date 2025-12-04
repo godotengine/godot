@@ -315,7 +315,7 @@ private:
 				uint32_t copy_mode_2d : 1;
 			};
 
-			float inv_emission_transform[16];
+			float inv_emission_transform[12];
 		};
 
 		enum {

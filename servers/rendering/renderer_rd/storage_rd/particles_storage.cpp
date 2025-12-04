@@ -1619,8 +1619,20 @@ void ParticlesStorage::update_particles() {
 				// So, we need to pass the inverse of the emission transform to bring the
 				// particles to local coordinates before drawing.
 				Transform3D inv = particles->emission_transform.affine_inverse();
-				RendererRD::MaterialStorage::store_transform(inv, copy_push_constant.inv_emission_transform);
-			}
+				//RendererRD::MaterialStorage::store_transform(inv, copy_push_constant.inv_emission_transform);
+				copy_push_constant.inv_emission_transform[0] = inv.basis.rows[0][0];
+				copy_push_constant.inv_emission_transform[1] = inv.basis.rows[1][0];
+				copy_push_constant.inv_emission_transform[2] = inv.basis.rows[2][0];
+				copy_push_constant.inv_emission_transform[3] = inv.basis.rows[0][1];
+				copy_push_constant.inv_emission_transform[4] = inv.basis.rows[1][1];
+				copy_push_constant.inv_emission_transform[5] = inv.basis.rows[2][1];
+				copy_push_constant.inv_emission_transform[6] = inv.basis.rows[0][2];
+				copy_push_constant.inv_emission_transform[7] = inv.basis.rows[1][2];
+				copy_push_constant.inv_emission_transform[8] = inv.basis.rows[2][2];
+				copy_push_constant.inv_emission_transform[9] = inv.origin.x;
+				copy_push_constant.inv_emission_transform[10] = inv.origin.y;
+				copy_push_constant.inv_emission_transform[11] = inv.origin.z;
+				}
 
 			copy_push_constant.total_particles = total_amount;
 			copy_push_constant.frame_remainder = particles->interpolate ? particles->frame_remainder : 0.0;
