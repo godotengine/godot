@@ -1687,7 +1687,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(Tex
 					uav_desc.Texture2DArray.ArraySize = 1;
 					uav_desc.Texture2DArray.PlaneSlice = 0;
 				} else if ((srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY || (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DMS && p_layer))) {
-					srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+					srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY;
 					srv_desc.Texture2DMSArray.FirstArraySlice = p_layer;
 					srv_desc.Texture2DMSArray.ArraySize = 1;
 
