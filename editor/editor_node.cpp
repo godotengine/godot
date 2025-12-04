@@ -7764,7 +7764,6 @@ void EditorNode::_update_main_menu_type() {
 
 #ifdef ANDROID_ENABLED
 		// Align main menu icon visually with TouchActionsPanel buttons.
-		main_menu_button->get_popup()->add_theme_constant_override("v_separation", 16 * EDSCALE);
 		menu_btn_spacer = memnew(Control);
 		menu_btn_spacer->set_custom_minimum_size(Vector2(8, 0) * EDSCALE);
 		title_bar->add_child(menu_btn_spacer);
