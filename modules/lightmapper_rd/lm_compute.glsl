@@ -68,6 +68,10 @@ layout(rgba8, set = 1, binding = 5) uniform restrict writeonly image2DArray shad
 layout(set = 1, binding = 5) uniform texture2D environment;
 #endif
 
+#if defined(MODE_DIRECT_LIGHT)
+layout(set = 1, binding = 6) uniform texture2D area_light_atlas;
+#endif
+
 #if defined(MODE_DILATE) || defined(MODE_DENOISE) || defined(MODE_PACK_L1_COEFFS)
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2DArray dest_light;
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
