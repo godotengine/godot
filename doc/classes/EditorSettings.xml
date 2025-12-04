@@ -914,6 +914,9 @@
 		<member name="interface/editor/bottom_dock_tab_style" type="int" setter="" getter="">
 			Tab style of editor docks located at the bottom.
 		</member>
+		<member name="interface/editor/bottom_dock_tab_individual_height" type="bool" setter="" getter="">
+			If the editor docks located at the bottom should have individual heights.
+		</member>
 		<member name="interface/editor/code_font" type="String" setter="" getter="">
 			The font to use for the script editor. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 		</member>

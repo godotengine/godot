@@ -80,6 +80,7 @@ public:
 	void toggle_last_opened_bottom_panel();
 	void set_expanded(bool p_expanded);
 	void _theme_changed();
+	void _editor_settings_changed();
 
 	void set_bottom_panel_offset(int p_offset);
 	int get_bottom_panel_offset();
