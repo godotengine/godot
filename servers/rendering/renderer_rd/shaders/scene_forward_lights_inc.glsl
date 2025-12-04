@@ -920,6 +920,13 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			diffuse_light, specular_light);
 }
 
+float acos_approx(float p_x) {
+	float x = abs(p_x);
+	float res = -0.156583f * x + (M_PI / 2.0);
+	res *= sqrt(1.0f - x);
+	return (p_x >= 0) ? res : M_PI - res;
+}
+
 float integrate_edge_hill(vec3 p0, vec3 p1) {
 	// Approximation suggested by Hill and Heitz, calculating the integral of the spherical cosine distribution over the line between p0 and p1.
 	// Runs faster than the exact formula of Baum et al. (1989).
@@ -1335,7 +1342,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	specular_light = hvec3(specular_light_highp);
 
 #else
-	half theta = acos(dot(normal, eye_vec));
+	half theta = acos_approx(dot(normal, eye_vec));
 
 	vec4 M_brdf_abcd;
 	vec3 M_brdf_e_mag_fres;
