@@ -100,11 +100,4 @@ public:
 			HashMap<GLTFNodeIndex, Node *> &r_scene_nodes,
 			int p_naming_version);
 	static Error _create_skins(Vector<Ref<GLTFSkin>> &skins, Vector<Ref<GLTFNode>> &nodes, bool use_named_skin_binds, HashSet<String> &unique_names);
-	static int _find_joint_original_index(
-			const Vector<Ref<GLTFNode>> &r_nodes,
-			const Ref<GLTFSkin> &p_skin,
-			const SkinNodeIndex p_node_index);
-	static HashMap<int, int> _build_joints_to_original_mapping(
-			const Vector<Ref<GLTFNode>> &r_nodes,
-			const Ref<GLTFSkin> &p_skin);
 };

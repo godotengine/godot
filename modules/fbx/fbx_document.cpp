@@ -2718,17 +2718,6 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		return err;
 	}
 
-	// Expand and verify skins (same as GLTF import does)
-	// This ensures joints array is properly expanded with intermediate nodes
-	for (int i = 0; i < state->skins.size(); ++i) {
-		Ref<GLTFSkin> skin = state->skins.write[i];
-		ERR_FAIL_COND_V(skin.is_null(), ERR_INVALID_DATA);
-		// Expand the skin to capture all the extra non-joints that lie in between the actual joints,
-		// and expand the hierarchy to ensure multi-rooted trees lie on the same height level
-		ERR_FAIL_COND_V(SkinTool::_expand_skin(state->nodes, skin), ERR_INVALID_DATA);
-		ERR_FAIL_COND_V(SkinTool::_verify_skin(state->nodes, skin), ERR_INVALID_DATA);
-	}
-
 	// Apply scale to convert from meters (Godot) to centimeters (FBX default)
 	// This uses the same approach as Godot's import scale application
 	// Scale factor: 1 meter = 100 centimeters
