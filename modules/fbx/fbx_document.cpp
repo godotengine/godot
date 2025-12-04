@@ -3445,6 +3445,13 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				}
 
 				ufbxw_node fbx_bone_node = gltf_to_fbx_nodes[joint_node_idx];
+				
+				// Debug: show which bone should map to this joint
+				int expected_bone_idx = -1;
+				Dictionary joint_i_to_bone_i_dict = gltf_skin->get_joint_i_to_bone_i();
+				if (joint_i_to_bone_i_dict.has(joint_i)) {
+					expected_bone_idx = joint_i_to_bone_i_dict[joint_i];
+				}
 
 				// Create skin cluster for this deformer
 				ufbxw_skin_cluster fbx_cluster = ufbxw_create_skin_cluster(write_scene, fbx_skin_deformer, fbx_bone_node);
@@ -3572,8 +3579,8 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 										}
 										if (bone_idx_to_joint_idx.size() > 10) mapping_info += ", ...";
 										
-										ERR_PRINT(vformat("FBX export: Cluster %d (joint %d, node %d): checked %d weights, matched %d, seen bone indices: [%s], mapping: {%s}, joints_original size: %d, joints size: %d", 
-											joint_i, joint_node_idx, fbx_bone_node.id, total_weights_checked, weights_matched, bone_indices_str, mapping_info, joints_original.size(), joints.size()));
+										ERR_PRINT(vformat("FBX export: Cluster %d (joint %d, node %d, expected bone %d): checked %d weights, matched %d, seen bone indices: [%s], mapping: {%s}, joints_original size: %d, joints size: %d", 
+											joint_i, joint_node_idx, fbx_bone_node.id, expected_bone_idx, total_weights_checked, weights_matched, bone_indices_str, mapping_info, joints_original.size(), joints.size()));
 									}
 
 									// Set weights if we have any
