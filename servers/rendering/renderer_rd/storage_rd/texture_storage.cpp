@@ -2976,7 +2976,7 @@ void TextureStorage::update_area_light_atlas() {
 		//generate atlas
 		Vector<AreaLightAtlas::SortItem> itemsv;
 		itemsv.resize(area_light_atlas.textures.size());
-		uint32_t base_size = 8;
+		uint32_t base_size = 1;
 
 		int idx = 0;
 
@@ -3046,8 +3046,8 @@ void TextureStorage::update_area_light_atlas() {
 				si.pos.x = best_idx;
 				si.pos.y = best_height;
 
-				if (si.pos.y + si.size.height > max_height) {
-					max_height = si.pos.y + si.size.height;
+				if (si.pos.y + si.size.height + 1 > max_height) {
+					max_height = si.pos.y + si.size.height + 1; // max_height is at least one border larger.
 				}
 			}
 
@@ -3402,8 +3402,8 @@ void TextureStorage::update_decal_atlas() {
 			for (int i = 0; i < item_count; i++) {
 				//best fit
 				DecalAtlas::SortItem &si = items[i];
-				int best_idx = -1;
-				int best_height = 0x7FFFFFFF;
+				int best_idx = -1; // ideal x position
+				int best_height = 0x7FFFFFFF; // ideal y position
 				for (uint32_t j = 0; j <= base_size - si.size.width; j++) {
 					int height = 0;
 					for (int k = 0; k < si.size.width; k++) {
