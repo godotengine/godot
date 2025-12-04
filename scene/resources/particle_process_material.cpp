@@ -107,6 +107,9 @@ void ParticleProcessMaterial::init_shaders() {
 	shader_names->velocity_limit_curve = "velocity_limit_curve";
 	shader_names->inherit_emitter_velocity_ratio = "inherit_emitter_velocity_ratio";
 	shader_names->velocity_pivot = "velocity_pivot";
+	shader_names->rotation_velocity_3d_max = "rotation_velocity_3d_max";
+	shader_names->rotation_velocity_3d_min = "rotation_velocity_3d_min";
+	shader_names->rotation_velocity_3d_curve = "rotation_velocity_3d_curve";
 
 	shader_names->emission_sphere_radius = "emission_sphere_radius";
 	shader_names->emission_box_extents = "emission_box_extents";
@@ -265,6 +268,14 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "uniform vec3 emission_shape_scale = vec3(1.0);\n";
 
 	code += "uniform vec3 velocity_pivot = vec3(0.0);\n";
+
+	if (using_rotation_velocity_3d) {
+		code += "uniform vec3 rotation_velocity_3d_min = vec3(0.0);\n";
+		code += "uniform vec3 rotation_velocity_3d_max = vec3(0.0);\n";
+		if (rotation_velocity_3d_curve.is_valid()) {
+			code += "uniform sampler2D rotation_velocity_3d_curve : repeat_disable;\n";
+		}
+	}
 
 	if (tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
 		code += "uniform float scale_over_velocity_min = 0.0;\n";
@@ -579,6 +590,9 @@ void ParticleProcessMaterial::_update_shader() {
 	if (turbulence_enabled) {
 		code += "	float turb_influence;\n";
 	}
+	if (using_rotation_velocity_3d) {
+		code += "	vec3 rotation_velocity_3d;\n";
+	}
 	code += "};\n\n";
 
 	code += "struct PhysicalParameters {\n";
@@ -612,6 +626,12 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	params.rotation_3d.y = mix(rotation_3d_min.y, rotation_3d_max.y, rand_from_seed(alt_seed));\n";
 		code += "	params.rotation_3d.z = mix(rotation_3d_min.z, rotation_3d_max.z, rand_from_seed(alt_seed));\n";
 		code += "	params.rotation_3d *= 3.14159 / 180.0;\n";
+	}
+	if (using_rotation_velocity_3d) {
+		code += "	params.rotation_velocity_3d.x = mix(rotation_velocity_3d_min.x, rotation_velocity_3d_max.x, rand_from_seed(alt_seed));\n";
+		code += "	params.rotation_velocity_3d.y = mix(rotation_velocity_3d_min.y, rotation_velocity_3d_max.y, rand_from_seed(alt_seed));\n";
+		code += "	params.rotation_velocity_3d.z = mix(rotation_velocity_3d_min.z, rotation_velocity_3d_max.z, rand_from_seed(alt_seed));\n";
+		code += "	params.rotation_velocity_3d *= 3.14159 / 180.0;\n";
 	}
 	code += "}\n\n";
 
@@ -1222,6 +1242,59 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	}\n";
 	code += "\n";
 	code += "	CUSTOM.z = params.animation_offset + lifetime_percent * params.animation_speed;\n\n";
+	if (using_rotation_velocity_3d && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+		if (rotation_velocity_3d_curve.is_valid()) {
+			code += "	dynamic_params.rotation_velocity_3d *= texture(rotation_velocity_3d_curve, vec2(lifetime_percent)).xyz;\n";
+		}
+		code += R"(
+	if (length(dynamic_params.rotation_velocity_3d) > 0.0) {
+		vec3 r = dynamic_params.rotation_velocity_3d * DELTA;
+		vec4 origin = TRANSFORM[3];
+		vec4 norm_axis = normalize(TRANSFORM[0]);
+		float ux = norm_axis.x;
+		float uy = norm_axis.y;
+		float uz = norm_axis.z;
+		float s = sin(r.x);
+		float c = cos(r.x);
+		float cm = 1.0 - c;
+		mat4 rx = mat4(
+				vec4(ux * ux * cm + c,      ux * uy * cm - uz * s, ux * uz * cm + uy * s, 0.0),
+				vec4(ux * uy * cm + uz * s, uy * uy * cm + c,      uy * uz * cm - ux * s, 0.0),
+				vec4(ux * uz * cm - uy * s, uy * uz * cm + ux * s, uz * uz * cm + c,      0.0),
+				vec4(0.0, 0.0, 0.0, 1.0)
+			);
+		norm_axis = normalize(TRANSFORM[1]);
+		ux = norm_axis.x;
+		uy = norm_axis.y;
+		uz = norm_axis.z;
+		s = sin(r.y);
+		c = cos(r.y);
+		cm = 1.0 - c;
+		mat4 ry = mat4(
+				vec4(ux * ux * cm + c,      ux * uy * cm - uz * s, ux * uz * cm + uy * s, 0.0),
+				vec4(ux * uy * cm + uz * s, uy * uy * cm + c,      uy * uz * cm - ux * s, 0.0),
+				vec4(ux * uz * cm - uy * s, uy * uz * cm + ux * s, uz * uz * cm + c,      0.0),
+				vec4(0.0, 0.0, 0.0, 1.0)
+			);
+		norm_axis = normalize(TRANSFORM[2]);
+		ux = norm_axis.x;
+		uy = norm_axis.y;
+		uz = norm_axis.z;
+		s = sin(r.z);
+		c = cos(r.z);
+		cm = 1.0 - c;
+		mat4 rz = mat4(
+				vec4(ux * ux * cm + c,      ux * uy * cm - uz * s, ux * uz * cm + uy * s, 0.0),
+				vec4(ux * uy * cm + uz * s, uy * uy * cm + c,      uy * uz * cm - ux * s, 0.0),
+				vec4(ux * uz * cm - uy * s, uy * uz * cm + ux * s, uz * uz * cm + c,      0.0),
+				vec4(0.0, 0.0, 0.0, 1.0)
+			);
+		TRANSFORM[3].xyz = vec3(0.);
+		TRANSFORM = rz * ry * rx * TRANSFORM;
+		TRANSFORM[3] = origin;
+	}
+)";
+	}
 
 	if (sub_emitter_mode != SUB_EMITTER_DISABLED && !RenderingServer::get_singleton()->is_low_end()) {
 		code += "	int emit_count = 0;\n";
@@ -1873,6 +1946,7 @@ void ParticleProcessMaterial::set_use_scale_3d(const bool p_use_scale_3d) {
 	use_scale_3d = p_use_scale_3d;
 	notify_property_list_changed();
 }
+
 bool ParticleProcessMaterial::is_using_scale_3d() const {
 	return use_scale_3d;
 }
@@ -1934,6 +2008,46 @@ void ParticleProcessMaterial::set_rotation_3d_max(const Vector3 &p_rotation_3d_m
 		set_rotation_3d_min(rotation_3d_max);
 	}
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->rotation_3d_max, p_rotation_3d_max);
+}
+
+void ParticleProcessMaterial::set_use_rotation_velocity_3d(bool p_use_rotation_velocity_3d) {
+	using_rotation_velocity_3d = p_use_rotation_velocity_3d;
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+bool ParticleProcessMaterial::is_using_rotation_velocity_3d() const {
+	return using_rotation_velocity_3d;
+}
+
+void ParticleProcessMaterial::set_rotation_velocity_3d_min(const Vector3 &p_rotation_velocity_3d_min) {
+	rotation_velocity_3d_min = p_rotation_velocity_3d_min;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->rotation_velocity_3d_min, p_rotation_velocity_3d_min);
+}
+
+Vector3 ParticleProcessMaterial::get_rotation_velocity_3d_min() const {
+	return rotation_velocity_3d_min;
+}
+
+void ParticleProcessMaterial::set_rotation_velocity_3d_max(const Vector3 &p_rotation_velocity_3d_max) {
+	rotation_velocity_3d_max = p_rotation_velocity_3d_max;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->rotation_velocity_3d_max, p_rotation_velocity_3d_max);
+}
+
+Vector3 ParticleProcessMaterial::get_rotation_velocity_3d_max() const {
+	return rotation_velocity_3d_max;
+}
+
+void ParticleProcessMaterial::set_rotation_velocity_3d_curve(const Ref<Texture2D> &p_texture) {
+	rotation_velocity_3d_curve = p_texture;
+	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->rotation_velocity_3d_curve, tex_rid);
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+Ref<Texture2D> ParticleProcessMaterial::get_rotation_velocity_3d_curve() const {
+	return rotation_velocity_3d_curve;
 }
 
 void ParticleProcessMaterial::set_turbulence_enabled(const bool p_turbulence_enabled) {
@@ -2029,8 +2143,8 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		if (emission_shape != EMISSION_SHAPE_BOX) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") {
-		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+	} else if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture")) {
+		if ((emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	} else if (p_property.name == "emission_normal_texture") {
@@ -2038,7 +2152,7 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	} else if (p_property.name == "emission_point_count") {
-		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+		if ((emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	} else if (p_property.name.begins_with("emission_ring_")) {
@@ -2069,12 +2183,69 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		if (collision_mode != COLLISION_RIGID) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max") {
+	} else if ((p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max")) {
 		if (!tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (Engine::get_singleton()->is_editor_hint()) {
-		if (p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") {
+	} else if ((p_property.name == "rotation_velocity_3d_min" || p_property.name == "rotation_velocity_3d_max" || p_property.name == "rotation_velocity_3d_curve")) {
+		if (!using_rotation_velocity_3d) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+
+		} else if (p_property.name == "emission_box_extents") {
+			if (emission_shape != EMISSION_SHAPE_BOX) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") {
+			if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "emission_normal_texture") {
+			if (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "emission_point_count") {
+			if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name.begins_with("emission_ring_")) {
+			if (emission_shape != EMISSION_SHAPE_RING) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "sub_emitter_frequency") {
+			if (sub_emitter_mode != SUB_EMITTER_CONSTANT) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "sub_emitter_amount_at_end") {
+			if (sub_emitter_mode != SUB_EMITTER_AT_END) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "sub_emitter_amount_at_collision") {
+			if (sub_emitter_mode != SUB_EMITTER_AT_COLLISION) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "sub_emitter_amount_at_start") {
+			if (sub_emitter_mode != SUB_EMITTER_AT_START) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "collision_friction") {
+			if (collision_mode != COLLISION_RIGID) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "collision_bounce") {
+			if (collision_mode != COLLISION_RIGID) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max") {
+			if (!tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} else if (p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") {
 			if (!tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
@@ -2083,19 +2254,18 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
 		} else if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max")) &&
-				!(p_property.name == "scale_3d_max" || p_property.name == "scale_3d_min") &&
-				!(p_property.name == "rotation_3d_max" || p_property.name == "rotation_3d_min")) {
+				!p_property.name.begins_with("rotation_velocity") &&
+				!p_property.name.begins_with("scale_3d") &&
+				!p_property.name.begins_with("rotation_3d")) {
 			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+
+		} else if ((p_property.name == "scale_3d_min" || p_property.name == "scale_3d_max") && !use_scale_3d) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		} else if (p_property.name == "scale" && use_scale_3d) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		} else if ((p_property.name == "rotation_3d_max" || p_property.name == "rotation_3d_min") && (particle_flags[PARTICLE_FLAG_DISABLE_Z] || !use_rotation_3d)) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	}
-	if ((p_property.name == "scale_3d_min" || p_property.name == "scale_3d_max") && !use_scale_3d) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (p_property.name == "scale" && use_scale_3d) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if ((p_property.name == "rotation_3d_max" || p_property.name == "rotation_3d_min") && (particle_flags[PARTICLE_FLAG_DISABLE_Z] || !use_rotation_3d)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -2368,6 +2538,15 @@ void ParticleProcessMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_bounce", "bounce"), &ParticleProcessMaterial::set_collision_bounce);
 	ClassDB::bind_method(D_METHOD("get_collision_bounce"), &ParticleProcessMaterial::get_collision_bounce);
 
+	ClassDB::bind_method(D_METHOD("set_using_rotation_velocity_3d", "use_rotation_velocity_3d"), &ParticleProcessMaterial::set_use_rotation_velocity_3d);
+	ClassDB::bind_method(D_METHOD("is_using_rotation_velocity_3d"), &ParticleProcessMaterial::is_using_rotation_velocity_3d);
+	ClassDB::bind_method(D_METHOD("set_rotation_velocity_3d_max", "rotation_velocity_3d_max"), &ParticleProcessMaterial::set_rotation_velocity_3d_max);
+	ClassDB::bind_method(D_METHOD("get_rotation_velocity_3d_max"), &ParticleProcessMaterial::get_rotation_velocity_3d_max);
+	ClassDB::bind_method(D_METHOD("set_rotation_velocity_3d_min", "rotation_velocity_3d_min"), &ParticleProcessMaterial::set_rotation_velocity_3d_min);
+	ClassDB::bind_method(D_METHOD("get_rotation_velocity_3d_min"), &ParticleProcessMaterial::get_rotation_velocity_3d_min);
+	ClassDB::bind_method(D_METHOD("set_rotation_velocity_3d_curve", "rotation_velocity_3d_curve"), &ParticleProcessMaterial::set_rotation_velocity_3d_curve);
+	ClassDB::bind_method(D_METHOD("get_rotation_velocity_3d_curve"), &ParticleProcessMaterial::get_rotation_velocity_3d_curve);
+
 #define ADD_MIN_MAX_PROPERTY(m_property, m_range, m_parameter_name) \
 	ADD_PROPERTYI(PropertyInfo(Variant::VECTOR2, m_property, PROPERTY_HINT_RANGE, m_range, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "set_param", "get_param", m_parameter_name); \
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, m_property "_min", PROPERTY_HINT_RANGE, m_range), "set_param_min", "get_param_min", m_parameter_name); \
@@ -2426,6 +2605,12 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "radial_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, CurveTexture::get_class_static()), "set_param_texture", "get_param_texture", PARAM_RADIAL_VELOCITY);
 	ADD_SUBGROUP("Velocity Limit", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "velocity_limit_curve", PROPERTY_HINT_RESOURCE_TYPE, CurveTexture::get_class_static()), "set_velocity_limit_curve", "get_velocity_limit_curve");
+	ADD_SUBGROUP("Rotation Velocity 3D", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_rotation_velocity_3d", PROPERTY_HINT_GROUP_ENABLE), "set_using_rotation_velocity_3d", "is_using_rotation_velocity_3d");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_velocity_3d_min"), "set_rotation_velocity_3d_min", "get_rotation_velocity_3d_min");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_velocity_3d_max"), "set_rotation_velocity_3d_max", "get_rotation_velocity_3d_max");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "rotation_velocity_3d_curve", PROPERTY_HINT_RESOURCE_TYPE, CurveXYZTexture::get_class_static()), "set_rotation_velocity_3d_curve", "get_rotation_velocity_3d_curve");
+
 	ADD_GROUP("Accelerations", "");
 	ADD_SUBGROUP("Gravity", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity"), "set_gravity", "get_gravity");

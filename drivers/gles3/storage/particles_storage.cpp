@@ -323,6 +323,20 @@ void ParticlesStorage::particles_set_transform_align(RID p_particles, RSE::Parti
 	particles->transform_align = p_transform_align;
 }
 
+void ParticlesStorage::particles_set_transform_align_channel_filter(RID p_particles, RSE::ParticlesTransformAlignCustomSrc p_channel_filter) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_channel_filter = p_channel_filter;
+}
+
+void ParticlesStorage::particles_set_transform_align_axis(RID p_particles, RSE::ParticlesTransformAlignAxis p_rotation_axis) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_axis = p_rotation_axis;
+}
+
 void ParticlesStorage::particles_set_process_material(RID p_particles, RID p_material) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
@@ -792,7 +806,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
-	if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+	if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD) {
 		return;
 	}
 
@@ -960,6 +974,8 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_MODE, uint32_t(particles->transform_align), particles_shader.copy_shader_version, variant, specialization);
 	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_UP, p_up_axis, particles_shader.copy_shader_version, variant, specialization);
 	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::SORT_DIRECTION, p_axis, particles_shader.copy_shader_version, variant, specialization);
+	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_AXIS, uint32_t(particles->transform_align_axis), particles_shader.copy_shader_version, variant, specialization);
+	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_CHANNEL_FILTER, uint32_t(particles->transform_align_channel_filter), particles_shader.copy_shader_version, variant, specialization);
 
 	glBindVertexArray(particles->back_vertex_array);
 	glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, 0, particles->front_instance_buffer, 0, particles->instance_buffer_size_cache);
@@ -1155,7 +1171,8 @@ void ParticlesStorage::update_particles() {
 
 		// Copy particles to instance buffer and pack Color/Custom.
 		// We don't have camera information here, so don't copy here if we need camera information for view depth or align mode.
-		if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+
+		if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD) {
 			_particles_update_instance_buffer(particles, Vector3(0.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.0));
 
 			if (particles->draw_order == RSE::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME && particles->sort_buffer_filled) {
