@@ -38,6 +38,7 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 
 bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
 	for (int i = 0; i < p_terms.size(); i++) {
@@ -373,11 +374,15 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->connect(SceneStringName(item_selected), callable_mp(this, &EditorHelpSearch::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vbox->add_child(mc);
+
 	// Create the results tree.
 	results_tree = memnew(Tree);
 	results_tree->set_accessibility_name(TTRC("Search Results"));
 	results_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	results_tree->set_columns(2);
 	results_tree->set_column_title(0, TTR("Name"));
 	results_tree->set_column_clip_content(0, true);
@@ -388,9 +393,10 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
+	results_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	results_tree->connect("item_activated", callable_mp(this, &EditorHelpSearch::_confirmed));
 	results_tree->connect(SceneStringName(item_selected), callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(false));
-	vbox->add_child(results_tree, true);
+	mc->add_child(results_tree, true);
 }
 
 void EditorHelpSearch::TreeCache::clear() {
