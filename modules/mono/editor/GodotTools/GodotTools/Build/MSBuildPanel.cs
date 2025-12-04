@@ -208,7 +208,6 @@ namespace GodotTools.Build
             AvailableLayouts = DockLayout.Horizontal | DockLayout.Floating;
             Global = false;
             Transient = true;
-            ClipContents = false;
         }
 
         public override void _Ready()

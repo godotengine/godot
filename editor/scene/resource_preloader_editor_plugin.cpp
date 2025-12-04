@@ -339,6 +339,22 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 	}
 }
 
+void ResourcePreloaderEditor::update_layout(EditorDock::DockLayout p_layout) {
+	bool new_horizontal = (p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL);
+	if (horizontal == new_horizontal) {
+		return;
+	}
+	horizontal = new_horizontal;
+
+	if (horizontal) {
+		mc->set_theme_type_variation("NoBorderHorizontal");
+		tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	} else {
+		mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+	}
+}
+
 void ResourcePreloaderEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
 	ClassDB::bind_method(D_METHOD("_remove_resource", "to_remove"), &ResourcePreloaderEditor::_remove_resource);
@@ -372,6 +388,10 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	file = memnew(EditorFileDialog);
 	add_child(file);
 
+	mc = memnew(MarginContainer);
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_child(mc);
+
 	tree = memnew(Tree);
 	tree->connect("button_clicked", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -381,10 +401,9 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	tree->set_column_clip_content(0, true);
 	tree->set_column_expand_ratio(1, 3);
 	tree->set_column_clip_content(1, true);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	SET_DRAG_FORWARDING_GCD(tree, ResourcePreloaderEditor);
-	vbc->add_child(tree);
+	mc->add_child(tree);
 
 	dialog = memnew(AcceptDialog);
 	dialog->set_title(TTRC("Error!"));
