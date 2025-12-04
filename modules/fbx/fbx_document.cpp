@@ -3356,6 +3356,38 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		Vector<GLTFNodeIndex> joints = gltf_skin->get_joints();
 		TypedArray<Transform3D> inverse_binds = gltf_skin->get_inverse_binds();
 
+		// Build bone index mappings once per skin (not per mesh surface)
+		// Strategy:
+		// 1. Build a map from GLTFNodeIndex to index in joints_original
+		// 2. Use Skin resource to map Skeleton3D bone index → bind_i (index in joints_original)
+		// 3. For bone indices that are indices into joints array, map to joints_original index
+		// 4. For bone indices that are GLTFNodeIndex values, map directly to joints_original index
+		HashMap<GLTFNodeIndex, int> joint_node_to_original_idx;
+		for (int orig_i = 0; orig_i < joints_original.size(); orig_i++) {
+			joint_node_to_original_idx[joints_original[orig_i]] = orig_i;
+		}
+		
+		HashMap<int, int> bone_idx_to_joint_idx;
+		Ref<Skin> godot_skin = gltf_skin->get_godot_skin();
+		if (godot_skin.is_valid()) {
+			for (int bind_i = 0; bind_i < godot_skin->get_bind_count(); bind_i++) {
+				int bone_idx = godot_skin->get_bind_bone(bind_i);
+				if (bone_idx >= 0 && bind_i < joints_original.size()) {
+					// bind_i is the index in joints_original (cluster index)
+					bone_idx_to_joint_idx[bone_idx] = bind_i;
+				}
+			}
+		}
+		
+		// Build a map from joints array index to joints_original index
+		HashMap<int, int> joints_idx_to_original_idx;
+		for (int joints_i = 0; joints_i < joints.size(); joints_i++) {
+			GLTFNodeIndex joint_node = joints[joints_i];
+			if (joint_node_to_original_idx.has(joint_node)) {
+				joints_idx_to_original_idx[joints_i] = joint_node_to_original_idx[joint_node];
+			}
+		}
+
 		for (int mesh_idx = 0; mesh_idx < fbx_meshes.size(); mesh_idx++) {
 			ufbxw_mesh fbx_mesh = fbx_meshes[mesh_idx];
 			ufbxw_skin_deformer fbx_skin_deformer = ufbxw_create_skin_deformer(write_scene, fbx_mesh);
@@ -3453,50 +3485,14 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 									int vertex_count = bones.size() / num_weights_per_vertex;
 
-									// In FBX: nodes and joints are the same - a cluster's bone_node is just a node
-									// In Godot: skeleton bones (Skeleton3D bone indices) map to GLTF nodes (GLTFNodeIndex)
-									// joints_original contains GLTFNodeIndex values (the nodes/joints)
-									// joint_i is the cluster index (index into joints_original)
-									// 
-									// Bone indices in mesh can be:
-									// 1. Indices into joints array (from GLTF export) - these are GLTFNodeIndex values
-									// 2. Skeleton3D bone indices (from Godot scenes)
-									// 
-									// We need to map bone indices to joint indices (indices into joints_original)
-									// 
-									// Strategy:
-									// 1. Build a map from GLTFNodeIndex to index in joints_original
-									// 2. Use Skin resource to map Skeleton3D bone index → bind_i (index in joints_original)
-									// 3. For bone indices that are already joint indices, map via joints array
-									HashMap<GLTFNodeIndex, int> joint_node_to_original_idx;
-									for (int orig_i = 0; orig_i < joints_original.size(); orig_i++) {
-										joint_node_to_original_idx[joints_original[orig_i]] = orig_i;
-									}
-									
-									HashMap<int, int> bone_idx_to_joint_idx;
-									Ref<Skin> godot_skin = gltf_skin->get_godot_skin();
-									if (godot_skin.is_valid()) {
-										for (int bind_i = 0; bind_i < godot_skin->get_bind_count(); bind_i++) {
-											int bone_idx = godot_skin->get_bind_bone(bind_i);
-											if (bone_idx >= 0 && bind_i < joints_original.size()) {
-												// bind_i is the index in joints_original (cluster index)
-												bone_idx_to_joint_idx[bone_idx] = bind_i;
-											}
-										}
-									}
-									
-									// Also build a map from joints array index to joints_original index
-									HashMap<int, int> joints_idx_to_original_idx;
-									for (int joints_i = 0; joints_i < joints.size(); joints_i++) {
-										GLTFNodeIndex joint_node = joints[joints_i];
-										if (joint_node_to_original_idx.has(joint_node)) {
-											joints_idx_to_original_idx[joints_i] = joint_node_to_original_idx[joint_node];
-										}
-									}
-
 									// Collect vertex indices and weights for this cluster
 									Vector<int32_t> vertex_indices;
 									Vector<ufbxw_real> cluster_weights;
+									
+									// Debug: track unique bone indices we see
+									HashSet<int> seen_bone_indices;
+									int total_weights_checked = 0;
+									int weights_matched = 0;
 
 									for (int vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
 										for (int weight_i = 0; weight_i < num_weights_per_vertex; weight_i++) {
@@ -3506,9 +3502,17 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 											if (weight <= 0.0f) {
 												continue;
 											}
+											
+											total_weights_checked++;
+											seen_bone_indices.insert(bone_idx);
 
 											// Map bone index to joint index (cluster index)
 											// joint_i is the cluster index (index into joints_original)
+											// Bone indices in mesh can be:
+											// 1. Skeleton3D bone indices (from Godot scenes) - map via Skin resource
+											// 2. Indices into joints array (from GLTF export) - map via joints_idx_to_original_idx
+											// 3. GLTFNodeIndex values directly - map via joint_node_to_original_idx
+											// 4. Already cluster indices (indices into joints_original) - use directly
 											int joint_idx = -1;
 											if (bone_idx_to_joint_idx.has(bone_idx)) {
 												// Bone index is Skeleton3D bone index - map to joint index via Skin resource
@@ -3518,6 +3522,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 												if (joints_idx_to_original_idx.has(bone_idx)) {
 													joint_idx = joints_idx_to_original_idx[bone_idx];
 												}
+											} else if (joint_node_to_original_idx.has((GLTFNodeIndex)bone_idx)) {
+												// Bone index is a GLTFNodeIndex value - map directly to joints_original index
+												joint_idx = joint_node_to_original_idx[(GLTFNodeIndex)bone_idx];
 											} else if (bone_idx >= 0 && bone_idx < joints_original.size()) {
 												// Bone index is already cluster index (index into joints_original)
 												joint_idx = bone_idx;
@@ -3527,8 +3534,22 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 											if (joint_idx == joint_i) {
 												vertex_indices.push_back(vertex_i);
 												cluster_weights.push_back((ufbxw_real)weight);
+												weights_matched++;
 											}
 										}
+									}
+									
+									// Debug output for first few clusters or when no weights found
+									if (vertex_indices.size() == 0 && (joint_i < 5 || joint_i % 50 == 0)) {
+										String bone_indices_str = "";
+										int count = 0;
+										for (HashSet<int>::Iterator it = seen_bone_indices.begin(); it != seen_bone_indices.end() && count < 10; ++it, count++) {
+											if (count > 0) bone_indices_str += ", ";
+											bone_indices_str += itos(*it);
+										}
+										if (seen_bone_indices.size() > 10) bone_indices_str += ", ...";
+										print_verbose(vformat("FBX export: Cluster %d (joint %d): checked %d weights, matched %d, seen bone indices: [%s], joints_original size: %d, joints size: %d", 
+											joint_i, joint_node_idx, total_weights_checked, weights_matched, bone_indices_str, joints_original.size(), joints.size()));
 									}
 
 									// Set weights if we have any
@@ -4125,3 +4146,4 @@ Transform3D FBXDocument::_as_xform(const ufbx_matrix &p_mat) {
 	xform.set_origin(_as_vec3(p_mat.cols[3]));
 	return xform;
 }
+
