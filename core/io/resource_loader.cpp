@@ -1184,7 +1184,10 @@ String ResourceLoader::get_resource_script_class(const String &p_path) {
 }
 
 ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
-	String local_path = _validate_local_path(p_path);
+	const String local_path = _validate_local_path(p_path);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return ResourceUID::get_singleton()->get_path_id(local_path);
+	}
 
 	for (int i = 0; i < loader_count; i++) {
 		ResourceUID::ID id = loader[i]->get_resource_uid(local_path);
