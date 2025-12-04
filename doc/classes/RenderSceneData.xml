@@ -24,6 +24,28 @@
 				[b]Note:[/b] If more than one view is rendered, this will return a centered transform.
 			</description>
 		</method>
+		<method name="get_prev_cam_projection" qualifiers="const">
+			<return type="Projection" />
+			<description>
+				Returns the camera projection used to render the last frame.
+				[b]Note:[/b] If more than one view is rendered, this will return a combined projection.
+			</description>
+		</method>
+		<method name="get_prev_cam_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Returns the camera transform used to render the last frame.
+				[b]Note:[/b] If more than one view is rendered, this will return a centered transform.
+			</description>
+		</method>
+		<method name="get_prev_view_projection" qualifiers="const">
+			<return type="Projection" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Returns the view projection per view used to render the last frame.
+				[b]Note:[/b] If a single view is rendered, this returns the camera projection. If more than one view is rendered, this will return a projection for the given view including the eye offset.
+			</description>
+		</method>
 		<method name="get_uniform_buffer" qualifiers="const">
 			<return type="RID" />
 			<description>
