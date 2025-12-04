@@ -153,7 +153,7 @@ thread_local SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::TLSData SafeBinar
 SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG> GDScriptCache::mutex;
 
 void GDScriptCache::move_script(const String &p_from, const String &p_to) {
-	if (singleton == nullptr || p_from == p_to) {
+	if (singleton == nullptr || p_from == p_to || p_from.is_empty()) {
 		return;
 	}
 
