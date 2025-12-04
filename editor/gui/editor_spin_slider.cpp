@@ -34,6 +34,7 @@
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
+#include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
@@ -464,6 +465,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
+			set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
 			_update_value_input_stylebox();
 		} break;
 
@@ -514,17 +516,6 @@ void EditorSpinSlider::_notification(int p_what) {
 LineEdit *EditorSpinSlider::get_line_edit() {
 	_ensure_input_popup();
 	return value_input;
-}
-
-Size2 EditorSpinSlider::get_minimum_size() const {
-	Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"));
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
-
-	Size2 ms = sb->get_minimum_size();
-	ms.height += font->get_height(font_size);
-
-	return ms;
 }
 
 void EditorSpinSlider::set_control_state(ControlState p_state) {

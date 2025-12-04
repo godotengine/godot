@@ -247,7 +247,6 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		p_theme->set_constant("thumb_size", EditorStringName(Editor), p_config.thumb_size);
 		p_theme->set_constant("class_icon_size", EditorStringName(Editor), p_config.class_icon_size);
-		p_theme->set_constant("color_picker_button_height", EditorStringName(Editor), p_config.color_picker_button_height);
 		p_theme->set_constant("gizmo_handle_scale", EditorStringName(Editor), p_config.gizmo_handle_scale);
 
 		p_theme->set_constant("base_margin", EditorStringName(Editor), p_config.base_margin);
@@ -548,8 +547,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		// CheckBox.
 		{
 			Ref<StyleBoxFlat> checkbox_style = p_config.panel_container_style->duplicate();
-			Ref<StyleBoxFlat> checkbox_style_normal = p_config.base_style->duplicate();
-			checkbox_style_normal->set_content_margin_individual(p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 0.5 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 0.5 * EDSCALE);
+			checkbox_style->set_content_margin_individual(p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE);
+			Ref<StyleBoxFlat> checkbox_style_normal = checkbox_style->duplicate();
 			checkbox_style_normal->set_draw_center(false);
 
 			p_theme->set_stylebox(CoreStringName(normal), "CheckBox", checkbox_style_normal);
@@ -838,7 +837,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 	{
 		Ref<StyleBoxFlat> text_editor_style = p_config.base_style->duplicate();
 		text_editor_style->set_bg_color(p_config.surface_lower_color);
-		text_editor_style->set_content_margin_individual(p_config.base_margin * 2 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE, p_config.base_margin * 2 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE);
+		text_editor_style->set_content_margin_individual(p_config.base_margin * 2 * EDSCALE, ((p_config.base_margin * 0.75) + 1) * EDSCALE, p_config.base_margin * 2 * EDSCALE, ((p_config.base_margin * 0.75) + 1) * EDSCALE);
 		if (p_config.draw_extra_borders) {
 			text_editor_style->set_border_width_all(Math::round(EDSCALE));
 			text_editor_style->set_border_color(p_config.extra_border_color_1);
@@ -1860,14 +1859,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(panel), "EditorAbout", p_config.window_complex_style);
 		p_theme->set_stylebox(SceneStringName(panel), "ThemeItemEditorDialog", p_config.window_complex_style);
 
-		// InspectorActionButton.
-		p_theme->set_type_variation("InspectorActionButton", "Button");
-		p_theme->set_constant("h_separation", "InspectorActionButton", p_config.base_margin * 2 * EDSCALE);
-		p_theme->set_stylebox(CoreStringName(normal), "InspectorActionButton", p_config.button_style);
-		p_theme->set_stylebox(SceneStringName(hover), "InspectorActionButton", p_config.button_style_hover);
-		p_theme->set_stylebox(SceneStringName(pressed), "InspectorActionButton", p_config.button_style_pressed);
-		p_theme->set_stylebox("disabled", "InspectorActionButton", p_config.button_style_disabled);
-
 		// Buttons in material previews.
 		{
 			const Color dim_light_color = p_config.icon_normal_color.darkened(0.24);
@@ -1945,8 +1936,13 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		// Panel.
 		p_theme->set_stylebox(SceneStringName(panel), "EditorInspector", p_config.base_empty_style);
 
-		// Vertical separation between inspector categories and sections.
-		p_theme->set_constant("v_separation", "EditorInspector", Math::ceil(p_config.base_margin * 0.5 * EDSCALE));
+		// Vertical separation between inspector areas.
+		p_theme->set_type_variation("EditorInspectorContainer", "VBoxContainer");
+		p_theme->set_constant("separation", "EditorInspectorContainer", Math::ceil(p_config.base_margin * 0.5 * EDSCALE));
+
+		// Vertical separation between inspector properties.
+		p_theme->set_type_variation("EditorPropertyContainer", "VBoxContainer");
+		p_theme->set_constant("separation", "EditorPropertyContainer", p_config.base_margin * 0.5 * EDSCALE);
 
 		// EditorProperty.
 
@@ -1965,7 +1961,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg_selected);
 		p_theme->set_stylebox("child_bg", "EditorProperty", style_property_child_bg);
 		p_theme->set_constant("font_offset", "EditorProperty", 8 * EDSCALE);
-		p_theme->set_constant("v_separation", "EditorProperty", p_config.increased_margin * EDSCALE);
 
 		const Color property_color = p_config.font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
 		const Color readonly_color = property_color.lerp(p_config.dark_icon_and_font ? Color(0, 0, 0) : Color(1, 1, 1), 0.25);
@@ -2105,6 +2100,63 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_type_variation("ObjectSelectorMargin", "MarginContainer");
 		p_theme->set_constant("margin_left", "ObjectSelectorMargin", p_config.base_margin * 2 * EDSCALE);
 		p_theme->set_constant("margin_right", "ObjectSelectorMargin", p_config.base_margin * 2.5 * EDSCALE);
+
+		// EditorInspectorButton.
+
+		p_theme->set_type_variation("EditorInspectorButton", "Button");
+		Ref<StyleBoxFlat> style_line = p_theme->get_stylebox(CoreStringName(normal), SNAME("LineEdit"));
+		float vertical_margin = style_line->get_content_margin(SIDE_TOP);
+
+		Ref<StyleBoxFlat> style_inspector_button = p_config.button_style->duplicate();
+		style_inspector_button->set_content_margin(SIDE_TOP, vertical_margin);
+		style_inspector_button->set_content_margin(SIDE_BOTTOM, vertical_margin);
+
+		Ref<StyleBoxFlat> style_inspector_button_hover = p_config.button_style_hover->duplicate();
+		style_inspector_button_hover->set_content_margin(SIDE_TOP, vertical_margin);
+		style_inspector_button_hover->set_content_margin(SIDE_BOTTOM, vertical_margin);
+
+		Ref<StyleBoxFlat> style_inspector_button_pressed = p_config.button_style_pressed->duplicate();
+		style_inspector_button_pressed->set_content_margin(SIDE_TOP, vertical_margin);
+		style_inspector_button_pressed->set_content_margin(SIDE_BOTTOM, vertical_margin);
+
+		Ref<StyleBoxFlat> style_inspector_button_disabled = p_config.button_style_disabled->duplicate();
+		style_inspector_button_disabled->set_content_margin(SIDE_TOP, vertical_margin);
+		style_inspector_button_disabled->set_content_margin(SIDE_BOTTOM, vertical_margin);
+
+		p_theme->set_stylebox(CoreStringName(normal), "EditorInspectorButton", style_inspector_button);
+		p_theme->set_stylebox(SceneStringName(hover), "EditorInspectorButton", style_inspector_button_hover);
+		p_theme->set_stylebox(SceneStringName(pressed), "EditorInspectorButton", style_inspector_button_pressed);
+		p_theme->set_stylebox("hover_pressed", "EditorInspectorButton", style_inspector_button_pressed);
+		p_theme->set_stylebox("disabled", "EditorInspectorButton", style_inspector_button_disabled);
+
+		// Make the height for properties uniform.
+		Ref<StyleBoxFlat> inspector_button_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("EditorInspectorButton"));
+		Ref<Font> font = p_theme->get_font(SceneStringName(font), SNAME("LineEdit"));
+		int font_size = p_theme->get_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+		p_config.inspector_property_height = inspector_button_style->get_minimum_size().height + font->get_height(font_size);
+		p_theme->set_constant("inspector_property_height", EditorStringName(Editor), p_config.inspector_property_height);
+
+		// EditorInspectorFlatButton.
+
+		p_theme->set_type_variation("EditorInspectorFlatButton", "FlatButton");
+
+		Ref<StyleBoxFlat> inspector_flat_button_hover = p_config.flat_button_hover->duplicate();
+		inspector_flat_button_hover->set_content_margin(SIDE_TOP, vertical_margin);
+		inspector_flat_button_hover->set_content_margin(SIDE_BOTTOM, vertical_margin);
+
+		Ref<StyleBoxFlat> inspector_flat_button_pressed = p_config.flat_button_pressed->duplicate();
+		inspector_flat_button_pressed->set_content_margin(SIDE_TOP, vertical_margin);
+		inspector_flat_button_pressed->set_content_margin(SIDE_BOTTOM, vertical_margin);
+
+		p_theme->set_stylebox(CoreStringName(normal), "EditorInspectorFlatButton", p_config.base_empty_wide_style);
+		p_theme->set_stylebox(SceneStringName(hover), "EditorInspectorFlatButton", p_config.flat_button_hover);
+		p_theme->set_stylebox(SceneStringName(pressed), "EditorInspectorFlatButton", p_config.flat_button_pressed);
+		p_theme->set_stylebox("hover_pressed", "EditorInspectorFlatButton", p_config.flat_button_pressed);
+		p_theme->set_stylebox("disabled", "EditorInspectorFlatButton", p_config.base_empty_wide_style);
+
+		// InspectorActionButton.
+		p_theme->set_type_variation("InspectorActionButton", "Button");
+		p_theme->set_constant("h_separation", "InspectorActionButton", p_config.base_margin * 2 * EDSCALE);
 	}
 
 	// Animation Editor.
@@ -2363,12 +2415,12 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_color("playback_color", "GraphStateMachine", p_config.font_color);
 			p_theme->set_color("playback_background_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.3));
 		}
-
-		// TileSet editor.
-		// This editor is using Tree panel for the panel container of expanded view, while the theme
-		// needs trees to be transparent, so it needs to have its own style.
-		Ref<StyleBoxFlat> tile_expand_style = p_config.base_style->duplicate();
-		tile_expand_style->set_corner_radius_all(0);
-		p_theme->set_stylebox("expand_panel", "TileSetEditor", tile_expand_style);
 	}
+
+	// TileSet editor.
+	// This editor is using Tree panel for the panel container of expanded view, while the theme
+	// needs trees to be transparent, so it needs to have its own style.
+	Ref<StyleBoxFlat> tile_expand_style = p_config.base_style->duplicate();
+	tile_expand_style->set_corner_radius_all(0);
+	p_theme->set_stylebox("expand_panel", "TileSetEditor", tile_expand_style);
 }
