@@ -3454,16 +3454,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 					inverse_bind = inverse_binds[joint_i];
 				}
 
-				Transform3D geometry_to_bone = inverse_bind.inverse();
-
 				// Convert Transform3D to ufbxw_matrix
-				ufbxw_matrix fbx_matrix = _transform_to_ufbxw_matrix(geometry_to_bone);
+				ufbxw_matrix fbx_matrix = _transform_to_ufbxw_matrix(inverse_bind);
 				ufbxw_skin_cluster_set_transform(write_scene, fbx_cluster, fbx_matrix);
-
-				// Set link transform (bone's bind pose in world space)
-				Transform3D bone_rest_pose = inverse_bind.inverse();
-				ufbxw_matrix link_matrix = _transform_to_ufbxw_matrix(bone_rest_pose);
-				ufbxw_skin_cluster_set_link_transform(write_scene, fbx_cluster, link_matrix);
 
 				// Extract and set vertex weights from mesh data for this cluster
 				// Use the surface corresponding to this mesh index
