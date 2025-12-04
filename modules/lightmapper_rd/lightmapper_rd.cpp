@@ -139,7 +139,7 @@ void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Ve
 	light_metadata.push_back(md);
 }
 
-void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur) {
+void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur) {//, Ref<Texture2D> p_area_texture) {
 	Light l;
 	l.type = LIGHT_TYPE_AREA;
 	l.position[0] = p_position.x;
@@ -164,6 +164,11 @@ void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Ve
 	l.static_bake = p_static;
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
+	//RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture_rect(RSG::light_storage->light_area_get_texture(l));
+	l.area_texture_rect[0] = 0.0; //p_texture_rect.position.x;
+	l.area_texture_rect[1] = 0.0; //p_texture_rect.position.y;
+	l.area_texture_rect[2] = 0.0; //p_texture_rect.size.x;
+	l.area_texture_rect[3] = 0.0; //p_texture_rect.size.y;
 	lights.push_back(l);
 
 	LightMetadata md;
@@ -1784,6 +1789,13 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.append_id(shadowmask_tex);
 				uniforms.push_back(u);
 			}
+			/*{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 6;
+				u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
+				uniforms.push_back(u);
+			}*/
 		}
 
 		RID light_uniform_set = rd->uniform_set_create(uniforms, compute_shader_primary, 1);

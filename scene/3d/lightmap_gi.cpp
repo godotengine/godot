@@ -40,6 +40,9 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
+#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server_default.h"
 
 #include "modules/modules_enabled.gen.h" // For lightmapper_rd.
 
@@ -1222,7 +1225,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				// normalization to make larger lights output same amount of light as smaller lights with same energy
 				float surface_area = l->get_area_size().x * l->get_area_size().y;
 				energy /= surface_area;
-				lightmapper->add_area_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), area_vec_x, area_vec_y, l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
+				lightmapper->add_area_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), area_vec_x, area_vec_y, l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));//, l->get_area_texture());
 			}
 		}
 		for (int i = 0; i < probes_found.size(); i++) {
