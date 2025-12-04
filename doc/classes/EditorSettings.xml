@@ -1239,7 +1239,7 @@
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
 		<member name="interface/touchscreen/enable_touch_optimizations" type="bool" setter="" getter="">
-			If [code]true[/code], increases the scrollbar touch area and enables a larger dragger for split containers to improve usability on touchscreen devices
+			If [code]true[/code], increases the scrollbar touch area, enables a larger dragger for split containers, and increases PopupMenu vertical separation to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
 		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">
