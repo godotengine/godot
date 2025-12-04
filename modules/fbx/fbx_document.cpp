@@ -3477,17 +3477,19 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				// Explicitly set the bone node for this cluster (ensures proper linking)
 				ufbxw_skin_cluster_set_node(write_scene, fbx_cluster, fbx_bone_node);
 
-				// Get inverse bind matrix and invert it to get geometry_to_bone transform
-				Transform3D geometry_to_bone = Transform3D();
+				// Get inverse bind matrix (reader stores geometry_to_bone directly as inverse_bind)
+				Transform3D inverse_bind = Transform3D();
 				if (cluster_idx >= 0 && cluster_idx < inverse_binds.size()) {
-					Transform3D inverse_bind = inverse_binds[cluster_idx];
-					geometry_to_bone = inverse_bind.inverse();
-				} else {
-					// Compute from world transform if not found
-					Transform3D bone_world_transform = _compute_node_world_transform(state, joint_node_idx);
-					Transform3D inverse_bind = bone_world_transform.inverse() * mesh_bind_transform;
-					geometry_to_bone = inverse_bind.inverse();
+					inverse_bind = inverse_binds[cluster_idx];
 				}
+				// Compute from world transform if not found
+				if (inverse_bind == Transform3D()) {
+					Transform3D bone_world_transform = _compute_node_world_transform(state, joint_node_idx);
+					inverse_bind = bone_world_transform.inverse() * mesh_bind_transform;
+				}
+
+				// Reader stores geometry_to_bone directly as inverse_bind, so we use it directly (not inverted)
+				Transform3D geometry_to_bone = inverse_bind;
 
 				// Convert Transform3D to ufbxw_matrix
 				ufbxw_matrix fbx_matrix = _transform_to_ufbxw_matrix(geometry_to_bone);
