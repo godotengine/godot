@@ -3420,15 +3420,22 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		ufbxw_material fbx_material = { material_id };
 
 		if (base_material.is_null()) {
-			// No material - create a default material
+			// No material - create a proper default material with all essential properties
 			String mat_name = "DefaultMaterial_Surface" + itos(duplicate_mat_idx - state->materials.size());
 			CharString mat_name_utf8 = mat_name.utf8();
 			ufbxw_set_name_len(write_scene, material_id, mat_name_utf8.get_data(), mat_name_utf8.length());
 
-			// Use default material properties (white diffuse)
+			// Set complete default material properties (not empty)
+			// Diffuse/Albedo: white
 			ufbxw_vec3 diffuse_color = { 1.0, 1.0, 1.0 };
 			ufbxw_set_vec3(write_scene, material_id, "DiffuseColor", diffuse_color);
 			ufbxw_set_real(write_scene, material_id, "DiffuseFactor", 1.0);
+
+			// Metallic: 0.0 (non-metallic)
+			ufbxw_set_real(write_scene, material_id, "ReflectionFactor", 0.0);
+
+			// Roughness: 1.0 (fully rough, shininess = 0)
+			ufbxw_set_real(write_scene, material_id, "Shininess", 0.0);
 		} else {
 			// Find the base material index
 			int32_t base_mat_idx = -1;
@@ -3639,6 +3646,13 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		TypedArray<Transform3D> inverse_binds = gltf_skin->get_inverse_binds();
 		Vector<GLTFNodeIndex> joints_original = gltf_skin->get_joints_original();
 
+		// Verify that inverse_binds matches joints_original size
+		// joints_original is the minimal set from glTF, inverse_binds should match it
+		if (inverse_binds.size() != joints_original.size()) {
+			WARN_PRINT(vformat("FBX: Skin %d has %d inverse_binds but %d joints_original, skipping", skin_i, inverse_binds.size(), joints_original.size()));
+			continue;
+		}
+
 		// Build mapping from joints index to joints_original index (cluster index)
 		// Mesh bone indices refer to the expanded joints array, but cluster indices match joints_original order
 		HashMap<GLTFNodeIndex, int> node_to_joints_idx;
@@ -3667,17 +3681,23 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				continue;
 			}
 
-			// Get the mesh node's rest transform for the bind pose
-			// Use GODOT_rest_transform if available, otherwise fall back to current transform
+			// Get the mesh node's world rest transform for the bind pose
+			// Compute world transform using rest transforms if available
 			Transform3D mesh_bind_transform = Transform3D();
-			Ref<GLTFNode> mesh_node = state->nodes[mesh_node_idx];
-			if (mesh_node.is_valid()) {
-				Variant rest_transform_var = mesh_node->get_additional_data("GODOT_rest_transform");
-				if (rest_transform_var.get_type() == Variant::TRANSFORM3D) {
-					mesh_bind_transform = rest_transform_var;
-				} else {
-					mesh_bind_transform = mesh_node->transform;
+			GLTFNodeIndex current = mesh_node_idx;
+			while (current >= 0 && current < state->nodes.size()) {
+				Ref<GLTFNode> node = state->nodes[current];
+				if (node.is_null()) {
+					break;
 				}
+				// Use rest transform if available, otherwise use current transform
+				Transform3D node_transform = node->transform;
+				Variant rest_transform_var = node->get_additional_data("GODOT_rest_transform");
+				if (rest_transform_var.get_type() == Variant::TRANSFORM3D) {
+					node_transform = rest_transform_var;
+				}
+				mesh_bind_transform = node_transform * mesh_bind_transform;
+				current = node->get_parent();
 			}
 
 			// Create skin deformer for the combined mesh (all surfaces)
@@ -3740,13 +3760,18 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 			// Create clusters for each joint in joints_original (matching reader order)
 			// Reader: iterates over fbx_skin->clusters and stores in joints_original order
+			// joints_original is the minimal set from glTF, inverse_binds matches it
+			// joints is the expanded set that includes all nodes between joints (used for mesh bone indices)
+			int clusters_created = 0;
 			for (int cluster_idx = 0; cluster_idx < joints_original.size(); cluster_idx++) {
 				GLTFNodeIndex joint_node_idx = joints_original[cluster_idx];
 				if (joint_node_idx < 0 || joint_node_idx >= state->nodes.size()) {
+					WARN_PRINT(vformat("FBX: Skin %d cluster %d has invalid joint node index %d", skin_i, cluster_idx, joint_node_idx));
 					continue;
 				}
 
 				if (!gltf_to_fbx_nodes.has(joint_node_idx)) {
+					WARN_PRINT(vformat("FBX: Skin %d cluster %d joint node %d was not exported, skipping cluster", skin_i, cluster_idx, joint_node_idx));
 					continue;
 				}
 
@@ -3762,13 +3787,34 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				ufbxw_skin_cluster_set_node(write_scene, fbx_cluster, fbx_bone_node);
 
 				// Get inverse bind matrix (reader stores geometry_to_bone directly as inverse_bind)
+				// In GLTF, inverse_bind is the transform from mesh space to bone space at bind time
+				// In FBX, geometry_to_bone is the same thing: transform from mesh vertex space to bone space
 				Transform3D inverse_bind = Transform3D();
 				if (cluster_idx >= 0 && cluster_idx < inverse_binds.size()) {
 					inverse_bind = inverse_binds[cluster_idx];
 				}
 				// Compute from world transform if not found
+				// Use stored value if available (it should be correct from import)
 				if (inverse_bind == Transform3D()) {
-					Transform3D bone_world_transform = _compute_node_world_transform(state, joint_node_idx);
+					// Compute bone world transform using rest transforms
+					Transform3D bone_world_transform = Transform3D();
+					GLTFNodeIndex current = joint_node_idx;
+					while (current >= 0 && current < state->nodes.size()) {
+						Ref<GLTFNode> node = state->nodes[current];
+						if (node.is_null()) {
+							break;
+						}
+						// Use rest transform if available, otherwise use current transform
+						Transform3D node_transform = node->transform;
+						Variant rest_transform_var = node->get_additional_data("GODOT_rest_transform");
+						if (rest_transform_var.get_type() == Variant::TRANSFORM3D) {
+							node_transform = rest_transform_var;
+						}
+						bone_world_transform = node_transform * bone_world_transform;
+						current = node->get_parent();
+					}
+					// geometry_to_bone = inverse(bone_world) * mesh_world
+					// This transforms from mesh world space to bone world space, then to bone local space
 					inverse_bind = bone_world_transform.inverse() * mesh_bind_transform;
 				}
 
@@ -3805,6 +3851,10 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 						ufbxw_skin_cluster_set_weights(write_scene, fbx_cluster, indices_buffer, weights_buffer);
 					}
 				}
+				clusters_created++;
+			}
+			if (clusters_created == 0) {
+				WARN_PRINT(vformat("FBX: Skin %d mesh %d has no valid clusters created", skin_i, associated_mesh_idx));
 			}
 			is_first_mesh = false;
 		}
