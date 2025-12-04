@@ -461,7 +461,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
+			for (const KeyValue<StringName, int64_t> &F : t->gdtype->get_integer_constant_map(true)) {
 				snames.push_back(F.key);
 			}
 
@@ -469,7 +469,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (const StringName &F : snames) {
 				hash = hash_murmur3_one_64(F.hash(), hash);
-				hash = hash_murmur3_one_64(uint64_t(t->constant_map[F]), hash);
+				hash = hash_murmur3_one_64(uint64_t(t->gdtype->get_integer_constant_map(true)[F]), hash);
 			}
 		}
 
@@ -883,7 +883,7 @@ use_script:
 	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
-void ClassDB::_add_class(const GDType &p_class, const GDType *p_inherits) {
+void ClassDB::_add_class(GDType &p_class, const GDType *p_inherits) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	const StringName &name = p_class.get_name();
@@ -1158,61 +1158,19 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	ClassInfo *type = classes.getptr(p_class);
-
 	ERR_FAIL_NULL(type);
 
-	if (type->constant_map.has(p_name)) {
-		ERR_FAIL();
-	}
-
-	type->constant_map[p_name] = p_constant;
-
-	String enum_name = p_enum;
-	if (!enum_name.is_empty()) {
-		if (enum_name.contains_char('.')) {
-			enum_name = enum_name.get_slicec('.', 1);
-		}
-
-		ClassInfo::EnumInfo *constants_list = type->enum_map.getptr(enum_name);
-
-		if (constants_list) {
-			constants_list->constants.push_back(p_name);
-			constants_list->is_bitfield = p_is_bitfield;
-		} else {
-			ClassInfo::EnumInfo new_list;
-			new_list.is_bitfield = p_is_bitfield;
-			new_list.constants.push_back(p_name);
-			type->enum_map[enum_name] = new_list;
-		}
-	}
-
-#ifdef DEBUG_ENABLED
-	type->constant_order.push_back(p_name);
-#endif // DEBUG_ENABLED
+	type->gdtype->bind_integer_constant(p_enum, p_name, p_constant, p_is_bitfield);
 }
 
 void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
 
-	while (type) {
-#ifdef DEBUG_ENABLED
-		for (const StringName &E : type->constant_order) {
-			p_constants->push_back(E);
-		}
-#else
-
-		for (const KeyValue<StringName, int64_t> &E : type->constant_map) {
-			p_constants->push_back(E.key);
-		}
-
-#endif // DEBUG_ENABLED
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
+	for (const KeyValue<StringName, int64_t> &E : type->gdtype->get_integer_constant_map(p_no_inheritance)) {
+		p_constants->push_back(E.key);
 	}
 }
 
@@ -1220,23 +1178,19 @@ int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringNam
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-
-	while (type) {
-		int64_t *constant = type->constant_map.getptr(p_name);
+	if (type) {
+		const int64_t *constant = type->gdtype->get_integer_constant_map(false).getptr(p_name);
 		if (constant) {
 			if (p_success) {
 				*p_success = true;
 			}
 			return *constant;
 		}
-
-		type = type->inherits_ptr;
 	}
 
 	if (p_success) {
 		*p_success = false;
 	}
-
 	return 0;
 }
 
@@ -1244,60 +1198,33 @@ bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, false);
 
-	while (type) {
-		if (type->constant_map.has(p_name)) {
-			return true;
-		}
-		if (p_no_inheritance) {
-			return false;
-		}
-
-		type = type->inherits_ptr;
-	}
-
-	return false;
+	return type->gdtype->get_integer_constant_map(p_no_inheritance).has(p_name);
 }
 
 StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, StringName());
 
-	while (type) {
-		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
-			List<StringName> &constants_list = E.value.constants;
-			const List<StringName>::Element *found = constants_list.find(p_name);
-			if (found) {
-				return E.key;
-			}
-		}
-
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
-	}
-
-	return StringName();
+	const GDType::EnumInfo *enum_info = type->gdtype->get_integer_constant_enum(p_name, p_no_inheritance);
+	return enum_info ? enum_info->name : StringName();
 }
 
 void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	if (!type) {
+		// TODO This should probably error, but didn't previously.
+		// Making this error leads to a few prints during unit tests.
+		return;
+	}
 
-	while (type) {
-		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
-			p_enums->push_back(E.key);
-		}
-
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
+	for (const KeyValue<StringName, const GDType::EnumInfo *> &E : type->gdtype->get_enum_map(p_no_inheritance)) {
+		p_enums->push_back(E.key);
 	}
 }
 
@@ -1305,21 +1232,13 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
 
-	while (type) {
-		const ClassInfo::EnumInfo *constants = type->enum_map.getptr(p_enum);
+	const GDType::EnumInfo *const *enum_info = type->gdtype->get_enum_map(p_no_inheritance).getptr(p_enum);
+	ERR_FAIL_NULL(enum_info);
 
-		if (constants) {
-			for (const List<StringName>::Element *E = constants->constants.front(); E; E = E->next()) {
-				p_constants->push_back(E->get());
-			}
-		}
-
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
+	for (const KeyValue<StringName, int64_t> &kv : (*enum_info)->values) {
+		p_constants->push_back(kv.key);
 	}
 }
 
@@ -1354,38 +1273,21 @@ bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, false);
 
-	while (type) {
-		if (type->enum_map.has(p_name)) {
-			return true;
-		}
-		if (p_no_inheritance) {
-			return false;
-		}
-
-		type = type->inherits_ptr;
-	}
-
-	return false;
+	return type->gdtype->get_enum_map(p_no_inheritance).has(p_name);
 }
 
 bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, false);
 
-	while (type) {
-		if (type->enum_map.has(p_name) && type->enum_map[p_name].is_bitfield) {
-			return true;
-		}
-		if (p_no_inheritance) {
-			return false;
-		}
+	const GDType::EnumInfo *const *enum_info = type->gdtype->get_enum_map(p_no_inheritance).getptr(p_name);
+	ERR_FAIL_NULL_V(enum_info, false);
 
-		type = type->inherits_ptr;
-	}
-
-	return false;
+	return (*enum_info)->is_bitfield;
 }
 
 void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {
@@ -1724,7 +1626,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			return true;
 		}
 
-		const int64_t *c = check->constant_map.getptr(p_property); //constants count
+		const int64_t *c = check->gdtype->get_integer_constant_map(true).getptr(p_property); //constants count
 		if (c) {
 			r_value = *c;
 			return true;
