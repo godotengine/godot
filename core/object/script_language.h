@@ -204,19 +204,50 @@ public:
 	}
 };
 
-class ScriptLanguage : public Object {
-	GDCLASS(ScriptLanguage, Object)
+class LanguageServer {
 
+	static class Language* _languages[16];
+	static int _language_count;
+	static Mutex languages_mutex;
+
+public:
+
+	static int get_language_count() { return _language_count; }
+	static Language* get_language(int idx) { return _languages[idx]; }
+	static String find_matching_language(const String &p_file_name);
+	static void register_language(Language *p_language);
+	static void unregister_language(Language *p_language);
+};
+
+class Language : public Object {
+	GDCLASS(Language, Object)
+
+public:
+	virtual String get_name() const = 0;
+	virtual String get_generated_name() const = 0;
+	virtual String get_extension() const = 0;
+	virtual bool matches_language(const String &p_file_name) const;
+};
+
+class ShaderLanguageInfo : public Language {
+	GDCLASS(ShaderLanguageInfo, Language)
+
+public:
+	String get_name() const override { return "GDShader"; }
+	String get_generated_name() const override { return "Shader"; }
+	String get_extension() const override{ return "gdshader"; }
+};
+
+class ScriptLanguage : public Language {
+	GDCLASS(ScriptLanguage, Language)
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_name() const = 0;
 
 	/* LANGUAGE FUNCTIONS */
 	virtual void init() = 0;
 	virtual String get_type() const = 0;
-	virtual String get_extension() const = 0;
 	virtual void finish() = 0;
 
 	/* EDITOR FUNCTIONS */

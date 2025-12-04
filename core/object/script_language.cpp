@@ -47,6 +47,10 @@ bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
+class Language* LanguageServer:: _languages[16];
+int LanguageServer::_language_count = 0;
+Mutex LanguageServer::languages_mutex;
+
 // These need to be the last static variables in this file, since we're exploiting the reverse-order destruction of static variables.
 static bool is_program_exiting = false;
 struct ProgramExitGuard {
@@ -132,6 +136,30 @@ int Script::get_script_method_argument_count(const StringName &p_method, bool *r
 		*r_is_valid = true;
 	}
 	return mi.arguments.size();
+}
+
+String LanguageServer::find_matching_language(const String &p_file_name) {
+	MutexLock lock(languages_mutex);
+
+	for (int idx = 0; idx < _language_count; ++idx) {
+		if(_languages[idx]->matches_language(p_file_name)) {
+			return _languages[idx]->get_name();
+		}
+	}
+	return "";
+}
+
+void LanguageServer::register_language(Language *p_language) {
+	MutexLock lock(languages_mutex);
+
+	if (_language_count> 16)
+		return;
+
+	_languages[_language_count++] = p_language;
+}
+
+void LanguageServer::unregister_language(Language *p_language) {
+	MutexLock lock(languages_mutex);
 }
 
 #ifdef TOOLS_ENABLED
@@ -657,6 +685,18 @@ TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_cached_characte
 	}
 
 	return charac;
+}
+
+bool Language::matches_language(const String &p_file_name) const {
+	if (p_file_name.get_extension() == get_extension()) {
+
+		return true;
+	}
+
+	int pattern_start_index = p_file_name.rfind_char(':') + 1;
+	const String pattern_name = p_file_name.substr(pattern_start_index, get_generated_name().length());
+
+	return pattern_name == get_generated_name();
 }
 
 void ScriptLanguage::_bind_methods() {

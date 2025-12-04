@@ -143,6 +143,11 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 		script_language_gd = memnew(GDScriptLanguage);
 		ScriptServer::register_language(script_language_gd);
 
+		ShaderLanguageInfo* shader_language_info = memnew(ShaderLanguageInfo);
+
+		LanguageServer::register_language(script_language_gd);
+		LanguageServer::register_language(shader_language_info);
+
 		resource_loader_gd.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_gd);
 

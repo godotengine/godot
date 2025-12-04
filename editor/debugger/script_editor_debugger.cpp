@@ -674,14 +674,20 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 
 	// Find the language of the error's source file.
 	String source_language_name = "C++"; // Default value is the old hard-coded one.
-	const String source_file_extension = oe.source_file.get_extension();
+	const String matching_language = LanguageServer::find_matching_language(oe.source_file);
+
+	if (matching_language != "") {
+		source_language_name = matching_language;
+	}
+
+	/*const String source_file_extension = oe.source_file.get_extension();
 	for (int i = 0; i < ScriptServer::get_language_count(); ++i) {
 		ScriptLanguage *script_language = ScriptServer::get_language(i);
 		if (source_file_extension == script_language->get_extension()) {
 			source_language_name = script_language->get_name();
 			break;
 		}
-	}
+	}*/
 
 	if (!oe.error_descr.is_empty()) {
 		// Add item for C++ error condition.

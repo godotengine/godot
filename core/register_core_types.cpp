@@ -171,6 +171,7 @@ void register_core_types() {
 	}
 
 	GDREGISTER_ABSTRACT_CLASS(Script);
+	GDREGISTER_ABSTRACT_CLASS(Language);
 	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
 	GDREGISTER_CLASS(ScriptBacktrace);
 	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);

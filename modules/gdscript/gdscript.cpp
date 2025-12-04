@@ -2322,6 +2322,10 @@ String GDScriptLanguage::get_type() const {
 	return "GDScript";
 }
 
+String GDScriptLanguage::get_generated_name() const {
+	return "GDScript";
+}
+
 String GDScriptLanguage::get_extension() const {
 	return "gd";
 }

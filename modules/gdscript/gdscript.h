@@ -592,6 +592,7 @@ public:
 	/* LANGUAGE FUNCTIONS */
 	virtual void init() override;
 	virtual String get_type() const override;
+	virtual String get_generated_name() const override;
 	virtual String get_extension() const override;
 	virtual void finish() override;
 
