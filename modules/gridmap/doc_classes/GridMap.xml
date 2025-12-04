@@ -28,6 +28,12 @@
 				Clears all baked meshes. See [method make_baked_meshes].
 			</description>
 		</method>
+		<method name="fix_invalid_cells">
+			<return type="void" />
+			<description>
+				Clears cells that do not exist in the grid map.
+			</description>
+		</method>
 		<method name="get_bake_mesh_instance">
 			<return type="RID" />
 			<param index="0" name="idx" type="int" />
