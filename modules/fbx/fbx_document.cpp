@@ -3435,16 +3435,23 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 									int vertex_count = bones.size() / num_weights_per_vertex;
 
-									// Create reverse mapping from Skeleton3D bone index to joint index in joints_original
-									// Bone indices in mesh are Skeleton3D bone indices (not converted during GLTF serialization)
-									// Use the Skin resource where bind_i corresponds to joint index in joints_original
+									// In FBX: nodes and joints are the same - a cluster's bone_node is just a node
+									// In Godot: skeleton bones (Skeleton3D bone indices) map to GLTF nodes (GLTFNodeIndex)
+									// joints_original contains GLTFNodeIndex values (the nodes/joints)
+									// joint_i is the cluster index (index into joints_original)
+									// 
+									// Bone indices in mesh are Skeleton3D bone indices (from Godot scenes)
+									// We need to map: Skeleton3D bone index → GLTFNodeIndex → index in joints_original
+									// 
+									// Use Skin resource: bind_i (index in joints_original) maps to Skeleton3D bone index
+									// Reverse this to map Skeleton3D bone index → bind_i (joint index/cluster index)
 									HashMap<int, int> bone_idx_to_joint_idx;
 									Ref<Skin> godot_skin = gltf_skin->get_godot_skin();
 									if (godot_skin.is_valid()) {
 										for (int bind_i = 0; bind_i < godot_skin->get_bind_count(); bind_i++) {
 											int bone_idx = godot_skin->get_bind_bone(bind_i);
 											if (bone_idx >= 0 && bind_i < joints_original.size()) {
-												// bind_i is the index in joints_original, so use it directly
+												// bind_i is the index in joints_original (cluster index)
 												bone_idx_to_joint_idx[bone_idx] = bind_i;
 											}
 										}
@@ -3463,14 +3470,21 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 												continue;
 											}
 
-											// Convert Skeleton3D bone index to joint index in joints_original
+											// Map Skeleton3D bone index to joint index (cluster index)
+											// joint_i is the cluster index (index into joints_original)
+											int joint_idx = -1;
 											if (bone_idx_to_joint_idx.has(bone_idx)) {
-												int joint_idx = bone_idx_to_joint_idx[bone_idx];
-												// Check if this matches the current cluster (joint_i is index into joints_original)
-												if (joint_idx == joint_i) {
-													vertex_indices.push_back(vertex_i);
-													cluster_weights.push_back((ufbxw_real)weight);
-												}
+												// Bone index is Skeleton3D bone index - map to joint index
+												joint_idx = bone_idx_to_joint_idx[bone_idx];
+											} else if (bone_idx >= 0 && bone_idx < joints_original.size()) {
+												// Bone index is already cluster index (index into joints_original)
+												joint_idx = bone_idx;
+											}
+
+											// Check if this matches the current cluster
+											if (joint_idx == joint_i) {
+												vertex_indices.push_back(vertex_i);
+												cluster_weights.push_back((ufbxw_real)weight);
 											}
 										}
 									}
