@@ -2896,12 +2896,34 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 			// Get indices (triangles) - meshes should have triangles
 			Variant index_var = surface_arrays[Mesh::ARRAY_INDEX];
-			if (index_var.get_type() != Variant::PACKED_INT32_ARRAY && index_var.get_type() != Variant::NIL) {
+			Vector<int> indices;
+			
+			if (index_var.get_type() == Variant::PACKED_INT32_ARRAY) {
+				indices = index_var;
+			} else if (index_var.get_type() == Variant::NIL) {
+				// No indices provided - generate sequential indices for all vertices
+				// This creates a simple triangle list: 0,1,2, 3,4,5, 6,7,8, ...
+				// Note: This assumes vertices are already in triangle order
+				indices.resize(vertices.size());
+				for (int i = 0; i < vertices.size(); i++) {
+					indices.write[i] = i;
+				}
+			} else {
 				continue; // Invalid index data, try next surface
 			}
-			Vector<int> indices = index_var;
+			
 			if (indices.size() == 0) {
 				continue; // Try next surface
+			}
+			
+			// Ensure indices form complete triangles (multiple of 3)
+			if (indices.size() % 3 != 0) {
+				// Truncate to nearest multiple of 3
+				int valid_triangle_count = (indices.size() / 3) * 3;
+				indices.resize(valid_triangle_count);
+				if (indices.size() == 0) {
+					continue;
+				}
 			}
 
 			// Create a separate FBX mesh for this surface
