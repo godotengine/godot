@@ -491,6 +491,27 @@ void ParticlesStorage::particles_set_transform_align(RID p_particles, RS::Partic
 	particles->transform_align = p_transform_align;
 }
 
+void ParticlesStorage::particles_set_transform_align_flags(RID p_particles, uint32_t p_flags) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->align_flags = p_flags;
+}
+
+void ParticlesStorage::particles_set_transform_align_channel_filter(RID p_particles, RS::ParticlesTransformAlignCustomSrc p_transform_align_channel_filter) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_src = p_transform_align_channel_filter;
+}
+
+void ParticlesStorage::particles_set_transform_align_axis(RID p_particles, RS::ParticlesTransformAlignAxis p_rotation_axis) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_axis = p_rotation_axis;
+}
+
 void ParticlesStorage::particles_set_process_material(RID p_particles, RID p_material) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
@@ -1220,7 +1241,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
-	if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+	if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD) {
 		return;
 	}
 
@@ -1295,6 +1316,9 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	copy_push_constant.align_up[2] = p_up_axis.z;
 
 	copy_push_constant.align_mode = particles->transform_align;
+	copy_push_constant.align_src = particles->transform_align_src;
+	copy_push_constant.align_axis = uint32_t(particles->transform_align_axis);
+	copy_push_constant.align_flags = particles->align_flags;
 
 	if (do_sort) {
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -1619,7 +1643,18 @@ void ParticlesStorage::update_particles() {
 				// So, we need to pass the inverse of the emission transform to bring the
 				// particles to local coordinates before drawing.
 				Transform3D inv = particles->emission_transform.affine_inverse();
-				RendererRD::MaterialStorage::store_transform(inv, copy_push_constant.inv_emission_transform);
+				copy_push_constant.inv_emission_transform[0] = inv.basis.rows[0][0];
+				copy_push_constant.inv_emission_transform[1] = inv.basis.rows[1][0];
+				copy_push_constant.inv_emission_transform[2] = inv.basis.rows[2][0];
+				copy_push_constant.inv_emission_transform[3] = inv.basis.rows[0][1];
+				copy_push_constant.inv_emission_transform[4] = inv.basis.rows[1][1];
+				copy_push_constant.inv_emission_transform[5] = inv.basis.rows[2][1];
+				copy_push_constant.inv_emission_transform[6] = inv.basis.rows[0][2];
+				copy_push_constant.inv_emission_transform[7] = inv.basis.rows[1][2];
+				copy_push_constant.inv_emission_transform[8] = inv.basis.rows[2][2];
+				copy_push_constant.inv_emission_transform[9] = inv.origin.x;
+				copy_push_constant.inv_emission_transform[10] = inv.origin.y;
+				copy_push_constant.inv_emission_transform[11] = inv.origin.z;
 			}
 
 			copy_push_constant.total_particles = total_amount;
@@ -1628,6 +1663,9 @@ void ParticlesStorage::update_particles() {
 			copy_push_constant.align_up[0] = 0;
 			copy_push_constant.align_up[1] = 0;
 			copy_push_constant.align_up[2] = 0;
+			copy_push_constant.align_src = particles->transform_align_src;
+			copy_push_constant.align_axis = uint32_t(particles->transform_align_axis);
+			copy_push_constant.align_flags = particles->align_flags;
 
 			if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
 				copy_push_constant.trail_size = particles->trail_bind_poses.size();

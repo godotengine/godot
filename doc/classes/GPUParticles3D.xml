@@ -165,6 +165,16 @@
 			The amount of time the particle's trail should represent (in seconds). Only effective if [member trail_enabled] is [code]true[/code].
 		</member>
 		<member name="transform_align" type="int" setter="set_transform_align" getter="get_transform_align" enum="GPUParticles3D.TransformAlign" default="0">
+			The alignment of particles. Use this for billboarding and aligning to velocity.
+		</member>
+		<member name="transform_align_axis" type="int" setter="set_transform_align_axis" getter="get_transform_align_axis" enum="RenderingServer.ParticlesTransformAlignAxis">
+			When using transform align local billboard, which axis to use for the billboarding. Supports only X or Y.
+		</member>
+		<member name="transform_align_channel_filter" type="int" setter="set_transform_align_channel_filter" getter="get_transform_align_channel_filter" enum="RenderingServer.ParticlesTransformAlignCustomSrc">
+			In the case of billboarded particles, which custom channel to read from to calculate their angle.
+		</member>
+		<member name="transform_align_use_velocity" type="bool" setter="set_transform_align_use_velocity" getter="get_transform_align_use_velocity">
+			When using transform align local billboard, turn on to align to the velocity vector.
 		</member>
 		<member name="use_fixed_seed" type="bool" setter="set_use_fixed_seed" getter="get_use_fixed_seed" default="false">
 			If [code]true[/code], particles will use the same seed for every simulation using the seed defined in [member seed]. This is useful for situations where the visual outcome should be consistent across replays, for example when using Movie Maker mode.

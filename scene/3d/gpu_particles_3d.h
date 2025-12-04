@@ -46,10 +46,11 @@ public:
 	};
 
 	enum TransformAlign {
-		TRANSFORM_ALIGN_DISABLED,
-		TRANSFORM_ALIGN_Z_BILLBOARD,
-		TRANSFORM_ALIGN_Y_TO_VELOCITY,
-		TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY
+		TRANSFORM_ALIGN_DISABLED = RS::PARTICLES_TRANSFORM_ALIGN_DISABLED,
+		TRANSFORM_ALIGN_Z_BILLBOARD = RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD,
+		TRANSFORM_ALIGN_Y_TO_VELOCITY = RS::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY,
+		TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY = RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY,
+		TRANSFORM_ALIGN_LOCAL_BILLBOARD = RS::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD,
 	};
 
 	enum {
@@ -84,6 +85,9 @@ private:
 	double trail_lifetime = 0.3;
 
 	TransformAlign transform_align = TRANSFORM_ALIGN_DISABLED;
+	RS::ParticlesTransformAlignCustomSrc transform_align_channel_filter = RS::ParticlesTransformAlignCustomSrc::PARTICLES_ALIGN_CHANNEL_FILTER_X;
+	RS::ParticlesTransformAlignAxis transform_align_axis = RS::ParticlesTransformAlignAxis::PARTICLES_ALIGN_AXIS_Y;
+	bool transform_align_use_velocity = true;
 
 	Ref<Material> process_material;
 
@@ -180,6 +184,17 @@ public:
 
 	void set_transform_align(TransformAlign p_align);
 	TransformAlign get_transform_align() const;
+
+	void set_transform_align_channel_filter(RS::ParticlesTransformAlignCustomSrc p_align_channel_filter);
+	RS::ParticlesTransformAlignCustomSrc get_transform_align_channel_filter() const;
+
+	void set_transform_align_axis(RS::ParticlesTransformAlignAxis p_axis);
+	RS::ParticlesTransformAlignAxis get_transform_align_axis() const;
+
+	void set_transform_align_use_velocity(bool p_align_to_velocity);
+	bool get_transform_align_use_velocity() const;
+
+	uint32_t compute_align_flags() const;
 
 	void restart(bool p_keep_seed = false);
 

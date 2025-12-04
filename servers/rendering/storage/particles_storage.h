@@ -66,6 +66,9 @@ public:
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) = 0;
 
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) = 0;
+	virtual void particles_set_transform_align_channel_filter(RID p_particles, RS::ParticlesTransformAlignCustomSrc p_channel_filter) = 0;
+	virtual void particles_set_transform_align_flags(RID p_particles, uint32_t p_flags) = 0;
+	virtual void particles_set_transform_align_axis(RID p_particles, RS::ParticlesTransformAlignAxis p_rotation_axis) = 0;
 
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) = 0;
 
