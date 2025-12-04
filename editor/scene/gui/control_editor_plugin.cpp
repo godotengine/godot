@@ -244,6 +244,7 @@ EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
+	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(options);
 	add_focusable(options);
 	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyAnchorsPreset::_option_selected));
@@ -426,6 +427,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	flag_presets = memnew(OptionButton);
 	flag_presets->set_clip_text(true);
 	flag_presets->set_flat(true);
+	flag_presets->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	vb->add_child(flag_presets);
 	add_focusable(flag_presets);
 	set_label_reference(flag_presets);
