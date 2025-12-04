@@ -291,6 +291,7 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionMotionResult, "Vector2 travel;Vector2 remainder;Vector2 collision_point;Vector2 collision_normal;Vector2 collider_velocity;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;int collision_local_shape;ObjectID collider_id;RID collider;int collider_shape");
 
 	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsRayIntersectionResult2D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
