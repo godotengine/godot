@@ -1066,15 +1066,16 @@ void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
 	}
 }
 
-vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
-	float max_lod = 11.0;
-	float low = min(max(floor(lod), 0.0), max_lod - 1.0);
-	float high = min(max(floor(lod + 1.0), 1.0), max_lod);
-	vec2 sample_pos = clamp(uv, 0.0, 1.0) * texture_rect.zw; // take border into account
-	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, light_projector_sampler), texture_rect.xy + sample_pos, low);
-	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, light_projector_sampler), texture_rect.xy + sample_pos, high);
+#define MAX_AREA_LIGHT_ATLAS_LOD 8.0
 
-	float blend = high - lod;
+vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
+	float low = min(max(floor(lod), 0.0), MAX_AREA_LIGHT_ATLAS_LOD - 1.0);
+	float high = min(max(floor(lod + 1.0), 1.0), MAX_AREA_LIGHT_ATLAS_LOD);
+	vec2 sample_pos = texture_rect.xy + clamp(uv, 0.0, 1.0) * texture_rect.zw; // take border into account
+	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, light_projector_sampler), sample_pos, low);
+	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, light_projector_sampler), sample_pos, high);
+
+	float blend = high - clamp(lod, high-1.0, high);
 	vec4 sample_col = mix(sample_col_high, sample_col_low, blend);
 	return sample_col.rgb * sample_col.a; // premultiply alpha channel
 }
@@ -1121,7 +1122,7 @@ vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5]) {
 	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod);
 }
 
-void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], vec4 texture_rect, out float integral, out hvec3 tex_color) {
+void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], vec4 texture_rect, out float integral, out vec3 tex_color) {
 	// default is white
 	tex_color = vec3(1.0);
 	// construct the orthonormal basis around the normal vector
@@ -1382,9 +1383,9 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	points[3] = area_lights.data[idx].position + area_height - vertex;
 
 	float ltc_diffuse = float(0.0);
-	hvec3 ltc_diffuse_tex_color = vec3(1.0);
+	vec3 ltc_diffuse_tex_color = vec3(1.0);
 	float ltc_specular = float(0.0);
-	hvec3 ltc_specular_tex_color = vec3(1.0);
+	vec3 ltc_specular_tex_color = vec3(1.0);
 	ltc_evaluate(vertex, normal, eye_vec, mat3(1), points, area_lights.data[idx].projector_rect, ltc_diffuse, ltc_diffuse_tex_color);
 	ltc_evaluate(vertex, normal, eye_vec, M_inv, points, area_lights.data[idx].projector_rect, ltc_specular, ltc_specular_tex_color);
 	ltc_diffuse = max(ltc_diffuse, 0.0) / (2.0 * M_PI);
