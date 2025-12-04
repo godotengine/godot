@@ -60,7 +60,7 @@ class CommandQueueMT {
 		_FORCE_INLINE_ Command(T *p_instance, M p_method, FwdArgs &&...p_args) :
 				CommandBase(NeedsSync), instance(p_instance), method(p_method), args(std::forward<FwdArgs>(p_args)...) {}
 
-		void call() {
+		void call() override {
 			call_impl(BuildIndexSequence<sizeof...(Args)>{});
 		}
 
@@ -128,7 +128,7 @@ class CommandQueueMT {
 		command_mem.resize(size + alloc_size + sizeof(uint64_t));
 		*(uint64_t *)&command_mem[size] = alloc_size;
 		void *cmd = &command_mem[size + sizeof(uint64_t)];
-		new (cmd) T(std::forward<Args>(p_args)...);
+		memnew_placement(cmd, T(std::forward<Args>(p_args)...));
 		pending.store(true);
 	}
 
@@ -164,44 +164,39 @@ class CommandQueueMT {
 			return;
 		}
 
-		char cmd_backup[MAX_COMMAND_SIZE];
+		alignas(uint64_t) char cmd_local_mem[MAX_COMMAND_SIZE];
 
 		while (flush_read_ptr < command_mem.size()) {
 			uint64_t size = *(uint64_t *)&command_mem[flush_read_ptr];
 			flush_read_ptr += sizeof(uint64_t);
 
-			CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
-
 			// Protect against race condition between this thread
 			// during the call to the command and other threads potentially
-			// invalidating the pointer due to reallocs.
-			memcpy(cmd_backup, (char *)cmd, size);
+			// invalidating the pointer due to reallocs by relocating the object.
+			CommandBase *cmd_original = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
+			CommandBase *cmd_local = reinterpret_cast<CommandBase *>(cmd_local_mem);
+			memcpy(cmd_local_mem, (char *)cmd_original, size);
 
 			if (unique_flusher) {
 				// A single thread will pump; the lock is only needed for the command queue itself.
 				lock.temp_unlock();
-				((CommandBase *)cmd_backup)->call();
+				cmd_local->call();
 				lock.temp_relock();
 			} else {
 				// At least we can unlock during WTP operations.
 				uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(lock);
-				((CommandBase *)cmd_backup)->call();
+				cmd_local->call();
 				WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 			}
 
-			// Handle potential realloc due to the command and unlock allowance.
-			cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
-
-			if (unlikely(cmd->sync)) {
+			if (unlikely(cmd_local->sync)) {
 				sync_head++;
 				lock.temp_unlock(); // Give an opportunity to awaiters right away.
 				sync_cond_var.notify_all();
 				lock.temp_relock();
-				// Handle potential realloc happened during unlock.
-				cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 			}
 
-			cmd->~CommandBase();
+			cmd_local->~CommandBase();
 
 			flush_read_ptr += size;
 		}
