@@ -88,6 +88,17 @@ void EditorBottomPanel::_editor_settings_changed() {
 		}
 	}
 
+	// If the editor settings were changed to enable individual tabs, then set the
+	// individual tab heights to be equal to the current unified height and set
+	else {
+		for (int tab_idx = 0; tab_idx < get_tab_count(); tab_idx++) {
+			EditorDock *tab = Object::cast_to<EditorDock>(get_tab_control(tab_idx));
+			if (tab) {
+				dock_offsets[tab->get_effective_layout_key()] = dock_offset;
+			}
+		}
+	}
+
 	_update_center_split_offset();
 }
 
