@@ -368,6 +368,7 @@ protected:
 
 	bool _can_use_native_popup() const;
 	virtual void _item_menu_id_pressed(int p_option);
+	virtual void _dir_contents_changed() {}
 
 	virtual bool _should_use_native_popup() const;
 	virtual bool _should_hide_file(const String &p_file) const { return false; }

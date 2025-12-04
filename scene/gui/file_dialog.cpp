@@ -1064,8 +1064,11 @@ void FileDialog::_file_list_select_first() {
 }
 
 void FileDialog::_delete_confirm() {
-	OS::get_singleton()->move_to_trash(_get_item_path(_get_selected_file_idx()));
-	invalidate();
+	Error err = OS::get_singleton()->move_to_trash(_get_item_path(_get_selected_file_idx()));
+	if (err == OK) {
+		invalidate();
+		_dir_contents_changed();
+	}
 }
 
 void FileDialog::_filename_filter_selected() {
@@ -1537,6 +1540,7 @@ FileDialog::Access FileDialog::get_access() const {
 void FileDialog::_make_dir_confirm() {
 	Error err = dir_access->make_dir(new_dir_name->get_text().strip_edges());
 	if (err == OK) {
+		_dir_contents_changed();
 		_change_dir(new_dir_name->get_text().strip_edges());
 		update_filters();
 		_push_history();
