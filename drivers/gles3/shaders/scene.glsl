@@ -1565,6 +1565,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	vec3 normal = N;
 	vec3 light = L;
 	vec3 view = V;
+	bool is_area = false;
+	float area_diffuse = 1.0;
+	float area_specular = 1.0;
+	vec3 area_diffuse_tex_color = vec3(1.0);
+	vec3 area_specular_tex_color = vec3(1.0);
 
 	/* clang-format off */
 
@@ -1750,6 +1755,14 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 #endif // !DISABLE_LIGHT_OMNI
 
 #if !defined(DISABLE_LIGHT_AREA)
+
+float acos_approx(float p_x) {
+	float x = abs(p_x);
+	float res = -0.156583f * x + (M_PI / 2.0);
+	res *= sqrt(1.0f - x);
+	return (p_x >= 0) ? res : M_PI - res;
+}
+
 float integrate_edge_hill(vec3 p0, vec3 p1) {
 	// Approximation suggested by Hill and Heitz, calculating the integral of the spherical cosine distribution over the line between p0 and p1.
 	// Runs faster than the exact formula of Baum et al. (1989).
@@ -1883,7 +1896,7 @@ void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
 	}
 }
 
-vec3 ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4]) {
+float ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4]) {
 	// construct the orthonormal basis around the normal vector
 	vec3 x, z;
 	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector
@@ -1901,7 +1914,7 @@ vec3 ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 point
 	int n = 0;
 	clip_quad_to_horizon(L, n);
 	if (n == 0) {
-		return vec3(0, 0, 0);
+		return 0.0;
 	}
 
 	vec3 L_proj[5];
@@ -1922,9 +1935,9 @@ vec3 ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 point
 		float alpha = -dot(points[1], r10) / dot(r10, r10);
 		float beta = -dot(points[1], r12) / dot(r12, r12);
 		if (0.0 < alpha && alpha < 1.0 && 0.0 < beta && beta < 1.0) { // fragment is on light {
-			return vec3(2 * M_PI);
+			return 2.0 * M_PI;
 		} else {
-			return vec3(0.0);
+			return 0.0;
 		}
 	}
 
@@ -1939,7 +1952,7 @@ vec3 ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 point
 		I += integrate_edge(L_proj[4], L_proj[0], L[4], L[0]);
 	}
 
-	return vec3(abs(I));
+	return abs(I);
 }
 
 // implementation of area lights with Linearly Transformed Cosines (LTC): https://eheitzresearch.wordpress.com/415-2/
@@ -1982,33 +1995,8 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	float light_length = max(0, dist);
 	float decay = area_lights[idx].attenuation;
-#ifndef LIGHT_CODE_USED
-	decay -= 2.0; // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
-#endif
-	float attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, decay);
 
-	vec3 light_color = area_lights[idx].color;
-	attenuation *= shadow;
-
-#if defined(LIGHT_CODE_USED)
-	// light is written by the light shader
-
-	highp mat4 model_matrix = world_transform;
-	mat4 projection_matrix = scene_data_block.data.projection_matrix;
-	mat4 inv_projection_matrix = scene_data_block.data.inv_projection_matrix;
-
-	vec3 light = (light_center - vertex) / light_length;
-	vec3 view = eye_vec;
-	float specular_amount = area_lights[idx].specular_amount;
-
-	/* clang-format off */
-
-#CODE : LIGHT
-
-	/* clang-format on */
-
-#else
-	float theta = acos(dot(normal, eye_vec));
+	float theta = acos_approx(dot(normal, eye_vec));
 
 	vec4 M_brdf_abcd;
 	vec3 M_brdf_e_mag_fres;
@@ -2032,8 +2020,41 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	points[2] = area_lights[idx].position + area_width + area_height - vertex;
 	points[3] = area_lights[idx].position + area_height - vertex;
 
-	vec3 ltc_diffuse = max(vec3(ltc_evaluate(vertex, normal, eye_vec, mat3(1), points)), vec3(0));
-	vec3 ltc_specular = max(vec3(ltc_evaluate(vertex, normal, eye_vec, M_inv, points)), vec3(0));
+	float ltc_diffuse = max(ltc_evaluate(vertex, normal, eye_vec, mat3(1), points), 0.0);
+	float ltc_specular = max(ltc_evaluate(vertex, normal, eye_vec, M_inv, points), 0.0);
+
+#ifndef LIGHT_CODE_USED
+	decay -= 2.0; // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+#endif
+	float attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, decay);
+
+	vec3 light_color = area_lights[idx].color;
+	attenuation *= shadow;
+
+#if defined(LIGHT_CODE_USED)
+	// light is written by the light shader
+
+	highp mat4 model_matrix = world_transform;
+	mat4 projection_matrix = scene_data_block.data.projection_matrix;
+	mat4 inv_projection_matrix = scene_data_block.data.inv_projection_matrix;
+
+	vec3 light = (light_center - vertex) / light_length;
+	vec3 view = eye_vec;
+	float specular_amount = area_lights[idx].specular_amount;
+
+	bool is_area = true;
+	float area_diffuse = ltc_diffuse;
+	float area_specular = ltc_specular;
+	vec3 area_diffuse_tex_color = vec3(1.0);
+	vec3 area_specular_tex_color = vec3(1.0);
+
+	/* clang-format off */
+
+#CODE : LIGHT
+
+	/* clang-format on */
+
+#else
 
 	if (metallic < 1.0) {
 		diffuse_light += ltc_diffuse * light_color / (2.0 * M_PI) * attenuation;
