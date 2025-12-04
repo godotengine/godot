@@ -44,6 +44,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
+#include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
@@ -1036,13 +1037,22 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 	}
 }
 
-void CanvasItemEditor::_adjust_new_node_position(Node *p_node) {
+void CanvasItemEditor::_adjust_new_node_position(Object *p_node) {
 	if (node_create_position == Point2()) {
 		return;
 	}
 
-	CanvasItem *c = Object::cast_to<CanvasItem>(p_node);
-	if (c) {
+	if (MultiNodeEdit *p_node_edit = Object::cast_to<MultiNodeEdit>(p_node)) {
+		for (int i = 0; i < p_node_edit->get_node_count(); i++) {
+			Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+			Node *node = edited_scene->get_node(p_node_edit->get_node(i));
+			CanvasItem *c = Object::cast_to<CanvasItem>(node);
+			if (c) {
+				Transform2D xform = c->get_global_transform_with_canvas().affine_inverse() * c->get_transform();
+				c->_edit_set_position(xform.xform(node_create_position));
+			}
+		}
+	} else if (CanvasItem *c = Object::cast_to<CanvasItem>(p_node)) {
 		Transform2D xform = c->get_global_transform_with_canvas().affine_inverse() * c->get_transform();
 		c->_edit_set_position(xform.xform(node_create_position));
 	}
