@@ -431,6 +431,7 @@ private:
 	Callable palette_file_selected_callback;
 
 	EditorBottomPanel *bottom_panel = nullptr;
+	bool bottom_dock_tab_individual_height = false;
 
 	Tree *disk_changed_list = nullptr;
 	LocalVector<String> disk_changed_scenes;
@@ -778,6 +779,8 @@ public:
 	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"), uint32_t p_wrap_width = 0);
 
 	static bool is_cmdline_mode();
+
+	static bool is_bottom_dock_tab_individual_height();
 
 	static HashMap<String, Variant> get_initial_settings();
 

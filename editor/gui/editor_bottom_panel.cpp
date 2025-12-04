@@ -79,13 +79,25 @@ void EditorBottomPanel::_theme_changed() {
 }
 
 void EditorBottomPanel::set_bottom_panel_offset(int p_offset) {
-	EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
-	if (current_tab) {
-		dock_offsets[current_tab->get_effective_layout_key()] = p_offset;
+	if (EditorNode::get_singleton()->is_bottom_dock_tab_individual_height()){
+		// Store the individual offsets
+		EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
+		if (current_tab) {
+			dock_offsets[current_tab->get_effective_layout_key()] = p_offset;
+		}
+	} else {
+		// Store the unified offset
+		dock_offset = p_offset;
 	}
 }
 
 int EditorBottomPanel::get_bottom_panel_offset() {
+	// Return the unified height
+	if (!EditorNode::get_singleton()->is_bottom_dock_tab_individual_height()) {
+		return dock_offset;
+	}
+
+	// Load the individual tab heights
 	EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
 	if (current_tab) {
 		return dock_offsets[current_tab->get_effective_layout_key()];
@@ -127,14 +139,21 @@ void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, con
 		offsets[E.key] = E.value;
 	}
 	p_config_file->set_value(p_section, "bottom_panel_offsets", offsets);
+	p_config_file->set_value(p_section, "bottom_panel_offset", dock_offset);
 }
 
 void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section) {
-	const Dictionary offsets = p_config_file->get_value(p_section, "bottom_panel_offsets", Dictionary());
-	const LocalVector<Variant> offset_list = offsets.get_key_list();
-
-	for (const Variant &v : offset_list) {
-		dock_offsets[v] = offsets[v];
+	if (EditorNode::get_singleton()->is_bottom_dock_tab_individual_height()){
+		// Load the individual offsets
+		const Dictionary offsets = p_config_file->get_value(p_section, "bottom_panel_offsets", Dictionary());
+		const LocalVector<Variant> offset_list = offsets.get_key_list();
+		for (const Variant &v : offset_list) {
+			dock_offsets[v] = offsets[v];
+		}
+	} else {
+		// Load the unified offset
+		const int offset = p_config_file->get_value(p_section, "bottom_panel_offset", int());
+		dock_offset = offset;
 	}
 	_update_center_split_offset();
 }

@@ -1064,6 +1064,7 @@ void EditorNode::_notification(int p_what) {
 				theme->set_constant("dragging_unfold_wait_msec", "Tree", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 				theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 				editor_dock_manager->update_tab_styles();
+				bottom_dock_tab_individual_height = EDITOR_GET("interface/editor/bottom_dock_tab_individual_height");
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/scene_tabs")) {
@@ -6356,6 +6357,10 @@ bool EditorNode::is_cmdline_mode() {
 	return singleton->cmdline_mode;
 }
 
+bool EditorNode::is_bottom_dock_tab_individual_height() {
+	return singleton->bottom_dock_tab_individual_height;
+}
+
 void EditorNode::cleanup() {
 	_init_callbacks.clear();
 }
@@ -9219,6 +9224,7 @@ EditorNode::EditorNode() {
 			EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec);
 		}
 	}
+
 
 	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
