@@ -1307,7 +1307,6 @@ FindInFilesContainer::FindInFilesContainer() {
 	set_transient(true);
 	set_closable(true);
 	set_custom_minimum_size(Size2(0, 200 * EDSCALE));
-	set_clip_contents(false);
 
 	_tabs = memnew(TabContainer);
 	_tabs->set_tabs_visible(false);
