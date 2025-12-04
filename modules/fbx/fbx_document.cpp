@@ -2861,6 +2861,8 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	HashMap<GLTFMeshIndex, ufbxw_mesh> gltf_to_fbx_meshes; // One FBX mesh per GLTF mesh (with multiple material parts)
 	// Store per-face material indices for each FBX mesh (for material parts)
 	HashMap<ufbxw_id, Vector<int32_t>> fbx_mesh_face_material_indices;
+	// Store mapping from sequential index to internal material index for each mesh
+	HashMap<ufbxw_id, Vector<int32_t>> fbx_mesh_material_indices; // Maps fbx_mesh.id -> ordered list of internal material indices
 	// Store mapping of duplicate material indices to base materials (for surfaces that share materials)
 	HashMap<int32_t, Ref<Material>> duplicate_material_map; // Maps unique_mat_idx -> base material
 
@@ -3282,15 +3284,38 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			ufbxw_mesh_set_colors_indexed(write_scene, fbx_mesh, 0, colors_buffer, color_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
 		}
 
+		// Remap material indices to sequential indices (0, 1, 2, ...) for this mesh
+		// This ensures material indices match the order materials will be connected to mesh instances
+		HashMap<int32_t, int32_t> material_index_remap; // Maps internal_mat_idx -> sequential_idx
+		Vector<int32_t> unique_material_indices; // Ordered list of unique material indices used
+		for (int i = 0; i < face_material_indices.size(); i++) {
+			int32_t mat_idx = face_material_indices[i];
+			if (!material_index_remap.has(mat_idx)) {
+				int32_t sequential_idx = unique_material_indices.size();
+				material_index_remap[mat_idx] = sequential_idx;
+				unique_material_indices.push_back(mat_idx);
+			}
+		}
+		
+		// Remap face_material_indices to use sequential indices
+		Vector<int32_t> remapped_face_material_indices;
+		remapped_face_material_indices.resize(face_material_indices.size());
+		for (int i = 0; i < face_material_indices.size(); i++) {
+			remapped_face_material_indices.write[i] = material_index_remap[face_material_indices[i]];
+		}
+
 		// Set per-face materials (creates material parts)
-		if (face_material_indices.size() > 0) {
-			ufbxw_int_buffer material_indices_buffer = ufbxw_copy_int_array(write_scene, face_material_indices.ptr(), face_material_indices.size());
+		if (remapped_face_material_indices.size() > 0) {
+			ufbxw_int_buffer material_indices_buffer = ufbxw_copy_int_array(write_scene, remapped_face_material_indices.ptr(), remapped_face_material_indices.size());
 			ufbxw_mesh_set_face_material(write_scene, fbx_mesh, material_indices_buffer);
 		}
 
 		// Store the combined FBX mesh for the GLTF mesh
 		gltf_to_fbx_meshes[mesh_i] = fbx_mesh;
-		fbx_mesh_face_material_indices[fbx_mesh.id] = face_material_indices;
+		fbx_mesh_face_material_indices[fbx_mesh.id] = remapped_face_material_indices;
+		// Store mapping from sequential index to internal material index for this mesh
+		// This will be used later to connect materials to mesh instances in the correct order
+		fbx_mesh_material_indices[fbx_mesh.id] = unique_material_indices;
 
 		// Store mapping of unique material indices to base materials for duplicate material creation
 		// This will be used later to create duplicate FBX materials
@@ -3456,6 +3481,8 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 	// Materials are already assigned per-face using ufbxw_mesh_set_face_material
 	// This creates material parts automatically, matching FBX import behavior
+	// Material indices in face_material_indices are sequential (0, 1, 2, ...) and correspond
+	// to the order materials appear in fbx_mesh_material_indices for each mesh
 
 	// Export cameras
 	for (int cam_i = 0; cam_i < state->cameras.size(); cam_i++) {
