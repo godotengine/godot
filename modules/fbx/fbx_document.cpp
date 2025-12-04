@@ -3369,6 +3369,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			ufbxw_skin_deformer_set_skinning_type(write_scene, fbx_skin_deformer, UFBXW_SKINNING_TYPE_LINEAR);
 
 			// Set mesh bind transform (mesh's transform at bind time)
+			// Note: ufbxw_create_skin_deformer already creates the connection, so we don't need ufbxw_skin_deformer_add_mesh
 			ufbxw_matrix mesh_bind_matrix = _transform_to_ufbxw_matrix(mesh_bind_transform);
 			ufbxw_skin_deformer_set_mesh_bind_transform(write_scene, fbx_skin_deformer, mesh_bind_matrix);
 
@@ -3434,7 +3435,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 					if (!importer_mesh.is_null() && mesh_idx < importer_mesh->get_surface_count()) {
 						// Get bone and weight arrays from the surface corresponding to this mesh
 						Array surface_arrays = importer_mesh->get_surface_arrays(mesh_idx);
-						if (surface_arrays.size() > Mesh::ARRAY_MAX) {
+						if (surface_arrays.size() > Mesh::ARRAY_BONES && surface_arrays.size() > Mesh::ARRAY_WEIGHTS) {
 							Variant bones_variant = surface_arrays[Mesh::ARRAY_BONES];
 							Variant weights_variant = surface_arrays[Mesh::ARRAY_WEIGHTS];
 
@@ -3517,6 +3518,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 										ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, vertex_indices.ptr(), vertex_indices.size());
 										ufbxw_real_buffer weights_buffer = ufbxw_copy_real_array(write_scene, cluster_weights.ptr(), cluster_weights.size());
 										ufbxw_skin_cluster_set_weights(write_scene, fbx_cluster, indices_buffer, weights_buffer);
+										print_verbose(vformat("FBX export: Set %d weights for cluster %d (joint %d)", vertex_indices.size(), joint_i, joint_node_idx));
+									} else {
+										ERR_PRINT(vformat("FBX export: No weights found for cluster %d (joint %d, bone node %d)", joint_i, joint_node_idx, fbx_bone_node.id));
 									}
 								}
 							}
