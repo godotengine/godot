@@ -317,6 +317,9 @@ void EditorProperty::_notification(int p_what) {
 				int child_room = size.width * (1.0 - split_ratio);
 				int separation = 4 * EDSCALE;
 				int height = label.is_empty() ? 0 : theme_cache.font->get_height(theme_cache.font_size) + separation;
+				if (!bottom_editor && height < size.height) {
+					height = size.height;
+				}
 				int half_padding = theme_cache.padding / 2;
 				bool no_children = true;
 
