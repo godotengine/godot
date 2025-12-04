@@ -3458,11 +3458,21 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 									// joints_original contains GLTFNodeIndex values (the nodes/joints)
 									// joint_i is the cluster index (index into joints_original)
 									// 
-									// Bone indices in mesh are Skeleton3D bone indices (from Godot scenes)
-									// We need to map: Skeleton3D bone index → GLTFNodeIndex → index in joints_original
+									// Bone indices in mesh can be:
+									// 1. Indices into joints array (from GLTF export) - these are GLTFNodeIndex values
+									// 2. Skeleton3D bone indices (from Godot scenes)
 									// 
-									// Use Skin resource: bind_i (index in joints_original) maps to Skeleton3D bone index
-									// Reverse this to map Skeleton3D bone index → bind_i (joint index/cluster index)
+									// We need to map bone indices to joint indices (indices into joints_original)
+									// 
+									// Strategy:
+									// 1. Build a map from GLTFNodeIndex to index in joints_original
+									// 2. Use Skin resource to map Skeleton3D bone index → bind_i (index in joints_original)
+									// 3. For bone indices that are already joint indices, map via joints array
+									HashMap<GLTFNodeIndex, int> joint_node_to_original_idx;
+									for (int orig_i = 0; orig_i < joints_original.size(); orig_i++) {
+										joint_node_to_original_idx[joints_original[orig_i]] = orig_i;
+									}
+									
 									HashMap<int, int> bone_idx_to_joint_idx;
 									Ref<Skin> godot_skin = gltf_skin->get_godot_skin();
 									if (godot_skin.is_valid()) {
@@ -3472,6 +3482,15 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 												// bind_i is the index in joints_original (cluster index)
 												bone_idx_to_joint_idx[bone_idx] = bind_i;
 											}
+										}
+									}
+									
+									// Also build a map from joints array index to joints_original index
+									HashMap<int, int> joints_idx_to_original_idx;
+									for (int joints_i = 0; joints_i < joints.size(); joints_i++) {
+										GLTFNodeIndex joint_node = joints[joints_i];
+										if (joint_node_to_original_idx.has(joint_node)) {
+											joints_idx_to_original_idx[joints_i] = joint_node_to_original_idx[joint_node];
 										}
 									}
 
@@ -3488,12 +3507,17 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 												continue;
 											}
 
-											// Map Skeleton3D bone index to joint index (cluster index)
+											// Map bone index to joint index (cluster index)
 											// joint_i is the cluster index (index into joints_original)
 											int joint_idx = -1;
 											if (bone_idx_to_joint_idx.has(bone_idx)) {
-												// Bone index is Skeleton3D bone index - map to joint index
+												// Bone index is Skeleton3D bone index - map to joint index via Skin resource
 												joint_idx = bone_idx_to_joint_idx[bone_idx];
+											} else if (bone_idx >= 0 && bone_idx < joints.size()) {
+												// Bone index is index into joints array - map to joints_original index
+												if (joints_idx_to_original_idx.has(bone_idx)) {
+													joint_idx = joints_idx_to_original_idx[bone_idx];
+												}
 											} else if (bone_idx >= 0 && bone_idx < joints_original.size()) {
 												// Bone index is already cluster index (index into joints_original)
 												joint_idx = bone_idx;
