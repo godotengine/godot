@@ -3420,17 +3420,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				continue;
 			}
 
-			// Get the mesh node's rest transform for the bind pose
-			// Use GODOT_rest_transform if available, otherwise fall back to current transform
+			// Get the mesh node's transform for the bind pose
 			Transform3D mesh_bind_transform = Transform3D();
 			Ref<GLTFNode> mesh_node = state->nodes[mesh_node_idx];
 			if (mesh_node.is_valid()) {
-				Variant rest_transform_var = mesh_node->get_additional_data("GODOT_rest_transform");
-				if (rest_transform_var.get_type() == Variant::TRANSFORM3D) {
-					mesh_bind_transform = rest_transform_var;
-				} else {
-					mesh_bind_transform = mesh_node->transform;
-				}
+				mesh_bind_transform = mesh_node->transform;
 			}
 
 			// Create skin deformer for each surface of this mesh
@@ -3499,23 +3493,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 					}
 					// Compute from world transform if not found
 					if (inverse_bind == Transform3D()) {
-						// Compute bone world transform using rest transforms
-						Transform3D bone_world_transform = Transform3D();
-						GLTFNodeIndex current = joint_node_idx;
-						while (current >= 0 && current < state->nodes.size()) {
-							Ref<GLTFNode> node = state->nodes[current];
-							if (node.is_null()) {
-								break;
-							}
-							// Use rest transform if available, otherwise use current transform
-							Transform3D node_transform = node->transform;
-							Variant rest_transform_var = node->get_additional_data("GODOT_rest_transform");
-							if (rest_transform_var.get_type() == Variant::TRANSFORM3D) {
-								node_transform = rest_transform_var;
-							}
-							bone_world_transform = node_transform * bone_world_transform;
-							current = node->get_parent();
-						}
+						Transform3D bone_world_transform = _compute_node_world_transform(state, joint_node_idx);
 						inverse_bind = bone_world_transform.inverse() * mesh_bind_transform;
 					}
 
