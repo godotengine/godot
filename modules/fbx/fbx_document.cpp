@@ -2858,8 +2858,8 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	// This converts GLTF meshes to FBX meshes and attaches them to nodes
 	// Create one FBX mesh per surface (avoid combining surfaces)
 	HashMap<GLTFMeshIndex, Vector<ufbxw_mesh>> gltf_to_fbx_meshes; // Multiple meshes per GLTF mesh (one per surface)
-	// Store per-face material indices for each FBX mesh (to be applied after materials are created)
-	HashMap<ufbxw_id, Vector<int32_t>> fbx_mesh_face_material_indices;
+	// Store material index for each FBX mesh (one material per surface)
+	HashMap<ufbxw_id, int32_t> fbx_mesh_material_indices;
 
 	for (int mesh_i = 0; mesh_i < state->meshes.size(); mesh_i++) {
 		Ref<GLTFMesh> gltf_mesh = state->meshes[mesh_i];
@@ -2879,10 +2879,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		for (int surface_i = 0; surface_i < importer_mesh->get_surface_count(); surface_i++) {
 			Array surface_arrays = importer_mesh->get_surface_arrays(surface_i);
 
-			// Check if array is valid and has required size
-			if (surface_arrays.size() < Mesh::ARRAY_MAX) {
-				continue; // Invalid array, try next surface
-			}
+			ERR_FAIL_INDEX_V(surface_arrays.size(), Mesh::ARRAY_MAX, ERR_INVALID_PARAMETER);
 
 			// Get vertices - meshes must have vertices
 			Variant vertex_var = surface_arrays[Mesh::ARRAY_VERTEX];
@@ -2890,9 +2887,6 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				continue; // Invalid vertex data, try next surface
 			}
 			Vector<Vector3> vertices = vertex_var;
-			if (vertices.size() == 0) {
-				continue; // Try next surface
-			}
 
 			// Get indices (triangles) - meshes should have triangles
 			Variant index_var = surface_arrays[Mesh::ARRAY_INDEX];
@@ -2910,10 +2904,6 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				}
 			} else {
 				continue; // Invalid index data, try next surface
-			}
-			
-			if (indices.size() == 0) {
-				continue; // Try next surface
 			}
 			
 			// Ensure indices form complete triangles (multiple of 3)
@@ -3137,15 +3127,10 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				}
 			}
 
-			// Store per-face material indices (all faces in this surface use the same material)
-			int face_count = indices.size() / 3;
-			Vector<int32_t> face_material_indices;
-			face_material_indices.resize(face_count);
-			for (int tri = 0; tri < face_count; tri++) {
-				face_material_indices.write[tri] = surface_material_index;
-			}
-			if (face_material_indices.size() > 0) {
-				fbx_mesh_face_material_indices[fbx_mesh.id] = face_material_indices;
+			// Store material index for this surface (per-surface, not per-face)
+			// Since we create one FBX mesh per surface, all faces share the same material
+			if (surface_material_index >= 0) {
+				fbx_mesh_material_indices[fbx_mesh.id] = surface_material_index;
 			}
 
 			// Store this FBX mesh for the GLTF mesh
@@ -3229,7 +3214,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		}
 	}
 
-	// Assign materials to meshes (always per-face)
+	// Assign materials to meshes (per-surface, one material per surface)
 	for (int mesh_i = 0; mesh_i < state->meshes.size(); mesh_i++) {
 		if (!gltf_to_fbx_meshes.has(mesh_i)) {
 			continue;
@@ -3244,11 +3229,10 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Assign materials to each FBX mesh (one per surface)
 		for (int j = 0; j < fbx_meshes.size(); j++) {
 			ufbxw_mesh fbx_mesh = fbx_meshes[j];
-			if (fbx_mesh_face_material_indices.has(fbx_mesh.id)) {
-				Vector<int32_t> face_material_indices = fbx_mesh_face_material_indices[fbx_mesh.id];
-				if (face_material_indices.size() > 0) {
-					ufbxw_int_buffer material_indices_buffer = ufbxw_copy_int_array(write_scene, face_material_indices.ptr(), face_material_indices.size());
-					ufbxw_mesh_set_face_material(write_scene, fbx_mesh, material_indices_buffer);
+			if (fbx_mesh_material_indices.has(fbx_mesh.id)) {
+				int32_t material_index = fbx_mesh_material_indices[fbx_mesh.id];
+				if (material_index >= 0) {
+					ufbxw_mesh_set_single_material(write_scene, fbx_mesh, material_index);
 				}
 			}
 		}
