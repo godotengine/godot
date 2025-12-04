@@ -3554,16 +3554,26 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 									}
 									
 									// Debug output for first few clusters or when no weights found
-									if (vertex_indices.size() == 0 && (joint_i < 5 || joint_i % 50 == 0)) {
+									if (vertex_indices.size() == 0 && (joint_i < 10 || joint_i % 50 == 0)) {
 										String bone_indices_str = "";
 										int count = 0;
-										for (HashSet<int>::Iterator it = seen_bone_indices.begin(); it != seen_bone_indices.end() && count < 10; ++it, count++) {
+										for (HashSet<int>::Iterator it = seen_bone_indices.begin(); it != seen_bone_indices.end() && count < 20; ++it, count++) {
 											if (count > 0) bone_indices_str += ", ";
 											bone_indices_str += itos(*it);
 										}
-										if (seen_bone_indices.size() > 10) bone_indices_str += ", ...";
-										print_verbose(vformat("FBX export: Cluster %d (joint %d): checked %d weights, matched %d, seen bone indices: [%s], joints_original size: %d, joints size: %d", 
-											joint_i, joint_node_idx, total_weights_checked, weights_matched, bone_indices_str, joints_original.size(), joints.size()));
+										if (seen_bone_indices.size() > 20) bone_indices_str += ", ...";
+										
+										// Show mapping info
+										String mapping_info = "";
+										int mapping_count = 0;
+										for (HashMap<int, int>::Iterator it = bone_idx_to_joint_idx.begin(); it != bone_idx_to_joint_idx.end() && mapping_count < 10; ++it, mapping_count++) {
+											if (mapping_count > 0) mapping_info += ", ";
+											mapping_info += vformat("bone_%d->joint_%d", it->key, it->value);
+										}
+										if (bone_idx_to_joint_idx.size() > 10) mapping_info += ", ...";
+										
+										ERR_PRINT(vformat("FBX export: Cluster %d (joint %d, node %d): checked %d weights, matched %d, seen bone indices: [%s], mapping: {%s}, joints_original size: %d, joints size: %d", 
+											joint_i, joint_node_idx, fbx_bone_node.id, total_weights_checked, weights_matched, bone_indices_str, mapping_info, joints_original.size(), joints.size()));
 									}
 
 									// Set weights if we have any
