@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  physics_direct_space_state_2d.h                                       */
+/*  physics_intersect_ray_result_2d.cpp                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "physics_intersect_ray_result_2d.h"
 
-#include "core/variant/type_info.h"
-#include "servers/physics_2d/physics_server_2d_types.h"
-#include "servers/physics_2d/queries/physics_intersect_ray_result_2d.h"
-#include "servers/physics_2d/queries/physics_point_query_parameters_2d.h"
-#include "servers/physics_2d/queries/physics_ray_query_parameters_2d.h"
-#include "servers/physics_2d/queries/physics_shape_query_parameters_2d.h"
+#include "core/object/class_db.h"
 
-class PhysicsDirectSpaceState2D : public Object {
-	GDCLASS(PhysicsDirectSpaceState2D, Object);
+Vector2 PhysicsIntersectRayResult2D::get_position() const {
+	return result.position;
+}
 
-	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> p_ray_query);
-	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters2D> p_point_query, int p_max_results = 32);
-	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, int p_max_results = 32);
-	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query);
-	TypedArray<Vector2> _collide_shape(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, int p_max_results = 32);
-	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query);
+Vector2 PhysicsIntersectRayResult2D::get_normal() const {
+	return result.normal;
+}
 
-	bool _intersect_ray_into(RequiredParam<PhysicsRayQueryParameters2D> p_ray_query, RequiredParam<PhysicsIntersectRayResult2D> p_result);
+RID PhysicsIntersectRayResult2D::get_collider_rid() const {
+	return result.rid;
+}
 
-protected:
-	static void _bind_methods();
+ObjectID PhysicsIntersectRayResult2D::get_collider_id() const {
+	return result.collider_id;
+}
 
-public:
-	virtual bool intersect_ray(const PS2DT::RayParameters &p_parameters, PS2DT::RayResult &r_result) = 0;
-	virtual int intersect_point(const PS2DT::PointParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) = 0;
-	virtual int intersect_shape(const PS2DT::ShapeParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) = 0;
-	virtual bool cast_motion(const PS2DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) = 0;
-	virtual bool collide_shape(const PS2DT::ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) = 0;
-	virtual bool rest_info(const PS2DT::ShapeParameters &p_parameters, PS2DT::ShapeRestInfo *r_info) = 0;
+Object *PhysicsIntersectRayResult2D::get_collider() const {
+	return result.collider;
+}
 
-	PhysicsDirectSpaceState2D();
-};
+int PhysicsIntersectRayResult2D::get_collider_shape() const {
+	return result.shape;
+}
+
+void PhysicsIntersectRayResult2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_position"), &PhysicsIntersectRayResult2D::get_position);
+	ClassDB::bind_method(D_METHOD("get_normal"), &PhysicsIntersectRayResult2D::get_normal);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &PhysicsIntersectRayResult2D::get_collider_rid);
+	ClassDB::bind_method(D_METHOD("get_collider_id"), &PhysicsIntersectRayResult2D::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider"), &PhysicsIntersectRayResult2D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_shape"), &PhysicsIntersectRayResult2D::get_collider_shape);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "normal"), "", "get_normal");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "collider_rid"), "", "get_collider_rid");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id"), "", "get_collider_id");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
+}
