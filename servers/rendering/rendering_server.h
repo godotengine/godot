@@ -823,10 +823,11 @@ public:
 		PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY,
 		PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY,
 		PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD,
+		PARTICLES_TRANSFORM_ALIGN_ROTATE_AROUND_AXIS,
 		PARTICLES_TRANSFORM_MAX,
 	};
 
-	enum ParticlesTransformAlignCustomSrc {
+	enum ParticlesTransformAlignChannelFilter {
 		PARTICLES_ALIGN_CHANNEL_FILTER_DISABLED,
 		PARTICLES_ALIGN_CHANNEL_FILTER_X,
 		PARTICLES_ALIGN_CHANNEL_FILTER_Y,
@@ -838,11 +839,12 @@ public:
 	enum ParticlesTransformAlignAxis {
 		PARTICLES_ALIGN_AXIS_X,
 		PARTICLES_ALIGN_AXIS_Y,
+		PARTICLES_ALIGN_AXIS_Z,
 		PARTICLES_ALIGN_AXIS_MAX,
 	};
 
 	virtual void particles_set_transform_align(RID p_particles, ParticlesTransformAlign p_transform_align) = 0;
-	virtual void particles_set_transform_align_channel_filter(RID p_particles, ParticlesTransformAlignCustomSrc p_transform_align_channel_filter) = 0;
+	virtual void particles_set_transform_align_channel_filter(RID p_particles, ParticlesTransformAlignChannelFilter p_transform_align_channel_filter) = 0;
 	virtual void particles_set_transform_align_axis(RID p_particles, ParticlesTransformAlignAxis p_rotation_axis) = 0;
 	virtual void particles_set_transform_align_flags(RID p_particles, uint32_t p_flags) = 0;
 
@@ -2007,7 +2009,7 @@ VARIANT_ENUM_CAST(RenderingServer::DecalTexture);
 VARIANT_ENUM_CAST(RenderingServer::DecalFilter);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesMode);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesTransformAlign);
-VARIANT_ENUM_CAST(RenderingServer::ParticlesTransformAlignCustomSrc);
+VARIANT_ENUM_CAST(RenderingServer::ParticlesTransformAlignChannelFilter);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesTransformAlignAxis);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesEmitFlags);

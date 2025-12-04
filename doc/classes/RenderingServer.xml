@@ -3337,7 +3337,7 @@
 		<method name="particles_set_transform_align_channel_filter">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
-			<param index="1" name="channel_filter" type="int" enum="RenderingServer.ParticlesTransformAlignCustomSrc" />
+			<param index="1" name="channel_filter" type="int" enum="RenderingServer.ParticlesTransformAlignChannelFilter" />
 			<description>
 				When using with Z-Billboarding, which CUSTOM channel to read from.
 			</description>
@@ -5209,19 +5209,19 @@
 		<constant name="PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD" value="4" enum="ParticlesTransformAlign">
 			Billboard each particles around a local axis.
 		</constant>
-		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_DISABLED" value="0" enum="ParticlesTransformAlignCustomSrc">
+		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_DISABLED" value="0" enum="ParticlesTransformAlignChannelFilter">
 			Do not read from CUSTOM when performing billboarding.
 		</constant>
-		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_X" value="1" enum="ParticlesTransformAlignCustomSrc">
+		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_X" value="1" enum="ParticlesTransformAlignChannelFilter">
 			Read from CUSTOM.x when performing billboarding and use it as an angle, in radians.
 		</constant>
-		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_Y" value="2" enum="ParticlesTransformAlignCustomSrc">
+		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_Y" value="2" enum="ParticlesTransformAlignChannelFilter">
 			Read from CUSTOM.y when performing billboarding and use it as an angle, in radians.
 		</constant>
-		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_Z" value="3" enum="ParticlesTransformAlignCustomSrc">
+		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_Z" value="3" enum="ParticlesTransformAlignChannelFilter">
 			Read from CUSTOM.z when performing billboarding and use it as an angle, in radians.
 		</constant>
-		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_W" value="4" enum="ParticlesTransformAlignCustomSrc">
+		<constant name="PARTICLES_ALIGN_CHANNEL_FILTER_W" value="4" enum="ParticlesTransformAlignChannelFilter">
 			Read from CUSTOM.w when performing billboarding and use it as an angle, in radians.
 		</constant>
 		<constant name="PARTICLES_ALIGN_AXIS_X" value="0" enum="ParticlesTransformAlignAxis">

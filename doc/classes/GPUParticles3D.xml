@@ -170,7 +170,7 @@
 		<member name="transform_align_axis" type="int" setter="set_transform_align_axis" getter="get_transform_align_axis" enum="RenderingServer.ParticlesTransformAlignAxis">
 			When using transform align local billboard, which axis to use for the billboarding. Supports only X or Y.
 		</member>
-		<member name="transform_align_channel_filter" type="int" setter="set_transform_align_channel_filter" getter="get_transform_align_channel_filter" enum="RenderingServer.ParticlesTransformAlignCustomSrc">
+		<member name="transform_align_channel_filter" type="int" setter="set_transform_align_channel_filter" getter="get_transform_align_channel_filter" enum="RenderingServer.ParticlesTransformAlignChannelFilter">
 			In the case of billboarded particles, which custom channel to read from to calculate their angle.
 		</member>
 		<member name="transform_align_use_velocity" type="bool" setter="set_transform_align_use_velocity" getter="get_transform_align_use_velocity">

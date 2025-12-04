@@ -173,7 +173,7 @@ private:
 		uint32_t frame_counter = 0;
 		RS::ParticlesTransformAlign transform_align = RS::PARTICLES_TRANSFORM_ALIGN_DISABLED;
 		RS::ParticlesTransformAlignAxis transform_align_axis = RS::PARTICLES_ALIGN_AXIS_Y;
-		RS::ParticlesTransformAlignCustomSrc transform_align_channel_filter = RS::PARTICLES_ALIGN_CHANNEL_FILTER_X;
+		RS::ParticlesTransformAlignChannelFilter transform_align_channel_filter = RS::PARTICLES_ALIGN_CHANNEL_FILTER_X;
 		uint32_t transform_align_flags = 0;
 
 		RS::ParticlesDrawOrder draw_order = RS::PARTICLES_DRAW_ORDER_INDEX;
@@ -347,7 +347,7 @@ public:
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
 
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
-	virtual void particles_set_transform_align_channel_filter(RID p_particles, RS::ParticlesTransformAlignCustomSrc p_channel_filter) override;
+	virtual void particles_set_transform_align_channel_filter(RID p_particles, RS::ParticlesTransformAlignChannelFilter p_channel_filter) override;
 	virtual void particles_set_transform_align_axis(RID p_particles, RS::ParticlesTransformAlignAxis p_rotation_axis) override;
 	virtual void particles_set_transform_align_flags(RID p_particles, uint32_t p_flags) override;
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) override;

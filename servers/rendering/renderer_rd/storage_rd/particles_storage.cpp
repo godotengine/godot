@@ -498,7 +498,7 @@ void ParticlesStorage::particles_set_transform_align_flags(RID p_particles, uint
 	particles->align_flags = p_flags;
 }
 
-void ParticlesStorage::particles_set_transform_align_channel_filter(RID p_particles, RS::ParticlesTransformAlignCustomSrc p_transform_align_channel_filter) {
+void ParticlesStorage::particles_set_transform_align_channel_filter(RID p_particles, RS::ParticlesTransformAlignChannelFilter p_transform_align_channel_filter) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 

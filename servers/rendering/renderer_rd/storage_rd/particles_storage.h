@@ -182,7 +182,8 @@ private:
 		RID process_material;
 		uint32_t frame_counter = 0;
 		RS::ParticlesTransformAlign transform_align = RS::PARTICLES_TRANSFORM_ALIGN_DISABLED;
-		RS::ParticlesTransformAlignCustomSrc transform_align_src = RS::PARTICLES_ALIGN_CHANNEL_FILTER_X;
+		RS::ParticlesTransformAlignChannelFilter transform_align_src = RS::PARTICLES_ALIGN_CHANNEL_FILTER_X;
+
 		RS::ParticlesTransformAlignAxis transform_align_axis = RS::ParticlesTransformAlignAxis::PARTICLES_ALIGN_AXIS_Y;
 		uint32_t align_flags;
 
@@ -467,7 +468,7 @@ public:
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
-	virtual void particles_set_transform_align_channel_filter(RID p_particles, RS::ParticlesTransformAlignCustomSrc p_transform_align_channel_filter) override;
+	virtual void particles_set_transform_align_channel_filter(RID p_particles, RS::ParticlesTransformAlignChannelFilter p_transform_align_channel_filter) override;
 	virtual void particles_set_transform_align_axis(RID p_particles, RS::ParticlesTransformAlignAxis p_rotation_axis) override;
 	virtual void particles_set_transform_align_flags(RID p_particles, uint32_t p_flags) override;
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) override;
