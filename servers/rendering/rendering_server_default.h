@@ -639,6 +639,8 @@ public:
 	FUNC2(particles_set_collision_base_size, RID, float)
 
 	FUNC2(particles_set_transform_align, RID, RSE::ParticlesTransformAlign)
+	FUNC2(particles_set_transform_align_channel_filter, RID, RSE::ParticlesTransformAlignCustomSrc)
+	FUNC2(particles_set_transform_align_axis, RID, RSE::ParticlesTransformAlignAxis)
 
 	FUNC2(particles_set_draw_order, RID, RSE::ParticlesDrawOrder)
 

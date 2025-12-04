@@ -450,6 +450,8 @@ public:
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) = 0;
 
 	virtual void particles_set_transform_align(RID p_particles, RSE::ParticlesTransformAlign p_transform_align) = 0;
+	virtual void particles_set_transform_align_channel_filter(RID p_particles, RSE::ParticlesTransformAlignCustomSrc p_transform_align_channel_filter) = 0;
+	virtual void particles_set_transform_align_axis(RID p_particles, RSE::ParticlesTransformAlignAxis p_rotation_axis) = 0;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, float p_length_sec) = 0;
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) = 0;
@@ -1070,6 +1072,7 @@ private:
 };
 
 // Make variant understand the enums.
+
 VARIANT_ENUM_CAST_EXT(RSE::TextureType, RenderingServer::TextureType);
 VARIANT_ENUM_CAST_EXT(RSE::TextureLayeredType, RenderingServer::TextureLayeredType);
 VARIANT_ENUM_CAST_EXT(RSE::CubeMapLayer, RenderingServer::CubeMapLayer);
@@ -1097,6 +1100,8 @@ VARIANT_ENUM_CAST_EXT(RSE::DecalTexture, RenderingServer::DecalTexture);
 VARIANT_ENUM_CAST_EXT(RSE::DecalFilter, RenderingServer::DecalFilter);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesMode, RenderingServer::ParticlesMode);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesTransformAlign, RenderingServer::ParticlesTransformAlign);
+VARIANT_ENUM_CAST_EXT(RSE::ParticlesTransformAlignCustomSrc, RenderingServer::ParticlesTransformAlignCustomSrc);
+VARIANT_ENUM_CAST_EXT(RSE::ParticlesTransformAlignAxis, RenderingServer::ParticlesTransformAlignAxis);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesDrawOrder, RenderingServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesEmitFlags, RenderingServer::ParticlesEmitFlags);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesCollisionType, RenderingServer::ParticlesCollisionType);
