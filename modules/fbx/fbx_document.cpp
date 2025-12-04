@@ -3334,6 +3334,19 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			continue;
 		}
 
+		// Find the mesh node's transform for the bind pose
+		Transform3D mesh_bind_transform = Transform3D();
+		for (int node_i = 0; node_i < state->nodes.size(); node_i++) {
+			Ref<GLTFNode> node = state->nodes[node_i];
+			if (node.is_null()) {
+				continue;
+			}
+			if (node->skin == skin_i && node->mesh == associated_mesh_idx) {
+				mesh_bind_transform = node->transform;
+				break;
+			}
+		}
+
 		// Create skin deformer for each mesh (one per surface)
 		// Track all created deformers per mesh
 		HashMap<ufbxw_id, ufbxw_skin_deformer> mesh_to_deformer;
@@ -3354,6 +3367,10 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			
 			// Set skin deformer properties
 			ufbxw_skin_deformer_set_skinning_type(write_scene, fbx_skin_deformer, UFBXW_SKINNING_TYPE_LINEAR);
+
+			// Set mesh bind transform (mesh's transform at bind time)
+			ufbxw_matrix mesh_bind_matrix = _transform_to_ufbxw_matrix(mesh_bind_transform);
+			ufbxw_skin_deformer_set_mesh_bind_transform(write_scene, fbx_skin_deformer, mesh_bind_matrix);
 
 			// Set skin name if available
 			String skin_name = gltf_skin->get_name();
