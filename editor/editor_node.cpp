@@ -1067,7 +1067,6 @@ void EditorNode::_notification(int p_what) {
 
 				bottom_dock_tab_individual_height = EDITOR_GET("interface/editor/bottom_dock_tab_individual_height");
 				get_bottom_panel()->_editor_settings_changed();
-
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/scene_tabs")) {
