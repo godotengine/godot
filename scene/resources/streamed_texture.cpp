@@ -69,7 +69,21 @@ void StreamedTexture2D::texture_reload(uint32_t p_resolution) {
 
 	_current_resolution = p_resolution;
 
-	_load_internal(path_to_file, false);
+	{
+		StreamedTexture2DLoadData load_data;
+		load_data.image.instantiate();
+		Error err = _load_data(path_to_file, _current_resolution, load_data);
+		ERR_FAIL_COND(err != OK);
+
+		RID new_texture = RS::get_singleton()->texture_2d_create(load_data.image);
+		RenderingServer::get_singleton()->texture_set_path(new_texture, path_to_file);
+
+		if (texture.is_valid()) {
+			RS::get_singleton()->texture_replace(texture, new_texture);
+		} else {
+			texture = new_texture;
+		}
+	}
 }
 
 Error StreamedTexture2D::_load_data(const String &p_path, const uint32_t p_max_resolution, StreamedTexture2DLoadData &p_load_data) {
@@ -272,6 +286,8 @@ Error StreamedTexture2D::_load_internal(const String &p_path, bool p_load_settin
 					callable_mp(this, &StreamedTexture2D::texture_reload));
 
 			RS::get_singleton()->texture_2d_attach_streaming_state(texture, streaming_state);
+		} else {
+			TextureStreaming::get_singleton()->texture_update(streaming_state, w, h, streaming_min, streaming_max);
 		}
 	}
 #endif
