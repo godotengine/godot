@@ -3530,23 +3530,29 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 											// Map bone index to joint index (cluster index)
 											// joint_i is the cluster index (index into joints_original)
 											// Bone indices in mesh can be:
-											// 1. Skeleton3D bone indices (from Godot scenes) - map via Skin resource
-											// 2. Indices into joints array (from GLTF export) - map via joints_idx_to_original_idx
+											// 1. Indices into joints array (from GLTF export) - check this FIRST
+											// 2. Skeleton3D bone indices (from Godot scenes) - map via joint_i_to_bone_i
 											// 3. GLTFNodeIndex values directly - map via joint_node_to_original_idx
 											// 4. Already cluster indices (indices into joints_original) - use directly
 											int joint_idx = -1;
-											if (bone_idx_to_joint_idx.has(bone_idx)) {
-												// Bone index is Skeleton3D bone index - map to joint index via Skin resource
-												joint_idx = bone_idx_to_joint_idx[bone_idx];
-											} else if (bone_idx >= 0 && bone_idx < joints.size()) {
-												// Bone index is index into joints array - map to joints_original index
+											// Try joints array index first (most common after GLTF serialization)
+											if (bone_idx >= 0 && bone_idx < joints.size()) {
 												if (joints_idx_to_original_idx.has(bone_idx)) {
 													joint_idx = joints_idx_to_original_idx[bone_idx];
 												}
-											} else if (joint_node_to_original_idx.has((GLTFNodeIndex)bone_idx)) {
+											}
+											// Try Skeleton3D bone index mapping
+											if (joint_idx == -1 && bone_idx_to_joint_idx.has(bone_idx)) {
+												// Bone index is Skeleton3D bone index - map to joint index via joint_i_to_bone_i
+												joint_idx = bone_idx_to_joint_idx[bone_idx];
+											}
+											// Try GLTFNodeIndex value
+											if (joint_idx == -1 && joint_node_to_original_idx.has((GLTFNodeIndex)bone_idx)) {
 												// Bone index is a GLTFNodeIndex value - map directly to joints_original index
 												joint_idx = joint_node_to_original_idx[(GLTFNodeIndex)bone_idx];
-											} else if (bone_idx >= 0 && bone_idx < joints_original.size()) {
+											}
+											// Try direct cluster index
+											if (joint_idx == -1 && bone_idx >= 0 && bone_idx < joints_original.size()) {
 												// Bone index is already cluster index (index into joints_original)
 												joint_idx = bone_idx;
 											}
