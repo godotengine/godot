@@ -413,6 +413,7 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 
 	_move_dock(p_dock, nullptr);
 	p_dock->update_layout(EditorDock::DOCK_LAYOUT_FLOATING);
+	p_dock->current_layout = EditorDock::DOCK_LAYOUT_FLOATING;
 	wrapper->set_wrapped_control(p_dock);
 
 	p_dock->dock_window = wrapper;
@@ -499,7 +500,11 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	}
 
 	if (p_target != closed_dock_parent) {
-		p_dock->update_layout(p_target->get_meta("dock_layout"));
+		EditorDock::DockLayout layout = p_target->get_meta("dock_layout");
+		if (layout != p_dock->current_layout) {
+			p_dock->update_layout(layout);
+			p_dock->current_layout = layout;
+		}
 		p_dock->dock_slot_index = p_target->get_meta("dock_slot");
 	}
 
