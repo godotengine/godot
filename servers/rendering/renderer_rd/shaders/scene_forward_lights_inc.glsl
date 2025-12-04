@@ -933,7 +933,7 @@ float acos_approx(float p_x) {
 	return (p_x >= 0) ? res : M_PI - res;
 }
 
-float integrate_edge_hill(vec3 p0, vec3 p1) {
+vec3 integrate_edge_hill(vec3 p0, vec3 p1) {
 	// Approximation suggested by Hill and Heitz, calculating the integral of the spherical cosine distribution over the line between p0 and p1.
 	// Runs faster than the exact formula of Baum et al. (1989).
 	float cosTheta = dot(p0, p1);
@@ -1121,7 +1121,7 @@ vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5]) {
 	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod);
 }
 
-vec3 ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], vec4 texture_rect, out float integral, out hvec3 tex_color) {
+void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], vec4 texture_rect, out float integral, out hvec3 tex_color) {
 	// default is white
 	tex_color = vec3(1.0);
 	// construct the orthonormal basis around the normal vector
