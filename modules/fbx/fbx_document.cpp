@@ -3521,6 +3521,16 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 						ufbxw_skin_cluster_set_weights(write_scene, fbx_cluster, indices_buffer, weights_buffer);
 					}
 				}
+								}
+							}
+						}
+					}
+					if (vertex_indices.size() > 0) {
+						ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, vertex_indices.ptr(), vertex_indices.size());
+						ufbxw_real_buffer weights_buffer = ufbxw_copy_real_array(write_scene, cluster_weights.ptr(), cluster_weights.size());
+						ufbxw_skin_cluster_set_weights(write_scene, fbx_cluster, indices_buffer, weights_buffer);
+					}
+				}
 			}
 		}
 		// Store the primary skin deformer for reference
