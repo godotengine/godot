@@ -1065,7 +1065,7 @@ void EditorNode::_notification(int p_what) {
 				theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 				editor_dock_manager->update_tab_styles();
 
-				bottom_dock_tab_individual_height = EDITOR_GET("interface/editor/bottom_dock_tab_individual_height");
+				bottom_dock_tabs_allow_individual_heights = EDITOR_GET("interface/editor/bottom_dock_tabs_allow_individual_heights");
 				get_bottom_panel()->_editor_settings_changed();
 			}
 
@@ -6359,8 +6359,8 @@ bool EditorNode::is_cmdline_mode() {
 	return singleton->cmdline_mode;
 }
 
-bool EditorNode::is_bottom_dock_tab_individual_height() {
-	return singleton->bottom_dock_tab_individual_height;
+bool EditorNode::is_bottom_dock_tabs_allow_individual_heights() {
+	return singleton->bottom_dock_tabs_allow_individual_heights;
 }
 
 void EditorNode::cleanup() {
@@ -8814,6 +8814,7 @@ EditorNode::EditorNode() {
 		Dictionary offsets;
 		offsets["Audio"] = -450;
 		default_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "bottom_panel_offsets", offsets);
+		default_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "bottom_panel_offset", -450);
 	}
 
 	_update_layouts_menu();

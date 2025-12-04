@@ -431,7 +431,7 @@ private:
 	Callable palette_file_selected_callback;
 
 	EditorBottomPanel *bottom_panel = nullptr;
-	bool bottom_dock_tab_individual_height = false;
+	bool bottom_dock_tabs_allow_individual_heights = false;
 
 	Tree *disk_changed_list = nullptr;
 	LocalVector<String> disk_changed_scenes;
@@ -780,7 +780,7 @@ public:
 
 	static bool is_cmdline_mode();
 
-	static bool is_bottom_dock_tab_individual_height();
+	static bool is_bottom_dock_tabs_allow_individual_heights();
 
 	static HashMap<String, Variant> get_initial_settings();
 
