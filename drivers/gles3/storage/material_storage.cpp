@@ -1176,6 +1176,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["MODEL_MATRIX"] = "model_matrix";
 		actions.renames["CANVAS_MATRIX"] = "canvas_transform";
 		actions.renames["SCREEN_MATRIX"] = "screen_transform";
+		actions.renames["INSTANCE_MATRIX"] = "instance_matrix";
 		actions.renames["TIME"] = "time";
 		actions.renames["PI"] = String::num(Math::PI);
 		actions.renames["TAU"] = String::num(Math::TAU);
@@ -1251,6 +1252,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";
 		actions.renames["MODELVIEW_NORMAL_MATRIX"] = "modelview_normal";
 		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data_block.data.main_cam_inv_view_matrix";
+		actions.renames["INSTANCE_MATRIX"] = "instance_matrix";
 
 		actions.renames["VERTEX"] = "vertex";
 		actions.renames["NORMAL"] = "normal";

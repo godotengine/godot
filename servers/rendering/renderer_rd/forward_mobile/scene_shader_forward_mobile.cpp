@@ -699,6 +699,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["AO_LIGHT_AFFECT"] = "ao_light_affect_highp";
 		actions.renames["EMISSION"] = "emission_highp";
 		actions.renames["POINT_COORD"] = "point_coord";
+		actions.renames["INSTANCE_MATRIX"] = "instance_matrix";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 		actions.renames["SCREEN_UV"] = "screen_uv";
 		actions.renames["DEPTH"] = "gl_FragDepth";
