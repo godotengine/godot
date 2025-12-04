@@ -372,8 +372,8 @@ void FileDialog::_save_confirm_pressed() {
 	_save_to_recent();
 
 	String f = dir_access->get_current_dir().path_join(filename_edit->get_text());
-	emit_signal(SNAME("file_selected"), f);
 	hide();
+	emit_signal(SNAME("file_selected"), f);
 }
 
 void FileDialog::_post_popup() {
@@ -413,8 +413,8 @@ void FileDialog::_action_pressed() {
 		const Vector<String> files = get_selected_files();
 		if (!files.is_empty()) {
 			_save_to_recent();
-			emit_signal(SNAME("files_selected"), files);
 			hide();
+			emit_signal(SNAME("files_selected"), files);
 		}
 		return;
 	}
@@ -424,8 +424,8 @@ void FileDialog::_action_pressed() {
 
 	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && (dir_access->file_exists(f) || dir_access->is_bundle(f))) {
 		_save_to_recent();
-		emit_signal(SNAME("file_selected"), f);
 		hide();
+		emit_signal(SNAME("file_selected"), f);
 	} else if (mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_DIR) {
 		String path = dir_access->get_current_dir();
 
@@ -439,8 +439,8 @@ void FileDialog::_action_pressed() {
 		}
 
 		_save_to_recent();
-		emit_signal(SNAME("dir_selected"), path);
 		hide();
+		emit_signal(SNAME("dir_selected"), path);
 	}
 
 	if (mode == FILE_MODE_SAVE_FILE) {
@@ -501,15 +501,14 @@ void FileDialog::_action_pressed() {
 			confirm_save->popup_centered(Size2(250, 80));
 		} else {
 			_save_to_recent();
-			emit_signal(SNAME("file_selected"), f);
 			hide();
+			emit_signal(SNAME("file_selected"), f);
 		}
 	}
 }
 
 void FileDialog::_cancel_pressed() {
 	filename_edit->set_text("");
-	invalidate();
 	hide();
 }
 
