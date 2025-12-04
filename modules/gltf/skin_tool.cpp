@@ -846,3 +846,134 @@ String SkinTool::_sanitize_bone_name(const String &p_name) {
 	bone_name = bone_name.replace_chars(":/", '_');
 	return bone_name;
 }
+
+// Reverse of _expand_skin: maps a node index (from expanded joints array) back to joints_original index
+// If the node is an intermediate node (not in joints_original), walks up the tree to find the closest ancestor
+int SkinTool::_find_joint_original_index(
+		const Vector<Ref<GLTFNode>> &r_nodes,
+		const Ref<GLTFSkin> &p_skin,
+		const SkinNodeIndex p_node_index) {
+	if (p_node_index < 0 || p_node_index >= r_nodes.size()) {
+		return -1;
+	}
+
+	// Build a map from node index to joints_original index for quick lookup
+	HashMap<SkinNodeIndex, int> node_to_original_idx;
+	Vector<GLTFNodeIndex> joints_original = p_skin->get_joints_original();
+	for (int orig_i = 0; orig_i < joints_original.size(); orig_i++) {
+		node_to_original_idx[joints_original[orig_i]] = orig_i;
+	}
+
+	// Check if the node is directly in joints_original
+	if (node_to_original_idx.has(p_node_index)) {
+		return node_to_original_idx[p_node_index];
+	}
+
+	// Walk up the tree to find the closest ancestor in joints_original
+	SkinNodeIndex current_node = p_node_index;
+	while (current_node >= 0 && current_node < r_nodes.size()) {
+		if (node_to_original_idx.has(current_node)) {
+			return node_to_original_idx[current_node];
+		}
+
+		const Ref<GLTFNode> node = r_nodes[current_node];
+		if (node.is_null()) {
+			break;
+		}
+
+		current_node = node->parent;
+	}
+
+	return -1;
+}
+
+// Builds a mapping from joints array index to joints_original index
+// For nodes directly in joints_original, uses direct mapping
+// For intermediate nodes (added by _expand_skin), walks up the tree to find the closest ancestor in joints_original
+HashMap<int, int> SkinTool::_build_joints_to_original_mapping(
+		const Vector<Ref<GLTFNode>> &r_nodes,
+		const Ref<GLTFSkin> &p_skin) {
+	HashMap<int, int> joints_idx_to_original_idx;
+
+	Vector<GLTFNodeIndex> joints_original = p_skin->get_joints_original();
+	Vector<GLTFNodeIndex> joints = p_skin->get_joints();
+
+	// Build a map from node index to joints_original index for quick lookup
+	HashMap<SkinNodeIndex, int> node_to_original_idx;
+	for (int orig_i = 0; orig_i < joints_original.size(); orig_i++) {
+		node_to_original_idx[joints_original[orig_i]] = orig_i;
+	}
+
+	// Map from joints array index to joints_original index
+	for (int joints_i = 0; joints_i < joints.size(); joints_i++) {
+		GLTFNodeIndex joint_node = joints[joints_i];
+		int original_idx = -1;
+
+		// Check if node is directly in joints_original
+		if (node_to_original_idx.has(joint_node)) {
+			original_idx = node_to_original_idx[joint_node];
+		} else {
+			// For intermediate nodes (added by _expand_skin), find the closest joint in joints_original
+			// Prefer descendant (child) over ancestor (parent) as intermediate nodes are typically
+			// between a parent joint and child joint, and should map to the child
+			int descendant_idx = -1;
+			int ancestor_idx = -1;
+
+			// First, try to find a descendant joint by walking down the tree
+			Vector<SkinNodeIndex> to_visit;
+			HashSet<SkinNodeIndex> visited;
+			to_visit.push_back(joint_node);
+			visited.insert(joint_node);
+
+			while (!to_visit.is_empty()) {
+				SkinNodeIndex current_node = to_visit[0];
+				to_visit.remove_at(0);
+
+				if (node_to_original_idx.has(current_node)) {
+					descendant_idx = node_to_original_idx[current_node];
+					break;
+				}
+
+				const Ref<GLTFNode> node = r_nodes[current_node];
+				if (node.is_null()) {
+					continue;
+				}
+
+				for (int child_i = 0; child_i < node->children.size(); child_i++) {
+					SkinNodeIndex child = node->children[child_i];
+					if (!visited.has(child)) {
+						to_visit.push_back(child);
+						visited.insert(child);
+					}
+				}
+			}
+
+			// If no descendant found, walk up the tree to find the closest ancestor
+			if (descendant_idx < 0) {
+				SkinNodeIndex current_node = joint_node;
+				while (current_node >= 0 && current_node < r_nodes.size()) {
+					if (node_to_original_idx.has(current_node)) {
+						ancestor_idx = node_to_original_idx[current_node];
+						break;
+					}
+
+					const Ref<GLTFNode> node = r_nodes[current_node];
+					if (node.is_null()) {
+						break;
+					}
+
+					current_node = node->parent;
+				}
+			}
+
+			// Prefer descendant over ancestor
+			original_idx = (descendant_idx >= 0) ? descendant_idx : ancestor_idx;
+		}
+
+		if (original_idx >= 0) {
+			joints_idx_to_original_idx[joints_i] = original_idx;
+		}
+	}
+
+	return joints_idx_to_original_idx;
+}
