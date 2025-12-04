@@ -339,17 +339,6 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 }
 
 Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner, bool p_update_from_disk) {
-	Ref<GDScript> uncached_script = get_full_script_no_resource_cache(p_path, r_error, p_owner, p_update_from_disk);
-
-	// Resources don't know whether they are cached, so using `set_path()` after `set_path_cache()` does not add the resource to the cache if the path is the same.
-	// We reset the cached path from `get_shallow_script()` so that the subsequent call to `set_path()` caches everything correctly.
-	uncached_script->set_path_cache(String());
-	uncached_script->set_path(p_path, true);
-
-	return uncached_script;
-}
-
-Ref<GDScript> GDScriptCache::get_full_script_no_resource_cache(const String &p_path, Error &r_error, const String &p_owner, bool p_update_from_disk) {
 	MutexLock lock(singleton->mutex);
 
 	if (!p_owner.is_empty() && p_path != p_owner) {
@@ -402,6 +391,12 @@ Ref<GDScript> GDScriptCache::get_full_script_no_resource_cache(const String &p_p
 
 	singleton->full_gdscript_cache[p_path] = script;
 	singleton->shallow_gdscript_cache.erase(p_path);
+
+	// Add the script to the resource cache. Usually ResourceLoader would take care of it, but cyclic references can break that sometimes so we do it ourselves.
+	// Resources don't know whether they are cached, so using `set_path()` after `set_path_cache()` does not add the resource to the cache if the path is the same.
+	// We reset the cached path from `get_shallow_script()` so that the subsequent call to `set_path()` caches everything correctly.
+	script->set_path_cache(String());
+	script->set_path(p_path, true);
 
 	return script;
 }

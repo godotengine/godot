@@ -124,14 +124,6 @@ public:
 	/**
 	 * Returns a fully loaded GDScript using an already cached script if one exists.
 	 *
-	 * If a new script is created, the resource will only have its patch_cache set, so it won't be present in the ResourceCache.
-	 * Mismatches between GDScriptCache and ResourceCache might trigger complex issues so when using this method ensure
-	 * that the script is added to the resource cache or removed from the GDScript cache.
-	 */
-	static Ref<GDScript> get_full_script_no_resource_cache(const String &p_path, Error &r_error, const String &p_owner = String(), bool p_update_from_disk = false);
-	/**
-	 * Returns a fully loaded GDScript using an already cached script if one exists.
-	 *
 	 * The returned instance is present in GDScriptCache and ResourceCache.
 	 */
 	static Ref<GDScript> get_full_script(const String &p_path, Error &r_error, const String &p_owner = String(), bool p_update_from_disk = false);
