@@ -1119,14 +1119,14 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 		}
 
 		Ref<Resource> edited_res = se->get_edited_resource();
-
 		if (!edited_res->is_built_in()) {
 			continue; // External script, who cares.
 		}
 
-		if (edited_res->get_path().get_slice("::", 0) == p_parent_path) {
-			se->tag_saved_version();
+		if (edited_res->get_path().get_slice("::", 0) != p_parent_path) {
+			continue; // Wrong scene.
 		}
+		se->tag_saved_version();
 
 		Ref<Script> scr = edited_res;
 		if (scr.is_valid()) {
