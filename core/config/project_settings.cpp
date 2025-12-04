@@ -1506,6 +1506,12 @@ ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_
 	return autoloads[p_name];
 }
 
+void ProjectSettings::fix_autoload_paths() {
+	for (KeyValue<StringName, AutoloadInfo> &kv : autoloads) {
+		kv.value.path = ResourceUID::ensure_path(kv.value.path);
+	}
+}
+
 const HashMap<StringName, String> &ProjectSettings::get_global_groups_list() const {
 	return global_groups;
 }
