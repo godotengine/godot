@@ -269,9 +269,15 @@ HistoryDock::HistoryDock() {
 	global_history_checkbox->set_pressed(true);
 	global_history_checkbox->connect(SceneStringName(toggled), callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(mc);
+
 	action_list = memnew(ItemList);
+	action_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
 	action_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	main_vb->add_child(action_list);
+	mc->add_child(action_list);
 	action_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list->connect(SceneStringName(item_selected), callable_mp(this, &HistoryDock::seek_history));
 }

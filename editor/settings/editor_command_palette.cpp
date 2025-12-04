@@ -356,6 +356,12 @@ EditorCommandPalette::EditorCommandPalette() {
 	vbc->add_child(margin_container_csb);
 	register_text_enter(command_search_box);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->add_child(mc);
+
 	search_options = memnew(Tree);
 	search_options->connect("item_activated", callable_mp(this, &EditorCommandPalette::_confirmed));
 	search_options->connect(SceneStringName(item_selected), callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(false));
@@ -363,10 +369,9 @@ EditorCommandPalette::EditorCommandPalette() {
 	search_options->create_item();
 	search_options->set_hide_root(true);
 	search_options->set_columns(2);
-	search_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	search_options->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_options->set_column_custom_minimum_width(0, int(8 * EDSCALE));
-	vbc->add_child(search_options, true);
+	search_options->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	mc->add_child(search_options, true);
 }
 
 Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode, String p_command_name) {

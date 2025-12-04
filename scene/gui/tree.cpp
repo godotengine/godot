@@ -4556,6 +4556,7 @@ void Tree::update_scrollbars() {
 		theme_cache.offset.y = v_scroll->get_value();
 	} else {
 		v_scroll->hide();
+		v_scroll->set_value(0);
 		theme_cache.offset.y = 0;
 	}
 
@@ -4566,6 +4567,7 @@ void Tree::update_scrollbars() {
 		theme_cache.offset.x = h_scroll->get_value();
 	} else {
 		h_scroll->hide();
+		h_scroll->set_value(0);
 		theme_cache.offset.x = 0;
 	}
 
@@ -5131,7 +5133,7 @@ void Tree::_notification(int p_what) {
 			if (scroll_hint_mode != SCROLL_HINT_MODE_DISABLED) {
 				Size2 size = get_size();
 				float v_scroll_value = v_scroll->get_value();
-				bool v_scroll_below_max = v_scroll_value < (get_internal_min_size().height - size.height - 1);
+				bool v_scroll_below_max = v_scroll_value < (get_internal_min_size().height - (content_rect.get_size().height - _get_title_button_height()) - 1);
 				if (v_scroll_value > 1 || v_scroll_below_max) {
 					int hint_height = theme_cache.scroll_hint->get_height();
 					if ((scroll_hint_mode == SCROLL_HINT_MODE_BOTH || scroll_hint_mode == SCROLL_HINT_MODE_TOP) && v_scroll_value > 1) {

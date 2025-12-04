@@ -751,13 +751,14 @@ LocalizationEditor::LocalizationEditor() {
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_file_open));
 		thb->add_child(addtr);
 
-		VBoxContainer *tmc = memnew(VBoxContainer);
-		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
 
 		translation_list = memnew(Tree);
-		translation_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tmc->add_child(translation_list);
+		translation_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+		mc->add_child(translation_list);
 		trees.push_back(translation_list);
 		tree_data_types[translation_list] = "localization_editor_translation_item";
 		tree_settings[translation_list] = "internationalization/locale/translations";
@@ -788,15 +789,16 @@ LocalizationEditor::LocalizationEditor() {
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_res_file_open));
 		thb->add_child(addtr);
 
-		VBoxContainer *tmc = memnew(VBoxContainer);
-		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontal");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
 
 		translation_remap = memnew(Tree);
-		translation_remap->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		translation_remap->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 		translation_remap->connect("cell_selected", callable_mp(this, &LocalizationEditor::_translation_res_select));
 		translation_remap->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_delete));
-		tmc->add_child(translation_remap);
+		mc->add_child(translation_remap);
 
 		translation_res_file_open_dialog = memnew(EditorFileDialog);
 		translation_res_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
@@ -815,10 +817,6 @@ LocalizationEditor::LocalizationEditor() {
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 
-		tmc = memnew(VBoxContainer);
-		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
-
 		translation_remap_options = memnew(Tree);
 		translation_remap_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		translation_remap_options->set_columns(2);
@@ -833,7 +831,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap_options->connect("item_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_changed));
 		translation_remap_options->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_option_delete));
 		translation_remap_options->connect("custom_popup_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_popup));
-		tmc->add_child(translation_remap_options);
+		mc->add_child(translation_remap_options);
 
 		translation_res_option_file_open_dialog = memnew(EditorFileDialog);
 		translation_res_option_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
@@ -861,9 +859,14 @@ LocalizationEditor::LocalizationEditor() {
 		template_generate_button->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_generate_open));
 		thb->add_child(template_generate_button);
 
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontal");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
+
 		template_source_list = memnew(Tree);
-		template_source_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(template_source_list);
+		template_source_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+		mc->add_child(template_source_list);
 		trees.push_back(template_source_list);
 		tree_data_types[template_source_list] = "localization_editor_pot_item";
 		tree_settings[template_source_list] = "internationalization/locale/translations_pot_files";

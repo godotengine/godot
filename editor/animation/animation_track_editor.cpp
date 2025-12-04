@@ -7879,6 +7879,16 @@ float AnimationTrackEditor::get_snap_unit() {
 	return snap_unit;
 }
 
+void AnimationTrackEditor::_update_timeline_rtl_spacer() {
+	if (scroll->get_v_scroll_bar()->is_visible() && is_layout_rtl()) {
+		int spacer_width = scroll->get_v_scroll_bar()->get_minimum_size().width;
+		timeline_rtl_spacer->set_custom_minimum_size(Size2(spacer_width, 0));
+		timeline_rtl_spacer->show();
+	} else {
+		timeline_rtl_spacer->hide();
+	}
+}
+
 void AnimationTrackEditor::_add_animation_player() {
 	EditorData &editor_data = EditorNode::get_editor_data();
 	Node *scene = editor_data.get_edited_scene_root();
@@ -8016,10 +8026,14 @@ void AnimationTrackEditor::popup_read_only_dialog() {
 }
 
 AnimationTrackEditor::AnimationTrackEditor() {
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderAnimation");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	main_panel = memnew(PanelContainer);
 	main_panel->set_focus_mode(FOCUS_ALL); // Allow panel to have focus so that shortcuts work as expected.
-	add_child(main_panel);
-	main_panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->add_child(main_panel);
 	HBoxContainer *timeline_scroll = memnew(HBoxContainer);
 	main_panel->add_child(timeline_scroll);
 	timeline_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -8052,8 +8066,13 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_animation_player->set_h_size_flags(SIZE_SHRINK_CENTER);
 	add_animation_player->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_add_animation_player));
 
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	hbox->add_theme_constant_override(SNAME("separation"), 0);
+	timeline_vbox->add_child(hbox);
+
 	timeline = memnew(AnimationTimelineEdit);
-	timeline_vbox->add_child(timeline);
+	timeline->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbox->add_child(timeline);
 	timeline->set_editor(this);
 	timeline->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
 	timeline->connect("name_limit_changed", callable_mp(this, &AnimationTrackEditor::_name_limit_changed));
@@ -8061,6 +8080,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_timeline_value_changed));
 	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
 	timeline->connect("filter_changed", callable_mp(this, &AnimationTrackEditor::_update_tracks));
+
+	// If the animation editor is changed to take right-to-left into account, this won't be needed anymore.
+	timeline_rtl_spacer = memnew(Control);
+	timeline_rtl_spacer->hide();
+	hbox->add_child(timeline_rtl_spacer);
 
 	panner.instantiate();
 	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN);
@@ -8090,16 +8114,17 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	marker_edit->connect(SceneStringName(draw), callable_mp((CanvasItem *)bezier_edit, &CanvasItem::queue_redraw));
 
 	scroll = memnew(ScrollContainer);
+	scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	box_selection_container->add_child(scroll);
 	scroll->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
-	VScrollBar *sb = scroll->get_v_scroll_bar();
-	scroll->remove_child(sb);
-	timeline_scroll->add_child(sb); // Move here so timeline and tracks are always aligned.
 	scroll->set_focus_mode(FOCUS_CLICK);
 	scroll->connect(SceneStringName(gui_input), callable_mp(this, &AnimationTrackEditor::_scroll_input));
 	scroll->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
+	// Must be updated from here, so it guarantees that the scrollbar theme has already changed.
+	scroll->connect(SceneStringName(theme_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_rtl_spacer), CONNECT_DEFERRED);
+	scroll->get_v_scroll_bar()->connect(SceneStringName(visibility_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_rtl_spacer));
 	scroll->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_v_scroll_changed));
 	scroll->get_h_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_h_scroll_changed));
 

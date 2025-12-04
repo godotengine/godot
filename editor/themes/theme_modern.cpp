@@ -1861,6 +1861,33 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(panel), "EditorAbout", p_config.window_complex_style);
 		p_theme->set_stylebox(SceneStringName(panel), "ThemeItemEditorDialog", p_config.window_complex_style);
 
+		// MarginContainers with negative margins, to negate borders. Used with scroll hints.
+		{
+			int margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
+
+			p_theme->set_type_variation("NoBorderHorizontal", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderHorizontal", margin);
+			p_theme->set_constant("margin_right", "NoBorderHorizontal", margin);
+
+			p_theme->set_type_variation("NoBorderHorizontalBottom", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderHorizontalBottom", margin);
+			p_theme->set_constant("margin_right", "NoBorderHorizontalBottom", margin);
+			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
+
+			margin = margin - p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
+
+			// Used in the animation track editor.
+			p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderAnimation", margin);
+			p_theme->set_constant("margin_right", "NoBorderAnimation", margin);
+
+			margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
+
+			p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
+			p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
+		}
+
 		// Buttons in material previews.
 		{
 			const Color dim_light_color = p_config.icon_normal_color.darkened(0.24);

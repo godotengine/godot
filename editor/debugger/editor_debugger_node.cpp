@@ -70,7 +70,6 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	set_global(false);
 	set_transient(true);
 
-	set_clip_contents(false);
 	_update_margins();
 
 	if (!singleton) {
