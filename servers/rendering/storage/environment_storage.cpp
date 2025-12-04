@@ -615,7 +615,7 @@ RS::EnvironmentGlowBlendMode RendererEnvironmentStorage::environment_get_glow_bl
 
 float RendererEnvironmentStorage::environment_get_glow_hdr_bleed_threshold(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, 0.0);
+	ERR_FAIL_NULL_V(env, 1.0);
 	return env->glow_hdr_bleed_threshold;
 }
 
