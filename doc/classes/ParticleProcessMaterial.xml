@@ -315,6 +315,15 @@
 			Minimum radial velocity applied to each particle. Makes particles move away from the [member velocity_pivot], or toward it if negative.
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
 		</member>
+		<member name="rotation_velocity_3d_curve" type="Texture2D" setter="set_rotation_velocity_3d_curve" getter="get_rotation_velocity_3d_curve">
+			Rotation velocity curve over lifetime, per-axis. Enable [member use_rotation_velocity_3d] to use this.
+		</member>
+		<member name="rotation_velocity_3d_max" type="Vector3" setter="set_rotation_velocity_3d_max" getter="get_rotation_velocity_3d_max">
+			Maximum 3D rotation velocity on the particle's local axis. Enable [member use_rotation_velocity_3d] to use this.
+		</member>
+		<member name="rotation_velocity_3d_min" type="Vector3" setter="set_rotation_velocity_3d_min" getter="get_rotation_velocity_3d_min">
+			Minimum 3D rotation velocity on the particle's local axis. Enable [member use_rotation_velocity_3d] to use this.
+		</member>
 		<member name="scale_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's scale will vary along this [CurveTexture] over its lifetime. If a [CurveXYZTexture] is supplied instead, the scale will be separated per-axis.
 		</member>
@@ -406,6 +415,9 @@
 		</member>
 		<member name="turbulence_noise_strength" type="float" setter="set_turbulence_noise_strength" getter="get_turbulence_noise_strength" default="1.0">
 			The turbulence noise strength. Increasing this will result in a stronger, more contrasting, flow pattern.
+		</member>
+		<member name="use_rotation_velocity_3d" type="bool" setter="set_using_rotation_velocity_3d" getter="is_using_rotation_velocity_3d" default="false">
+			Enable 3D rotation velocity.
 		</member>
 		<member name="velocity_limit_curve" type="Texture2D" setter="set_velocity_limit_curve" getter="get_velocity_limit_curve">
 			A [CurveTexture] that defines the maximum velocity of a particle during its lifetime.

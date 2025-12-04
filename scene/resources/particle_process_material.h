@@ -128,6 +128,8 @@ private:
 		uint64_t emission_curve : 1;
 		uint64_t has_initial_ramp : 1;
 		uint64_t orbit_uses_curve_xyz : 1;
+		uint64_t use_rotation_velocity_3d : 1;
+		uint64_t use_rotation_velocity_3d_curve : 1;
 
 		MaterialKey() {
 			memset(this, 0, sizeof(MaterialKey));
@@ -173,6 +175,11 @@ private:
 		mk.has_initial_ramp = color_initial_ramp.is_valid() ? 1 : 0;
 		CurveXYZTexture *texture = Object::cast_to<CurveXYZTexture>(tex_parameters[PARAM_ORBIT_VELOCITY].ptr());
 		mk.orbit_uses_curve_xyz = texture ? 1 : 0;
+		mk.use_rotation_velocity_3d = using_rotation_velocity_3d;
+		if (using_rotation_velocity_3d) {
+			texture = Object::cast_to<CurveXYZTexture>(rotation_velocity_3d_curve.ptr());
+			mk.use_rotation_velocity_3d_curve = texture ? 1 : 0;
+		}
 
 		for (int i = 0; i < PARAM_MAX; i++) {
 			if (tex_parameters[i].is_valid()) {
@@ -210,6 +217,7 @@ private:
 		StringName anim_speed_min;
 		StringName anim_offset_min;
 		StringName directional_velocity_min;
+		StringName rotation_velocity_3d_min;
 
 		StringName initial_linear_velocity_max;
 		StringName initial_angle_max;
@@ -226,6 +234,7 @@ private:
 		StringName anim_speed_max;
 		StringName anim_offset_max;
 		StringName directional_velocity_max;
+		StringName rotation_velocity_3d_max;
 
 		StringName angle_texture;
 		StringName angular_velocity_texture;
@@ -242,6 +251,7 @@ private:
 		StringName anim_offset_texture;
 		StringName velocity_limiter_texture;
 		StringName directional_velocity_texture;
+		StringName rotation_velocity_3d_curve;
 
 		StringName color;
 		StringName color_ramp;
@@ -346,6 +356,11 @@ private:
 
 	double lifetime_randomness = 0.0;
 	double inherit_emitter_velocity_ratio = 0.0;
+
+	bool using_rotation_velocity_3d = false;
+	Vector3 rotation_velocity_3d_min;
+	Vector3 rotation_velocity_3d_max;
+	Ref<Texture2D> rotation_velocity_3d_curve;
 
 	SubEmitterMode sub_emitter_mode;
 	double sub_emitter_frequency = 0.0;
@@ -458,6 +473,15 @@ public:
 
 	void set_inherit_velocity_ratio(double p_ratio);
 	double get_inherit_velocity_ratio();
+
+	void set_use_rotation_velocity_3d(bool p_use_rotation_velocity_3d);
+	bool is_using_rotation_velocity_3d() const;
+	void set_rotation_velocity_3d_min(const Vector3 &p_rotation_velocity_3d_min);
+	Vector3 get_rotation_velocity_3d_min() const;
+	void set_rotation_velocity_3d_max(const Vector3 &p_rotation_velocity_3d_max);
+	Vector3 get_rotation_velocity_3d_max() const;
+	void set_rotation_velocity_3d_curve(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_rotation_velocity_3d_curve() const;
 
 	void set_attractor_interaction_enabled(bool p_enable);
 	bool is_attractor_interaction_enabled() const;
