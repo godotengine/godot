@@ -123,26 +123,43 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 
 	// Key is None WITH a physical key AND modifiers.
 	none_key.set_physical_keycode(Key::ENTER);
-	CHECK(none_key.as_text() == "Ctrl+Enter - Physical");
+	CHECK(none_key.as_text() == "Ctrl+Enter");
+
+	none_key.set_physical_keycode(Key::W);
+	CHECK(none_key.as_text() == "Ctrl+W - Physical");
 
 	// Key is None WITH a physical key AND multiple modifiers, checks for correct ordering.
+	none_key.set_physical_keycode(Key::ENTER);
 	none_key.set_alt_pressed(true);
 	none_key.set_shift_pressed(true);
 #ifdef MACOS_ENABLED
-	CHECK(none_key.as_text() != "Ctrl+Shift+Option+Enter - Physical");
-	CHECK(none_key.as_text() == "Ctrl+Option+Shift+Enter - Physical");
+	CHECK(none_key.as_text() != "Ctrl+Shift+Option+Enter");
+	CHECK(none_key.as_text() == "Ctrl+Option+Shift+Enter");
 #else
-	CHECK(none_key.as_text() != "Ctrl+Shift+Alt+Enter - Physical");
-	CHECK(none_key.as_text() == "Ctrl+Alt+Shift+Enter - Physical");
+	CHECK(none_key.as_text() != "Ctrl+Shift+Alt+Enter");
+	CHECK(none_key.as_text() == "Ctrl+Alt+Shift+Enter");
+#endif
+	none_key.set_physical_keycode(Key::W);
+#ifdef MACOS_ENABLED
+	CHECK(none_key.as_text() != "Ctrl+Shift+Option+W - Physical");
+	CHECK(none_key.as_text() == "Ctrl+Option+Shift+W - Physical");
+#else
+	CHECK(none_key.as_text() != "Ctrl+Shift+Alt+W - Physical");
+	CHECK(none_key.as_text() == "Ctrl+Alt+Shift+W - Physical");
 #endif
 
 	InputEventKey none_key2;
 
 	// Key is None without modifiers with a physical key.
 	none_key2.set_keycode(Key::NONE);
+	none_key2.set_physical_keycode(Key::W);
+
+	CHECK(none_key2.as_text() == "W - Physical");
+
+	none_key2.set_keycode(Key::NONE);
 	none_key2.set_physical_keycode(Key::ENTER);
 
-	CHECK(none_key2.as_text() == "Enter - Physical");
+	CHECK(none_key2.as_text() == "Enter");
 
 	InputEventKey key;
 

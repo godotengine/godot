@@ -475,7 +475,10 @@ String InputEventKey::as_text() const {
 	} else if (keycode != Key::NONE) {
 		kc = keycode_get_string(keycode);
 	} else if (physical_keycode != Key::NONE) {
-		kc = keycode_get_string(physical_keycode) + " - " + RTR("Physical");
+		kc = keycode_get_string(physical_keycode);
+		if ((physical_keycode & Key::SPECIAL) != Key::SPECIAL) {
+			kc += " - " + RTR("Physical");
+		}
 	} else {
 		kc = "(" + RTR("unset") + ")";
 	}
