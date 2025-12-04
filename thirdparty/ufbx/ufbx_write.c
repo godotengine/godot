@@ -8763,7 +8763,7 @@ static void ufbxwi_save_mesh_data(ufbxwi_save_context *sc, ufbxwi_element *eleme
 		ufbxwi_dom_open(sc, info->layer_element_name, "I", attrib->set);
 
 		ufbxwi_dom_value(sc, "Version", "I", info->version);
-		ufbxwi_dom_value(sc, "Name", "S", &attrib->name);
+		ufbxwi_dom_value(sc, "Name", "S", attrib->name);
 		ufbxwi_dom_value(sc, "MappingInformationType", "C", ufbxwi_attribute_mapping_infos[attrib->mapping].name);
 		ufbxwi_dom_value(sc, "ReferenceInformationType", "C", attrib->indices ? "IndexToDirect" : "Direct");
 
