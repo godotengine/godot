@@ -99,6 +99,7 @@ public:
 	void set_target(const String &p_prop);
 	void set_label(const String &p_label) { label = p_label; }
 	void set_keyable(const bool p_keyable);
+	void set_skeleton(Skeleton3D *p_skeleton);
 
 	void _update_properties();
 };
@@ -218,6 +219,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	void _update_properties();
 
 	void _subgizmo_selection_change();
+	void _disconnect_from_skeleton();
 
 	int selected_bone = -1;
 
