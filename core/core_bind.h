@@ -358,6 +358,12 @@ public:
 	TypedArray<PackedVector2Array> intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Common area (multiply).
 	TypedArray<PackedVector2Array> exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // All but common area (xor).
 
+	// 2D complex (multiple contours) polygon boolean operations
+	TypedArray<PackedVector2Array> merge_polygons_complex(const TypedArray<PackedVector2Array> &p_polygon_a, const TypedArray<PackedVector2Array> &p_polygon_b); // Union (add).
+	TypedArray<PackedVector2Array> clip_polygons_complex(const TypedArray<PackedVector2Array> &p_polygon_a, const TypedArray<PackedVector2Array> &p_polygon_b); // Difference (subtract).
+	TypedArray<PackedVector2Array> intersect_polygons_complex(const TypedArray<PackedVector2Array> &p_polygon_a, const TypedArray<PackedVector2Array> &p_polygon_b); // Common area (multiply).
+	TypedArray<PackedVector2Array> exclude_polygons_complex(const TypedArray<PackedVector2Array> &p_polygon_a, const TypedArray<PackedVector2Array> &p_polygon_b); // All but common area (xor).
+
 	// 2D polyline vs polygon operations.
 	TypedArray<PackedVector2Array> clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Cut.
 	TypedArray<PackedVector2Array> intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
