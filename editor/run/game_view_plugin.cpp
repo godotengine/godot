@@ -855,7 +855,7 @@ void GameView::_camera_override_menu_id_pressed(int p_id) {
 void GameView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Alt+RMB: Show list of all nodes at position clicked."));
+			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(vformat(TTR("%s+Alt+RMB: Show list of all nodes at position clicked."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)));
 			_update_ui();
 		} break;
 
