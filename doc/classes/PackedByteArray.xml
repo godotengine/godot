@@ -107,6 +107,13 @@
 				Decodes a 64-bit floating-point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
+		<method name="decode_double_be" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 64-bit floating-point number from the bytes starting at [param byte_offset] in [b]big-endian order[/b]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
 		<method name="decode_float" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="byte_offset" type="int" />
@@ -114,11 +121,25 @@
 				Decodes a 32-bit floating-point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
+		<method name="decode_float_be" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 32-bit floating-point number from the bytes starting at [param byte_offset] in [b]big-endian order[/b]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
 		<method name="decode_half" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
 				Decodes a 16-bit floating-point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_half_be" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 16-bit floating-point number from the bytes starting at [param byte_offset] in [b]big-endian order[/b]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_s8" qualifiers="const">
@@ -135,6 +156,13 @@
 				Decodes a 16-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
+		<method name="decode_s16_be" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 16-bit signed integer number from the bytes starting at [param byte_offset] in [b]big-endian order[/b]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
 		<method name="decode_s32" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
@@ -142,11 +170,25 @@
 				Decodes a 32-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
+		<method name="decode_s32_be" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 32-bit signed integer number from the bytes starting at [param byte_offset] in [b]big-endian order[/b]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
 		<method name="decode_s64" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
 				Decodes a 64-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_s64_be" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 64-bit signed integer number from the bytes starting at [param byte_offset] in [b]big-endian order[/b]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_u8" qualifiers="const">
@@ -163,6 +205,13 @@
 				Decodes a 16-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
+		<method name="decode_u16_be" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 16-bit unsigned integer number from the bytes starting at [param byte_offset] in [b]big-endian order[/b]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
 		<method name="decode_u32" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
@@ -170,11 +219,25 @@
 				Decodes a 32-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
+		<method name="decode_u32_be" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 32-bit unsigned integer number from the bytes starting at [param byte_offset] in [b]big-endian order[/b]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
 		<method name="decode_u64" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
 				Decodes a 64-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_u64_be" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 64-bit unsigned integer number from the bytes starting at [param byte_offset] in [b]big-endian order[/b]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_var" qualifiers="const">
@@ -227,6 +290,14 @@
 				Encodes a 64-bit floating-point number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of allocated space, starting at the offset.
 			</description>
 		</method>
+		<method name="encode_double_be">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Encodes a 64-bit floating-point number as bytes at the index of [param byte_offset] bytes in [b]big-endian order[/b]. The array must have at least 8 bytes of allocated space, starting at the offset.
+			</description>
+		</method>
 		<method name="encode_float">
 			<return type="void" />
 			<param index="0" name="byte_offset" type="int" />
@@ -235,12 +306,28 @@
 				Encodes a 32-bit floating-point number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
 			</description>
 		</method>
+		<method name="encode_float_be">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Encodes a 32-bit floating-point number as bytes at the index of [param byte_offset] bytes in [b]big-endian order[/b]. The array must have at least 4 bytes of allocated space, starting at the offset.
+			</description>
+		</method>
 		<method name="encode_half">
 			<return type="void" />
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="float" />
 			<description>
 				Encodes a 16-bit floating-point number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_half_be">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Encodes a 16-bit floating-point number as bytes at the index of [param byte_offset] bytes in [b]big-endian order[/b]. The array must have at least 2 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_s8">
@@ -259,6 +346,14 @@
 				Encodes a 16-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
 			</description>
 		</method>
+		<method name="encode_s16_be">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 16-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
+			</description>
+		</method>
 		<method name="encode_s32">
 			<return type="void" />
 			<param index="0" name="byte_offset" type="int" />
@@ -267,12 +362,28 @@
 				Encodes a 32-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
 			</description>
 		</method>
+		<method name="encode_s32_be">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 32-bit signed integer number as bytes at the index of [param byte_offset] bytes in [b]big-endian order[/b]. The array must have at least 4 bytes of space, starting at the offset.
+			</description>
+		</method>
 		<method name="encode_s64">
 			<return type="void" />
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
 				Encodes a 64-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_s64_be">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 64-bit signed integer number as bytes at the index of [param byte_offset] bytes in [b]big-endian order[/b]. The array must have at least 8 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_u8">
@@ -291,6 +402,14 @@
 				Encodes a 16-bit unsigned integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
 			</description>
 		</method>
+		<method name="encode_u16_be">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 16-bit unsigned integer number as bytes at the index of [param byte_offset] bytes in [b]big-endian order[/b]. The array must have at least 2 bytes of space, starting at the offset.
+			</description>
+		</method>
 		<method name="encode_u32">
 			<return type="void" />
 			<param index="0" name="byte_offset" type="int" />
@@ -299,12 +418,28 @@
 				Encodes a 32-bit unsigned integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
 			</description>
 		</method>
+		<method name="encode_u32_be">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 32-bit unsigned integer number as bytes at the index of [param byte_offset] bytes in [b]big-endian order[/b]. The array must have at least 4 bytes of space, starting at the offset.
+			</description>
+		</method>
 		<method name="encode_u64">
 			<return type="void" />
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="int" />
 			<description>
 				Encodes a 64-bit unsigned integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_u64_be">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 64-bit unsigned integer number as bytes at the index of [param byte_offset] bytes in [b]big-endian order[/b]. The array must have at least 8 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_var">
