@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  margin_container_editor_plugin.h                                      */
+/*  container_editor_plugin.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,14 +31,26 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/margin_container.h"
 
-class CanvasItemEditor;
+class ContainerEditorPlugin : public EditorPlugin {
+	GDCLASS(ContainerEditorPlugin, EditorPlugin);
 
-class MarginContainerEditorPlugin : public EditorPlugin {
-	GDCLASS(MarginContainerEditorPlugin, EditorPlugin);
+	enum ContainerType {
+		CONTAINER_TYPE_NONE,
+		CONTAINER_TYPE_ASPECT_RATIO,
+		CONTAINER_TYPE_GRID,
+		CONTAINER_TYPE_CENTER,
+		CONTAINER_TYPE_SCROLL,
+		CONTAINER_TYPE_MARGIN,
+		CONTAINER_TYPE_SPLIT,
+		CONTAINER_TYPE_FLOW,
+		CONTAINER_TYPE_BOX,
+	};
 
-	MarginContainer *margin_container = nullptr;
+	ContainerType type;
+	Container *container = nullptr;
+
+	ContainerType _get_container_type(Object *p_object) const;
 
 public:
 	void forward_canvas_draw_over_viewport(Control *p_viewport_control) override;

@@ -35,12 +35,16 @@
 class GridContainer : public Container {
 	GDCLASS(GridContainer, Container);
 
+	friend class ContainerEditorPlugin;
+
 	int columns = 1;
 
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;
 	} theme_cache;
+
+	PackedInt32Array cell_sizes;
 
 protected:
 	void _notification(int p_what);
