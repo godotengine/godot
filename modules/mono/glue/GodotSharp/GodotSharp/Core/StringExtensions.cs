@@ -1087,16 +1087,46 @@ namespace Godot
         /// <returns>The escaped string.</returns>
         public static string JSONEscape(this string instance)
         {
-            var sb = new StringBuilder(instance);
+            var sb = new StringBuilder();
 
-            sb.Replace("\\", "\\\\");
-            sb.Replace("\b", "\\b");
-            sb.Replace("\f", "\\f");
-            sb.Replace("\n", "\\n");
-            sb.Replace("\r", "\\r");
-            sb.Replace("\t", "\\t");
-            sb.Replace("\v", "\\v");
-            sb.Replace("\"", "\\\"");
+            foreach (char c in instance)
+            {
+                switch (c)
+                {
+                    case '\\':
+                        sb.Append("\\\\");
+                        break;
+                    case '"':
+                        sb.Append("\\\"");
+                        break;
+                    case '\b':
+                        sb.Append("\\b");
+                        break;
+                    case '\f':
+                        sb.Append("\\f");
+                        break;
+                    case '\n':
+                        sb.Append("\\n");
+                        break;
+                    case '\r':
+                        sb.Append("\\r");
+                        break;
+                    case '\t':
+                        sb.Append("\\t");
+                        break;
+                    default:
+                        // ASCII control characters (0x00-0x1F) and C1 control characters (0x7F-0x9F) must be escaped using \uXXXX format.
+                        if (c <= 0x1F || (c >= 0x7F && c <= 0x9F))
+                        {
+                            sb.AppendFormat(CultureInfo.InvariantCulture, "\\u{0:X4}", (int)c);
+                        }
+                        else
+                        {
+                            sb.Append(c);
+                        }
+                        break;
+                }
+            }
 
             return sb.ToString();
         }
