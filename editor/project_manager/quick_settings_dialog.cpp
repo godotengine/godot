@@ -52,6 +52,7 @@ void QuickSettingsDialog::_fetch_setting_values() {
 	editor_network_modes.clear();
 	editor_check_for_updates.clear();
 	editor_directory_naming_conventions.clear();
+	editor_dropped_node_naming_convention.clear();
 
 	{
 		List<PropertyInfo> editor_settings_properties;
@@ -72,6 +73,8 @@ void QuickSettingsDialog::_fetch_setting_values() {
 				editor_check_for_updates = pi.hint_string.split(",");
 			} else if (pi.name == "project_manager/directory_naming_convention") {
 				editor_directory_naming_conventions = pi.hint_string.split(",");
+			} else if (pi.name == "project_manager/dropped_node_naming_convention") {
+				editor_dropped_node_naming_convention = pi.hint_string.split(",");
 			}
 		}
 	}
@@ -164,6 +167,19 @@ void QuickSettingsDialog::_update_current_values() {
 			}
 		}
 	}
+
+	// Dropped node naming options.
+	{
+		const int current_directory_naming = EDITOR_GET("project_manager/dropped_node_naming_convention");
+
+		for (int i = 0; i < editor_dropped_node_naming_convention.size(); i++) {
+			const String &dropped_node_naming_value = editor_dropped_node_naming_convention[i];
+			if (current_directory_naming == i) {
+				dropped_node_naming_convention_button->set_text(dropped_node_naming_value);
+				dropped_node_naming_convention_button->select(i);
+			}
+		}
+	}
 }
 
 void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_control) {
@@ -210,6 +226,10 @@ void QuickSettingsDialog::_check_for_update_selected(int p_id) {
 
 void QuickSettingsDialog::_directory_naming_convention_selected(int p_id) {
 	_set_setting_value("project_manager/directory_naming_convention", p_id);
+}
+
+void QuickSettingsDialog::_dropped_node_naming_convention(int p_id) {
+	_set_setting_value("project_manager/dropped_node_naming_convention", p_id);
 }
 
 void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Variant &p_value, bool p_restart_required) {
@@ -395,6 +415,20 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			}
 
 			_add_setting_control(TTRC("Directory Naming Convention"), directory_naming_convention_button);
+		}
+
+		// Dropped node naming options.
+		{
+			dropped_node_naming_convention_button = memnew(OptionButton);
+			dropped_node_naming_convention_button->set_fit_to_longest_item(false);
+			dropped_node_naming_convention_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_dropped_node_naming_convention));
+
+			for (int i = 0; i < editor_dropped_node_naming_convention.size(); i++) {
+				const String &dropped_node_naming_convention = editor_dropped_node_naming_convention[i];
+				dropped_node_naming_convention_button->add_item(dropped_node_naming_convention, i);
+			}
+
+			_add_setting_control(TTRC("Dropped Node Naming Convention"), dropped_node_naming_convention_button);
 		}
 
 		_update_current_values();
