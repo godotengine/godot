@@ -1028,8 +1028,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	register_core_settings(); //here globals are present
 
 	translation_server = memnew(TranslationServer);
-	performance = memnew(Performance);
 	GDREGISTER_CLASS(Performance);
+	performance = memnew(Performance);
 	engine->add_singleton(Engine::Singleton("Performance", performance));
 
 	// Only flush stdout in debug builds by default, as spamming `print()` will
