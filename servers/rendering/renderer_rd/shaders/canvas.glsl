@@ -693,6 +693,11 @@ void main() {
 
 #CODE : FRAGMENT
 
+#ifdef LIGHT_VERTEX_USED
+		vertex = light_vertex.xy;
+		shadow_vertex = light_vertex.xy;
+#endif
+
 #if defined(NORMAL_MAP_USED)
 		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_map_depth);
 #endif
