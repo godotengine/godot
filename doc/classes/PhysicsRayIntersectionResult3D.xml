@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsRayIntersectionResult3D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores the result of a ray intersection query.
+	</brief_description>
+	<description>
+		This object contains the intersection information produced by [method PhysicsDirectSpaceState3D.intersect_ray].
+		After calling [method PhysicsDirectSpaceState3D.intersect_ray], the fields of this object will be populated with the hit information if the ray intersects a shape. If no intersection occurred, the values remain unchanged from the previous state.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object" />
+			<description>
+				Returns the intersected object instance.
+			</description>
+		</method>
+		<method name="get_collider_face_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the face index at the intersection point.
+				This value is only valid if the intersected shape is a [ConcavePolygonShape3D]. Otherwise, [code]-1[/code] is returned.
+			</description>
+		</method>
+		<method name="get_collider_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique ID of the intersected object.
+			</description>
+		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the intersected object.
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the shape index of the intersected object's shape.
+			</description>
+		</method>
+		<method name="get_normal" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the surface normal at the intersection point. If the ray starts inside a shape and [member PhysicsRayQueryParameters3D.hit_from_inside] is [code]true[/code], this value may be [code]Vector3(0, 0, 0)[/code].
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the world-space intersection point.
+			</description>
+		</method>
+	</methods>
+</class>
