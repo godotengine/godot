@@ -677,6 +677,9 @@
 		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a signal is declared but never explicitly used in the class.
 		</member>
+		<member name="debug/gdscript/warnings/unused_static_overriding_trait" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an overridden static member from a trait is not declared with the [code]static[/code] keyword.
+		</member>
 		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local variable is unused.
 		</member>
