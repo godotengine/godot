@@ -32,6 +32,7 @@
 
 #include "core/variant/type_info.h"
 #include "servers/physics_3d/physics_server_3d_types.h"
+#include "servers/physics_3d/queries/physics_point_intersection_result_3d.h"
 #include "servers/physics_3d/queries/physics_point_query_parameters_3d.h"
 #include "servers/physics_3d/queries/physics_ray_intersection_result_3d.h"
 #include "servers/physics_3d/queries/physics_ray_query_parameters_3d.h"
@@ -49,6 +50,7 @@ private:
 	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
 
 	bool _intersect_ray_typed(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult3D> rp_result);
+	bool _intersect_point_typed(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, RequiredParam<PhysicsPointIntersectionResult3D> rp_result);
 
 protected:
 	static void _bind_methods();
