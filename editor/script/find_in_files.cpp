@@ -872,13 +872,19 @@ void FindInFilesPanel::_notification(int p_what) {
 
 			TreeItem *file_item = _results_display->get_root()->get_first_child();
 			while (file_item) {
-				file_item->set_button_tooltip_text(0, FIND_BUTTON_REPLACE, TTR("Replace all matches in file"));
-				file_item->set_button_tooltip_text(0, FIND_BUTTON_REMOVE, TTR("Remove result"));
+				if (_with_replace) {
+					file_item->set_button_tooltip_text(0, file_item->get_button_by_id(0, FIND_BUTTON_REPLACE), TTR("Replace all matches in file"));
+				}
+				file_item->set_button_tooltip_text(0, file_item->get_button_by_id(0, FIND_BUTTON_REMOVE), TTR("Remove result"));
 
 				TreeItem *result_item = file_item->get_first_child();
 				while (result_item) {
-					result_item->set_button_tooltip_text(_with_replace ? 1 : 0, FIND_BUTTON_REPLACE, TTR("Replace"));
-					result_item->set_button_tooltip_text(_with_replace ? 1 : 0, FIND_BUTTON_REMOVE, TTR("Remove result"));
+					if (_with_replace) {
+						result_item->set_button_tooltip_text(1, file_item->get_button_by_id(0, FIND_BUTTON_REPLACE), TTR("Replace"));
+						result_item->set_button_tooltip_text(1, file_item->get_button_by_id(0, FIND_BUTTON_REMOVE), TTR("Remove result"));
+					} else {
+						result_item->set_button_tooltip_text(0, file_item->get_button_by_id(0, FIND_BUTTON_REMOVE), TTR("Remove result"));
+					}
 					result_item = result_item->get_next();
 				}
 
