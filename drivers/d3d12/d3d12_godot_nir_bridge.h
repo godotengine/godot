@@ -52,6 +52,10 @@ typedef struct GodotNirCallbacks {
 	void (*report_bitcode_bit_offset_fn)(uint64_t p_bit_offset, void *p_data);
 } GodotNirCallbacks;
 
+extern void *godot_nir_malloc(size_t p_size);
+extern void *godot_nir_realloc(void *p_block, size_t p_size);
+extern void godot_nir_free(void *p_block);
+
 #ifdef __cplusplus
 }
 #endif
