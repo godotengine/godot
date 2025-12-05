@@ -64,6 +64,10 @@
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
+bool EditorInterface::is_exiting() const {
+	return EditorNode::get_singleton()->is_exiting();
+}
+
 void EditorInterface::restart_editor(bool p_save) {
 	if (p_save) {
 		EditorNode::get_singleton()->save_all_scenes();
@@ -827,6 +831,7 @@ void EditorInterface::get_argument_options(const StringName &p_function, int p_i
 // Base.
 
 void EditorInterface::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("is_exiting"), &EditorInterface::is_exiting);
 	ClassDB::bind_method(D_METHOD("restart_editor", "save"), &EditorInterface::restart_editor, DEFVAL(true));
 
 	// Editor tools.
