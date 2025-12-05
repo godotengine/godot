@@ -1844,10 +1844,55 @@ void fragment_shader(in SceneData scene_data) {
 			vec3 n = normalize(lightmaps.data[ofs].normal_xform * indirect_normal);
 			float en = lightmaps.data[ofs].exposure_normalization;
 
-			ambient_light += lm_light_l0 * en;
-			ambient_light += lm_light_l1n1 * n.y * (lm_light_l0 * en * 4.0);
-			ambient_light += lm_light_l1_0 * n.z * (lm_light_l0 * en * 4.0);
-			ambient_light += lm_light_l1p1 * n.x * (lm_light_l0 * en * 4.0);
+			vec3 sh_light = vec3(0.0);
+			sh_light += lm_light_l0 * en;
+			sh_light += lm_light_l1n1 * n.y * (lm_light_l0 * en * 4.0);
+			sh_light += lm_light_l1_0 * n.z * (lm_light_l0 * en * 4.0);
+			sh_light += lm_light_l1p1 * n.x * (lm_light_l0 * en * 4.0);
+			ambient_light += sh_light;
+
+			if (lightmaps.data[ofs].specular_intensity > 0.0) {
+				// fake specular light to create some direct light specular lobes for directional lightmaps.
+				// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
+				vec3 l1_r = vec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
+				vec3 l1_g = vec3(lm_light_l1p1.g, lm_light_l1n1.g, lm_light_l1_0.g);
+				vec3 l1_b = vec3(lm_light_l1p1.b, lm_light_l1n1.b, lm_light_l1_0.b);
+
+				vec3 l1 = (l1_r + l1_g + l1_b) / 3.0;
+				vec3 lightmap_direction = normalize(l1);
+
+				vec3 L_view = hvec3(inverse(lightmaps.data[ofs].normal_xform) * lightmap_direction);
+
+				vec3 f0 = F0(metallic, specular, albedo);
+
+				// Discard diffuse light from this fake light, as we're only interested in its specular light output.
+				vec3 diffuse_light_discarded = diffuse_light;
+
+				float specular_intensity = length(l1) * lightmaps.data[ofs].specular_intensity * 10.0;
+
+				light_compute(indirect_normal, L_view, normalize(view), 0.0, sh_light, false, 1.5, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv, energy_compensation,
+#ifdef LIGHT_BACKLIGHT_USED
+						backlight,
+#endif
+#ifdef LIGHT_TRANSMITTANCE_USED
+						transmittance_color,
+						transmittance_depth,
+						transmittance_boost,
+						transmittance_z,
+#endif
+#ifdef LIGHT_RIM_USED
+						rim, rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+						clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
+#ifdef LIGHT_ANISOTROPY_USED
+						binormal,
+						tangent, anisotropy,
+#endif
+						diffuse_light_discarded,
+						direct_specular_light);
+			}
 
 		} else {
 			if (sc_use_lightmap_bicubic_filter()) {
