@@ -722,7 +722,7 @@
 			<param index="1" name="from" type="Transform2D" />
 			<param index="2" name="motion" type="Vector2" />
 			<param index="3" name="margin" type="float" />
-			<param index="4" name="collide_separation_ray" type="bool" />
+			<param index="4" name="separation_rays_stop_motion" type="bool" />
 			<param index="5" name="recovery_as_collision" type="bool" />
 			<param index="6" name="result" type="PhysicsServer2DExtensionMotionResult*" />
 			<description>

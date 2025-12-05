@@ -138,13 +138,15 @@ public:
 
 class GodotSeparationRayShape3D : public GodotShape3D {
 	real_t length = 1.0;
-	bool slide_on_slope = false;
+	bool stops_motion = false;
+	bool separate_along_ray = true;
 
-	void _setup(real_t p_length, bool p_slide_on_slope);
+	void _setup(real_t p_length, bool p_stops_motion, bool p_separate_along_ray);
 
 public:
 	real_t get_length() const;
-	bool get_slide_on_slope() const;
+	bool get_stops_motion() const;
+	bool get_separate_along_ray() const;
 
 	virtual real_t get_volume() const override { return 0.0; }
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_SEPARATION_RAY; }

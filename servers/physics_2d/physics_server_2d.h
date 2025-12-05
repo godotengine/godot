@@ -495,7 +495,7 @@ public:
 		Transform2D from;
 		Vector2 motion;
 		real_t margin = 0.08;
-		bool collide_separation_ray = false;
+		bool separation_rays_stop_motion = false;
 		HashSet<RID> exclude_bodies;
 		HashSet<ObjectID> exclude_objects;
 		bool recovery_as_collision = false;
@@ -750,8 +750,8 @@ public:
 	real_t get_margin() const { return parameters.margin; }
 	void set_margin(real_t p_margin) { parameters.margin = p_margin; }
 
-	bool is_collide_separation_ray_enabled() const { return parameters.collide_separation_ray; }
-	void set_collide_separation_ray_enabled(bool p_enabled) { parameters.collide_separation_ray = p_enabled; }
+	bool is_separation_rays_stop_motion_enabled() const { return parameters.separation_rays_stop_motion; }
+	void set_separation_rays_stop_motion_enabled(bool p_enabled) { parameters.separation_rays_stop_motion = p_enabled; }
 
 	TypedArray<RID> get_exclude_bodies() const;
 	void set_exclude_bodies(const TypedArray<RID> &p_exclude);

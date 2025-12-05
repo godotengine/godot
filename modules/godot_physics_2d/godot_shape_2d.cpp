@@ -162,14 +162,16 @@ real_t GodotSeparationRayShape2D::get_moment_of_inertia(real_t p_mass, const Siz
 void GodotSeparationRayShape2D::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
 	length = d["length"];
-	slide_on_slope = d["slide_on_slope"];
+	stops_motion = d["stops_motion"];
+	separate_along_ray = d["separate_along_ray"];
 	configure(Rect2(0, 0, 0.001, length));
 }
 
 Variant GodotSeparationRayShape2D::get_data() const {
 	Dictionary d;
 	d["length"] = length;
-	d["slide_on_slope"] = slide_on_slope;
+	d["stops_motion"] = stops_motion;
+	d["separate_along_ray"] = separate_along_ray;
 	return d;
 }
 
