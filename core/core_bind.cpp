@@ -52,6 +52,10 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 	return ::ResourceLoader::load_threaded_request(p_path, p_type_hint, p_use_sub_threads, ResourceFormatLoader::CacheMode(p_cache_mode));
 }
 
+Error ResourceLoader::load_threaded(const String &p_path, const Callable &p_callback, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
+	return ::ResourceLoader::load_threaded(p_path, p_callback, p_type_hint, p_use_sub_threads, ResourceFormatLoader::CacheMode(p_cache_mode));
+}
+
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, Array r_progress) {
 	// Progress being the default array indicates the user hasn't requested for it to be computed.
 	// Default array should never be modified, it causes the hash of the method to change.
@@ -137,6 +141,7 @@ Vector<String> ResourceLoader::list_directory(const String &p_directory) {
 }
 
 void ResourceLoader::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("load_threaded", "path", "callback", "type_hint", "use_sub_threads", "cache_mode"), &ResourceLoader::load_threaded, DEFVAL(""), DEFVAL(false), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("load_threaded_request", "path", "type_hint", "use_sub_threads", "cache_mode"), &ResourceLoader::load_threaded_request, DEFVAL(""), DEFVAL(false), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &ResourceLoader::load_threaded_get_status, DEFVAL_ARRAY);
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &ResourceLoader::load_threaded_get);

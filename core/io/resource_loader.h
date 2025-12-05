@@ -34,6 +34,8 @@
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
+#include "core/templates/local_vector.h"
+#include "core/variant/callable.h"
 
 namespace CoreBind {
 class ResourceLoader;
@@ -130,6 +132,7 @@ public:
 		String local_path;
 		String user_path;
 		uint32_t user_rc = 0; // Having user RC implies regular RC incremented in one, until the user RC reaches zero.
+		LocalVector<Callable> user_callbacks; // Having user callbacks also in implies user_rc incremented by user_callbacks.size().
 		ThreadLoadTask *task_if_unregistered = nullptr;
 
 		void clear();
@@ -145,6 +148,7 @@ public:
 private:
 	static LoadToken *_load_threaded_request_reuse_user_token(const String &p_path);
 	static void _load_threaded_request_setup_user_token(LoadToken *p_token, const String &p_path);
+	static void _load_threaded_auto_complete_user_request(const String &p_user_path);
 
 	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
 
@@ -234,6 +238,7 @@ public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
+	static Error load_threaded(const String &p_path, const Callable &p_callback, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
 
 	static bool is_within_load() { return load_nesting > 0; }
 
