@@ -426,6 +426,10 @@ uint32_t GodotSoftBody3D::get_node_count() const {
 	return nodes.size();
 }
 
+uint32_t GodotSoftBody3D::get_vertex_count() const {
+	return map_visual_to_physics.size();
+}
+
 real_t GodotSoftBody3D::get_node_inv_mass(uint32_t p_node_index) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), 0.0);
 	return nodes[p_node_index].im;
