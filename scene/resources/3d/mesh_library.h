@@ -82,38 +82,46 @@ protected:
 
 public:
 	void create_item(int p_item);
-	void set_item_name(int p_item, const String &p_name);
-	void set_item_mesh(int p_item, const Ref<Mesh> &p_mesh);
-	void set_item_mesh_transform(int p_item, const Transform3D &p_transform);
-	void set_item_mesh_cast_shadow(int p_item, RS::ShadowCastingSetting p_shadow_casting_setting);
-	void set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh);
-	void set_item_navigation_mesh_transform(int p_item, const Transform3D &p_transform);
-	void set_item_navigation_layers(int p_item, uint32_t p_navigation_layers);
-#ifndef PHYSICS_3D_DISABLED
-	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
-#endif // PHYSICS_3D_DISABLED
-	void set_item_preview(int p_item, const Ref<Texture2D> &p_preview);
-	String get_item_name(int p_item) const;
-	Ref<Mesh> get_item_mesh(int p_item) const;
-	Transform3D get_item_mesh_transform(int p_item) const;
-	RS::ShadowCastingSetting get_item_mesh_cast_shadow(int p_item) const;
-	Ref<NavigationMesh> get_item_navigation_mesh(int p_item) const;
-	Transform3D get_item_navigation_mesh_transform(int p_item) const;
-	uint32_t get_item_navigation_layers(int p_item) const;
-#ifndef PHYSICS_3D_DISABLED
-	Vector<ShapeData> get_item_shapes(int p_item) const;
-#endif // PHYSICS_3D_DISABLED
-	Ref<Texture2D> get_item_preview(int p_item) const;
-
 	void remove_item(int p_item);
+
 	bool has_item(int p_item) const;
-
-	void clear();
-
 	int find_item_by_name(const String &p_name) const;
 
 	Vector<int> get_item_list() const;
 	int get_last_unused_item_id() const;
+
+	void set_item_name(int p_item, const String &p_name);
+	String get_item_name(int p_item) const;
+
+	void set_item_mesh(int p_item, const Ref<Mesh> &p_mesh);
+	Ref<Mesh> get_item_mesh(int p_item) const;
+
+	void set_item_mesh_transform(int p_item, const Transform3D &p_transform);
+	Transform3D get_item_mesh_transform(int p_item) const;
+
+	void set_item_mesh_cast_shadow(int p_item, RS::ShadowCastingSetting p_shadow_casting_setting);
+	RS::ShadowCastingSetting get_item_mesh_cast_shadow(int p_item) const;
+
+	void set_item_preview(int p_item, const Ref<Texture2D> &p_preview);
+	Ref<Texture2D> get_item_preview(int p_item) const;
+
+#ifndef NAVIGATION_3D_DISABLED
+	void set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh);
+	Ref<NavigationMesh> get_item_navigation_mesh(int p_item) const;
+
+	void set_item_navigation_mesh_transform(int p_item, const Transform3D &p_transform);
+	Transform3D get_item_navigation_mesh_transform(int p_item) const;
+
+	void set_item_navigation_layers(int p_item, uint32_t p_navigation_layers);
+	uint32_t get_item_navigation_layers(int p_item) const;
+#endif // NAVIGATION_3D_DISABLED
+
+#ifndef PHYSICS_3D_DISABLED
+	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
+	Vector<ShapeData> get_item_shapes(int p_item) const;
+#endif // PHYSICS_3D_DISABLED
+
+	void clear();
 
 	MeshLibrary();
 	~MeshLibrary();
