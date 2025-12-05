@@ -50,6 +50,7 @@ typedef Error (*SaveJPGFunc)(const String &p_path, const Ref<Image> &p_img, floa
 typedef Vector<uint8_t> (*SaveJPGBufferFunc)(const Ref<Image> &p_img, float p_quality);
 
 typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_data, int p_size);
+typedef Error (*ImageMemLoadFuncEx)(Image *p_image, const uint8_t *p_data, int p_size, bool p_strict);
 typedef Ref<Image> (*ScalableImageMemLoadFunc)(const uint8_t *p_data, int p_size, float p_scale);
 
 typedef Error (*SaveWebPFunc)(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
@@ -213,6 +214,7 @@ public:
 	static inline ImageMemLoadFunc _png_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _png_mem_unpacker_func = nullptr;
 	static inline ImageMemLoadFunc _jpg_mem_loader_func = nullptr;
+	static inline ImageMemLoadFuncEx _jpg_mem_loader_func_ex = nullptr;
 	static inline ImageMemLoadFunc _webp_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _tga_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _bmp_mem_loader_func = nullptr;
@@ -425,6 +427,7 @@ public:
 
 	Error load_png_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_jpg_from_buffer(const Vector<uint8_t> &p_array);
+	Error _load_jpg_from_buffer_lenient(const uint8_t *p_data, int p_size);
 	Error load_webp_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_tga_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_bmp_from_buffer(const Vector<uint8_t> &p_array);
