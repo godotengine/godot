@@ -13,6 +13,9 @@
 			If [code]true[/code], the slider can be interacted with. If [code]false[/code], the value can be changed only by code.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="respect_grabber_area_min_size" type="bool" setter="set_respect_grabber_area_min_size" getter="is_respecting_grabber_area_min_size" default="false">
+			If [code]true[/code], the slider will ensure that the grabber area's minimum size is always respected, potentially reducing the usable range of the slider.
+		</member>
 		<member name="scrollable" type="bool" setter="set_scrollable" getter="is_scrollable" default="true">
 			If [code]true[/code], the value can be changed using the mouse wheel.
 		</member>
