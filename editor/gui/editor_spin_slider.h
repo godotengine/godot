@@ -112,6 +112,8 @@ protected:
 public:
 	String get_tooltip(const Point2 &p_pos) const override;
 
+	virtual Size2 get_minimum_size() const override;
+
 	String get_text_value() const;
 	void set_label(const String &p_label);
 	String get_label() const;
