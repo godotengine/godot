@@ -1112,6 +1112,9 @@
 			[b]Note:[/b] Because a resource's file extension may change in an exported project, it is heavily recommended to use [method @GDScript.load] or [ResourceLoader] instead of [FileAccess] to load resources dynamically.
 			[b]Note:[/b] The project settings file ([code]project.godot[/code]) will always be converted to binary on export, regardless of this setting.
 		</member>
+		<member name="editor/export/convert_visual_shaders_to_text_shaders" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [VisualShader] resources will be converted to [Shader] resources on project export. The resulting text shaders are smaller, so this option can save space.
+		</member>
 		<member name="editor/import/atlas_max_width" type="int" setter="" getter="" default="2048">
 			The maximum width to use when importing textures as an atlas. The value will be rounded to the nearest power of two when used. Use this to prevent imported textures from growing too large in the other direction.
 		</member>
