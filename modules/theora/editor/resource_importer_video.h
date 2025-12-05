@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  resource_importer_video.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,76 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "video_stream_theora.h"
+#include "core/io/resource_importer.h"
 
-#ifdef TOOLS_ENABLED
-#include "core/config/project_settings.h"
-#include "editor/editor_node.h"
-#include "editor/movie_writer_ogv.h"
-#include "editor/resource_importer_video.h"
-#endif
+class ResourceImporterVideo : public ResourceImporter {
+	GDCLASS(ResourceImporterVideo, ResourceImporter);
 
-static Ref<ResourceFormatLoaderTheora> resource_loader_theora;
-#ifdef TOOLS_ENABLED
-static MovieWriterOGV *writer_ogv = nullptr;
-#endif
+	bool check_ffmpeg_version();
 
-#ifdef TOOLS_ENABLED
-static void _editor_init() {
-	Ref<ResourceImporterVideo> video_importer;
-	video_importer.instantiate();
-	ResourceFormatImporter::get_singleton()->add_importer(video_importer);
-}
-#endif
+public:
+	virtual String get_importer_name() const override;
+	virtual String get_visible_name() const override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual String get_save_extension() const override;
+	virtual String get_resource_type() const override;
 
-void initialize_theora_module(ModuleInitializationLevel p_level) {
-	switch (p_level) {
-		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
-#ifdef TOOLS_ENABLED
-			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
-				writer_ogv = memnew(MovieWriterOGV);
-				MovieWriter::add_writer(writer_ogv);
-			}
-#endif
-		} break;
+	virtual int get_preset_count() const override;
+	virtual String get_preset_name(int p_idx) const override;
 
-		case MODULE_INITIALIZATION_LEVEL_SCENE: {
-			resource_loader_theora.instantiate();
-			ResourceLoader::add_resource_format_loader(resource_loader_theora, true);
-			GDREGISTER_CLASS(VideoStreamTheora);
-		} break;
-		default:
-			break;
-	}
+	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
+	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		GLOBAL_DEF_RST_BASIC("filesystem/import/ffmpeg/enabled", true);
-		if (GLOBAL_GET_CACHED(bool, "filesystem/import/ffmpeg/enabled")) {
-			GDREGISTER_CLASS(ResourceImporterVideo);
-			EditorNode::add_init_callback(_editor_init);
-		}
-	}
-#endif
-}
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-void uninitialize_theora_module(ModuleInitializationLevel p_level) {
-	switch (p_level) {
-		case MODULE_INITIALIZATION_LEVEL_SCENE: {
-			ResourceLoader::remove_resource_format_loader(resource_loader_theora);
-			resource_loader_theora.unref();
-		} break;
-
-		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
-#ifdef TOOLS_ENABLED
-			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
-				memdelete(writer_ogv);
-			}
-#endif
-		} break;
-		default:
-			break;
-	}
-}
+	virtual bool can_import_threaded() const override { return true; }
+};

@@ -1215,6 +1215,9 @@
 		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
+		<member name="filesystem/import/ffmpeg/enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], video files with extensions [code].mp4[/code], [code].webm[/code], [code].mpg[/code], [code].mpeg[/code], [code].mkv[/code], [code].avi[/code], [code].mov[/code] and [code].wmv[/code] extensions will be imported by converting them to OGV. This requires configuring a path to a FFmpeg executable in the editor settings at [member EditorSettings.filesystem/import/video/ffmpeg_path].
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
