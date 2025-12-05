@@ -293,6 +293,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsRayIntersectionResult2D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsPointIntersectionResult2D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
