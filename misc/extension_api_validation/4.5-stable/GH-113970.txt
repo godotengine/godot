@@ -1,0 +1,7 @@
+GH-113970
+---------
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_ray/return_value': type changed value in new API, from "Dictionary" to "bool".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_ray/arguments': size changed value in new API, from 1 to 2.
+
+New result type argument added; return type modified.
+Compatibility methods registered.
