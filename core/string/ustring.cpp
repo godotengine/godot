@@ -4054,13 +4054,13 @@ String String::dedent() const {
 	return new_string;
 }
 
-String String::strip_edges(bool left, bool right) const {
-	int len = length();
-	int beg = 0, end = len;
+Span<char32_t> String::strip_edges_span(Span<char32_t> p_span, bool p_left, bool p_right) {
+	uint64_t beg = 0;
+	uint64_t end = p_span.size();
 
-	if (left) {
-		for (int i = 0; i < len; i++) {
-			if (operator[](i) <= 32) {
+	if (p_left) {
+		for (uint64_t i = 0; i < end; i++) {
+			if (p_span[i] <= 32) {
 				beg++;
 			} else {
 				break;
@@ -4068,9 +4068,9 @@ String String::strip_edges(bool left, bool right) const {
 		}
 	}
 
-	if (right) {
-		for (int i = len - 1; i >= 0; i--) {
-			if (operator[](i) <= 32) {
+	if (p_right && (end > 0)) {
+		for (uint64_t i = end - 1; i > beg; i--) {
+			if (p_span[i] <= 32) {
 				end--;
 			} else {
 				break;
@@ -4078,11 +4078,14 @@ String String::strip_edges(bool left, bool right) const {
 		}
 	}
 
-	if (beg == 0 && end == len) {
-		return *this;
-	}
+	return Span(p_span.ptr() + beg, static_cast<uint64_t>(end - beg));
+}
 
-	return substr(beg, end - beg);
+String String::strip_edges(bool left, bool right) const {
+	const char32_t *p = ptr();
+	Span<char32_t> sp = strip_edges_span(span(), left, right);
+
+	return substr(sp.begin() - p, sp.size());
 }
 
 String String::strip_escapes() const {
