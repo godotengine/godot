@@ -115,6 +115,8 @@ public:
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
 
+	Dictionary get_documentation(const StringName &p_class_name) const;
+
 	// Editor GUI.
 
 	Ref<Theme> get_editor_theme() const;
