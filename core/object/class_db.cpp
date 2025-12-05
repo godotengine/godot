@@ -1154,7 +1154,7 @@ MethodBind *ClassDB::get_method_with_compatibility(const StringName &p_class, co
 	return nullptr;
 }
 
-void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
+void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield, const String &p_display_name) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -1174,16 +1174,21 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 		}
 
 		ClassInfo::EnumInfo *constants_list = type->enum_map.getptr(enum_name);
-
-		if (constants_list) {
-			constants_list->constants.push_back(p_name);
-			constants_list->is_bitfield = p_is_bitfield;
-		} else {
+		if (!constants_list) {
 			ClassInfo::EnumInfo new_list;
 			new_list.is_bitfield = p_is_bitfield;
-			new_list.constants.push_back(p_name);
-			type->enum_map[enum_name] = new_list;
+			HashMap<StringName, ClassDB::ClassInfo::EnumInfo>::Iterator I = type->enum_map.insert(enum_name, new_list);
+			constants_list = &I->value;
 		}
+
+		constants_list->constants.push_back(p_name);
+#ifdef TOOLS_ENABLED
+		if (!p_display_name.is_empty()) {
+			constants_list->display_names.push_back(p_display_name);
+		}
+#endif
+		DEV_ASSERT(constants_list->display_names.is_empty() || constants_list->display_names.size() == constants_list->constants.size());
+		DEV_ASSERT(constants_list->is_bitfield == p_is_bitfield);
 	}
 
 #ifdef DEBUG_ENABLED
@@ -1321,6 +1326,29 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 
 		type = type->inherits_ptr;
 	}
+}
+
+PackedStringArray ClassDB::get_enum_display_names(const StringName &p_class, const StringName &p_enum) {
+	Locker::Lock lock(Locker::STATE_READ);
+	PackedStringArray ret;
+
+	ClassInfo *type = classes.getptr(p_class);
+	while (type) {
+		const ClassInfo::EnumInfo *constants = type->enum_map.getptr(p_enum);
+		if (constants) {
+			ret.resize(constants->display_names.size());
+			String *ret_write = ret.ptrw();
+
+			int i = 0;
+			for (const String &display_name : constants->display_names) {
+				ret_write[i] = display_name;
+				i++;
+			}
+			break;
+		}
+		type = type->inherits_ptr;
+	}
+	return ret;
 }
 
 void ClassDB::set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values) {
@@ -1896,6 +1924,7 @@ int ClassDB::get_method_argument_count(const StringName &p_class, const StringNa
 void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method) {
 	_bind_method_custom(p_class, p_method, false);
 }
+
 void ClassDB::bind_compatibility_method_custom(const StringName &p_class, MethodBind *p_method) {
 	_bind_method_custom(p_class, p_method, true);
 }

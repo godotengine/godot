@@ -132,6 +132,9 @@ public:
 		AHashMap<StringName, int64_t> constant_map;
 		struct EnumInfo {
 			List<StringName> constants;
+#ifdef TOOLS_ENABLED
+			List<String> display_names;
+#endif
 			bool is_bitfield = false;
 		};
 
@@ -501,7 +504,7 @@ public:
 	static void add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info);
 	static Vector<uint32_t> get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
-	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
+	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false, const String &p_display_name = String());
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
 	static int64_t get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
 	static bool has_integer_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
@@ -510,6 +513,7 @@ public:
 	static StringName get_integer_constant_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static void get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance = false);
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
+	static PackedStringArray get_enum_display_names(const StringName &p_class, const StringName &p_enum);
 	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static bool is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
@@ -552,6 +556,9 @@ public:
 
 #define BIND_ENUM_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), #m_constant, m_constant);
+
+#define BIND_NAMED_ENUM_CONSTANT(m_constant, m_display_name) \
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), #m_constant, m_constant, false, m_display_name);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant), #m_constant, m_constant, true);
