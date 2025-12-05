@@ -67,6 +67,12 @@ public:
 		INITIAL_SCREEN_PRIMARY = -2,
 	};
 
+	enum UpdatePriority {
+		UPDATE_CONTINUOUSLY = 0,
+		UPDATE_WHEN_CHANGED = 1,
+		UPDATE_VITAL_ONLY = 2,
+	};
+
 private:
 	struct VariantContainer {
 		int order = 0;
@@ -213,6 +219,8 @@ public:
 
 	EditorSettings();
 };
+
+VARIANT_ENUM_CAST(EditorSettings::UpdatePriority);
 
 //not a macro any longer
 

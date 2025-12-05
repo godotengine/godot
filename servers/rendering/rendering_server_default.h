@@ -56,12 +56,23 @@ class RenderingServerDefault : public RenderingServer {
 
 	};
 
-	static int changes;
+	// low and high priority
+	static int changes[2];
 	RID test_cube;
 
 	List<Callable> frame_drawn_callbacks;
 
-	static void _changes_changed() {}
+	// This function is NOT dead code.
+	// It is specifically for debugging redraws to help identify problems with
+	// undesired constant editor updating.
+	// The function will be called in DEV builds (and thus does not require a recompile),
+	// allowing you to place a breakpoint either at the first line or the semicolon.
+	// You can then look at the callstack to find the cause of the redraw.
+	static void _changes_changed(int p_priority) {
+		if (p_priority) {
+			;
+		}
+	}
 
 	uint64_t frame_profile_frame = 0;
 	Vector<FrameProfileArea> frame_profile;
@@ -95,20 +106,13 @@ class RenderingServerDefault : public RenderingServer {
 	void _call_on_render_thread(const Callable &p_callable);
 
 public:
-	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
-	//#define DEBUG_CHANGES
-
-#ifdef DEBUG_CHANGES
-	_FORCE_INLINE_ static void redraw_request() {
-		changes++;
-		_changes_changed();
-	}
-
-#else
-	_FORCE_INLINE_ static void redraw_request() {
-		changes++;
-	}
+	_FORCE_INLINE_ static void redraw_request(bool p_high_priority = true) {
+		int priority = p_high_priority ? 1 : 0;
+		changes[priority] += 1;
+#ifdef DEV_ENABLED
+		_changes_changed(priority);
 #endif
+	}
 
 #define WRITE_ACTION redraw_request();
 #define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
@@ -1164,7 +1168,7 @@ public:
 
 	virtual void draw(bool p_present, double frame_step) override;
 	virtual void sync() override;
-	virtual bool has_changed() const override;
+	virtual bool has_changed(ChangedPriority p_priority) const override;
 	virtual void init() override;
 	virtual void finish() override;
 	virtual void tick() override;
