@@ -119,13 +119,13 @@ Ref<Image> (*Image::png_unpacker)(const Vector<uint8_t> &) = nullptr;
 Ref<Image> (*Image::basis_universal_unpacker)(const Vector<uint8_t> &) = nullptr;
 Ref<Image> (*Image::basis_universal_unpacker_ptr)(const uint8_t *, int) = nullptr;
 
-void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+void Image::_put_pixelb(int p_x, int p_y, int p_width, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * p_width + p_x) * p_pixel_size;
 	memcpy(p_data + ofs, p_pixel, p_pixel_size);
 }
 
-void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+void Image::_get_pixelb(int p_x, int p_y, int p_width, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * p_width + p_x) * p_pixel_size;
 	memcpy(p_pixel, p_data + ofs, p_pixel_size);
 }
 
@@ -1651,10 +1651,10 @@ void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 						pdata[i] = 0;
 					}
 				} else {
-					_get_pixelb(x, y, pixel_size, r, pdata);
+					_get_pixelb(x, y, width, pixel_size, r, pdata);
 				}
 
-				dst._put_pixelb(x - p_x, y - p_y, pixel_size, w, pdata);
+				_put_pixelb(x - p_x, y - p_y, dst.width, pixel_size, w, pdata);
 			}
 		}
 	}
@@ -1674,13 +1674,10 @@ void Image::rotate_90(ClockDirection p_direction) {
 	ERR_FAIL_COND_MSG(width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", width));
 	ERR_FAIL_COND_MSG(height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", height));
 
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
-		clear_mipmaps();
-	}
+	const int mipmap_count = get_mipmap_count();
 
 	// In-place 90 degrees rotation by following the permutation cycles.
-	{
+	for (int mip = 0; mip <= mipmap_count; mip++) {
 		// Explanation by example (clockwise):
 		//
 		//  abc      da
@@ -1706,13 +1703,14 @@ void Image::rotate_90(ClockDirection p_direction) {
 		//  5->4  daebef -> daebff
 		//  s->5  daebff -> daebfc
 
-		const int w = width;
-		const int h = height;
-		const int size = w * h;
+		int64_t off, size;
+		int w, h;
+		get_mipmap_offset_size_and_dimensions(mip, off, size, w, h);
 
-		uint8_t *data_ptr = data.ptrw();
-		uint32_t pixel_size = get_format_pixel_size(format);
+		const int pixel_count = w * h;
+		const uint32_t pixel_size = get_format_pixel_size(format);
 
+		uint8_t *data_ptr = data.ptrw() + off;
 		uint8_t single_pixel_buffer[16];
 
 #define PREV_INDEX_IN_CYCLE(index) (p_direction == CLOCKWISE) ? ((h - 1 - (index % h)) * w + (index / h)) : ((index % h) * w + (w - 1 - (index / h)))
@@ -1733,7 +1731,7 @@ void Image::rotate_90(ClockDirection p_direction) {
 		} else { // Rectangular case (w != h), kinda unpredictable cycles.
 			int permuted_pixels_count = 0;
 
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < pixel_count; i++) {
 				int prev = PREV_INDEX_IN_CYCLE(i);
 				if (prev == i) {
 					// 1-length cycle, pixel remains at the same index.
@@ -1770,21 +1768,16 @@ void Image::rotate_90(ClockDirection p_direction) {
 				memcpy(data_ptr + current * pixel_size, single_pixel_buffer, pixel_size);
 				permuted_pixels_count++;
 
-				if (permuted_pixels_count == size) {
+				if (permuted_pixels_count == pixel_count) {
 					break;
 				}
 			}
-
-			width = h;
-			height = w;
 		}
 
 #undef PREV_INDEX_IN_CYCLE
 	}
 
-	if (used_mipmaps) {
-		generate_mipmaps();
-	}
+	SWAP(width, height);
 }
 
 void Image::rotate_180() {
@@ -1792,19 +1785,18 @@ void Image::rotate_180() {
 	ERR_FAIL_COND_MSG(width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", width));
 	ERR_FAIL_COND_MSG(height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", height));
 
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
-		clear_mipmaps();
-	}
+	const uint32_t pixel_size = get_format_pixel_size(format);
+	const int mipmap_count = get_mipmap_count();
 
-	{
-		uint8_t *data_ptr = data.ptrw();
-		uint32_t pixel_size = get_format_pixel_size(format);
+	uint8_t *data_ptr = data.ptrw();
+	uint8_t single_pixel_buffer[16];
 
-		uint8_t single_pixel_buffer[16];
+	for (int i = 0; i <= mipmap_count; i++) {
+		int64_t off, size;
+		get_mipmap_offset_and_size(i, off, size);
 
-		uint8_t *from_begin_ptr = data_ptr;
-		uint8_t *from_end_ptr = data_ptr + (width * height - 1) * pixel_size;
+		uint8_t *from_begin_ptr = data_ptr + off;
+		uint8_t *from_end_ptr = from_begin_ptr + size - pixel_size;
 
 		while (from_begin_ptr < from_end_ptr) {
 			memcpy(single_pixel_buffer, from_begin_ptr, pixel_size);
@@ -1815,69 +1807,67 @@ void Image::rotate_180() {
 			from_end_ptr -= pixel_size;
 		}
 	}
-
-	if (used_mipmaps) {
-		generate_mipmaps();
-	}
 }
 
 void Image::flip_y() {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot flip_y in compressed image formats.");
+	ERR_FAIL_COND_MSG(width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", width));
+	ERR_FAIL_COND_MSG(height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", height));
 
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
-		clear_mipmaps();
-	}
+	const uint32_t pixel_size = get_format_pixel_size(format);
+	const int mipmap_count = get_mipmap_count();
 
-	{
-		uint8_t *w = data.ptrw();
-		uint8_t up[16];
-		uint8_t down[16];
-		uint32_t pixel_size = get_format_pixel_size(format);
+	uint8_t *data_ptr = data.ptrw();
+	uint8_t up[16];
+	uint8_t down[16];
 
-		for (int y = 0; y < height / 2; y++) {
-			for (int x = 0; x < width; x++) {
-				_get_pixelb(x, y, pixel_size, w, up);
-				_get_pixelb(x, height - y - 1, pixel_size, w, down);
+	for (int i = 0; i <= mipmap_count; i++) {
+		int64_t off, size;
+		int w, h;
+		get_mipmap_offset_size_and_dimensions(i, off, size, w, h);
 
-				_put_pixelb(x, height - y - 1, pixel_size, w, up);
-				_put_pixelb(x, y, pixel_size, w, down);
+		uint8_t *mip_ptr = data_ptr + off;
+
+		for (int y = 0; y < h / 2; y++) {
+			for (int x = 0; x < w; x++) {
+				_get_pixelb(x, y, w, pixel_size, mip_ptr, up);
+				_get_pixelb(x, h - y - 1, w, pixel_size, mip_ptr, down);
+
+				_put_pixelb(x, h - y - 1, w, pixel_size, mip_ptr, up);
+				_put_pixelb(x, y, w, pixel_size, mip_ptr, down);
 			}
 		}
-	}
-
-	if (used_mipmaps) {
-		generate_mipmaps();
 	}
 }
 
 void Image::flip_x() {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot flip_x in compressed image formats.");
+	ERR_FAIL_COND_MSG(width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", width));
+	ERR_FAIL_COND_MSG(height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", height));
 
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
-		clear_mipmaps();
-	}
+	const uint32_t pixel_size = get_format_pixel_size(format);
+	const int mipmap_count = get_mipmap_count();
 
-	{
-		uint8_t *w = data.ptrw();
-		uint8_t up[16];
-		uint8_t down[16];
-		uint32_t pixel_size = get_format_pixel_size(format);
+	uint8_t *data_ptr = data.ptrw();
+	uint8_t up[16];
+	uint8_t down[16];
 
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width / 2; x++) {
-				_get_pixelb(x, y, pixel_size, w, up);
-				_get_pixelb(width - x - 1, y, pixel_size, w, down);
+	for (int i = 0; i <= mipmap_count; i++) {
+		int64_t off, size;
+		int w, h;
+		get_mipmap_offset_size_and_dimensions(i, off, size, w, h);
 
-				_put_pixelb(width - x - 1, y, pixel_size, w, up);
-				_put_pixelb(x, y, pixel_size, w, down);
+		uint8_t *mip_ptr = data_ptr + off;
+
+		for (int y = 0; y < h; y++) {
+			for (int x = 0; x < w / 2; x++) {
+				_get_pixelb(x, y, w, pixel_size, mip_ptr, up);
+				_get_pixelb(w - x - 1, y, w, pixel_size, mip_ptr, down);
+
+				_put_pixelb(w - x - 1, y, w, pixel_size, mip_ptr, up);
+				_put_pixelb(x, y, w, pixel_size, mip_ptr, down);
 			}
 		}
-	}
-
-	if (used_mipmaps) {
-		generate_mipmaps();
 	}
 }
 
@@ -2583,7 +2573,7 @@ void Image::initialize_data(const char **p_xpm) {
 					for (uint32_t i = 0; i < pixel_size; i++) {
 						pixel[i] = CLAMP((*colorptr)[i] * 255, 0, 255);
 					}
-					_put_pixelb(x, y, pixel_size, data_write, pixel);
+					_put_pixelb(x, y, pixel_size, width, data_write, pixel);
 				}
 
 				if (y == (size_height - 1)) {
