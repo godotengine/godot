@@ -44,6 +44,7 @@
 #include "editor/themes/editor_scale.h"
 #include "modules/regex/regex.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
@@ -117,9 +118,7 @@ void EditorLog::_update_theme() {
 	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
-	copy_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
-	show_search_button->set_button_icon(get_editor_theme_icon(SNAME("Search")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -148,6 +147,17 @@ void EditorLog::_notification(int p_what) {
 			_update_theme();
 			_rebuild_log();
 		} break;
+	}
+}
+
+void EditorLog::shortcut_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			search_box->grab_focus();
+			search_box->select_all();
+			accept_event();
+		}
 	}
 }
 
@@ -195,9 +205,6 @@ void EditorLog::_load_state() {
 
 	collapse = config->get_value(section, "collapse", false);
 	collapse_button->set_pressed(collapse);
-	bool show_search = config->get_value(section, "show_search", true);
-	search_box->set_visible(show_search);
-	show_search_button->set_pressed(show_search);
 
 	is_loading_state = false;
 }
@@ -468,14 +475,6 @@ void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
 	_rebuild_log();
 }
 
-void EditorLog::_set_search_visible(bool p_visible) {
-	search_box->set_visible(p_visible);
-	if (p_visible) {
-		search_box->grab_focus();
-	}
-	_start_state_save_timer();
-}
-
 void EditorLog::_search_changed(const String &p_text) {
 	_rebuild_log();
 }
@@ -494,6 +493,7 @@ EditorLog::EditorLog() {
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_global(false);
 	set_transient(true);
+	set_process_shortcut_input(true);
 
 	save_state_timer = memnew(Timer);
 	save_state_timer->set_wait_time(2);
@@ -508,7 +508,7 @@ EditorLog::EditorLog() {
 	add_child(hb);
 
 	VBoxContainer *vb_left = memnew(VBoxContainer);
-	vb_left->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
+	vb_left->set_custom_minimum_size(Size2(0, 90 * EDSCALE));
 	vb_left->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb_left->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(vb_left);
@@ -527,23 +527,22 @@ EditorLog::EditorLog() {
 	log->connect("meta_clicked", callable_mp(this, &EditorLog::_meta_clicked));
 	vb_left->add_child(log);
 
+	HFlowContainer *bottom_hf = memnew(HFlowContainer);
+	vb_left->add_child(bottom_hf);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	bottom_hf->add_child(hbox);
+
 	// Search box
 	search_box = memnew(LineEdit);
+	search_box->set_custom_minimum_size(Vector2(200 * EDSCALE, 0));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTR("Filter Messages"));
+	search_box->set_placeholder(TTRC("Filter Messages"));
 	search_box->set_accessibility_name(TTRC("Filter Messages"));
 	search_box->set_clear_button_enabled(true);
-	search_box->set_visible(true);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
-	vb_left->add_child(search_box);
-
-	VBoxContainer *vb_right = memnew(VBoxContainer);
-	hb->add_child(vb_right);
-
-	// Tools grid
-	HBoxContainer *hb_tools = memnew(HBoxContainer);
-	hb_tools->set_h_size_flags(SIZE_SHRINK_CENTER);
-	vb_right->add_child(hb_tools);
+	hbox->add_child(search_box);
 
 	// Clear.
 	clear_button = memnew(Button);
@@ -552,25 +551,13 @@ EditorLog::EditorLog() {
 	clear_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTRC("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_clear_request));
-	hb_tools->add_child(clear_button);
-
-	// Copy.
-	copy_button = memnew(Button);
-	copy_button->set_accessibility_name(TTRC("Copy Selection"));
-	copy_button->set_theme_type_variation(SceneStringName(FlatButton));
-	copy_button->set_focus_mode(FOCUS_ACCESSIBILITY);
-	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTRC("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
-	copy_button->set_shortcut_context(this);
-	copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_copy_request));
-	hb_tools->add_child(copy_button);
+	hbox->add_child(clear_button);
 
 	// Separate toggle buttons from normal buttons.
-	vb_right->add_child(memnew(HSeparator));
+	hbox->add_child(memnew(VSeparator));
 
-	// A second hbox to make a 2x2 grid of buttons.
-	HBoxContainer *hb_tools2 = memnew(HBoxContainer);
-	hb_tools2->set_h_size_flags(SIZE_SHRINK_CENTER);
-	vb_right->add_child(hb_tools2);
+	hbox = memnew(HBoxContainer);
+	bottom_hf->add_child(hbox);
 
 	// Collapse.
 	collapse_button = memnew(Button);
@@ -580,42 +567,28 @@ EditorLog::EditorLog() {
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
-	hb_tools2->add_child(collapse_button);
-
-	// Show Search.
-	show_search_button = memnew(Button);
-	show_search_button->set_accessibility_name(TTRC("Show Search"));
-	show_search_button->set_theme_type_variation(SceneStringName(FlatButton));
-	show_search_button->set_focus_mode(FOCUS_ACCESSIBILITY);
-	show_search_button->set_toggle_mode(true);
-	show_search_button->set_pressed(true);
-	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));
-	show_search_button->set_shortcut_context(this);
-	show_search_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_visible));
-	hb_tools2->add_child(show_search_button);
+	hbox->add_child(collapse_button);
 
 	// Message Type Filters.
-	vb_right->add_child(memnew(HSeparator));
-
 	LogFilter *std_filter = memnew(LogFilter(MSG_TYPE_STD));
 	std_filter->initialize_button(TTRC("Standard Messages"), TTRC("Toggle visibility of standard output messages."), callable_mp(this, &EditorLog::_set_filter_active));
-	vb_right->add_child(std_filter->toggle_button);
+	hbox->add_child(std_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_STD, std_filter);
 	type_filter_map.insert(MSG_TYPE_STD_RICH, std_filter);
 
 	LogFilter *error_filter = memnew(LogFilter(MSG_TYPE_ERROR));
 	error_filter->initialize_button(TTRC("Errors"), TTRC("Toggle visibility of errors."), callable_mp(this, &EditorLog::_set_filter_active));
-	vb_right->add_child(error_filter->toggle_button);
+	hbox->add_child(error_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_ERROR, error_filter);
 
 	LogFilter *warning_filter = memnew(LogFilter(MSG_TYPE_WARNING));
 	warning_filter->initialize_button(TTRC("Warnings"), TTRC("Toggle visibility of warnings."), callable_mp(this, &EditorLog::_set_filter_active));
-	vb_right->add_child(warning_filter->toggle_button);
+	hbox->add_child(warning_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_WARNING, warning_filter);
 
 	LogFilter *editor_filter = memnew(LogFilter(MSG_TYPE_EDITOR));
 	editor_filter->initialize_button(TTRC("Editor Messages"), TTRC("Toggle visibility of editor messages."), callable_mp(this, &EditorLog::_set_filter_active));
-	vb_right->add_child(editor_filter->toggle_button);
+	hbox->add_child(editor_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_EDITOR, editor_filter);
 
 	add_message(GODOT_VERSION_FULL_NAME " (c) 2007-present Juan Linietsky, Ariel Manzur & Godot Contributors.");
