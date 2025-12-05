@@ -148,12 +148,12 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 		return; //do not compress, already compressed
 	}
 
-	int w = p_image->get_width();
-	int h = p_image->get_height();
+	int w = (p_image->get_width() + 3) & ~0x03;
+	int h = (p_image->get_height() + 3) & ~0x03;
 
-	if (w % 4 != 0 || h % 4 != 0) {
-		w = w <= 2 ? w : (w + 3) & ~3;
-		h = h <= 2 ? h : (h + 3) & ~3;
+	if (p_image->get_width() != w || p_image->get_height() != h) {
+		// Align the image to 4x4 texels.
+		p_image->resize(w, h, Image::INTERPOLATE_NEAREST);
 	}
 
 	bool is_ldr = (p_image->get_format() <= Image::FORMAT_RGBA8);
