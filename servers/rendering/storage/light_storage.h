@@ -107,6 +107,7 @@ public:
 	virtual void reflection_probe_initialize(RID p_rid) = 0;
 	virtual void reflection_probe_free(RID p_rid) = 0;
 
+	virtual void reflection_probe_queue_update(RID p_probe) = 0;
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) = 0;
