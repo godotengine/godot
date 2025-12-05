@@ -2296,6 +2296,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				if (item_width <= 0) {
 					ofs = get_column_width(0);
+					r_self_height = compute_item_height(p_item);
+					label_h = r_self_height + theme_cache.v_separation;
 					continue;
 				}
 			} else {
