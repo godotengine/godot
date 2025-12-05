@@ -2189,7 +2189,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	paint_tool_button->set_toggle_mode(true);
 	paint_tool_button->set_button_group(tool_buttons_group);
 	paint_tool_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/paint_tool"));
-	paint_tool_button->set_tooltip_text(TTR("Shift: Draw line.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Shift: Draw rectangle."));
+	paint_tool_button->set_tooltip_text(TTR("Shift: Draw line.") + "\n" + vformat(TTR("%s+Shift: Draw rectangle."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)));
 	paint_tool_button->connect(SceneStringName(pressed), callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_toolbar));
 	paint_tool_button->set_accessibility_name(TTRC("Paint Tool"));
 	tilemap_tiles_tools_buttons->add_child(paint_tool_button);
