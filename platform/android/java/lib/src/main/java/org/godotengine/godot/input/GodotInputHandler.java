@@ -61,6 +61,34 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// Must be kept in sync with core/input/input_enums.h
+class JoyButton {
+	public static final int INVALID = -1;
+	public static final int A = 0;
+	public static final int B = 1;
+	public static final int X = 2;
+	public static final int Y = 3;
+	public static final int BACK = 4;
+	public static final int GUIDE = 5;
+	public static final int START = 6;
+	public static final int LEFT_STICK = 7;
+	public static final int RIGHT_STICK = 8;
+	public static final int LEFT_SHOULDER = 9;
+	public static final int RIGHT_SHOULDER = 10;
+	public static final int DPAD_UP = 11;
+	public static final int DPAD_DOWN = 12;
+	public static final int DPAD_LEFT = 13;
+	public static final int DPAD_RIGHT = 14;
+	public static final int MISC1 = 15;
+	public static final int PADDLE1 = 16;
+	public static final int PADDLE2 = 17;
+	public static final int PADDLE3 = 18;
+	public static final int PADDLE4 = 19;
+	public static final int TOUCHPAD = 20;
+	public static final int SDL_MAX = 21;
+	public static final int MAX = 128;
+}
+
 /**
  * Handles input related events for the {@link GodotRenderView} view.
  */
@@ -69,6 +97,11 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 	private static final int ROTARY_INPUT_VERTICAL_AXIS = 1;
 	private static final int ROTARY_INPUT_HORIZONTAL_AXIS = 0;
+
+	private static final int DIGITAL_L_TRIGGER_KEYCODE = KeyEvent.KEYCODE_BUTTON_L2;
+	private static final int DIGITAL_R_TRIGGER_KEYCODE = KeyEvent.KEYCODE_BUTTON_R2;
+	private static final int DIGITAL_L_TRIGGER_AXIS = MotionEvent.AXIS_LTRIGGER;
+	private static final int DIGITAL_R_TRIGGER_AXIS = MotionEvent.AXIS_RTRIGGER;
 
 	private final SparseIntArray mJoystickIds = new SparseIntArray(4);
 	private final SparseArray<Joystick> mJoysticksDevices = new SparseArray<>(4);
@@ -91,6 +124,9 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	private int cachedRotation = -1;
 	private boolean overrideVolumeButtons = false;
 	private boolean hasHardwareKeyboardConfig = false;
+
+	private int digitalLTriggerAxisIndex = -1;
+	private int digitalRTriggerAxisIndex = -1;
 
 	public GodotInputHandler(Context context, Godot godot) {
 		this.godot = godot;
@@ -183,7 +219,14 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
 				final int button = getGodotButton(keyCode);
 				final int godotJoyId = mJoystickIds.get(deviceId);
-				handleJoystickButtonEvent(godotJoyId, button, false);
+
+				if (button > JoyButton.INVALID) {
+					handleJoystickButtonEvent(godotJoyId, button, false);
+				} else if (keyCode == DIGITAL_L_TRIGGER_KEYCODE) {
+					handleJoystickAxisEvent(godotJoyId, digitalLTriggerAxisIndex, -1.0f);
+				} else if (keyCode == DIGITAL_R_TRIGGER_KEYCODE) {
+					handleJoystickAxisEvent(godotJoyId, digitalRTriggerAxisIndex, -1.0f);
+				}
 			}
 		} else {
 			// getKeyCode(): The physical key that was pressed.
@@ -212,7 +255,14 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
 				final int button = getGodotButton(keyCode);
 				final int godotJoyId = mJoystickIds.get(deviceId);
-				handleJoystickButtonEvent(godotJoyId, button, true);
+
+				if (button > JoyButton.INVALID) {
+					handleJoystickButtonEvent(godotJoyId, button, true);
+				} else if (keyCode == DIGITAL_L_TRIGGER_KEYCODE) {
+					handleJoystickAxisEvent(godotJoyId, digitalLTriggerAxisIndex, 1.0f);
+				} else if (keyCode == DIGITAL_R_TRIGGER_KEYCODE) {
+					handleJoystickAxisEvent(godotJoyId, digitalRTriggerAxisIndex, 1.0f);
+				}
 			}
 		} else {
 			final int physical_keycode = event.getKeyCode();
@@ -381,6 +431,12 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 				joystick.hasAxisHat = true;
 			} else {
 				if (!already.contains(axis)) {
+					if (axis == DIGITAL_L_TRIGGER_AXIS) {
+						digitalLTriggerAxisIndex = already.size();
+					} else if (axis == DIGITAL_R_TRIGGER_AXIS) {
+						digitalRTriggerAxisIndex = already.size();
+					}
+
 					already.add(axis);
 					joystick.axes.add(axis);
 				} else {
@@ -388,6 +444,17 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 				}
 			}
 		}
+
+		if (digitalLTriggerAxisIndex < 0 && device.hasKeys(DIGITAL_L_TRIGGER_KEYCODE)[0]) {
+			digitalLTriggerAxisIndex = joystick.axes.size();
+			joystick.axes.add(DIGITAL_L_TRIGGER_AXIS);
+		}
+
+		if (digitalRTriggerAxisIndex < 0 && device.hasKeys(DIGITAL_R_TRIGGER_KEYCODE)[0]) {
+			digitalRTriggerAxisIndex = joystick.axes.size();
+			joystick.axes.add(DIGITAL_R_TRIGGER_AXIS);
+		}
+
 		Collections.sort(joystick.axes);
 		for (int idx = 0; idx < joystick.axes.size(); idx++) {
 			//Helps with creating new joypad mappings.
@@ -419,73 +486,68 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public static int getGodotButton(int keyCode) {
-		int button;
+		int button = JoyButton.INVALID;
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_BUTTON_A: // Android A is SNES B
-				button = 0;
+				button = JoyButton.A;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_B:
-				button = 1;
+				button = JoyButton.B;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_X: // Android X is SNES Y
-				button = 2;
+				button = JoyButton.X;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_Y:
-				button = 3;
+				button = JoyButton.Y;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_L1:
-				button = 9;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_L2:
-				button = 15;
+				button = JoyButton.LEFT_SHOULDER;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_R1:
-				button = 10;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_R2:
-				button = 16;
+				button = JoyButton.RIGHT_SHOULDER;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_SELECT:
 			case KeyEvent.KEYCODE_BACK:
-				button = 4;
+				button = JoyButton.BACK;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_MODE: // Home/Xbox Button on Xbox controllers
-				button = 5;
+				button = JoyButton.GUIDE;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_START:
 			case KeyEvent.KEYCODE_MENU:
-				button = 6;
+				button = JoyButton.START;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_THUMBL:
-				button = 7;
+				button = JoyButton.LEFT_STICK;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_THUMBR:
-				button = 8;
+				button = JoyButton.RIGHT_STICK;
 				break;
 			case KeyEvent.KEYCODE_DPAD_UP:
-				button = 11;
+				button = JoyButton.DPAD_UP;
 				break;
 			case KeyEvent.KEYCODE_DPAD_DOWN:
-				button = 12;
+				button = JoyButton.DPAD_DOWN;
 				break;
 			case KeyEvent.KEYCODE_DPAD_LEFT:
-				button = 13;
+				button = JoyButton.DPAD_LEFT;
 				break;
 			case KeyEvent.KEYCODE_DPAD_RIGHT:
-				button = 14;
+				button = JoyButton.DPAD_RIGHT;
 				break;
 			case KeyEvent.KEYCODE_MEDIA_RECORD: // Share Button on Xbox controllers
-				button = 15;
+				button = JoyButton.MISC1;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_C:
-				button = 17;
+				button = JoyButton.PADDLE2;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_Z:
-				button = 18;
+				button = JoyButton.PADDLE3;
 				break;
-
 			default:
-				button = keyCode - KeyEvent.KEYCODE_BUTTON_1 + 20;
+				if (keyCode >= KeyEvent.KEYCODE_BUTTON_1) {
+					button = keyCode - KeyEvent.KEYCODE_BUTTON_1 + JoyButton.SDL_MAX;
+				}
 				break;
 		}
 		return button;
