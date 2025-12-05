@@ -621,6 +621,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				l.dc_color = dc->color;
 				l.dc_ol_size = dc->ol_size;
 				l.dc_ol_color = dc->ol_color;
+				l.dc_char_count = dc->text.length();
 			} break;
 			case ITEM_NEWLINE: {
 				Ref<Font> font = p_base_font;
@@ -1662,6 +1663,196 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 		}
 		from_line++;
 	}
+}
+
+Rect2 RichTextLabel::get_character_bounds(int p_pos) {
+	Size2 size = get_size();
+	Rect2 text_rect = _get_text_rect();
+
+	int vofs = vscroll->get_value();
+
+	// Search for the first line.
+	int to_line = main->first_invalid_line.load();
+	int from_line = _find_first_line(0, to_line, vofs);
+
+	int total_height = INT32_MAX;
+	if (to_line && vertical_alignment != VERTICAL_ALIGNMENT_TOP) {
+		MutexLock lock(main->lines[to_line - 1].text_buf->get_mutex());
+		if (theme_cache.line_separation < 0) {
+			// Do not apply to the last line to avoid cutting text.
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
+		} else {
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation;
+		}
+	}
+	float vbegin = 0, vsep = 0;
+	if (text_rect.size.y > total_height) {
+		switch (vertical_alignment) {
+			case VERTICAL_ALIGNMENT_TOP: {
+				// Nothing.
+			} break;
+			case VERTICAL_ALIGNMENT_CENTER: {
+				vbegin = (text_rect.size.y - total_height) / 2;
+			} break;
+			case VERTICAL_ALIGNMENT_BOTTOM: {
+				vbegin = text_rect.size.y - total_height;
+			} break;
+			case VERTICAL_ALIGNMENT_FILL: {
+				int lines = 0;
+				for (int l = from_line; l < to_line; l++) {
+					MutexLock lock(main->lines[l].text_buf->get_mutex());
+					lines += main->lines[l].text_buf->get_line_count();
+				}
+				if (lines > 1) {
+					vsep = (text_rect.size.y - total_height) / (lines - 1);
+				}
+			} break;
+		}
+	}
+
+	Point2 ofs = text_rect.get_position() + Vector2(0, vbegin + main->lines[from_line].offset.y - vofs);
+	while (ofs.y < size.height && from_line < to_line) {
+		MutexLock lock(main->lines[from_line].text_buf->get_mutex());
+		Rect2 ret = _find_char_bounds_in_line(main, from_line, ofs, text_rect.size.x, vsep, p_pos);
+		if (ret != Rect2()) {
+			return ret;
+		}
+		ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * (theme_cache.line_separation + vsep);
+		from_line++;
+	}
+	return Rect2();
+}
+
+Rect2 RichTextLabel::_find_char_bounds_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, int p_char) {
+	Vector2 off;
+
+	Line &l = p_frame->lines[p_line];
+	MutexLock lock(l.text_buf->get_mutex());
+
+	bool rtl = (l.text_buf->get_direction() == TextServer::DIRECTION_RTL);
+	bool lrtl = is_layout_rtl();
+
+	if (p_char >= l.char_offset && p_char < l.char_offset + l.dc_char_count) {
+		RID rid = l.text_buf->get_dropcap_rid();
+		int v_size = TS->shaped_text_get_glyph_count(rid);
+		const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
+
+		float gl_off = 0.0f;
+		for (int j = 0; j < v_size; j++) {
+			if ((glyphs[j].count > 0) && ((glyphs[j].index != 0) || ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE))) {
+				if (p_char >= glyphs[j].start + l.char_offset && p_char < glyphs[j].end + l.char_offset) {
+					float advance = 0.f;
+					for (int k = 0; k < glyphs[j].count; k++) {
+						advance += glyphs[j + k].advance;
+					}
+					Rect2 rect;
+					rect.position = p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)) + Vector2(gl_off, 0);
+					rect.size = Vector2(advance, l.text_buf->get_dropcap_size().y);
+					return rect;
+				}
+			}
+			gl_off += glyphs[j].advance * glyphs[j].repeat;
+		}
+	}
+
+	for (int line = 0; line < l.text_buf->get_line_count(); line++) {
+		RID rid = l.text_buf->get_line_rid(line);
+
+		float width = l.text_buf->get_width();
+		float length = TS->shaped_text_get_width(rid);
+
+		if (rtl) {
+			off.x = p_width - l.offset.x - width;
+			if (!lrtl && p_frame == main) { // Skip Scrollbar.
+				off.x -= scroll_w;
+			}
+		} else {
+			off.x = l.offset.x;
+			if (lrtl && p_frame == main) { // Skip Scrollbar.
+				off.x += scroll_w;
+			}
+		}
+
+		switch (l.text_buf->get_alignment()) {
+			case HORIZONTAL_ALIGNMENT_FILL:
+			case HORIZONTAL_ALIGNMENT_LEFT: {
+				if (rtl) {
+					off.x += width - length;
+				}
+			} break;
+			case HORIZONTAL_ALIGNMENT_CENTER: {
+				off.x += Math::floor((width - length) / 2.0);
+			} break;
+			case HORIZONTAL_ALIGNMENT_RIGHT: {
+				if (!rtl) {
+					off.x += width - length;
+				}
+			} break;
+		}
+		// Adjust for dropcap.
+		int dc_lines = l.text_buf->get_dropcap_lines();
+		float h_off = l.text_buf->get_dropcap_size().x;
+		if (line <= dc_lines) {
+			if (rtl) {
+				off.x -= h_off;
+			} else {
+				off.x += h_off;
+			}
+		}
+		off.y += TS->shaped_text_get_ascent(rid);
+
+		Vector2i l_range = TS->shaped_text_get_range(rid);
+
+		if (p_char >= l.char_offset + l_range.x && p_char < l.char_offset + l_range.y) {
+			Array objects = TS->shaped_text_get_objects(rid);
+			for (int i = 0; i < objects.size(); i++) {
+				Vector2i obj_range = TS->shaped_text_get_object_range(rid, objects[i]);
+				if (p_char >= l.char_offset + obj_range.x && p_char < l.char_offset + obj_range.y) {
+					Item *it = items.get_or_null(objects[i]);
+					if (it != nullptr && it->type == ITEM_IMAGE) {
+						Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
+						rect.position += p_ofs + off;
+						return rect;
+					} else if (it != nullptr && it->type == ITEM_TABLE) {
+						Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
+						rect.position += p_ofs + off;
+
+						ItemTable *table = static_cast<ItemTable *>(it);
+						for (Item *E : table->subitems) {
+							ItemFrame *frame = static_cast<ItemFrame *>(E);
+							for (int j = 0; j < (int)frame->lines.size(); j++) {
+								Rect2 ret = _find_char_bounds_in_line(frame, j, rect.position + Vector2(frame->padding.position.x, frame->lines[j].offset.y), rect.size.x, 0, p_char);
+								if (ret != Rect2()) {
+									return ret;
+								}
+							}
+						}
+					}
+				}
+			}
+			int v_size = TS->shaped_text_get_glyph_count(rid);
+			const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
+
+			float gl_off = 0.0f;
+			for (int j = 0; j < v_size; j++) {
+				if ((glyphs[j].count > 0) && ((glyphs[j].index != 0) || ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE))) {
+					if (p_char >= glyphs[j].start + l.char_offset && p_char < glyphs[j].end + l.char_offset) {
+						float advance = 0.f;
+						for (int k = 0; k < glyphs[j].count; k++) {
+							advance += glyphs[j + k].advance;
+						}
+						Rect2 rect;
+						rect.position = p_ofs + off + Vector2(gl_off, -TS->shaped_text_get_ascent(rid));
+						rect.size = Vector2(advance, TS->shaped_text_get_size(rid).y);
+						return rect;
+					}
+				}
+				gl_off += glyphs[j].advance * glyphs[j].repeat;
+			}
+		}
+		off.y += TS->shaped_text_get_descent(rid) + theme_cache.line_separation + p_vsep;
+	}
+	return Rect2();
 }
 
 float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool p_table, bool p_meta) {
@@ -7673,6 +7864,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_all"), &RichTextLabel::select_all);
 	ClassDB::bind_method(D_METHOD("get_selected_text"), &RichTextLabel::get_selected_text);
 	ClassDB::bind_method(D_METHOD("deselect"), &RichTextLabel::deselect);
+
+	ClassDB::bind_method(D_METHOD("get_character_bounds", "pos"), &RichTextLabel::get_character_bounds);
 
 	ClassDB::bind_method(D_METHOD("parse_bbcode", "bbcode"), &RichTextLabel::parse_bbcode);
 	ClassDB::bind_method(D_METHOD("append_text", "bbcode"), &RichTextLabel::append_text);
