@@ -43,56 +43,137 @@ enum TileMapLayerDataFormat {
 	TILE_MAP_LAYER_DATA_FORMAT_MAX,
 };
 
-class TerrainConstraint {
-private:
-	Ref<TileSet> tile_set;
-	Vector2i base_cell_coords;
-	int bit = -1;
-	int terrain = -1;
+class TerrainConstraints {
+public:
+	class Action;
+	class Bit {
+		friend class RBMap<Bit, Action>;
+		friend class RBSet<Bit>;
 
-	int priority = 1;
+		Vector2i base_cell_coords;
+		int bit = -1;
+
+	public:
+		bool operator<(const Bit &p_other) const {
+			if (base_cell_coords == p_other.base_cell_coords) {
+				return bit < p_other.bit;
+			}
+			return base_cell_coords < p_other.base_cell_coords;
+		}
+
+		Vector2i get_base_cell_coords() const {
+			return base_cell_coords;
+		}
+
+		bool is_center_bit() const {
+			return bit == 0;
+		}
+
+		HashMap<Vector2i, TileSet::CellNeighbor> get_overlapping_coords_and_peering_bits(const Ref<TileSet> &p_tile_set) const;
+
+	protected:
+		explicit Bit(const Vector2i &p_position) :
+				base_cell_coords(p_position), bit(0) {} // For the center terrain bit
+		Bit(const Ref<TileSet> &p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit); // For peering bits
+		Bit() {}
+	};
+	class CenterBit : public Bit {
+	public:
+		explicit CenterBit(const Vector2i &p_position) :
+				Bit(p_position) {}
+	};
+	class PeeringBit : public Bit {
+	public:
+		PeeringBit(const Ref<TileSet> &p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit) :
+				Bit(p_tile_set, p_position, p_bit) {}
+	};
+
+	class Action {
+		static constexpr int INVALID_TERRAIN_MAGIC_NUMBER = -99999;
+		int terrain = INVALID_TERRAIN_MAGIC_NUMBER;
+		int priority = 0;
+
+	public:
+		bool is_valid() const {
+			return terrain != INVALID_TERRAIN_MAGIC_NUMBER;
+		}
+
+		bool is_unconstrained() const {
+			return terrain == -2;
+		}
+
+		bool is_targetted() const {
+			return terrain >= -1;
+		}
+
+		void set_terrain(int p_terrain) {
+			ERR_FAIL_COND(terrain < -1 || p_terrain < -1);
+			terrain = p_terrain;
+		}
+
+		int get_terrain() const {
+			ERR_FAIL_COND_V(terrain < -1, -1);
+			return terrain;
+		}
+
+		void set_priority(int p_priority) {
+			priority = p_priority;
+		}
+
+		int get_priority() const {
+			return priority;
+		}
+
+		// Public constructor always creates an invalid action
+		constexpr Action() {}
+
+	protected:
+		// Protected constructor ensures use of child classes to better communicate intent
+		constexpr Action(int p_terrain, int p_priority) :
+				terrain(p_terrain), priority(p_priority) {}
+	};
+	class TargetTerrain : public Action {
+	public:
+		explicit TargetTerrain(int p_terrain, int p_priority = 1) :
+				Action(p_terrain, p_priority) {
+			ERR_FAIL_COND(p_terrain < -1);
+		}
+	};
+	class Unconstrained : public Action {
+	public:
+		Unconstrained() :
+				Action(-2, 0) {}
+	};
+
+private:
+	RBMap<Bit, Action> _data;
 
 public:
-	bool operator<(const TerrainConstraint &p_other) const {
-		if (base_cell_coords == p_other.base_cell_coords) {
-			return bit < p_other.bit;
+	const Action get(Bit p_target) const {
+		const RBMap<Bit, Action>::Element *E = _data.find(p_target);
+		return E ? E->value() : Unconstrained();
+	}
+
+	void set(Bit p_target, Action p_action) {
+		_data.insert(p_target, p_action); // RBMap::insert replaces value if key already exists
+	}
+
+	void add_if_unset(Bit p_target, Action p_action) {
+		Action &a = _data[p_target];
+		if (!a.is_valid()) {
+			a = p_action;
 		}
-		return base_cell_coords < p_other.base_cell_coords;
 	}
 
-	String to_string() const {
-		return vformat("Constraint {pos:%s, bit:%d, terrain:%d, priority:%d}", base_cell_coords, bit, terrain, priority);
+	using ConstIterator = RBMap<Bit, Action>::ConstIterator;
+	ConstIterator begin() const {
+		return _data.begin();
+	}
+	ConstIterator end() const {
+		return _data.end();
 	}
 
-	Vector2i get_base_cell_coords() const {
-		return base_cell_coords;
-	}
-
-	bool is_center_bit() const {
-		return bit == 0;
-	}
-
-	HashMap<Vector2i, TileSet::CellNeighbor> get_overlapping_coords_and_peering_bits() const;
-
-	void set_terrain(int p_terrain) {
-		terrain = p_terrain;
-	}
-
-	int get_terrain() const {
-		return terrain;
-	}
-
-	void set_priority(int p_priority) {
-		priority = p_priority;
-	}
-
-	int get_priority() const {
-		return priority;
-	}
-
-	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, int p_terrain); // For the center terrain bit
-	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
-	TerrainConstraint() {}
+	TerrainConstraints() {}
 };
 
 #ifdef DEBUG_ENABLED
@@ -495,9 +576,10 @@ private:
 	void _set_scene_transform_with_alternative(Node2D *p_scene, const Vector2 &p_cell_position, const int p_alternative_id);
 
 	// Terrains.
-	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) const;
-	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
-	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
+	void _prepare_terrain_fill(const Vector<Vector2i> &p_coords_array, Vector<Vector2i> &r_can_modify_list, RBSet<Vector2i> &r_can_modify_set, RBSet<Vector2i> &r_painted_set) const;
+	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const TerrainConstraints &p_constraints, TileSet::TerrainsPattern p_current_pattern) const;
+	void _add_terrain_pattern_as_constraints(const Vector2i &p_position, int p_terrain_set, const TileSet::TerrainsPattern &p_terrains_pattern, TerrainConstraints &r_constraints, int p_priority) const;
+	void _add_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains, TerrainConstraints &r_constraints) const;
 
 	void _tile_set_changed();
 
@@ -538,7 +620,8 @@ public:
 	Rect2 get_rect(bool &r_changed) const;
 
 	// Terrains.
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) const; // Not exposed.
+	TileSet::TerrainsPattern get_terrain_pattern_of_cell(const Vector2i &p_position, int p_terrain_set) const;
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const TerrainConstraints &p_constraints) const; // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true) const; // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true) const; // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_pattern(const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains = true) const; // Not exposed.
