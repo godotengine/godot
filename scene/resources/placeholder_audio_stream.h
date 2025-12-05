@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_stream_mp3.h                                                    */
+/*  placeholder_audio_stream.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,43 +32,29 @@
 
 #include "servers/audio/audio_stream.h"
 
-#include <minimp3_ex.h>
+class PlaceholderAudioStream;
 
-class AudioStreamMP3;
+class PlaceholderAudioStreamPlayback : public AudioStreamPlayback {
+	GDCLASS(PlaceholderAudioStreamPlayback, AudioStreamPlayback);
 
-class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
-	GDCLASS(AudioStreamPlaybackMP3, AudioStreamPlaybackResampled);
-
-	enum {
-		FADE_SIZE = 256
-	};
-	AudioFrame loop_fade[FADE_SIZE];
-	int loop_fade_remaining = FADE_SIZE;
-
-	bool looping_override = false;
-	bool looping = false;
-	mp3dec_ex_t mp3d = {};
-	uint32_t frames_mixed = 0;
+	int64_t offset = 0;
+	int8_t sign = 1;
 	bool active = false;
-	int loops = 0;
+	Ref<PlaceholderAudioStream> base;
 
-	friend class AudioStreamMP3;
-
-	Ref<AudioStreamMP3> mp3_stream;
+	friend class PlaceholderAudioStream;
 
 	bool _is_sample = false;
 	Ref<AudioSamplePlayback> sample_playback;
 
-protected:
-	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
-	virtual float get_stream_sampling_rate() override;
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames);
 
 public:
 	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
 	virtual bool is_playing() const override;
 
-	virtual int get_loop_count() const override; //times it looped
+	virtual int get_loop_count() const override;
 
 	virtual double get_playback_position() const override;
 	virtual void seek(double p_time) override;
@@ -80,75 +66,54 @@ public:
 	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
 	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
 
-	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
-	virtual Variant get_parameter(const StringName &p_name) const override;
-
-	AudioStreamPlaybackMP3() {}
-	~AudioStreamPlaybackMP3();
+	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 };
 
-class AudioStreamMP3 : public AudioStream {
-	GDCLASS(AudioStreamMP3, AudioStream);
-	OBJ_SAVE_TYPE(AudioStream) //children are all saved as AudioStream, so they can be exchanged
-	RES_BASE_EXTENSION("mp3str");
+///////////
 
-	friend class AudioStreamPlaybackMP3;
+class PlaceholderAudioStream : public AudioStream {
+	GDCLASS(PlaceholderAudioStream, AudioStream)
 
-	TightLocalVector<uint8_t> data;
-	uint32_t data_len = 0;
+public:
+	enum LoopMode {
+		LOOP_DISABLED,
+		LOOP_FORWARD,
+		LOOP_PINGPONG,
+		LOOP_BACKWARD
+	};
 
-	float sample_rate = 1.0;
-	int channels = 1;
-	float length = 0.0;
-	bool loop = false;
-	float loop_offset = 0.0;
-	void clear_data();
+private:
+	double length = 0.0;
+	LoopMode loop_mode = LOOP_DISABLED;
+	int64_t loop_begin = 0;
+	int64_t loop_end = 0;
+	Dictionary tags;
 
-	double bpm = 0;
-	int beat_count = 0;
-	int bar_beats = 4;
+	friend class PlaceholderAudioStreamPlayback;
 
 protected:
 	static void _bind_methods();
 
 public:
-	static Ref<AudioStreamMP3> load_from_buffer(const Vector<uint8_t> &p_stream_data);
-	static Ref<AudioStreamMP3> load_from_file(const String &p_path);
+	void set_length(double p_length);
+	double get_length() const override;
 
-	void set_loop(bool p_enable);
-	virtual bool has_loop() const override;
+	void set_loop_mode(LoopMode p_loop_mode);
+	LoopMode get_loop_mode() const;
 
-	void set_loop_offset(double p_seconds);
-	double get_loop_offset() const;
+	void set_loop_begin(int p_frame);
+	int get_loop_begin() const;
 
-	void set_bpm(double p_bpm);
-	virtual double get_bpm() const override;
+	void set_loop_end(int p_frame);
+	int get_loop_end() const;
 
-	void set_beat_count(int p_beat_count);
-	virtual int get_beat_count() const override;
-
-	void set_bar_beats(int p_bar_beats);
-	virtual int get_bar_beats() const override;
+	void set_tags(const Dictionary &p_tags);
+	Dictionary get_tags() const override;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 
-	void set_data(const Vector<uint8_t> &p_data);
-	Vector<uint8_t> get_data() const;
-
-	virtual double get_length() const override;
-
-	virtual bool is_monophonic() const override;
-
-	virtual bool can_be_sampled() const override {
-		return true;
-	}
-	virtual Ref<AudioSample> generate_sample() const override;
-
-	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
-
-	virtual Ref<Resource> create_placeholder() const;
-
-	AudioStreamMP3();
-	virtual ~AudioStreamMP3();
+	PlaceholderAudioStream();
+	~PlaceholderAudioStream();
 };
+
+VARIANT_ENUM_CAST(PlaceholderAudioStream::LoopMode);

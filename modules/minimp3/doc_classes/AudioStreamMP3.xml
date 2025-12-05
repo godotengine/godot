@@ -10,6 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderAudioStream]).
+			</description>
+		</method>
 		<method name="load_from_buffer" qualifiers="static">
 			<return type="AudioStreamMP3" />
 			<param index="0" name="stream_data" type="PackedByteArray" />

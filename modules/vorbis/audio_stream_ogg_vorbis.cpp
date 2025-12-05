@@ -30,6 +30,7 @@
 
 #include "audio_stream_ogg_vorbis.h"
 #include "core/io/file_access.h"
+#include "scene/resources/placeholder_audio_stream.h"
 
 #include "core/templates/rb_map.h"
 
@@ -703,6 +704,14 @@ Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_file(const String &p_p
 	return load_from_buffer(stream_data);
 }
 
+Ref<Resource> AudioStreamOggVorbis::create_placeholder() const {
+	Ref<PlaceholderAudioStream> placeholder;
+	placeholder.instantiate();
+	placeholder->set_length(get_length());
+	placeholder->set_tags(get_tags());
+	return placeholder;
+}
+
 void AudioStreamOggVorbis::_bind_methods() {
 	ClassDB::bind_static_method("AudioStreamOggVorbis", D_METHOD("load_from_buffer", "stream_data"), &AudioStreamOggVorbis::load_from_buffer);
 	ClassDB::bind_static_method("AudioStreamOggVorbis", D_METHOD("load_from_file", "path"), &AudioStreamOggVorbis::load_from_file);
@@ -727,6 +736,8 @@ void AudioStreamOggVorbis::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &AudioStreamOggVorbis::set_tags);
 	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamOggVorbis::get_tags);
+
+	ClassDB::bind_method(D_METHOD("create_placeholder"), &AudioStreamOggVorbis::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "packet_sequence", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_sequence", "get_packet_sequence");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), "set_bpm", "get_bpm");
