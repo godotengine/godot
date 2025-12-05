@@ -841,8 +841,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 
 	if (p_node->is_instance() && p_node->get_owner() == p_owner && instantiated_by_owner) {
 		if (p_node->get_scene_instance_load_placeholder()) {
-			//it's a placeholder, use the placeholder path
-			nd.instance = _vm_get_variant(p_node->get_scene_file_path(), variant_map);
+			// It's a placeholder, use the placeholder path.
+			ResourceUID::ID scene_id = p_node->get_scene_file_uid();
+			nd.instance = _vm_get_variant(ResourceUID::get_singleton()->id_to_text(scene_id), variant_map);
 			nd.instance |= FLAG_INSTANCE_IS_PLACEHOLDER;
 		} else {
 			//must instance ourselves
