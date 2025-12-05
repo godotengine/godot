@@ -783,6 +783,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (unlikely(!op_func)) {
 #ifdef DEBUG_ENABLED
 						err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
+						if (op == Variant::OP_MODULE && (a_type == Variant::FLOAT || b_type == Variant::FLOAT)) {
+							err_text += " Use \"fmod(x, y)\" instead.";
+						}
 #endif
 						initializer_mutex.unlock();
 						OPCODE_BREAK;
@@ -825,6 +828,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							err_text += " in operator '" + Variant::get_operator_name(op) + "'.";
 						} else {
 							err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
+							if (op == Variant::OP_MODULE && (a->get_type() == Variant::FLOAT || b->get_type() == Variant::FLOAT)) {
+								err_text += " Use \"fmod(x, y)\" instead.";
+							}
 						}
 						OPCODE_BREAK;
 					}
