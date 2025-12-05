@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
+#include "editor/scene/2d/canvas_item_editor_gizmos.h"
 #include "scene/gui/box_container.h"
 
 class AcceptDialog;
@@ -63,6 +64,9 @@ public:
 
 	Transform2D pre_drag_xform;
 	Rect2 pre_drag_rect;
+
+	Ref<EditorCanvasItemGizmo> gizmo;
+	HashMap<int, Transform2D> subgizmos; // Key: Subgizmo ID, Value: Initial subgizmo transform.
 
 	List<real_t> pre_drag_bones_length;
 	List<Dictionary> pre_drag_bones_undo_state;
@@ -393,6 +397,9 @@ private:
 	Ref<Shortcut> reset_transform_rotation_shortcut;
 	Ref<Shortcut> reset_transform_scale_shortcut;
 
+	Vector<Ref<EditorCanvasItemGizmoPlugin>> gizmo_plugins_by_priority;
+	Vector<Ref<EditorCanvasItemGizmoPlugin>> gizmo_plugins_by_name;
+
 	Ref<ViewPanner> panner;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
@@ -415,6 +422,8 @@ private:
 
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
+
+	void _update_gizmos_menu() {} // TODO: GIZMOS, implement.
 
 	void _prepare_view_menu();
 	void _popup_callback(int p_op);
@@ -545,6 +554,11 @@ private:
 
 	friend class CanvasItemEditorPlugin;
 
+	CanvasItem *selected_canvas_item = nullptr;
+
+	void _request_gizmo(Object *p_obj);
+	void _request_gizmo_for_id(ObjectID p_id);
+
 protected:
 	void _notification(int p_what);
 
@@ -609,6 +623,22 @@ public:
 	ThemePreviewMode get_theme_preview() const { return theme_preview; }
 
 	EditorSelection *editor_selection = nullptr;
+
+	/* GIZMOS */
+
+	// TODO: GIZMOS actually implement this.
+	bool is_current_selected_gizmo(const EditorCanvasItemGizmo *p_gizmo);
+	Ref<EditorCanvasItemGizmo> get_current_hover_gizmo() { return Ref<EditorCanvasItemGizmo>(); }
+	int get_current_hover_gizmo_handle(bool &r_secondary) const {
+		r_secondary = false;
+		return -1;
+	}
+	bool is_subgizmo_selected(int p_id) { return false; }
+	Vector<int> get_subgizmo_selection() { return Vector<int>(); }
+	void update_transform_gizmo() {}
+	void update_all_gizmos(Node *p_node = nullptr);
+	void add_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_plugin);
+	void remove_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_plugin);
 
 	CanvasItemEditor();
 };
@@ -677,6 +707,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static constexpr int32_t GIZMO_EDIT_LAYER = 26;
+
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 

@@ -668,8 +668,11 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 			xform *= p_parent_xform;
 		}
 		xform = (xform * ci->get_transform()).affine_inverse();
+		const Vector2 point = xform.xform(p_pos);
 		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
-		if (ci->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
+
+		// legacy way
+		if (ci->_edit_is_selected_on_click(point, local_grab_distance)) {
 			Node2D *node = Object::cast_to<Node2D>(ci);
 
 			_SelectResult res;
@@ -677,6 +680,25 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 			res.z_index = node ? node->get_z_index() : 0;
 			res.has_z = node;
 			r_items.push_back(res);
+		}
+
+		// gizmos way
+		// note: this may produce duplicate entries but the calling
+		// function is filtering for duplicates anyways, so we're not spending
+		// any extra effort here.
+		Vector<Ref<CanvasItemGizmo>> gizmos = ci->get_gizmos();
+		for (Ref<EditorCanvasItemGizmo> gizmo : gizmos) {
+			if (gizmo.is_null()) {
+				continue;
+			}
+			if (gizmo->intersect_point(point)) {
+				Node2D *node = Object::cast_to<Node2D>(ci);
+				_SelectResult res;
+				res.item = ci;
+				res.z_index = node ? node->get_z_index() : 0;
+				res.has_z = true;
+				r_items.push_back(res);
+			}
 		}
 	}
 }
@@ -775,6 +797,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 		}
 		xform *= ci->get_transform();
 
+		// legacy way
 		if (ci->_edit_use_rect()) {
 			Rect2 rect = ci->_edit_get_rect();
 			if (p_rect.has_point(xform.xform(rect.position)) &&
@@ -785,6 +808,17 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 			}
 		} else {
 			if (p_rect.has_point(xform.xform(Point2()))) {
+				r_items->push_back(ci);
+			}
+		}
+
+		// gizmos way
+		Vector<Ref<CanvasItemGizmo>> gizmos = ci->get_gizmos();
+		for (Ref<EditorCanvasItemGizmo> gizmo : gizmos) {
+			if (gizmo.is_null()) {
+				continue;
+			}
+			if (gizmo->intersect_rect(p_rect)) {
 				r_items->push_back(ci);
 			}
 		}
@@ -5198,8 +5232,12 @@ void CanvasItemEditor::_reset_drag() {
 void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
 
+	ClassDB::bind_method("_request_gizmo", &CanvasItemEditor::_request_gizmo);
+	ClassDB::bind_method("_request_gizmo_for_id", &CanvasItemEditor::_request_gizmo_for_id);
+
 	ClassDB::bind_method(D_METHOD("update_viewport"), &CanvasItemEditor::update_viewport);
 	ClassDB::bind_method(D_METHOD("center_at", "position"), &CanvasItemEditor::center_at);
+	ClassDB::bind_method("update_all_gizmos", &CanvasItemEditor::update_all_gizmos);
 
 	ClassDB::bind_method("_set_owner_for_node_and_children", &CanvasItemEditor::_set_owner_for_node_and_children);
 
@@ -5527,6 +5565,104 @@ void CanvasItemEditor::center_at(const Point2 &p_pos) {
 	Vector2 offset = viewport->get_size() / 2 - EditorNode::get_singleton()->get_scene_root()->get_global_canvas_transform().xform(p_pos);
 	view_offset -= (offset / zoom).round();
 	update_viewport();
+}
+
+struct _GizmoPluginPriorityComparator {
+	bool operator()(const Ref<EditorCanvasItemGizmoPlugin> &a, const Ref<EditorCanvasItemGizmoPlugin> &b) const {
+		if (a->get_priority() == b->get_priority()) {
+			return a->get_name() < b->get_name();
+		}
+		return a->get_priority() > b->get_priority();
+	}
+};
+
+struct _GizmoPluginNameComparator {
+	bool operator()(const Ref<EditorCanvasItemGizmoPlugin> &a, const Ref<EditorCanvasItemGizmoPlugin> &b) const {
+		return a->get_name() < b->get_name();
+	}
+};
+
+void CanvasItemEditor::add_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+
+	gizmo_plugins_by_priority.push_back(p_plugin);
+	gizmo_plugins_by_priority.sort_custom<_GizmoPluginPriorityComparator>();
+
+	gizmo_plugins_by_name.push_back(p_plugin);
+	gizmo_plugins_by_name.sort_custom<_GizmoPluginNameComparator>();
+
+	_update_gizmos_menu();
+}
+
+void CanvasItemEditor::remove_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_plugin) {
+	gizmo_plugins_by_priority.erase(p_plugin);
+	gizmo_plugins_by_name.erase(p_plugin);
+
+	_update_gizmos_menu();
+}
+
+void CanvasItemEditor::_request_gizmo(Object *p_obj) {
+	CanvasItem *ci = Object::cast_to<CanvasItem>(p_obj);
+	if (!ci) {
+		return;
+	}
+
+	bool is_selected = (ci == selected_canvas_item);
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	if (edited_scene && (ci == edited_scene || (ci->get_owner() && edited_scene->is_ancestor_of(ci)))) {
+		for (int i = 0; i < gizmo_plugins_by_priority.size(); i++) {
+			Ref<EditorCanvasItemGizmo> gizmo = gizmo_plugins_by_priority.write[i]->get_gizmo(ci);
+
+			if (gizmo.is_valid()) {
+				ci->add_gizmo(gizmo);
+
+				if (is_selected != gizmo->is_selected()) {
+					gizmo->set_selected(is_selected);
+				}
+			}
+		}
+		if (!ci->get_gizmos().is_empty()) {
+			ci->update_gizmos();
+		}
+	}
+}
+
+void CanvasItemEditor::_request_gizmo_for_id(ObjectID p_id) {
+	CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(p_id);
+	if (ci) {
+		_request_gizmo(ci);
+	}
+}
+
+void _update_all_canvas_item_gizmos(Node *p_node) {
+	for (int i = p_node->get_child_count() - 1; i >= 0; --i) {
+		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node->get_child(i));
+		if (canvas_item) {
+			canvas_item->update_gizmos();
+		}
+
+		_update_all_canvas_item_gizmos(p_node->get_child(i));
+	}
+}
+
+void CanvasItemEditor::update_all_gizmos(Node *p_node) {
+	if (!p_node && is_inside_tree()) {
+		p_node = get_tree()->get_edited_scene_root();
+	}
+
+	if (!p_node) {
+		// No edited scene, so nothing to update.
+		return;
+	}
+	_update_all_canvas_item_gizmos(p_node);
+}
+
+bool CanvasItemEditor::is_current_selected_gizmo(const EditorCanvasItemGizmo *p_gizmo) {
+	CanvasItemEditorSelectedItem *se = selected_canvas_item ? editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item) : nullptr;
+	if (se) {
+		return se->gizmo == p_gizmo;
+	}
+	return false;
 }
 
 CanvasItemEditor::CanvasItemEditor() {
@@ -6028,6 +6164,8 @@ CanvasItemEditor::CanvasItemEditor() {
 	singleton = this;
 
 	set_process_shortcut_input(true);
+	add_to_group(SceneStringName(_canvas_item_editor_group));
+
 	clear(); // Make sure values are initialized.
 
 	// Update the menus' checkboxes.
