@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/relocate_init_list.h"
 #include "core/templates/span.h"
 #include "core/typedefs.h"
 #include "core/variant/variant_deep_duplicate.h"
@@ -195,9 +196,17 @@ public:
 		return this->span();
 	}
 
+	template <typename... Args>
+	static Array make(Args &&...args) {
+		static_assert(sizeof...(Args) > 0);
+		RelocateInitData<Variant, sizeof...(Args)> data(std::forward<Args>(args)...);
+		return Array(data);
+	}
+
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
-	Array(std::initializer_list<Variant> p_init);
+	Array(std::initializer_list<Variant> p_init); // Deprecated.
+	explicit Array(RelocateInitList<Variant> p_init);
 	Array();
 	~Array();
 };
