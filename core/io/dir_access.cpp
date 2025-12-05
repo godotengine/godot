@@ -324,7 +324,7 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error *r_error) {
 	const String ERROR_COMMON_PREFIX = "Error while creating temporary directory";
 
-	if (!p_prefix.is_valid_filename()) {
+	if (!p_prefix.is_empty() && !p_prefix.strip_edges(false, true).is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
 		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
 	}
