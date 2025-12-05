@@ -77,6 +77,8 @@ public:
 		ASSERT_ALWAYS_FALSE, // Expression for assert argument is always false.
 		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded.
 		NARROWING_CONVERSION, // Float value into an integer slot, precision is lost.
+		BOOL_TO_NUMBER_IMPLICIT_CONVERSION, // Bool value into an integer/float slot.
+		NUMBER_TO_BOOL_IMPLICIT_CONVERSION, // Integer/float value into a bool slot.
 		INT_AS_ENUM_WITHOUT_CAST, // An integer value was used as an enum value without casting.
 		INT_AS_ENUM_WITHOUT_MATCH, // An integer value was used as an enum value without matching enum member.
 		ENUM_VARIABLE_WITHOUT_DEFAULT, // A variable with an enum type does not have a default value. The default will be set to `0` instead of the first enum value.
@@ -135,6 +137,8 @@ public:
 		WARN, // ASSERT_ALWAYS_FALSE
 		WARN, // INTEGER_DIVISION
 		WARN, // NARROWING_CONVERSION
+		WARN, // BOOL_TO_NUMBER_IMPLICIT_CONVERSION
+		WARN, // NUMBER_TO_BOOL_IMPLICIT_CONVERSION
 		WARN, // INT_AS_ENUM_WITHOUT_CAST
 		WARN, // INT_AS_ENUM_WITHOUT_MATCH
 		WARN, // ENUM_VARIABLE_WITHOUT_DEFAULT
