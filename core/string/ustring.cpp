@@ -44,6 +44,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/string/string_name.h"
 #include "core/string/translation_server.h"
 #include "core/string/ucaps.h"
+#include "core/templates/hash_map.h"
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
@@ -3537,11 +3538,110 @@ bool String::matchn(const String &p_wildcard) const {
 	return _wildcard_match(p_wildcard.get_data(), get_data(), false);
 }
 
-String String::format(const Variant &values, const String &placeholder) const {
-	String new_string = *this;
+// Tracks which parts of a template string are to be replaced by which new text.
+struct ReplacementText {
+	int start; // index in the template string of the first character of the segment to replace.
+	int end; // index in the template string of the first character after the segment to replace.
+	String new_text; // the text to place into the template string in place of the existing text.
 
-	if (values.get_type() == Variant::ARRAY) {
-		Array values_arr = values;
+	// Support sorting by start index.
+	bool operator<(const ReplacementText &other) const {
+		return start < other.start;
+	}
+};
+
+// Replace segments within p_this as indicated by p_replacements, returning the result.
+// p_replacements must be sorted by starting index, the replacements must be within the index bounds of p_this,
+// and the replacements must not overlap.
+String _replace_segments(const String &p_this, const LocalVector<ReplacementText> &p_replacements) {
+	if (p_replacements.is_empty()) {
+		return p_this;
+	}
+	// Pre-allocate the size of the output string.
+	int new_size = p_this.length() + 1;
+	for (const ReplacementText &replacement_text : p_replacements) {
+		new_size -= replacement_text.end - replacement_text.start;
+		new_size += replacement_text.new_text.length();
+	}
+	String new_string;
+	new_string.resize(new_size);
+
+	char32_t *dst = new_string.ptrw();
+	const char32_t *tmpl_start = p_this.ptr();
+	const char32_t *tmpl_end = tmpl_start + p_this.length();
+	const char32_t *tmpl_src = tmpl_start;
+	for (const ReplacementText &replacement_text : p_replacements) {
+		// Copy template up to next segment.
+		const char32_t *segment_start = tmpl_start + replacement_text.start;
+		while (tmpl_src < segment_start) {
+			*dst++ = *tmpl_src++;
+		}
+		tmpl_src = tmpl_start + replacement_text.end;
+		// Copy replacement value.
+		const char32_t *val_src = replacement_text.new_text.ptr();
+		const char32_t *val_end = val_src + replacement_text.new_text.length();
+		while (val_src < val_end) {
+			*dst++ = *val_src++;
+		}
+	}
+	// Copy end of template.
+	while (tmpl_src < tmpl_end) {
+		*dst++ = *tmpl_src++;
+	}
+	*dst = 0;
+	return new_string;
+}
+
+String _format_with_map(const String &p_this, const HashMap<String, Variant> &p_values, const String &p_placeholder) {
+	if (p_placeholder.contains_char('_')) {
+		LocalVector<ReplacementText> replacements;
+		for (const KeyValue<String, Variant> &kv : p_values) {
+			const String key = p_placeholder.replace("_", kv.key);
+			if (key.length() == 0) {
+				continue;
+			}
+			const String &value = kv.value;
+			int search_from = 0;
+			while (true) {
+				const int found_loc = p_this.find(key, search_from);
+				if (found_loc < 0) {
+					break;
+				}
+				replacements.push_back(ReplacementText{ found_loc, found_loc + key.length(), value });
+				search_from = found_loc + key.length();
+			}
+		}
+		replacements.sort();
+		return _replace_segments(p_this, replacements);
+	} else {
+		// Replace placeholders in order.
+		if (p_placeholder.length() == 0) {
+			return p_this;
+		}
+		LocalVector<ReplacementText> replacements;
+		int search_from = 0;
+		for (int i = 0; i < p_values.size(); i++) {
+			const Variant *value = p_values.getptr(String::num_int64(i));
+			if (value == nullptr) {
+				continue;
+			}
+			const String svalue = *value;
+			const int found_loc = p_this.find(p_placeholder, search_from);
+			if (found_loc < 0) {
+				break;
+			}
+			replacements.push_back(ReplacementText{ found_loc, found_loc + p_placeholder.length(), svalue });
+			search_from = found_loc + p_placeholder.length();
+		}
+		return _replace_segments(p_this, replacements);
+	}
+}
+
+String String::format(const Variant &p_values, const String &p_placeholder) const {
+	HashMap<String, Variant> values_map;
+	if (p_values.get_type() == Variant::ARRAY) {
+		Array values_arr = p_values;
+		values_map.reserve(values_arr.size());
 
 		for (int i = 0; i < values_arr.size(); i++) {
 			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
@@ -3550,42 +3650,37 @@ String String::format(const Variant &values, const String &placeholder) const {
 				if (value_arr.size() == 2) {
 					String key = value_arr[0];
 					String val = value_arr[1];
-
-					new_string = new_string.replace(placeholder.replace("_", key), val);
+					values_map.insert(key, val);
 				} else {
 					ERR_PRINT(vformat("Invalid format: the inner Array at index %d needs to contain only 2 elements, as a key-value pair.", i).ascii().get_data());
 				}
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
 				String val = values_arr[i];
-
-				if (placeholder.contains_char('_')) {
-					new_string = new_string.replace(placeholder.replace("_", String::num_int64(i)), val);
-				} else {
-					new_string = new_string.replace_first(placeholder, val);
-				}
+				values_map.insert(String::num_int64(i), val);
 			}
 		}
-	} else if (values.get_type() == Variant::DICTIONARY) {
-		Dictionary d = values;
-
-		for (const KeyValue<Variant, Variant> &kv : d) {
-			new_string = new_string.replace(placeholder.replace("_", kv.key), kv.value);
+	} else if (p_values.get_type() == Variant::DICTIONARY) {
+		Dictionary values_dict = p_values;
+		values_map.reserve(values_dict.size());
+		for (const KeyValue<Variant, Variant> &kv : values_dict) {
+			values_map.insert(kv.key, kv.value);
 		}
-	} else if (values.get_type() == Variant::OBJECT) {
-		Object *obj = values.get_validated_object();
-		ERR_FAIL_NULL_V(obj, new_string);
+	} else if (p_values.get_type() == Variant::OBJECT) {
+		Object *obj = p_values.get_validated_object();
+		ERR_FAIL_NULL_V(obj, *this);
 
 		List<PropertyInfo> props;
 		obj->get_property_list(&props);
+		values_map.reserve(props.size());
 
 		for (const PropertyInfo &E : props) {
-			new_string = new_string.replace(placeholder.replace("_", E.name), obj->get(E.name));
+			values_map.insert(E.name, obj->get(E.name));
 		}
 	} else {
 		ERR_PRINT(String("Invalid type: use Array, Dictionary or Object.").ascii().get_data());
 	}
 
-	return new_string;
+	return _format_with_map(*this, values_map, p_placeholder);
 }
 
 static String _replace_common(const String &p_this, const String &p_key, const String &p_with, bool p_case_insensitive) {

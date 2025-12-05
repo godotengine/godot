@@ -407,7 +407,7 @@ public:
 	bool is_lowercase() const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
-	String format(const Variant &values, const String &placeholder = "{_}") const;
+	String format(const Variant &p_values, const String &p_placeholder = "{_}") const;
 	String replace_first(const String &p_key, const String &p_with) const;
 	String replace_first(const char *p_key, const char *p_with) const;
 	String replace(const String &p_key, const String &p_with) const;
