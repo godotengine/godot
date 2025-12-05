@@ -1136,6 +1136,9 @@ void main() {
 	float roughness_highp = 1.0;
 	float rim_highp = 0.0;
 	float rim_tint_highp = 0.0;
+	float sheen_highp = 0.0;
+	float sheen_roughness_highp = 0.0;
+	vec3 sheen_color_highp = vec3(1.0);
 	float clearcoat_highp = 0.0;
 	float clearcoat_roughness_highp = 0.0;
 	float anisotropy_highp = 0.0;
@@ -1272,6 +1275,9 @@ void main() {
 	half roughness = half(roughness_highp);
 	half rim = half(rim_highp);
 	half rim_tint = half(rim_tint_highp);
+	half sheen = half(sheen_highp);
+	half sheen_roughness = half(sheen_roughness_highp);
+	hvec3 sheen_color = hvec3(sheen_color_highp);
 	half clearcoat = half(clearcoat_highp);
 	half clearcoat_roughness = half(clearcoat_roughness_highp);
 	half anisotropy = half(anisotropy_highp);
@@ -2098,6 +2104,11 @@ void main() {
 #ifdef LIGHT_RIM_USED
 					rim, rim_tint,
 #endif
+/* not supported here
+#ifdef LIGHT_SHEEN_USED
+					sheen, sheen_roughness, sheen_color,
+#endif
+*/
 #ifdef LIGHT_CLEARCOAT_USED
 					clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
@@ -2134,6 +2145,11 @@ void main() {
 				rim,
 				rim_tint,
 #endif
+/*
+#ifdef LIGHT_SHEEN_USED
+				sheen, sheen_roughness, sheen_color,
+#endif
+*/
 #ifdef LIGHT_CLEARCOAT_USED
 				clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
@@ -2166,6 +2182,11 @@ void main() {
 				rim,
 				rim_tint,
 #endif
+/*
+#ifdef LIGHT_SHEEN_USED
+				sheen, sheen_roughness, sheen_color,
+#endif
+*/
 #ifdef LIGHT_CLEARCOAT_USED
 				clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
