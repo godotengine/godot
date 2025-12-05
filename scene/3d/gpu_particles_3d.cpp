@@ -90,6 +90,9 @@ void GPUParticles3D::set_interp_to_end(float p_interp) {
 }
 
 void GPUParticles3D::set_one_shot(bool p_one_shot) {
+	if (one_shot == p_one_shot) {
+		return;
+	}
 	one_shot = p_one_shot;
 	RS::get_singleton()->particles_set_one_shot(particles, one_shot);
 
@@ -97,6 +100,11 @@ void GPUParticles3D::set_one_shot(bool p_one_shot) {
 		if (!one_shot) {
 			RenderingServer::get_singleton()->particles_restart(particles);
 		}
+	}
+	if (one_shot) {
+		active = true;
+		emission_time = lifetime;
+		active_time = lifetime * (2 - explosiveness_ratio);
 	}
 }
 
