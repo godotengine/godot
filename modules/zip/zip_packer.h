@@ -38,9 +38,22 @@
 class ZIPPacker : public RefCounted {
 	GDCLASS(ZIPPacker, RefCounted);
 
-	Ref<FileAccess> fa;
 	zipFile zf = nullptr;
+
 	int compression_level = Z_DEFAULT_COMPRESSION;
+
+	Ref<FileAccess> fa;
+
+	Vector<uint8_t> sink;
+	uint64_t sink_cursor = 0;
+
+	static void *_zipio_mem_open(voidpf p_opaque, const char *p_fname, int p_mode);
+	static uLong _zipio_mem_read(voidpf p_opaque, voidpf p_stream, void *p_buf, uLong p_size);
+	static uLong _zipio_mem_write(voidpf p_opaque, voidpf p_stream, const void *p_buf, uLong p_size);
+	static long _zipio_mem_tell(voidpf p_opaque, voidpf p_stream);
+	static long _zipio_mem_seek(voidpf p_opaque, voidpf p_stream, uLong p_offset, int p_origin);
+	static int _zipio_mem_close(voidpf p_opaque, voidpf p_stream);
+	static int _zipio_mem_testerror(voidpf p_opaque, voidpf p_stream);
 
 protected:
 	static void _bind_methods();
@@ -60,7 +73,10 @@ public:
 	};
 
 	Error open(const String &p_path, ZipAppend p_append);
+	Error open_buffer(const Vector<uint8_t> &p_init, ZipAppend p_append);
 	Error close();
+
+	Vector<uint8_t> get_buffer() const;
 
 	void set_compression_level(int p_compression_level);
 	int get_compression_level() const;
@@ -69,7 +85,6 @@ public:
 	Error write_file(const Vector<uint8_t> &p_data);
 	Error close_file();
 
-	ZIPPacker();
 	~ZIPPacker();
 };
 
