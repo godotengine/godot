@@ -18,6 +18,10 @@ Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/collide_shape/arguments': default_value was removed.
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/get_rest_info/return_value': type changed value in new API, from "Dictionary" to "bool".
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/get_rest_info/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_point/return_value': type changed value in new API, from "typedarray::Dictionary" to "bool".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_point/arguments/1': type changed value in new API, from "int" to "PhysicsPointIntersectionResult2D".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_point/arguments/1': meta changed value in new API, from "int32" to "required".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_point/arguments': default_value was removed.
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_ray/return_value': type changed value in new API, from "Dictionary" to "bool".
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_ray/arguments': size changed value in new API, from 1 to 2.
 
