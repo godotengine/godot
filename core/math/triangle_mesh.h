@@ -85,7 +85,12 @@ private:
 public:
 	bool is_valid() const;
 	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr, int32_t *r_face_index = nullptr) const;
-	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr, int32_t *r_face_index = nullptr) const;
+	enum CullMode {
+		CULL_BACK = 0,
+		CULL_FRONT = 1,
+		CULL_DISABLED = 2,
+	};
+	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr, int32_t *r_face_index = nullptr, CullMode p_cull_mode = CULL_BACK) const;
 	bool inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale = Vector3(1, 1, 1)) const;
 	Vector<Face3> get_faces() const;
 
