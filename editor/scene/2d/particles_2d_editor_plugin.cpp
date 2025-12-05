@@ -61,6 +61,7 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 void GPUParticles2DEditorPlugin::_add_menu_options(PopupMenu *p_menu) {
 	Particles2DEditorPlugin::_add_menu_options(p_menu);
 	p_menu->add_item(TTR("Generate Visibility Rect"), MENU_GENERATE_VISIBILITY_RECT);
+	p_menu->set_item_metadata(-1, "disable_on_multiselect");
 }
 
 void Particles2DEditorPlugin::_browse_mask_texture_pressed() {
