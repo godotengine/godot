@@ -3444,6 +3444,66 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	r_forced = r_result.size() > 0;
 }
 
+namespace {
+
+/**
+ * @brief Generates additional edits for GDScript completions of category `COMPLETION_OVERRIDE_METHOD`.
+ *        These edits will automatically apply the `@override` annotation when using completion to generate an override.
+ *        If the `@override` annotation is already present, nothing will occur.
+ *
+ * @param ctx           The completion context
+ * @param code_by_line  A vector containing each line of text in the currently open file (split by \n).
+ */
+Vector<ScriptLanguage::TextEdit> get_override_text_edits(const GDScriptParser::CompletionContext &ctx, const Vector<String> &code_by_line) {
+	int line = ctx.current_line;
+	// Backtrack in the current line and upwards a few lines to search for `@override`. If we don't see it, apply it on the line above the `func` keyword.
+	bool has_override_annot = false;
+	int lines_traversed = 0;
+	int func_line = -1; // Generally speaking we expect the line with `func` to be the current line, but for sanity we'll search for it anyway.
+
+	while (!has_override_annot && lines_traversed < 10 && line >= 0) {
+		String text = code_by_line.get(line);
+
+		if (text.contains("func")) {
+			if (func_line == -1) {
+				func_line = line;
+			} else {
+				break; // We've hit another `func` decl. Anything in or above this line doesn't apply to this function anymore.
+			}
+		}
+
+		if (text.contains("@override")) {
+			has_override_annot = true;
+			break;
+		}
+
+		line--;
+		lines_traversed++;
+	}
+
+	if (!has_override_annot && func_line != -1) {
+		String text = code_by_line.get(func_line);
+		ScriptLanguage::TextEdit edit;
+		edit.start = { func_line - 1, 0 }; // Always start at the base of the line above the func_line
+		edit.end = { func_line, 0 }; // And then end on the func line itself.
+
+		// What we actually need to do here is replace whatever the line above the func_line was with "<line>\n@override\n"
+		// But the @override has to have the same indentation level as the func_line.
+
+		int func_column = text.length() - text.lstrip(" \t").length();
+		String new_text = code_by_line.get(func_line - 1);
+		new_text = new_text + "\n" + text.substr(0, func_column) + "@override\n";
+
+		edit.new_text = new_text;
+
+		return { edit };
+	}
+
+	return {};
+}
+
+} // namespace
+
 ::Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
@@ -3452,6 +3512,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	parser.parse(p_code, p_path, true);
 	analyzer.analyze();
+
+	Vector<String> code_by_line = p_code.split("\n");
 
 	r_forced = false;
 	HashMap<String, ScriptLanguage::CodeCompletionOption> options;
@@ -3705,6 +3767,10 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 							String display_name = member.function->identifier->name;
 							display_name += member.function->signature + ":";
 							ScriptLanguage::CodeCompletionOption option(display_name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+
+							// When inserting a completion for a function override, we want to automatically add the @override annotation to the completion.
+							option.additional_edits = get_override_text_edits(completion_context, code_by_line);
+
 							options.insert(member.function->identifier->name, option); // Insert name instead of display to track duplicates.
 						}
 						native_type = native_type.class_type->base_type;
@@ -3779,6 +3845,10 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				method_hint += ":";
 
 				ScriptLanguage::CodeCompletionOption option(method_hint, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+
+				// When inserting a completion for a function override, we want to automatically add the @override annotation to the completion.
+				option.additional_edits = get_override_text_edits(completion_context, code_by_line);
+
 				options.insert(option.display, option);
 			}
 		} break;
