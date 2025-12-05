@@ -4291,6 +4291,16 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_focus();
 	_draw_hover();
 	_draw_message();
+
+	// Update any CanvasItem that could affect drawing
+	const List<CanvasItem *> selection = _get_edited_canvas_items(true, false);
+	for (CanvasItem *selected_ci : selection) {
+		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_ci);
+
+		se->prev_rect = selected_ci->_edit_use_rect() ? selected_ci->_edit_get_rect() : Rect2();
+		se->prev_xform = selected_ci->get_global_transform();
+		se->prev_drawn = true;
+	}
 }
 
 void CanvasItemEditor::update_viewport() {
@@ -4393,10 +4403,8 @@ void CanvasItemEditor::_notification(int p_what) {
 				}
 				Transform2D xform = ci->get_global_transform();
 
-				if (rect != se->prev_rect || xform != se->prev_xform) {
+				if (!se->prev_drawn || rect != se->prev_rect || xform != se->prev_xform) {
 					viewport->queue_redraw();
-					se->prev_rect = rect;
-					se->prev_xform = xform;
 				}
 
 				Control *control = Object::cast_to<Control>(ci);
