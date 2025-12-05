@@ -39,30 +39,20 @@ void Parallax2D::_notification(int p_what) {
 			add_to_group(group_name);
 			_update_repeat();
 			_update_scroll();
-		} break;
-
-		case NOTIFICATION_READY: {
 			_update_process();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			Point2 offset = scroll_offset;
-			offset += autoscroll * get_process_delta_time();
-
-			if (repeat_size.x) {
-				offset.x = Math::fposmod(offset.x, repeat_size.x);
-			}
-
-			if (repeat_size.y) {
-				offset.y = Math::fposmod(offset.y, repeat_size.y);
-			}
-
-			scroll_offset = offset;
+			_process_autoscroll();
 			_update_scroll();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			remove_from_group(group_name);
+		} break;
+
+		case NOTIFICATION_EDITOR_PRE_SAVE: {
+			set_screen_offset(Vector2());
 		} break;
 	}
 }
@@ -147,6 +137,21 @@ void Parallax2D::_update_repeat() {
 
 	RenderingServer::get_singleton()->canvas_set_item_repeat(get_canvas_item(), repeat_size, repeat_times);
 	RenderingServer::get_singleton()->canvas_item_set_interpolated(get_canvas_item(), false);
+}
+
+void Parallax2D::_process_autoscroll() {
+	Point2 offset = scroll_offset;
+	offset += autoscroll * get_process_delta_time();
+
+	if (repeat_size.x) {
+		offset.x = Math::fposmod(offset.x, repeat_size.x);
+	}
+
+	if (repeat_size.y) {
+		offset.y = Math::fposmod(offset.y, repeat_size.y);
+	}
+
+	scroll_offset = offset;
 }
 
 void Parallax2D::set_scroll_scale(const Size2 &p_scale) {
