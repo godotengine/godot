@@ -37,6 +37,7 @@
 #include "core/math/vector2i.h"
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
+#include "core/templates/iterable.h"
 #include "core/templates/vector.h"
 
 class Geometry2D {
@@ -461,41 +462,77 @@ public:
 		return H;
 	}
 
-	static Vector<Point2i> bresenham_line(const Point2i &p_from, const Point2i &p_to) {
-		Vector<Point2i> points;
+	class BresenhamIterator {
+		bool is_end;
+		Vector2i to;
 
-		Vector2i delta = (p_to - p_from).abs() * 2;
-		Vector2i step = (p_to - p_from).sign();
-		Vector2i current = p_from;
+		Vector2i pos;
+		int err;
+		Vector2i delta;
+		Vector2i step;
 
-		if (delta.x > delta.y) {
-			int err = delta.x / 2;
-
-			for (; current.x != p_to.x; current.x += step.x) {
-				points.push_back(current);
-
+	public:
+		_FORCE_INLINE_ void operator++() {
+			if (pos == to) {
+				is_end = true;
+				return;
+			}
+			if (delta.x > delta.y) {
 				err -= delta.y;
 				if (err < 0) {
-					current.y += step.y;
+					pos.y += step.y;
 					err += delta.x;
 				}
-			}
-		} else {
-			int err = delta.y / 2;
-
-			for (; current.y != p_to.y; current.y += step.y) {
-				points.push_back(current);
-
+				pos.x += step.x;
+			} else {
 				err -= delta.x;
 				if (err < 0) {
-					current.x += step.x;
+					pos.x += step.x;
 					err += delta.y;
 				}
+				pos.y += step.y;
 			}
 		}
 
-		points.push_back(current);
+		_FORCE_INLINE_ Vector2i operator*() {
+			return pos;
+		}
 
+		_FORCE_INLINE_ bool operator!=(const BresenhamIterator &p_it) const {
+			return (is_end && p_it.is_end) ? false : (is_end != p_it.is_end || pos != p_it.pos);
+		}
+
+	public:
+		BresenhamIterator(const Vector2i &p_from, const Vector2i &p_to) {
+			is_end = false;
+
+			pos = p_from;
+			to = p_to;
+
+			Vector2i offset = p_to - p_from;
+			delta = offset.abs() * 2;
+			step = offset.sign();
+			if (delta.x > delta.y) {
+				err = delta.x / 2;
+			} else {
+				err = delta.y / 2;
+			}
+		}
+
+		BresenhamIterator() {
+			is_end = true;
+		}
+	};
+
+	static Iterable<BresenhamIterator> bresenham_iter(Vector2i p_from, Vector2i p_to) {
+		return Iterable<BresenhamIterator>(BresenhamIterator(p_from, p_to), BresenhamIterator());
+	}
+
+	static Vector<Point2i> bresenham_line(const Point2i &p_from, const Point2i &p_to) {
+		Vector<Point2i> points;
+		for (Vector2i point : bresenham_iter(p_from, p_to)) {
+			points.push_back(point);
+		}
 		return points;
 	}
 
