@@ -114,6 +114,45 @@ Rect2 AtlasTexture::get_margin() const {
 	return margin;
 }
 
+void AtlasTexture::set_snap_mode(const int p_mode) {
+	if (snap_mode == p_mode) {
+		return;
+	}
+
+	snap_mode = p_mode;
+	emit_changed();
+}
+
+int AtlasTexture::get_snap_mode() const {
+	return snap_mode;
+}
+
+void AtlasTexture::set_separation(const Vector2i p_sep) {
+	if (separation == p_sep) {
+		return;
+	}
+
+	separation = p_sep;
+	emit_changed();
+}
+
+Vector2i AtlasTexture::get_separation() const {
+	return separation;
+}
+
+void AtlasTexture::set_offset(const Vector2i p_offset) {
+	if (offset == p_offset) {
+		return;
+	}
+
+	offset = p_offset;
+	emit_changed();
+}
+
+Vector2i AtlasTexture::get_offset() const {
+	return offset;
+}
+
 void AtlasTexture::set_filter_clip(const bool p_enable) {
 	filter_clip = p_enable;
 	emit_changed();
@@ -146,12 +185,24 @@ void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &AtlasTexture::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &AtlasTexture::get_margin);
 
+	ClassDB::bind_method(D_METHOD("_set_snap_mode", "snap_mode"), &AtlasTexture::set_snap_mode);
+	ClassDB::bind_method(D_METHOD("_get_snap_mode"), &AtlasTexture::get_snap_mode);
+
+	ClassDB::bind_method(D_METHOD("_set_separation", "separation"), &AtlasTexture::set_separation);
+	ClassDB::bind_method(D_METHOD("_get_separation"), &AtlasTexture::get_separation);
+
+	ClassDB::bind_method(D_METHOD("_set_offset", "offset"), &AtlasTexture::set_offset);
+	ClassDB::bind_method(D_METHOD("_get_offset"), &AtlasTexture::get_offset);
+
 	ClassDB::bind_method(D_METHOD("set_filter_clip", "enable"), &AtlasTexture::set_filter_clip);
 	ClassDB::bind_method(D_METHOD("has_filter_clip"), &AtlasTexture::has_filter_clip);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "atlas", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_atlas", "get_atlas");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region", PROPERTY_HINT_NONE, "suffix:px"), "set_region", "get_region");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "margin", PROPERTY_HINT_NONE, "suffix:px"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "_set_snap_mode", "_get_snap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "_set_separation", "_get_separation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "_set_offset", "_get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_clip"), "set_filter_clip", "has_filter_clip");
 }
 
