@@ -866,25 +866,21 @@ ConnectDialog::ConnectDialog() {
 	type_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	type_list->populate({ Variant::NIL, Variant::OBJECT });
 	add_bind_hb->add_child(type_list);
-	bind_controls.push_back(type_list);
 
 	Button *add_bind = memnew(Button);
 	add_bind->set_text(TTR("Add"));
 	add_bind_hb->add_child(add_bind);
 	add_bind->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_add_bind));
-	bind_controls.push_back(add_bind);
 
 	Button *del_bind = memnew(Button);
 	del_bind->set_text(TTR("Remove"));
 	add_bind_hb->add_child(del_bind);
 	del_bind->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_remove_bind));
-	bind_controls.push_back(del_bind);
 
 	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
 
 	bind_editor = memnew(EditorInspector);
 	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments:"));
-	bind_controls.push_back(bind_editor);
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
@@ -1670,9 +1666,6 @@ void ConnectionsDock::update_tree() {
 				if (cd.flags & CONNECT_APPEND_SOURCE_OBJECT) {
 					path += " (source)";
 				}
-				if (cd.unbinds > 0) {
-					path += " unbinds(" + itos(cd.unbinds) + ")";
-				}
 				if (!cd.binds.is_empty()) {
 					path += " binds(";
 					for (int i = 0; i < cd.binds.size(); i++) {
@@ -1682,6 +1675,9 @@ void ConnectionsDock::update_tree() {
 						path += cd.binds[i].operator String();
 					}
 					path += ")";
+				}
+				if (cd.unbinds > 0) {
+					path += " unbinds(" + itos(cd.unbinds) + ")";
 				}
 
 				TreeItem *connection_item = tree->create_item(signal_item);
