@@ -235,15 +235,6 @@ void ActionMapEditor::_set_show_builtin_actions(bool p_show) {
 }
 
 void ActionMapEditor::_on_search_bar_value_changed() {
-	if (action_list_search_bar->is_searching()) {
-		show_builtin_actions_checkbutton->set_pressed_no_signal(true);
-		show_builtin_actions_checkbutton->set_disabled(true);
-		show_builtin_actions_checkbutton->set_tooltip_text(TTRC("Built-in actions are always shown when searching."));
-	} else {
-		show_builtin_actions_checkbutton->set_pressed_no_signal(show_builtin_actions);
-		show_builtin_actions_checkbutton->set_disabled(false);
-		show_builtin_actions_checkbutton->set_tooltip_text(String());
-	}
 	update_action_list();
 }
 
@@ -449,7 +440,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			continue;
 		}
 
-		if (!action_info.editable && !action_list_search_bar->is_searching() && !show_builtin_actions) {
+		if (!action_info.editable && !show_builtin_actions) {
 			continue;
 		}
 
