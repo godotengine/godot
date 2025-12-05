@@ -1611,6 +1611,8 @@ void main() {
 		indirect_specular_light *= half(scene_data.IBL_exposure_normalization);
 		indirect_specular_light *= horizon * horizon;
 		indirect_specular_light *= half(scene_data.ambient_light_color_energy.a);
+	} else if (sc_scene_use_reflection_color()) {
+		indirect_specular_light = hvec3(scene_data.reflection_color.rgb);
 	}
 
 #if defined(CUSTOM_RADIANCE_USED)
@@ -1672,6 +1674,8 @@ void main() {
 		hvec3 clearcoat_light = hvec3(textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb);
 #endif //USE_RADIANCE_OCTMAP_ARRAY
 		indirect_specular_light += clearcoat_light * horizon * horizon * Fc * half(scene_data.ambient_light_color_energy.a);
+	} else if (sc_scene_use_reflection_color()) {
+		indirect_specular_light = hvec3(scene_data.reflection_color.rgb);
 	}
 #endif // LIGHT_CLEARCOAT_USED
 #endif // !AMBIENT_LIGHT_DISABLED
