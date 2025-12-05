@@ -157,12 +157,12 @@ class CommandQueueMT {
 	}
 
 	void _flush() {
-		MutexLock lock(mutex);
-
 		if (unlikely(flush_read_ptr)) {
 			// Re-entrant call.
 			return;
 		}
+
+		MutexLock lock(mutex);
 
 		alignas(uint64_t) char cmd_local_mem[MAX_COMMAND_SIZE];
 
