@@ -3834,7 +3834,8 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// XLookupString returns keysyms usable as nice keycodes.
 	char str[256] = {};
 	XKeyEvent xkeyevent_no_mod = *xkeyevent;
-	xkeyevent_no_mod.state &= 0xFF00;
+	xkeyevent_no_mod.state &= ~ShiftMask;
+	xkeyevent_no_mod.state &= ~ControlMask;
 	XLookupString(xkeyevent, str, 255, &keysym_unicode, nullptr);
 	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
 
