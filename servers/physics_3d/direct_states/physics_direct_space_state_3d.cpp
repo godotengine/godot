@@ -170,6 +170,15 @@ bool PhysicsDirectSpaceState3D::_intersect_point_into(RequiredParam<PhysicsPoint
 	return result->intersection_count > 0;
 }
 
+bool PhysicsDirectSpaceState3D::_intersect_shape_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsIntersectShapeResult3D> p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(result, p_result, false);
+
+	result->intersection_count = intersect_shape(shape_query->get_parameters(), result->result.ptr(), result->get_max_intersections());
+
+	return result->intersection_count > 0;
+}
+
 PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 }
 
@@ -183,4 +192,5 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("intersect_ray_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_ray_into);
 	ClassDB::bind_method(D_METHOD("intersect_point_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_point_into);
+	ClassDB::bind_method(D_METHOD("intersect_shape_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_shape_into);
 }
