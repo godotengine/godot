@@ -80,6 +80,7 @@ private:
 	void _update_tab_titles();
 	void _reposition_active_tab(int p_to_index);
 	void _update_context_menu();
+	void _menu_option(int p_option);
 	void _custom_menu_option(int p_option);
 	void _update_scene_list();
 
