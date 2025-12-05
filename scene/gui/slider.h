@@ -59,6 +59,7 @@ private:
 	double custom_step = -1.0;
 	bool editable = true;
 	bool scrollable = true;
+	bool symmetric_fill = false;
 
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
@@ -107,6 +108,11 @@ public:
 
 	void set_scrollable(bool p_scrollable);
 	bool is_scrollable() const;
+
+	void set_symmetric_fill(bool p_symmetric_fill);
+	bool is_symmetric_fill() const;
+
+	PackedStringArray get_configuration_warnings() const override;
 
 	Slider(Orientation p_orientation = VERTICAL);
 };
