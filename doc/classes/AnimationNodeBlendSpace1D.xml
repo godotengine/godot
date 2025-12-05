@@ -21,10 +21,24 @@
 				Adds a new point that represents a [param node] on the virtual axis at a given position set by [param pos]. You can insert it at a specific index using the [param at_index] argument. If you use the default value for [param at_index], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
+		<method name="find_blend_point_by_name" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the index of the blend point with the given [param name]. Returns [code]-1[/code] if no blend point with that name is found.
+			</description>
+		</method>
 		<method name="get_blend_point_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of points on the blend axis.
+			</description>
+		</method>
+		<method name="get_blend_point_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Returns the name of the blend point at index [param point].
 			</description>
 		</method>
 		<method name="get_blend_point_node" qualifiers="const">
@@ -46,6 +60,22 @@
 			<param index="0" name="point" type="int" />
 			<description>
 				Removes the point at index [param point] from the blend axis.
+			</description>
+		</method>
+		<method name="reorder_blend_point">
+			<return type="void" />
+			<param index="0" name="from_index" type="int" />
+			<param index="1" name="to_index" type="int" />
+			<description>
+				Swaps the blend points at indices [param from_index] and [param to_index], exchanging their positions and properties.
+			</description>
+		</method>
+		<method name="set_blend_point_name">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the name of the blend point at index [param point]. If the name conflicts with an existing point, a unique name will be generated automatically.
 			</description>
 		</method>
 		<method name="set_blend_point_node">
