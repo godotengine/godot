@@ -3536,6 +3536,16 @@ PackedStringArray Node::get_configuration_warnings() const {
 		ret.append_array(warnings);
 	}
 
+#ifdef TOOLS_ENABLED
+	Variant vscript = get_script();
+	if (!vscript.is_null()) {
+		Script *scr = Object::cast_to<Script>(vscript);
+		if (!scr->has_default_constructor()) {
+			ret.append(vformat(R"(Script class "%s" has no default constructor. Node will not load correctly.)", scr->get_global_name()));
+		}
+	}
+#endif
+
 	return ret;
 }
 
