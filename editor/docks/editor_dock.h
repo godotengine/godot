@@ -73,6 +73,9 @@ private:
 	int previous_tab_index = -1;
 	WindowWrapper *dock_window = nullptr;
 	int dock_slot_index = DockConstants::DOCK_SLOT_NONE;
+	Dictionary window_dump;
+
+	void _restore_to_saved_window();
 
 	void _set_default_slot_bind(EditorPlugin::DockSlot p_slot);
 	EditorPlugin::DockSlot _get_default_slot_bind() const { return (EditorPlugin::DockSlot)default_slot; }
