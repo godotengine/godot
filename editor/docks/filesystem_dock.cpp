@@ -1237,7 +1237,7 @@ HashSet<String> FileSystemDock::_get_valid_conversions_for_file_paths(const Vect
 	return all_valid_conversion_to_targets;
 }
 
-void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites, bool p_navigate) {
+void FileSystemDock::open_file(const String &p_path, bool p_select_in_favorites, bool p_navigate) {
 	String fpath = p_path;
 	if (fpath.ends_with("/")) {
 		// Ignore a directory.
@@ -1316,13 +1316,13 @@ void FileSystemDock::_tree_activate_file() {
 			bool collapsed = selected->is_collapsed();
 			selected->set_collapsed(!collapsed);
 		} else {
-			_select_file(file_path, is_favorite && !is_folder, is_favorite && is_folder);
+			open_file(file_path, is_favorite && !is_folder, is_favorite && is_folder);
 		}
 	}
 }
 
 void FileSystemDock::_file_list_activate_file(int p_idx) {
-	_select_file(files->get_item_metadata(p_idx));
+	open_file(files->get_item_metadata(p_idx));
 }
 
 void FileSystemDock::_preview_invalidated(const String &p_path) {
@@ -2378,7 +2378,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 			// Open the file.
 			for (int i = 0; i < p_selected.size(); i++) {
-				_select_file(p_selected[i]);
+				open_file(p_selected[i]);
 			}
 		} break;
 
