@@ -127,6 +127,8 @@ private:
 		uint64_t emission_curve : 1;
 		uint64_t has_initial_ramp : 1;
 		uint64_t orbit_uses_curve_xyz : 1;
+		uint64_t use_scale_3d : 1;
+		uint64_t use_orientation_3d : 1;
 
 		MaterialKey() {
 			memset(this, 0, sizeof(MaterialKey));
@@ -172,6 +174,8 @@ private:
 		mk.has_initial_ramp = color_initial_ramp.is_valid() ? 1 : 0;
 		CurveXYZTexture *texture = Object::cast_to<CurveXYZTexture>(tex_parameters[PARAM_ORBIT_VELOCITY].ptr());
 		mk.orbit_uses_curve_xyz = texture ? 1 : 0;
+		mk.use_scale_3d = use_scale_3d ? 1 : 0;
+		mk.use_orientation_3d = use_orientation_3d ? 1 : 0;
 
 		for (int i = 0; i < PARAM_MAX; i++) {
 			if (tex_parameters[i].is_valid()) {
@@ -209,6 +213,8 @@ private:
 		StringName anim_speed_min;
 		StringName anim_offset_min;
 		StringName directional_velocity_min;
+		StringName scale_3d_min;
+		StringName orientation_3d_min;
 
 		StringName initial_linear_velocity_max;
 		StringName initial_angle_max;
@@ -225,6 +231,8 @@ private:
 		StringName anim_speed_max;
 		StringName anim_offset_max;
 		StringName directional_velocity_max;
+		StringName scale_3d_max;
+		StringName orientation_3d_max;
 
 		StringName angle_texture;
 		StringName angular_velocity_texture;
@@ -348,6 +356,13 @@ private:
 	double lifetime_randomness = 0.0;
 	double inherit_emitter_velocity_ratio = 0.0;
 
+	bool use_orientation_3d = false;
+	bool use_scale_3d = false;
+	Vector3 scale_3d_min;
+	Vector3 scale_3d_max;
+	Vector3 orientation_3d_min;
+	Vector3 orientation_3d_max;
+
 	SubEmitterMode sub_emitter_mode;
 	double sub_emitter_frequency = 0.0;
 	int sub_emitter_amount_at_end = 0;
@@ -409,6 +424,24 @@ public:
 
 	void set_emission_curve(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_emission_curve() const;
+
+	void set_use_scale_3d(const bool p_use_scale_3d);
+	bool is_using_scale_3d() const;
+
+	void set_scale_3d_min(const Vector3 &p_scale_3d_min);
+	Vector3 get_scale_3d_min() const;
+
+	void set_scale_3d_max(const Vector3 &p_scale_3d_max);
+	Vector3 get_scale_3d_max() const;
+
+	void set_use_orientation_3d(const bool p_use_scale_3d);
+	bool is_using_orientation_3d() const;
+
+	void set_orientation_3d_min(const Vector3 &p_orientation_3d_min);
+	Vector3 get_orientation_3d_min() const;
+
+	void set_orientation_3d_max(const Vector3 &p_orientation_3d_max);
+	Vector3 get_orientation_3d_max() const;
 
 	void set_particle_flag(ParticleFlags p_particle_flag, bool p_enable);
 	bool get_particle_flag(ParticleFlags p_particle_flag) const;
