@@ -86,23 +86,47 @@ void DebugEffects::_create_frustum_arrays() {
 	if (frustum.index_buffer.is_null()) {
 		uint16_t indices[6 * 2 * 3] = {
 			// Far
-			0, 1, 2, // FLT, FLB, FRT
-			1, 3, 2, // FLB, FRB, FRT
+			0,
+			1,
+			2, // FLT, FLB, FRT
+			1,
+			3,
+			2, // FLB, FRB, FRT
 			// Near
-			4, 6, 5, // NLT, NRT, NLB
-			6, 7, 5, // NRT, NRB, NLB
+			4,
+			6,
+			5, // NLT, NRT, NLB
+			6,
+			7,
+			5, // NRT, NRB, NLB
 			// Left
-			0, 4, 1, // FLT, NLT, FLB
-			4, 5, 1, // NLT, NLB, FLB
+			0,
+			4,
+			1, // FLT, NLT, FLB
+			4,
+			5,
+			1, // NLT, NLB, FLB
 			// Right
-			6, 2, 7, // NRT, FRT, NRB
-			2, 3, 7, // FRT, FRB, NRB
+			6,
+			2,
+			7, // NRT, FRT, NRB
+			2,
+			3,
+			7, // FRT, FRB, NRB
 			// Top
-			0, 2, 4, // FLT, FRT, NLT
-			2, 6, 4, // FRT, NRT, NLT
+			0,
+			2,
+			4, // FLT, FRT, NLT
+			2,
+			6,
+			4, // FRT, NRT, NLT
 			// Bottom
-			5, 7, 1, // NLB, NRB, FLB,
-			7, 3, 1, // NRB, FRB, FLB
+			5,
+			7,
+			1, // NLB, NRB, FLB,
+			7,
+			3,
+			1, // NRB, FRB, FLB
 		};
 
 		// Create our index_array
@@ -123,20 +147,32 @@ void DebugEffects::_create_frustum_arrays() {
 
 	if (frustum.lines_buffer.is_null()) {
 		uint16_t indices[12 * 2] = {
-			0, 1, // FLT - FLB
-			1, 3, // FLB - FRB
-			3, 2, // FRB - FRT
-			2, 0, // FRT - FLT
+			0,
+			1, // FLT - FLB
+			1,
+			3, // FLB - FRB
+			3,
+			2, // FRB - FRT
+			2,
+			0, // FRT - FLT
 
-			4, 6, // NLT - NRT
-			6, 7, // NRT - NRB
-			7, 5, // NRB - NLB
-			5, 4, // NLB - NLT
+			4,
+			6, // NLT - NRT
+			6,
+			7, // NRT - NRB
+			7,
+			5, // NRB - NLB
+			5,
+			4, // NLB - NLT
 
-			0, 4, // FLT - NLT
-			1, 5, // FLB - NLB
-			2, 6, // FRT - NRT
-			3, 7, // FRB - NRB
+			0,
+			4, // FLT - NLT
+			1,
+			5, // FLB - NLB
+			2,
+			6, // FRT - NRT
+			3,
+			7, // FRB - NRB
 		};
 
 		// Create our lines_array
