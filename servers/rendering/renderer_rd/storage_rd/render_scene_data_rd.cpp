@@ -298,3 +298,27 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 RID RenderSceneDataRD::get_uniform_buffer() const {
 	return uniform_buffer;
 }
+
+RID RenderSceneDataRD::get_directional_light_buffer() const {
+	return RendererRD::LightStorage::get_singleton()->get_directional_light_buffer();
+}
+
+RID RenderSceneDataRD::get_omni_light_buffer() const {
+	return RendererRD::LightStorage::get_singleton()->get_omni_light_buffer();
+}
+
+RID RenderSceneDataRD::get_spot_light_buffer() const {
+	return RendererRD::LightStorage::get_singleton()->get_spot_light_buffer();
+}
+
+RID RenderSceneDataRD::decal_atlas_get_texture() const {
+	return RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture();
+}
+
+RID RenderSceneDataRD::decal_atlas_get_texture_srgb() const {
+	return RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture_srgb();
+}
+
+RID RenderSceneDataRD::directional_shadow_get_texture() const {
+	return RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture();
+}
