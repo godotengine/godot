@@ -3114,7 +3114,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 
 		// Make sure it's immediately added to the map so we can remap dependencies if we want to after this.
 		ResourceUID::get_singleton()->add_id(res_uid, p_to);
-	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
+	} else if (get_file_uid(p_from) == ResourceUID::INVALID_ID) {
 		// Files which do not use an uid can just be copied.
 		Error err = da->copy(p_from, p_to);
 		if (err != OK) {
