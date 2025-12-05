@@ -32,7 +32,8 @@ else:
 
 # Mesa NIR
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
-mesa_version = "23.1.9-2"
+# Note: This is temporary, I'll revert it back to the official repository when the partner PR is merged.
+mesa_version = "alloc-redirection-rel"
 # WinPixEventRuntime
 # Check for latest version: https://www.nuget.org/api/v2/package/WinPixEventRuntime (check downloaded filename)
 pix_version = "1.0.240308001"
@@ -70,7 +71,7 @@ for arch in [
         os.remove(mesa_archive)
     print(f"Downloading Mesa NIR {mesa_filename} ...")
     urllib.request.urlretrieve(
-        f"https://github.com/godotengine/godot-nir-static/releases/download/{mesa_version}/{mesa_filename}",
+        f"https://github.com/blueskythlikesclouds/godot-nir-static/releases/download/{mesa_version}/{mesa_filename}",
         mesa_archive,
     )
     if os.path.exists(mesa_folder):
