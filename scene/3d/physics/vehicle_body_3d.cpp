@@ -484,7 +484,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 	bool col = ss->intersect_ray(ray_params, rr);
 
 	if (col) {
-		param = source.distance_to(rr.position) / source.distance_to(target);
+		param = (source.distance_to(rr.position) - wheel.m_wheelRadius) / raylen;
 		depth = raylen * param;
 		wheel.m_raycastInfo.m_contactNormalWS = rr.normal;
 
