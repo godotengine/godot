@@ -33,32 +33,38 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/tab_container.h"
 
-class ImportDefaultsEditorSettings;
+class ImporterDefaultSettings;
+class ExtensionImporterSettings;
 class EditorInspector;
 
 class ImportDefaultsEditor : public VBoxContainer {
 	GDCLASS(ImportDefaultsEditor, VBoxContainer)
 
+	TabContainer *tabs = nullptr;
+
 	OptionButton *importers = nullptr;
 	Button *save_defaults = nullptr;
 	Button *reset_defaults = nullptr;
 
-	EditorInspector *inspector = nullptr;
-
-	ImportDefaultsEditorSettings *settings = nullptr;
+	EditorInspector *importer_defaults_inspector = nullptr;
+	EditorInspector *extension_importer_inspector = nullptr;
+	ImporterDefaultSettings *importer_settings = nullptr;
+	ExtensionImporterSettings *extension_settings = nullptr;
 
 	void _update_importer();
 	void _importer_selected(int p_index);
 
 	void _reset();
 	void _save();
+	void _save_extension_importer(const String &p_property_name);
 
 protected:
 	void _notification(int p_what);
 
 public:
-	void clear();
+	void update_editors();
 
 	ImportDefaultsEditor();
 	~ImportDefaultsEditor();
