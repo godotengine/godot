@@ -53,8 +53,31 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray_bind_compat_113970(Required
 	return r;
 }
 
+TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point_bind_compat_113970(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(p_point_query, rp_point_query, TypedArray<Dictionary>());
+
+	Ref<PhysicsPointIntersectionResult3D> p_result = memnew(PhysicsPointIntersectionResult3D(p_max_results));
+
+	p_result->collision_count = _intersect_point(p_point_query, p_result);
+
+	TypedArray<Dictionary> r;
+	r.resize(p_result->collision_count);
+
+	for (int i = 0; i < p_result->collision_count; i++) {
+		Dictionary d;
+		d["rid"] = p_result->get_collider_rid(i);
+		d["collider_id"] = p_result->get_collider_id(i);
+		d["collider"] = p_result->get_collider(i);
+		d["shape"] = p_result->get_collider_shape(i);
+		r[i] = d;
+	}
+
+	return r;
+}
+
 void PhysicsDirectSpaceState3D::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray_bind_compat_113970);
+	ClassDB::bind_compatibility_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point_bind_compat_113970, DEFVAL(32));
 }
 
 #endif

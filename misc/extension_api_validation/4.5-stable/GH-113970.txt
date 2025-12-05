@@ -1,5 +1,9 @@
 GH-113970
 ---------
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_point/return_value': type changed value in new API, from "typedarray::Dictionary" to "bool".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_point/arguments/1': type changed value in new API, from "int" to "PhysicsPointIntersectionResult3D".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_point/arguments/1': meta changed value in new API, from "int32" to "required".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_point/arguments': default_value was removed.
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_ray/return_value': type changed value in new API, from "Dictionary" to "bool".
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_ray/arguments': size changed value in new API, from 1 to 2.
 
