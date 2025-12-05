@@ -1095,6 +1095,9 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	for (uint32_t n = 0; n < p_node->data.canvas_item_children.size(); n++) {
 		CanvasItem *ci = p_node->data.canvas_item_children[n];
 		if (!ci->top_level) {
+			if (is_inside_tree() && !block_transform_notify) {
+				ci->notification(NOTIFICATION_PARENT_TRANSFORM_CHANGED);
+			}
 			_notify_transform(ci);
 		}
 	}
