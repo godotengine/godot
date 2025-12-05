@@ -889,6 +889,7 @@ public:
 	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1, int p_button = -1) const;
 	bool edit_selected(bool p_force_edit = false);
 	bool is_editing();
+	Popup *get_popup_editor() const;
 	void set_editor_selection(int p_from_line, int p_to_line, int p_from_column = -1, int p_to_column = -1, int p_caret = 0);
 
 	// First item that starts with the text, from the current focused item down and wraps around.
