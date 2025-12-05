@@ -885,14 +885,28 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		bool use_deferred_node_path_bit = false;
 
 		if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
-			if (value.get_type() == Variant::OBJECT) {
+			bool is_null = false;
+			if (value.get_type() == Variant::NIL) {
+				is_null = true; // Variant null.
+				use_deferred_node_path_bit = true;
+			} else if (value.get_type() == Variant::OBJECT) {
+				is_null = value.is_null(); // Object null.
 				if (Node *n = Object::cast_to<Node>(value)) {
 					value = p_node->get_path_to(n);
 				}
 				use_deferred_node_path_bit = true;
-			}
-			if (value.get_type() != Variant::NODE_PATH) {
+			} else if (value.get_type() != Variant::NODE_PATH) {
 				continue; //was never set, ignore.
+			}
+
+			if (is_null) {
+				bool is_valid_default = false;
+				Variant default_value = PropertyUtils::get_property_default_value(p_node, name, &is_valid_default, &states_stack, true);
+
+				if (is_valid_default && PropertyUtils::is_property_value_different(p_node, value, default_value)) {
+					// Use null to overwrite the non-null inherited exported value.
+					value = NodePath();
+				}
 			}
 		} else if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
 			// Was this missing resource overridden? If so do not save the old value.
