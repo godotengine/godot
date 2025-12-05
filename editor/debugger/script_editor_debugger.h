@@ -162,6 +162,7 @@ private:
 	bool can_request_idle_draw = false;
 
 	bool live_debug = true;
+	bool external_debugger = false;
 
 	uint64_t debugging_thread_id = Thread::UNASSIGNED_ID;
 
@@ -323,6 +324,7 @@ public:
 	void debug_ignore_error_breaks();
 	void debug_copy();
 
+	void debug_select_thread(int p_thread_id);
 	void debug_out();
 	void debug_next();
 	void debug_step();
@@ -358,6 +360,9 @@ public:
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
+
+	bool is_external_debugger() const;
+	void set_external_debugger(bool p_enable);
 
 	bool get_debug_mute_audio() const;
 	void set_debug_mute_audio(bool p_mute);
