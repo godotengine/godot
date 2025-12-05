@@ -70,7 +70,11 @@ void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const Proper
 		p_method.return_is_bitfield = p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 		p_method.return_type = "int";
 	} else if (p_retinfo.class_name != StringName()) {
-		p_method.return_type = p_retinfo.class_name;
+		if (p_retinfo.hint == PROPERTY_HINT_WEAKREF_TYPE) {
+			p_method.return_type = "WeakRef[" + p_retinfo.hint_string + "]";
+		} else {
+			p_method.return_type = p_retinfo.class_name;
+		}
 	} else if (p_retinfo.type == Variant::ARRAY && p_retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 		p_method.return_type = p_retinfo.hint_string + "[]";
 	} else if (p_retinfo.type == Variant::DICTIONARY && p_retinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
@@ -104,7 +108,11 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 		p_argument.is_bitfield = p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 		p_argument.type = "int";
 	} else if (p_arginfo.class_name != StringName()) {
-		p_argument.type = p_arginfo.class_name;
+		if (p_arginfo.hint == PROPERTY_HINT_WEAKREF_TYPE) {
+			p_argument.type = "WeakRef[" + p_arginfo.hint_string + "]";
+		} else {
+			p_argument.type = p_arginfo.class_name;
+		}
 	} else if (p_arginfo.type == Variant::ARRAY && p_arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 		p_argument.type = p_arginfo.hint_string + "[]";
 	} else if (p_arginfo.type == Variant::DICTIONARY && p_arginfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {

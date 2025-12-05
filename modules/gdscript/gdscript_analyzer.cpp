@@ -784,6 +784,13 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			result.kind = GDScriptParser::DataType::NATIVE;
 			result.builtin_type = Variant::OBJECT;
 			result.native_type = first;
+			if (first == WeakRef::get_class_static()) {
+				GDScriptParser::DataType ref_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
+				if (ref_type.is_object_type()) {
+					ref_type.is_constant = false;
+					result.set_container_element_type(0, ref_type);
+				}
+			}
 		} else if (ScriptServer::is_global_class(first)) {
 			if (GDScript::is_canonically_equal_paths(parser->script_path, ScriptServer::get_global_class_path(first))) {
 				result = parser->head->get_datatype();
@@ -945,6 +952,11 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		} else if (result.builtin_type == Variant::DICTIONARY) {
 			if (p_type->container_types.size() != 2) {
 				push_error(R"(Typed dictionaries require exactly two collection element types.)", p_type);
+				return bad_type;
+			}
+		} else if (result.kind == GDScriptParser::DataType::NATIVE && result.native_type == WeakRef::get_class_static()) {
+			if (p_type->container_types.size() != 1) {
+				push_error(R"(Typed WeakRefs require exactly one class type.)", p_type);
 				return bad_type;
 			}
 		} else {
@@ -3543,6 +3555,18 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			} else {
 				validate_call_arg(function_info, p_call);
 			}
+			if (function_name == SNAME("weakref") && p_call->arguments.size() == 1) {
+				GDScriptParser::ExpressionNode *ref_arg = p_call->arguments[0];
+				if (ref_arg->datatype.is_object_type()) {
+					call_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+					call_type.kind = GDScriptParser::DataType::NATIVE;
+					call_type.builtin_type = Variant::OBJECT;
+					call_type.native_type = WeakRef::get_class_static();
+					call_type.set_container_element_type(0, ref_arg->datatype);
+					p_call->set_datatype(call_type);
+					return;
+				}
+			}
 			p_call->set_datatype(type_from_property(function_info.return_val));
 			return;
 		}
@@ -3621,6 +3645,12 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		if ((base_type.kind == GDScriptParser::DataType::CLASS && base_type.class_type->is_abstract) || (base_type.kind == GDScriptParser::DataType::SCRIPT && base_type.script_type.is_valid() && base_type.script_type->is_abstract())) {
 			push_error(vformat(R"(Cannot construct abstract class "%s".)", base_type.to_string()), p_call);
 		}
+	}
+
+	// Typed WeakRef
+	if (base_type.kind == GDScriptParser::DataType::NATIVE && base_type.native_type == WeakRef::get_class_static() && base_type.has_container_element_type(0) && p_call->function_name == SNAME("get_ref")) {
+		p_call->set_datatype(base_type.get_container_element_type(0));
+		return;
 	}
 
 	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags)) {
@@ -6210,6 +6240,20 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 	if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::NIL) {
 		// null is acceptable in object.
 		return true;
+	}
+
+	// If both are typed WeakRef, then compare their types
+	if (p_source.kind == GDScriptParser::DataType::NATIVE && p_target.kind == GDScriptParser::DataType::NATIVE && p_source.native_type == WeakRef::get_class_static() && p_target.native_type == WeakRef::get_class_static()) {
+		if (!p_target.has_container_element_type(0)) {
+			return true; // No issue if target is an un-typed WeakRef
+		}
+		if (p_source.has_container_element_type(0)) {
+			GDScriptParser::DataType target_class = p_target.get_container_element_type(0);
+			GDScriptParser::DataType source_class = p_source.get_container_element_type(0);
+			return check_type_compatibility(target_class, source_class, p_allow_implicit_conversion, p_source_node);
+		} else {
+			return p_allow_implicit_conversion;
+		}
 	}
 
 	StringName src_native;
