@@ -23,6 +23,9 @@
 #define hmat3 f16mat3
 #define hmat4 f16mat4
 #define saturateHalf(x) min(float16_t(x), HALF_FLT_MAX)
+#define saturateHvec2(x) min(f16vec2(x), f16vec2(HALF_FLT_MAX))
+#define saturateHvec3(x) min(f16vec3(x), f16vec3(HALF_FLT_MAX))
+#define saturateHvec4(x) min(f16vec4(x), f16vec4(HALF_FLT_MAX))
 
 #else
 
@@ -37,6 +40,9 @@
 #define hmat3 mat3
 #define hmat4 mat4
 #define saturateHalf(x) (x)
+#define saturateHvec2(x) (x)
+#define saturateHvec3(x) (x)
+#define saturateHvec4(x) (x)
 
 #endif
 
