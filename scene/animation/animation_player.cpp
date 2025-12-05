@@ -881,7 +881,7 @@ Tween::EaseType AnimationPlayer::get_auto_capture_ease_type() const {
 #ifdef TOOLS_ENABLED
 void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
-	if (p_idx == 0 && (pf == "play" || pf == "play_backwards" || pf == "has_animation" || pf == "queue")) {
+	if (p_idx == 0 && (pf == "play" || pf == "play_backwards" || pf == "play_section" || pf == "play_section_backwards" || pf == "play_section_with_markers" || pf == "play_section_with_markers_backwards" || pf == "has_animation" || pf == "queue")) {
 		List<StringName> al;
 		get_animation_list(&al);
 		for (const StringName &name : al) {
