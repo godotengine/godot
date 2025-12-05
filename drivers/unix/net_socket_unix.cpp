@@ -720,11 +720,20 @@ void NetSocketUnix::set_tcp_no_delay_enabled(bool p_enabled) {
 }
 
 void NetSocketUnix::set_reuse_address_enabled(bool p_enabled) {
-	ERR_FAIL_COND(!is_open());
+	ERR_FAIL_COND(_sock < 0);
 
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &par, sizeof(int)) < 0) {
-		WARN_PRINT("Unable to set socket REUSEADDR option.");
+		WARN_PRINT("Unable to set socket SO_REUSEADDR option.");
+	}
+}
+
+void NetSocketUnix::set_reuse_port_enabled(bool p_enabled) {
+	ERR_FAIL_COND(_sock < 0);
+
+	int par = p_enabled ? 1 : 0;
+	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEPORT, &par, sizeof(int)) < 0) {
+		WARN_PRINT("Unable to set socket SO_REUSEPORT option.");
 	}
 }
 
