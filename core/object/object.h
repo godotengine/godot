@@ -400,89 +400,104 @@ struct ObjectGDExtension {
 
 /// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
 /// Use this for `Object` subclasses that are not registered in `ClassDB` (use `GDCLASS` otherwise).
-#define GDSOFTCLASS(m_class, m_inherits)                                                                         \
-public:                                                                                                          \
-	using self_type = m_class;                                                                                   \
-	using super_type = m_inherits;                                                                               \
-	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                         \
-		static int ptr;                                                                                          \
-		return &ptr;                                                                                             \
-	}                                                                                                            \
-	virtual bool is_class_ptr(void *p_ptr) const override {                                                      \
-		return (p_ptr == get_class_ptr_static()) || m_inherits::is_class_ptr(p_ptr);                             \
-	}                                                                                                            \
-                                                                                                                 \
-protected:                                                                                                       \
-	_FORCE_INLINE_ bool (Object::*_get_get() const)(const StringName &p_name, Variant &) const {                 \
-		return (bool (Object::*)(const StringName &, Variant &) const) & m_class::_get;                          \
-	}                                                                                                            \
-	virtual bool _getv(const StringName &p_name, Variant &r_ret) const override {                                \
-		if (m_class::_get_get() != m_inherits::_get_get()) {                                                     \
-			if (_get(p_name, r_ret)) {                                                                           \
-				return true;                                                                                     \
-			}                                                                                                    \
-		}                                                                                                        \
-		return m_inherits::_getv(p_name, r_ret);                                                                 \
-	}                                                                                                            \
-	_FORCE_INLINE_ bool (Object::*_get_set() const)(const StringName &p_name, const Variant &p_property) {       \
-		return (bool (Object::*)(const StringName &, const Variant &)) & m_class::_set;                          \
-	}                                                                                                            \
-	virtual bool _setv(const StringName &p_name, const Variant &p_property) override {                           \
-		if (m_inherits::_setv(p_name, p_property)) {                                                             \
-			return true;                                                                                         \
-		}                                                                                                        \
-		if (m_class::_get_set() != m_inherits::_get_set()) {                                                     \
-			return _set(p_name, p_property);                                                                     \
-		}                                                                                                        \
-		return false;                                                                                            \
-	}                                                                                                            \
-	_FORCE_INLINE_ void (Object::*_get_validate_property() const)(PropertyInfo & p_property) const {             \
-		return (void (Object::*)(PropertyInfo &) const) & m_class::_validate_property;                           \
-	}                                                                                                            \
-	virtual void _validate_propertyv(PropertyInfo &p_property) const override {                                  \
-		m_inherits::_validate_propertyv(p_property);                                                             \
-		if (m_class::_get_validate_property() != m_inherits::_get_validate_property()) {                         \
-			_validate_property(p_property);                                                                      \
-		}                                                                                                        \
-	}                                                                                                            \
-	_FORCE_INLINE_ bool (Object::*_get_property_can_revert() const)(const StringName &p_name) const {            \
-		return (bool (Object::*)(const StringName &) const) & m_class::_property_can_revert;                     \
-	}                                                                                                            \
-	virtual bool _property_can_revertv(const StringName &p_name) const override {                                \
-		if (m_class::_get_property_can_revert() != m_inherits::_get_property_can_revert()) {                     \
-			if (_property_can_revert(p_name)) {                                                                  \
-				return true;                                                                                     \
-			}                                                                                                    \
-		}                                                                                                        \
-		return m_inherits::_property_can_revertv(p_name);                                                        \
-	}                                                                                                            \
-	_FORCE_INLINE_ bool (Object::*_get_property_get_revert() const)(const StringName &p_name, Variant &) const { \
-		return (bool (Object::*)(const StringName &, Variant &) const) & m_class::_property_get_revert;          \
-	}                                                                                                            \
-	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_ret) const override {                \
-		if (m_class::_get_property_get_revert() != m_inherits::_get_property_get_revert()) {                     \
-			if (_property_get_revert(p_name, r_ret)) {                                                           \
-				return true;                                                                                     \
-			}                                                                                                    \
-		}                                                                                                        \
-		return m_inherits::_property_get_revertv(p_name, r_ret);                                                 \
-	}                                                                                                            \
-	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {                                              \
-		return (void (Object::*)(int)) & m_class::_notification;                                                 \
-	}                                                                                                            \
-	virtual void _notification_forwardv(int p_notification) override {                                           \
-		m_inherits::_notification_forwardv(p_notification);                                                      \
-		if (m_class::_get_notification() != m_inherits::_get_notification()) {                                   \
-			_notification(p_notification);                                                                       \
-		}                                                                                                        \
-	}                                                                                                            \
-	virtual void _notification_backwardv(int p_notification) override {                                          \
-		if (m_class::_get_notification() != m_inherits::_get_notification()) {                                   \
-			_notification(p_notification);                                                                       \
-		}                                                                                                        \
-		m_inherits::_notification_backwardv(p_notification);                                                     \
-	}                                                                                                            \
-                                                                                                                 \
+#define GDSOFTCLASS(m_class, m_inherits)                                                                                                 \
+public:                                                                                                                                  \
+	using self_type = m_class;                                                                                                           \
+	using super_type = m_inherits;                                                                                                       \
+	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                 \
+		static int ptr;                                                                                                                  \
+		return &ptr;                                                                                                                     \
+	}                                                                                                                                    \
+	virtual bool is_class_ptr(void *p_ptr) const override {                                                                              \
+		return (p_ptr == get_class_ptr_static()) || m_inherits::is_class_ptr(p_ptr);                                                     \
+	}                                                                                                                                    \
+	template <typename Other>                                                                                                            \
+	bool derives_from() const {                                                                                                          \
+		if constexpr (std::is_base_of_v<Other, m_class>) {                                                                               \
+			return true;                                                                                                                 \
+		} else {                                                                                                                         \
+			static_assert(std::is_base_of_v<m_class, Other>, "Cannot cast argument to Other because it is not related by inheritance."); \
+			static_assert(std::is_same_v<std::decay_t<Other>, typename Other::self_type>, "Other must use GDCLASS or GDSOFTCLASS.");     \
+                                                                                                                                         \
+			if constexpr (Other::static_ancestral_class != Other::super_type::static_ancestral_class) {                                  \
+				return _has_ancestry(Other::static_ancestral_class);                                                                     \
+			} else {                                                                                                                     \
+				return is_class_ptr(Other::get_class_ptr_static());                                                                      \
+			}                                                                                                                            \
+		}                                                                                                                                \
+	}                                                                                                                                    \
+                                                                                                                                         \
+protected:                                                                                                                               \
+	_FORCE_INLINE_ bool (Object::*_get_get() const)(const StringName &p_name, Variant &) const {                                         \
+		return (bool (Object::*)(const StringName &, Variant &) const) & m_class::_get;                                                  \
+	}                                                                                                                                    \
+	virtual bool _getv(const StringName &p_name, Variant &r_ret) const override {                                                        \
+		if (m_class::_get_get() != m_inherits::_get_get()) {                                                                             \
+			if (_get(p_name, r_ret)) {                                                                                                   \
+				return true;                                                                                                             \
+			}                                                                                                                            \
+		}                                                                                                                                \
+		return m_inherits::_getv(p_name, r_ret);                                                                                         \
+	}                                                                                                                                    \
+	_FORCE_INLINE_ bool (Object::*_get_set() const)(const StringName &p_name, const Variant &p_property) {                               \
+		return (bool (Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                  \
+	}                                                                                                                                    \
+	virtual bool _setv(const StringName &p_name, const Variant &p_property) override {                                                   \
+		if (m_inherits::_setv(p_name, p_property)) {                                                                                     \
+			return true;                                                                                                                 \
+		}                                                                                                                                \
+		if (m_class::_get_set() != m_inherits::_get_set()) {                                                                             \
+			return _set(p_name, p_property);                                                                                             \
+		}                                                                                                                                \
+		return false;                                                                                                                    \
+	}                                                                                                                                    \
+	_FORCE_INLINE_ void (Object::*_get_validate_property() const)(PropertyInfo & p_property) const {                                     \
+		return (void (Object::*)(PropertyInfo &) const) & m_class::_validate_property;                                                   \
+	}                                                                                                                                    \
+	virtual void _validate_propertyv(PropertyInfo &p_property) const override {                                                          \
+		m_inherits::_validate_propertyv(p_property);                                                                                     \
+		if (m_class::_get_validate_property() != m_inherits::_get_validate_property()) {                                                 \
+			_validate_property(p_property);                                                                                              \
+		}                                                                                                                                \
+	}                                                                                                                                    \
+	_FORCE_INLINE_ bool (Object::*_get_property_can_revert() const)(const StringName &p_name) const {                                    \
+		return (bool (Object::*)(const StringName &) const) & m_class::_property_can_revert;                                             \
+	}                                                                                                                                    \
+	virtual bool _property_can_revertv(const StringName &p_name) const override {                                                        \
+		if (m_class::_get_property_can_revert() != m_inherits::_get_property_can_revert()) {                                             \
+			if (_property_can_revert(p_name)) {                                                                                          \
+				return true;                                                                                                             \
+			}                                                                                                                            \
+		}                                                                                                                                \
+		return m_inherits::_property_can_revertv(p_name);                                                                                \
+	}                                                                                                                                    \
+	_FORCE_INLINE_ bool (Object::*_get_property_get_revert() const)(const StringName &p_name, Variant &) const {                         \
+		return (bool (Object::*)(const StringName &, Variant &) const) & m_class::_property_get_revert;                                  \
+	}                                                                                                                                    \
+	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_ret) const override {                                        \
+		if (m_class::_get_property_get_revert() != m_inherits::_get_property_get_revert()) {                                             \
+			if (_property_get_revert(p_name, r_ret)) {                                                                                   \
+				return true;                                                                                                             \
+			}                                                                                                                            \
+		}                                                                                                                                \
+		return m_inherits::_property_get_revertv(p_name, r_ret);                                                                         \
+	}                                                                                                                                    \
+	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {                                                                      \
+		return (void (Object::*)(int)) & m_class::_notification;                                                                         \
+	}                                                                                                                                    \
+	virtual void _notification_forwardv(int p_notification) override {                                                                   \
+		m_inherits::_notification_forwardv(p_notification);                                                                              \
+		if (m_class::_get_notification() != m_inherits::_get_notification()) {                                                           \
+			_notification(p_notification);                                                                                               \
+		}                                                                                                                                \
+	}                                                                                                                                    \
+	virtual void _notification_backwardv(int p_notification) override {                                                                  \
+		if (m_class::_get_notification() != m_inherits::_get_notification()) {                                                           \
+			_notification(p_notification);                                                                                               \
+		}                                                                                                                                \
+		m_inherits::_notification_backwardv(p_notification);                                                                             \
+	}                                                                                                                                    \
+                                                                                                                                         \
 private:
 
 /// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
@@ -833,23 +848,23 @@ public:
 	static T *cast_to(O *p_object) {
 		// This is like dynamic_cast, but faster.
 		// The reason is that we can assume no virtual and multiple inheritance.
-		return p_object && p_object->template derives_from<T, O>() ? static_cast<T *>(p_object) : nullptr;
+		return p_object && p_object->template derives_from<T>() ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <typename T, typename O>
 	static const T *cast_to(const O *p_object) {
-		return p_object && p_object->template derives_from<T, O>() ? static_cast<const T *>(p_object) : nullptr;
+		return p_object && p_object->template derives_from<T>() ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	// cast_to versions for types that implicitly convert to Object.
 	template <typename T>
 	static T *cast_to(Object *p_object) {
-		return p_object && p_object->template derives_from<T, Object>() ? static_cast<T *>(p_object) : nullptr;
+		return p_object && p_object->derives_from<T>() ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		return p_object && p_object->template derives_from<T, Object>() ? static_cast<const T *>(p_object) : nullptr;
+		return p_object && p_object->derives_from<T>() ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {
@@ -882,7 +897,7 @@ public:
 	bool is_class(const String &p_class) const;
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
-	template <typename T, typename O>
+	template <typename T>
 	bool derives_from() const;
 
 	const StringName &get_class_name() const;
@@ -1051,21 +1066,20 @@ public:
 bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
 
-template <typename T, typename O>
+template <typename Other>
 bool Object::derives_from() const {
-	if constexpr (std::is_base_of_v<T, O>) {
-		// We derive statically from T (or are the same class), so casting to it is trivial.
+	if constexpr (std::is_base_of_v<Other, Object>) {
+		// Other is Object, so casting is trivial.
 		return true;
 	} else {
-		static_assert(std::is_base_of_v<Object, O>, "derives_from can only be used with Object subclasses.");
-		static_assert(std::is_base_of_v<O, T>, "Cannot cast argument to T because T does not derive from the argument's known class.");
-		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS.");
+		static_assert(std::is_base_of_v<Object, Other>, "Cannot cast argument to Other because it is not related by inheritance.");
+		static_assert(std::is_same_v<std::decay_t<Other>, typename Other::self_type>, "Other must use GDCLASS or GDSOFTCLASS.");
 
 		// If there is an explicitly set ancestral class on the type, we can use that.
-		if constexpr (T::static_ancestral_class != T::super_type::static_ancestral_class) {
-			return _has_ancestry(T::static_ancestral_class);
+		if constexpr (Other::static_ancestral_class != Other::super_type::static_ancestral_class) {
+			return _has_ancestry(Other::static_ancestral_class);
 		} else {
-			return is_class_ptr(T::get_class_ptr_static());
+			return is_class_ptr(Other::get_class_ptr_static());
 		}
 	}
 }
