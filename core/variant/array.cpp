@@ -949,6 +949,10 @@ Span<Variant> Array::span() const {
 	return _p->array.span();
 }
 
+Array::operator String() const {
+	return Variant(*this).stringify();
+}
+
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
