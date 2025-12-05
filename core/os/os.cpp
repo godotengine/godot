@@ -610,6 +610,14 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 
+	if (p_feature == "apple_platform") {
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
+		return true;
+#else
+		return _check_internal_feature_support("web_macos") || _check_internal_feature_support("web_ios") || _check_internal_feature_support("web_visionos");
+#endif
+	}
+
 	if (p_feature == "threads") {
 #ifdef THREADS_ENABLED
 		return true;
