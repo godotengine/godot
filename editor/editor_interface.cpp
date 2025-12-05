@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "editor/asset_library/asset_library_editor_plugin.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
@@ -52,6 +53,7 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/3d/light_3d.h"
@@ -103,6 +105,31 @@ EditorToaster *EditorInterface::get_editor_toaster() const {
 
 EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
 	return EditorUndoRedoManager::get_singleton();
+}
+
+void EditorInterface::open_project_settings(const String &p_general_page, const String &p_filter) {
+	ProjectSettingsEditor *project_settings = EditorNode::get_singleton()->get_project_settings();
+
+	if (!p_general_page.is_empty()) {
+		project_settings->set_general_page(p_general_page);
+	}
+	if (!p_filter.is_empty()) {
+		project_settings->set_filter(p_filter);
+	}
+
+	project_settings->popup_project_settings(false);
+}
+
+void EditorInterface::open_export_dialog() {
+	EditorNode::get_singleton()->open_export_dialog();
+}
+
+void EditorInterface::search_asset_library(const String &p_filter) {
+	AssetLibraryEditorPlugin *asset_lib = EditorNode::get_singleton()->get_asset_library();
+	ERR_FAIL_NULL_MSG(asset_lib, "Asset Library not available.");
+
+	set_main_screen_editor("AssetLib");
+	asset_lib->search_assset_library(p_filter);
 }
 
 AABB EditorInterface::_calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb) {
@@ -839,6 +866,10 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
 	ClassDB::bind_method(D_METHOD("get_editor_toaster"), &EditorInterface::get_editor_toaster);
 	ClassDB::bind_method(D_METHOD("get_editor_undo_redo"), &EditorInterface::get_editor_undo_redo);
+
+	ClassDB::bind_method(D_METHOD("open_project_settings", "general_page", "filter"), &EditorInterface::open_project_settings, DEFVAL(""), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("open_export_dialog"), &EditorInterface::open_export_dialog);
+	ClassDB::bind_method(D_METHOD("search_asset_library", "filter"), &EditorInterface::search_asset_library);
 
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 
