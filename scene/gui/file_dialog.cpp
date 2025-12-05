@@ -534,7 +534,7 @@ bool FileDialog::_is_open_should_be_disabled() {
 }
 
 void FileDialog::_go_up() {
-	_change_dir("..");
+	_change_dir(get_current_dir().trim_suffix("/").get_base_dir());
 	_push_history();
 }
 
