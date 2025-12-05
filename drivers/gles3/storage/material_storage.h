@@ -302,6 +302,7 @@ struct SceneShaderData : public ShaderData {
 	DepthDraw depth_draw;
 	DepthTest depth_test;
 	RS::CullMode cull_mode;
+	bool keep_backface_normals;
 
 	StencilCompare stencil_compare;
 	uint32_t stencil_flags;
