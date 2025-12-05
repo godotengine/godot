@@ -1631,8 +1631,12 @@ TEST_CASE("[String] lstrip and rstrip") {
 	bool state = true;
 
 	// strip none
-	STRIP_TEST(String("abc").lstrip("") == "abc");
-	STRIP_TEST(String("abc").rstrip("") == "abc");
+	STRIP_TEST(String("abc").lstrip() == "abc");
+	STRIP_TEST(String("abc").rstrip() == "abc");
+	// strip whitespace
+	STRIP_TEST(String("abc ").lstrip() == "abc ");
+	STRIP_TEST(String("abc").lstrip() == "abc");
+	STRIP_TEST(String(" abc ").rstrip() == " abc");
 	// strip one
 	STRIP_TEST(String("abc").lstrip("a") == "bc");
 	STRIP_TEST(String("abc").rstrip("c") == "ab");
@@ -1939,6 +1943,14 @@ TEST_CASE("[String] Similarity") {
 	String b = "West";
 	String c = "Toad";
 	CHECK(a.similarity(b) > a.similarity(c));
+}
+
+TEST_CASE("[String] Strip") {
+	String s = "\t Test Test   ";
+	CHECK(s.strip() == "Test Test");
+	CHECK(s.strip().strip("T") == "est Test");
+	CHECK(s.strip().strip("Tt") == "est Tes");
+	CHECK(String("Test").strip() == "Test");
 }
 
 TEST_CASE("[String] Strip edges") {
