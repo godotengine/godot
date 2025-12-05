@@ -1063,6 +1063,8 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_path"), &FileAccess::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_absolute"), &FileAccess::get_path_absolute);
 	ClassDB::bind_method(D_METHOD("is_open"), &FileAccess::is_open);
+	ClassDB::bind_method(D_METHOD("is_read_end_open"), &FileAccess::is_read_end_open);
+	ClassDB::bind_method(D_METHOD("is_write_end_open"), &FileAccess::is_write_end_open);
 	ClassDB::bind_method(D_METHOD("seek", "position"), &FileAccess::seek);
 	ClassDB::bind_method(D_METHOD("seek_end", "position"), &FileAccess::seek_end, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_position"), &FileAccess::get_position);
