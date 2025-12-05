@@ -1332,6 +1332,7 @@ public:
 
 private:
 	friend class GDScriptAnalyzer;
+	friend class GDScriptInlineInfoGenerator;
 	friend class GDScriptParserRef;
 
 	bool _is_tool = false;
