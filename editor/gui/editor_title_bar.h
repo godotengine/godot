@@ -34,7 +34,7 @@
 #include "scene/main/window.h"
 
 class EditorTitleBar : public HBoxContainer {
-	GDCLASS(EditorTitleBar, HBoxContainer);
+	GDSOFTCLASS(EditorTitleBar, HBoxContainer);
 
 	Point2i click_pos;
 	bool moving = false;
