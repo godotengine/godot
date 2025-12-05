@@ -602,8 +602,11 @@ int VisualShaderNodeCustom::get_output_port_count() const {
 }
 
 VisualShaderNodeCustom::PortType VisualShaderNodeCustom::get_output_port_type(int p_port) const {
-	ERR_FAIL_INDEX_V(p_port, output_ports.size(), PORT_TYPE_SCALAR);
-	return (PortType)output_ports.get(p_port).type;
+	if (p_port < output_ports.size()) {
+		return (PortType)output_ports.get(p_port).type;
+	} else {
+		return PORT_TYPE_SCALAR;
+	}
 }
 
 String VisualShaderNodeCustom::get_output_port_name(int p_port) const {
