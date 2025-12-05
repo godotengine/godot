@@ -845,7 +845,9 @@ void Skeleton3D::clear_bones() {
 void Skeleton3D::set_bone_pose(int p_bone, const Transform3D &p_pose) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
-
+	if (modifier_updating) {
+		bones[p_bone].make_bone_modified();
+	}
 	bones[p_bone].pose_position = p_pose.origin;
 	bones[p_bone].pose_rotation = p_pose.basis.get_rotation_quaternion();
 	bones[p_bone].pose_scale = p_pose.basis.get_scale();
@@ -859,7 +861,9 @@ void Skeleton3D::set_bone_pose(int p_bone, const Transform3D &p_pose) {
 void Skeleton3D::set_bone_pose_position(int p_bone, const Vector3 &p_position) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
-
+	if (modifier_updating) {
+		bones[p_bone].make_bone_modified();
+	}
 	bones[p_bone].pose_position = p_position;
 	bones[p_bone].pose_cache_dirty = true;
 	if (is_inside_tree()) {
@@ -870,7 +874,9 @@ void Skeleton3D::set_bone_pose_position(int p_bone, const Vector3 &p_position) {
 void Skeleton3D::set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
-
+	if (modifier_updating) {
+		bones[p_bone].make_bone_modified();
+	}
 	bones[p_bone].pose_rotation = p_rotation;
 	bones[p_bone].pose_cache_dirty = true;
 	if (is_inside_tree()) {
@@ -881,7 +887,9 @@ void Skeleton3D::set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation
 void Skeleton3D::set_bone_pose_scale(int p_bone, const Vector3 &p_scale) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
-
+	if (modifier_updating) {
+		bones[p_bone].make_bone_modified();
+	}
 	bones[p_bone].pose_scale = p_scale;
 	bones[p_bone].pose_cache_dirty = true;
 	if (is_inside_tree()) {
@@ -1183,27 +1191,27 @@ void Skeleton3D::_process_modifiers() {
 #endif // TOOLS_ENABLED
 		real_t influence = mod->get_influence();
 		if (influence < 1.0) {
-			LocalVector<Transform3D> old_poses;
-			for (int i = 0; i < get_bone_count(); i++) {
-				old_poses.push_back(get_bone_pose(i));
-			}
+			modifier_updating = true;
 			mod->process_modification(update_delta);
-			LocalVector<Transform3D> new_poses;
+			modifier_updating = false;
 			for (int i = 0; i < get_bone_count(); i++) {
-				new_poses.push_back(get_bone_pose(i));
-			}
-			for (int i = 0; i < get_bone_count(); i++) {
-				if (old_poses[i] == new_poses[i]) {
+				if (!bones[i].modifier_applied) {
 					continue; // Avoid unneeded calculation.
 				}
-				set_bone_pose(i, old_poses[i].interpolate_with(new_poses[i], influence));
+				bones[i].update_pose_cache(); // Update new pose which is 100% of modified result.
+				if (bones[i].pose_cache == bones[i].modifier_pose_cache) {
+					continue; // Avoid unneeded calculation.
+				}
+				set_bone_pose(i, bones[i].modifier_pose_cache.interpolate_with(bones[i].pose_cache, influence)); // Interpolation by infuluence.
+				bones[i].modifier_applied = false;
 			}
 		} else {
 			mod->process_modification(update_delta);
 		}
 		force_update_all_dirty_bones();
 	}
-	update_delta = 0; // Reset accumulated delta.
+	// Reset accumulated delta.
+	update_delta = 0;
 }
 
 void Skeleton3D::add_child_notify(Node *p_child) {
