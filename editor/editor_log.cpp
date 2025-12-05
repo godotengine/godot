@@ -492,8 +492,6 @@ EditorLog::EditorLog() {
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Dock"), KeyModifierMask::ALT | Key::O));
 	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
-	set_global(false);
-	set_transient(true);
 
 	save_state_timer = memnew(Timer);
 	save_state_timer->set_wait_time(2);
