@@ -146,6 +146,10 @@ Ref<StyleBox> Button::_get_current_stylebox() const {
 				stylebox = theme_cache.disabled;
 			}
 		} break;
+
+		case DRAW_AUTO: {
+			// Unreachable.
+		} break;
 	}
 
 	return stylebox;
@@ -298,7 +302,6 @@ void Button::_notification(int p_what) {
 					if (has_theme_color(SNAME("icon_hover_pressed_color"))) {
 						icon_modulate_color = theme_cache.icon_hover_pressed_color;
 					}
-
 				} break;
 				case DRAW_PRESSED: {
 					if (has_theme_color(SNAME("font_pressed_color"))) {
@@ -309,14 +312,12 @@ void Button::_notification(int p_what) {
 					if (has_theme_color(SNAME("icon_pressed_color"))) {
 						icon_modulate_color = theme_cache.icon_pressed_color;
 					}
-
 				} break;
 				case DRAW_HOVER: {
 					font_color = theme_cache.font_hover_color;
 					if (has_theme_color(SNAME("icon_hover_color"))) {
 						icon_modulate_color = theme_cache.icon_hover_color;
 					}
-
 				} break;
 				case DRAW_DISABLED: {
 					font_color = theme_cache.font_disabled_color;
@@ -325,7 +326,9 @@ void Button::_notification(int p_what) {
 					} else {
 						icon_modulate_color.a = 0.4;
 					}
-
+				} break;
+				case DRAW_AUTO: {
+					// Unreachable.
 				} break;
 			}
 
