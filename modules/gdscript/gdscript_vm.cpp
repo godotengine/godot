@@ -976,7 +976,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_SET_KEYED) {
-				CHECK_SPACE(3);
+				CHECK_SPACE(4);
 
 				GET_VARIANT_PTR(dst, 0);
 				GET_VARIANT_PTR(index, 1);
@@ -1022,7 +1022,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_SET_KEYED_VALIDATED) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(dst, 0);
 				GET_VARIANT_PTR(index, 1);
@@ -1056,7 +1056,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_SET_INDEXED_VALIDATED) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(dst, 0);
 				GET_VARIANT_PTR(index, 1);
@@ -1092,7 +1092,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_GET_KEYED) {
-				CHECK_SPACE(3);
+				CHECK_SPACE(4);
 
 				GET_VARIANT_PTR(src, 0);
 				GET_VARIANT_PTR(index, 1);
@@ -1128,7 +1128,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_GET_KEYED_VALIDATED) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(src, 0);
 				GET_VARIANT_PTR(key, 1);
@@ -1164,7 +1164,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_GET_INDEXED_VALIDATED) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(src, 0);
 				GET_VARIANT_PTR(index, 1);
@@ -1196,7 +1196,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_SET_NAMED) {
-				CHECK_SPACE(3);
+				CHECK_SPACE(4);
 
 				GET_VARIANT_PTR(dst, 0);
 				GET_VARIANT_PTR(value, 1);
@@ -1233,7 +1233,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_SET_NAMED_VALIDATED) {
-				CHECK_SPACE(3);
+				CHECK_SPACE(4);
 
 				GET_VARIANT_PTR(dst, 0);
 				GET_VARIANT_PTR(value, 1);
@@ -1278,7 +1278,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_GET_NAMED_VALIDATED) {
-				CHECK_SPACE(3);
+				CHECK_SPACE(4);
 
 				GET_VARIANT_PTR(src, 0);
 				GET_VARIANT_PTR(dst, 1);
@@ -1725,8 +1725,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE(OPCODE_CONSTRUCT) {
 				LOAD_INSTRUCTION_ARGS
-				CHECK_SPACE(2 + instr_arg_count);
-
+				CHECK_SPACE(3 + instr_arg_count);
 				ip += instr_arg_count;
 
 				int argc = _code_ptr[ip + 1];
@@ -1753,7 +1752,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE(OPCODE_CONSTRUCT_VALIDATED) {
 				LOAD_INSTRUCTION_ARGS
-				CHECK_SPACE(2 + instr_arg_count);
+				CHECK_SPACE(3 + instr_arg_count);
 				ip += instr_arg_count;
 
 				int argc = _code_ptr[ip + 1];
@@ -1774,7 +1773,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE(OPCODE_CONSTRUCT_ARRAY) {
 				LOAD_INSTRUCTION_ARGS
-				CHECK_SPACE(1 + instr_arg_count);
+				CHECK_SPACE(2 + instr_arg_count);
 				ip += instr_arg_count;
 
 				int argc = _code_ptr[ip + 1];
@@ -1796,7 +1795,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE(OPCODE_CONSTRUCT_TYPED_ARRAY) {
 				LOAD_INSTRUCTION_ARGS
-				CHECK_SPACE(3 + instr_arg_count);
+				CHECK_SPACE(4 + instr_arg_count);
 				ip += instr_arg_count;
 
 				int argc = _code_ptr[ip + 1];
@@ -2563,6 +2562,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					if (result.get_type() != Variant::SIGNAL) {
 						// Not async, return immediately using the target from OPCODE_AWAIT_RESUME.
+						CHECK_SPACE(2 + 2);
 						GET_VARIANT_PTR(target, 2);
 						*target = result;
 						ip += 4; // Skip OPCODE_AWAIT_RESUME and its data.
@@ -2999,7 +2999,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 
 			OPCODE(OPCODE_ITERATE_BEGIN) {
-				CHECK_SPACE(8); // Space for this and a regular iterate.
+				CHECK_SPACE(3 + 5); // Space for this and a regular iterate.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3033,7 +3033,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN_INT) {
-				CHECK_SPACE(8); // Check space for iterate instruction too.
+				CHECK_SPACE(3 + 5); // Check space for iterate instruction too.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3060,7 +3060,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN_FLOAT) {
-				CHECK_SPACE(8); // Check space for iterate instruction too.
+				CHECK_SPACE(3 + 5); // Check space for iterate instruction too.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3087,7 +3087,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN_VECTOR2) {
-				CHECK_SPACE(8); // Check space for iterate instruction too.
+				CHECK_SPACE(3 + 5); // Check space for iterate instruction too.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3114,7 +3114,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN_VECTOR2I) {
-				CHECK_SPACE(8); // Check space for iterate instruction too.
+				CHECK_SPACE(3 + 5); // Check space for iterate instruction too.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3141,7 +3141,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN_VECTOR3) {
-				CHECK_SPACE(8); // Check space for iterate instruction too.
+				CHECK_SPACE(3 + 5); // Check space for iterate instruction too.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3173,7 +3173,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN_VECTOR3I) {
-				CHECK_SPACE(8); // Check space for iterate instruction too.
+				CHECK_SPACE(3 + 5); // Check space for iterate instruction too.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3205,7 +3205,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN_STRING) {
-				CHECK_SPACE(8); // Check space for iterate instruction too.
+				CHECK_SPACE(3 + 5); // Check space for iterate instruction too.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3232,7 +3232,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN_DICTIONARY) {
-				CHECK_SPACE(8); // Check space for iterate instruction too.
+				CHECK_SPACE(3 + 5); // Check space for iterate instruction too.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3257,7 +3257,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN_ARRAY) {
-				CHECK_SPACE(8); // Check space for iterate instruction too.
+				CHECK_SPACE(3 + 5); // Check space for iterate instruction too.
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3284,7 +3284,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #define OPCODE_ITERATE_BEGIN_PACKED_ARRAY(m_var_type, m_elem_type, m_get_func, m_var_ret_type, m_ret_type, m_ret_get_func) \
 	OPCODE(OPCODE_ITERATE_BEGIN_PACKED_##m_var_type##_ARRAY) {                                                             \
-		CHECK_SPACE(8);                                                                                                    \
+		CHECK_SPACE(3 + 5);                                                                                                \
 		GET_VARIANT_PTR(counter, 0);                                                                                       \
 		GET_VARIANT_PTR(container, 1);                                                                                     \
 		Vector<m_elem_type> *array = VariantInternal::m_get_func(container);                                               \
@@ -3316,7 +3316,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR4, Vector4, get_vector4_array, VECTOR4, Vector4, get_vector4);
 
 			OPCODE(OPCODE_ITERATE_BEGIN_OBJECT) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3407,7 +3407,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3439,7 +3439,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_INT) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3463,7 +3463,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_FLOAT) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3487,7 +3487,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_VECTOR2) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3511,7 +3511,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_VECTOR2I) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3535,7 +3535,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_VECTOR3) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3559,7 +3559,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_VECTOR3I) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3583,7 +3583,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_STRING) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3606,7 +3606,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_DICTIONARY) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3629,7 +3629,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_ARRAY) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
@@ -3653,7 +3653,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #define OPCODE_ITERATE_PACKED_ARRAY(m_var_type, m_elem_type, m_get_func, m_ret_get_func)            \
 	OPCODE(OPCODE_ITERATE_PACKED_##m_var_type##_ARRAY) {                                            \
-		CHECK_SPACE(4);                                                                             \
+		CHECK_SPACE(5);                                                                             \
 		GET_VARIANT_PTR(counter, 0);                                                                \
 		GET_VARIANT_PTR(container, 1);                                                              \
 		const Vector<m_elem_type> *array = VariantInternal::m_get_func((const Variant *)container); \
@@ -3683,7 +3683,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_ITERATE_PACKED_ARRAY(VECTOR4, Vector4, get_vector4_array, get_vector4);
 
 			OPCODE(OPCODE_ITERATE_OBJECT) {
-				CHECK_SPACE(4);
+				CHECK_SPACE(5);
 
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
