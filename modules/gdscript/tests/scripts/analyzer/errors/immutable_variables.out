@@ -1,0 +1,11 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 25: The immutable variable "immutable_local" can only be assigned inline.
+>> ERROR at line 30: Cannot assign to immutable function parameter "delta". Remove the "let" to make it mutable.
+>> ERROR at line 34: The immutable variable "immutable_member" can only be assigned inline.
+>> ERROR at line 35: Cannot use "set()" to modify immutable variable "immutable_member".
+>> ERROR at line 8: The immutable variable "immutable_member" can only be assigned inline.
+>> ERROR at line 9: The immutable variable "immutable_static" can only be assigned inline.
+>> ERROR at line 10: The immutable variable "immutable_array" can only be assigned inline.
+>> ERROR at line 16: Cannot assign to immutable function parameter "immutable_parameter". Remove the "let" to make it mutable.
+>> ERROR at line 17: Cannot assign to immutable function parameter "immutable_default". Remove the "let" to make it mutable.
+>> ERROR at line 21: The immutable variable "immutable_member" can only be assigned inline.
