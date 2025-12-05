@@ -678,6 +678,12 @@
 				Returns the [TextEdit]'s' tab size.
 			</description>
 		</method>
+		<method name="get_text_canvas_item" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the canvas item [RID] for internal drawn text, available for use by [RenderingServer].
+			</description>
+		</method>
 		<method name="get_total_gutter_width" qualifiers="const">
 			<return type="int" />
 			<description>
