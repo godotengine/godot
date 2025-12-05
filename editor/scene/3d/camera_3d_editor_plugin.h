@@ -60,6 +60,7 @@ class Camera3DPreview : public TexturePreview {
 	SubViewport *sub_viewport = nullptr;
 
 	void _update_sub_viewport_size();
+	void _camera_exiting();
 
 public:
 	Camera3DPreview(Camera3D *p_camera);
