@@ -926,7 +926,7 @@ Files extracted from upstream source:
 ## re-spirv
 
 - Upstream: https://github.com/renderbag/re-spirv
-- Version: git (2f9be81bca5882ada1b6377d2ef8c0f7d8665171, 2025)
+- Version: git (00ed4d2c25be0c5ea78523c795119d7570d6209e, 2025)
 - License: MIT
 
 Files extracted from upstream source:
