@@ -79,6 +79,7 @@ public:
 	virtual bool is_echo() const;
 
 	virtual String as_text() const = 0;
+	virtual String as_text_alt() const { return as_text(); }
 
 	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
@@ -142,6 +143,7 @@ public:
 	BitField<KeyModifierMask> get_modifiers_mask() const;
 
 	virtual String as_text() const override;
+	virtual String as_text_alt() const override;
 	virtual String _to_string() override;
 };
 
@@ -194,6 +196,7 @@ public:
 	virtual String as_text_key_label() const;
 	virtual String as_text_location() const;
 	virtual String as_text() const override;
+	virtual String as_text_alt() const override;
 	virtual String _to_string() override;
 
 	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
@@ -473,6 +476,7 @@ public:
 	virtual bool is_action_type() const override { return true; }
 
 	virtual String as_text() const override;
+	virtual String as_text_alt() const override;
 	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::ACTION; }
