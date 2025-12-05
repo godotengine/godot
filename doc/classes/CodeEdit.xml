@@ -484,6 +484,12 @@
 				Sets the symbol emitted by [signal symbol_validate] as a valid lookup.
 			</description>
 		</method>
+		<method name="shape_code">
+			<return type="void" />
+			<description>
+				Redefines the indentations of each line, if [member indent_automatic] is [code]true[/code] and according to the current indentation settings.
+			</description>
+		</method>
 		<method name="toggle_foldable_line">
 			<return type="void" />
 			<param index="0" name="line" type="int" />
