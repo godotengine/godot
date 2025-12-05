@@ -802,13 +802,18 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has already been granted. See also [signal MainLoop.on_request_permissions_result].
-				The [param name] must be the full permission name. For example:
+				The [param name] must be the full permission name, following this format: [code]&lt;platform&gt;.permission.&lt;ACTION_SUBJECT&gt;[/code]
+				[b]Note:[/b] Android permissions:
 				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
 				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
+				For a complete list of available [code]&lt;ACTION_SUBJECT&gt;[/code] identifiers, see the [url=https://developer.android.com/reference/android/Manifest.permission]Manifest.permission[/url] entry of the [url=https://developer.android.com/reference]Android API reference[/url].
+				Note that the permission must also be checked during export.
+				[b]Note:[/b] macOS permissions:
 				- [code]OS.request_permission("macos.permission.RECORD_SCREEN")[/code]
+				- [code]OS.request_permission("macos.permission.RECORD_AUDIO")[/code]
+				[b]Note:[/b] iPad and visionOS permissions:
 				- [code]OS.request_permission("appleembedded.permission.AUDIO_RECORD")[/code]
-				[b]Note:[/b] On Android, permission must be checked during export.
-				[b]Note:[/b] This method is implemented on Android, macOS, and visionOS platforms.
+				[b]Note:[/b] This method has not been implemented on other platforms.
 			</description>
 		</method>
 		<method name="request_permissions">
