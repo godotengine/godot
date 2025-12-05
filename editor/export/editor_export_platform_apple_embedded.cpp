@@ -402,7 +402,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 	} else if (p_line.contains("$modules_buildgrp")) {
 		strnew += p_line.replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
 	} else if (p_line.contains("$name")) {
-		strnew += p_line.replace("$name", p_config.pkg_name) + "\n";
+		strnew += p_line.replace("$name", p_config.pkg_name.xml_escape(true)) + "\n";
 	} else if (p_line.contains("$bundle_identifier")) {
 		strnew += p_line.replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 	} else if (p_line.contains("$short_version")) {
@@ -594,13 +594,13 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$ipad_interface_orientations", orientations);
 	} else if (p_line.contains("$camera_usage_description")) {
 		String description = p_preset->get("privacy/camera_usage_description");
-		strnew += p_line.replace("$camera_usage_description", description) + "\n";
+		strnew += p_line.replace("$camera_usage_description", description.xml_escape(true)) + "\n";
 	} else if (p_line.contains("$microphone_usage_description")) {
 		String description = p_preset->get("privacy/microphone_usage_description");
-		strnew += p_line.replace("$microphone_usage_description", description) + "\n";
+		strnew += p_line.replace("$microphone_usage_description", description.xml_escape(true)) + "\n";
 	} else if (p_line.contains("$photolibrary_usage_description")) {
 		String description = p_preset->get("privacy/photolibrary_usage_description");
-		strnew += p_line.replace("$photolibrary_usage_description", description) + "\n";
+		strnew += p_line.replace("$photolibrary_usage_description", description.xml_escape(true)) + "\n";
 	} else if (p_line.contains("$pbx_locale_file_reference")) {
 		String locale_files;
 		Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
@@ -1934,10 +1934,10 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + project_name + "\";");
-			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
-			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
-			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + project_name.xml_escape(true) + "\";");
+			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String().xml_escape(true) + "\";");
+			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String().xml_escape(true) + "\";");
+			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String().xml_escape(true) + "\";");
 		}
 
 		for (const String &lang : locales) {
@@ -1955,20 +1955,20 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 				domain->set_locale_override(lang);
 				const String &name = domain->translate(project_name, String());
 				if (name != project_name) {
-					f->store_line("CFBundleDisplayName = \"" + name + "\";");
+					f->store_line("CFBundleDisplayName = \"" + name.xml_escape(true) + "\";");
 				}
 			} else if (appnames.has(lang)) {
-				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String().xml_escape(true) + "\";");
 			}
 
 			if (camera_usage_descriptions.has(lang)) {
-				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (microphone_usage_descriptions.has(lang)) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (photolibrary_usage_descriptions.has(lang)) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 		}
 	}
