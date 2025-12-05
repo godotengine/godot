@@ -31,7 +31,9 @@
 #include "groove_joint_2d.h"
 
 #include "scene/2d/physics/physics_body_2d.h"
+#include "servers/rendering/rendering_server.h"
 
+#ifdef DEBUG_ENABLED
 void GrooveJoint2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -43,13 +45,16 @@ void GrooveJoint2D::_notification(int p_what) {
 				break;
 			}
 
-			draw_line(Point2(-10, 0), Point2(+10, 0), Color(0.7, 0.6, 0.0, 0.5), 3);
-			draw_line(Point2(-10, length), Point2(+10, length), Color(0.7, 0.6, 0.0, 0.5), 3);
-			draw_line(Point2(0, 0), Point2(0, length), Color(0.7, 0.6, 0.0, 0.5), 3);
-			draw_line(Point2(-10, initial_offset), Point2(+10, initial_offset), Color(0.8, 0.8, 0.9, 0.5), 5);
+			_prepare_debug_canvas_item();
+			RenderingServer *rs = RenderingServer::get_singleton();
+			rs->canvas_item_add_line(_get_debug_canvas_item(), Point2(-10, 0), Point2(+10, 0), Color(0.7, 0.6, 0.0, 0.5), 3);
+			rs->canvas_item_add_line(_get_debug_canvas_item(), Point2(-10, length), Point2(+10, length), Color(0.7, 0.6, 0.0, 0.5), 3);
+			rs->canvas_item_add_line(_get_debug_canvas_item(), Point2(0, 0), Point2(0, length), Color(0.7, 0.6, 0.0, 0.5), 3);
+			rs->canvas_item_add_line(_get_debug_canvas_item(), Point2(-10, initial_offset), Point2(+10, initial_offset), Color(0.8, 0.8, 0.9, 0.5), 5);
 		} break;
 	}
 }
+#endif // DEBUG_ENABLED
 
 void GrooveJoint2D::_configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
 	Transform2D gt = get_global_transform();
