@@ -1939,10 +1939,10 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + project_name + "\";");
-			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
-			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
-			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + project_name.xml_escape(true) + "\";");
+			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String().xml_escape(true) + "\";");
+			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String().xml_escape(true) + "\";");
+			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String().xml_escape(true) + "\";");
 		}
 
 		for (const String &lang : locales) {
@@ -1960,10 +1960,10 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 				domain->set_locale_override(lang);
 				const String &name = domain->translate(project_name, String());
 				if (name != project_name) {
-					f->store_line("CFBundleDisplayName = \"" + name + "\";");
+					f->store_line("CFBundleDisplayName = \"" + name.xml_escape(true) + "\";");
 				}
 			} else if (appnames.has(lang)) {
-				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String().xml_escape(true) + "\";");
 			}
 
 			if (camera_usage_descriptions.has(lang)) {
