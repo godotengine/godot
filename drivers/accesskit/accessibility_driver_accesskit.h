@@ -50,7 +50,7 @@
 #endif
 
 class AccessibilityDriverAccessKit : public AccessibilityDriver {
-	static AccessibilityDriverAccessKit *singleton;
+	static inline AccessibilityDriverAccessKit *singleton = nullptr;
 
 	struct AccessibilityElement {
 		HashMap<accesskit_action, Callable> actions;

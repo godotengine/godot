@@ -51,10 +51,6 @@
 #define print_lt(m_text)
 #endif
 
-Ref<ResourceFormatLoader> ResourceLoader::loader[ResourceLoader::MAX_LOADERS];
-
-int ResourceLoader::loader_count = 0;
-
 bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_for_type) const {
 	bool ret = false;
 	if (GDVIRTUAL_CALL(_recognize_path, p_path, p_for_type, ret)) {
@@ -1401,8 +1397,6 @@ void ResourceLoader::set_load_callback(ResourceLoadedCallback p_callback) {
 	_loaded_callback = p_callback;
 }
 
-ResourceLoadedCallback ResourceLoader::_loaded_callback = nullptr;
-
 Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(const String &path) {
 	for (int i = 0; i < loader_count; ++i) {
 		if (loader[i]->get_script_instance() && loader[i]->get_script_instance()->get_script()->get_path() == path) {
@@ -1534,18 +1528,8 @@ void ResourceLoader::initialize() {}
 
 void ResourceLoader::finalize() {}
 
-ResourceLoadErrorNotify ResourceLoader::err_notify = nullptr;
-DependencyErrorNotify ResourceLoader::dep_err_notify = nullptr;
-
-bool ResourceLoader::create_missing_resources_if_class_unavailable = false;
-bool ResourceLoader::abort_on_missing_resource = true;
-bool ResourceLoader::timestamp_on_load = false;
-
-thread_local bool ResourceLoader::import_thread = false;
-thread_local int ResourceLoader::load_nesting = 0;
 thread_local Vector<String> ResourceLoader::load_paths_stack;
 thread_local HashMap<int, HashMap<String, Ref<Resource>>> ResourceLoader::res_ref_overrides;
-thread_local ResourceLoader::ThreadLoadTask *ResourceLoader::curr_load_task = nullptr;
 
 SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG> &_get_res_loader_mutex() {
 	return ResourceLoader::thread_load_mutex;
@@ -1553,13 +1537,3 @@ SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG> &_get_res_loader_mutex() {
 
 template <>
 thread_local SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG>::TLSData SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG>::tls_data(_get_res_loader_mutex());
-SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG> ResourceLoader::thread_load_mutex;
-HashMap<String, ResourceLoader::ThreadLoadTask> ResourceLoader::thread_load_tasks;
-bool ResourceLoader::cleaning_tasks = false;
-
-HashMap<String, ResourceLoader::LoadToken *> ResourceLoader::user_load_tokens;
-
-SelfList<Resource>::List ResourceLoader::remapped_list;
-HashMap<String, Vector<String>> ResourceLoader::translation_remaps;
-
-ResourceLoaderImport ResourceLoader::import = nullptr;

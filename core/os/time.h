@@ -46,7 +46,7 @@
 class Time : public Object {
 	GDCLASS(Time, Object);
 	static void _bind_methods();
-	static Time *singleton;
+	static inline Time *singleton = nullptr;
 
 public:
 	static Time *get_singleton();

@@ -202,12 +202,12 @@ public:
 		};
 	};
 
-	static HashMap<StringName, ClassInfo> classes;
-	static HashMap<StringName, StringName> resource_base_extensions;
-	static HashMap<StringName, StringName> compat_classes;
+	static inline HashMap<StringName, ClassInfo> classes;
+	static inline HashMap<StringName, StringName> resource_base_extensions;
+	static inline HashMap<StringName, StringName> compat_classes;
 
 #ifdef TOOLS_ENABLED
-	static HashMap<StringName, ObjectGDExtension> placeholder_extensions;
+	static inline HashMap<StringName, ObjectGDExtension> placeholder_extensions;
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -216,22 +216,23 @@ public:
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount);
 #endif // DEBUG_ENABLED
 
-	static APIType current_api;
-	static HashMap<APIType, uint32_t> api_hashes_cache;
+	static inline APIType current_api = API_CORE;
+	static inline HashMap<APIType, uint32_t> api_hashes_cache;
 
 	static void _add_class(const GDType &p_class, const GDType *p_inherits);
 
-	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
-	static HashSet<StringName> default_values_cached;
+	static inline HashMap<StringName, HashMap<StringName, Variant>> default_values;
+	static inline HashSet<StringName> default_values_cached;
 
 	// Native structs, used by binder
 	struct NativeStruct {
 		String ccode; // C code to create the native struct, fields separated by ; Arrays accepted (even containing other structs), also function pointers. All types must be Godot types.
 		uint64_t struct_size; // local size of struct, for comparison
 	};
-	static HashMap<StringName, NativeStruct> native_structs;
+	static inline HashMap<StringName, NativeStruct> native_structs;
 
-	static Array default_array_arg;
+	// Array to use in optional parameters on methods and the DEFVAL_ARRAY macro.
+	static inline Array default_array_arg = Array::create_read_only();
 	static bool is_default_array_arg(const Array &p_array);
 
 private:

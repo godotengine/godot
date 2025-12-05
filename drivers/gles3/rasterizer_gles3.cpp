@@ -88,12 +88,6 @@
 #define strcpy strcpy_s
 #endif
 
-#ifdef WINDOWS_ENABLED
-bool RasterizerGLES3::screen_flipped_y = false;
-#endif
-
-bool RasterizerGLES3::gles_over_gl = true;
-
 void RasterizerGLES3::begin_frame(double frame_step) {
 	frame++;
 	delta = frame_step;
@@ -227,8 +221,6 @@ void RasterizerGLES3::finalize() {
 	memdelete(utilities);
 	memdelete(config);
 }
-
-RasterizerGLES3 *RasterizerGLES3::singleton = nullptr;
 
 #ifdef EGL_ENABLED
 void *_egl_load_function_wrapper(const char *p_name) {

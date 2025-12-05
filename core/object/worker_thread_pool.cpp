@@ -35,18 +35,12 @@
 #include "core/os/safe_binary_mutex.h"
 #include "core/os/thread_safe.h"
 
-WorkerThreadPool::Task *const WorkerThreadPool::ThreadData::YIELDING = (Task *)1;
-
-HashMap<StringName, WorkerThreadPool *> WorkerThreadPool::named_pools;
-
 void WorkerThreadPool::Task::free_template_userdata() {
 	ERR_FAIL_NULL(template_userdata);
 	ERR_FAIL_NULL(native_func_userdata);
 	BaseTemplateUserdata *btu = (BaseTemplateUserdata *)native_func_userdata;
 	memdelete(btu);
 }
-
-WorkerThreadPool *WorkerThreadPool::singleton = nullptr;
 
 #ifdef THREADS_ENABLED
 thread_local WorkerThreadPool::UnlockableLocks WorkerThreadPool::unlockable_locks[MAX_UNLOCKABLE_LOCKS];

@@ -148,28 +148,26 @@ private:
 
 	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
 
-	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
-	static int loader_count;
-	static bool timestamp_on_load;
+	static inline Ref<ResourceFormatLoader> loader[MAX_LOADERS];
+	static inline int loader_count = 0;
+	static inline bool timestamp_on_load = false;
 
-	static void *err_notify_ud;
-	static ResourceLoadErrorNotify err_notify;
-	static void *dep_err_notify_ud;
-	static DependencyErrorNotify dep_err_notify;
-	static bool abort_on_missing_resource;
-	static bool create_missing_resources_if_class_unavailable;
-	static HashMap<String, Vector<String>> translation_remaps;
+	static inline ResourceLoadErrorNotify err_notify = nullptr;
+	static inline DependencyErrorNotify dep_err_notify = nullptr;
+	static inline bool abort_on_missing_resource = true;
+	static inline bool create_missing_resources_if_class_unavailable = false;
+	static inline HashMap<String, Vector<String>> translation_remaps;
 
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
 
-	static SelfList<Resource>::List remapped_list;
+	static inline SelfList<Resource>::List remapped_list;
 
 	friend class ResourceFormatImporter;
 
 	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
-	static ResourceLoadedCallback _loaded_callback;
+	static inline ResourceLoadedCallback _loaded_callback = nullptr;
 
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(const String &path);
 
@@ -210,19 +208,19 @@ private:
 	};
 	static void _run_load_task(void *p_userdata);
 
-	static thread_local bool import_thread;
-	static thread_local int load_nesting;
+	static inline thread_local bool import_thread = false;
+	static inline thread_local int load_nesting = 0;
 	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
 	static thread_local Vector<String> load_paths_stack;
-	static thread_local ThreadLoadTask *curr_load_task;
+	static inline thread_local ThreadLoadTask *curr_load_task = nullptr;
 
-	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
+	static inline SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
 	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_res_loader_mutex();
 
-	static HashMap<String, ThreadLoadTask> thread_load_tasks;
-	static bool cleaning_tasks;
+	static inline HashMap<String, ThreadLoadTask> thread_load_tasks;
+	static inline bool cleaning_tasks = false;
 
-	static HashMap<String, LoadToken *> user_load_tokens;
+	static inline HashMap<String, LoadToken *> user_load_tokens;
 
 	static float _dependency_get_progress(const String &p_path);
 
@@ -300,7 +298,7 @@ public:
 	static void clear_thread_load_tasks();
 
 	static void set_load_callback(ResourceLoadedCallback p_callback);
-	static ResourceLoaderImport import;
+	static inline ResourceLoaderImport import = nullptr;
 
 	static bool add_custom_resource_format_loader(const String &script_path);
 	static void add_custom_loaders();

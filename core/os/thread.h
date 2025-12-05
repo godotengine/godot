@@ -107,7 +107,7 @@ private:
 
 	ID id = UNASSIGNED_ID;
 
-	static SafeNumeric<uint64_t> id_counter;
+	static inline SafeNumeric<uint64_t> id_counter{ 1 }; // The first value after .increment() is 2, hence by default the main thread ID should be 1.
 	static thread_local ID caller_id;
 	THREADING_NAMESPACE::thread thread;
 

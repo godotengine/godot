@@ -2509,12 +2509,6 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 }
 #endif
 
-SpinLock ObjectDB::spin_lock;
-uint32_t ObjectDB::slot_count = 0;
-uint32_t ObjectDB::slot_max = 0;
-ObjectDB::ObjectSlot *ObjectDB::object_slots = nullptr;
-uint64_t ObjectDB::validator_counter = 0;
-
 int ObjectDB::get_object_count() {
 	return slot_count;
 }

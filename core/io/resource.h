@@ -198,11 +198,11 @@ VARIANT_ENUM_CAST(Resource::DeepDuplicateMode);
 class ResourceCache {
 	friend class Resource;
 	friend class ResourceLoader; // Need the lock.
-	static Mutex lock;
-	static HashMap<String, Resource *> resources;
+	static inline Mutex lock;
+	static inline HashMap<String, Resource *> resources;
 #ifdef TOOLS_ENABLED
-	static HashMap<String, HashMap<String, String>> resource_path_cache; // Each tscn has a set of resource paths and IDs.
-	static RWLock path_cache_lock;
+	static inline HashMap<String, HashMap<String, String>> resource_path_cache; // Each tscn has a set of resource paths and IDs.
+	static inline RWLock path_cache_lock;
 #endif // TOOLS_ENABLED
 	friend void unregister_core_types();
 	static void clear();

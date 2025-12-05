@@ -157,8 +157,8 @@ public:
 };
 
 class MessageQueue : public CallQueue {
-	static CallQueue *main_singleton;
-	static thread_local CallQueue *thread_singleton;
+	static inline CallQueue *main_singleton = nullptr;
+	static inline thread_local CallQueue *thread_singleton = nullptr;
 	friend class CallQueue;
 
 public:

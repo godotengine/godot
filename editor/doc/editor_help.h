@@ -366,7 +366,7 @@ public:
 class EditorHelpBitTooltip : public PopupPanel {
 	GDCLASS(EditorHelpBitTooltip, PopupPanel);
 
-	static bool _is_tooltip_visible;
+	static inline bool _is_tooltip_visible = false;
 
 	Timer *timer = nullptr;
 	uint64_t _enter_tree_time = 0;
@@ -402,7 +402,7 @@ public:
 private:
 	using HighlightData = Vector<Pair<int, Color>>;
 
-	static EditorHelpHighlighter *singleton;
+	static inline EditorHelpHighlighter *singleton = nullptr;
 
 	HashMap<String, HighlightData> highlight_data_caches[LANGUAGE_MAX];
 
