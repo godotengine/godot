@@ -351,6 +351,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsIntersectPointResult3D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsIntersectShapeResult3D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
 
