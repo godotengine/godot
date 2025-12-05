@@ -91,6 +91,13 @@ public:
 
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
+	RBSet<Key> key_label_just_pressed;
+	RBSet<Key> key_label_just_released;
+	RBSet<Key> physical_keys_just_pressed;
+	RBSet<Key> physical_keys_just_released;
+	RBSet<Key> keys_just_pressed;
+	RBSet<Key> keys_just_released;
+
 private:
 	BitField<MouseButtonMask> mouse_button_mask = MouseButtonMask::NONE;
 
@@ -314,8 +321,14 @@ public:
 	bool is_anything_pressed() const;
 	bool is_anything_pressed_except_mouse() const;
 	bool is_key_pressed(Key p_keycode) const;
+	bool is_key_just_pressed(Key p_keycode) const;
+	bool is_key_just_released(Key p_keycode) const;
 	bool is_physical_key_pressed(Key p_keycode) const;
+	bool is_physical_key_just_pressed(Key p_keycode) const;
+	bool is_physical_key_just_released(Key p_keycode) const;
 	bool is_key_label_pressed(Key p_keycode) const;
+	bool is_key_label_just_pressed(Key p_keycode) const;
+	bool is_key_label_just_released(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
 	bool is_joy_button_pressed(int p_device, JoyButton p_button) const;
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
