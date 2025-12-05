@@ -1170,6 +1170,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
+		} else if (arg == "--color") { // force colored output
+			OS::get_singleton()->_colored_stdout = true;
 		} else if (arg == "-v" || arg == "--verbose") { // verbose output
 
 			OS::get_singleton()->_verbose_stdout = true;
