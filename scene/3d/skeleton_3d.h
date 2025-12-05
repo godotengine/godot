@@ -188,6 +188,11 @@ private:
 	void _process_modifiers();
 	void _process_changed();
 	void _make_modifiers_dirty();
+	bool modifier_updating = false; // Is modifier updating now?
+	LocalVector<int> modified_bones;
+	LocalVector<Transform3D> mod_old_poses;
+	LocalVector<Transform3D> mod_new_poses;
+	void _make_bone_modified(int p_bone);
 
 	// Global bone pose calculation.
 	mutable LocalVector<int> nested_set_offset_to_bone_index; // Map from Bone::nested_set_offset to bone index.
