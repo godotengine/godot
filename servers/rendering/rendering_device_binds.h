@@ -32,13 +32,20 @@
 
 #include "servers/rendering/rendering_device.h"
 
+#define RD_GET(m_type, m_member)    \
+	m_type get_##m_member() const { \
+		return base.m_member;       \
+	}
+
 #define RD_SETGET(m_type, m_member)            \
 	void set_##m_member(m_type p_##m_member) { \
 		base.m_member = p_##m_member;          \
 	}                                          \
-	m_type get_##m_member() const {            \
-		return base.m_member;                  \
-	}
+	RD_GET(m_type, m_member)
+
+#define RD_BIND_GET(m_variant_type, m_class, m_member)                                 \
+	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_member)), &m_class::get_##m_member); \
+	ADD_PROPERTY(PropertyInfo(m_variant_type, #m_member), "", "get_" _MKSTR(m_member))
 
 #define RD_BIND(m_variant_type, m_class, m_member)                                                          \
 	ClassDB::bind_method(D_METHOD("set_" _MKSTR(m_member), "p_" _MKSTR(member)), &m_class::set_##m_member); \
@@ -496,26 +503,56 @@ protected:
 class RDPipelineSpecializationConstant : public RefCounted {
 	GDCLASS(RDPipelineSpecializationConstant, RefCounted)
 	friend class RenderingDevice;
+	friend class RDShaderDescription;
 
-	Variant value = false;
-	uint32_t constant_id = 0;
+	RD::PipelineSpecializationConstant base;
 
 public:
-	void set_value(const Variant &p_value) {
-		ERR_FAIL_COND(p_value.get_type() != Variant::BOOL && p_value.get_type() != Variant::INT && p_value.get_type() != Variant::FLOAT);
-		value = p_value;
-	}
-	Variant get_value() const { return value; }
+	RD_GET(RenderingDeviceCommons::PipelineSpecializationConstantType, type)
 
-	void set_constant_id(uint32_t p_id) {
-		constant_id = p_id;
+	void set_value(const Variant &p_value) {
+		switch (p_value.get_type()) {
+			case Variant::BOOL: {
+				base.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+				base.bool_value = p_value;
+			} break;
+			case Variant::INT: {
+				base.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
+				base.int_value = p_value;
+			} break;
+			case Variant::FLOAT: {
+				base.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
+				base.float_value = p_value;
+			} break;
+			default: {
+				ERR_FAIL_MSG("Specialization constant value has to be a boolean, integer or float.");
+			}
+		}
 	}
-	uint32_t get_constant_id() const {
-		return constant_id;
+
+	Variant get_value() const {
+		switch (base.type) {
+			case RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL: {
+				return base.bool_value;
+			} break;
+			case RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT: {
+				return base.int_value;
+			} break;
+			case RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT: {
+				return base.float_value;
+			} break;
+			default: {
+				ERR_FAIL_V(0);
+			}
+		}
 	}
+
+	RD_SETGET(uint32_t, constant_id)
 
 protected:
 	static void _bind_methods() {
+		RD_BIND_GET(Variant::INT, RDPipelineSpecializationConstant, type);
+
 		ClassDB::bind_method(D_METHOD("set_value", "value"), &RDPipelineSpecializationConstant::set_value);
 		ClassDB::bind_method(D_METHOD("get_value"), &RDPipelineSpecializationConstant::get_value);
 
@@ -524,6 +561,117 @@ protected:
 
 		ADD_PROPERTY(PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "set_value", "get_value");
 		ADD_PROPERTY(PropertyInfo(Variant::INT, "constant_id", PROPERTY_HINT_RANGE, "0,65535,0"), "set_constant_id", "get_constant_id");
+	}
+};
+
+class RDUniformDescription : public RefCounted {
+	GDCLASS(RDUniformDescription, RefCounted)
+	friend class RDShaderDescription;
+
+	uint32_t set; // TODO: Move to RD::ShaderUniform?
+	RD::ShaderUniform base;
+
+public:
+	RD_GET(RD::UniformType, type)
+	RD_GET(bool, writable)
+
+	uint32_t get_set() const {
+		return set;
+	}
+
+	RD_GET(uint32_t, binding)
+	RD_GET(uint64_t, stages) // TODO: Refactor RD::ShaderStage into two and turn this into a bitfield?
+	RD_GET(uint32_t, length)
+
+protected:
+	static void _bind_methods() {
+		RD_BIND_GET(Variant::INT, RDUniformDescription, type);
+		RD_BIND_GET(Variant::BOOL, RDUniformDescription, writable);
+		RD_BIND_GET(Variant::INT, RDUniformDescription, set);
+		RD_BIND_GET(Variant::INT, RDUniformDescription, binding);
+		RD_BIND_GET(Variant::INT, RDUniformDescription, stages);
+		RD_BIND_GET(Variant::INT, RDUniformDescription, length);
+	}
+};
+
+class RDShaderDescription : public RefCounted {
+	GDCLASS(RDShaderDescription, RefCounted)
+	friend class RenderingDevice;
+
+	RD::ShaderDescription base;
+
+public:
+	RD_GET(uint64_t, vertex_input_mask)
+	RD_GET(uint32_t, fragment_output_mask)
+	RD_GET(bool, is_compute)
+
+	Vector3i get_compute_local_size() const {
+		return Vector3i(
+				base.compute_local_size[0],
+				base.compute_local_size[1],
+				base.compute_local_size[2]);
+	}
+
+	RD_GET(uint32_t, push_constant_size)
+
+	uint32_t get_uniform_sets() const {
+		return base.uniform_sets.size();
+	}
+
+	TypedArray<RDUniformDescription> find_uniforms_by_set(uint32_t p_set) const {
+		ERR_FAIL_COND_V(p_set > base.uniform_sets.size() - 1, {});
+		TypedArray<RDUniformDescription> uniforms = {};
+		for (uint32_t b = 0; b < base.uniform_sets[p_set].size(); b++) {
+			Ref<RDUniformDescription> uniform;
+			uniform.instantiate();
+			uniform->set = p_set;
+			uniform->base = base.uniform_sets[p_set][b];
+			uniforms.append(uniform);
+		}
+		return uniforms;
+	}
+
+	TypedArray<RDUniformDescription> get_uniforms() const {
+		TypedArray<RDUniformDescription> uniforms = {};
+		for (uint32_t s = 0; s < base.uniform_sets.size(); s++) {
+			uniforms.append_array(find_uniforms_by_set(s));
+		}
+		return uniforms;
+	}
+
+	TypedArray<RDPipelineSpecializationConstant> get_specialization_constants() const {
+		TypedArray<RDPipelineSpecializationConstant> spec_constants = {};
+		for (uint32_t i = 0; i < base.specialization_constants.size(); i++) {
+			Ref<RDPipelineSpecializationConstant> spec_const;
+			spec_const.instantiate();
+			spec_const->base = base.specialization_constants[i];
+			spec_constants.append(spec_const);
+		}
+		return spec_constants;
+	}
+
+	// TODO: Refactor RD::ShaderStage into two and turn this into a bitfield?
+	uint64_t get_stages() const {
+		uint64_t stages = 0;
+		for (uint32_t i = 0; i < base.stages.size(); i++) {
+			stages |= (((uint64_t)1) << base.stages[i]);
+		}
+		return stages;
+	}
+
+protected:
+	static void _bind_methods() {
+		RD_BIND_GET(Variant::INT, RDShaderDescription, vertex_input_mask);
+		RD_BIND_GET(Variant::INT, RDShaderDescription, fragment_output_mask);
+		RD_BIND_GET(Variant::BOOL, RDShaderDescription, is_compute);
+		RD_BIND_GET(Variant::VECTOR3I, RDShaderDescription, compute_local_size);
+		RD_BIND_GET(Variant::INT, RDShaderDescription, push_constant_size);
+		RD_BIND_GET(Variant::INT, RDShaderDescription, uniform_sets);
+		RD_BIND_GET(Variant::ARRAY, RDShaderDescription, uniforms);
+		RD_BIND_GET(Variant::ARRAY, RDShaderDescription, specialization_constants);
+		RD_BIND_GET(Variant::INT, RDShaderDescription, stages);
+
+		ClassDB::bind_method(D_METHOD("find_uniforms_by_set", "set"), &RDShaderDescription::find_uniforms_by_set);
 	}
 };
 
