@@ -474,6 +474,11 @@
 		<member name="emulate_touch_from_mouse" type="bool" setter="set_emulate_touch_from_mouse" getter="is_emulating_touch_from_mouse">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse. See also [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
 		</member>
+		<member name="joypad_enabled" type="bool" setter="set_joypad_enabled" getter="is_joypad_enabled">
+			If [code]true[/code], enables joypad input events and allows the use of joypad-related functions such as [method Input.is_joy_button_pressed], [method Input.get_joy_axis], [method Input.start_joy_vibration], and [method Input.stop_joy_vibration].
+			See also [member ProjectSettings.input_devices/joypad/joypad_enabled].
+			[b]Note:[/b] Disabling this option does not stop Godot from capturing/connecting to the joypad itself.
+		</member>
 		<member name="mouse_mode" type="int" setter="set_mouse_mode" getter="get_mouse_mode" enum="Input.MouseMode">
 			Controls the mouse mode.
 		</member>
