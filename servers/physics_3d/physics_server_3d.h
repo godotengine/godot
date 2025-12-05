@@ -123,6 +123,7 @@ class PhysicsRayIntersectionResult3D;
 class PhysicsPointQueryParameters3D;
 class PhysicsPointIntersectionResult3D;
 class PhysicsShapeQueryParameters3D;
+class PhysicsShapeIntersectionResult3D;
 
 class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
@@ -130,7 +131,7 @@ class PhysicsDirectSpaceState3D : public Object {
 private:
 	bool _intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult3D> rp_result);
 	bool _intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, RequiredParam<PhysicsPointIntersectionResult3D> rp_result);
-	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
+	bool _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeIntersectionResult3D> rp_result);
 	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
 	TypedArray<Vector3> _collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
@@ -141,6 +142,7 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	Dictionary _intersect_ray_bind_compat_113970(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query);
 	TypedArray<Dictionary> _intersect_point_bind_compat_113970(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results = 32);
+	TypedArray<Dictionary> _intersect_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -994,6 +996,36 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+};
+
+class PhysicsShapeIntersectionResult3D : public RefCounted {
+	GDCLASS(PhysicsShapeIntersectionResult3D, RefCounted);
+
+	friend class PhysicsDirectSpaceState3D;
+
+	Vector<PhysicsDirectSpaceState3D::ShapeResult> result;
+	int collision_count;
+
+protected:
+	static void _bind_methods();
+
+public:
+	PhysicsShapeIntersectionResult3D(int p_max_collisions = 32) {
+		result.resize(p_max_collisions);
+		collision_count = 0;
+	}
+
+	PhysicsDirectSpaceState3D::ShapeResult *get_result_ptr() { return result.ptrw(); }
+
+	int get_max_collisions() const { return result.size(); }
+	void set_max_collisions(int p_max_collisions) { result.resize(p_max_collisions); }
+
+	int get_collision_count() const;
+
+	RID get_collider_rid(int p_collider_index) const;
+	ObjectID get_collider_id(int p_collider_index) const;
+	Object *get_collider(int p_collider_index) const;
+	int get_collider_shape(int p_collider_index) const;
 };
 
 class PhysicsTestMotionParameters3D : public RefCounted {

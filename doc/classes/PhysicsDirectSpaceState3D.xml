@@ -66,16 +66,13 @@
 			</description>
 		</method>
 		<method name="intersect_shape">
-			<return type="Dictionary[]" />
+			<return type="bool" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
-			<param index="1" name="max_results" type="int" default="32" />
+			<param index="1" name="result" type="PhysicsShapeIntersectionResult3D" />
 			<description>
-				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space. The intersected shapes are returned in an array containing dictionaries with the following fields:
-				[code]collider[/code]: The colliding object.
-				[code]collider_id[/code]: The colliding object's ID.
-				[code]rid[/code]: The intersecting object's [RID].
-				[code]shape[/code]: The shape index of the colliding shape.
-				The number of intersections can be limited with the [param max_results] parameter, to reduce the processing time.
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space.
+				If one or more shapes are found, this method returns [code]true[/code] and writes the intersection data into the [PhysicsShapeIntersectionResult3D] object passed in [code skip-lint]result[/code]. If no shapes are overlapping, it returns [code]false[/code].
+				The number of intersections can be limited using [member PhysicsShapeIntersectionResult3D.max_collisions], to reduce the processing time.
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
 			</description>
 		</method>
