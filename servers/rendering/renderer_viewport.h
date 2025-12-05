@@ -209,6 +209,7 @@ private:
 	void _draw_viewport(Viewport *p_viewport);
 
 	int occlusion_rays_per_thread = 512;
+	bool using_metal = false;
 
 	void _resize_occlusion_culling_buffer(const Size2i &p_size);
 
