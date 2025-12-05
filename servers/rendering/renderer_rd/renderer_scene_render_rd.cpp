@@ -1648,6 +1648,37 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Typed
 	return ret;
 }
 
+TypedArray<Image> RendererSceneRenderRD::bake_render_area_light_atlas(const TypedArray<Texture2D> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) {
+	/* TODO */
+	ERR_FAIL_COND_V_MSG(p_mipmaps <= 0, TypedArray<Image>(), "Mipmaps must be greater than 0");
+	ERR_FAIL_COND_V_MSG(p_size.width < pow(2, p_mipmaps), TypedArray<Image>(), "Image width must be greater than mipmaps to power of 2");
+	ERR_FAIL_COND_V_MSG(p_size.height < pow(2, p_mipmaps), TypedArray<Image>(), "Image height must be greater than  than mipmaps to power of 2");
+
+	TypedArray<Image> ret;
+
+	for (int i = 0; i < p_mipmaps; i++) {
+		int w = p_size.width / pow(2, i);
+		int h = p_size.height / pow(2, i);
+
+		Vector<uint8_t> pv;
+		pv.resize(w * h * 4);
+		for (int i = 0; i < w * h; i++) {
+			// Opaque red.
+			pv.set(i * 4 + 0, 255);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		Ref<Image> img = Image::create_from_data(h, w, false, Image::FORMAT_RGBA8, pv);
+		ret.push_back(img);
+	}
+
+	// TODO: actually copy textures and blur them with copy effects.
+
+	return ret;
+}
+
 void RendererSceneRenderRD::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 	gi.sdfgi_debug_probe_pos = p_position;
 	gi.sdfgi_debug_probe_dir = p_dir;

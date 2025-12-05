@@ -3086,7 +3086,6 @@ void TextureStorage::update_area_light_atlas() {
 	tformat.texture_type = RD::TEXTURE_TYPE_2D;
 	tformat.mipmaps = area_light_atlas.mipmaps;
 	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
-	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
 
 	area_light_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView());
 	RD::get_singleton()->texture_clear(area_light_atlas.texture, Color(0, 0, 0, 0), 0, area_light_atlas.mipmaps, 0, 1);

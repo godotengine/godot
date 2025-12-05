@@ -139,7 +139,7 @@ void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Ve
 	light_metadata.push_back(md);
 }
 
-void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur) {//, Ref<Texture2D> p_area_texture) {
+void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur, const Rect2 &p_texture_rect) {
 	Light l;
 	l.type = LIGHT_TYPE_AREA;
 	l.position[0] = p_position.x;
@@ -164,17 +164,22 @@ void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Ve
 	l.static_bake = p_static;
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
-	//RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture_rect(RSG::light_storage->light_area_get_texture(l));
-	l.area_texture_rect[0] = 0.0; //p_texture_rect.position.x;
-	l.area_texture_rect[1] = 0.0; //p_texture_rect.position.y;
-	l.area_texture_rect[2] = 0.0; //p_texture_rect.size.x;
-	l.area_texture_rect[3] = 0.0; //p_texture_rect.size.y;
+	l.area_texture_rect[0] = p_texture_rect.position.x;
+	l.area_texture_rect[1] = p_texture_rect.position.y;
+	l.area_texture_rect[2] = p_texture_rect.size.x;
+	l.area_texture_rect[3] = p_texture_rect.size.y;
 	lights.push_back(l);
 
 	LightMetadata md;
 	md.name = p_name;
 	md.type = LIGHT_TYPE_AREA;
 	light_metadata.push_back(md);
+}
+
+void LightmapperRD::add_area_light_atlas(const Vector2i &p_size, int p_mipmap_count, const TypedArray<Image> &images) {
+	area_light_atlas.mipmap_count = p_mipmap_count;
+	area_light_atlas.size = p_size;
+	area_light_atlas.images = images;
 }
 
 void LightmapperRD::add_probe(const Vector3 &p_position) {
@@ -1203,6 +1208,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID light_accum_tex;
 	RID light_accum_tex2;
 	RID light_environment_tex;
+	RID area_light_atlas_tex;
 	RID shadowmask_tex;
 	RID shadowmask_tex2;
 
@@ -1216,6 +1222,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free_rid(light_accum_tex2);      \
 	rd->free_rid(light_accum_tex);       \
 	rd->free_rid(light_environment_tex); \
+	rd->free_rid(area_light_atlas_tex);  \
 	if (p_bake_shadowmask) {             \
 		rd->free_rid(shadowmask_tex);    \
 		rd->free_rid(shadowmask_tex2);   \
@@ -1304,6 +1311,28 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 #ifdef DEBUG_TEXTURES
 			panorama_tex->save_exr("res://0_panorama.exr", false);
 #endif
+		}
+
+		// area lights
+		{
+			RD::TextureFormat tf;
+			tf.width = area_light_atlas.size.width;
+			tf.height = area_light_atlas.size.height;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+			tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			tf.mipmaps = area_light_atlas.mipmap_count;
+
+			//rd->texture_clear(area_light_atlas_tex, Color(0, 0, 0, 0), 0, area_light_atlas.mipmap_count, 0, 1); // texture recreated each time -> clearning not necessary
+
+			// now fill mipmap with data from Vector<Ref<Image>> area_light_atlas.images
+			Vector<uint8_t> texture_bytes;
+			for (int i = 0; i < area_light_atlas.mipmap_count; i++) {
+				Ref<Image> img = area_light_atlas.images[i];
+				texture_bytes.append_array(img->get_data());
+			}
+			Vector<Vector<uint8_t>> tdata;
+			tdata.push_back(texture_bytes);
+			area_light_atlas_tex = rd->texture_create(tf, RD::TextureView(), tdata);
 		}
 	}
 
@@ -1789,13 +1818,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.append_id(shadowmask_tex);
 				uniforms.push_back(u);
 			}
-			/*{
+
+			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 6;
-				u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
+				u.append_id(area_light_atlas_tex);
 				uniforms.push_back(u);
-			}*/
+			}
 		}
 
 		RID light_uniform_set = rd->uniform_set_create(uniforms, compute_shader_primary, 1);
@@ -1911,6 +1941,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 5;
 				u.append_id(light_environment_tex);
+				uniforms.push_back(u);
+			}
+
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 6;
+				u.append_id(area_light_atlas_tex);
 				uniforms.push_back(u);
 			}
 		}
@@ -2034,6 +2072,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 2;
 				u.append_id(light_environment_tex);
+				uniforms.push_back(u);
+			}
+
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 6;
+				u.append_id(area_light_atlas_tex);
 				uniforms.push_back(u);
 			}
 		}
