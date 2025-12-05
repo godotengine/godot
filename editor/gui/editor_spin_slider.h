@@ -78,6 +78,8 @@ public:
 
 private:
 	ControlState control_state = CONTROL_STATE_DEFAULT;
+	double unbounded_value = 0.0;
+	bool valid = true;
 	bool flat = false;
 	bool editing_integer = false;
 
@@ -104,15 +106,22 @@ private:
 protected:
 	void _notification(int p_what);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void _value_changed(double p_value) override;
 	static void _bind_methods();
 	void _grabber_mouse_entered();
 	void _grabber_mouse_exited();
 	void _focus_entered(bool p_hide_focus = false);
 
 public:
+	void set_unbounded_value_no_signal(double p_val);
+	_FORCE_INLINE_ double get_unbounded_value() const { return unbounded_value; }
+
+	void set_valid(bool p_valid);
+	_FORCE_INLINE_ bool is_valid() const { return valid; }
+
 	String get_tooltip(const Point2 &p_pos) const override;
 
-	String get_text_value() const;
+	String get_text_value(bool p_unbounded = false) const;
 	void set_label(const String &p_label);
 	String get_label() const;
 

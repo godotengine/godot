@@ -61,6 +61,54 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/visual_shader_nodes.h"
 
+static void _mark_invalid_value(Button *p_button) {
+	ERR_FAIL_NULL(p_button);
+
+	const Color error_color = p_button->get_theme_color("error_color", EditorStringName(Editor));
+	p_button->add_theme_color_override(SceneStringName(font_color), error_color);
+	p_button->add_theme_color_override("font_hover_color", error_color);
+	p_button->add_theme_color_override("font_hover_pressed_color", error_color);
+	p_button->add_theme_color_override("font_focus_color", error_color);
+	p_button->add_theme_color_override("font_pressed_color", error_color);
+	p_button->add_theme_color_override("font_disabled_color", error_color);
+}
+
+static void _unmark_invalid_value(Button *p_button) {
+	ERR_FAIL_NULL(p_button);
+
+	p_button->remove_theme_color_override(SceneStringName(font_color));
+	p_button->remove_theme_color_override("font_hover_color");
+	p_button->remove_theme_color_override("font_hover_pressed_color");
+	p_button->remove_theme_color_override("font_focus_color");
+	p_button->remove_theme_color_override("font_pressed_color");
+	p_button->remove_theme_color_override("font_disabled_color");
+}
+
+static void _validate_spin_slider_value(EditorSpinSlider *p_spin) {
+	ERR_FAIL_NULL(p_spin);
+
+	const double value = p_spin->get_unbounded_value();
+
+	if (Math::is_nan(value)) {
+		p_spin->set_valid(false);
+		return;
+	}
+
+	if (!p_spin->is_lesser_allowed() && value < p_spin->get_min()) {
+		p_spin->set_valid(false);
+		return;
+	}
+
+	if (!p_spin->is_greater_allowed() && value > p_spin->get_max()) {
+		p_spin->set_valid(false);
+		return;
+	}
+
+	// TODO: Check step?
+
+	p_spin->set_valid(true);
+}
+
 ///////////////////// NIL /////////////////////////
 
 void EditorPropertyNil::update_property() {
@@ -921,6 +969,8 @@ void EditorPropertyEnum::update_property() {
 	if (current.get_type() == Variant::NIL) {
 		options->select(-1);
 		options->set_text("<null>");
+		options->set_tooltip_text(TTR("The property value is not one of the enumerated values."));
+		_mark_invalid_value(options);
 		return;
 	}
 
@@ -928,11 +978,15 @@ void EditorPropertyEnum::update_property() {
 	for (int i = 0; i < options->get_item_count(); i++) {
 		if (which == (int64_t)options->get_item_metadata(i)) {
 			options->select(i);
+			options->set_tooltip_text(vformat("%s (%d)", options->get_item_text(i), which));
+			_unmark_invalid_value(options);
 			return;
 		}
 	}
 	options->select(-1);
 	options->set_text(itos(which));
+	options->set_tooltip_text(TTR("The property value is not one of the enumerated values."));
+	_mark_invalid_value(options);
 }
 
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
@@ -1565,13 +1619,14 @@ void EditorPropertyInteger::_value_changed(int64_t val) {
 
 void EditorPropertyInteger::update_property() {
 	int64_t val = get_edited_property_display_value();
-	spin->set_value_no_signal(val);
+	spin->set_unbounded_value_no_signal(val);
 #ifdef DEBUG_ENABLED
 	// If spin (currently EditorSplinSlider : Range) is changed so that it can use int64_t, then the below warning wouldn't be a problem.
 	if (val != (int64_t)(double)(val)) {
 		WARN_PRINT("Cannot reliably represent '" + itos(val) + "' in the inspector, value is too large.");
 	}
 #endif
+	_validate_spin_slider_value(spin);
 }
 
 void EditorPropertyInteger::setup(const EditorPropertyRangeHint &p_range_hint) {
@@ -1705,7 +1760,8 @@ void EditorPropertyFloat::update_property() {
 	if (radians_as_degrees) {
 		val = Math::rad_to_deg(val);
 	}
-	spin->set_value_no_signal(val);
+	spin->set_unbounded_value_no_signal(val);
+	_validate_spin_slider_value(spin);
 }
 
 void EditorPropertyFloat::setup(const EditorPropertyRangeHint &p_range_hint) {
