@@ -1600,13 +1600,14 @@ Vector<Node *> SceneTree::get_nodes_in_group(const StringName &p_group) {
 void SceneTree::_flush_delete_queue() {
 	_THREAD_SAFE_METHOD_
 
-	while (delete_queue.size()) {
-		Object *obj = ObjectDB::get_instance(delete_queue.front()->get());
+	for (const ObjectID &id : delete_queue) {
+		Object *obj = ObjectDB::get_instance(id);
 		if (obj) {
 			memdelete(obj);
 		}
-		delete_queue.pop_front();
 	}
+
+	delete_queue.clear();
 }
 
 void SceneTree::queue_delete(RequiredParam<Object> rp_object) {
