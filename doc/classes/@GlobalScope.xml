@@ -1770,22 +1770,22 @@
 			A bit mask for [code]INLINE_ALIGNMENT_TO_*[/code] alignment constants.
 		</constant>
 		<constant name="EULER_ORDER_XYZ" value="0" enum="EulerOrder">
-			Specifies that Euler angles should be in XYZ order. When composing, the order is X, Y, Z. When decomposing, the order is reversed, first Z, then Y, and X last.
+			Specifies that Euler angles should be in intrinsic XYZ order. When composing, the rotations happen around the local X, Y, and Z axes, in that order. When decomposing, the order is reversed, first Z, then Y, and X last.
 		</constant>
 		<constant name="EULER_ORDER_XZY" value="1" enum="EulerOrder">
-			Specifies that Euler angles should be in XZY order. When composing, the order is X, Z, Y. When decomposing, the order is reversed, first Y, then Z, and X last.
+			Specifies that Euler angles should be in intrinsic XZY order. When composing, the rotations happen around the local X, Z, and Y axes, in that order. When decomposing, the order is reversed, first Y, then Z, and X last.
 		</constant>
 		<constant name="EULER_ORDER_YXZ" value="2" enum="EulerOrder">
-			Specifies that Euler angles should be in YXZ order. When composing, the order is Y, X, Z. When decomposing, the order is reversed, first Z, then X, and Y last.
+			Specifies that Euler angles should be in intrinsic YXZ order. When composing, the rotations happen around the local Y, X, and Z axes, in that order. When decomposing, the order is reversed, first Z, then X, and Y last.
 		</constant>
 		<constant name="EULER_ORDER_YZX" value="3" enum="EulerOrder">
-			Specifies that Euler angles should be in YZX order. When composing, the order is Y, Z, X. When decomposing, the order is reversed, first X, then Z, and Y last.
+			Specifies that Euler angles should be in intrinsic YZX order. When composing, the rotations happen around the local Y, Z, and X axes, in that order. When decomposing, the order is reversed, first X, then Z, and Y last.
 		</constant>
 		<constant name="EULER_ORDER_ZXY" value="4" enum="EulerOrder">
-			Specifies that Euler angles should be in ZXY order. When composing, the order is Z, X, Y. When decomposing, the order is reversed, first Y, then X, and Z last.
+			Specifies that Euler angles should be in intrinsic ZXY order. When composing, the rotations happen around the local Z, X, and Y axes, in that order. When decomposing, the order is reversed, first Y, then X, and Z last.
 		</constant>
 		<constant name="EULER_ORDER_ZYX" value="5" enum="EulerOrder">
-			Specifies that Euler angles should be in ZYX order. When composing, the order is Z, Y, X. When decomposing, the order is reversed, first X, then Y, and Z last.
+			Specifies that Euler angles should be in intrinsic ZYX order. When composing, the rotations happen around the local Z, Y, and X axes, in that order. When decomposing, the order is reversed, first X, then Y, and Z last.
 		</constant>
 		<constant name="KEY_NONE" value="0" enum="Key">
 			Enum value which doesn't correspond to any key. This is used to initialize [enum Key] properties with a generic state.
