@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/gui/panel_container.h"
+#include "scene/gui/tab_container.h"
 
 class Button;
 class ConfigFile;
@@ -38,8 +39,8 @@ class EditorPlugin;
 class HBoxContainer;
 class VBoxContainer;
 
-class EditorMainScreen : public PanelContainer {
-	GDCLASS(EditorMainScreen, PanelContainer);
+class EditorMainScreen : public TabContainer {
+	GDCLASS(EditorMainScreen, TabContainer);
 
 public:
 	enum EditorTable {
@@ -87,6 +88,8 @@ public:
 
 	void add_main_plugin(EditorPlugin *p_editor);
 	void remove_main_plugin(EditorPlugin *p_editor);
+
+	void add_dock(Control *p_control);
 
 	EditorMainScreen();
 };
