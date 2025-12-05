@@ -737,6 +737,20 @@ void CodeEdit::_unhide_carets() {
 
 /* Text manipulation */
 
+void CodeEdit::_count_brace_balance(int p_pair, int p_line, int &r_count) {
+	String line = get_line(p_line);
+	for (int c = 0; c < line.length(); c++) {
+		if (is_in_comment(p_line, c) != -1 || is_in_string(p_line, c) != -1) {
+			continue;
+		}
+		if (line[c] == auto_brace_completion_pairs[p_pair].open_key[0]) {
+			r_count += 1;
+		} else if (line[c] == auto_brace_completion_pairs[p_pair].close_key[0]) {
+			r_count -= 1;
+		}
+	}
+}
+
 // Overridable actions
 void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) {
 	start_action(EditAction::ACTION_TYPING);
@@ -788,7 +802,34 @@ void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode, int p_ca
 				} else if (cc < get_line(cl).length() && !is_symbol(get_line(cl)[cc])) {
 					insert_text_at_caret(chr, i);
 				} else if (post_brace_pair != -1 && auto_brace_completion_pairs[post_brace_pair].close_key[0] == chr[0]) {
-					caret_move_offset = auto_brace_completion_pairs[post_brace_pair].close_key.length();
+					// Try to count the brace balance for this pair. Insert closing brace if there are too much open braces, otherwise just move the cursor.
+					int pair_balance = 0;
+					if (auto_brace_completion_pairs[post_brace_pair].close_key.length() == 1 && auto_brace_completion_pairs[post_brace_pair].open_key.length() == 1) {
+						// HACK: We only want to balance in the same scope (or even expression). But scope information is not exposed by the script language so indentation is our best heuristic.
+						int indent_level = get_indent_level(cl);
+
+						for (int balance_line = cl; balance_line >= 0; balance_line--) {
+							if (get_indent_level(balance_line) < indent_level) {
+								// Less indented -> not part of the current scope -> stop searching
+								break;
+							}
+							_count_brace_balance(post_brace_pair, balance_line, pair_balance);
+						}
+
+						for (int balance_line = cl + 1; balance_line < get_line_count(); balance_line++) {
+							if (get_indent_level(balance_line) < indent_level) {
+								// Less indented -> not part of the current scope -> stop searching
+								break;
+							}
+							_count_brace_balance(post_brace_pair, balance_line, pair_balance);
+						}
+					}
+
+					if (pair_balance > 0) {
+						insert_text_at_caret(chr, i);
+					} else {
+						caret_move_offset = auto_brace_completion_pairs[post_brace_pair].close_key.length();
+					}
 				} else if (is_in_comment(cl, cc) != -1 || (is_in_string(cl, cc) != -1 && has_string_delimiter(chr))) {
 					insert_text_at_caret(chr, i);
 				} else {
