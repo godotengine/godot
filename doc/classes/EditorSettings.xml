@@ -1159,7 +1159,6 @@
 		</member>
 		<member name="interface/scene_tabs/restore_scenes_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], when a project is loaded, restores scenes that were opened on the last editor session.
-			[b]Note:[/b] With many opened scenes, the editor may take longer to become usable. If starting the editor quickly is necessary, consider setting this to [code]false[/code].
 		</member>
 		<member name="interface/scene_tabs/show_script_button" type="bool" setter="" getter="">
 			If [code]true[/code], show a button next to each scene tab that opens the scene's "dominant" script when clicked. The "dominant" script is the one that is at the highest level in the scene's hierarchy.
