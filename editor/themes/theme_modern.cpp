@@ -1645,13 +1645,14 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(pressed), "RunBarButton", p_config.base_empty_wide_style);
 		p_theme->set_stylebox(SceneStringName(hover), "RunBarButton", run_bar_hover);
 
-		// FIXME: Decide if the faded color should be used in the modern theme as well.
+		// Needs to present even if unused.
 		p_theme->set_type_variation("RunBarButtonMovieMakerDisabled", "RunBarButton");
 
 		p_theme->set_type_variation("RunBarButtonMovieMakerEnabled", "RunBarButton");
-		// The icon will be surrounded by the accent color, no need to colorize it.
-		p_theme->set_color("icon_pressed_color", "RunBarButtonMovieMakerEnabled", p_config.icon_pressed_color);
-		p_theme->set_color("icon_hover_pressed_color", "RunBarButtonMovieMakerEnabled", p_config.icon_pressed_color);
+		p_theme->set_color("icon_normal_color", "RunBarButtonMovieMakerEnabled", Color(0, 0, 0, 0.7));
+		p_theme->set_color("icon_pressed_color", "RunBarButtonMovieMakerEnabled", Color(0, 0, 0, 0.84));
+		p_theme->set_color("icon_hover_color", "RunBarButtonMovieMakerEnabled", Color(0, 0, 0, 0.9));
+		p_theme->set_color("icon_hover_pressed_color", "RunBarButtonMovieMakerEnabled", Color(0, 0, 0, 0.84));
 
 		// Bottom panel.
 		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
