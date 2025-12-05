@@ -84,10 +84,28 @@ bool CharacterBody2D::move_and_slide() {
 			parameters.exclude_objects.insert(platform_object_id);
 		}
 
-		PhysicsServer2D::MotionResult floor_result;
-		if (move_and_collide(parameters, floor_result, false, false)) {
-			motion_results.push_back(floor_result);
+		// platform_velocity may include recovery motion.
+		// We have to do sliding here. To make things eaiser,
+		// let's slide in any situation. Since it's pushed by
+		// a platform, it should make sense.
+		for (int iteration = 0; iteration < max_slides; ++iteration) {
+			PhysicsServer2D::MotionResult floor_result;
+			if (!move_and_collide(parameters, floor_result, false, true)) {
+				break;
+			}
 			_set_collision_direction(floor_result);
+			parameters.from = get_global_transform();
+			
+			// likely a recovery motion, just remove it and continue
+			if (floor_result.travel.length() <= margin + CMP_EPSILON) {
+				motion_results.push_back(floor_result);
+			} else {
+				parameters.motion = floor_result.remainder.slide(floor_result.collision_normal);
+			}
+
+			if (parameters.motion.is_zero_approx()) {
+				break;
+			}
 		}
 	}
 
@@ -348,8 +366,20 @@ void CharacterBody2D::_apply_floor_snap(bool p_wall_as_floor) {
 	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
-	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(parameters, result, true, false)) {
+	// should we take iteration count '8' as a paramater?
+	// this may be regarded as the max number of bodies standing on it.
+	for (int iteration = 0; iteration < 8; ++iteration) {
+		PhysicsServer2D::MotionResult result;
+		if (!move_and_collide(parameters, result, true, false)) {
+			break;
+		}
+		// ignore ceiling likely caused by recovery
+		if (result.get_angle(-up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+			parameters.exclude_bodies.insert(result.collider);
+			parameters.exclude_objects.insert(result.collider_id);
+			continue;
+		}
+
 		if ((result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) ||
 				(p_wall_as_floor && result.get_angle(-up_direction) > floor_max_angle + FLOOR_ANGLE_THRESHOLD)) {
 			on_floor = true;
@@ -369,6 +399,8 @@ void CharacterBody2D::_apply_floor_snap(bool p_wall_as_floor) {
 			parameters.from.columns[2] += result.travel;
 			set_global_transform(parameters.from);
 		}
+
+		break;
 	}
 }
 
