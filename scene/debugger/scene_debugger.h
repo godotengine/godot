@@ -300,7 +300,8 @@ private:
 	LocalVector<ObjectID> selected_ci_nodes;
 	real_t sel_2d_grab_dist = 0;
 
-	RID sbox_2d_ci;
+	Color ssquare_color;
+	RID ssquare_ci;
 
 #ifndef _3D_DISABLED
 	struct Cursor {
@@ -346,7 +347,7 @@ private:
 
 	Vector2 previous_mouse_position;
 
-	struct SelectionBox3D : public RefCounted {
+	struct SelectionBox : public RefCounted {
 		RID instance;
 		RID instance_ofs;
 		RID instance_xray;
@@ -355,7 +356,7 @@ private:
 		Transform3D transform;
 		AABB bounds;
 
-		~SelectionBox3D() {
+		~SelectionBox() {
 			if (instance.is_valid()) {
 				RS::get_singleton()->free_rid(instance);
 				RS::get_singleton()->free_rid(instance_ofs);
@@ -364,15 +365,15 @@ private:
 			}
 		}
 	};
-	HashMap<ObjectID, Ref<SelectionBox3D>> selected_3d_nodes;
+	HashMap<ObjectID, Ref<SelectionBox>> selected_3d_nodes;
 
-	Color sbox_3d_color;
-	Ref<ArrayMesh> sbox_3d_mesh;
-	Ref<ArrayMesh> sbox_3d_mesh_xray;
-	RID sbox_3d;
-	RID sbox_3d_ofs;
-	RID sbox_3d_xray;
-	RID sbox_3d_xray_ofs;
+	Color sbox_color;
+	Ref<ArrayMesh> sbox_mesh;
+	Ref<ArrayMesh> sbox_mesh_xray;
+	RID sbox;
+	RID sbox_ofs;
+	RID sbox_xray;
+	RID sbox_xray_ofs;
 #endif // _3D_DISABLED
 
 	void _setup(const Dictionary &p_settings);
