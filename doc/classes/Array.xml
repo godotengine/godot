@@ -297,6 +297,7 @@
 			<description>
 				Returns the index of [param value] in the sorted array. If it cannot be found, returns where [param value] should be inserted to keep the array sorted (using [param func] for the comparisons). The algorithm used is [url=https://en.wikipedia.org/wiki/Binary_search_algorithm]binary search[/url].
 				Similar to [method sort_custom], [param func] is called as many times as necessary, receiving one array element and [param value] as arguments. The function should return [code]true[/code] if the array element should be [i]behind[/i] [param value], otherwise it should return [code]false[/code].
+				If the order of the two elements does not matter (e.g. they are equal), it should return [code]false[/code]. This means that for comparisons, [code]&lt;[/code] or [code]&gt;[/code] should always be used instead of [code]&lt;=[/code] or [code]&gt;=[/code]. If this rule is not followed, an error is printed as sorting will be broken.
 				If [param before] is [code]true[/code] (as by default), the returned index comes before all existing elements equal to [param value] in the array.
 				[codeblock]
 				func sort_by_amount(a, b):
@@ -786,6 +787,7 @@
 			<description>
 				Sorts the array using a custom [Callable].
 				[param func] is called as many times as necessary, receiving two array elements as arguments. The function should return [code]true[/code] if the first element should be moved [i]before[/i] the second one, otherwise it should return [code]false[/code].
+				If the order of the two elements does not matter (e.g. they are equal), it should return [code]false[/code]. This means that for comparisons, [code]&lt;[/code] or [code]&gt;[/code] should always be used instead of [code]&lt;=[/code] or [code]&gt;=[/code]. If this rule is not followed, an error is printed as sorting will be broken.
 				[codeblock]
 				func sort_ascending(a, b):
 					if a[1] &lt; b[1]:
