@@ -983,9 +983,8 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	error = OK;
 
 	f = p_f;
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
+	uint32_t header = f->get_32();
+	if (header == FOURCC_COMPRESSED) {
 		// Compressed.
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
@@ -996,7 +995,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		}
 		f = fac;
 
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
+	} else if (header != FOURCC_REGULAR) {
 		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
 		f.unref();
@@ -1121,9 +1120,8 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 	error = OK;
 
 	f = p_f;
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
+	uint32_t header = p_f->get_32();
+	if (header == ResourceLoaderBinary::FOURCC_COMPRESSED) {
 		// Compressed.
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
@@ -1134,7 +1132,7 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 		}
 		f = fac;
 
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
+	} else if (header == ResourceLoaderBinary::FOURCC_REGULAR) {
 		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
 		f.unref();
@@ -1162,9 +1160,8 @@ String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
 	error = OK;
 
 	f = p_f;
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
+	uint32_t header = f->get_32();
+	if (header == ResourceLoaderBinary::FOURCC_COMPRESSED) {
 		// Compressed.
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
@@ -1175,7 +1172,7 @@ String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
 		}
 		f = fac;
 
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
+	} else if (header == ResourceLoaderBinary::FOURCC_REGULAR) {
 		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
 		f.unref();
@@ -1310,9 +1307,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	String local_path = p_path.get_base_dir();
 
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
+	uint32_t header = f->get_32();
+	if (header == ResourceLoaderBinary::FOURCC_COMPRESSED) {
 		// Compressed.
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
@@ -1322,21 +1318,19 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
-		facw->configure("RSCC");
+		facw->configure(ResourceLoaderBinary::FOURCC_COMPRESSED);
 		err = facw->open_internal(p_path + ".depren", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.depren'.", p_path));
 
 		fw = facw;
 
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
+	} else if (header != ResourceLoaderBinary::FOURCC_REGULAR) {
 		// Not normal.
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Unrecognized binary resource file '%s'.", local_path));
 	} else {
 		fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.depren'.", p_path));
-
-		uint8_t magic[4] = { 'R', 'S', 'R', 'C' };
-		fw->store_buffer(magic, 4);
+		fw->store_32(ResourceLoaderBinary::FOURCC_REGULAR);
 	}
 
 	bool big_endian = f->get_32();
@@ -2165,7 +2159,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	if (p_flags & ResourceSaver::FLAG_COMPRESS) {
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
-		fac->configure("RSCC");
+		fac->configure(ResourceLoaderBinary::FOURCC_COMPRESSED);
 		f = fac;
 		err = fac->open_internal(p_path, FileAccess::WRITE);
 	} else {
@@ -2190,9 +2184,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	_find_resources(p_resource, true);
 
 	if (!(p_flags & ResourceSaver::FLAG_COMPRESS)) {
-		//save header compressed
-		static const uint8_t header[4] = { 'R', 'S', 'R', 'C' };
-		f->store_buffer(header, 4);
+		f->store_32(ResourceLoaderBinary::FOURCC_REGULAR);
 	}
 
 	if (big_endian) {
@@ -2410,9 +2402,8 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 
 	local_path = p_path.get_base_dir();
 
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
+	uint32_t header = f->get_32();
+	if (header == ResourceLoaderBinary::FOURCC_COMPRESSED) {
 		// Compressed.
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
@@ -2422,21 +2413,19 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
-		facw->configure("RSCC");
+		facw->configure(ResourceLoaderBinary::FOURCC_COMPRESSED);
 		err = facw->open_internal(p_path + ".uidren", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.uidren'.", p_path));
 
 		fw = facw;
 
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
+	} else if (header != ResourceLoaderBinary::FOURCC_REGULAR) {
 		// Not a binary resource.
 		return ERR_FILE_UNRECOGNIZED;
 	} else {
 		fw = FileAccess::open(p_path + ".uidren", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.uidren'.", p_path));
-
-		uint8_t magich[4] = { 'R', 'S', 'R', 'C' };
-		fw->store_buffer(magich, 4);
+		fw->store_32(ResourceLoaderBinary::FOURCC_REGULAR);
 	}
 
 	big_endian = f->get_32();
