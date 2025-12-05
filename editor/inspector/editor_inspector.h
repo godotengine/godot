@@ -78,7 +78,8 @@ class EditorProperty : public Container {
 		Ref<StyleBox> background;
 		Ref<StyleBox> background_selected;
 		Ref<StyleBox> child_background;
-		Ref<StyleBox> hover;
+		Ref<StyleBox> button_hover_background;
+		Ref<StyleBox> button_pressed_background;
 		Ref<StyleBox> sub_inspector_background[17];
 
 		Ref<Texture2D> key_icon;
@@ -103,6 +104,10 @@ class EditorProperty : public Container {
 		int vertical_separation = 0;
 		int padding = 0;
 		int inspector_property_height = 0;
+
+		Color button_icon_normal_color;
+		Color button_icon_hover_color;
+		Color button_icon_pressed_color;
 
 		Color property_color;
 		Color readonly_property_color;
@@ -168,12 +173,16 @@ private:
 
 	Rect2 keying_rect;
 	bool keying_hover = false;
+	bool keying_pressed = false;
 	Rect2 revert_rect;
 	bool revert_hover = false;
+	bool revert_pressed = false;
 	Rect2 check_rect;
 	bool check_hover = false;
+	bool check_pressed = false;
 	Rect2 delete_rect;
 	bool delete_hover = false;
+	bool delete_pressed = false;
 
 	bool can_revert = false;
 	bool can_pin = false;
@@ -453,8 +462,10 @@ class EditorInspectorSection : public Container {
 
 	Rect2 check_rect;
 	bool check_hover = false;
+	bool check_pressed = false;
 	Rect2 keying_rect;
 	bool keying_hover = false;
+	bool keying_pressed = false;
 	bool header_hover = false;
 
 	bool checkbox_only = false;
@@ -478,10 +489,14 @@ class EditorInspectorSection : public Container {
 		Color warning_color;
 		Color prop_subsection;
 		Color font_color;
-		Color font_disabled_color;
+		Color font_disabled_color; // Used to draw revertable count text, not an actual disabled state.
 		Color font_hover_color;
 		Color font_pressed_color;
 		Color font_hover_pressed_color;
+
+		Color button_icon_normal_color;
+		Color button_icon_hover_color;
+		Color button_icon_pressed_color;
 
 		Ref<Font> font;
 		int font_size = 0;
@@ -497,8 +512,9 @@ class EditorInspectorSection : public Container {
 		Ref<Texture2D> icon_gui_unchecked;
 		Ref<Texture2D> icon_gui_animation_key;
 
-		Ref<StyleBoxFlat> indent_box;
-		Ref<StyleBoxFlat> key_hover;
+		Ref<StyleBox> indent_box;
+		Ref<StyleBox> button_hover_background;
+		Ref<StyleBox> button_pressed_background;
 	} theme_cache;
 
 protected:
