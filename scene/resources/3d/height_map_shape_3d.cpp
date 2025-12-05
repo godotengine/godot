@@ -47,7 +47,8 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 		const real_t *r = map_data.ptr();
 
 		// reserve some memory for our points..
-		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2) + ((map_width - 1) * (map_depth - 1) * 2));
+		points.resize_uninitialized(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2) + ((map_width - 1) * (map_depth - 1) * 2));
+		Vector3 *points_ptrw = points.ptrw();
 
 		// now set our points
 		int r_offset = 0;
@@ -59,18 +60,18 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 				height.y = r[r_offset++];
 
 				if (w != map_width - 1) {
-					points.write[w_offset++] = height;
-					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
+					points_ptrw[w_offset++] = height;
+					points_ptrw[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
 				}
 
 				if (d != map_depth - 1) {
-					points.write[w_offset++] = height;
-					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+					points_ptrw[w_offset++] = height;
+					points_ptrw[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
 				}
 
 				if ((w != map_width - 1) && (d != map_depth - 1)) {
-					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
-					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+					points_ptrw[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
+					points_ptrw[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
 				}
 
 				height.x += 1.0;
@@ -84,45 +85,52 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 }
 
 Ref<ArrayMesh> HeightMapShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+	if (map_depth < 2 || map_width < 2) {
+		return Ref<ArrayMesh>();
+	}
+
 	Vector<Vector3> verts;
 	Vector<Color> colors;
 	Vector<int> indices;
 
 	// This will be slow for large maps...
 
-	if ((map_width != 0) && (map_depth != 0)) {
-		Vector2 size = Vector2(map_width - 1, map_depth - 1) * -0.5;
-		const real_t *r = map_data.ptr();
+	const int quad_count_w = map_width - 1;
+	const int quad_count_d = map_depth - 1;
 
-		for (int d = 0; d <= map_depth - 2; d++) {
-			const int this_row_offset = map_width * d;
-			const int next_row_offset = this_row_offset + map_width;
+	const Vector2 half_size_offset = Vector2(quad_count_w, quad_count_d) * -0.5;
+	const real_t *r = map_data.ptr();
 
-			for (int w = 0; w <= map_width - 2; w++) {
-				const float height_tl = r[next_row_offset + w];
-				const float height_bl = r[this_row_offset + w];
-				const float height_br = r[this_row_offset + w + 1];
-				const float height_tr = r[next_row_offset + w + 1];
+	verts.resize_uninitialized(map_depth * map_width);
+	Vector3 *verts_ptrw = verts.ptrw();
+	int index = 0;
+	for (int d = 0; d < map_depth; d++) {
+		for (int w = 0; w < map_width; w++) {
+			const float height = r[index];
+			verts_ptrw[index++] = Vector3(half_size_offset.x + w, height, half_size_offset.y + d);
+		}
+	}
 
-				const int index_offset = verts.size();
+	colors.resize_uninitialized(map_depth * map_width);
+	colors.fill(p_modulate);
 
-				verts.push_back(Vector3(size.x + w, height_tl, size.y + d + 1));
-				verts.push_back(Vector3(size.x + w, height_bl, size.y + d));
-				verts.push_back(Vector3(size.x + w + 1, height_br, size.y + d));
-				verts.push_back(Vector3(size.x + w + 1, height_tr, size.y + d + 1));
+	indices.resize_uninitialized(quad_count_d * quad_count_w * 6);
+	int *indices_ptrw = indices.ptrw();
+	index = 0;
+	for (int d = 0; d < quad_count_d; d++) {
+		for (int w = 0; w < quad_count_w; w++) {
+			const int index_bl = d * map_width + w;
+			const int index_br = index_bl + 1;
+			const int index_tl = index_bl + map_width;
+			const int index_tr = index_tl + 1;
 
-				colors.push_back(p_modulate);
-				colors.push_back(p_modulate);
-				colors.push_back(p_modulate);
-				colors.push_back(p_modulate);
+			indices_ptrw[index++] = index_tl;
+			indices_ptrw[index++] = index_bl;
+			indices_ptrw[index++] = index_br;
 
-				indices.push_back(index_offset);
-				indices.push_back(index_offset + 1);
-				indices.push_back(index_offset + 2);
-				indices.push_back(index_offset);
-				indices.push_back(index_offset + 2);
-				indices.push_back(index_offset + 3);
-			}
+			indices_ptrw[index++] = index_tl;
+			indices_ptrw[index++] = index_br;
+			indices_ptrw[index++] = index_tr;
 		}
 	}
 
