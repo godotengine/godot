@@ -109,6 +109,9 @@ void EditorTitleBar::_notification(int p_what) {
 			Control *base = nullptr;
 			Control *next = nullptr;
 
+			int prev_min = 0;
+			int next_min = 0;
+
 			bool rtl = is_layout_rtl();
 
 			int start;
@@ -129,22 +132,24 @@ void EditorTitleBar::_notification(int p_what) {
 				if (!c) {
 					continue;
 				}
-				if (base) {
-					next = c;
-					break;
-				}
-				if (c != center_control) {
+				if (!base && c == center_control) {
+					base = c;
+				} else if (!base) {
 					prev = c;
-					continue;
+					prev_min += c->get_combined_minimum_size().x;
+				} else {
+					if (!next) {
+						next = c;
+					}
+					next_min += c->get_combined_minimum_size().x;
 				}
-				base = c;
 			}
 			if (base && prev && next) {
 				Size2i title_size = get_size();
 				Size2i c_size = base->get_combined_minimum_size();
 
-				int min_offset = prev->get_position().x + prev->get_combined_minimum_size().x;
-				int max_offset = next->get_position().x + next->get_size().x - next->get_combined_minimum_size().x - c_size.x;
+				int min_offset = prev_min;
+				int max_offset = title_size.x - next_min - c_size.x;
 
 				int offset = (title_size.width - c_size.width) / 2;
 				offset = CLAMP(offset, min_offset, max_offset);

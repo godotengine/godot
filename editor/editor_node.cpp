@@ -9194,16 +9194,6 @@ EditorNode::EditorNode() {
 	add_child(screenshot_timer);
 	screenshot_timer->set_owner(get_owner());
 
-	// Adjust spacers to center 2D / 3D / Script buttons.
-	if (main_menu_button != nullptr) {
-		int max_w = MAX(project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu_button->get_minimum_size().x);
-		left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu_button->get_minimum_size().x), 0));
-		right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - project_run_bar->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
-	} else {
-		int max_w = MAX(project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu_bar->get_minimum_size().x);
-		left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu_bar->get_minimum_size().x), 0));
-		right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - project_run_bar->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
-	}
 	// Extend menu bar to window title.
 	if (can_expand) {
 		DisplayServer::get_singleton()->process_events();
