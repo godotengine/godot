@@ -51,10 +51,10 @@
 
 #include <tracy/Tracy.hpp>
 
-namespace TracyInternal {
-const char *intern_name(const StringName &p_name);
-const tracy::SourceLocationData *intern_source_location(const void *p_function_ptr, const StringName &p_file, const StringName &p_function, uint32_t p_line);
-} //namespace TracyInternal
+// Hijacking the tracy namespace so we can use their macros.
+namespace tracy {
+const SourceLocationData *intern_source_location(const void *p_function_ptr, const StringName &p_file, const StringName &p_function, const StringName &p_name, uint32_t p_line, bool p_is_script);
+} //namespace tracy
 
 // Define tracing macros.
 #define GodotProfileFrameMark FrameMark
@@ -72,8 +72,11 @@ const tracy::SourceLocationData *intern_source_location(const void *p_function_p
 	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
 #endif
-#define GodotProfileZoneGroupedFirstScript(m_varname, m_ptr, m_file, m_function, m_line) \
-	tracy::ScopedZone __godot_tracy_zone_##m_group_name(TracyInternal::intern_source_location(m_ptr, m_file, m_function, m_line))
+
+#define GodotProfileZoneScript(m_ptr, m_file, m_function, m_name, m_line) \
+	tracy::ScopedZone __godot_tracy_script(tracy::intern_source_location(m_ptr, m_file, m_function, m_name, m_line, true))
+#define GodotProfileZoneScriptSystemCall(m_ptr, m_file, m_function, m_name, m_line) \
+	tracy::ScopedZone __godot_tracy_zone_system_call(tracy::intern_source_location(m_ptr, m_file, m_function, m_name, m_line, false))
 
 // Memory allocation
 #ifdef GODOT_PROFILER_TRACK_MEMORY
@@ -119,7 +122,9 @@ struct PerfettoGroupedEventEnder {
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name) \
 	__godot_perfetto_zone_##m_group_name._end_now();       \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);
-#define GodotProfileZoneGroupedFirstScript(m_varname, m_ptr, m_file, m_function, m_line) \\ TODO
+
+#define GodotProfileZoneScript(m_ptr, m_file, m_function, m_name, m_line)
+#define GodotProfileZoneScriptSystemCall(m_ptr, m_file, m_function, m_name, m_line)
 
 #define GodotProfileAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr)
@@ -177,7 +182,8 @@ private:
 #define GodotProfileZone(m_zone_name) \
 	GodotProfileZoneGroupedFirst(__COUNTER__, m_zone_name)
 
-#define GodotProfileZoneGroupedFirstScript(m_varname, m_ptr, m_file, m_function, m_line)
+#define GodotProfileZoneScript(m_ptr, m_file, m_function, m_name, m_line)
+#define GodotProfileZoneScriptSystemCall(m_ptr, m_file, m_function, m_name, m_line)
 
 // Instruments has its own memory profiling, so these are no-ops.
 #define GodotProfileAlloc(m_ptr, m_size)
@@ -210,10 +216,11 @@ void godot_cleanup_profiler();
 // There must be a one to one correspondence of GodotProfileAlloc and GodotProfileFree calls.
 #define GodotProfileFree(m_ptr)
 
-// Define a zone with custom source information (for scripting)
-// m_varname is equivalent to GodotProfileZoneGrouped varnames.
+// Define a zone for a script call (dynamic source location).
 // m_ptr is a pointer to the function instance, which will be used for the lookup.
-// m_file, m_function are StringNames, m_line is a uint32_t, all used for the source location.
-#define GodotProfileZoneGroupedFirstScript(m_varname, m_ptr, m_file, m_function, m_line)
+// m_file, m_function, m_name are StringNames, and m_line is uint32_t
+#define GodotProfileZoneScript(m_ptr, m_file, m_function, m_name, m_line)
+// Define a zone for a system call from a script (dynamic source location).
+#define GodotProfileZoneScriptSystemCall(m_ptr, m_file, m_function, m_name, m_line)
 
 #endif
