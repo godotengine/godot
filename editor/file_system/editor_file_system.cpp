@@ -546,6 +546,7 @@ void EditorFileSystem::_save_filesystem_cache() {
 }
 
 void EditorFileSystem::_thread_func(void *_userdata) {
+	Thread::set_name("EditorFileSystem scan");
 	EditorFileSystem *sd = (EditorFileSystem *)_userdata;
 	sd->_scan_filesystem();
 }
@@ -1637,6 +1638,7 @@ int EditorFileSystem::_insert_actions_delete_files_directory(EditorFileSystemDir
 }
 
 void EditorFileSystem::_thread_func_sources(void *_userdata) {
+	Thread::set_name("EditorFileSystem scan sources");
 	EditorFileSystem *efs = (EditorFileSystem *)_userdata;
 	if (efs->filesystem) {
 		EditorProgressBG pr("sources", TTR("ScanSources"), 1000);

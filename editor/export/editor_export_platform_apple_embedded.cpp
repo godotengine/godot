@@ -2318,6 +2318,7 @@ bool EditorExportPlatformAppleEmbedded::_check_xcode_install() {
 }
 
 void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud) {
+	Thread::set_name("iOS/visionOS device detection");
 	EditorExportPlatformAppleEmbedded *ea = static_cast<EditorExportPlatformAppleEmbedded *>(ud);
 
 	String device_types;
