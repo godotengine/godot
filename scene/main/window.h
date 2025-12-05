@@ -121,6 +121,8 @@ private:
 
 	String title;
 	String displayed_title;
+	String session_id;
+
 	mutable int current_screen = 0;
 	mutable Point2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -164,6 +166,7 @@ private:
 	void _make_window();
 	void _clear_window();
 	void _update_from_window();
+	void _save_window();
 	void _accessibility_notify_enter(Node *p_node);
 	void _accessibility_notify_exit(Node *p_node);
 
@@ -300,6 +303,9 @@ public:
 	void set_title(const String &p_title);
 	String get_title() const;
 	String get_displayed_title() const;
+
+	void set_session_id(const String &p_name);
+	String get_session_id() const;
 
 	void set_initial_position(WindowInitialPosition p_initial_position);
 	WindowInitialPosition get_initial_position() const;
