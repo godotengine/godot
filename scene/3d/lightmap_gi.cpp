@@ -40,9 +40,9 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
-#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #include "modules/modules_enabled.gen.h" // For lightmapper_rd.
 
@@ -896,6 +896,33 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 	return LightmapGI::BAKE_ERROR_OK;
 }
 
+void LightmapGI::_build_area_light_texture_atlas(const Vector<LightmapGI::LightsFound> &lights_found, HashMap<Ref<Texture2D>, Rect2> &r_texture_rects, Size2i &r_atlas_size, int &r_mipmaps) const {
+	r_mipmaps = 8;
+	r_atlas_size = Size2i(pow(2, r_mipmaps), pow(2, r_mipmaps));
+
+	for (int i = 0; i < lights_found.size(); i++) {
+		Light3D *light = lights_found[i].light;
+		if (Object::cast_to<AreaLight3D>(light)) {
+			AreaLight3D *l = Object::cast_to<AreaLight3D>(light);
+			if (l->get_area_texture().is_valid() && !r_texture_rects.has(l->get_area_texture())) {
+				r_texture_rects[l->get_area_texture()] = Rect2();
+			}
+		}
+	}
+
+	for (const KeyValue<Ref<Texture2D>, Rect2> &E : r_texture_rects) {
+		Ref<Texture2D> tex = E.key;
+		Size2i tex_size = Size2i(tex->get_width(), tex->get_height());
+
+		/* TODO: build atlas */
+
+		r_atlas_size.x = MAX(r_atlas_size.x, nearest_power_of_2_templated(tex_size.x));
+		r_atlas_size.y = MAX(r_atlas_size.y, nearest_power_of_2_templated(tex_size.y));
+
+		r_texture_rects[tex] = Rect2(Vector2(0.0, 0.0), Vector2(1.0, 1.0));
+	}
+}
+
 LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
 	if (p_image_data_path.is_empty()) {
 		if (get_light_data().is_null()) {
@@ -1176,6 +1203,21 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	{
+		Size2i size;
+		HashMap<Ref<Texture2D>, Rect2> area_light_atlas_texture_rects;
+		int mipmaps = 1;
+		_build_area_light_texture_atlas(lights_found, area_light_atlas_texture_rects, size, mipmaps);
+		TypedArray<Texture2D> area_light_textures; // keys of area_light_atlas_texture_rects
+		TypedArray<Rect2> area_light_texture_rects; // values of area_light_atlas_texture_rects
+		for (const KeyValue<Ref<Texture2D>, Rect2> &E : area_light_atlas_texture_rects) {
+			area_light_textures.push_back(E.key);
+			area_light_texture_rects.push_back(E.value);
+		}
+
+		TypedArray<Image> area_light_atlas_images = RS::get_singleton()->bake_render_area_light_atlas(area_light_textures, area_light_texture_rects, size, mipmaps);
+
+		lightmapper->add_area_light_atlas(size, area_light_atlas_images.size(), area_light_atlas_images);
+
 		for (int i = 0; i < mesh_data.size(); i++) {
 			lightmapper->add_mesh(mesh_data[i]);
 		}
@@ -1225,7 +1267,11 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				// normalization to make larger lights output same amount of light as smaller lights with same energy
 				float surface_area = l->get_area_size().x * l->get_area_size().y;
 				energy /= surface_area;
-				lightmapper->add_area_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), area_vec_x, area_vec_y, l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));//, l->get_area_texture());
+				Rect2 texture_rect = Rect2(0.0, 0.0, 0.0, 0.0);
+				if (l->get_area_texture().is_valid()) {
+					texture_rect = area_light_atlas_texture_rects[l->get_area_texture()];
+				}
+				lightmapper->add_area_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), area_vec_x, area_vec_y, l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR), texture_rect);
 			}
 		}
 		for (int i = 0; i < probes_found.size(); i++) {
