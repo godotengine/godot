@@ -746,6 +746,7 @@ void SkyRD::init() {
 		actions.renames["COLOR"] = "color";
 		actions.renames["ALPHA"] = "alpha";
 		actions.renames["EYEDIR"] = "cube_normal";
+		actions.renames["ORIENTATION"] = "params.orientation";
 		actions.renames["POSITION"] = "params.position";
 		actions.renames["SKY_COORDS"] = "panorama_coords";
 		actions.renames["SCREEN_UV"] = "uv";
