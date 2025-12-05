@@ -32,6 +32,10 @@
 
 #include "scene/main/viewport.h"
 
+#ifdef DEBUG_ENABLED
+#include "servers/physics_2d/physics_server_2d.h"
+#endif
+
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	if (texture_normal == p_texture) {
 		return;
@@ -451,4 +455,8 @@ void TouchScreenButton::_bind_methods() {
 TouchScreenButton::TouchScreenButton() {
 	unit_rect.instantiate();
 	unit_rect->set_size(Vector2(1, 1));
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_options_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }
