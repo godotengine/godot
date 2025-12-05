@@ -1310,7 +1310,12 @@ public:
 		ENV_SSAO_QUALITY_ULTRA,
 	};
 
-	virtual void environment_set_ssao_quality(EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
+	enum EnvironmentSSAOType {
+		ENV_SSAO_TYPE_ASSAO,
+		ENV_SSAO_TYPE_GTAO,
+	};
+
+	virtual void environment_set_ssao_quality(EnvironmentSSAOQuality p_quality, EnvironmentSSAOType p_type, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
 	virtual void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) = 0;
 
@@ -1998,6 +2003,7 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentFogMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOType);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSILQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToConverge);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIRayCount);
