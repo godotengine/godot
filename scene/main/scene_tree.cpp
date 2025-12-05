@@ -2073,7 +2073,9 @@ SceneTree::SceneTree() {
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
 
+#ifndef _2D_DISABLED
 	root->set_as_audio_listener_2d(true);
+#endif // _2D_DISABLED
 	current_scene = nullptr;
 
 	const int msaa_mode_2d = GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d");
