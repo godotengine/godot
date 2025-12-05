@@ -565,6 +565,13 @@ Error OS_LinuxBSD::shell_open(const String &p_uri) {
 		return OK;
 	}
 	ok = execute("kde-open", args, nullptr, &err_code);
+	// XFCE
+	ok = execute("exo-open", args, nullptr, &err_code);
+	if (ok == OK && !err_code) {
+		return OK;
+	} else if (err_code == 2) {
+		return ERR_FILE_NOT_FOUND;
+	}
 	return !err_code ? ok : FAILED;
 }
 
