@@ -4347,10 +4347,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
-		const HashMap<StringName, ClassDB::ClassInfo::EnumInfo> &enum_map = class_info->enum_map;
+		const AHashMap<StringName, const GDType::EnumInfo *> &enum_map = class_info->gdtype->get_enum_map(true);
 
-		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &E : enum_map) {
-			StringName enum_proxy_cname = E.key;
+		for (const KeyValue<StringName, const GDType::EnumInfo *> &kv : enum_map) {
+			StringName enum_proxy_cname = kv.key;
 			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.operator String());
 			if (itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
 				// In case the enum name conflicts with other PascalCase members,
@@ -4359,15 +4359,12 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, E.value.is_bitfield);
-			const List<StringName> &enum_constants = E.value.constants;
-			for (const StringName &constant_cname : enum_constants) {
-				String constant_name = constant_cname.operator String();
-				int64_t *value = class_info->constant_map.getptr(constant_cname);
-				ERR_FAIL_NULL_V(value, false);
-				constants.erase(constant_name);
+			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, kv.value->is_bitfield);
+			for (const KeyValue<StringName, int64_t> &kv_case : kv.value->values) {
+				String constant_name = kv_case.key.operator String();
+				constants.erase(kv_case.key);
 
-				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
+				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), kv_case.value);
 
 				iconstant.const_doc = nullptr;
 				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -4400,7 +4397,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			TypeInterface enum_itype;
 			enum_itype.is_enum = true;
-			enum_itype.name = itype.name + "." + String(E.key);
+			enum_itype.name = itype.name + "." + String(kv.key);
 			enum_itype.cname = StringName(enum_itype.name);
 			enum_itype.proxy_name = itype.proxy_name + "." + enum_proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
@@ -4408,7 +4405,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			int64_t *value = class_info->constant_map.getptr(StringName(constant_name));
+			const int64_t *value = class_info->gdtype->get_integer_constant_map(true).getptr(StringName(constant_name));
 			ERR_FAIL_NULL_V(value, false);
 
 			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
