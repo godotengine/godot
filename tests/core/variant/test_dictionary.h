@@ -474,12 +474,12 @@ TEST_CASE("[Dictionary] Nested dictionary comparison") {
 
 TEST_CASE("[Dictionary] Nested array comparison") {
 	// d1 = {1: [2, 3]}
-	Dictionary d1 = { { 1, { 2, 3 } } };
+	Dictionary d1 = { { 1, Array{ 2, 3 } } };
 
 	Dictionary d2 = d1.duplicate(true);
 
 	// other_d = {1: [2, 0]}
-	Dictionary other_d = { { 1, { 2, 0 } } };
+	Dictionary other_d = { { 1, Array{ 2, 0 } } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
