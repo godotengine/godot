@@ -33,6 +33,7 @@
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/multi_node_edit.h"
@@ -452,10 +453,7 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 			scene_tiles_list->select(item_index, false);
 		}
 	}
-	if (scene_tiles_list->get_item_count() == 0) {
-		scene_tiles_list->add_item(TTR("The selected scene collection source has no scenes. Add scenes in the TileSet bottom tab."));
-		scene_tiles_list->set_item_disabled(-1, true);
-	}
+	scenes_empty_label->set_visible(scene_tiles_list->get_item_count() == 0);
 
 	// Icon size update.
 	int int_size = int(EDITOR_GET("filesystem/file_dialog/thumbnail_size")) * EDSCALE;
@@ -534,6 +532,7 @@ void TileMapLayerEditorTilesPlugin::_update_theme() {
 	transform_button_flip_v->set_button_icon(tiles_bottom_panel->get_editor_theme_icon("MirrorY"));
 
 	missing_atlas_texture_icon = tiles_bottom_panel->get_editor_theme_icon(SNAME("TileSet"));
+	scenes_empty_label->add_theme_color_override(SceneStringName(font_color), tiles_bottom_panel->get_theme_color("warning_color", EditorStringName(Editor)));
 	_update_tile_set_sources_list();
 }
 
@@ -2416,15 +2415,22 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	tile_atlas_view->add_control_over_alternative_tiles(alternative_tiles_control);
 
 	// Scenes collection source.
+	VBoxContainer *scenes_vb = memnew(VBoxContainer);
+	scenes_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	atlas_sources_split_container->add_child(scenes_vb);
+
+	scenes_empty_label = memnew(Label);
+	scenes_empty_label->set_text(TTRC("The selected scene collection source has no scenes. Add scenes in the TileSet bottom tab."));
+	scenes_vb->add_child(scenes_empty_label);
+
 	scene_tiles_list = memnew(ItemList);
-	scene_tiles_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
-	scene_tiles_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	scene_tiles_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
 	scene_tiles_list->set_select_mode(ItemList::SELECT_MULTI);
 	scene_tiles_list->connect("multi_selected", callable_mp(this, &TileMapLayerEditorTilesPlugin::_scenes_list_multi_selected));
 	scene_tiles_list->connect("empty_clicked", callable_mp(this, &TileMapLayerEditorTilesPlugin::_scenes_list_lmb_empty_clicked));
 	scene_tiles_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-	atlas_sources_split_container->add_child(scene_tiles_list);
+	scenes_vb->add_child(scene_tiles_list);
 
 	// Invalid source label.
 	invalid_source_label = memnew(Label);
