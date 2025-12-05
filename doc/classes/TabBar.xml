@@ -276,6 +276,9 @@
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
 			The horizontal alignment of the tabs.
 		</member>
+		<member name="tab_sizing" type="int" setter="set_tab_sizing" getter="get_tab_sizing" enum="TabBar.SizingMode" default="0">
+			The sizing strategy used to determine tab widths.
+		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
 			When the close button will appear on the tabs.
 		</member>
@@ -358,6 +361,21 @@
 		</constant>
 		<constant name="ALIGNMENT_MAX" value="3" enum="AlignmentMode">
 			Represents the size of the [enum AlignmentMode] enum.
+		</constant>
+		<constant name="TAB_SIZING_CONTENT_WIDTH" value="0" enum="SizingMode">
+			Size tabs individually according to the size of their content.
+		</constant>
+		<constant name="TAB_SIZING_JUSTIFY" value="1" enum="SizingMode">
+			Size tabs individually according to their content, expanding to the full width of the tab bar.
+		</constant>
+		<constant name="TAB_SIZING_EXPAND" value="2" enum="SizingMode">
+			Size tabs equally, expanding to the full width of the tab bar.
+		</constant>
+		<constant name="TAB_SIZING_UNIFORM" value="3" enum="SizingMode">
+			Size tabs uniformly, with the widest tab determining the size of all tabs.
+		</constant>
+		<constant name="TAB_SIZING_MAX" value="4" enum="SizingMode">
+			Represents the size of the [enum SizingMode] enum.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
 			Never show the close buttons.
