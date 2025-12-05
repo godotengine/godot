@@ -201,6 +201,8 @@ private:
 	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
 	void _accessibility_action_focus(const Variant &p_data, int p_index);
 
+	bool _are_all_tabs_hidden() const;
+
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
