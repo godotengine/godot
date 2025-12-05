@@ -242,6 +242,12 @@
 				Returns a [Projection] that performs the inverse of this [Projection]'s projective transformation.
 			</description>
 		</method>
+		<method name="is_frustum_symmetric" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Projection] conforms to standard orthographic or perspective.
+			</description>
+		</method>
 		<method name="is_orthogonal" qualifiers="const">
 			<return type="bool" />
 			<description>
