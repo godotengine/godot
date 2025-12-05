@@ -3,4 +3,14 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+import editor_export_builders
+
+# Template keys
+flist = Glob("#editor/export/keys/*.pub")
+env.CommandNoCache(
+    "#editor/export/export_template_keys.gen.h",
+    flist,
+    env.Run(editor_export_builders.make_keys_header),
+)
+
 env.add_source_files(env.editor_sources, "*.cpp")
