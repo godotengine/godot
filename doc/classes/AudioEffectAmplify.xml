@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectAmplify" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds an amplifying audio effect to an audio bus.
+		Adds an amplifying audio effect.
 	</brief_description>
 	<description>
-		Increases or decreases the volume being routed through the audio bus.
+		Increases or decreases the volume of the audio being routed through this effect.
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
