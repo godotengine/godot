@@ -4189,6 +4189,9 @@ String String::simplify_path() const {
 		}
 	}
 	Vector<String> dirs = s.split("/", false);
+	bool absolute_path = is_absolute_path();
+
+	absolute_path = absolute_path && !begins_with("res://"); // FIXME: Some code (GLTF importer) rely on accessing files up from `res://`, this probably should be disabled in the future.
 
 	for (int i = 0; i < dirs.size(); i++) {
 		String d = dirs[i];
@@ -4200,6 +4203,9 @@ String String::simplify_path() const {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;
+			} else if (absolute_path && i == 0) {
+				dirs.remove_at(i);
+				i--;
 			}
 		}
 	}
