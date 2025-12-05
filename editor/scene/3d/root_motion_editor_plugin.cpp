@@ -66,10 +66,7 @@ void EditorPropertyRootMotion::_node_assign() {
 
 	HashSet<String> paths;
 	{
-		List<StringName> animations;
-		mixer->get_animation_list(&animations);
-
-		for (const StringName &E : animations) {
+		for (const StringName &E : mixer->get_sorted_animation_list()) {
 			Ref<Animation> anim = mixer->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				String pathname = anim->track_get_path(i).get_concatenated_names();
