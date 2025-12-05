@@ -1766,6 +1766,7 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_ALL), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
+	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_TABS_BELOW), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_DOCS), !_has_docs_tab());
 
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_RUN), res.is_null());
