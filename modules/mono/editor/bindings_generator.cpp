@@ -1404,43 +1404,45 @@ void BindingsGenerator::_append_xml_undeclared(StringBuilder &p_xml_output, cons
 }
 
 bool BindingsGenerator::_validate_api_type(const TypeInterface *p_target_itype, const TypeInterface *p_source_itype) {
-	static constexpr const char *api_types[5] = {
-		"Core",
-		"Editor",
-		"Extension",
-		"Editor Extension",
-		"None",
-	};
-
 	const ClassDB::APIType target_api = p_target_itype ? p_target_itype->api_type : ClassDB::API_NONE;
 	ERR_FAIL_INDEX_V((int)target_api, 5, false);
 	const ClassDB::APIType source_api = p_source_itype ? p_source_itype->api_type : ClassDB::API_NONE;
 	ERR_FAIL_INDEX_V((int)source_api, 5, false);
 	bool validate = false;
 
-	switch (target_api) {
-		case ClassDB::API_NONE:
-		case ClassDB::API_CORE:
-		default:
-			validate = true;
-			break;
-		case ClassDB::API_EDITOR:
-			validate = source_api == ClassDB::API_EDITOR || source_api == ClassDB::API_EDITOR_EXTENSION;
-			break;
-		case ClassDB::API_EXTENSION:
-			validate = source_api == ClassDB::API_EXTENSION || source_api == ClassDB::API_EDITOR_EXTENSION;
-			break;
-		case ClassDB::API_EDITOR_EXTENSION:
-			validate = source_api == ClassDB::API_EDITOR_EXTENSION;
-			break;
-	}
-	if (!validate) {
+	if (!_api_type_can_reference_other(source_api, target_api)) {
 		const String target_name = p_target_itype ? p_target_itype->proxy_name : "@GlobalScope";
 		const String source_name = p_source_itype ? p_source_itype->proxy_name : "@GlobalScope";
 		WARN_PRINT(vformat("Type '%s' has API level '%s'; it cannot be referenced by type '%s' with API level '%s'.",
-				target_name, api_types[target_api], source_name, api_types[source_api]));
+				target_name, api_type_names[target_api], source_name, api_type_names[source_api]));
 	}
 	return validate;
+}
+
+bool BindingsGenerator::_api_type_can_reference_other(const ClassDB::APIType p_source_api_type, const ClassDB::APIType p_target_api_type) {
+	switch (p_target_api_type) {
+		// Builtins/global ok for all
+		case ClassDB::API_NONE:
+			return true;
+
+		// CORE is visible to all
+		case ClassDB::API_CORE:
+			return true;
+
+		// EDITOR types are visible to both editor and editor extensions.
+		case ClassDB::API_EDITOR:
+			return p_source_api_type == ClassDB::API_EDITOR || p_source_api_type == ClassDB::API_EDITOR_EXTENSION;
+
+		// EXTENSION types are visible to both extensions and editor extensions.
+		case ClassDB::API_EXTENSION:
+			return p_source_api_type == ClassDB::API_EXTENSION || p_source_api_type == ClassDB::API_EDITOR_EXTENSION;
+
+		// EDITOR_EXTENSION types are only visible to editor extension types.
+		case ClassDB::API_EDITOR_EXTENSION:
+			return p_source_api_type == ClassDB::API_EDITOR_EXTENSION;
+	}
+
+	ERR_FAIL_V_MSG(false, "Argument out of range: " + itos(p_target_api_type));
 }
 
 int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
@@ -1787,7 +1789,8 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
 		const TypeInterface &itype = E.value;
 
-		if (itype.api_type == ClassDB::API_EDITOR) {
+		const bool is_editor_type = itype.api_type == ClassDB::API_EDITOR || itype.api_type == ClassDB::API_EDITOR_EXTENSION;
+		if (is_editor_type) {
 			continue;
 		}
 
@@ -1832,7 +1835,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
 			const TypeInterface &itype = E.value;
 
-			if (itype.api_type != ClassDB::API_CORE || itype.is_singleton_instance) {
+			if ((itype.api_type != ClassDB::API_CORE && itype.api_type != ClassDB::API_EXTENSION) || itype.is_singleton_instance) {
 				continue;
 			}
 
@@ -1957,7 +1960,8 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
 		const TypeInterface &itype = E.value;
 
-		if (itype.api_type != ClassDB::API_EDITOR) {
+		const bool is_editor_type = itype.api_type == ClassDB::API_EDITOR || itype.api_type == ClassDB::API_EDITOR_EXTENSION;
+		if (!is_editor_type) {
 			continue;
 		}
 
@@ -1990,7 +1994,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
 			const TypeInterface &itype = E.value;
 
-			if (itype.api_type != ClassDB::API_EDITOR || itype.is_singleton_instance) {
+			if ((itype.api_type != ClassDB::API_EDITOR && itype.api_type != ClassDB::API_EDITOR_EXTENSION) || itype.is_singleton_instance) {
 				continue;
 			}
 
@@ -2362,7 +2366,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		// Static fields are initialized in order of declaration, but when they're in different
 		// partial class declarations then it becomes harder to tell (Rider warns about this).
 
-		if (itype.is_instantiable) {
+		// Extension types dont use NativeCtor, they are instantiated via ClassDB instead.
+		const bool is_extension_class = itype.api_type == ClassDB::API_EXTENSION || itype.api_type == ClassDB::API_EDITOR_EXTENSION;
+		if (itype.is_instantiable && !is_extension_class) {
 			// Add native constructor static field
 
 			output << MEMBER_BEGIN << "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
@@ -2377,9 +2383,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output << MEMBER_BEGIN "public " << itype.proxy_name << "() : this("
 					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
 					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
-					   << INDENT3 "ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
+					   << INDENT3 "ConstructAndInitialize(" << (is_extension_class ? "null" : CS_STATIC_FIELD_NATIVE_CTOR) << ", "
 					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
-					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+					   << (itype.is_ref_counted ? "true" : "false") << ", isExtensionClass: "
+					   << (is_extension_class ? "true" : "false") << ");\n"
 					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			} else {
 				// Hide the constructor
@@ -2388,7 +2395,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
 					   << INDENT3 "ConstructAndInitialize(null, "
 					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
-					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+					   << (itype.is_ref_counted ? "true" : "false") << ", isExtensionClass: "
+					   << (is_extension_class ? "true" : "false") << ");\n"
 					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			}
 
@@ -2398,7 +2406,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
 				   << INDENT3 "ConstructAndInitialize(null, "
 				   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
-				   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+				   << (itype.is_ref_counted ? "true" : "false") << ", isExtensionClass: "
+				   << (is_extension_class ? "true" : "false") << ");\n"
 				   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 
 			// Add.. em.. trick constructor. Sort of.
@@ -4463,22 +4472,125 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 	return true;
 }
 
+bool BindingsGenerator::_type_can_reference_other_type(const TypeInterface &p_owner, const TypeReference &p_other_type_ref, const String &context, String &r_error_message) {
+	const TypeInterface *other_type = obj_types.getptr(p_other_type_ref.cname);
+	if (!other_type) {
+		return true; // Unknown types are always allowed (e.g. String, bool, void, etc).
+	}
+
+	if (_api_type_can_reference_other(p_owner.api_type, other_type->api_type)) {
+		return true;
+	}
+
+	r_error_message = String(api_type_names[p_owner.api_type]) + " Type '" + p_owner.name + "' " +
+			"cannot reference " + api_type_names[other_type->api_type] + " Type '" + other_type->name + "' " +
+			"in " + context + ".";
+
+	return false;
+}
+
+bool BindingsGenerator::_validate_object_type_interfaces() {
+	HashMap<const TypeInterface *, LocalVector<String>> types_with_errors;
+
+#define VALIDATE_TYPE_REF(other_type_ref, context)                                                              \
+	if (String error_message; !_type_can_reference_other_type(itype, other_type_ref, context, error_message)) { \
+		LocalVector<String> *errors = &types_with_errors[&itype];                                               \
+		errors->push_back(error_message);                                                                       \
+	}
+
+	// Make sure that types only reference other types they are allowed to reference
+	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+		const TypeInterface &itype = E.value;
+
+		ERR_CONTINUE_MSG(itype.api_type == ClassDB::API_NONE, "Type '" + itype.name + "' has invalid API type.");
+
+		for (const MethodInterface &imethod : itype.methods) {
+			for (const ArgumentInterface &iarg : imethod.arguments) {
+				VALIDATE_TYPE_REF(iarg.type, "method argument of '" + imethod.name + "'");
+			}
+
+			VALIDATE_TYPE_REF(imethod.return_type, "method return type of '" + imethod.name + "'");
+		}
+
+		for (const SignalInterface &isignal : itype.signals_) {
+			for (const ArgumentInterface &iarg : isignal.arguments) {
+				VALIDATE_TYPE_REF(iarg.type, "signal argument of '" + isignal.name + "'");
+			}
+		}
+
+		for (const PropertyInterface &iprop : itype.properties) {
+			if (const MethodInterface *getter = itype.find_method_by_name(iprop.getter)) {
+				VALIDATE_TYPE_REF(getter->return_type, "property getter of '" + iprop.cname + "'");
+			}
+
+			if (const MethodInterface *setter = itype.find_method_by_name(iprop.setter); setter && setter->arguments.size() > 0) {
+				VALIDATE_TYPE_REF(setter->arguments.get(0).type, "property setter of '" + iprop.cname + "'");
+			}
+		}
+	}
+
+	// Report errors
+	for (const KeyValue<const TypeInterface *, LocalVector<String>> &E : types_with_errors) {
+		String full_error_message = "Type '" + E.key->name + "' has invalid references:\n";
+		for (const String &error_message : E.value) {
+			full_error_message += "  - " + error_message + "\n";
+		}
+
+		ERR_PRINT(full_error_message);
+	}
+
+	return types_with_errors.size() == 0;
+}
+
+static String _to_cs_num(const String &p_base_type, const String &p_num_string, const String &p_suffix) {
+	if (p_num_string == "inf") {
+		return p_base_type + ".PositiveInfinity";
+	}
+	if (p_num_string == "-inf") {
+		return p_base_type + ".NegativeInfinity";
+	}
+	if (p_num_string == "nan") {
+		return p_base_type + ".NaN";
+	}
+	return p_num_string + p_suffix;
+}
+
+static String _float_to_cs_declaration(const float p_num, const bool p_trailing = true) {
+	const String num_string = String::num_real(p_num, p_trailing);
+	return _to_cs_num("float", num_string, "f");
+}
+
+#if REAL_T_IS_DOUBLE // Needed to avoid -Wunused-function.
+static String _double_to_cs_declaration(const double p_num, const bool p_trailing = true) {
+	const String num_string = String::num_real(p_num, p_trailing);
+	return _to_cs_num("double", num_string, "d");
+}
+#endif
+
+static String _real_to_cs_declaration(const real_t p_num, const bool p_trailing = true) {
+#if REAL_T_IS_DOUBLE
+	return _double_to_cs_declaration(p_num, p_trailing);
+#else
+	return _float_to_cs_declaration(p_num, p_trailing);
+#endif
+}
+
 static String _get_vector2_cs_ctor_args(const Vector2 &p_vec2) {
-	return String::num_real(p_vec2.x, true) + "f, " +
-			String::num_real(p_vec2.y, true) + "f";
+	return _real_to_cs_declaration(p_vec2.x) + ", " +
+			_real_to_cs_declaration(p_vec2.y);
 }
 
 static String _get_vector3_cs_ctor_args(const Vector3 &p_vec3) {
-	return String::num_real(p_vec3.x, true) + "f, " +
-			String::num_real(p_vec3.y, true) + "f, " +
-			String::num_real(p_vec3.z, true) + "f";
+	return _real_to_cs_declaration(p_vec3.x) + ", " +
+			_real_to_cs_declaration(p_vec3.y) + ", " +
+			_real_to_cs_declaration(p_vec3.z);
 }
 
 static String _get_vector4_cs_ctor_args(const Vector4 &p_vec4) {
-	return String::num_real(p_vec4.x, true) + "f, " +
-			String::num_real(p_vec4.y, true) + "f, " +
-			String::num_real(p_vec4.z, true) + "f, " +
-			String::num_real(p_vec4.w, true) + "f";
+	return _real_to_cs_declaration(p_vec4.x) + ", " +
+			_real_to_cs_declaration(p_vec4.y) + ", " +
+			_real_to_cs_declaration(p_vec4.z) + ", " +
+			_real_to_cs_declaration(p_vec4.w);
 }
 
 static String _get_vector2i_cs_ctor_args(const Vector2i &p_vec2i) {
@@ -4521,7 +4633,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::FLOAT:
 			r_iarg.default_argument = p_val.operator String();
-
+			// TODO: Does this need to honor REAL_T_IS_DOUBLE?
 			if (r_iarg.type.cname == name_cache.type_float) {
 				r_iarg.default_argument += "f";
 			}
@@ -4696,10 +4808,10 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 				r_iarg.default_argument = "Quaternion.Identity";
 			} else {
 				r_iarg.default_argument = "new Quaternion(" +
-						String::num_real(quaternion.x, false) + "f, " +
-						String::num_real(quaternion.y, false) + "f, " +
-						String::num_real(quaternion.z, false) + "f, " +
-						String::num_real(quaternion.w, false) + "f)";
+						_real_to_cs_declaration(quaternion.x, false) + ", " +
+						_real_to_cs_declaration(quaternion.y, false) + ", " +
+						_real_to_cs_declaration(quaternion.z, false) + ", " +
+						_real_to_cs_declaration(quaternion.w, false) + ")";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -5232,6 +5344,9 @@ void BindingsGenerator::_initialize() {
 
 	bool obj_type_ok = _populate_object_type_interfaces();
 	ERR_FAIL_COND_MSG(!obj_type_ok, "Failed to generate object type interfaces");
+
+	bool validate_obj_types_ok = _validate_object_type_interfaces();
+	ERR_FAIL_COND_MSG(!validate_obj_types_ok, "Validation of object type interfaces failed");
 
 	_populate_builtin_type_interfaces();
 

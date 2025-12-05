@@ -3282,6 +3282,7 @@ void EditorHelp::generate_doc(bool p_use_cache, bool p_use_script_cache) {
 	} else {
 		print_verbose("Regenerating editor help cache");
 		doc->generate();
+		_gen_extensions_docs();
 		worker_thread.start(_gen_doc_thread, (void *)p_use_script_cache);
 	}
 }
