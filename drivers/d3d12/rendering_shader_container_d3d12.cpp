@@ -72,6 +72,97 @@ GODOT_GCC_WARNING_POP
 GODOT_CLANG_WARNING_POP
 GODOT_MSVC_WARNING_POP
 
+// SPIR-V to DXIL does way too many allocations, which causes worker thread pools
+// to bottleneck each other due to sharing the same global process heap.
+// This can be solved by making each thread allocate from its own heap.
+#define SPIRV_TO_DXIL_ENABLE_HEAP_PER_THREAD
+
+#ifdef SPIRV_TO_DXIL_ENABLE_HEAP_PER_THREAD
+
+namespace {
+struct Win32Heap {
+	HANDLE handle;
+	SafeRefCount ref_count;
+
+	Win32Heap() {
+		handle = HeapCreate(0, 0, 0);
+		ref_count.init();
+	}
+
+	~Win32Heap() {
+		HeapDestroy(handle);
+	}
+};
+
+constexpr size_t ALLOC_HEADER_SIZE = sizeof(Win32Heap *) * 2;
+} //namespace
+
+extern "C" {
+void *godot_nir_malloc(size_t p_size) {
+	// This RAII helper is for allowing the heap to be destroyed when the thread quits.
+	struct Win32HeapHolder {
+		Win32Heap *win32_heap = nullptr;
+
+		Win32HeapHolder() {
+			win32_heap = memnew(Win32Heap);
+		}
+
+		~Win32HeapHolder() {
+			if (win32_heap->ref_count.unref()) {
+				memdelete(win32_heap);
+			}
+		}
+	};
+
+	thread_local Win32HeapHolder holder;
+
+	void *block = HeapAlloc(holder.win32_heap->handle, 0, p_size + ALLOC_HEADER_SIZE);
+
+	// Store the heap in the allocation for the realloc/free operations.
+	*(Win32Heap **)block = holder.win32_heap;
+	holder.win32_heap->ref_count.ref();
+
+	return (uint8_t *)block + ALLOC_HEADER_SIZE;
+}
+
+void *godot_nir_realloc(void *p_block, size_t p_size) {
+	uint8_t *actual_block = (uint8_t *)p_block - ALLOC_HEADER_SIZE;
+	Win32Heap *win32_heap = *(Win32Heap **)actual_block;
+	return (uint8_t *)HeapReAlloc(win32_heap->handle, 0, actual_block, p_size + ALLOC_HEADER_SIZE) + ALLOC_HEADER_SIZE;
+}
+
+void godot_nir_free(void *p_block) {
+	if (p_block != nullptr) {
+		uint8_t *actual_block = (uint8_t *)p_block - ALLOC_HEADER_SIZE;
+		Win32Heap *win32_heap = *(Win32Heap **)actual_block;
+		HeapFree(win32_heap->handle, 0, actual_block);
+
+		// Allocations can outlive the threads they were created in if they were stored globally.
+		if (win32_heap->ref_count.unref()) {
+			memdelete(win32_heap);
+		}
+	}
+}
+}
+
+#else
+
+extern "C" {
+void *godot_nir_malloc(size_t p_size) {
+	return malloc(p_size);
+}
+
+void *godot_nir_realloc(void *p_block, size_t p_size) {
+	return realloc(p_block, p_size);
+}
+
+void godot_nir_free(void *p_block) {
+	return free(p_block);
+}
+}
+
+#endif
+
 static D3D12_SHADER_VISIBILITY stages_to_d3d12_visibility(uint32_t p_stages_mask) {
 	switch (p_stages_mask) {
 		case RenderingDeviceCommons::SHADER_STAGE_VERTEX_BIT:
