@@ -3078,10 +3078,72 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 
 #ifdef DEBUG_ENABLED
 	GDScriptParser::DataType to_await_type = p_await->to_await->get_datatype();
-	if (!to_await_type.is_coroutine && !to_await_type.is_variant() && to_await_type.builtin_type != Variant::SIGNAL) {
+	if (!to_await_type.is_coroutine && !to_await_type.is_variant() && to_await_type.builtin_type != Variant::SIGNAL && !awaited_is_of_abstract_function(p_await)) {
 		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
 	}
 #endif // DEBUG_ENABLED
+}
+
+bool GDScriptAnalyzer::awaited_is_of_abstract_function(GDScriptParser::AwaitNode *p_await) {
+	if (p_await->to_await == nullptr) {
+		return false;
+	}
+
+	if (p_await->to_await->type != GDScriptParser::Node::CALL) {
+		return false;
+	};
+
+	GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(p_await->to_await);
+
+	GDScriptParser::DataType return_type;
+	List<GDScriptParser::DataType> par_types;
+	int default_arg_count = 0;
+	BitField<MethodFlags> method_flags = METHOD_FLAGS_DEFAULT;
+	StringName native_class;
+
+	GDScriptParser::Node::Type callee_type = call->get_callee_type();
+	GDScriptParser::DataType base_type;
+
+	if (call->is_super) {
+		base_type = parser->current_class->base_type;
+	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
+		base_type = parser->current_class->get_datatype();
+	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
+		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(call->callee);
+		if (subscript->base == nullptr || !subscript->is_attribute || subscript->attribute == nullptr) {
+			return false;
+		}
+
+		GDScriptParser::IdentifierNode *base_id = nullptr;
+		if (subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+			base_id = static_cast<GDScriptParser::IdentifierNode *>(subscript->base);
+		}
+		if (base_id && GDScriptParser::get_builtin_type(base_id->name) < Variant::VARIANT_MAX) {
+			base_type = make_builtin_meta_type(GDScriptParser::get_builtin_type(base_id->name));
+		} else {
+			reduce_expression(subscript->base);
+			base_type = subscript->base->get_datatype();
+		}
+	} else {
+		return false;
+	}
+
+	bool found = get_function_signature(
+			call,
+			false,
+			base_type,
+			call->function_name,
+			return_type,
+			par_types,
+			default_arg_count,
+			method_flags,
+			&native_class);
+
+	if (!found) {
+		return false;
+	}
+
+	return method_flags & METHOD_FLAG_VIRTUAL_REQUIRED;
 }
 
 void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op) {
