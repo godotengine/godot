@@ -43,16 +43,11 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
-		if (!c) {
-			continue;
-		}
-		// Ignore the scroll hints.
-		if (c == h_scroll || c == v_scroll || c == focus_panel) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
 
 		Size2 child_min_size = c->get_combined_minimum_size();
-
 		largest_child_min_size = largest_child_min_size.max(child_min_size);
 	}
 

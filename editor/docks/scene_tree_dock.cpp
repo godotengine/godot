@@ -4421,10 +4421,11 @@ List<Node *> SceneTreeDock::get_node_clipboard() const {
 	return node_clipboard;
 }
 
-void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
+void SceneTreeDock::add_remote_tree_editor(Tree *p_remote) {
 	ERR_FAIL_COND(remote_tree != nullptr);
-	main_vbox->add_child(p_remote);
+	main_mc->add_child(p_remote);
 	remote_tree = p_remote;
+	remote_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	remote_tree->hide();
 	remote_tree->connect("open", callable_mp(this, &SceneTreeDock::_load_request));
 }
@@ -4744,7 +4745,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	editor_selection = p_editor_selection;
 	scene_root = p_scene_root;
 
-	main_vbox = memnew(VBoxContainer);
+	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox);
 
 	HBoxContainer *filter_hbc = memnew(HBoxContainer);
@@ -4872,10 +4873,14 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	create_root_dialog->set_v_size_flags(SIZE_EXPAND_FILL);
 	create_root_dialog->hide();
 
-	scene_tree = memnew(SceneTreeEditor(false, true, true));
+	main_mc = memnew(MarginContainer);
+	main_vbox->add_child(main_mc);
+	main_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	main_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	main_vbox->add_child(scene_tree);
-	scene_tree->set_v_size_flags(SIZE_EXPAND | SIZE_FILL);
+	scene_tree = memnew(SceneTreeEditor(false, true, true));
+	main_mc->add_child(scene_tree);
+	scene_tree->get_scene_tree()->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));
 
 	scene_tree->connect("node_selected", callable_mp(this, &SceneTreeDock::_node_selected), CONNECT_DEFERRED);

@@ -959,6 +959,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("selected_focus", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "ItemList", focus);
 	theme->set_stylebox("cursor_unfocused", "ItemList", focus);
+	theme->set_icon("scroll_hint", "ItemList", icons["scroll_hint_vertical"]);
 
 	theme->set_constant("outline_size", "ItemList", 0);
 

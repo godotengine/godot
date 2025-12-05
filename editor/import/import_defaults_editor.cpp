@@ -37,6 +37,7 @@
 #include "editor/settings/action_map_editor.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
 
 class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)
@@ -213,12 +214,17 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	hb->add_child(reset_defaults);
 	add_child(hb);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	inspector = memnew(EditorInspector);
-	add_child(inspector);
-	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
+	inspector->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	// Make it possible to display tooltips stored in the XML class reference.
 	// The object name is set when the importer changes in `_update_importer()`.
 	inspector->set_use_doc_hints(true);
+	mc->add_child(inspector);
 
 	CenterContainer *cc = memnew(CenterContainer);
 	save_defaults = memnew(Button);

@@ -153,6 +153,7 @@ private:
 	VBoxContainer *scanning_vb = nullptr;
 	ProgressBar *scanning_progress = nullptr;
 	SplitContainer *split_box = nullptr;
+	MarginContainer *tree_mc = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
 
 	int split_box_offset_h = 0;

@@ -1588,6 +1588,7 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_icon("scroll_hint_vertical", "ScrollContainer", empty_texture);
 		p_theme->set_icon("scroll_hint_horizontal", "ScrollContainer", empty_texture);
 		p_theme->set_icon("scroll_hint", "Tree", empty_texture);
+		p_theme->set_icon("scroll_hint", "ItemList", empty_texture);
 
 		// This stylebox is used in 3d and 2d viewports (no borders).
 		Ref<StyleBoxFlat> style_content_panel_vp = p_config.content_panel_style->duplicate();
