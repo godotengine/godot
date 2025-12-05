@@ -795,6 +795,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_canceled(mb->is_canceled());
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
+			touch_event->set_window_id(mb->get_window_id());
 			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(touch_event);
