@@ -1023,6 +1023,7 @@ public:
 	bool editor_is_section_unfolded(const String &p_section);
 	const HashSet<String> &editor_get_section_folding() const { return editor_section_folding; }
 	void editor_clear_section_folding() { editor_section_folding.clear(); }
+	static bool editor_is_object_or_resource_property(const String &p_name);
 #endif
 
 	// Used by script languages to store binding data.

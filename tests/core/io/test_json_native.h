@@ -104,7 +104,7 @@ TEST_CASE("[JSON][Native] Conversion between native and JSON formats") {
 	res.instantiate();
 
 	// The properties are stored in an array because the order in which they are assigned may be important during initialization.
-	const String res_repr = R"({"type":"Resource","props":["resource_local_to_scene",false,"resource_name","s:","script",null]})";
+	const String res_repr = R"({"type":"Resource","props":["resource_local_to_scene",false,"resource_name","s:","editor_description","s:","script",null]})";
 
 	test(res, res_repr, true);
 	ERR_PRINT_OFF;
