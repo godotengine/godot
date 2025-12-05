@@ -542,6 +542,15 @@ void GodotPhysicsServer3D::body_set_shape_disabled(RID p_body, int p_shape_idx, 
 	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
+void GodotPhysicsServer3D::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
+	FLUSH_QUERY_CHECK(body);
+
+	body->set_shape_as_one_way_collision(p_shape_idx, p_enable, p_margin);
+}
+
 Transform3D GodotPhysicsServer3D::body_get_shape_transform(RID p_body, int p_shape_idx) const {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, Transform3D());
@@ -1781,6 +1790,22 @@ void GodotPhysicsServer3D::_shape_col_cbk(const Vector3 &p_point_A, int p_index_
 		return;
 	}
 
+	Vector3 rel_dir = (p_point_A - p_point_B);
+	real_t rel_length2 = rel_dir.length_squared();
+	if (cbk->valid_dir != Vector3()) {
+		if (cbk->valid_depth < 10e20) {
+			if (rel_length2 > cbk->valid_depth * cbk->valid_depth ||
+					(rel_length2 > CMP_EPSILON && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON)) {
+				cbk->invalid_by_dir++;
+				return;
+			}
+		} else {
+			if (rel_length2 > 0 && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON) {
+				return;
+			}
+		}
+	}
+
 	if (cbk->amount == cbk->max) {
 		//find least deep
 		real_t min_depth = 1e20;
@@ -1799,11 +1824,12 @@ void GodotPhysicsServer3D::_shape_col_cbk(const Vector3 &p_point_A, int p_index_
 		}
 		cbk->ptr[min_depth_idx * 2 + 0] = p_point_A;
 		cbk->ptr[min_depth_idx * 2 + 1] = p_point_B;
-
+		cbk->passed++;
 	} else {
 		cbk->ptr[cbk->amount * 2 + 0] = p_point_A;
 		cbk->ptr[cbk->amount * 2 + 1] = p_point_B;
 		cbk->amount++;
+		cbk->passed++;
 	}
 }
 
