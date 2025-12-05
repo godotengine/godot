@@ -58,8 +58,10 @@ bool ShaderIncludeDB::has_built_in_include_file(const String &p_filename) {
 
 String ShaderIncludeDB::get_built_in_include_file(const String &p_filename) {
 	const String *ptr = built_in_includes.getptr(p_filename);
-
-	return ptr ? *ptr : String();
+	if (ptr) {
+		return *ptr;
+	}
+	return String();
 }
 
 String ShaderIncludeDB::parse_include_files(const String &p_code) {

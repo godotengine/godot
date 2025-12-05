@@ -1054,7 +1054,10 @@ String EditorData::script_class_get_icon_path(const String &p_class, bool *r_val
 }
 
 StringName EditorData::script_class_get_name(const String &p_path) const {
-	return _script_class_file_to_path.has(p_path) ? _script_class_file_to_path[p_path] : StringName();
+	if (_script_class_file_to_path.has(p_path)) {
+		return _script_class_file_to_path[p_path];
+	}
+	return StringName();
 }
 
 void EditorData::script_class_set_name(const String &p_path, const StringName &p_class) {
