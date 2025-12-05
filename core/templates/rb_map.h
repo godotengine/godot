@@ -96,6 +96,7 @@ public:
 
 	typedef KeyValue<K, V> ValueType;
 
+	struct ConstIterator;
 	struct Iterator {
 		friend class RBMap<K, V, C, A>;
 
@@ -125,6 +126,10 @@ public:
 		Iterator(Element *p_E) { E = p_E; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
+
+		operator ConstIterator() const {
+			return ConstIterator(E);
+		}
 
 	private:
 		Element *E = nullptr;
