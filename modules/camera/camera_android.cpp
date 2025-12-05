@@ -367,6 +367,22 @@ void CameraFeedAndroid::handle_rotation_change() {
 	_set_rotation();
 }
 
+// In-place stride compaction (handles row padding).
+void CameraFeedAndroid::compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride) {
+	if (stride == width) {
+		return;
+	}
+
+	uint8_t *src_row = data + stride;
+	uint8_t *dst_row = data + width;
+
+	for (int y = 1; y < height; y++) {
+		memmove(dst_row, src_row, width);
+		src_row += stride;
+		dst_row += width;
+	}
+}
+
 void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
 
@@ -398,16 +414,28 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	int width = format.width;
 	int height = format.height;
 	switch (format.pixel_format) {
-		case AIMAGE_FORMAT_YUV_420_888:
+		case AIMAGE_FORMAT_YUV_420_888: {
+			int32_t y_row_stride;
+			AImage_getPlaneRowStride(image, 0, &y_row_stride);
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
-				data_y.resize(len > size ? len : size);
+
+			int64_t y_size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
+
+			if (y_row_stride == width && len == y_size) {
+				data_y.resize(y_size);
+				memcpy(data_y.ptrw(), data, y_size);
+			} else {
+				if (feed->scratch_y.size() < len) {
+					feed->scratch_y.resize(len);
+				}
+				memcpy(feed->scratch_y.ptrw(), data, len);
+				CameraFeedAndroid::compact_stride_inplace(feed->scratch_y.ptrw(), width, height, y_row_stride);
+				data_y.resize(y_size);
+				memcpy(data_y.ptrw(), feed->scratch_y.ptr(), y_size);
 			}
-			memcpy(data_y.ptrw(), data, len);
 
 			AImage_getPlanePixelStride(image, 1, &pixel_stride);
 			AImage_getPlaneRowStride(image, 1, &row_stride);
@@ -415,17 +443,66 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_uv.size()) {
-				int64_t size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
-				data_uv.resize(len > size ? len : size);
+
+			int64_t uv_size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
+
+			int uv_width = width / 2;
+			int uv_height = height / 2;
+
+			uint8_t *data_v = nullptr;
+			int32_t v_pixel_stride = 0;
+			int32_t v_row_stride = 0;
+			int len_v = 0;
+
+			if (pixel_stride != 2) {
+				AImage_getPlanePixelStride(image, 2, &v_pixel_stride);
+				AImage_getPlaneRowStride(image, 2, &v_row_stride);
+				AImage_getPlaneData(image, 2, &data_v, &len_v);
+				if (len_v <= 0) {
+					return;
+				}
 			}
-			memcpy(data_uv.ptrw(), data, len);
+
+			if (pixel_stride == 2 && row_stride == uv_width * 2 && len == uv_size) {
+				data_uv.resize(uv_size);
+				memcpy(data_uv.ptrw(), data, uv_size);
+			} else if (pixel_stride == 2) {
+				if (feed->scratch_uv.size() < len) {
+					feed->scratch_uv.resize(len);
+				}
+				memcpy(feed->scratch_uv.ptrw(), data, len);
+				if (row_stride != uv_width * 2) {
+					CameraFeedAndroid::compact_stride_inplace(feed->scratch_uv.ptrw(), uv_width * 2, uv_height, row_stride);
+				}
+				data_uv.resize(uv_size);
+				memcpy(data_uv.ptrw(), feed->scratch_uv.ptr(), uv_size);
+			} else {
+				if (data_v && len_v > 0) {
+					data_uv.resize(uv_size);
+					uint8_t *dst = data_uv.ptrw();
+					uint8_t *src_u = data;
+					uint8_t *src_v = data_v;
+					for (int row = 0; row < uv_height; row++) {
+						for (int col = 0; col < uv_width; col++) {
+							dst[col * 2] = src_u[col * pixel_stride];
+							dst[col * 2 + 1] = src_v[col * v_pixel_stride];
+						}
+						dst += uv_width * 2;
+						src_u += row_stride;
+						src_v += v_row_stride;
+					}
+				} else {
+					data_uv.resize(uv_size);
+					memset(data_uv.ptrw(), 128, uv_size);
+				}
+			}
 
 			image_y->initialize_data(width, height, false, Image::FORMAT_R8, data_y);
 			image_uv->initialize_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
 
 			feed->set_ycbcr_images(image_y, image_uv);
 			break;
+		}
 		case AIMAGE_FORMAT_RGBA_8888:
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
