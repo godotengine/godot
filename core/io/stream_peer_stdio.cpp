@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_language_server.h                                            */
+/*  stream_peer_stdio.cpp                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,90 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "stream_peer_stdio.h"
 
-#include "gdscript_language_protocol.h"
+#include <fcntl.h>
+#include <cerrno>
+#include <cstdio>
 
-#include "editor/plugins/editor_plugin.h"
+#ifdef WINDOWS_ENABLED
+#include <io.h>
+#define READ_FUNCTION _read
+#define WRITE_FUNCTION _write
+#else
+#include <unistd.h>
+#define READ_FUNCTION read
+#define WRITE_FUNCTION write
+#endif
 
-class GDScriptLanguageServer : public EditorPlugin {
-	GDCLASS(GDScriptLanguageServer, EditorPlugin);
+StreamPeerStdio::StreamPeerStdio() {
+	// Set stdin to non-blocking mode and binary mode
+#ifdef WINDOWS_ENABLED
+	stdin_fileno = _fileno(stdin);
+	stdout_fileno = _fileno(stdout);
 
-	GDScriptLanguageProtocol protocol;
+	_setmode(stdin_fileno, _O_BINARY);
+	_setmode(stdout_fileno, _O_BINARY);
+#else
+	stdin_fileno = STDIN_FILENO;
+	stdout_fileno = STDOUT_FILENO;
 
-	Thread thread;
-	bool thread_running = false;
-	// There is no notification when the editor is initialized. We need to poll till we attempted to start the server.
-	bool start_attempted = false;
-	bool started = false;
-	bool use_thread = false;
-	String host = "127.0.0.1";
-	int port = 6005;
-	int poll_limit_usec = 100000;
-	static void thread_main(void *p_userdata);
+	int flags = fcntl(stdin_fileno, F_GETFL, 0);
+	fcntl(stdin_fileno, F_SETFL, flags | O_NONBLOCK);
+#endif
+}
 
-private:
-	void _notification(int p_what);
+StreamPeerStdio::~StreamPeerStdio() {
+	// TODO: see if make sense to revert the non-blocking
+}
 
-public:
-	static int port_override;
-	static bool use_stdio;
-	GDScriptLanguageServer();
-	void start();
-	void stop();
-};
+Error StreamPeerStdio::put_data(const uint8_t *p_data, int p_bytes) {
+	int sent;
+	return put_partial_data(p_data, p_bytes, sent);
+}
 
-void register_lsp_types();
+Error StreamPeerStdio::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
+	int sent = WRITE_FUNCTION(stdout_fileno, p_data, p_bytes);
+	if (sent < 0) {
+		r_sent = 0;
+		return FAILED;
+	}
+
+	r_sent = sent;
+	fflush(stdout);
+
+	return OK;
+}
+
+Error StreamPeerStdio::get_data(uint8_t *p_buffer, int p_bytes) {
+	int received;
+	return get_partial_data(p_buffer, p_bytes, received);
+}
+
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wlogical-op") // Silence a false positive. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=69602
+
+Error StreamPeerStdio::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
+	int received = READ_FUNCTION(stdin_fileno, p_buffer, p_bytes);
+	if (received < 0) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			r_received = 0;
+			return ERR_BUSY;
+		}
+		r_received = 0;
+		return FAILED;
+	} else if (received == 0) { // EOF
+		r_received = 0;
+		return FAILED;
+	}
+
+	r_received = received;
+	return OK;
+}
+
+GODOT_GCC_WARNING_POP
+
+int StreamPeerStdio::get_available_bytes() const {
+	// Return 1 to indicate data might be available
+	// The actual read will handle EAGAIN/EWOULDBLOCK
+	return 1;
+}
