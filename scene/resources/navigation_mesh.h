@@ -104,6 +104,8 @@ protected:
 	bool filter_walkable_low_height_spans = false;
 	AABB filter_baking_aabb;
 	Vector3 filter_baking_aabb_offset;
+	bool tile_baking_enabled = false;
+	float tile_baking_size = 30.0f;
 
 public:
 	// Recast settings
@@ -181,6 +183,11 @@ public:
 
 	void set_filter_baking_aabb_offset(const Vector3 &p_aabb_offset);
 	Vector3 get_filter_baking_aabb_offset() const;
+
+	void set_tile_baking_enabled(bool p_enabled);
+	bool is_tile_baking_enabled() const;
+	void set_tile_baking_size(float p_size);
+	float get_tile_baking_size() const;
 
 	void create_from_mesh(const Ref<Mesh> &p_mesh);
 
