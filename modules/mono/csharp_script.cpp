@@ -1995,6 +1995,11 @@ void CSharpInstance::notification(int p_notification, bool p_reversed) {
 				gchandle.get_intptr(), /* okIfNull */ false);
 
 		return;
+	} else if (p_notification == Object::NOTIFICATION_EXPORT_ASSIGNED) {
+		// When NOTIFICATION_EXPORT_ASSIGNED is sent, we take the chance to validate exported properties.
+		// This notification is sent after all the exported properties of a Resource or PackedScene instance
+		// have been assigned, which makes it a good point to all the validation logic.
+		GDMonoCache::managed_callbacks.CSharpInstanceBridge_ValidateExports(gchandle.get_intptr());
 	}
 
 	_call_notification(p_notification, p_reversed);

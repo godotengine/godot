@@ -6,5 +6,6 @@
     <CompilerVisibleProperty Include="GodotProjectDirBase64" />
     <CompilerVisibleProperty Include="GodotSourceGenerators" />
     <CompilerVisibleProperty Include="IsGodotToolsProject" />
+    <CompilerVisibleProperty Include="GodotEnableExportNullChecks" />
   </ItemGroup>
 </Project>
