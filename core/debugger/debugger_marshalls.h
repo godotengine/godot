@@ -61,6 +61,7 @@ struct DebuggerMarshalls {
 		int source_line = -1;
 		String error;
 		String error_descr;
+		ErrorHandlerType error_type;
 		bool warning = false;
 		Vector<ScriptLanguage::StackInfo> callstack;
 
