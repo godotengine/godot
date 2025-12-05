@@ -618,7 +618,7 @@ void OptionButton::_bind_methods() {
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, arrow_icon, "arrow");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, arrow_margin);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, modulate_arrow);
+	BIND_THEME_ITEM_CONSTANT_WITH_HINT(OptionButton, modulate_arrow, PROPERTY_HINT_ENUM, "Disabled,Enabled");
 
 	PopupMenu::Item defaults(true);
 
