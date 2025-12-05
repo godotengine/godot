@@ -718,6 +718,10 @@ public:
 	Ref<Font> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
 
+#ifdef TOOLS_ENABLED
+	void create_variation_from_overrides(const StringName &p_name);
+#endif // TOOLS_ENABLED
+
 	// Internationalization.
 
 	void set_layout_direction(LayoutDirection p_direction);
