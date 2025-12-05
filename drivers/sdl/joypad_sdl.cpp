@@ -169,6 +169,7 @@ void JoypadSDL::process_events() {
 				joypads[joy_id].sdl_instance_idx = sdl_event.jdevice.which;
 				joypads[joy_id].supports_force_feedback = SDL_GetBooleanProperty(propertiesID, SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, false);
 				joypads[joy_id].guid = StringName(String(guid));
+				joypads[joy_id].supports_sensors = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL) && SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
 
 				sdl_instance_id_to_joypad_id.insert(sdl_event.jdevice.which, joy_id);
 
@@ -272,6 +273,31 @@ void JoypadSDL::process_events() {
 			}
 		}
 	}
+
+	for (int i = 0; i < Input::JOYPADS_MAX; i++) {
+		Joypad &joy = joypads[i];
+		if (!joy.attached || !joy.supports_sensors) {
+			continue;
+		}
+		SDL_Gamepad *gamepad = SDL_GetGamepadFromID(joy.sdl_instance_idx);
+		// gamepad should not be NULL since joy.supports_sensors is true here.
+
+		float accel_data[3];
+		float gyro_data[3];
+		SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_ACCEL, accel_data, 3);
+		SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_GYRO, gyro_data, 3);
+
+		Input::get_singleton()->process_joy_sensors(
+				i,
+				Vector3(-accel_data[0], -accel_data[1], -accel_data[2]),
+				Vector3(gyro_data[0], gyro_data[1], gyro_data[2]));
+
+		float data_rate = SDL_GetGamepadSensorDataRate(
+				SDL_GetGamepadFromID(sdl_event.gsensor.which),
+				SDL_SENSOR_ACCEL); // Data rate for all sensors should be the same.
+
+		Input::get_singleton()->set_joy_sensor_rate(i, data_rate);
+	}
 }
 
 void JoypadSDL::close_joypad(int p_pad_idx) {
@@ -300,6 +326,15 @@ bool JoypadSDL::Joypad::has_joy_light() const {
 bool JoypadSDL::Joypad::set_joy_light(const Color &p_color) {
 	Color linear = p_color.srgb_to_linear();
 	return SDL_SetJoystickLED(get_sdl_joystick(), linear.get_r8(), linear.get_g8(), linear.get_b8());
+}
+
+bool JoypadSDL::Joypad::has_joy_sensors() const {
+	return supports_sensors;
+}
+
+bool JoypadSDL::Joypad::set_joy_sensors_enabled(bool p_enable) {
+	SDL_Gamepad *gamepad = get_sdl_gamepad();
+	return SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_ACCEL, p_enable) && SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_GYRO, p_enable);
 }
 
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
