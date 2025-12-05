@@ -1690,9 +1690,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--gdscript-docs") {
 			if (N) {
 				project_path = N->get();
+				if (project_path.is_relative_path()) {
+					project_path = "res://" + project_path;
+				}
 				// Will be handled in start()
 				main_args.push_back(arg);
-				main_args.push_back(N->get());
+				main_args.push_back(project_path);
 				N = N->next();
 				// GDScript docgen requires Autoloads, but loading those also creates a main loop.
 				// This forces main loop to quit without adding more GDScript-specific exceptions to setup.
