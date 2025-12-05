@@ -475,7 +475,7 @@ void TileSet::_compute_next_source_id() {
 // Sources management
 int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source_id_override) {
 	ERR_FAIL_COND_V(p_tile_set_source.is_null(), TileSet::INVALID_SOURCE);
-	ERR_FAIL_COND_V_MSG(p_atlas_source_id_override >= 0 && (sources.has(p_atlas_source_id_override)), TileSet::INVALID_SOURCE, vformat("Cannot create TileSet atlas source. Another atlas source exists with id %d.", p_atlas_source_id_override));
+	ERR_FAIL_COND_V_MSG(p_atlas_source_id_override >= 0 && (sources.has(p_atlas_source_id_override)), TileSet::INVALID_SOURCE, vformat("Cannot create TileSet atlas source. Another atlas source exists with ID %d.", p_atlas_source_id_override));
 	ERR_FAIL_COND_V_MSG(p_atlas_source_id_override < 0 && p_atlas_source_id_override != TileSet::INVALID_SOURCE, TileSet::INVALID_SOURCE, vformat("Provided source ID %d is not valid. Negative source IDs are not allowed.", p_atlas_source_id_override));
 
 	int new_source_id = p_atlas_source_id_override >= 0 ? p_atlas_source_id_override : next_source_id;
@@ -499,7 +499,7 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 }
 
 void TileSet::remove_source(int p_source_id) {
-	ERR_FAIL_COND_MSG(!sources.has(p_source_id), vformat("Cannot remove TileSet atlas source. No tileset atlas source with id %d.", p_source_id));
+	ERR_FAIL_COND_MSG(!sources.has(p_source_id), vformat("Cannot remove TileSet atlas source. No tileset atlas source with ID %d.", p_source_id));
 
 	sources[p_source_id]->disconnect_changed(callable_mp(this, &TileSet::_source_changed));
 
@@ -524,12 +524,12 @@ void TileSet::remove_source_ptr(TileSetSource *p_tile_set_source) {
 
 void TileSet::set_source_id(int p_source_id, int p_new_source_id) {
 	ERR_FAIL_COND(p_new_source_id < 0);
-	ERR_FAIL_COND_MSG(!sources.has(p_source_id), vformat("Cannot change TileSet atlas source ID. No tileset atlas source with id %d.", p_source_id));
+	ERR_FAIL_COND_MSG(!sources.has(p_source_id), vformat("Cannot change TileSet atlas source ID. No tileset atlas source with ID %d.", p_source_id));
 	if (p_source_id == p_new_source_id) {
 		return;
 	}
 
-	ERR_FAIL_COND_MSG(sources.has(p_new_source_id), vformat("Cannot change TileSet atlas source ID. Another atlas source exists with id %d.", p_new_source_id));
+	ERR_FAIL_COND_MSG(sources.has(p_new_source_id), vformat("Cannot change TileSet atlas source ID. Another atlas source exists with ID %d.", p_new_source_id));
 
 	sources[p_new_source_id] = sources[p_source_id];
 	sources.erase(p_source_id);
@@ -549,7 +549,7 @@ bool TileSet::has_source(int p_source_id) const {
 }
 
 Ref<TileSetSource> TileSet::get_source(int p_source_id) const {
-	ERR_FAIL_COND_V_MSG(!sources.has(p_source_id), nullptr, vformat("No TileSet atlas source with id %d.", p_source_id));
+	ERR_FAIL_COND_V_MSG(!sources.has(p_source_id), nullptr, vformat("No TileSet atlas source with ID %d.", p_source_id));
 
 	return sources[p_source_id];
 }
@@ -5007,7 +5007,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 }
 
 void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
 
 	// Remove all covered positions from the mapping cache
 	_clear_coords_mapping_cache(p_atlas_coords);
@@ -5040,7 +5040,7 @@ Vector2i TileSetAtlasSource::get_tile_at_coords(Vector2i p_atlas_coords) const {
 }
 
 void TileSetAtlasSource::set_tile_animation_columns(const Vector2i p_atlas_coords, int p_frame_columns) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	ERR_FAIL_COND(p_frame_columns < 0);
 
 	TileAlternativesData &tad = tiles[p_atlas_coords];
@@ -5058,12 +5058,12 @@ void TileSetAtlasSource::set_tile_animation_columns(const Vector2i p_atlas_coord
 }
 
 int TileSetAtlasSource::get_tile_animation_columns(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	return tiles[p_atlas_coords].animation_columns;
 }
 
 void TileSetAtlasSource::set_tile_animation_separation(const Vector2i p_atlas_coords, const Vector2i p_separation) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	ERR_FAIL_COND(p_separation.x < 0 || p_separation.y < 0);
 
 	TileAlternativesData &tad = tiles[p_atlas_coords];
@@ -5081,12 +5081,12 @@ void TileSetAtlasSource::set_tile_animation_separation(const Vector2i p_atlas_co
 }
 
 Vector2i TileSetAtlasSource::get_tile_animation_separation(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	return tiles[p_atlas_coords].animation_separation;
 }
 
 void TileSetAtlasSource::set_tile_animation_speed(const Vector2i p_atlas_coords, real_t p_speed) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	ERR_FAIL_COND(p_speed <= 0);
 
 	tiles[p_atlas_coords].animation_speed = p_speed;
@@ -5095,12 +5095,12 @@ void TileSetAtlasSource::set_tile_animation_speed(const Vector2i p_atlas_coords,
 }
 
 real_t TileSetAtlasSource::get_tile_animation_speed(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1.0, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1.0, vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	return tiles[p_atlas_coords].animation_speed;
 }
 
 void TileSetAtlasSource::set_tile_animation_mode(const Vector2i p_atlas_coords, TileSetAtlasSource::TileAnimationMode p_mode) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 
 	tiles[p_atlas_coords].animation_mode = p_mode;
 
@@ -5108,13 +5108,13 @@ void TileSetAtlasSource::set_tile_animation_mode(const Vector2i p_atlas_coords, 
 }
 
 TileSetAtlasSource::TileAnimationMode TileSetAtlasSource::get_tile_animation_mode(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TILE_ANIMATION_MODE_DEFAULT, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TILE_ANIMATION_MODE_DEFAULT, vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 
 	return tiles[p_atlas_coords].animation_mode;
 }
 
 void TileSetAtlasSource::set_tile_animation_frames_count(const Vector2i p_atlas_coords, int p_frames_count) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	ERR_FAIL_COND(p_frames_count < 1);
 
 	int old_size = tiles[p_atlas_coords].animation_frames_durations.size();
@@ -5142,12 +5142,12 @@ void TileSetAtlasSource::set_tile_animation_frames_count(const Vector2i p_atlas_
 }
 
 int TileSetAtlasSource::get_tile_animation_frames_count(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	return tiles[p_atlas_coords].animation_frames_durations.size();
 }
 
 void TileSetAtlasSource::set_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index, real_t p_duration) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	ERR_FAIL_INDEX(p_frame_index, (int)tiles[p_atlas_coords].animation_frames_durations.size());
 	ERR_FAIL_COND(p_duration <= 0.0);
 
@@ -5157,13 +5157,13 @@ void TileSetAtlasSource::set_tile_animation_frame_duration(const Vector2i p_atla
 }
 
 real_t TileSetAtlasSource::get_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	ERR_FAIL_INDEX_V(p_frame_index, (int)tiles[p_atlas_coords].animation_frames_durations.size(), 0.0);
 	return tiles[p_atlas_coords].animation_frames_durations[p_frame_index];
 }
 
 real_t TileSetAtlasSource::get_tile_animation_total_duration(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 
 	real_t sum = 0.0;
 	for (const real_t &duration : tiles[p_atlas_coords].animation_frames_durations) {
@@ -5173,7 +5173,7 @@ real_t TileSetAtlasSource::get_tile_animation_total_duration(const Vector2i p_at
 }
 
 Vector2i TileSetAtlasSource::get_tile_size_in_atlas(Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(-1, -1), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(-1, -1), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
 
 	return tiles[p_atlas_coords].size_in_atlas;
 }
@@ -5281,7 +5281,7 @@ PackedVector2Array TileSetAtlasSource::get_tiles_to_be_removed_on_change(Ref<Tex
 }
 
 Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords, int p_frame) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
 	ERR_FAIL_INDEX_V(p_frame, (int)tiles[p_atlas_coords].animation_frames_durations.size(), Rect2i());
 
 	const TileAlternativesData &tad = tiles[p_atlas_coords];
@@ -5331,7 +5331,7 @@ Ref<Texture2D> TileSetAtlasSource::get_runtime_texture() const {
 }
 
 Rect2i TileSetAtlasSource::get_runtime_tile_texture_region(Vector2i p_atlas_coords, int p_frame) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
 	ERR_FAIL_INDEX_V(p_frame, (int)tiles[p_atlas_coords].animation_frames_durations.size(), Rect2i());
 
 	Rect2i src_rect = get_tile_texture_region(p_atlas_coords, p_frame);
@@ -5347,7 +5347,7 @@ Rect2i TileSetAtlasSource::get_runtime_tile_texture_region(Vector2i p_atlas_coor
 }
 
 void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_new_atlas_coords, Vector2i p_new_size) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
 
 	TileAlternativesData &tad = tiles[p_atlas_coords];
 
@@ -5382,8 +5382,8 @@ void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_
 }
 
 int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_id_override) {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TileSetSource::INVALID_TILE_ALTERNATIVE, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_V_MSG(p_alternative_id_override >= 0 && tiles[p_atlas_coords].alternatives.has(p_alternative_id_override), TileSetSource::INVALID_TILE_ALTERNATIVE, vformat("Cannot create alternative tile. Another alternative exists with id %d.", p_alternative_id_override));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TileSetSource::INVALID_TILE_ALTERNATIVE, vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(p_alternative_id_override >= 0 && tiles[p_atlas_coords].alternatives.has(p_alternative_id_override), TileSetSource::INVALID_TILE_ALTERNATIVE, vformat("Cannot create alternative tile. Another alternative exists with ID %d.", p_alternative_id_override));
 
 	int new_alternative_id = p_alternative_id_override >= 0 ? p_alternative_id_override : tiles[p_atlas_coords].next_alternative_id;
 
@@ -5402,10 +5402,10 @@ int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, i
 }
 
 void TileSetAtlasSource::remove_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), vformat("%s: TileSetAtlasSource has no alternative with ID %d for tile coords %s.", p_alternative_tile, get_path(), String(p_atlas_coords)));
 	p_alternative_tile = alternative_no_transform(p_alternative_tile);
-	ERR_FAIL_COND_MSG(p_alternative_tile == 0, "Cannot remove the alternative with id 0, the base tile alternative cannot be removed.");
+	ERR_FAIL_COND_MSG(p_alternative_tile == 0, "Cannot remove the alternative with ID 0, the base tile alternative cannot be removed.");
 
 	memdelete(tiles[p_atlas_coords].alternatives[p_alternative_tile]);
 	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
@@ -5416,12 +5416,12 @@ void TileSetAtlasSource::remove_alternative_tile(const Vector2i p_atlas_coords, 
 }
 
 void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), vformat("%s: TileSetAtlasSource has no alternative with ID %d for tile coords %s.", p_alternative_tile, get_path(), String(p_atlas_coords)));
 	p_alternative_tile = alternative_no_transform(p_alternative_tile);
-	ERR_FAIL_COND_MSG(p_alternative_tile == 0, "Cannot change the alternative with id 0, the base tile alternative cannot be modified.");
+	ERR_FAIL_COND_MSG(p_alternative_tile == 0, "Cannot change the alternative with ID 0, the base tile alternative cannot be modified.");
 
-	ERR_FAIL_COND_MSG(tiles[p_atlas_coords].alternatives.has(p_new_id), vformat("TileSetAtlasSource has already an alternative with id %d at %s.", p_new_id, String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(tiles[p_atlas_coords].alternatives.has(p_new_id), vformat("%s: TileSetAtlasSource has already an alternative with ID %d at %s.", p_new_id, get_path(), String(p_atlas_coords)));
 
 	tiles[p_atlas_coords].alternatives[p_new_id] = tiles[p_atlas_coords].alternatives[p_alternative_tile];
 	tiles[p_atlas_coords].alternatives_ids.push_back(p_new_id);
@@ -5434,22 +5434,22 @@ void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, 
 }
 
 bool TileSetAtlasSource::has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), false, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), false, vformat("%s: The TileSetAtlasSource atlas has no tile at %s.", get_path(), String(p_atlas_coords)));
 	return tiles[p_atlas_coords].alternatives.has(alternative_no_transform(p_alternative_tile));
 }
 
 int TileSetAtlasSource::get_next_alternative_tile_id(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TileSetSource::INVALID_TILE_ALTERNATIVE, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TileSetSource::INVALID_TILE_ALTERNATIVE, vformat("%s: The TileSetAtlasSource atlas has no tile at %s.", get_path(), String(p_atlas_coords)));
 	return tiles[p_atlas_coords].next_alternative_id;
 }
 
 int TileSetAtlasSource::get_alternative_tiles_count(const Vector2i p_atlas_coords) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), -1, vformat("%s: The TileSetAtlasSource atlas has no tile at %s.", get_path(), String(p_atlas_coords)));
 	return tiles[p_atlas_coords].alternatives_ids.size();
 }
 
 int TileSetAtlasSource::get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TileSetSource::INVALID_TILE_ALTERNATIVE, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TileSetSource::INVALID_TILE_ALTERNATIVE, vformat("%s: The TileSetAtlasSource atlas has no tile at %s.", get_path(), String(p_atlas_coords)));
 	p_index = alternative_no_transform(p_index);
 	ERR_FAIL_INDEX_V(p_index, tiles[p_atlas_coords].alternatives_ids.size(), TileSetSource::INVALID_TILE_ALTERNATIVE);
 
@@ -5457,9 +5457,9 @@ int TileSetAtlasSource::get_alternative_tile_id(const Vector2i p_atlas_coords, i
 }
 
 TileData *TileSetAtlasSource::get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("%s: The TileSetAtlasSource atlas has no tile at %s.", get_path(), String(p_atlas_coords)));
 	p_alternative_tile = alternative_no_transform(p_alternative_tile);
-	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("%s: TileSetAtlasSource has no alternative with ID %d for tile coords %sget_path(), .", p_alternative_tile, String(p_atlas_coords)));
 
 	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
 }
@@ -5550,22 +5550,22 @@ TileSetAtlasSource::~TileSetAtlasSource() {
 }
 
 TileData *TileSetAtlasSource::_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
 	p_alternative_tile = alternative_no_transform(p_alternative_tile);
-	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("%s: TileSetAtlasSource has no alternative with ID %d for tile coords %sget_path(), .", p_alternative_tile, String(p_atlas_coords)));
 
 	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
 }
 
 const TileData *TileSetAtlasSource::_get_atlas_tile_data(Vector2i p_atlas_coords, int p_alternative_tile) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("%s: TileSetAtlasSource has no alternative with ID %d for tile coords %sget_path(), .", p_alternative_tile, String(p_atlas_coords)));
 
 	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
 }
 
 void TileSetAtlasSource::_compute_next_alternative_id(const Vector2i p_atlas_coords) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), String(p_atlas_coords)));
 
 	while (tiles[p_atlas_coords].alternatives.has(tiles[p_atlas_coords].next_alternative_id)) {
 		tiles[p_atlas_coords].next_alternative_id = (tiles[p_atlas_coords].next_alternative_id % 1073741823) + 1; // 2 ** 30
@@ -5573,7 +5573,7 @@ void TileSetAtlasSource::_compute_next_alternative_id(const Vector2i p_atlas_coo
 }
 
 void TileSetAtlasSource::_clear_coords_mapping_cache(Vector2i p_atlas_coords) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 	TileAlternativesData &tad = tiles[p_atlas_coords];
 	for (int frame = 0; frame < (int)tad.animation_frames_durations.size(); frame++) {
 		Vector2i frame_coords = p_atlas_coords + (tad.size_in_atlas + tad.animation_separation) * ((tad.animation_columns > 0) ? Vector2i(frame % tad.animation_columns, frame / tad.animation_columns) : Vector2i(frame, 0));
@@ -5581,7 +5581,7 @@ void TileSetAtlasSource::_clear_coords_mapping_cache(Vector2i p_atlas_coords) {
 			for (int y = 0; y < tad.size_in_atlas.y; y++) {
 				Vector2i coords = frame_coords + Vector2i(x, y);
 				if (!_coords_mapping_cache.has(coords)) {
-					WARN_PRINT(vformat("TileSetAtlasSource has no cached tile at position %s, the position cache might be corrupted.", coords));
+					WARN_PRINT(vformat("%s: TileSetAtlasSource has no cached tile at position %s, the position cache might be get_path(), corrupted.", coords));
 				} else {
 					if (_coords_mapping_cache[coords] != p_atlas_coords) {
 						WARN_PRINT(vformat("The position cache at position %s is pointing to a wrong tile, the position cache might be corrupted.", coords));
@@ -5594,7 +5594,7 @@ void TileSetAtlasSource::_clear_coords_mapping_cache(Vector2i p_atlas_coords) {
 }
 
 void TileSetAtlasSource::_create_coords_mapping_cache(Vector2i p_atlas_coords) {
-	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("%s: TileSetAtlasSource has no tile at %s.", get_path(), Vector2i(p_atlas_coords)));
 
 	TileAlternativesData &tad = tiles[p_atlas_coords];
 	for (int frame = 0; frame < (int)tad.animation_frames_durations.size(); frame++) {
@@ -5778,7 +5778,7 @@ bool TileSetScenesCollectionSource::has_alternative_tile(const Vector2i p_atlas_
 }
 
 int TileSetScenesCollectionSource::create_scene_tile(Ref<PackedScene> p_packed_scene, int p_id_override) {
-	ERR_FAIL_COND_V_MSG(p_id_override >= 0 && scenes.has(p_id_override), INVALID_TILE_ALTERNATIVE, vformat("Cannot create scene tile. Another scene tile exists with id %d.", p_id_override));
+	ERR_FAIL_COND_V_MSG(p_id_override >= 0 && scenes.has(p_id_override), INVALID_TILE_ALTERNATIVE, vformat("Cannot create scene tile. Another scene tile exists with ID %d.", p_id_override));
 
 	int new_scene_id = p_id_override >= 0 ? p_id_override : next_scene_id;
 
