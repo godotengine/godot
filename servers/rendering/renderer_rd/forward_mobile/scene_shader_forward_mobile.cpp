@@ -846,13 +846,13 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 shader_type spatial;
 
 void vertex() {
-	ROUGHNESS = 0.8;
+	ROUGHNESS = 0.5;
 }
 
 void fragment() {
-	ALBEDO = vec3(0.6);
-	ROUGHNESS = 0.8;
-	METALLIC = 0.2;
+	ALBEDO = vec3(0.5);
+	ROUGHNESS = 0.5;
+	METALLIC = 0.0;
 }
 )");
 		default_material = material_storage->material_allocate();
