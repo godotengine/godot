@@ -344,6 +344,7 @@ class EditorHelpBit : public VBoxContainer {
 	void _add_type_to_title(const DocType &p_doc_type);
 	void _update_labels();
 	void _go_to_help(const String &p_what);
+	void _go_to_url(const String &p_what);
 	void _meta_clicked(const String &p_select);
 
 protected:
