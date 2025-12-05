@@ -113,12 +113,18 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 
 void ObjectDBProfilerPanel::receive_snapshot(int request_id) {
 	const Vector<uint8_t> &in_data = partial_snapshots[request_id].data;
-	String snapshot_file_name = Time::get_singleton()->get_datetime_string_from_system(false).replace_char('T', '_').replace_char(':', '-');
 	Ref<DirAccess> snapshot_dir = _get_and_create_snapshot_storage_dir();
 	if (snapshot_dir.is_valid()) {
 		Error err;
+		String base_snapshot_file_name = Time::get_singleton()->get_datetime_string_from_system(false).replace_char('T', '_').replace_char(':', '-');
+		String snapshot_file_name = base_snapshot_file_name;
 		String current_dir = snapshot_dir->get_current_dir();
 		String joined_dir = current_dir.path_join(snapshot_file_name) + ".odb_snapshot";
+
+		for (int i = 2; FileAccess::exists(joined_dir); i++) {
+			snapshot_file_name = base_snapshot_file_name + '_' + String::chr('0' + i);
+			joined_dir = current_dir.path_join(snapshot_file_name) + ".odb_snapshot";
+		}
 
 		Ref<FileAccess> file = FileAccess::open(joined_dir, FileAccess::WRITE, &err);
 		if (err == OK) {
