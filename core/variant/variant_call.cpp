@@ -2287,6 +2287,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector3, floor, sarray(), varray());
 	bind_method(Vector3, ceil, sarray(), varray());
 	bind_method(Vector3, round, sarray(), varray());
+	bind_method(Vector3, round_to_decimal, sarray("precision"), varray());
 	bind_method(Vector3, posmod, sarray("mod"), varray());
 	bind_method(Vector3, posmodv, sarray("modv"), varray());
 	bind_method(Vector3, project, sarray("b"), varray());

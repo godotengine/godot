@@ -109,6 +109,27 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void MeshInstance3D::_update_overlapping_vertices() {
+	overlapping_vertices.clear();
+	point_to_position.clear();
+
+	if (mesh.is_null() || mesh->get_surface_count() == 0) {
+		return;
+	}
+
+	int point_index = 0;
+	for (int i = 0; i < mesh->get_surface_count(); i++) {
+		Array arrays = mesh->surface_get_arrays(i);
+		const PackedVector3Array &vertices = arrays[Mesh::ARRAY_VERTEX];
+
+		for (int j = 0; j < vertices.size(); j++, point_index++) {
+			Vector3 coordinates = vertices[j].round_to_decimal(6);
+			overlapping_vertices[coordinates].push_back(point_index);
+			point_to_position[point_index] = coordinates;
+		}
+	}
+}
+
 void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 	if (mesh == p_mesh) {
 		return;
@@ -426,6 +447,7 @@ void MeshInstance3D::_mesh_changed() {
 		}
 	}
 
+	_update_overlapping_vertices();
 	update_gizmos();
 }
 
