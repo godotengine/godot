@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource.h"
+#include "core/variant/container_type_validate.h"
 #include "core/variant/variant.h"
 
 class VariantParser {
@@ -134,6 +135,12 @@ public:
 		HashMap<String, Variant> fields;
 	};
 
+	struct ParsedTypeResult {
+		ContainerType type;
+		Error error;
+		bool got_expected_token;
+	};
+
 private:
 	static const char *tk_name[TK_MAX];
 
@@ -144,6 +151,8 @@ private:
 	static Error _parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
 	static Error _parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
 	static Error _parse_tag(Token &token, Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
+
+	static ParsedTypeResult _parse_type(Token &token, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser, TokenType expected_token_type);
 
 public:
 	static Error parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
