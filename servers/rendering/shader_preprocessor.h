@@ -89,7 +89,7 @@ private:
 		int get_line() const;
 		int get_index() const;
 		char32_t peek();
-		int consume_line_continuations(int p_offset);
+		int consume_line_continuations();
 
 		void get_and_clear_generated(LocalVector<char32_t> *r_out);
 		void backtrack(char32_t p_what);
