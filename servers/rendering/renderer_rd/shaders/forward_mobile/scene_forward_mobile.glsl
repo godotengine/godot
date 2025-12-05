@@ -39,6 +39,7 @@ layout(location = 3) in vec4 color_attrib;
 
 #ifdef UV_USED
 layout(location = 4) in vec2 uv_attrib;
+vec2 uv_interp;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP) || defined(MODE_RENDER_MATERIAL)
@@ -101,7 +102,7 @@ layout(location = 2) out vec4 color_interp;
 #endif
 
 #ifdef UV_USED
-layout(location = 3) out vec2 uv_interp;
+layout(location = 3) out vec2 uv_interp_internal;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
@@ -507,6 +508,10 @@ void vertex_shader(in vec3 vertex,
 
 	vertex_interp = vertex;
 
+#ifdef UV_USED
+	uv_interp_internal = uv_interp;
+#endif
+
 	// Normalize TBN vectors before interpolation, per MikkTSpace.
 	// See: http://www.mikktspace.com/
 #ifdef NORMAL_USED
@@ -834,6 +839,22 @@ void main() {
 
 /* Varyings */
 
+#if defined(TEXTURE_STREAMING)
+#if defined(UV_USED)
+#if !defined(MODE_RENDER_DEPTH) && !defined(ALPHA_SCISSOR_USED) && !defined(ALPHA_HASH_USED) && !defined(ALPHA_ANTIALIASING_EDGE_USED)
+
+// When texture streaming is enabled subgroupElect is needed to properly handle texture feedback.
+#extension GL_KHR_shader_subgroup_basic : enable
+
+// Since material feedback writes to a ssbo buffer, early fragment tests likely get disabled by the
+// driver so unless we want really bad performance, we need to force enable it again.
+// To Early-Z, or Not To Early-Z
+//  - https://therealmjp.github.io/posts/to-earlyz-or-not-to-earlyz/#uavsstorage-texturesstorage-buffers
+layout(early_fragment_tests) in;
+#endif // MODE_RENDER_DEPTH
+#endif // UV_USED
+#endif // TEXTURE_STREAMING
+
 // All interpolators are intentionally kept at full precision as storageInputOutput16 is not
 // checked for support. Devices with Adreno GPUs don't usually support this capability.
 
@@ -848,7 +869,8 @@ layout(location = 2) in vec4 color_interp;
 #endif
 
 #ifdef UV_USED
-layout(location = 3) in vec2 uv_interp;
+layout(location = 3) in vec2 uv_interp_internal;
+vec2 uv_interp = uv_interp_internal;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
@@ -1015,6 +1037,37 @@ layout(location = 0) out vec4 frag_color;
 #endif // RENDER DEPTH
 
 #include "../scene_forward_aa_inc.glsl"
+
+#if defined(TEXTURE_STREAMING)
+#if defined(UV_USED)
+#if !defined(MODE_RENDER_DEPTH) && !defined(ALPHA_SCISSOR_USED) && !defined(ALPHA_HASH_USED) && !defined(ALPHA_ANTIALIASING_EDGE_USED)
+uint getMipLevelAnisotropic(vec2 uv_dx, vec2 uv_dy) {
+	float px_sq = dot(uv_dx, uv_dx);
+	float py_sq = dot(uv_dy, uv_dy);
+
+	float min_sq = min(px_sq, py_sq);
+	float max_sq = max(px_sq, py_sq);
+
+	// Anisotropic filtering allows using the mip level of the minor axis (min_sq),
+	// but limited by the max anisotropy (usually 16x).
+	// If the anisotropy ratio exceeds 16, we are forced to use a lower res mip.
+	const float MAX_ANISOTROPY = 16.0;
+	float lod_sq = max(min_sq, max_sq / (MAX_ANISOTROPY * MAX_ANISOTROPY));
+
+	// Calculate LOD: -0.5 * log2(lod_sq)
+	// We invert the log2 because we want higher values for smaller derivatives (higher resolution)
+	// This matches the atomicMax behavior used in the feedback buffer.
+	float lod = -0.5 * log2(max(lod_sq, 1e-8));
+
+	// Clamp to valid range.
+	lod = clamp(lod, 0.0, 15.0);
+
+	uint mask = 1u << uint(ceil(lod));
+	return mask;
+}
+#endif // MODE_RENDER_DEPTH
+#endif // UV_USED
+#endif // TEXTURE_STREAMING
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) // && !defined(USE_VERTEX_LIGHTING)
 
@@ -1358,6 +1411,24 @@ void main() {
 	}
 #endif // MODE_RENDER_MATERIAL
 #endif // ALPHA_SCISSOR_USED
+
+#if defined(TEXTURE_STREAMING)
+#if defined(UV_USED)
+#if !defined(MODE_RENDER_DEPTH) && !defined(ALPHA_SCISSOR_USED) && !defined(ALPHA_HASH_USED) && !defined(ALPHA_ANTIALIASING_EDGE_USED)
+	if (sc_material_feedback()) {
+		// Instance has materials which require feedback.
+		vec2 uv_dx = dFdx(uv_interp);
+		vec2 uv_dy = dFdy(uv_interp);
+
+		if (subgroupElect()) {
+			uint resolution0 = getMipLevelAnisotropic(uv_dx, uv_dy);
+			uint material_feedback_index = instances.data[draw_call.instance_index].material_feedback_index;
+			atomicMax(material_feedback.data[material_feedback_index], resolution0);
+		}
+	}
+#endif // MODE_RENDER_DEPTH
+#endif //TEXTURE_STREAMING
+#endif // UV_USED
 
 // alpha hash can be used in unison with alpha antialiasing
 #ifdef ALPHA_HASH_USED
