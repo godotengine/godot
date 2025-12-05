@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<class name="Control" inherits="CanvasItem" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<?xml version='1.0' encoding='utf-8'?>
+<class xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Control" inherits="CanvasItem" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all GUI controls. Adapts its position and size based on its parent control.
 	</brief_description>
@@ -1175,7 +1175,14 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
-	</members>
+	<member name="layout_mode" type="int" setter="" getter="" enum="Control.LayoutMode" default="0">
+Controls how the control's position and size are interpreted relative to its parent.
+
+- [b]Anchors and Offsets[/b] ([constant LAYOUT_MODE_ANCHORS_AND_OFFSETS] = 0): Uses anchors and offsets for flexible UI layouts.
+- [b]Position and Size[/b] ([constant LAYOUT_MODE_POSITION_AND_SIZE] = 1): Uses absolute position and size like Node2D.
+
+[b]Note:[/b] This property is only settable via the Inspector. It cannot be changed from scripts.
+</member></members>
 	<signals>
 		<signal name="focus_entered">
 			<description>
@@ -1509,4 +1516,4 @@
 			Right-to-left text writing direction.
 		</constant>
 	</constants>
-</class>
+<enum name="LayoutMode"><value name="LAYOUT_MODE_ANCHORS_AND_OFFSETS" value="0" /><value name="LAYOUT_MODE_POSITION_AND_SIZE" value="1" /></enum></class>
