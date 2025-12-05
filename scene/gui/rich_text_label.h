@@ -127,7 +127,13 @@ public:
 		UPDATE_REGION = 1 << 4,
 		UPDATE_PAD = 1 << 5,
 		UPDATE_TOOLTIP = 1 << 6,
-		UPDATE_WIDTH_IN_PERCENT = 1 << 7,
+		UPDATE_WIDTH_UNIT = 1 << 7,
+	};
+
+	enum ImageUnit {
+		IMAGE_UNIT_PIXEL,
+		IMAGE_UNIT_PERCENT,
+		IMAGE_UNIT_EM,
 	};
 
 protected:
@@ -150,7 +156,8 @@ protected:
 	void _push_strikethrough_bind_compat_106300();
 	void _add_image_bind_compat_107347(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false, const String &p_alt_text = String());
 	void _update_image_bind_compat_107347(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
-
+	void _add_image_bind_compat_112617(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false, const String &p_alt_text = String());
+	void _update_image_bind_compat_112617(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -280,8 +287,8 @@ private:
 		String alt_text;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 		bool pad = false;
-		bool width_in_percent = false;
-		bool height_in_percent = false;
+		ImageUnit width_unit = IMAGE_UNIT_PIXEL;
+		ImageUnit height_unit = IMAGE_UNIT_PIXEL;
 		Rect2 region;
 		Size2 size;
 		Size2 rq_size;
@@ -737,7 +744,8 @@ private:
 
 	void _invalidate_fonts();
 
-	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
+	Size2 _get_image_size(const Ref<Texture2D> &p_image, float p_width = 0, float p_height = 0, const Rect2 &p_region = Rect2());
+	Size2 _get_item_image_final_size(ItemImage *p_img, float p_orig_width, float p_base_font_size);
 
 	String _get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items);
 	void _add_list_prefixes(ItemFrame *p_frame, int p_line, Line &r_l);
@@ -824,8 +832,8 @@ public:
 	String get_parsed_text() const;
 	void add_text(const String &p_text);
 	void add_hr(int p_width = 90, int p_height = 2, const Color &p_color = Color(1.0, 1.0, 1.0), HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, bool p_width_in_percent = true, bool p_height_in_percent = false);
-	void add_image(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false, const String &p_alt_text = String());
-	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false);
+	void add_image(const Ref<Texture2D> &p_image, float p_width = 0, float p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), ImageUnit p_width_unit = IMAGE_UNIT_PIXEL, ImageUnit p_height_unit = IMAGE_UNIT_PIXEL, const String &p_alt_text = String());
+	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, float p_width = 0, float p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), ImageUnit p_width_unit = IMAGE_UNIT_PIXEL, ImageUnit p_height_unit = IMAGE_UNIT_PIXEL);
 	void add_newline();
 	bool remove_paragraph(int p_paragraph, bool p_no_invalidate = false);
 	bool invalidate_paragraph(int p_paragraph);
@@ -1037,3 +1045,4 @@ VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
 VARIANT_ENUM_CAST(RichTextLabel::MetaUnderline);
 VARIANT_BITFIELD_CAST(RichTextLabel::ImageUpdateMask);
+VARIANT_ENUM_CAST(RichTextLabel::ImageUnit);
