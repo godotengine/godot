@@ -101,7 +101,7 @@ void CurveTexture::_update() {
 		if (_curve.is_valid()) {
 			Curve &curve = **_curve;
 			for (int i = 0; i < _width; ++i) {
-				float t = i / static_cast<float>(_width);
+				float t = curve.get_min_domain() + i / static_cast<float>(_width - 1) * curve.get_domain_range();
 				if (texture_mode == TEXTURE_MODE_RGB) {
 					wd[i * 3 + 0] = curve.sample_baked(t);
 					wd[i * 3 + 1] = wd[i * 3 + 0];
@@ -287,7 +287,7 @@ void CurveXYZTexture::_update() {
 		if (_curve_x.is_valid()) {
 			Curve &curve_x = **_curve_x;
 			for (int i = 0; i < _width; ++i) {
-				float t = i / static_cast<float>(_width);
+				float t = curve_x.get_min_domain() + i / static_cast<float>(_width - 1) * curve_x.get_domain_range();
 				wd[i * 3 + 0] = curve_x.sample_baked(t);
 			}
 
@@ -300,7 +300,7 @@ void CurveXYZTexture::_update() {
 		if (_curve_y.is_valid()) {
 			Curve &curve_y = **_curve_y;
 			for (int i = 0; i < _width; ++i) {
-				float t = i / static_cast<float>(_width);
+				float t = curve_y.get_min_domain() + i / static_cast<float>(_width - 1) * curve_y.get_domain_range();
 				wd[i * 3 + 1] = curve_y.sample_baked(t);
 			}
 
@@ -313,7 +313,7 @@ void CurveXYZTexture::_update() {
 		if (_curve_z.is_valid()) {
 			Curve &curve_z = **_curve_z;
 			for (int i = 0; i < _width; ++i) {
-				float t = i / static_cast<float>(_width);
+				float t = curve_z.get_min_domain() + i / static_cast<float>(_width - 1) * curve_z.get_domain_range();
 				wd[i * 3 + 2] = curve_z.sample_baked(t);
 			}
 
