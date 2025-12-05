@@ -907,6 +907,25 @@ void ResourceLoaderBinary::set_translation_remapped(bool p_remapped) {
 	translation_remapped = p_remapped;
 }
 
+static Error load_header(Ref<FileAccess> &r_file) {
+	uint8_t header[4];
+	r_file->get_buffer(header, 4);
+	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
+		// Compressed.
+		Ref<FileAccessCompressed> fac;
+		fac.instantiate();
+		Error err = fac->open_after_magic(r_file);
+		if (err != OK) {
+			return err;
+		}
+		r_file = fac;
+	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
+		// Not normal.
+		return ERR_FILE_UNRECOGNIZED;
+	}
+	return OK;
+}
+
 static void save_ustring(Ref<FileAccess> f, const String &p_string) {
 	CharString utf8 = p_string.utf8();
 	f->store_32(uint32_t(utf8.length() + 1));
@@ -980,28 +999,14 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 }
 
 void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p_keep_uuid_paths) {
-	error = OK;
+	error = load_header(p_f);
 
-	f = p_f;
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
-		// Compressed.
-		Ref<FileAccessCompressed> fac;
-		fac.instantiate();
-		error = fac->open_after_magic(f);
-		if (error != OK) {
-			f.unref();
-			ERR_FAIL_MSG(vformat("Failed to open binary resource file: '%s'.", local_path));
-		}
-		f = fac;
-
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
-		// Not normal.
-		error = ERR_FILE_UNRECOGNIZED;
-		f.unref();
-		ERR_FAIL_MSG(vformat("Unrecognized binary resource file: '%s'.", local_path));
+	if (error == ERR_FILE_UNRECOGNIZED) {
+		ERR_FAIL_MSG(vformat("Unrecognized binary resource file: \"%s\".", local_path));
+	} else if (error != OK) {
+		ERR_FAIL_MSG(vformat("Failed to open binary resource file: \"%s\".", local_path));
 	}
+	f = p_f;
 
 	bool big_endian = f->get_32();
 	bool use_real64 = f->get_32();
@@ -1118,28 +1123,11 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 }
 
 String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
-	error = OK;
-
-	f = p_f;
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
-		// Compressed.
-		Ref<FileAccessCompressed> fac;
-		fac.instantiate();
-		error = fac->open_after_magic(f);
-		if (error != OK) {
-			f.unref();
-			return "";
-		}
-		f = fac;
-
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
-		// Not normal.
-		error = ERR_FILE_UNRECOGNIZED;
-		f.unref();
-		return "";
+	error = load_header(p_f);
+	if (error != OK) {
+		return String();
 	}
+	f = p_f;
 
 	bool big_endian = f->get_32();
 	f->get_32(); // use_real64
@@ -1159,28 +1147,11 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 }
 
 String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
-	error = OK;
-
-	f = p_f;
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
-		// Compressed.
-		Ref<FileAccessCompressed> fac;
-		fac.instantiate();
-		error = fac->open_after_magic(f);
-		if (error != OK) {
-			f.unref();
-			return "";
-		}
-		f = fac;
-
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
-		// Not normal.
-		error = ERR_FILE_UNRECOGNIZED;
-		f.unref();
-		return "";
+	error = load_header(p_f);
+	if (error != OK) {
+		return String();
 	}
+	f = p_f;
 
 	bool big_endian = f->get_32();
 	f->get_32(); // use_real64
@@ -1306,38 +1277,27 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
+	Error err = load_header(f);
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot open file '%s'.", p_path));
+
 	Ref<FileAccess> fw;
-
-	String local_path = p_path.get_base_dir();
-
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
-		// Compressed.
-		Ref<FileAccessCompressed> fac;
-		fac.instantiate();
-		Error err = fac->open_after_magic(f);
-		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot open file '%s'.", p_path));
-		f = fac;
-
+	if (Object::cast_to<FileAccessCompressed>(f.ptr())) {
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
 		facw->configure("RSCC");
 		err = facw->open_internal(p_path + ".depren", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.depren'.", p_path));
+		ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.depren'.", p_path));
 
 		fw = facw;
-
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
-		// Not normal.
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Unrecognized binary resource file '%s'.", local_path));
 	} else {
 		fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.depren'.", p_path));
 
-		uint8_t magic[4] = { 'R', 'S', 'R', 'C' };
-		fw->store_buffer(magic, 4);
+		uint8_t magich[4] = { 'R', 'S', 'R', 'C' };
+		fw->store_buffer(magich, 4);
 	}
+
+	const String local_path = p_path.get_base_dir();
 
 	bool big_endian = f->get_32();
 	bool use_real64 = f->get_32();
@@ -1364,7 +1324,6 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		WARN_PRINT(vformat("This file is old, so it can't refactor dependencies, opening and resaving '%s'.", p_path));
 
-		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 		ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
@@ -2406,20 +2365,11 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
+	Error err = load_header(f);
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot open file '%s'.", p_path));
+
 	Ref<FileAccess> fw;
-
-	local_path = p_path.get_base_dir();
-
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
-		// Compressed.
-		Ref<FileAccessCompressed> fac;
-		fac.instantiate();
-		Error err = fac->open_after_magic(f);
-		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot open file '%s'.", p_path));
-		f = fac;
-
+	if (Object::cast_to<FileAccessCompressed>(f.ptr())) {
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
 		facw->configure("RSCC");
@@ -2427,10 +2377,6 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.uidren'.", p_path));
 
 		fw = facw;
-
-	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
-		// Not a binary resource.
-		return ERR_FILE_UNRECOGNIZED;
 	} else {
 		fw = FileAccess::open(p_path + ".uidren", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.uidren'.", p_path));
@@ -2438,6 +2384,8 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 		uint8_t magich[4] = { 'R', 'S', 'R', 'C' };
 		fw->store_buffer(magich, 4);
 	}
+
+	local_path = p_path.get_base_dir();
 
 	big_endian = f->get_32();
 	bool use_real64 = f->get_32();
