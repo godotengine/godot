@@ -50,6 +50,7 @@ class ViewPanner;
 class VScrollBar;
 class VSeparator;
 class VSplitContainer;
+class MultiNodeEdit;
 
 class CanvasItemEditorSelectedItem : public Object {
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
@@ -425,7 +426,7 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _add_node_pressed(int p_result);
-	void _adjust_new_node_position(Node *p_node);
+	void _adjust_new_node_position(Object *p_node);
 	void _reset_create_position();
 	void _update_editor_settings();
 	bool _is_grid_visible() const;
