@@ -84,9 +84,9 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		nr = arrays[Mesh::ARRAY_NORMAL].operator Vector<Vector3>().ptr();
 	}
 
-	const real_t *ta = nullptr;
+	const float *ta = nullptr;
 	if (arrays[Mesh::ARRAY_TANGENT].get_type() != Variant::NIL) {
-		ta = arrays[Mesh::ARRAY_TANGENT].operator Vector<real_t>().ptr();
+		ta = arrays[Mesh::ARRAY_TANGENT].operator Vector<float>().ptr();
 	}
 
 	const Vector2 *uv = nullptr;
