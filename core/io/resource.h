@@ -189,6 +189,9 @@ public:
 	void set_id_for_path(const String &p_referrer_path, const String &p_id) { set_resource_id_for_path(p_referrer_path, get_path(), p_id); }
 	String get_id_for_path(const String &p_referrer_path) const;
 
+	virtual void _start_load(const StringName &p_res_format_type, int p_res_format_version);
+	virtual void _finish_load(const StringName &p_res_format_type, int p_res_format_version);
+
 	Resource();
 	~Resource();
 };
