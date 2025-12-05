@@ -676,7 +676,6 @@ void ScriptEditor::_save_history() {
 void ScriptEditor::_save_previous_state(Dictionary p_state) {
 	if (lock_history) {
 		// Done as a result of a deferred call triggered by set_edit_state().
-		lock_history = false;
 		return;
 	}
 
@@ -3854,6 +3853,10 @@ void ScriptEditor::_update_selected_editor_menu() {
 	}
 }
 
+void ScriptEditor::_unlock_history() {
+	lock_history = false;
+}
+
 void ScriptEditor::_update_history_pos(int p_new_pos) {
 	Node *n = tab_container->get_current_tab_control();
 
@@ -3873,6 +3876,10 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 	if (seb) {
 		lock_history = true;
 		seb->set_edit_state(history[history_pos].state);
+		// `set_edit_state()` can modify the caret position which might trigger a
+		// request to save the history. Since `TextEdit::caret_changed` is emitted
+		// deferred, we need to defer unlocking of the history as well.
+		callable_mp(this, &ScriptEditor::_unlock_history).call_deferred();
 		seb->ensure_focus();
 
 		Ref<Script> scr = seb->get_edited_resource();
