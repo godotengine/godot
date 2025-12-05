@@ -400,9 +400,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 
 	if (can_rename) {
 		bool collapsed = p_node->is_displayed_folded();
-		if (collapsed) {
-			p_item->set_collapsed(true);
-		}
+		p_item->set_collapsed(collapsed);
 	}
 
 	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node);
