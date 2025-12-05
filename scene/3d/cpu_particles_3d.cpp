@@ -31,12 +31,15 @@
 #include "cpu_particles_3d.h"
 #include "cpu_particles_3d.compat.inc"
 
+#include "core/io/resource_loader.h"
 #include "core/math/random_number_generator.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/particle_process_material.h"
 
@@ -523,6 +526,175 @@ void CPUParticles3D::set_gravity(const Vector3 &p_gravity) {
 
 Vector3 CPUParticles3D::get_gravity() const {
 	return gravity;
+}
+
+void CPUParticles3D::set_node_selected(const NodePath &p_path) {
+	Node *sel = get_node(p_path);
+	if (!sel) {
+		return;
+	}
+
+	if (!sel->is_class("Node3D")) {
+		return;
+	}
+
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(sel);
+	if (!mi || mi->get_mesh().is_null()) {
+		return;
+	}
+
+	geometry = mi->get_mesh()->get_faces();
+
+	if (geometry.size() == 0) {
+		return;
+	}
+
+	Transform3D geom_xform = get_global_transform().affine_inverse() * mi->get_global_transform();
+
+	int gc = geometry.size();
+	Face3 *w = geometry.ptrw();
+
+	for (int i = 0; i < gc; i++) {
+		for (int j = 0; j < 3; j++) {
+			w[i].vertex[j] = geom_xform.xform(w[i].vertex[j]);
+		}
+	}
+
+	update_configuration_warnings();
+}
+
+bool CPUParticles3D::_generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals, int &emission_amount, int &emission_fill) {
+	bool use_normals = emission_fill == 1;
+
+	if (emission_fill < 2) {
+		float area_accum = 0;
+		RBMap<float, int> triangle_area_map;
+
+		for (int i = 0; i < geometry.size(); i++) {
+			float area = geometry[i].get_area();
+			if (area < CMP_EPSILON) {
+				continue;
+			}
+			triangle_area_map[area_accum] = i;
+			area_accum += area;
+		}
+
+		if (!triangle_area_map.size() || area_accum == 0) {
+			return false;
+		}
+
+		int emissor_count = emission_amount;
+
+		for (int i = 0; i < emissor_count; i++) {
+			float areapos = Math::random(0.0f, area_accum);
+
+			RBMap<float, int>::Iterator E = triangle_area_map.find_closest(areapos);
+			ERR_FAIL_COND_V(!E, false);
+			int index = E->value;
+			ERR_FAIL_INDEX_V(index, geometry.size(), false);
+
+			// ok FINALLY get face
+			Face3 face = geometry[index];
+			//now compute some position inside the face...
+
+			Vector3 pos = face.get_random_point_inside();
+
+			r_points.push_back(pos);
+
+			if (use_normals) {
+				Vector3 normal = face.get_plane().normal;
+				r_normals.push_back(normal);
+			}
+		}
+	} else {
+		int gcount = geometry.size();
+
+		if (gcount == 0) {
+			return false;
+		}
+
+		const Face3 *r = geometry.ptr();
+
+		AABB aabb;
+
+		for (int i = 0; i < gcount; i++) {
+			for (int j = 0; j < 3; j++) {
+				if (i == 0 && j == 0) {
+					aabb.position = r[i].vertex[j];
+				} else {
+					aabb.expand_to(r[i].vertex[j]);
+				}
+			}
+		}
+
+		int emissor_count = emission_amount;
+
+		for (int i = 0; i < emissor_count; i++) {
+			int attempts = 5;
+
+			for (int j = 0; j < attempts; j++) {
+				Vector3 dir;
+				dir[Math::rand() % 3] = 1.0;
+				Vector3 ofs = (Vector3(1, 1, 1) - dir) * Vector3(Math::randf(), Math::randf(), Math::randf()) * aabb.size + aabb.position;
+
+				Vector3 ofsv = ofs + aabb.size * dir;
+
+				//space it a little
+				ofs -= dir;
+				ofsv += dir;
+
+				float max = -1e7, min = 1e7;
+
+				for (int k = 0; k < gcount; k++) {
+					const Face3 &f3 = r[k];
+
+					Vector3 res;
+					if (f3.intersects_segment(ofs, ofsv, &res)) {
+						res -= ofs;
+						float d = dir.dot(res);
+
+						if (d < min) {
+							min = d;
+						}
+						if (d > max) {
+							max = d;
+						}
+					}
+				}
+
+				if (max < min) {
+					continue; //lost attempt
+				}
+
+				float val = min + (max - min) * Math::randf();
+
+				Vector3 point = ofs + dir * val;
+
+				r_points.push_back(point);
+				break;
+			}
+		}
+	}
+	return true;
+}
+
+void CPUParticles3D::generate_emission_points(const NodePath &p_path, int p_emission_amount, int p_emission_source) {
+	set_node_selected(p_path);
+
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+
+	if (!_generate(points, normals, p_emission_amount, p_emission_source)) {
+		return;
+	}
+
+	if (normals.is_empty()) {
+		emission_shape = CPUParticles3D::EMISSION_SHAPE_POINTS;
+	} else {
+		emission_shape = CPUParticles3D::EMISSION_SHAPE_DIRECTED_POINTS;
+		emission_normals = normals;
+	}
+	emission_points = points;
 }
 
 Ref<Curve> CPUParticles3D::get_scale_curve_x() const {
@@ -1638,6 +1810,8 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scale_curve_z"), &CPUParticles3D::get_scale_curve_z);
 	ClassDB::bind_method(D_METHOD("set_scale_curve_z", "scale_curve"), &CPUParticles3D::set_scale_curve_z);
 
+	ClassDB::bind_method(D_METHOD("generate_emission_points", "path", "emission_amount", "emission_source"), &CPUParticles3D::generate_emission_points);
+
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles3D::convert_from_particles);
 
 	ADD_SIGNAL(MethodInfo("finished"));
@@ -1747,6 +1921,10 @@ void CPUParticles3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RING);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
+
+	BIND_ENUM_CONSTANT(SURFACE_POINTS);
+	BIND_ENUM_CONSTANT(SURFACE_POINTS_AND_NORMAL);
+	BIND_ENUM_CONSTANT(VOLUME);
 }
 
 CPUParticles3D::CPUParticles3D() {
