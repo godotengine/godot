@@ -161,8 +161,8 @@ struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
 	String name;
 	StringName class_name; // For classes
-	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
+	PropertyHint hint = PROPERTY_HINT_NONE;
 	uint32_t usage = PROPERTY_USAGE_DEFAULT;
 
 	// If you are thinking about adding another member to this class, ask the maintainer (Juan) first.
@@ -182,8 +182,8 @@ struct PropertyInfo {
 	PropertyInfo(const Variant::Type p_type, const String &p_name, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName()) :
 			type(p_type),
 			name(p_name),
-			hint(p_hint),
 			hint_string(p_hint_string),
+			hint(p_hint),
 			usage(p_usage) {
 		if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			class_name = hint_string;
@@ -200,8 +200,8 @@ struct PropertyInfo {
 			type((Variant::Type)pinfo.type),
 			name(*reinterpret_cast<StringName *>(pinfo.name)),
 			class_name(*reinterpret_cast<StringName *>(pinfo.class_name)),
-			hint((PropertyHint)pinfo.hint),
 			hint_string(*reinterpret_cast<String *>(pinfo.hint_string)),
+			hint((PropertyHint)pinfo.hint),
 			usage(pinfo.usage) {}
 
 	bool operator==(const PropertyInfo &p_info) const {
