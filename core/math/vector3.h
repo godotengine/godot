@@ -225,6 +225,9 @@ struct [[nodiscard]] Vector3 {
 			x(0), y(0), z(0) {}
 	constexpr Vector3(real_t p_x, real_t p_y, real_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
+	template <typename V, std::enable_if_t<std::is_arithmetic_v<V>, int> = 0>
+	constexpr explicit Vector3(V p_v) :
+			x(p_v), y(p_v), z(p_v) {}
 };
 
 inline constexpr Vector3 Vector3::LEFT = { -1, 0, 0 };

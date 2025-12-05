@@ -37,10 +37,18 @@ namespace TestVector3 {
 
 TEST_CASE("[Vector3] Constructor methods") {
 	constexpr Vector3 vector_empty = Vector3();
+	constexpr Vector3 vector_from_int_zero = Vector3(0);
+	constexpr Vector3 vector_from_float_zero = Vector3(0.0f);
 	constexpr Vector3 vector_zero = Vector3(0.0, 0.0, 0.0);
 	static_assert(
 			vector_empty == vector_zero,
-			"Vector3 Constructor with no inputs should return a zero Vector3.");
+			"Default constructor Vector3() should create a zero Vector3.");
+	static_assert(
+			vector_from_int_zero == vector_zero,
+			"Vector3(int scalar) should create a zero Vector3 when scalar is 0.");
+	static_assert(
+			vector_from_float_zero == vector_zero,
+			"Vector3(float scalar) should create a zero Vector3 when scalar is 0.0f.");
 }
 
 TEST_CASE("[Vector3] Angle methods") {
