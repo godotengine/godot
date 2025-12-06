@@ -55,18 +55,19 @@ bool Line2D::_edit_use_rect() const {
 }
 
 bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	const real_t d = _width / 2 + p_tolerance;
+	const real_t dist = _width / 2 + p_tolerance;
+	const real_t dist_squared = dist * dist;
 	const Vector2 *points = _points.ptr();
 	for (int i = 0; i < _points.size() - 1; i++) {
 		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, points[i], points[i + 1]);
-		if (p_point.distance_to(p) <= d) {
+		if (p_point.distance_squared_to(p) <= dist_squared) {
 			return true;
 		}
 	}
 	// Closing segment between the first and last point.
 	if (_closed && _points.size() > 2) {
 		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, points[0], points[_points.size() - 1]);
-		if (p_point.distance_to(p) <= d) {
+		if (p_point.distance_squared_to(p) <= dist_squared) {
 			return true;
 		}
 	}

@@ -740,14 +740,15 @@ void ColorPickerShapeWheel::_wheel_input(const Ref<InputEvent> &p_event) {
 	const Vector2 center = uv_size * 0.5;
 
 	if (is_click && !spinning) {
-		real_t dist = center.distance_to(event_position);
-		if (dist >= center.x * WHEEL_RADIUS * 2.0 && dist <= center.x) {
+		const real_t dist_squared = center.distance_squared_to(event_position);
+		const real_t min_dist_squared = (center.x * (WHEEL_RADIUS * 2.0f)) * (center.x * (WHEEL_RADIUS * 2.0f));
+		if (dist_squared >= min_dist_squared && dist_squared <= (center.x * center.x)) {
 			spinning = true;
 			if (!wheel_focused) {
 				cursor_editing = true;
 				wheel_focused = true;
 			}
-		} else if (dist > center.x) {
+		} else if (dist_squared > (center.x * center.x)) {
 			// Clicked outside the wheel.
 			cancel_event();
 			return;
@@ -857,13 +858,13 @@ void ColorPickerShapeCircle::update_circle_cursor(const Vector2 &p_color_change_
 		circle_keyboard_joypad_picker_cursor_position = p_center + p_hue_offset;
 	}
 
-	Vector2i potential_cursor_position = circle_keyboard_joypad_picker_cursor_position + p_color_change_vector;
-	real_t potential_new_cursor_distance = p_center.distance_to(potential_cursor_position);
-	real_t dist_pre = p_center.distance_to(circle_keyboard_joypad_picker_cursor_position);
-	if (color_picker->s < 1 || potential_new_cursor_distance < dist_pre) {
+	const Vector2i potential_cursor_position = circle_keyboard_joypad_picker_cursor_position + p_color_change_vector;
+	const real_t potential_new_cursor_distance_squared = p_center.distance_squared_to(potential_cursor_position);
+	const real_t dist_pre_squared = p_center.distance_squared_to(circle_keyboard_joypad_picker_cursor_position);
+	if (color_picker->s < 1 || potential_new_cursor_distance_squared < dist_pre_squared) {
 		circle_keyboard_joypad_picker_cursor_position += p_color_change_vector;
-		real_t dist = p_center.distance_to(circle_keyboard_joypad_picker_cursor_position);
-		real_t rad = p_center.angle_to_point(circle_keyboard_joypad_picker_cursor_position);
+		const real_t dist = p_center.distance_to(circle_keyboard_joypad_picker_cursor_position);
+		const real_t rad = p_center.angle_to_point(circle_keyboard_joypad_picker_cursor_position);
 		color_picker->h = ((rad >= 0) ? rad : (Math::TAU + rad)) / Math::TAU;
 		color_picker->s = CLAMP(dist / p_center.x, 0, 1);
 	} else {

@@ -1164,7 +1164,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					_update_current_tile_data_editor();
 				}
 			} else if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
-				if (Vector2(drag_start_mouse_pos).distance_to(tile_atlas_control->get_local_mouse_position()) > 5.0 * EDSCALE) {
+				if (Vector2(drag_start_mouse_pos).distance_squared_to(tile_atlas_control->get_local_mouse_position()) > (5.0f * EDSCALE) * (5.0f * EDSCALE)) {
 					drag_type = DRAG_TYPE_NONE;
 				}
 			} else if (drag_type >= DRAG_TYPE_RESIZE_TOP_LEFT && drag_type <= DRAG_TYPE_RESIZE_LEFT) {
@@ -1949,7 +1949,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 		alternative_tiles_control_unscaled->queue_redraw();
 
 		if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
-			if (Vector2(drag_start_mouse_pos).distance_to(alternative_tiles_control->get_local_mouse_position()) > 5.0 * EDSCALE) {
+			if (Vector2(drag_start_mouse_pos).distance_squared_to(alternative_tiles_control->get_local_mouse_position()) > (5.0f * EDSCALE) * (5.0f * EDSCALE)) {
 				drag_type = DRAG_TYPE_NONE;
 			}
 		}

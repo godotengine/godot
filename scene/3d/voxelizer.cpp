@@ -611,7 +611,7 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 		bake_cells.write[p_idx].normal[2] /= alpha;
 
 		Vector3 n(bake_cells[p_idx].normal[0], bake_cells[p_idx].normal[1], bake_cells[p_idx].normal[2]);
-		if (n.length() < 0.01) {
+		if (n.length_squared() < 0.0001f) {
 			//too much fight over normal, zero it
 			bake_cells.write[p_idx].normal[0] = 0;
 			bake_cells.write[p_idx].normal[1] = 0;

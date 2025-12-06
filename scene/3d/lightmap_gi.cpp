@@ -777,6 +777,7 @@ void LightmapGI::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cel
 }
 
 void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool> &positions_used, const AABB &p_bounds) {
+	const float probe_margin = p_cell_size * 0.5f;
 	for (int i = 0; i < 8; i++) {
 		Vector3i pos = p_cell->offset;
 		if (i & 1) {
@@ -797,7 +798,7 @@ void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, f
 			const Vector3 *pp = probe_positions.ptr();
 			bool exists = false;
 			for (int j = 0; j < ppcount; j++) {
-				if (pp[j].distance_to(real_pos) < (p_cell_size * 0.5f)) {
+				if (pp[j].distance_squared_to(real_pos) < probe_margin * probe_margin) {
 					exists = true;
 					break;
 				}

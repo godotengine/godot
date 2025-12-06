@@ -570,6 +570,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 	Transform3D it = gt.affine_inverse();
 
 	static const int click_dist = 10; //should make global
+	static const int click_dist_squared = click_dist * click_dist;
 
 	Ref<InputEventMouseButton> mb = p_event;
 
@@ -603,24 +604,24 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 				const Vector3 *r = v3a.ptr();
 				float closest_d = 1e20;
 
-				if (viewport->point_to_screen(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist) {
+				if (viewport->point_to_screen(gt.xform(c->get_point_position(0))).distance_squared_to(mbpos) < click_dist_squared) {
 					return EditorPlugin::AFTER_GUI_INPUT_PASS; //nope, existing
 				}
 
 				for (int i = 0; i < c->get_point_count() - 1; i++) {
 					//find the offset and point index of the place to break up
 					int j = idx;
-					if (viewport->point_to_screen(gt.xform(c->get_point_position(i + 1))).distance_to(mbpos) < click_dist) {
+					if (viewport->point_to_screen(gt.xform(c->get_point_position(i + 1))).distance_squared_to(mbpos) < click_dist_squared) {
 						return EditorPlugin::AFTER_GUI_INPUT_PASS; //nope, existing
 					}
 
 					while (j < rc && c->get_point_position(i + 1) != r[j]) {
 						Vector3 from = r[j];
 						Vector3 to = r[j + 1];
-						real_t cdist = from.distance_to(to);
+						real_t cdist_squared = from.distance_squared_to(to);
 						from = gt.xform(from);
 						to = gt.xform(to);
-						if (cdist > 0) {
+						if (cdist_squared > 0.0f) {
 							const Vector2 segment_a = viewport->point_to_screen(from);
 							const Vector2 segment_b = viewport->point_to_screen(to);
 							Vector2 inters = Geometry2D::get_closest_point_to_segment(mbpos, segment_a, segment_b);
@@ -688,35 +689,35 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 		} else if (mb->is_pressed() && ((mb->get_button_index() == MouseButton::LEFT && curve_del->is_pressed()) || (mb->get_button_index() == MouseButton::RIGHT && curve_edit->is_pressed()))) {
 			const float disk_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size");
 			for (int i = 0; i < c->get_point_count(); i++) {
-				real_t dist_to_p = viewport->point_to_screen(gt.xform(c->get_point_position(i))).distance_to(mbpos);
-				real_t dist_to_p_out = viewport->point_to_screen(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);
-				real_t dist_to_p_in = viewport->point_to_screen(gt.xform(c->get_point_position(i) + c->get_point_in(i))).distance_to(mbpos);
-				real_t dist_to_p_up = viewport->point_to_screen(gt.xform(c->get_point_position(i) + c->get_point_baked_posture(i, true).get_column(1) * disk_size)).distance_to(mbpos);
+				real_t dist_to_p_squared = viewport->point_to_screen(gt.xform(c->get_point_position(i))).distance_squared_to(mbpos);
+				real_t dist_to_p_out_squared = viewport->point_to_screen(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_squared_to(mbpos);
+				real_t dist_to_p_in_squared = viewport->point_to_screen(gt.xform(c->get_point_position(i) + c->get_point_in(i))).distance_squared_to(mbpos);
+				real_t dist_to_p_up_squared = viewport->point_to_screen(gt.xform(c->get_point_position(i) + c->get_point_baked_posture(i, true).get_column(1) * disk_size)).distance_squared_to(mbpos);
 
 				// Find the offset and point index of the place to break up.
 				// Also check for the control points.
-				if (dist_to_p < click_dist) {
+				if (dist_to_p_squared < click_dist_squared) {
 					EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 					ur->create_action(TTR("Remove Path Point"));
 					ur->add_do_method(c.ptr(), "remove_point", i);
 					ur->add_undo_method(c.ptr(), "add_point", c->get_point_position(i), c->get_point_in(i), c->get_point_out(i), i);
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				} else if (dist_to_p_out < click_dist) {
+				} else if (dist_to_p_out_squared < click_dist_squared) {
 					EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 					ur->create_action(TTR("Reset Out-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_out", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_out", i, c->get_point_out(i));
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				} else if (dist_to_p_in < click_dist) {
+				} else if (dist_to_p_in_squared < click_dist_squared) {
 					EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 					ur->create_action(TTR("Reset In-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_in", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_in", i, c->get_point_in(i));
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				} else if (dist_to_p_up < click_dist) {
+				} else if (dist_to_p_up_squared < click_dist_squared) {
 					EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 					ur->create_action(TTR("Reset Point Tilt"));
 					ur->add_do_method(c.ptr(), "set_point_tilt", i, 0.0f);
@@ -1085,8 +1086,8 @@ int Path3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo,
 
 	if (Path3DEditorPlugin::singleton->curve_edit->is_pressed()) {
 		for (int idx = 0; idx < curve->get_point_count(); ++idx) {
-			Vector3 pos = path->get_global_transform().xform(curve->get_point_position(idx));
-			if (p_camera->unproject_position(pos).distance_to(p_point) < 20) {
+			const Vector3 pos = path->get_global_transform().xform(curve->get_point_position(idx));
+			if (p_camera->unproject_position(pos).distance_squared_to(p_point) < 400.0f) {
 				return idx;
 			}
 		}
