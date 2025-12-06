@@ -52,6 +52,7 @@ class EditorBottomPanel : public TabContainer {
 	bool lock_panel_switching = false;
 	LocalVector<EditorDock *> bottom_docks;
 	LocalVector<Ref<Shortcut>> dock_shortcuts;
+	int dock_offset = -450;
 	HashMap<String, int> dock_offsets;
 
 	LocalVector<Button *> legacy_buttons;
@@ -79,6 +80,7 @@ public:
 	void toggle_last_opened_bottom_panel();
 	void set_expanded(bool p_expanded);
 	void _theme_changed();
+	void _editor_settings_changed();
 
 	void set_bottom_panel_offset(int p_offset);
 	int get_bottom_panel_offset();

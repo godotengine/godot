@@ -78,19 +78,61 @@ void EditorBottomPanel::_theme_changed() {
 	}
 }
 
+void EditorBottomPanel::_editor_settings_changed() {
+	// If the editor settings were changed to disable individual tabs, then set the
+	// unified tab height to be equal to the currently active tab height
+	if (!EditorNode::get_singleton()->is_bottom_dock_tabs_allow_individual_heights()) {
+		EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
+		if (current_tab) {
+			dock_offset = dock_offsets[current_tab->get_effective_layout_key()];
+		}
+	}
+
+	// If the editor settings were changed to enable individual tabs, then set the
+	// individual tab heights to be equal to the current unified height and set
+	else {
+		for (int tab_idx = 0; tab_idx < get_tab_count(); tab_idx++) {
+			EditorDock *tab = Object::cast_to<EditorDock>(get_tab_control(tab_idx));
+			if (tab) {
+				dock_offsets[tab->get_effective_layout_key()] = dock_offset;
+			}
+		}
+	}
+
+	_update_center_split_offset();
+}
+
 void EditorBottomPanel::set_bottom_panel_offset(int p_offset) {
-	EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
-	if (current_tab) {
-		dock_offsets[current_tab->get_effective_layout_key()] = p_offset;
+	// Store the individual offsets
+	if (EditorNode::get_singleton()->is_bottom_dock_tabs_allow_individual_heights()) {
+		EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
+		if (current_tab) {
+			dock_offsets[current_tab->get_effective_layout_key()] = p_offset;
+		}
+		return;
+	}
+
+	// Store the unified offset and update all individual offsets to match
+	dock_offset = p_offset;
+	for (const KeyValue<String, int> &E : dock_offsets) {
+		dock_offsets[E.key] = p_offset;
 	}
 }
 
 int EditorBottomPanel::get_bottom_panel_offset() {
+	// Handle the null case
 	EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
-	if (current_tab) {
+	if (!current_tab) {
+		return 0;
+	}
+
+	// Return the individual offsets
+	if (EditorNode::get_singleton()->is_bottom_dock_tabs_allow_individual_heights()) {
 		return dock_offsets[current_tab->get_effective_layout_key()];
 	}
-	return 0;
+
+	// Return the unified offset
+	return dock_offset;
 }
 
 void EditorBottomPanel::_repaint() {
@@ -123,19 +165,32 @@ void EditorBottomPanel::_repaint() {
 
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
 	Dictionary offsets;
-	for (const KeyValue<String, int> &E : dock_offsets) {
-		offsets[E.key] = E.value;
+	if (EditorNode::get_singleton()->is_bottom_dock_tabs_allow_individual_heights()) {
+		// Store the individual offsets as themselves
+		for (const KeyValue<String, int> &E : dock_offsets) {
+			offsets[E.key] = E.value;
+		}
+	} else {
+		// Store the individual offsets as the unified offset
+		for (const KeyValue<String, int> &E : dock_offsets) {
+			offsets[E.key] = dock_offset;
+		}
 	}
 	p_config_file->set_value(p_section, "bottom_panel_offsets", offsets);
+	p_config_file->set_value(p_section, "bottom_panel_offset", dock_offset);
 }
 
 void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section) {
+	// Load the unified offset
+	dock_offset = p_config_file->get_value(p_section, "bottom_panel_offset", int());
+
+	// Load the individual offsets
 	const Dictionary offsets = p_config_file->get_value(p_section, "bottom_panel_offsets", Dictionary());
 	const LocalVector<Variant> offset_list = offsets.get_key_list();
-
 	for (const Variant &v : offset_list) {
 		dock_offsets[v] = offsets[v];
 	}
+
 	_update_center_split_offset();
 }
 
