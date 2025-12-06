@@ -2008,7 +2008,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 		add_options = names.has(p_function);
 	}
 	if (add_options) {
-		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
+		const HashMap<StringName, String> &global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
 		for (const KeyValue<StringName, String> &E : global_groups) {
 			r_options->push_back(E.key.operator String().quote());
 		}

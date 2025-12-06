@@ -1640,9 +1640,9 @@ void ProjectSettings::_bind_methods() {
 
 void ProjectSettings::_add_builtin_input_map() {
 	if (InputMap::get_singleton()) {
-		HashMap<String, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
+		const HashMap<String, List<Ref<InputEvent>>> &builtins = InputMap::get_singleton()->get_builtins();
 
-		for (KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
+		for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 			Array events;
 
 			// Convert list of input events into array
