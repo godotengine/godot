@@ -207,7 +207,7 @@ void Light2D::_notification(int p_what) {
 			_update_light_visibility();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
 		} break;
 
@@ -218,7 +218,7 @@ void Light2D::_notification(int p_what) {
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
 			if (is_visible_in_tree() && is_physics_interpolated_and_enabled()) {
 				// Explicitly make sure the transform is up to date in RenderingServer before
-				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
+				// resetting. This is necessary because NOTIFICATION_GLOBAL_TRANSFORM_CHANGED
 				// is normally deferred, and a client change to transform will not always be sent
 				// before the reset, so we need to guarantee this.
 				RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
@@ -330,7 +330,7 @@ void Light2D::_bind_methods() {
 
 Light2D::Light2D() {
 	canvas_light = RenderingServer::get_singleton()->canvas_light_create();
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 }
 
 Light2D::~Light2D() {

@@ -489,7 +489,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 void TileMapLayer::_rendering_notification(int p_what) {
 	RenderingServer *rs = RenderingServer::get_singleton();
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED || p_what == NOTIFICATION_ENTER_CANVAS || p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+	if (p_what == NOTIFICATION_GLOBAL_TRANSFORM_CHANGED || p_what == NOTIFICATION_ENTER_CANVAS || p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (tile_set.is_valid()) {
 			Transform2D tilemap_xform = get_global_transform();
 			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
@@ -1049,7 +1049,7 @@ void TileMapLayer::_physics_notification(int p_what) {
 	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
 	switch (p_what) {
-		case NOTIFICATION_TRANSFORM_CHANGED:
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED:
 			// Move the collisison shapes along with the TileMap.
 			if (is_inside_tree() && tile_set.is_valid()) {
 				for (KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
@@ -1350,7 +1350,7 @@ void TileMapLayer::_navigation_update(bool p_force_cleanup) {
 }
 
 void TileMapLayer::_navigation_notification(int p_what) {
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
+	if (p_what == NOTIFICATION_GLOBAL_TRANSFORM_CHANGED) {
 		if (tile_set.is_valid()) {
 			Transform2D tilemap_xform = get_global_transform();
 			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
@@ -3618,7 +3618,7 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 #endif // NAVIGATION_2D_DISABLED
 
 TileMapLayer::TileMapLayer() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 }
 
 TileMapLayer::~TileMapLayer() {

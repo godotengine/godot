@@ -116,7 +116,7 @@ void RemoteTransform3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (!is_inside_tree()) {
 				break;
 			}
@@ -153,7 +153,7 @@ void RemoteTransform3D::set_use_global_coordinates(const bool p_enable) {
 
 	use_global_coordinates = p_enable;
 
-	set_notify_transform(use_global_coordinates);
+	set_notify_global_transform(use_global_coordinates);
 	set_notify_local_transform(!use_global_coordinates);
 	_update_remote();
 }
@@ -237,6 +237,6 @@ void RemoteTransform3D::_bind_methods() {
 }
 
 RemoteTransform3D::RemoteTransform3D() {
-	set_notify_transform(use_global_coordinates);
+	set_notify_global_transform(use_global_coordinates);
 	set_notify_local_transform(!use_global_coordinates);
 }
