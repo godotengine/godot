@@ -190,6 +190,7 @@ class DisplayServerX11 : public DisplayServer {
 		ObjectID instance_id;
 
 		bool no_focus = false;
+		bool focused = true;
 
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
@@ -200,7 +201,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool resize_disabled = false;
 		bool no_min_btn = false;
 		bool no_max_btn = false;
-		bool focused = true;
+		bool contents_focused = true;
 		bool minimized = false;
 		bool maximized = false;
 		bool is_popup = false;
@@ -366,6 +367,7 @@ class DisplayServerX11 : public DisplayServer {
 	Context context = CONTEXT_ENGINE;
 	bool swap_cancel_ok = false;
 
+	void _window_focused(WindowID p_window);
 	WindowID _get_focused_window_or_popup() const;
 	bool _window_focus_check();
 
