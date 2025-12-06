@@ -107,19 +107,24 @@ void EditorResourcePicker::_update_resource() {
 
 			String tooltip;
 
+			String resource_name = "resource";
+			if (edited_resource.is_valid()) {
+				resource_name = edited_resource->get_class_name();
+			}
+
 			if (num_of_copies > 1) {
-				tooltip = vformat(TTR("This Resource is used in (%d) places."), num_of_copies);
+				tooltip = vformat(TTRN("This %s is used in %d place.", "This %s is used in %d places.", num_of_copies), resource_name, num_of_copies);
 			} else if (!is_internal) {
-				tooltip = TTR("This Resource is external to scene.");
+				tooltip = vformat(TTR("This %s is external to scene."), resource_name);
 			}
 
 			if (!editable) {
-				tooltip += "\n" + TTR("The Resource cannot be edited in the inspector and can't be made unique directly.") + "\n";
+				tooltip += "\n" + vformat(TTR("The %s cannot be edited in the inspector and can't be made unique directly."), resource_name) + "\n";
 			} else {
-				tooltip += unique_enable ? TTR(" Left-click to make it unique.") + "\n" : "\n";
+				tooltip += "\n" + TTR("Left-click to make it unique.") + "\n";
 
 				if (unique_recursive_enabled) {
-					tooltip += TTR("It is possible to make its subresources unique. Right-click to make them unique.") + "\n";
+					tooltip += TTR("It is possible to make its subresources unique.") + "\n" + TTR("Right-click to make them unique.");
 				}
 
 				if (!unique_enable && EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
