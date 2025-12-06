@@ -118,7 +118,7 @@ public:
 	void free() {
 		_wait();
 
-		if (pipeline.is_valid()) {
+		if (pipeline.is_valid() && (RD::get_singleton()->render_pipeline_is_valid(pipeline) || RD::get_singleton()->compute_pipeline_is_valid(pipeline))) {
 			RD::get_singleton()->free_rid(pipeline);
 			pipeline = RID();
 		}
