@@ -282,6 +282,9 @@
 		<member name="tab_count" type="int" setter="set_tab_count" getter="get_tab_count" default="0">
 			The number of tabs currently in the bar.
 		</member>
+		<member name="tab_sizing" type="int" setter="set_tab_sizing" getter="get_tab_sizing" enum="TabBar.SizingMode" default="0">
+			The sizing strategy used to determine tab widths.
+		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabBar]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
 			Setting this to [code]-1[/code] will disable rearranging between [TabBar]s.
@@ -358,6 +361,21 @@
 		</constant>
 		<constant name="ALIGNMENT_MAX" value="3" enum="AlignmentMode">
 			Represents the size of the [enum AlignmentMode] enum.
+		</constant>
+		<constant name="TAB_SIZING_FIT_CONTENT" value="0" enum="SizingMode">
+			Size tabs individually according to the size of their content.
+		</constant>
+		<constant name="TAB_SIZING_UNIFORM" value="1" enum="SizingMode">
+			Size tabs uniformly, with the widest tab determining the size of all tabs. This may trigger clipping sooner than other sizing modes due to increased tab sizes.
+		</constant>
+		<constant name="TAB_SIZING_JUSTIFY" value="2" enum="SizingMode">
+			Size tabs individually according to their content, expanding to the full width of the tab bar.
+		</constant>
+		<constant name="TAB_SIZING_EXPAND" value="3" enum="SizingMode">
+			Size tabs equally, expanding to the full width of the tab bar if there is room, otherwise fall back to Fit Content.
+		</constant>
+		<constant name="TAB_SIZING_MAX" value="4" enum="SizingMode">
+			Represents the size of the [enum SizingMode] enum.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
 			Never show the close buttons.
