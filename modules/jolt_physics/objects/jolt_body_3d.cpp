@@ -559,9 +559,10 @@ void JoltBody3D::set_transform(Transform3D p_transform) {
 	if (!in_space()) {
 		jolt_settings->mPosition = to_jolt_r(p_transform.origin);
 		jolt_settings->mRotation = to_jolt(p_transform.basis);
-	} else if (is_kinematic()) {
-		kinematic_transform = p_transform;
 	} else {
+		if (is_kinematic()) {
+			kinematic_transform = p_transform;
+		}
 		space->get_body_iface().SetPositionAndRotation(jolt_body->GetID(), to_jolt_r(p_transform.origin), to_jolt(p_transform.basis), JPH::EActivation::DontActivate);
 	}
 
