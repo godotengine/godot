@@ -43,7 +43,6 @@ class WindowWrapper : public MarginContainer {
 	Control *wrapped_control = nullptr;
 	MarginContainer *margins = nullptr;
 	Window *window = nullptr;
-	ObjectID window_id;
 
 	Panel *window_background = nullptr;
 
