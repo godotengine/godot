@@ -1693,7 +1693,7 @@ PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedA
 				RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
 				Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
 				if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-					copy_effects->gaussian_blur(rd_texture, blur_tex, copy_rect, mip_tex_size); // Problem: Rendering device texture owner doesnt own the texture.
+					copy_effects->gaussian_blur(rd_texture, blur_tex, copy_rect, mip_tex_size);
 				} else {
 					copy_effects->gaussian_blur_raster(rd_texture, blur_tex, copy_rect, mip_tex_size);
 				}
