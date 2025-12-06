@@ -1334,7 +1334,41 @@ TypedArray<Dictionary> ProjectSettings::get_global_class_list() {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	if (cf->load(get_global_class_list_path()) == OK) {
-		global_class_list = cf->get_value("", "list", Array());
+		// Merge the loaded list with the existing one, to avoid losing classes added at runtime via PCK mounting.
+		// This mirrors the logic for uid_cache.bin
+		Array loaded_list = cf->get_value("", "list", Array());
+
+		// First, remove any entries from global_class_list that are also in the loaded_list (will be replaced).
+		if (!global_class_list.is_empty()) {
+			for (const Variant &entry : loaded_list) {
+				if (entry.get_type() != Variant::DICTIONARY) {
+					continue;
+				}
+				Dictionary d = entry;
+
+				// get the class name
+				if (!d.has("class")) {
+					continue;
+				}
+				StringName class_name = d["class"];
+
+				// remove any entry that matches this class name
+				for (int i = 0; i < global_class_list.size(); i++) {
+					Dictionary existing = global_class_list[i];
+					if (existing.has("class")) {
+						StringName existing_class_name = d["class"];
+						if (existing_class_name == class_name) {
+							// Remove this entry.
+							global_class_list.remove_at(i);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// Now that any duplicates have been removed, append the new entries.
+		global_class_list.append_array(loaded_list);
 	} else {
 #ifndef TOOLS_ENABLED
 		// Script classes can't be recreated in exported project, so print an error.
