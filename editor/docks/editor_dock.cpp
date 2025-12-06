@@ -39,6 +39,10 @@ void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
 	default_slot = (DockConstants::DockSlot)p_slot;
 }
 
+void EditorDock::_emit_changed() {
+	emit_signal(SNAME("_tab_style_changed"));
+}
+
 void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open"), &EditorDock::open);
 	ClassDB::bind_method(D_METHOD("make_visible"), &EditorDock::make_visible);
@@ -93,6 +97,7 @@ void EditorDock::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2,Floating:3"), "set_available_layouts", "get_available_layouts");
 
 	ADD_SIGNAL(MethodInfo("closed"));
+	ADD_SIGNAL(MethodInfo("_tab_style_changed"));
 
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_VERTICAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_HORIZONTAL);
@@ -106,7 +111,6 @@ void EditorDock::_bind_methods() {
 
 EditorDock::EditorDock() {
 	set_clip_contents(true);
-	add_user_signal(MethodInfo("tab_style_changed"));
 }
 
 void EditorDock::open() {
@@ -130,7 +134,7 @@ void EditorDock::set_title(const String &p_title) {
 		return;
 	}
 	title = p_title;
-	emit_signal("tab_style_changed");
+	_emit_changed();
 }
 
 void EditorDock::set_global(bool p_global) {
@@ -148,7 +152,7 @@ void EditorDock::set_icon_name(const StringName &p_name) {
 		return;
 	}
 	icon_name = p_name;
-	emit_signal("tab_style_changed");
+	_emit_changed();
 }
 
 void EditorDock::set_dock_icon(const Ref<Texture2D> &p_icon) {
@@ -156,7 +160,7 @@ void EditorDock::set_dock_icon(const Ref<Texture2D> &p_icon) {
 		return;
 	}
 	dock_icon = p_icon;
-	emit_signal("tab_style_changed");
+	_emit_changed();
 }
 
 void EditorDock::set_force_show_icon(bool p_force) {
@@ -164,7 +168,7 @@ void EditorDock::set_force_show_icon(bool p_force) {
 		return;
 	}
 	force_show_icon = p_force;
-	emit_signal("tab_style_changed");
+	_emit_changed();
 }
 
 void EditorDock::set_title_color(const Color &p_color) {
@@ -172,7 +176,7 @@ void EditorDock::set_title_color(const Color &p_color) {
 		return;
 	}
 	title_color = p_color;
-	emit_signal("tab_style_changed");
+	_emit_changed();
 }
 
 void EditorDock::set_dock_shortcut(const Ref<Shortcut> &p_shortcut) {
