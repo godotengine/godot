@@ -1,0 +1,5 @@
+GH-91201
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/OS/methods/read_string_from_stdin': arguments
+
+Added optional argument. Compatibility method registered.

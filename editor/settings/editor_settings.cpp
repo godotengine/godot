@@ -54,6 +54,7 @@
 #include "main/main.h"
 #include "modules/regex/regex.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/file_dialog.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -1591,7 +1592,17 @@ void EditorSettings::save_project_metadata() {
 	project_metadata_dirty = false;
 }
 
-void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
+void EditorSettings::set_favorites(const Vector<String> &p_favorites, bool p_update_file_dialog) {
+	if (p_update_file_dialog) {
+		FileDialog::set_favorite_list(p_favorites);
+	} else if (p_favorites == favorites) {
+		// If the list came from EditorFileDialog, it may be the same as before.
+		return;
+	}
+	set_favorites_bind(p_favorites);
+}
+
+void EditorSettings::set_favorites_bind(const Vector<String> &p_favorites) {
 	favorites = p_favorites;
 	String favorites_file;
 	if (Engine::get_singleton()->is_project_manager_hint()) {
@@ -1627,7 +1638,17 @@ HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() con
 	return favorite_properties;
 }
 
-void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
+void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog) {
+	if (p_update_file_dialog) {
+		FileDialog::set_recent_list(p_recent_dirs);
+	} else if (p_recent_dirs == recent_dirs) {
+		// If the list came from EditorFileDialog, it may be the same as before.
+		return;
+	}
+	set_recent_dirs_bind(p_recent_dirs);
+}
+
+void EditorSettings::set_recent_dirs_bind(const Vector<String> &p_recent_dirs) {
 	recent_dirs = p_recent_dirs;
 	String recent_dirs_file;
 	if (Engine::get_singleton()->is_project_manager_hint()) {
@@ -1671,6 +1692,7 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 			line = f->get_line().strip_edges();
 		}
 	}
+	FileDialog::set_favorite_list(favorites);
 
 	/// Inspector Favorites
 
@@ -1701,6 +1723,7 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 			line = f->get_line().strip_edges();
 		}
 	}
+	FileDialog::set_recent_list(recent_dirs);
 }
 
 HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
@@ -2237,9 +2260,9 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);
 	ClassDB::bind_method(D_METHOD("get_project_metadata", "section", "key", "default"), &EditorSettings::get_project_metadata, DEFVAL(Variant()));
 
-	ClassDB::bind_method(D_METHOD("set_favorites", "dirs"), &EditorSettings::set_favorites);
+	ClassDB::bind_method(D_METHOD("set_favorites", "dirs"), &EditorSettings::set_favorites_bind);
 	ClassDB::bind_method(D_METHOD("get_favorites"), &EditorSettings::get_favorites);
-	ClassDB::bind_method(D_METHOD("set_recent_dirs", "dirs"), &EditorSettings::set_recent_dirs);
+	ClassDB::bind_method(D_METHOD("set_recent_dirs", "dirs"), &EditorSettings::set_recent_dirs_bind);
 	ClassDB::bind_method(D_METHOD("get_recent_dirs"), &EditorSettings::get_recent_dirs);
 
 	ClassDB::bind_method(D_METHOD("set_builtin_action_override", "name", "actions_list"), &EditorSettings::set_builtin_action_override);

@@ -4218,9 +4218,63 @@ void EditorHelpBit::_update_labels() {
 	}
 }
 
+void EditorHelpBit::_go_to_url(const String &p_what) {
+	Vector<String> parts;
+	{
+		int from = 0;
+		int buffer_start = 0;
+		while (true) {
+			const int pos = p_what.find_char(':', from);
+			if (pos < 0) {
+				parts.push_back(p_what.substr(buffer_start));
+				break;
+			}
+
+			if (pos + 1 < p_what.length() && p_what[pos + 1] == ':') {
+				// `::` used in built-in scripts.
+				from = pos + 2;
+			} else {
+				parts.push_back(p_what.substr(buffer_start, pos - buffer_start));
+				from = pos + 1;
+				buffer_start = from;
+			}
+		}
+	}
+
+	const String what = parts[0]; // `parts` is always non-empty.
+	const String clss = (parts.size() > 1) ? parts[1].to_lower() : String();
+	const String name = (parts.size() > 2) ? parts[2].to_lower().replace_chars("/_", '-') : String();
+
+	String section = "";
+	if (what == "class_desc") {
+		section = "#description";
+	} else if (what == "class_signal") {
+		section = vformat("#class-%s-signal-%s", clss, name);
+	} else if (what == "class_method" || what == "class_method_desc") {
+		section = vformat("#class-%s-method-%s", clss, name);
+	} else if (what == "class_property") {
+		section = vformat("#class-%s-property-%s", clss, name);
+	} else if (what == "class_enum") {
+		section = vformat("#enum-%s-%s", clss, name);
+	} else if (what == "class_theme_item") {
+		section = vformat("#class-%s-theme-%s", clss, name);
+	} else if (what == "class_constant") {
+		section = vformat("#class-%s-constant-%s", clss, name);
+	} else if (what == "class_annotation") {
+		section = vformat("#%s", clss);
+	}
+
+	String doc_url = clss.is_empty() ? String(GODOT_VERSION_DOCS_URL "/") : vformat(GODOT_VERSION_DOCS_URL "/classes/class_%s.html%s", clss, section);
+	OS::get_singleton()->shell_open(doc_url);
+}
+
 void EditorHelpBit::_go_to_help(const String &p_what) {
-	EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
-	ScriptEditor::get_singleton()->goto_help(p_what);
+	if (ScriptEditor::get_singleton()) {
+		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+		ScriptEditor::get_singleton()->goto_help(p_what);
+	} else {
+		_go_to_url(p_what);
+	}
 	emit_signal(SNAME("request_hide"));
 }
 
@@ -4933,7 +4987,7 @@ FindBar::FindBar() {
 	hide_button->set_tooltip_text(TTR("Hide"));
 	hide_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindBar::_hide_bar));
-	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
+	hide_button->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(hide_button);
 }
 
@@ -4999,6 +5053,11 @@ bool FindBar::_search(bool p_search_previous) {
 		results_count = 0;
 		results_count_to_current = 0;
 	}
+
+	if (results_count == 1) {
+		rich_text_label->scroll_to_selection();
+	}
+
 	_update_matches_label();
 
 	return ret;

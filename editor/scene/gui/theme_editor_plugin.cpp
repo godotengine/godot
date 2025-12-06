@@ -31,6 +31,7 @@
 #include "theme_editor_plugin.h"
 
 #include "editor/doc/editor_help.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
@@ -39,6 +40,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/settings/editor_command_palette.h"
@@ -50,7 +52,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
@@ -2630,10 +2631,11 @@ void ThemeTypeEditor::_update_type_items() {
 		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, Theme::DATA_TYPE_CONSTANT, show_default);
 		for (const KeyValue<StringName, bool> &E : constant_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key, E.value);
-			SpinBox *item_editor = memnew(SpinBox);
+			EditorSpinSlider *item_editor = memnew(EditorSpinSlider);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
 			item_editor->set_max(100000);
+			item_editor->set_editing_integer(true);
 			item_editor->set_step(1);
 			item_editor->set_allow_lesser(true);
 			item_editor->set_allow_greater(true);
@@ -2644,7 +2646,7 @@ void ThemeTypeEditor::_update_type_items() {
 				item_editor->connect(SceneStringName(value_changed), callable_mp(this, &ThemeTypeEditor::_constant_item_changed).bind(E.key));
 			} else {
 				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_constant(E.key, edited_type));
-				item_editor->set_editable(false);
+				item_editor->set_read_only(true);
 			}
 
 			_add_focusable(item_editor);
@@ -2702,10 +2704,11 @@ void ThemeTypeEditor::_update_type_items() {
 		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, Theme::DATA_TYPE_FONT_SIZE, show_default);
 		for (const KeyValue<StringName, bool> &E : font_size_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key, E.value);
-			SpinBox *item_editor = memnew(SpinBox);
+			EditorSpinSlider *item_editor = memnew(EditorSpinSlider);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
 			item_editor->set_max(100000);
+			item_editor->set_editing_integer(true);
 			item_editor->set_step(1);
 			item_editor->set_allow_lesser(true);
 			item_editor->set_allow_greater(true);
@@ -2716,7 +2719,7 @@ void ThemeTypeEditor::_update_type_items() {
 				item_editor->connect(SceneStringName(value_changed), callable_mp(this, &ThemeTypeEditor::_font_size_item_changed).bind(E.key));
 			} else {
 				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_font_size(E.key, edited_type));
-				item_editor->set_editable(false);
+				item_editor->set_read_only(true);
 			}
 
 			_add_focusable(item_editor);
@@ -3723,13 +3726,15 @@ void ThemeEditor::_theme_edit_button_cbk() {
 }
 
 void ThemeEditor::_theme_close_button_cbk() {
-	plugin->make_visible(false); // Enables auto hide.
+	close();
+	_dock_closed_cbk();
+}
+
+void ThemeEditor::_dock_closed_cbk() {
 	if (theme.is_valid() && InspectorDock::get_inspector_singleton()->get_edited_object() == theme.ptr()) {
 		EditorNode::get_singleton()->push_item(nullptr);
-	} else {
-		theme = Ref<Theme>();
-		EditorNode::get_singleton()->hide_unused_editors(plugin);
 	}
+	theme = Ref<Theme>();
 }
 
 void ThemeEditor::_scene_closed(const String &p_path) {
@@ -3917,6 +3922,7 @@ void ThemeEditor::_preview_tabs_resized() {
 void ThemeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			connect("closed", callable_mp(this, &ThemeEditor::_dock_closed_cbk));
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ThemeEditor::_scene_closed));
 			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ThemeEditor::_resource_saved));
 			FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &ThemeEditor::_files_moved));
@@ -3945,8 +3951,21 @@ void ThemeEditor::_notification(int p_what) {
 }
 
 ThemeEditor::ThemeEditor() {
+	set_name(TTRC("Theme"));
+	set_icon_name("ThemeDock");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_theme_bottom_panel", TTRC("Toggle Theme Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
+	set_closable(true);
+	set_custom_minimum_size(Size2(0, 200 * EDSCALE));
+
+	VBoxContainer *content_vb = memnew(VBoxContainer);
+	add_child(content_vb);
+
 	HBoxContainer *top_menu = memnew(HBoxContainer);
-	add_child(top_menu);
+	content_vb->add_child(top_menu);
 
 	Label *theme_label = memnew(Label);
 	theme_label->set_text(TTRC("Theme:"));
@@ -3997,7 +4016,7 @@ ThemeEditor::ThemeEditor() {
 
 	HSplitContainer *main_hs = memnew(HSplitContainer);
 	main_hs->set_v_size_flags(SIZE_EXPAND_FILL);
-	add_child(main_hs);
+	content_vb->add_child(main_hs);
 
 	main_hs->set_split_offset(520 * EDSCALE);
 
@@ -4065,14 +4084,9 @@ bool ThemeEditorPlugin::handles(Object *p_object) const {
 
 void ThemeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(theme_editor);
+		theme_editor->make_visible();
 	} else {
-		if (theme_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
-
-		button->hide();
+		theme_editor->close();
 	}
 }
 
@@ -4083,8 +4097,6 @@ bool ThemeEditorPlugin::can_auto_hide() const {
 ThemeEditorPlugin::ThemeEditorPlugin() {
 	theme_editor = memnew(ThemeEditor);
 	theme_editor->plugin = this;
-	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
-
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("Theme"), theme_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_theme_bottom_panel", TTRC("Toggle Theme Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(theme_editor);
+	theme_editor->close();
 }

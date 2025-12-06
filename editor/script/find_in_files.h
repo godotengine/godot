@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/templates/hash_map.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/margin_container.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
@@ -253,8 +253,8 @@ class TabContainer;
 // `Find in Files` search or a `Replace in Files` search, while a
 // FindInFilesContainer can contain several FindInFilesPanels so that multiple search
 // results can remain at the same time.
-class FindInFilesContainer : public MarginContainer {
-	GDCLASS(FindInFilesContainer, MarginContainer);
+class FindInFilesContainer : public EditorDock {
+	GDCLASS(FindInFilesContainer, EditorDock);
 
 	enum {
 		PANEL_CLOSE,
@@ -268,6 +268,7 @@ class FindInFilesContainer : public MarginContainer {
 	void _update_bar_visibility();
 	void _bar_menu_option(int p_option);
 	void _bar_input(const Ref<InputEvent> &p_input);
+	void _on_dock_closed();
 
 	TabContainer *_tabs = nullptr;
 	bool _update_bar = true;

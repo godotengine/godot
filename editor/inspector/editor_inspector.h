@@ -102,6 +102,7 @@ class EditorProperty : public Container {
 		int horizontal_separation = 0;
 		int vertical_separation = 0;
 		int padding = 0;
+		int inspector_property_height = 0;
 
 		Color property_color;
 		Color readonly_property_color;
@@ -701,9 +702,7 @@ class EditorInspector : public ScrollContainer {
 	static int inspector_plugin_count;
 
 	struct ThemeCache {
-		int vertical_separation = 0;
 		Color prop_subsection;
-		Ref<Texture2D> icon_add;
 	} theme_cache;
 
 	EditorInspectorSection::ThemeCache section_theme_cache;

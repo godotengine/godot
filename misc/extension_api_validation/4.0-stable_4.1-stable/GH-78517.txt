@@ -1,0 +1,29 @@
+GH-78517
+--------
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_check_item/arguments/2': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_check_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_radio_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_radio_check_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_item/arguments/2': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_multistate_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_multistate_item/arguments/5': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_radio_check_item/arguments/2': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_radio_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_damped_spring/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_groove/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_groove/arguments/5': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_pin/arguments/3': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_mesh/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_multimesh/arguments/2': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_polygon/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_triangle_array/arguments/7': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances_cull_aabb/arguments/1': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances_cull_convex/arguments/1': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances_cull_ray/arguments/2': default_value changed value in new API, from "" to "RID()".
+
+The previous argument was a serialization bug, there's no actual API change.

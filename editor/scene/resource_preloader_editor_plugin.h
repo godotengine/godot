@@ -30,16 +30,17 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/tree.h"
-#include "scene/main/resource_preloader.h"
 
+class AcceptDialog;
+class Button;
 class EditorFileDialog;
+class ResourcePreloader;
+class Tree;
 
-class ResourcePreloaderEditor : public PanelContainer {
-	GDCLASS(ResourcePreloaderEditor, PanelContainer);
+class ResourcePreloaderEditor : public EditorDock {
+	GDCLASS(ResourcePreloaderEditor, EditorDock);
 
 	enum {
 		BUTTON_OPEN_SCENE,
@@ -84,7 +85,6 @@ class ResourcePreloaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ResourcePreloaderEditorPlugin, EditorPlugin);
 
 	ResourcePreloaderEditor *preloader_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "ResourcePreloader"; }

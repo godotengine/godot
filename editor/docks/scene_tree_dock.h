@@ -146,7 +146,7 @@ class SceneTreeDock : public EditorDock {
 	List<Node *> node_clipboard;
 	HashSet<Node *> node_clipboard_edited_scene_owned;
 	String clipboard_source_scene;
-	HashMap<String, HashMap<Ref<Resource>, Ref<Resource>>> clipboard_resource_remap;
+	HashMap<String, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>>> clipboard_resource_remap;
 
 	ScriptCreateDialog *script_create_dialog = nullptr;
 	ShaderCreateDialog *shader_create_dialog = nullptr;

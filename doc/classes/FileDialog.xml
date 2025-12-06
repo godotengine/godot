@@ -118,12 +118,18 @@
 				Returns [code]true[/code] if the provided [param flag] is enabled.
 			</description>
 		</method>
+		<method name="popup_file_dialog">
+			<return type="void" />
+			<description>
+				Shows the [FileDialog] using the default size and position for file dialogs, and selects the file name if there is a current file.
+			</description>
+		</method>
 		<method name="set_customization_flag_enabled">
 			<return type="void" />
 			<param index="0" name="flag" type="int" enum="FileDialog.Customization" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Toggles the specified customization [param flag], allowing to customize features available in this [FileDialog]. See [enum Customization] for options.
+				Sets the specified customization [param flag], allowing to customize the features available in this [FileDialog].
 			</description>
 		</method>
 		<method name="set_favorite_list" qualifiers="static">
@@ -274,6 +280,7 @@
 			[b]Note:[/b] On Linux and macOS, sandboxed apps always use native dialogs to access the host file system.
 			[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
 			[b]Note:[/b] Native dialogs are isolated from the base process, file dialog properties can't be modified once the dialog is shown.
+			[b]Note:[/b] This property is ignored in [EditorFileDialog].
 		</member>
 	</members>
 	<signals>

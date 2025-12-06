@@ -100,6 +100,7 @@ private:
 		TONEMAP_MOBILE_FLAG_GLOW_MODE_SOFTLIGHT = (1 << 15),
 		TONEMAP_MOBILE_FLAG_GLOW_MODE_REPLACE = (1 << 16),
 		TONEMAP_MOBILE_FLAG_GLOW_MODE_MIX = (1 << 17),
+		TONEMAP_MOBILE_ADRENO_BUG = (1 << 18), // Needs to be last so we force the pipeline cache to specify specializations for all variants.
 	};
 
 	struct TonemapPushConstant {
@@ -121,6 +122,8 @@ private:
 		float white; //  4 - 88
 		float auto_exposure_scale; //  4 - 92
 		float luminance_multiplier; //  4 - 96
+
+		float tonemapper_params[4]; //  16 - 112
 	};
 
 	struct TonemapPushConstantMobile {
@@ -134,6 +137,8 @@ private:
 		float glow_map_strength; //  4 - 40
 		float exposure; //  4 - 44
 		float white; //  4 - 48
+
+		float tonemapper_params[4]; //  16 - 64
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -170,6 +175,7 @@ public:
 		RID glow_map;
 
 		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
+		float tonemapper_params[4] = { 0.0, 0.0, 0.0, 0.0 };
 		float exposure = 1.0;
 		float white = 1.0;
 

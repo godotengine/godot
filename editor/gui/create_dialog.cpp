@@ -459,29 +459,27 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 		return 1.0f;
 	}
 
-	const String &type_name = p_type.get_slicec(' ', 0);
-
-	float inverse_length = 1.f / float(type_name.length());
+	float inverse_length = 1.f / float(p_type.length());
 
 	// Favor types where search term is a substring close to the start of the type.
 	float w = 0.5f;
-	int pos = type_name.findn(p_search);
+	int pos = p_type.findn(p_search);
 	float score = (pos > -1) ? 1.0f - w * MIN(1, 3 * pos * inverse_length) : MAX(0.f, .9f - w);
 
 	// Favor shorter items: they resemble the search term more.
 	w = 0.9f;
 	score *= (1 - w) + w * MIN(1.0f, p_search.length() * inverse_length);
 
-	score *= _is_type_preferred(type_name) ? 1.0f : 0.9f;
+	score *= _is_type_preferred(p_type) ? 1.0f : 0.9f;
 
 	// Add score for being a favorite type.
-	score *= favorite_list.has(type_name) ? 1.0f : 0.8f;
+	score *= favorite_list.has(p_type) ? 1.0f : 0.8f;
 
 	// Look through at most 5 recent items
 	bool in_recent = false;
 	constexpr int RECENT_COMPLETION_SIZE = 5;
 	for (int i = 0; i < MIN(RECENT_COMPLETION_SIZE - 1, recent->get_item_count()); i++) {
-		if (recent->get_item_text(i) == type_name) {
+		if (recent->get_item_text(i) == p_type) {
 			in_recent = true;
 			break;
 		}
@@ -621,7 +619,7 @@ String CreateDialog::get_selected_type() {
 		return String();
 	}
 
-	String type = selected->get_text(0);
+	String type = selected->get_text(0).get_slicec(' ', 0);
 	return ClassDB::class_exists(type) ? type : String(selected->get_meta("_script_path", ""));
 }
 
@@ -680,7 +678,7 @@ void CreateDialog::_favorite_toggled() {
 		return;
 	}
 
-	String name = item->get_text(0);
+	String name = item->get_text(0).get_slicec(' ', 0);
 
 	if (favorite_list.has(name)) {
 		favorite_list.erase(name);
@@ -694,7 +692,7 @@ void CreateDialog::_favorite_toggled() {
 }
 
 void CreateDialog::_history_selected(int p_idx) {
-	search_box->set_text(recent->get_item_text(p_idx).get_slicec(' ', 0));
+	search_box->set_text(recent->get_item_text(p_idx));
 	favorites->deselect_all();
 	_update_search();
 }
@@ -705,7 +703,7 @@ void CreateDialog::_favorite_selected() {
 		return;
 	}
 
-	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
+	search_box->set_text(item->get_text(0));
 	recent->deselect_all();
 	_update_search();
 }
@@ -801,20 +799,18 @@ void CreateDialog::_save_and_update_favorite_list() {
 	{
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites." + base_type), FileAccess::WRITE);
 		if (f.is_valid()) {
-			for (int i = 0; i < favorite_list.size(); i++) {
-				String l = favorite_list[i];
-				String name = l.get_slicec(' ', 0);
+			for (const String &name : favorite_list) {
 				if (!EditorNode::get_editor_data().is_type_recognized(name)) {
 					continue;
 				}
-				f->store_line(l);
+				f->store_line(name);
 
 				if (_is_class_disabled_by_feature_profile(name)) {
 					continue;
 				}
 
 				TreeItem *ti = favorites->create_item(root);
-				ti->set_text(0, l);
+				ti->set_text(0, name);
 				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
@@ -828,11 +824,10 @@ void CreateDialog::_load_favorites_and_history() {
 	Ref<FileAccess> f = FileAccess::open(dir.path_join("create_recent." + base_type), FileAccess::READ);
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
-			String l = f->get_line().strip_edges();
-			String name = l.get_slicec(' ', 0);
+			String name = f->get_line().strip_edges();
 
 			if (EditorNode::get_editor_data().is_type_recognized(name) && !_is_class_disabled_by_feature_profile(name)) {
-				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name));
+				recent->add_item(name, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
 	}
@@ -840,10 +835,10 @@ void CreateDialog::_load_favorites_and_history() {
 	f = FileAccess::open(dir.path_join("favorites." + base_type), FileAccess::READ);
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
-			String l = f->get_line().strip_edges();
+			String name = f->get_line().strip_edges();
 
-			if (!l.is_empty()) {
-				favorite_list.push_back(l);
+			if (!name.is_empty()) {
+				favorite_list.push_back(name);
 			}
 		}
 	}

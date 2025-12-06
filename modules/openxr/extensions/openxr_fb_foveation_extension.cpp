@@ -63,10 +63,12 @@ OpenXRFBFoveationExtension::OpenXRFBFoveationExtension(const String &p_rendering
 	meta_foveation_eye_tracked_properties.next = nullptr;
 	meta_foveation_eye_tracked_properties.supportsFoveationEyeTracked = XR_FALSE;
 
+#ifdef VULKAN_ENABLED
 	meta_vulkan_swapchain_create_info.type = XR_TYPE_VULKAN_SWAPCHAIN_CREATE_INFO_META;
 	meta_vulkan_swapchain_create_info.next = nullptr;
 	meta_vulkan_swapchain_create_info.additionalCreateFlags = VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM;
 	meta_vulkan_swapchain_create_info.additionalUsageFlags = 0;
+#endif
 
 	if (rendering_driver == "opengl3") {
 		swapchain_create_info_foveation_fb.flags = XR_SWAPCHAIN_CREATE_FOVEATION_SCALED_BIN_BIT_FB;
@@ -144,10 +146,12 @@ void *OpenXRFBFoveationExtension::set_swapchain_create_info_and_get_next_pointer
 		swapchain_create_info_foveation_fb.next = next;
 		next = &swapchain_create_info_foveation_fb;
 
+#ifdef VULKAN_ENABLED
 		if (meta_foveation_eye_tracked_ext && meta_vulkan_swapchain_create_info_ext && meta_foveation_eye_tracked_properties.supportsFoveationEyeTracked) {
 			meta_vulkan_swapchain_create_info.next = next;
 			next = &meta_vulkan_swapchain_create_info;
 		}
+#endif
 	}
 
 	return next;

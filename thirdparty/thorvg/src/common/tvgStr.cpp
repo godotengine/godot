@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <memory.h>
 #include "tvgMath.h"

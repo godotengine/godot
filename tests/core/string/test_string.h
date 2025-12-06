@@ -992,6 +992,38 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish 143 frog"));
 
+	// INT64_MIN
+	format = "fish %d frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -9223372036854775808 frog"));
+
+	// INT64_MIN hex (lower)
+	format = "fish %x frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -8000000000000000 frog"));
+
+	// INT64_MIN hex (upper)
+	format = "fish %X frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -8000000000000000 frog"));
+
+	// INT64_MIN octal
+	format = "fish %o frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -1000000000000000000000 frog"));
+
 	///// Reals
 
 	// Real

@@ -1,0 +1,17 @@
+GH-79911
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/BarrierMask/values/BARRIER_MASK_RASTER': value changed value in new API, from 1.0 to 9.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/BarrierMask/values/BARRIER_MASK_ALL_BARRIERS': value changed value in new API, from 7.0 to 32767.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/BarrierMask/values/BARRIER_MASK_NO_BARRIER': value changed value in new API, from 8.0 to 32768.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_update/arguments/3': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_copy/arguments/9': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_clear/arguments/6': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_resolve_multisample/arguments/2': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_update/arguments/4': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_clear/arguments/3': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_end/arguments/0': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/compute_list_end/arguments/0': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/barrier/arguments/0': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/barrier/arguments/1': default_value changed value in new API, from "7" to "32767".
+
+Raster barrier was split into vertex and fragment barriers for use in mobile renderer.

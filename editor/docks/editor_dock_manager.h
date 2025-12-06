@@ -86,7 +86,7 @@ private:
 
 	// To access splits easily by index.
 	Vector<DockSplitContainer *> vsplits;
-	Vector<DockSplitContainer *> hsplits;
+	DockSplitContainer *main_hsplit = nullptr;
 
 	struct DockSlot {
 		TabContainer *container = nullptr;
@@ -133,9 +133,8 @@ public:
 	void set_tab_icon_max_width(int p_max_width);
 
 	void add_vsplit(DockSplitContainer *p_split);
-	void add_hsplit(DockSplitContainer *p_split);
+	void set_hsplit(DockSplitContainer *p_split);
 	void register_dock_slot(DockConstants::DockSlot p_dock_slot, TabContainer *p_tab_container, DockConstants::DockLayout p_layout);
-	int get_hsplit_count() const;
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 
@@ -146,6 +145,7 @@ public:
 	void close_dock(EditorDock *p_dock);
 	void open_dock(EditorDock *p_dock, bool p_set_current = true);
 	void focus_dock(EditorDock *p_dock);
+	void make_dock_floating(EditorDock *p_dock);
 
 	TabContainer *get_dock_tab_container(Control *p_dock) const;
 
