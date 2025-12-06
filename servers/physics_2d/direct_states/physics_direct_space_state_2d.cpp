@@ -169,6 +169,15 @@ bool PhysicsDirectSpaceState2D::_intersect_point_typed(RequiredParam<PhysicsPoin
 	return p_result->collision_count > 0;
 }
 
+bool PhysicsDirectSpaceState2D::_intersect_shape_typed(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, RequiredParam<PhysicsShapeIntersectionResult2D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
+
+	p_result->collision_count = intersect_shape(p_shape_query->get_parameters(), p_result->result.ptrw(), p_result->get_max_collisions());
+
+	return p_result->collision_count > 0;
+}
+
 PhysicsDirectSpaceState2D::PhysicsDirectSpaceState2D() {
 }
 
@@ -182,4 +191,5 @@ void PhysicsDirectSpaceState2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("intersect_ray_typed", "parameters", "result"), &PhysicsDirectSpaceState2D::_intersect_ray_typed);
 	ClassDB::bind_method(D_METHOD("intersect_point_typed", "parameters", "result"), &PhysicsDirectSpaceState2D::_intersect_point_typed);
+	ClassDB::bind_method(D_METHOD("intersect_shape_typed", "parameters", "result"), &PhysicsDirectSpaceState2D::_intersect_shape_typed);
 }
