@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
@@ -41,7 +42,7 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	String value = get_text_value() + suffix;
 	if (!read_only && grabber->is_visible()) {
 		String tooltip = value;
-		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+		Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 		if (!editing_integer) {
 			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), find_keycode_name(key));
 		}
@@ -51,9 +52,7 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 }
 
 String EditorSpinSlider::get_text_value() const {
-	return TS->format_number(editing_integer
-					? itos(get_value())
-					: String::num(get_value(), Math::range_step_decimals(get_step())));
+	return TranslationServer::get_singleton()->format_number(editing_integer ? itos(get_value()) : String::num(get_value(), Math::range_step_decimals(get_step())), _get_locale());
 }
 
 void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
@@ -582,19 +581,21 @@ String EditorSpinSlider::get_suffix() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
+	const String &lang = _get_locale();
+
 	Ref<Expression> expr;
 	expr.instantiate();
 
 	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
 	String text = value_input->get_text().replace_char(',', '.');
 	text = text.replace_char(';', ',');
-	text = TS->parse_number(text);
+	text = TranslationServer::get_singleton()->parse_number(text, lang);
 
 	Error err = expr->parse(text);
 	if (err != OK) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = value_input->get_text();
-		text = TS->parse_number(text);
+		text = TranslationServer::get_singleton()->parse_number(text, lang);
 
 		err = expr->parse(text);
 		if (err != OK) {

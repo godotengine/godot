@@ -46,6 +46,7 @@ class OptionButton;
 class PopupMenu;
 class ProjectExportDialog;
 class RichTextLabel;
+class SpinBox;
 class TabContainer;
 class Tree;
 class TreeItem;
@@ -78,11 +79,14 @@ class ProjectExportDialog : public ConfirmationDialog {
 	Button *delete_preset = nullptr;
 	ItemList *presets = nullptr;
 
+	VBoxContainer *settings_vb = nullptr;
 	LineEdit *name = nullptr;
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
 	CheckButton *runnable = nullptr;
 	CheckButton *advanced_options = nullptr;
+
+	Label *empty_label = nullptr;
 
 	Button *button_export = nullptr;
 	bool updating = false;
@@ -107,6 +111,11 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	RBSet<String> feature_set;
 
+	CheckButton *patch_delta_encoding = nullptr;
+	SpinBox *patch_delta_zstd_level = nullptr;
+	SpinBox *patch_delta_min_reduction = nullptr;
+	LineEdit *patch_delta_include_filter = nullptr;
+	LineEdit *patch_delta_exclude_filter = nullptr;
 	Tree *patches = nullptr;
 	int patch_index = -1;
 	EditorFileDialog *patch_dialog = nullptr;
@@ -133,6 +142,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
+	void _name_editing_finished();
 	void _export_path_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _add_preset(int p_platform);
 	void _edit_preset(int p_index);
@@ -157,6 +167,12 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _tree_popup_edited(bool p_arrow_clicked);
 	void _set_file_export_mode(int p_id);
 
+	bool updating_patch_delta_filters = false;
+	void _patch_delta_encoding_changed(bool p_pressed);
+	void _patch_delta_include_filter_changed(const String &p_filter);
+	void _patch_delta_exclude_filter_changed(const String &p_filter);
+	void _patch_delta_zstd_level_changed(double p_value);
+	void _patch_delta_min_reduction_changed(double p_value);
 	void _patch_tree_button_clicked(Object *p_item, int p_column, int p_id, int p_mouse_button_index);
 	void _patch_tree_item_edited();
 	void _patch_file_selected(const String &p_path);

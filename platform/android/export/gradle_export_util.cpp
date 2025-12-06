@@ -31,6 +31,7 @@
 #include "gradle_export_util.h"
 
 #include "core/string/translation_server.h"
+#include "modules/regex/regex.h"
 
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
@@ -169,14 +170,14 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when gradle build is enabled.
-Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
+Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 
 	const String simplified_path = EditorExportPlatform::simplify_path(p_path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, enc_data, sd);
+	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
 	if (err != OK) {
 		return err;
 	}
@@ -284,6 +285,19 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug) {
+	String export_plugins_activity_element_contents;
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->supports_platform(p_export_platform)) {
+			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
+			if (!contents.is_empty()) {
+				export_plugins_activity_element_contents += contents;
+				export_plugins_activity_element_contents += "\n";
+			}
+		}
+	}
+
+	// Update the GodotApp activity tag.
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\".GodotApp\" "
@@ -295,6 +309,20 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
 			orientation,
 			bool_to_string(bool(p_export_platform->get_project_setting(p_preset, "display/window/size/resizable"))));
+
+	// *LAUNCHER and *HOME categories should only go to the activity-alias.
+	Ref<RegEx> activity_content_to_remove_regex = RegEx::create_from_string(R"delim(<category\s+android:name\s*=\s*"\S+(LAUNCHER|HOME)"\s*\/>)delim");
+	String updated_export_plugins_activity_element_contents = activity_content_to_remove_regex->sub(export_plugins_activity_element_contents, "", true);
+	manifest_activity_text += updated_export_plugins_activity_element_contents;
+
+	manifest_activity_text += "        </activity>\n";
+
+	// Update the GodotAppLauncher activity tag.
+	manifest_activity_text += "        <activity-alias\n"
+							  "            tools:node=\"mergeOnlyAttributes\"\n"
+							  "            android:name=\".GodotAppLauncher\"\n"
+							  "            android:targetActivity=\".GodotApp\"\n"
+							  "            android:exported=\"true\">\n";
 
 	manifest_activity_text += "            <intent-filter>\n"
 							  "                <action android:name=\"android.intent.action.MAIN\" />\n"
@@ -317,18 +345,12 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 
 	manifest_activity_text += "            </intent-filter>\n";
 
-	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
-	for (int i = 0; i < export_plugins.size(); i++) {
-		if (export_plugins[i]->supports_platform(p_export_platform)) {
-			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
-			if (!contents.is_empty()) {
-				manifest_activity_text += contents;
-				manifest_activity_text += "\n";
-			}
-		}
-	}
+	// Hybrid categories should only go to the actual 'GodotApp' activity.
+	Ref<RegEx> activity_alias_content_to_remove_regex = RegEx::create_from_string(R"delim(<category\s+android:name\s*=\s*"org.godotengine.xr.hybrid.(IMMERSIVE|PANEL)"\s*\/>)delim");
+	String updated_export_plugins_activity_alias_element_contents = activity_alias_content_to_remove_regex->sub(export_plugins_activity_element_contents, "", true);
+	manifest_activity_text += updated_export_plugins_activity_alias_element_contents;
 
-	manifest_activity_text += "        </activity>\n";
+	manifest_activity_text += "        </activity-alias>\n";
 	return manifest_activity_text;
 }
 
@@ -376,7 +398,7 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 	return manifest_application_text;
 }
 
-Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
+Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
 	Error err = OK;
 	Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
 	if (err != OK) {
@@ -385,6 +407,7 @@ Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p
 	r_sd.path_utf8 = p_simplified_path.trim_prefix("res://").utf8();
 	r_sd.ofs = 0;
 	r_sd.size = p_data.size();
+	r_sd.delta = p_delta;
 	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, r_sd.encrypted);
 	if (err != OK) {
 		return err;

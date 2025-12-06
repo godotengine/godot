@@ -342,6 +342,13 @@ void MeshInstance3D::create_multiple_convex_collisions(const Ref<MeshConvexDecom
 void MeshInstance3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+#ifndef DISABLE_DEPRECATED
+			if (upgrading_skeleton_compat) {
+				if (skeleton_path.is_empty() && Object::cast_to<Skeleton3D>(get_parent())) {
+					skeleton_path = NodePath("..");
+				}
+			}
+#endif
 			_resolve_skeleton_path();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {

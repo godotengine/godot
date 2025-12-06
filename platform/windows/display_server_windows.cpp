@@ -301,7 +301,7 @@ TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
 	return tts->get_voices();
 }
 
-void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	if (unlikely(!tts)) {
 		initialize_tts();
 	}
@@ -2299,6 +2299,11 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
+
+	// GetWindowRect() returns a zero rect for a minimized window, so we need to get the size in another way.
+	if (wd.minimized) {
+		return Size2(wd.width_with_decorations, wd.height_with_decorations);
+	}
 
 	RECT r;
 	if (GetWindowRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
@@ -4768,9 +4773,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			// if the same nIDEvent is passed, the timer is replaced and the same timer_id is returned.
 			// The problem with the timer is that the window cannot be resized or the buttons cannot be used correctly
 			// if the window is not activated first. This happens because the code in the activation process runs
-			// after the mouse click is handled. To address this, the timer is now used only when the window is created.
+			// after the mouse click is handled. To address this, the timer is now used only during the window creation,
+			// and only as part of the activation process. We don't want 'Input::release_pressed_events()'
+			// to be called immediately in '_process_activate_event' when the window is not yet activated,
+			// as it would reset the currently pressed keys when hiding a window, which is incorrect behavior.
 			windows[window_id].activate_state = GET_WM_ACTIVATE_STATE(wParam, lParam);
-			if (windows[window_id].first_activation_done) {
+			if (windows[window_id].first_activation_done && (windows[window_id].activate_state == WA_ACTIVE || windows[window_id].activate_state == WA_CLICKACTIVE)) {
 				_process_activate_event(window_id);
 			} else {
 				windows[window_id].activate_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_WINDOW_ACTIVATION, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
@@ -5803,20 +5811,22 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (!window.minimized) {
 					window.width = window_client_rect.size.width;
 					window.height = window_client_rect.size.height;
+					window.width_with_decorations = window_rect.size.width;
+					window.height_with_decorations = window_rect.size.height;
 
 					rect_changed = true;
 				}
 #if defined(RD_ENABLED)
-				if (window.create_completed && rendering_context && window.context_created) {
+				if (window.create_completed && rendering_context && window.rendering_context_window_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
 					rendering_context->window_set_size(window_id, window.width, window.height);
 				}
 #endif
 #if defined(GLES3_ENABLED)
-				if (window.create_completed && gl_manager_native) {
+				if (window.create_completed && gl_manager_native && window.gl_native_window_created) {
 					gl_manager_native->window_resize(window_id, window.width, window.height);
 				}
-				if (window.create_completed && gl_manager_angle) {
+				if (window.create_completed && gl_manager_angle && window.gl_angle_window_created) {
 					gl_manager_angle->window_resize(window_id, window.width, window.height);
 				}
 #endif
@@ -6625,7 +6635,7 @@ Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_i
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", rendering_driver));
 
 	rendering_context->window_set_size(p_window_id, wd.width, wd.height);
-	wd.context_created = true;
+	wd.rendering_context_window_created = true;
 
 	return OK;
 }
@@ -6634,10 +6644,10 @@ void DisplayServerWindows::_destroy_rendering_context_window(WindowID p_window_i
 	DEV_ASSERT(rendering_context != nullptr);
 
 	WindowData &wd = windows[p_window_id];
-	DEV_ASSERT(wd.context_created);
+	DEV_ASSERT(wd.rendering_context_window_created);
 
 	rendering_context->window_destroy(p_window_id);
-	wd.context_created = false;
+	wd.rendering_context_window_created = false;
 }
 #endif
 
@@ -6645,12 +6655,20 @@ void DisplayServerWindows::_destroy_rendering_context_window(WindowID p_window_i
 Error DisplayServerWindows::_create_gl_window(WindowID p_window_id) {
 	if (gl_manager_native) {
 		WindowData &wd = windows[p_window_id];
-		return gl_manager_native->window_create(p_window_id, wd.hWnd, hInstance, wd.width, wd.height);
+
+		Error err = gl_manager_native->window_create(p_window_id, wd.hWnd, hInstance, wd.width, wd.height);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to create native OpenGL window.");
+
+		wd.gl_native_window_created = true;
 	}
 
 	if (gl_manager_angle) {
 		WindowData &wd = windows[p_window_id];
-		return gl_manager_angle->window_create(p_window_id, nullptr, wd.hWnd, wd.width, wd.height);
+
+		Error err = gl_manager_angle->window_create(p_window_id, nullptr, wd.hWnd, wd.width, wd.height);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to create ANGLE OpenGL window.");
+
+		wd.gl_angle_window_created = true;
 	}
 
 	return OK;
@@ -7401,7 +7419,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			gl_manager_native = nullptr;
 			windows.erase(MAIN_WINDOW_ID);
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Failed to create an OpenGL window.");
+			return;
 		}
 		RasterizerGLES3::make_current(true);
 	}
@@ -7411,7 +7429,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			gl_manager_angle = nullptr;
 			windows.erase(MAIN_WINDOW_ID);
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Failed to create an OpenGL window.");
+			return;
 		}
 		RasterizerGLES3::make_current(false);
 	}

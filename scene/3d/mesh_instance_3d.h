@@ -75,6 +75,7 @@ public:
 
 #ifndef DISABLE_DEPRECATED
 	static inline bool use_parent_skeleton_compat = false;
+	static inline bool upgrading_skeleton_compat = false;
 #endif
 
 	void set_mesh(const Ref<Mesh> &p_mesh);

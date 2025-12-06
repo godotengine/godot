@@ -127,6 +127,12 @@ public:
 		Color font_placeholder_color;
 		Color font_outline_color;
 
+		Color font_dark_background_color;
+		Color font_dark_background_focus_color;
+		Color font_dark_background_hover_color;
+		Color font_dark_background_pressed_color;
+		Color font_dark_background_hover_pressed_color;
+
 		Color icon_normal_color;
 		Color icon_secondary_color;
 		Color icon_focus_color;
@@ -180,6 +186,8 @@ public:
 		Ref<StyleBoxFlat> panel_container_style;
 		Ref<StyleBoxFlat> content_panel_style;
 		Ref<StyleBoxFlat> tree_panel_style;
+		Ref<StyleBoxFlat> tab_container_style;
+		Ref<StyleBoxFlat> foreground_panel;
 
 		Vector2 widget_margin;
 

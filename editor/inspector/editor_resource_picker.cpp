@@ -306,12 +306,20 @@ void EditorResourcePicker::_update_menu_items() {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 			edit_menu->set_item_disabled(-1, !unique_enabled);
 
+			String modifier = "Ctrl";
+			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+				modifier = "Cmd";
+			}
+			const String drag_and_drop_text = vformat(TTRC("Hold %s while drag-and-dropping from the FileSystem dock or another resource picker to automatically make a dropped resource unique."), modifier);
+
 			if (!unique_enabled) {
 				if (EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource) && EditorNode::get_singleton()->get_resource_count(edited_resource) == 1) {
-					edit_menu->set_item_tooltip(-1, TTRC("This Resource is already unique."));
+					edit_menu->set_item_tooltip(-1, String(TTRC("This Resource is already unique.")) + "\n" + drag_and_drop_text);
 				} else if (_has_parent_resource().is_valid()) {
-					edit_menu->set_item_tooltip(-1, TTRC("In order to duplicate it, make its parent Resource unique."));
+					edit_menu->set_item_tooltip(-1, String(TTRC("In order to duplicate it, make its parent Resource unique.")) + "\n" + drag_and_drop_text);
 				}
+			} else {
+				edit_menu->set_item_tooltip(-1, drag_and_drop_text);
 			}
 
 			if (_has_sub_resources(edited_resource)) {
@@ -704,8 +712,12 @@ String EditorResourcePicker::_get_owner_path() const {
 
 	Node *node = Object::cast_to<Node>(obj);
 	if (node) {
+		Node *p_edited_scene_root = EditorNode::get_singleton()->get_editor_data().get_edited_scene_root();
 		if (node->get_scene_file_path().is_empty()) {
 			node = node->get_owner();
+		} else if (p_edited_scene_root != nullptr && p_edited_scene_root->get_scene_file_path() != node->get_scene_file_path()) {
+			// PackedScene should use root scene path.
+			return p_edited_scene_root->get_scene_file_path();
 		}
 		if (node) {
 			return node->get_scene_file_path();
@@ -985,7 +997,14 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 		}
 
 		edited_resource = dropped_resource;
-		_resource_changed();
+
+		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			// `_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE)` already calls `_resource_changed()`,
+			// so we don't need to manually call it in this case.
+			_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+		} else {
+			_resource_changed();
+		}
 	}
 }
 
@@ -1354,6 +1373,9 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 }
 
 bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
+	if (force_allow_unique) {
+		return true;
+	}
 	Ref<Resource> parent_resource = _has_parent_resource();
 	EditorNode *en = EditorNode::get_singleton();
 	bool internal_to_scene = en->is_resource_internal_to_scene(edited_resource);

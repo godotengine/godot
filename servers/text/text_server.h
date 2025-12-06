@@ -137,6 +137,7 @@ public:
 		OVERRUN_ADD_ELLIPSIS = 1 << 2,
 		OVERRUN_ENFORCE_ELLIPSIS = 1 << 3,
 		OVERRUN_JUSTIFICATION_AWARE = 1 << 4,
+		OVERRUN_SHORT_STRING_ELLIPSIS = 1 << 5,
 	};
 
 	enum GraphemeFlag {
@@ -229,7 +230,7 @@ public:
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
-	double vp_oversampling = 0.0;
+	static double vp_oversampling;
 	HashMap<char32_t, char32_t> diacritics_map;
 	void _diacritics_map_add(const String &p_from, char32_t p_to);
 	void _init_diacritics_map();
@@ -584,10 +585,12 @@ public:
 	void shaped_text_debug_print(const RID &p_shaped) const;
 #endif
 
+#ifndef DISABLE_DEPRECATED
 	// Number conversion.
-	virtual String format_number(const String &p_string, const String &p_language = "") const = 0;
-	virtual String parse_number(const String &p_string, const String &p_language = "") const = 0;
-	virtual String percent_sign(const String &p_language = "") const = 0;
+	virtual String format_number(const String &p_string, const String &p_language = "") const;
+	virtual String parse_number(const String &p_string, const String &p_language = "") const;
+	virtual String percent_sign(const String &p_language = "") const;
+#endif // DISABLE_DEPRECATED
 
 	// String functions.
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int64_t p_chars_per_line = 0) const = 0;
@@ -607,7 +610,8 @@ public:
 
 	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
-	virtual void set_current_drawn_item_oversampling(double p_vp_oversampling) { vp_oversampling = p_vp_oversampling; }
+	static void set_current_drawn_item_oversampling(double p_vp_oversampling) { vp_oversampling = p_vp_oversampling; }
+	static double get_current_drawn_item_oversampling() { return vp_oversampling; }
 
 	virtual void cleanup() {}
 

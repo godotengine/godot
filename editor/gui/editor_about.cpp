@@ -36,7 +36,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/credits_roll.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_version_button.h"
+#include "editor/run/editor_run_bar.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/rich_text_label.h"
@@ -103,22 +105,34 @@ void EditorAbout::_license_tree_selected() {
 	_tpl_text->set_text(selected->get_metadata(0));
 }
 
+void EditorAbout::_credits_visibility_changed() {
+	if (!credits_roll->is_visible()) {
+		credits_roll->queue_free();
+		credits_roll = nullptr;
+
+		show();
+	}
+}
+
 void EditorAbout::_item_activated(int p_idx, ItemList *p_il) {
 	const Variant val = p_il->get_item_metadata(p_idx);
 	if (val.get_type() == Variant::STRING) {
 		OS::get_singleton()->shell_open(val);
 	} else {
-		// Easter egg :D
-		if (!EditorNode::get_singleton()) {
-			// Don't allow in Project Manager.
+		// Easter egg! :D
+		if (EditorRunBar::get_singleton()->is_playing()) {
+			// Don't allow if the game is running, as it will look weird if it's embedded.
+			EditorToaster::get_singleton()->popup_str(TTR("No distractions for this, close that game first."));
 			return;
 		}
 
 		if (!credits_roll) {
 			credits_roll = memnew(CreditsRoll);
-			add_child(credits_roll);
+			credits_roll->connect("visibility_changed", callable_mp(this, &EditorAbout::_credits_visibility_changed));
+			get_tree()->get_root()->add_child(credits_roll);
 		}
 		credits_roll->roll_credits();
+		hide();
 	}
 }
 
@@ -140,6 +154,7 @@ Label *EditorAbout::_create_section(Control *p_parent, const String &p_name, con
 	il->set_max_columns(p_flags.has_flag(FLAG_SINGLE_COLUMN) ? 1 : 16);
 	il->add_theme_constant_override("h_separation", 16 * EDSCALE);
 
+	// Don't allow the Easter egg in the Project Manager.
 	if (p_flags.has_flag(FLAG_ALLOW_WEBSITE) || (p_flags.has_flag(FLAG_EASTER_EGG) && EditorNode::get_singleton())) {
 		Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 		il->add_theme_style_override("focus", empty_stylebox);

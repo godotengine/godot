@@ -38,7 +38,7 @@
 
 #include <jni.h>
 
-jvalue _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject = false, int p_depth = 0);
+jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, int p_depth = 0);
 
 String _get_class_name(JNIEnv *env, jclass cls, bool *array);
 

@@ -41,6 +41,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"
 #include "main/main.h"
@@ -851,6 +852,13 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 }
 
 Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
+	// Do not run headless instance as app bundle, since it will never send `applicationDidFinishLaunching` and register as failed start after timeout.
+	for (size_t i = 0; i < std::size(OS_MacOS::headless_args); i++) {
+		if (p_arguments.find(String(OS_MacOS::headless_args[i]))) {
+			return OS_Unix::create_process(get_executable_path(), p_arguments, r_child_id, false);
+		}
+	}
+
 	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
@@ -1080,6 +1088,8 @@ static void handle_interrupt(int sig) {
 }
 
 void OS_MacOS_NSApp::start_main() {
+	godot_init_profiler();
+
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);
@@ -1103,6 +1113,9 @@ void OS_MacOS_NSApp::start_main() {
 				pre_wait_observer = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
 					@autoreleasepool {
 						@try {
+							GodotProfileFrameMark;
+							GodotProfileZone("macOS main loop");
+
 							if (ds_mac) {
 								ds_mac->_process_events(false);
 							} else if (ds) {
@@ -1276,6 +1289,9 @@ void OS_MacOS_Embedded::run() {
 		while (true) {
 			@autoreleasepool {
 				@try {
+					GodotProfileFrameMark;
+					GodotProfileZone("macOS embedded main loop");
+
 					ds->process_events();
 
 #ifdef SDL_ENABLED

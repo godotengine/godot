@@ -42,6 +42,7 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/xml_parser.h"
 #include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #ifdef TOOLS_ENABLED
@@ -364,6 +365,8 @@ void OS_Android::main_loop_begin() {
 }
 
 bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_Android::main_loop_iterate");
 	if (!main_loop) {
 		return false;
 	}
@@ -875,7 +878,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	}
 #endif
 
-	if (godot_java->has_feature(p_feature)) {
+	if (godot_java->check_internal_feature_support(p_feature)) {
 		return true;
 	}
 

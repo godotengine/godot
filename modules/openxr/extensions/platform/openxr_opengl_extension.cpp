@@ -56,7 +56,7 @@
 // feature off.
 // See: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_sRGB_write_control.txt
 
-HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 #ifdef ANDROID_ENABLED

@@ -2282,11 +2282,18 @@ void GDScriptLanguage::init() {
 		GDExtensionManager::get_singleton()->connect("extension_loaded", callable_mp(this, &GDScriptLanguage::_extension_loaded));
 		GDExtensionManager::get_singleton()->connect("extension_unloading", callable_mp(this, &GDScriptLanguage::_extension_unloading));
 	}
-#endif
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
+	GDScriptParser::update_project_settings();
+	if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp_static(&GDScriptParser::update_project_settings))) {
+		ProjectSettings::get_singleton()->connect("settings_changed", callable_mp_static(&GDScriptParser::update_project_settings));
+	}
+#endif // DEBUG_ENABLED
 
 #ifdef TESTS_ENABLED
 	GDScriptTests::GDScriptTestRunner::handle_cmdline();
-#endif
+#endif // TESTS_ENABLED
 }
 
 #ifdef TOOLS_ENABLED
@@ -2950,7 +2957,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	profiling = false;
 	profile_native_calls = false;
 	script_frame_time = 0;
-#endif
+#endif // DEBUG_ENABLED
 
 	_debug_max_call_stack = GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "512," + itos(GDScriptFunction::MAX_CALL_DEPTH - 1) + ",1"), 1024);
 	track_call_stack = GLOBAL_DEF_RST("debug/settings/gdscript/always_track_call_stacks", false);
@@ -2961,20 +2968,29 @@ GDScriptLanguage::GDScriptLanguage() {
 	track_locals = track_locals || EngineDebugger::is_active();
 
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
-	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
-	GLOBAL_DEF("debug/gdscript/warnings/renamed_in_godot_4_hint", true);
+
+	GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY,
+					   "debug/gdscript/warnings/directory_rules",
+					   PROPERTY_HINT_TYPE_STRING,
+					   vformat("%d/%d:;%d/%d:Exclude,Include", Variant::STRING, PROPERTY_HINT_DIR, Variant::INT, PROPERTY_HINT_ENUM)),
+			Dictionary({ { "res://addons", GDScriptParser::WarningDirectoryRule::DECISION_EXCLUDE } }));
+
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
-		GDScriptWarning::Code code = (GDScriptWarning::Code)i;
-		Variant default_enabled = GDScriptWarning::get_default_value(code);
-		String path = GDScriptWarning::get_settings_path_from_code(code);
-		GLOBAL_DEF(GDScriptWarning::get_property_info(code), default_enabled);
-	}
+		const GDScriptWarning::Code code = (GDScriptWarning::Code)i;
+		const Variant default_value = GDScriptWarning::get_default_value(code);
+		GLOBAL_DEF(GDScriptWarning::get_property_info(code), default_value);
 
 #ifndef DISABLE_DEPRECATED
-	ProjectSettings::get_singleton()->set_as_internal("debug/gdscript/warnings/property_used_as_function", true);
-	ProjectSettings::get_singleton()->set_as_internal("debug/gdscript/warnings/constant_used_as_function", true);
-	ProjectSettings::get_singleton()->set_as_internal("debug/gdscript/warnings/function_used_as_property", true);
-#endif
+		if (i >= GDScriptWarning::FIRST_DEPRECATED_WARNING) {
+			const String setting_path = GDScriptWarning::get_setting_path_from_code(code);
+			ProjectSettings::get_singleton()->set_as_internal(setting_path, true);
+		}
+#endif // DISABLE_DEPRECATED
+	}
+
+	// TODO: This setting has nothing to do with warnings. It should be moved at the next compatibility breakage,
+	// if the setting is still relevant at that time.
+	GLOBAL_DEF("debug/gdscript/warnings/renamed_in_godot_4_hint", true);
 #endif // DEBUG_ENABLED
 }
 

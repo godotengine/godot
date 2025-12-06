@@ -343,6 +343,12 @@ void SceneImportSettingsDialog::_fill_animation(Tree *p_tree, const Ref<Animatio
 		ad.animation = p_anim;
 
 		_load_default_subresource_settings(ad.settings, "animations", p_name, ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION);
+		if (!ad.settings.has("settings/loop_mode")) {
+			// Update the loop mode to match detected mode (from import hints).
+			// This is necessary on the first import of a scene, otherwise the
+			// default (0/NONE) is set when filling out defaults.
+			ad.settings["settings/loop_mode"] = p_anim->get_loop_mode();
+		}
 
 		animation_map[p_name] = ad;
 	}
@@ -1125,7 +1131,9 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 
 void SceneImportSettingsDialog::_skeleton_tree_entered(Skeleton3D *p_skeleton) {
 	bones_mesh_preview->set_skeleton_path(p_skeleton->get_path());
-	bones_mesh_preview->set_skin(p_skeleton->register_skin(p_skeleton->create_skin_from_rest_transforms()));
+	Ref<Skin> skin = p_skeleton->create_skin_from_rest_transforms();
+	p_skeleton->register_skin(skin);
+	bones_mesh_preview->set_skin(skin);
 }
 
 void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
@@ -1929,6 +1937,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	// Display the same tooltips as in the Import dock.
 	inspector->set_object_class(ResourceImporterScene::get_class_static());
 	inspector->set_use_doc_hints(true);
+	inspector->set_theme_type_variation(SNAME("EditorInspectorForeground"));
 
 	property_split->add_child(inspector);
 

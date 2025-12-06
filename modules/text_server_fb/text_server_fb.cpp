@@ -4117,6 +4117,10 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 							new_sd->descent = MAX(new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 						}
 					}
+					if (new_sd->glyphs.is_empty() && gl.x_off < 0.0) {
+						gl.advance += -gl.x_off;
+						gl.x_off = 0.0;
+					}
 					new_sd->width += gl.advance * gl.repeat;
 				}
 				new_sd->glyphs.push_back(gl);
@@ -4582,6 +4586,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	bool add_ellipsis = p_trim_flags.has_flag(OVERRUN_ADD_ELLIPSIS);
 	bool cut_per_word = p_trim_flags.has_flag(OVERRUN_TRIM_WORD_ONLY);
 	bool enforce_ellipsis = p_trim_flags.has_flag(OVERRUN_ENFORCE_ELLIPSIS);
+	bool short_string_ellipsis = p_trim_flags.has_flag(OVERRUN_SHORT_STRING_ELLIPSIS);
 	bool justification_aware = p_trim_flags.has_flag(OVERRUN_JUSTIFICATION_AWARE);
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
@@ -4614,7 +4619,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	// Find usable fonts, if fonts from the last glyph do not have required chars.
 	RID dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
-	if (add_ellipsis || enforce_ellipsis) {
+	if (add_ellipsis || enforce_ellipsis || short_string_ellipsis) {
 		if (!_font_has_char(dot_gl_font_rid, sd->el_char)) {
 			const Array &fonts = spans[span_size - 1].fonts;
 			for (int i = 0; i < fonts.size(); i++) {
@@ -4667,8 +4672,8 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 		}
 	}
 
-	int32_t dot_gl_idx = ((add_ellipsis || enforce_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, (found_el_char ? sd->el_char : '.'), 0) : -1;
-	Vector2 dot_adv = ((add_ellipsis || enforce_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
+	int32_t dot_gl_idx = ((add_ellipsis || enforce_ellipsis || short_string_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, (found_el_char ? sd->el_char : '.'), 0) : -1;
+	Vector2 dot_adv = ((add_ellipsis || enforce_ellipsis || short_string_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
 	int32_t whitespace_gl_idx = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_index(whitespace_gl_font_rid, last_gl_font_size, ' ', 0) : -1;
 	Vector2 whitespace_adv = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_advance(whitespace_gl_font_rid, last_gl_font_size, whitespace_gl_idx) : Vector2();
 
@@ -4682,12 +4687,12 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	double width_without_el = width;
 
 	int trim_pos = 0;
-	int ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
+	int ellipsis_pos = (enforce_ellipsis || short_string_ellipsis) ? 0 : -1;
 
 	int last_valid_cut = -1;
 	int last_valid_cut_witout_el = -1;
 
-	if (enforce_ellipsis && (width + ellipsis_width <= p_width)) {
+	if ((enforce_ellipsis || short_string_ellipsis) && (width + ellipsis_width <= p_width)) {
 		trim_pos = -1;
 		ellipsis_pos = sd_size;
 	} else {
@@ -4702,7 +4707,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 					width = width_without_el;
 					break;
 				}
-				if (!enforce_ellipsis && width <= p_width && last_valid_cut_witout_el == -1) {
+				if (!(enforce_ellipsis || short_string_ellipsis) && width <= p_width && last_valid_cut_witout_el == -1) {
 					if (cut_per_word && above_min_char_threshold) {
 						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 							last_valid_cut_witout_el = i;
@@ -4713,7 +4718,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 						width_without_el = width;
 					}
 				}
-				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
+				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis || short_string_ellipsis) ? ellipsis_width : 0) <= p_width) {
 					if (cut_per_word && above_min_char_threshold) {
 						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 							last_valid_cut = i;
@@ -4724,7 +4729,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 					if (last_valid_cut != -1) {
 						trim_pos = last_valid_cut;
 
-						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
+						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis || short_string_ellipsis) && width - ellipsis_width <= p_width) {
 							ellipsis_pos = trim_pos;
 						}
 						break;
@@ -4736,12 +4741,12 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	sd->overrun_trim_data.trim_pos = trim_pos;
 	sd->overrun_trim_data.ellipsis_pos = ellipsis_pos;
-	if (trim_pos == 0 && enforce_ellipsis && add_ellipsis) {
+	if (trim_pos == 0 && (enforce_ellipsis || short_string_ellipsis) && add_ellipsis) {
 		sd->overrun_trim_data.ellipsis_pos = 0;
 	}
 
-	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis) {
-		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis)) {
+	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis || short_string_ellipsis) {
+		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis || short_string_ellipsis)) {
 			// Insert an additional space when cutting word bound for aesthetics.
 			if (cut_per_word && (ellipsis_pos > 0)) {
 				Glyph gl;

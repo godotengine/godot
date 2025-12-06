@@ -9,6 +9,10 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="binding" type="int" setter="set_binding" getter="get_binding" default="4294967295">
+			The index of the buffer in the vertex buffer array to bind this vertex attribute. When set to [code]-1[/code], it defaults to the index of the attribute.
+			[b]Note:[/b] You cannot mix binding explicitly assigned attributes with implicitly assigned ones (i.e. [code]-1[/code]). Either all attributes must have their binding set to [code]-1[/code], or all must have explicit bindings.
+		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="232">
 			The way that this attribute's data is interpreted when sent to a shader.
 		</member>

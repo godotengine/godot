@@ -95,12 +95,12 @@ bool FileDialog::_can_use_native_popup() {
 	return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE);
 }
 
-void FileDialog::popup(const Rect2i &p_rect) {
+void FileDialog::_popup_base(const Rect2i &p_rect) {
 	_update_option_controls();
 
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
-		ConfirmationDialog::popup(p_rect);
+		ConfirmationDialog::_popup_base(p_rect);
 		return;
 	}
 #endif
@@ -108,7 +108,7 @@ void FileDialog::popup(const Rect2i &p_rect) {
 	if (_can_use_native_popup() && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		_native_popup();
 	} else {
-		ConfirmationDialog::popup(p_rect);
+		ConfirmationDialog::_popup_base(p_rect);
 	}
 }
 
@@ -1573,7 +1573,7 @@ void FileDialog::_change_dir(const String &p_new_dir) {
 	} else {
 		String old_dir = dir_access->get_current_dir();
 		dir_access->change_dir(p_new_dir);
-		if (!dir_access->get_current_dir(false).begins_with(root_prefix)) {
+		if (!dir_access->get_current_dir().begins_with(root_prefix)) {
 			dir_access->change_dir(old_dir);
 			return;
 		}

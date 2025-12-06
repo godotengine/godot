@@ -114,6 +114,8 @@ public:
 	Ref<Font> get_button_font() const;
 	int get_button_font_size() const;
 
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+
 	LinkButton(const String &p_text = String());
 };
 

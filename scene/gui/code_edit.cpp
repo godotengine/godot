@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
+#include "core/string/translation_server.h"
 #include "core/string/ustring.h"
 #include "scene/theme/theme_db.h"
 
@@ -504,7 +505,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* Ctrl + Hover symbols */
-	bool mac_keys = OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios");
+	bool mac_keys = OS::prefer_meta_over_ctrl();
 	if ((mac_keys && k->get_keycode() == Key::META) || (!mac_keys && k->get_keycode() == Key::CTRL)) {
 		if (symbol_lookup_on_click_enabled) {
 			if (k->is_pressed() && !is_dragging_cursor()) {
@@ -1545,7 +1546,7 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 		const String &lang = _get_locale();
 		String fc = String::num_int64(p_line + 1).lpad(line_number_digits, line_number_padding);
 		if (is_localizing_numeral_system()) {
-			fc = TS->format_number(fc, lang);
+			fc = TranslationServer::get_singleton()->format_number(fc, lang);
 		}
 
 		text_rid = TS->create_shaped_text();

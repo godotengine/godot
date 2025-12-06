@@ -730,7 +730,8 @@ uint32_t RenderSceneBuffersRD::get_color_usage_bits(bool p_resolve, bool p_msaa,
 }
 
 RD::DataFormat RenderSceneBuffersRD::get_depth_format(bool p_resolve, bool p_msaa, bool p_storage) {
-	if (p_resolve) {
+	if (p_resolve && (p_storage || !RenderingDevice::get_singleton()->has_feature(RD::SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE))) {
+		// Use R32 for resolve on Forward+ (p_storage == true), or if we don't support depth resolve.
 		return RD::DATA_FORMAT_R32_SFLOAT;
 	} else {
 		const RenderingDeviceCommons::DataFormat preferred_formats[2] = {
@@ -749,7 +750,13 @@ uint32_t RenderSceneBuffersRD::get_depth_usage_bits(bool p_resolve, bool p_msaa,
 	if (p_msaa) {
 		usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 	} else if (p_resolve) {
-		usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (p_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
+		usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		if (p_storage) {
+			usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+		} else if (RenderingDevice::get_singleton()->has_feature(RD::SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE)) {
+			// We're able to resolve depth in (sub)passes and we make use of this in our mobile renderer.
+			usage_bits |= RD::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
+		}
 	} else {
 		usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	}

@@ -1343,6 +1343,28 @@ void LightStorage::reflection_atlas_free(RID p_ref_atlas) {
 	reflection_atlas_owner.free(p_ref_atlas);
 }
 
+void LightStorage::_reflection_atlas_clear(ReflectionAtlas *p_reflection_atlas) {
+	RD::get_singleton()->free_rid(p_reflection_atlas->reflection);
+	p_reflection_atlas->reflection = RID();
+
+	RD::get_singleton()->free_rid(p_reflection_atlas->depth_fb);
+	p_reflection_atlas->depth_fb = RID();
+
+	RD::get_singleton()->free_rid(p_reflection_atlas->depth_buffer);
+	p_reflection_atlas->depth_buffer = RID();
+
+	for (int i = 0; i < p_reflection_atlas->reflections.size(); i++) {
+		p_reflection_atlas->reflections.write[i].data.clear_reflection_data();
+		if (p_reflection_atlas->reflections[i].owner.is_null()) {
+			continue;
+		}
+
+		reflection_probe_release_atlas_index(p_reflection_atlas->reflections[i].owner);
+	}
+
+	p_reflection_atlas->reflections.clear();
+}
+
 void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) {
 	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
 	ERR_FAIL_NULL(ra);
@@ -1360,21 +1382,7 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 	ra->count = p_reflection_count;
 
 	if (ra->reflection.is_valid()) {
-		//clear and invalidate everything
-		RD::get_singleton()->free_rid(ra->reflection);
-		ra->reflection = RID();
-		RD::get_singleton()->free_rid(ra->depth_buffer);
-		ra->depth_buffer = RID();
-		for (int i = 0; i < ra->reflections.size(); i++) {
-			ra->reflections.write[i].data.clear_reflection_data();
-			if (ra->reflections[i].owner.is_null()) {
-				continue;
-			}
-			reflection_probe_release_atlas_index(ra->reflections[i].owner);
-			//rp->atlasindex clear
-		}
-
-		ra->reflections.clear();
+		_reflection_atlas_clear(ra);
 	}
 
 	if (ra->render_buffers.is_valid()) {
@@ -1500,21 +1508,14 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
 	}
 
-	const bool update_mode_changed = atlas->update_always != update_always && atlas->reflection.is_valid();
+	// Reflection atlas only allows recreating the texture at a lower resolution when going from not real time to real time,
+	// but not the other way around. This can lead to situations where the reflection atlas will be stuck on a lower resolution
+	// even if no real-time probes are present. This is intentional behavior until a future solution can accommodate for both
+	// quality levels being used simultaneously.
+	const bool switched_to_real_time = !atlas->update_always && update_always && atlas->reflection.is_valid();
 	const bool real_time_mipmaps_different = update_always && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8;
-	if (update_mode_changed || real_time_mipmaps_different) {
-		// Invalidate reflection atlas, need to regenerate
-		RD::get_singleton()->free_rid(atlas->reflection);
-		atlas->reflection = RID();
-
-		for (int i = 0; i < atlas->reflections.size(); i++) {
-			if (atlas->reflections[i].owner.is_null()) {
-				continue;
-			}
-			reflection_probe_release_atlas_index(atlas->reflections[i].owner);
-		}
-
-		atlas->reflections.clear();
+	if (switched_to_real_time || real_time_mipmaps_different) {
+		_reflection_atlas_clear(atlas);
 	}
 
 	if (atlas->reflection.is_null()) {

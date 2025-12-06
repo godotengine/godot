@@ -78,7 +78,6 @@ public:
 		const T &get() const {
 			return value;
 		}
-		Element() {}
 	};
 
 	typedef T ValueType;

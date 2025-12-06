@@ -52,6 +52,7 @@ class ProjectSettings : public Object {
 
 public:
 	typedef HashMap<String, Variant> CustomMap;
+	// This constant is used to make the ".godot" folder and paths like "res://.godot/editor".
 	static inline const String PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
 	static inline const String EDITOR_SETTING_OVERRIDE_PREFIX = PNAME("editor_overrides") + String("/");
 
@@ -218,7 +219,7 @@ public:
 	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
 
 	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
-	void add_autoload(const AutoloadInfo &p_autoload);
+	void add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert = false);
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;
 	AutoloadInfo get_autoload(const StringName &p_name) const;

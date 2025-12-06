@@ -79,6 +79,14 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_config.success_color = Color(0.45, 0.95, 0.5);
 		p_config.warning_color = Color(0.83, 0.78, 0.62);
 		p_config.error_color = Color(1, 0.47, 0.42);
+
+		// Keep dark theme colors accessible for use in the frame time gradient in the 3D editor.
+		// This frame time gradient is used to colorize text for a dark background, so it should keep using bright colors
+		// even when using a light theme.
+		p_theme->set_color("success_color_dark_background", EditorStringName(Editor), p_config.success_color);
+		p_theme->set_color("warning_color_dark_background", EditorStringName(Editor), p_config.warning_color);
+		p_theme->set_color("error_color_dark_background", EditorStringName(Editor), p_config.error_color);
+
 		if (!p_config.dark_icon_and_font) {
 			// Darken some colors to be readable on a light background.
 			p_config.success_color = p_config.success_color.lerp(p_config.mono_color_font, 0.35);
@@ -97,6 +105,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("success_color", EditorStringName(Editor), p_config.success_color);
 		p_theme->set_color("warning_color", EditorStringName(Editor), p_config.warning_color);
 		p_theme->set_color("error_color", EditorStringName(Editor), p_config.error_color);
+		p_theme->set_color("ruler_color", EditorStringName(Editor), p_config.base_color.lerp(p_config.mono_color_inv, 0.3) * Color(1, 1, 1, 0.8));
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
 		p_theme->set_color("disabled_highlight_color", EditorStringName(Editor), p_config.highlight_disabled_color);
 #endif
@@ -121,6 +130,22 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_config.font_placeholder_color = p_config.font_disabled_color;
 		p_config.font_outline_color = Color(1, 1, 1, 0);
 
+		// Colors designed for dark backgrounds, even when using a light theme.
+		// This is used for 3D editor overlay texts.
+		if (p_config.dark_theme) {
+			p_config.font_dark_background_color = p_config.font_color;
+			p_config.font_dark_background_focus_color = p_config.font_focus_color;
+			p_config.font_dark_background_hover_color = p_config.font_hover_color;
+			p_config.font_dark_background_pressed_color = p_config.font_pressed_color;
+			p_config.font_dark_background_hover_pressed_color = p_config.font_hover_pressed_color;
+		} else {
+			p_config.font_dark_background_color = p_config.mono_color.inverted().lerp(p_config.base_color, 0.75);
+			p_config.font_dark_background_focus_color = p_config.mono_color.inverted().lerp(p_config.base_color, 0.25);
+			p_config.font_dark_background_hover_color = p_config.mono_color.inverted().lerp(p_config.base_color, 0.25);
+			p_config.font_dark_background_pressed_color = p_config.font_dark_background_color.lerp(p_config.accent_color, 0.74);
+			p_config.font_dark_background_hover_pressed_color = p_config.font_dark_background_color.lerp(p_config.accent_color, 0.5);
+		}
+
 		p_theme->set_color(SceneStringName(font_color), EditorStringName(Editor), p_config.font_color);
 		p_theme->set_color("font_focus_color", EditorStringName(Editor), p_config.font_focus_color);
 		p_theme->set_color("font_hover_color", EditorStringName(Editor), p_config.font_hover_color);
@@ -130,6 +155,13 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("font_readonly_color", EditorStringName(Editor), p_config.font_readonly_color);
 		p_theme->set_color("font_placeholder_color", EditorStringName(Editor), p_config.font_placeholder_color);
 		p_theme->set_color("font_outline_color", EditorStringName(Editor), p_config.font_outline_color);
+
+		p_theme->set_color("font_dark_background_color", EditorStringName(Editor), p_config.font_dark_background_color);
+		p_theme->set_color("font_dark_background_focus_color", EditorStringName(Editor), p_config.font_dark_background_focus_color);
+		p_theme->set_color("font_dark_background_hover_color", EditorStringName(Editor), p_config.font_dark_background_hover_color);
+		p_theme->set_color("font_dark_background_pressed_color", EditorStringName(Editor), p_config.font_dark_background_pressed_color);
+		p_theme->set_color("font_dark_background_hover_pressed_color", EditorStringName(Editor), p_config.font_dark_background_hover_pressed_color);
+
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
 		p_theme->set_color("readonly_font_color", EditorStringName(Editor), p_config.font_readonly_color);
 		p_theme->set_color("disabled_font_color", EditorStringName(Editor), p_config.font_disabled_color);
@@ -202,12 +234,6 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("forward_plus_color", EditorStringName(Editor), Color::hex(0x5d8c3fff));
 		p_theme->set_color("mobile_color", EditorStringName(Editor), Color::hex(0xa5557dff));
 		p_theme->set_color("gl_compatibility_color", EditorStringName(Editor), Color::hex(0x5586a4ff));
-
-		if (p_config.dark_theme) {
-			p_theme->set_color("highend_color", EditorStringName(Editor), Color(1.0, 0.0, 0.0));
-		} else {
-			p_theme->set_color("highend_color", EditorStringName(Editor), Color::hex(0xad1128ff));
-		}
 	}
 
 	// Constants.
@@ -357,6 +383,14 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_config.content_panel_style->set_corner_radius(CORNER_TOP_LEFT, 0);
 			p_config.content_panel_style->set_corner_radius(CORNER_TOP_RIGHT, 0);
 			p_config.content_panel_style->set_content_margin_individual(content_panel_margin, 2 * EDSCALE + content_panel_margin, content_panel_margin, content_panel_margin);
+
+			p_config.tab_container_style = p_config.base_style->duplicate();
+			p_config.tab_container_style->set_content_margin_all(p_config.increased_margin * 1.5 * EDSCALE);
+			p_config.tab_container_style->set_corner_radius_individual(0, 0, p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE);
+
+			p_config.foreground_panel = p_config.tab_container_style->duplicate();
+			p_config.foreground_panel->set_corner_radius(CORNER_TOP_LEFT, p_config.tab_container_style->get_corner_radius(CORNER_BOTTOM_LEFT));
+			p_config.foreground_panel->set_corner_radius(CORNER_TOP_RIGHT, p_config.tab_container_style->get_corner_radius(CORNER_BOTTOM_RIGHT));
 
 			// Trees and similarly inset panels.
 
@@ -729,12 +763,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 		style_tabbar_background->set_content_margin_individual(0, 0, p_config.base_margin * 0.25 * EDSCALE, 0);
 
-		Ref<StyleBoxFlat> style_panel = p_config.base_style->duplicate();
-		style_panel->set_content_margin_all(p_config.increased_margin * 1.5 * EDSCALE);
-		style_panel->set_corner_radius_individual(0, 0, p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE);
-
 		p_theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
-		p_theme->set_stylebox(SceneStringName(panel), "TabContainer", style_panel);
+		p_theme->set_stylebox(SceneStringName(panel), "TabContainer", p_config.tab_container_style);
 
 		p_theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
 		p_theme->set_stylebox("tab_hovered", "TabContainer", style_tab_hovered);
@@ -855,7 +885,6 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_color("font_outline_color", "TextEdit", p_config.font_outline_color);
 		p_theme->set_color("caret_color", "TextEdit", p_config.font_color);
 		p_theme->set_color("selection_color", "TextEdit", p_config.selection_color);
-		p_theme->set_color("background_color", "TextEdit", Color(1, 1, 1, 0));
 
 		p_theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 		p_theme->set_constant("outline_size", "TextEdit", 0);
@@ -1028,16 +1057,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
 		Ref<StyleBoxFlat> grabber_style = p_config.base_style->duplicate();
-		grabber_style->set_bg_color(_get_base_color(p_config, 0.5, 0.6));
-		grabber_style->set_border_color(p_config.base_color * Color(1, 1, 1, 0));
-		grabber_style->set_border_width_all(3 * EDSCALE);
+		grabber_style->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.225));
 
 		Ref<StyleBoxFlat> grabber_hl_style = p_config.base_style->duplicate();
-		grabber_hl_style->set_bg_color(_get_base_color(p_config, 1.4, 0.5));
-		grabber_hl_style->set_border_color(_get_base_color(p_config) * Color(1, 1, 1, 0));
-		grabber_hl_style->set_border_width_all(2.5 * EDSCALE);
+		grabber_hl_style->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.5));
 
-		int scroll_margin = (p_config.enable_touch_optimizations ? 12 : 6) * EDSCALE;
+		int scroll_margin = (p_config.enable_touch_optimizations ? 10 : 3) * EDSCALE;
 
 		// HScrollBar.
 
@@ -1057,6 +1082,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_icon("decrement_highlight", "HScrollBar", empty_icon);
 		p_theme->set_icon("decrement_pressed", "HScrollBar", empty_icon);
 
+		p_theme->set_constant("padding_top", "HScrollBar", p_config.base_margin * EDSCALE);
+		p_theme->set_constant("padding_bottom", "HScrollBar", p_config.base_margin * EDSCALE);
+
 		// VScrollBar.
 
 		Ref<StyleBoxEmpty> v_scroll_style = p_config.base_empty_style->duplicate();
@@ -1074,6 +1102,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_icon("decrement", "VScrollBar", empty_icon);
 		p_theme->set_icon("decrement_highlight", "VScrollBar", empty_icon);
 		p_theme->set_icon("decrement_pressed", "VScrollBar", empty_icon);
+
+		p_theme->set_constant("padding_left", "VScrollBar", p_config.base_margin * EDSCALE);
+		p_theme->set_constant("padding_right", "VScrollBar", p_config.base_margin * EDSCALE);
 
 		// Slider
 		const int background_margin = MAX(2, p_config.base_margin / 2);
@@ -1219,7 +1250,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		p_theme->set_stylebox(SceneStringName(panel), "GraphEdit", ge_panel_style);
 		p_theme->set_stylebox("panel_focus", "GraphEdit", p_config.focus_style);
-		p_theme->set_stylebox("menu_panel", "GraphEdit", EditorThemeManager::make_flat_stylebox(p_config.dark_color_1 * Color(1, 1, 1, 0.6), 4, 2, 4, 2, 3));
+		p_theme->set_stylebox("menu_panel", "GraphEdit", EditorThemeManager::make_flat_stylebox(p_config.surface_low_color * Color(1, 1, 1, 0.5), 4, 2, 4, 2, 3));
 
 		float grid_base_brightness = p_config.dark_theme ? 1.0 : 0.0;
 		GraphEdit::GridPattern grid_pattern = (GraphEdit::GridPattern) int(EDITOR_GET("editors/visual_editors/grid_pattern"));
@@ -1256,7 +1287,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		// GraphEditMinimap.
 		{
-			Ref<StyleBoxFlat> style_minimap_bg = EditorThemeManager::make_flat_stylebox(p_config.dark_color_1, 0, 0, 0, 0);
+			Ref<StyleBoxFlat> style_minimap_bg = EditorThemeManager::make_flat_stylebox(p_config.surface_low_color * Color(1, 1, 1, 0.3), 0, 0, 0, 0);
 			style_minimap_bg->set_border_color(p_config.dark_color_3);
 			style_minimap_bg->set_border_width_all(1);
 			p_theme->set_stylebox(SceneStringName(panel), "GraphEditMinimap", style_minimap_bg);
@@ -1268,7 +1299,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 				style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
 				style_minimap_node = EditorThemeManager::make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0);
 			} else {
-				style_minimap_camera = EditorThemeManager::make_flat_stylebox(Color(0.38, 0.38, 0.38, 0.2), 0, 0, 0, 0);
+				style_minimap_camera = EditorThemeManager::make_flat_stylebox(Color(0.38, 0.38, 0.38, 0.1), 0, 0, 0, 0);
 				style_minimap_camera->set_border_color(Color(0.38, 0.38, 0.38, 0.45));
 				style_minimap_node = EditorThemeManager::make_flat_stylebox(Color(0, 0, 0), 0, 0, 0, 0);
 			}
@@ -1291,7 +1322,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			const int gn_corner_radius = 3;
 
 			const Color gn_bg_color = p_config.dark_theme ? p_config.dark_color_3 : p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
-			const Color gn_frame_bg = _get_base_color(p_config, p_config.dark_theme ? -1.8 : -1.0, 0.9);
+			const Color gn_frame_bg = _get_base_color(p_config, p_config.dark_theme ? -1.8 : -0.5, 0.9);
 
 			const bool high_contrast_borders = p_config.draw_extra_borders && p_config.dark_theme;
 
@@ -1473,14 +1504,10 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, EditorThemeManager::ThemeConfiguration &p_config) {
 	// Project manager.
 	{
-		Ref<StyleBoxFlat> style_panel_container = p_theme->get_stylebox(SceneStringName(panel), SNAME("TabContainer"))->duplicate();
-		style_panel_container->set_corner_radius(CORNER_TOP_LEFT, style_panel_container->get_corner_radius(CORNER_BOTTOM_LEFT));
-		style_panel_container->set_corner_radius(CORNER_TOP_RIGHT, style_panel_container->get_corner_radius(CORNER_BOTTOM_RIGHT));
-
 		Ref<StyleBoxFlat> style_project_list = p_config.base_style->duplicate();
 		style_project_list->set_bg_color(p_config.surface_low_color);
 
-		p_theme->set_stylebox("panel_container", "ProjectManager", style_panel_container);
+		p_theme->set_stylebox("panel_container", "ProjectManager", p_config.foreground_panel);
 		p_theme->set_stylebox("project_list", "ProjectManager", style_project_list);
 		p_theme->set_stylebox("quick_settings_panel", "ProjectManager", style_project_list);
 		p_theme->set_constant("sidebar_button_icon_separation", "ProjectManager", int(6 * EDSCALE));
@@ -1550,7 +1577,14 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// 3D/Spatial editor.
 		Ref<StyleBoxFlat> style_info_3d_viewport = p_config.base_style->duplicate();
-		style_info_3d_viewport->set_bg_color(p_config.dark_color_2);
+		Color bg_color = style_info_3d_viewport->get_bg_color() * Color(1, 1, 1, 0.5);
+		if (!p_config.dark_theme) {
+			// Always use a dark background for the 3D viewport, even in light themes.
+			// This is displayed as an overlay of the 3D scene, whose appearance doesn't change with the editor theme.
+			// On top of that, dark overlays are more readable than light overlays.
+			bg_color.invert();
+		}
+		style_info_3d_viewport->set_bg_color(bg_color);
 		style_info_3d_viewport->set_content_margin_individual(p_config.base_margin * 2 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 2 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE);
 		p_theme->set_stylebox("Information3dViewport", EditorStringName(EditorStyles), style_info_3d_viewport);
 
@@ -1576,9 +1610,11 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 
 		// Game view.
-		p_theme->set_type_variation("GamePanel", "Panel");
+		p_theme->set_type_variation("GamePanel", "PanelContainer");
 		Ref<StyleBoxFlat> game_panel = p_theme->get_stylebox(SceneStringName(panel), SNAME("Panel"))->duplicate();
 		game_panel->set_corner_radius_all(0);
+		game_panel->set_content_margin_all(0);
+		game_panel->set_draw_center(true);
 		p_theme->set_stylebox(SceneStringName(panel), "GamePanel", game_panel);
 
 		// Main menu.
@@ -1891,6 +1927,15 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			// as the debugger inspector is too small to be considered a main area.
 			p_theme->set_stylebox(SceneStringName(panel), "EditorDebuggerInspector", style_sidebar);
 		}
+
+		// ForegroundPanel.
+		{
+			p_theme->set_type_variation("PanelForeground", "Panel");
+			p_theme->set_type_variation("EditorInspectorForeground", "EditorInspector");
+
+			p_theme->set_stylebox(SceneStringName(panel), "PanelForeground", p_config.foreground_panel);
+			p_theme->set_stylebox(SceneStringName(panel), "EditorInspectorForeground", p_config.foreground_panel);
+		}
 	}
 
 	// Editor inspector.
@@ -2056,7 +2101,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		Ref<StyleBoxEmpty> style_dictionary_add_item = EditorThemeManager::make_empty_stylebox(0, 4, 0, 4);
 		p_theme->set_stylebox("DictionaryAddItem0", EditorStringName(EditorStyles), style_dictionary_add_item);
 
-		// Object selector;
+		// Object selector.
 		p_theme->set_type_variation("ObjectSelectorMargin", "MarginContainer");
 		p_theme->set_constant("margin_left", "ObjectSelectorMargin", p_config.base_margin * 2 * EDSCALE);
 		p_theme->set_constant("margin_right", "ObjectSelectorMargin", p_config.base_margin * 2.5 * EDSCALE);
@@ -2072,14 +2117,14 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		// "primary" is used for integer timeline values, "secondary" for decimals.
 
 		Ref<StyleBoxFlat> style_time_available = p_config.base_style->duplicate();
-		style_time_available->set_bg_color(p_config.surface_highest_color);
+		style_time_available->set_bg_color(p_config.dark_theme ? p_config.surface_highest_color : p_config.surface_high_color);
 		if (p_config.draw_extra_borders) {
 			style_time_available->set_border_width_all(Math::round(EDSCALE));
-			style_time_available->set_border_color(p_config.extra_border_color_1);
+			style_time_available->set_border_color(p_config.extra_border_color_2);
 		}
 
 		Ref<StyleBoxFlat> style_time_unavailable = p_config.base_style->duplicate();
-		style_time_unavailable->set_bg_color(p_config.surface_high_color);
+		style_time_unavailable->set_bg_color(p_config.dark_theme ? p_config.surface_high_color : p_config.surface_highest_color);
 
 		p_theme->set_stylebox("time_available", "AnimationTimelineEdit", style_time_available);
 		p_theme->set_stylebox("time_unavailable", "AnimationTimelineEdit", style_time_unavailable);
@@ -2127,6 +2172,10 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		style_animation_track_header->set_content_margin_individual(p_config.base_margin * 4 * EDSCALE, p_config.base_margin * EDSCALE, 0, p_config.base_margin * EDSCALE);
 
 		p_theme->set_stylebox("header", "AnimationTrackEditGroup", style_animation_track_header);
+
+		Ref<StyleBoxFlat> style_animation_track_group_hover = p_config.base_style->duplicate();
+		style_animation_track_group_hover->set_bg_color(p_config.highlight_color);
+		p_theme->set_stylebox(SceneStringName(hover), "AnimationTrackEditGroup", style_animation_track_group_hover);
 
 		p_theme->set_color("bg_color", "AnimationTrackEditGroup", p_config.surface_base_color);
 		p_theme->set_color("h_line_color", "AnimationTrackEditGroup", Color(1, 1, 1, 0));

@@ -643,6 +643,9 @@ void EditorData::remove_scene(int p_idx) {
 			editor_plugins[i]->notify_scene_closed(edited_scene[p_idx].root->get_scene_file_path());
 		}
 
+		if (edited_scene[p_idx].root == SceneTree::get_singleton()->get_edited_scene_root()) {
+			SceneTree::get_singleton()->set_edited_scene_root(nullptr);
+		}
 		memdelete(edited_scene[p_idx].root);
 		edited_scene.write[p_idx].root = nullptr;
 	}

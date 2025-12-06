@@ -772,9 +772,6 @@ void TextEdit::_notification(int p_what) {
 			bool rtl = is_layout_rtl();
 			int lines_drawn = 0;
 
-			RID selection_start;
-			RID selection_end;
-
 			for (int i = 0; i < text.size(); i++) {
 				text.update_accessibility(i, ae);
 				const Ref<TextParagraph> &ac_buf = text.get_line_data(i);
@@ -957,9 +954,11 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_line_count() + 1;
 
+#ifndef DISABLE_DEPRECATED
 			if (theme_cache.background_color.a > 0.01) {
 				RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2i(), get_size()), theme_cache.background_color);
 			}
+#endif // DISABLE_DEPRECATED
 
 			Vector<BraceMatchingData> brace_matching;
 			if (highlight_matching_braces_enabled) {
@@ -7651,7 +7650,10 @@ void TextEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, line_spacing);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, wrap_offset);
 
+#ifndef DISABLE_DEPRECATED
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, background_color);
+#endif // DISABLE_DEPRECATED
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, current_line_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, word_highlighted_color);
 

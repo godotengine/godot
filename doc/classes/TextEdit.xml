@@ -1350,7 +1350,7 @@
 			If [code]true[/code], all wrapped lines are indented to the same amount as the unwrapped line.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="middle_mouse_paste_enabled" type="bool" setter="set_middle_mouse_paste_enabled" getter="is_middle_mouse_paste_enabled" default="true">
 			If [code]false[/code], using middle mouse button to paste clipboard will be disabled.
@@ -1627,7 +1627,7 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)" deprecated="Assign a [StyleBoxFlat] to [theme_item normal] instead, and set [member StyleBoxFlat.bg_color] to the desired background color.">
 			Sets the background [Color] of this [TextEdit].
 		</theme_item>
 		<theme_item name="caret_background_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">

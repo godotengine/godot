@@ -68,7 +68,7 @@ private:
 
 public:
 	String get_body_type() const;
-	void set_body_type(String p_body_type);
+	void set_body_type(const String &p_body_type);
 
 	PhysicsBodyType get_physics_body_type() const;
 	void set_physics_body_type(PhysicsBodyType p_body_type);
@@ -77,10 +77,10 @@ public:
 	void set_mass(real_t p_mass);
 
 	Vector3 get_linear_velocity() const;
-	void set_linear_velocity(Vector3 p_linear_velocity);
+	void set_linear_velocity(const Vector3 &p_linear_velocity);
 
 	Vector3 get_angular_velocity() const;
-	void set_angular_velocity(Vector3 p_angular_velocity);
+	void set_angular_velocity(const Vector3 &p_angular_velocity);
 
 	Vector3 get_center_of_mass() const;
 	void set_center_of_mass(const Vector3 &p_center_of_mass);
@@ -93,12 +93,12 @@ public:
 
 #ifndef DISABLE_DEPRECATED
 	Basis get_inertia_tensor() const;
-	void set_inertia_tensor(Basis p_inertia_tensor);
+	void set_inertia_tensor(const Basis &p_inertia_tensor);
 #endif // DISABLE_DEPRECATED
 
 	static Ref<GLTFPhysicsBody> from_node(const CollisionObject3D *p_body_node);
 	CollisionObject3D *to_node() const;
 
-	static Ref<GLTFPhysicsBody> from_dictionary(const Dictionary p_dictionary);
+	static Ref<GLTFPhysicsBody> from_dictionary(const Dictionary &p_dictionary);
 	Dictionary to_dictionary() const;
 };

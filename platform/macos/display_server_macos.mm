@@ -34,6 +34,7 @@
 #import "godot_application_delegate.h"
 #import "godot_button_view.h"
 #import "godot_content_view.h"
+#import "godot_core_cursor.h"
 #import "godot_menu_delegate.h"
 #import "godot_menu_item.h"
 #import "godot_open_save_delegate.h"
@@ -3024,7 +3025,7 @@ void DisplayServerMacOS::cursor_update_shape() {
 				[_cursor_from_selector(@selector(_windowResizeNorthWestSouthEastCursor)) set];
 				break;
 			case CURSOR_MOVE:
-				[[NSCursor arrowCursor] set];
+				[[[GodotCoreCursor alloc] initWithType:GDCoreCursorWindowMove] set];
 				break;
 			case CURSOR_VSPLIT:
 				[[NSCursor resizeUpDownCursor] set];

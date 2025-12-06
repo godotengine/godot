@@ -3951,6 +3951,9 @@ void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 	if (track_get_type(p_track) == TYPE_VALUE) {
 		p_to_animation->value_track_set_update_mode(dst_track, value_track_get_update_mode(p_track));
 	}
+	if (track_get_type(p_track) == TYPE_AUDIO) {
+		p_to_animation->audio_track_set_use_blend(dst_track, audio_track_is_use_blend(p_track));
+	}
 
 	for (int i = 0; i < track_get_key_count(p_track); i++) {
 		p_to_animation->track_insert_key(dst_track, track_get_key_time(p_track, i), track_get_key_value(p_track, i), track_get_key_transition(p_track, i));
@@ -5669,6 +5672,30 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 	}
 
 	return false;
+}
+
+// Helper functions for Rotation.
+double Animation::interpolate_via_rest(double p_from, double p_to, double p_weight, double p_rest) {
+	double rot_a = Math::fposmod(p_from, Math::TAU);
+	double rot_b = Math::fposmod(p_to, Math::TAU);
+	double rot_rest = Math::fposmod(p_rest, Math::TAU);
+	if (rot_rest < Math::PI) {
+		rot_a = rot_a > rot_rest + Math::PI ? rot_a - Math::TAU : rot_a;
+		rot_b = rot_b > rot_rest + Math::PI ? rot_b - Math::TAU : rot_b;
+	} else {
+		rot_a = rot_a < rot_rest - Math::PI ? rot_a + Math::TAU : rot_a;
+		rot_b = rot_b < rot_rest - Math::PI ? rot_b + Math::TAU : rot_b;
+	}
+	return Math::fposmod(rot_a + (rot_b - rot_rest) * p_weight, Math::TAU);
+}
+
+Quaternion Animation::interpolate_via_rest(const Quaternion &p_from, const Quaternion &p_to, real_t p_weight, const Quaternion &p_rest) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(!p_from.is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_rest.is_normalized(), Quaternion(), "The rest quaternion must be normalized.");
+#endif
+	return (p_from * Quaternion().slerp(p_rest.inverse() * p_to, p_weight)).normalized();
 }
 
 // Helper math functions for Variant.

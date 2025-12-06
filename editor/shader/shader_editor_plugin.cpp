@@ -40,7 +40,8 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/shader/shader_create_dialog.h"
 #include "editor/shader/text_shader_editor.h"
-#include "editor/shader/visual_shader_editor_plugin.h"
+#include "editor/shader/text_shader_language_plugin.h"
+#include "editor/shader/visual_shader_language_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/tab_container.h"
@@ -146,13 +147,17 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			if (edited_shaders[i].shader_inc.ptr() == shader_include) {
 				shader_tabs->set_current_tab(i);
 				shader_list->select(i);
-				_switch_to_editor(edited_shaders[i].shader_editor);
+				_switch_to_editor(edited_shaders[i].shader_editor, true);
 				return;
 			}
 		}
 		es.shader_inc = Ref<ShaderInclude>(shader_include);
-		es.shader_editor = memnew(TextShaderEditor);
-		es.shader_editor->edit_shader_include(shader_include);
+		for (Ref<EditorShaderLanguagePlugin> shader_lang : EditorShaderLanguagePlugin::get_shader_languages_read_only()) {
+			if (shader_lang->handles_shader_include(es.shader_inc)) {
+				es.shader_editor = shader_lang->edit_shader_include(es.shader_inc);
+				break;
+			}
+		}
 	} else {
 		// If it's not a ShaderInclude, check for Shader.
 		Shader *shader = Object::cast_to<Shader>(p_object);
@@ -162,21 +167,21 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			if (edited_shaders[i].shader.ptr() == shader) {
 				shader_tabs->set_current_tab(i);
 				shader_list->select(i);
-				_switch_to_editor(edited_shaders[i].shader_editor);
+				_switch_to_editor(edited_shaders[i].shader_editor, true);
 				return;
 			}
 		}
 		// If we did not return, the shader needs to be opened in a new shader editor.
 		es.shader = Ref<Shader>(shader);
-		Ref<VisualShader> vs = es.shader;
-		if (vs.is_valid()) {
-			es.shader_editor = memnew(VisualShaderEditor);
-		} else {
-			es.shader_editor = memnew(TextShaderEditor);
+		for (Ref<EditorShaderLanguagePlugin> shader_lang : EditorShaderLanguagePlugin::get_shader_languages_read_only()) {
+			if (shader_lang->handles_shader(es.shader)) {
+				es.shader_editor = shader_lang->edit_shader(es.shader);
+				break;
+			}
 		}
-		es.shader_editor->edit_shader(es.shader);
 	}
 
+	ERR_FAIL_NULL_MSG(es.shader_editor, "ShaderEditorPlugin: Unable to edit shader because no suitable editor was found.");
 	// TextShaderEditor-specific setup code.
 	TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(es.shader_editor);
 	if (text_shader_editor) {
@@ -195,7 +200,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 	shader_tabs->set_current_tab(shader_tabs->get_tab_count() - 1);
 	edited_shaders.push_back(es);
 	_update_shader_list();
-	_switch_to_editor(es.shader_editor);
+	_switch_to_editor(es.shader_editor, !restoring_layout);
 }
 
 bool ShaderEditorPlugin::handles(Object *p_object) const {
@@ -221,6 +226,8 @@ ShaderEditor *ShaderEditorPlugin::get_shader_editor(const Ref<Shader> &p_for_sha
 }
 
 void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
+	restoring_layout = true;
+
 	if (EDITOR_GET("interface/multi_window/restore_windows_on_load") && window_wrapper->is_window_available() && p_layout->has_section_key("ShaderEditor", "window_rect")) {
 		window_wrapper->restore_window_from_saved_position(
 				p_layout->get_value("ShaderEditor", "window_rect", Rect2i()),
@@ -263,6 +270,8 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 	_shader_selected(selected_shader_idx, false);
 
 	_set_text_shader_zoom_factor(p_layout->get_value("ShaderEditor", "text_shader_zoom_factor", 1.0f));
+
+	restoring_layout = false;
 }
 
 void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
@@ -511,12 +520,12 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 	switch (p_index) {
 		case FILE_MENU_NEW: {
 			String base_path = FileSystemDock::get_singleton()->get_current_path().get_base_dir();
-			shader_create_dialog->config(base_path.path_join("new_shader"), false, false, 0);
+			shader_create_dialog->config(base_path.path_join("new_shader"), false, false, "Shader");
 			shader_create_dialog->popup_centered();
 		} break;
 		case FILE_MENU_NEW_INCLUDE: {
 			String base_path = FileSystemDock::get_singleton()->get_current_path().get_base_dir();
-			shader_create_dialog->config(base_path.path_join("new_shader"), false, false, 2);
+			shader_create_dialog->config(base_path.path_join("new_shader"), false, false, "ShaderInclude");
 			shader_create_dialog->popup_centered();
 		} break;
 		case FILE_MENU_OPEN: {
@@ -778,7 +787,7 @@ void ShaderEditorPlugin::_update_shader_editor_zoom_factor(CodeTextEditor *p_sha
 	}
 }
 
-void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
+void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor, bool p_focus) {
 	ERR_FAIL_NULL(p_editor);
 	if (file_menu->get_parent() != nullptr) {
 		file_menu->get_parent()->remove_child(file_menu);
@@ -788,6 +797,12 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
 	}
 	empty_menu->set_visible(false);
 	p_editor->use_menu_bar_items(file_menu, make_floating);
+	if (p_focus) {
+		TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(p_editor);
+		if (text_shader_editor) {
+			text_shader_editor->get_code_editor()->get_text_editor()->grab_focus();
+		}
+	}
 }
 
 void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
@@ -927,9 +942,18 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	files_split->add_child(shader_create_dialog);
 	shader_create_dialog->connect("shader_created", callable_mp(this, &ShaderEditorPlugin::_shader_created));
 	shader_create_dialog->connect("shader_include_created", callable_mp(this, &ShaderEditorPlugin::_shader_include_created));
+
+	Ref<TextShaderLanguagePlugin> text_shader_lang;
+	text_shader_lang.instantiate();
+	EditorShaderLanguagePlugin::register_shader_language(text_shader_lang);
+
+	Ref<VisualShaderLanguagePlugin> visual_shader_lang;
+	visual_shader_lang.instantiate();
+	EditorShaderLanguagePlugin::register_shader_language(visual_shader_lang);
 }
 
 ShaderEditorPlugin::~ShaderEditorPlugin() {
+	EditorShaderLanguagePlugin::clear_registered_shader_languages();
 	memdelete(file_menu);
 	memdelete(make_floating);
 }

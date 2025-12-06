@@ -539,7 +539,7 @@ void VisualShaderGraphPlugin::update_frames(VisualShader::Type p_type, int p_nod
 
 void VisualShaderGraphPlugin::set_node_position(VisualShader::Type p_type, int p_id, const Vector2 &p_position) {
 	if (editor->get_current_shader_type() == p_type && links.has(p_id)) {
-		links[p_id].graph_element->set_position_offset(p_position);
+		links[p_id].graph_element->set_position_offset(p_position * editor->cached_theme_base_scale);
 	}
 }
 
@@ -736,7 +736,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		expression = expression_node->get_expression();
 	}
 
-	node->set_position_offset(visual_shader->get_node_position(p_type, p_id));
+	node->set_position_offset(visual_shader->get_node_position(p_type, p_id) * editor->cached_theme_base_scale);
 
 	node->connect("dragged", callable_mp(editor, &VisualShaderEditor::_node_dragged).bind(p_id));
 
@@ -1176,7 +1176,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 				if (is_group) {
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
-					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_left);
+					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_right);
 					remove_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_remove_output_port).bind(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 
@@ -1386,9 +1386,13 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		expression_node->set_ctrl_pressed(expression_box, 0);
 		expression_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		node->add_child(expression_box);
+
+		Control *offset2 = memnew(Control);
+		offset2->set_custom_minimum_size(Vector2(0, 11 * EDSCALE));
+		node->add_child(offset2);
+
 		register_expression_edit(p_id, expression_box);
 
-		Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
 		Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
 		Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 		Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
@@ -1399,7 +1403,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
 		expression_box->set_syntax_highlighter(expression_syntax_highlighter);
-		expression_box->add_theme_color_override("background_color", background_color);
 
 		for (const String &E : editor->keyword_list) {
 			if (ShaderLanguage::is_control_flow_keyword(E)) {
@@ -4171,7 +4174,7 @@ void VisualShaderEditor::_update_varyings() {
 
 void VisualShaderEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node) {
 	VisualShader::Type type = get_current_shader_type();
-	drag_buffer.push_back({ type, p_node, p_from, p_to });
+	drag_buffer.push_back({ type, p_node, p_from / cached_theme_base_scale, p_to / cached_theme_base_scale });
 	if (!drag_dirty) {
 		callable_mp(this, &VisualShaderEditor::_nodes_dragged).call_deferred();
 	}
@@ -5285,7 +5288,7 @@ void VisualShaderEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			site_search->set_button_icon(get_editor_theme_icon(SNAME("ExternalLink")));
-			highend_label->set_modulate(get_theme_color(SNAME("highend_color"), EditorStringName(Editor)));
+			highend_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 			param_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
 			node_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
@@ -5294,7 +5297,6 @@ void VisualShaderEditor::_notification(int p_what) {
 			shader_preview_button->set_button_icon(Control::get_editor_theme_icon(SNAME("SubViewport")));
 
 			{
-				Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
 				Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
 				Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 				Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
@@ -5305,7 +5307,6 @@ void VisualShaderEditor::_notification(int p_what) {
 				Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 				Color error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 
-				preview_text->add_theme_color_override("background_color", background_color);
 				varying_error_label->add_theme_color_override(SceneStringName(font_color), error_color);
 
 				for (const String &E : keyword_list) {
@@ -5344,6 +5345,8 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			tools->set_button_icon(get_editor_theme_icon(SNAME("Tools")));
 			preview_tools->set_button_icon(get_editor_theme_icon(SNAME("Tools")));
+
+			cached_theme_base_scale = get_theme_default_base_scale();
 
 			if (is_visible_in_tree()) {
 				_update_graph();
@@ -6931,9 +6934,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	highend_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	desc_hbox->add_child(highend_label);
 	highend_label->set_visible(false);
-	highend_label->set_text("Vulkan");
+	highend_label->set_text(TTRC("Forward+/Mobile"));
 	highend_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-	highend_label->set_tooltip_text(TTR("High-end node"));
+	highend_label->set_tooltip_text(TTR("Only supported in the Forward+ and Mobile rendering methods, not Compatibility."));
 
 	node_desc = memnew(RichTextLabel);
 	members_vb->add_child(node_desc);

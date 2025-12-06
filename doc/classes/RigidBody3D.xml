@@ -174,11 +174,11 @@
 		<member name="freeze" type="bool" setter="set_freeze_enabled" getter="is_freeze_enabled" default="false">
 			If [code]true[/code], the body is frozen. Gravity and forces are not applied anymore.
 			See [member freeze_mode] to set the body's behavior when frozen.
-			For a body that is always frozen, use [StaticBody3D] or [AnimatableBody3D] instead.
+			[b]Note:[/b] For a body that is always frozen, use [StaticBody3D] or [AnimatableBody3D] instead.
 		</member>
 		<member name="freeze_mode" type="int" setter="set_freeze_mode" getter="get_freeze_mode" enum="RigidBody3D.FreezeMode" default="0">
-			The body's freeze mode. Can be used to set the body's behavior when [member freeze] is enabled.
-			For a body that is always frozen, use [StaticBody3D] or [AnimatableBody3D] instead.
+			The body's freeze mode. Determines the body's behavior when [member freeze] is [code]true[/code].
+			[b]Note:[/b] For a body that is always frozen, use [StaticBody3D] or [AnimatableBody3D] instead.
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 			This is multiplied by [member ProjectSettings.physics/3d/default_gravity] to produce this body's gravity. For example, a value of [code]1.0[/code] will apply normal gravity, [code]2.0[/code] will apply double the gravity, and [code]0.5[/code] will apply half the gravity to this body.

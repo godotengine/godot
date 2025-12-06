@@ -751,7 +751,7 @@ SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 	class_name = p_obj->get_class();
 
 	if (ScriptInstance *si = p_obj->get_script_instance()) {
-		// Read script instance constants and variables
+		// Read script instance constants and variables.
 		if (!si->get_script().is_null()) {
 			Script *s = si->get_script().ptr();
 			_parse_script_properties(s, si);
@@ -815,9 +815,25 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 		base = base->get_base_script();
 	}
 
+	HashSet<String> exported_members;
+
+	if (p_instance) {
+		List<PropertyInfo> pinfo;
+		p_instance->get_property_list(&pinfo);
+		for (const PropertyInfo &E : pinfo) {
+			if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
+				exported_members.insert(E.name);
+			}
+		}
+	}
+
 	// Members
 	for (KeyValue<const Script *, HashSet<StringName>> sm : members) {
 		for (const StringName &E : sm.value) {
+			if (exported_members.has(E)) {
+				continue; // Exported variables already show up in the inspector.
+			}
+
 			Variant m;
 			if (p_instance->get(E, m)) {
 				String script_path = sm.key == p_script ? "" : sm.key->get_path().get_file() + "/";
@@ -2660,13 +2676,18 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 	shape.instantiate();
 	shape->set_points(points);
 
+	// Keep track of the currently listed nodes, so repeats can be ignored.
+	HashSet<Node *> node_list;
+
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::ShapeResult result;
+	PhysicsDirectSpaceState3D::ShapeResult results[32];
 	PhysicsDirectSpaceState3D::ShapeParameters shape_params;
 	shape_params.shape_rid = shape->get_rid();
 	shape_params.collide_with_areas = true;
-	if (ss->intersect_shape(shape_params, &result, 32)) {
+	const int num_hits = ss->intersect_shape(shape_params, results, 32);
+	for (int i = 0; i < num_hits; i++) {
+		const PhysicsDirectSpaceState3D::ShapeResult &result = results[i];
 		SelectResult res;
 		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
@@ -2679,12 +2700,18 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 			for (uint32_t &I : owners) {
 				SelectResult res_shape;
 				res_shape.item = Object::cast_to<Node>(collision->shape_owner_get_owner(I));
-				res_shape.order = res.order;
-				r_items.push_back(res_shape);
+				if (!node_list.has(res_shape.item)) {
+					node_list.insert(res_shape.item);
+					res_shape.order = res.order;
+					r_items.push_back(res_shape);
+				}
 			}
 		}
 
-		r_items.push_back(res);
+		if (!node_list.has(res.item)) {
+			node_list.insert(res.item);
+			r_items.push_back(res);
+		}
 	}
 #endif // PHYSICS_3D_DISABLED
 
@@ -2714,8 +2741,11 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 				if (mesh_collision->inside_convex_shape(transformed_frustum.ptr(), transformed_frustum.size(), convex_points.ptr(), convex_points.size(), mesh_scale)) {
 					SelectResult res;
 					res.item = Object::cast_to<Node>(obj);
-					res.order = -dist_pos.distance_to(gt.origin);
-					r_items.push_back(res);
+					if (!node_list.has(res.item)) {
+						node_list.insert(res.item);
+						res.order = -dist_pos.distance_to(gt.origin);
+						r_items.push_back(res);
+					}
 
 					continue;
 				}

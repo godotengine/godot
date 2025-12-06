@@ -506,6 +506,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/comment_color"] = p_config.dark_icon_and_font ? dim_color : Color(0.08, 0.08, 0.08, 0.5);
 			colors["text_editor/theme/highlighting/doc_comment_color"] = p_config.dark_icon_and_font ? Color(0.6, 0.7, 0.8, 0.8) : Color(0.15, 0.15, 0.4, 0.7);
 			colors["text_editor/theme/highlighting/string_color"] = p_config.dark_icon_and_font ? Color(1, 0.93, 0.63) : Color(0.6, 0.42, 0);
+			colors["text_editor/theme/highlighting/string_placeholder_color"] = p_config.dark_icon_and_font ? Color(1, 0.75, 0.4) : Color(0.93, 0.6, 0.33);
 
 			// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
 			colors["text_editor/theme/highlighting/background_color"] = p_config.dark_icon_and_font ? p_config.dark_color_2 : p_config.dark_color_3;
@@ -598,8 +599,6 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	p_theme->set_stylebox(CoreStringName(normal), "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("focus", "CodeEdit", memnew(StyleBoxEmpty));
-
-	p_theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0)); // Unset any color, we use a stylebox.
 
 	/* clang-format off */
 	p_theme->set_color("completion_background_color",     "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_background_color"));

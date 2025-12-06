@@ -94,7 +94,7 @@ String GLTFPhysicsBody::get_body_type() const {
 	return "rigid";
 }
 
-void GLTFPhysicsBody::set_body_type(String p_body_type) {
+void GLTFPhysicsBody::set_body_type(const String &p_body_type) {
 	if (p_body_type == "static") {
 		body_type = PhysicsBodyType::STATIC;
 	} else if (p_body_type == "animatable") {
@@ -132,7 +132,7 @@ Vector3 GLTFPhysicsBody::get_linear_velocity() const {
 	return linear_velocity;
 }
 
-void GLTFPhysicsBody::set_linear_velocity(Vector3 p_linear_velocity) {
+void GLTFPhysicsBody::set_linear_velocity(const Vector3 &p_linear_velocity) {
 	linear_velocity = p_linear_velocity;
 }
 
@@ -140,7 +140,7 @@ Vector3 GLTFPhysicsBody::get_angular_velocity() const {
 	return angular_velocity;
 }
 
-void GLTFPhysicsBody::set_angular_velocity(Vector3 p_angular_velocity) {
+void GLTFPhysicsBody::set_angular_velocity(const Vector3 &p_angular_velocity) {
 	angular_velocity = p_angular_velocity;
 }
 
@@ -173,7 +173,7 @@ Basis GLTFPhysicsBody::get_inertia_tensor() const {
 	return Basis::from_scale(inertia_diagonal);
 }
 
-void GLTFPhysicsBody::set_inertia_tensor(Basis p_inertia_tensor) {
+void GLTFPhysicsBody::set_inertia_tensor(const Basis &p_inertia_tensor) {
 	inertia_diagonal = p_inertia_tensor.get_main_diagonal();
 }
 #endif // DISABLE_DEPRECATED
@@ -250,7 +250,7 @@ CollisionObject3D *GLTFPhysicsBody::to_node() const {
 	return nullptr;
 }
 
-Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary p_dictionary) {
+Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary &p_dictionary) {
 	Ref<GLTFPhysicsBody> physics_body;
 	physics_body.instantiate();
 	Dictionary motion;

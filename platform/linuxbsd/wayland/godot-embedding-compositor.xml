@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="godot_embedding_compositor">
+
+  <copyright>
+    Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md).
+    Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+  </copyright>
+
+  <interface name="godot_embedding_compositor" version="1">
+    <description summary="Main control interface for embedding compositor"/>
+
+    <event name="client">
+      <description summary="A new client connected to the compositor"/>
+      <arg name="client" type="new_id" interface="godot_embedded_client"/>
+      <arg name="pid" type="int"/>
+    </event>
+  </interface>
+
+  <interface name="godot_embedded_client" version="1">
+    <description summary="A client connected to the embedded compositor.">
+      Clients have only a single embedded window at a time, subject to change.
+    </description>
+
+    <request name="destroy" type="destructor"/>
+
+    <request name="set_embedded_window_rect">
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
+    <request name="set_embedded_window_parent">
+      <description summary="(Re)map onto an xdg_toplevel"/>
+      <arg name="parent" type="object" interface="xdg_toplevel" allow-null="true"/>
+    </request>
+
+    <request name="focus_window"/>
+
+    <request name="embedded_window_request_close"/>
+
+    <event name="disconnected">
+      <description summary="The client got disconnected from the compositor">
+        This instance is no longer valid. The compositor shall ignore any
+        further request except destroy and stop emitting events for this object.
+        After this event, the client can safely destroy this object.
+      </description>
+    </event>
+
+    <event name="window_embedded"/>
+
+    <event name="window_focus_in"/>
+
+    <event name="window_focus_out"/>
+  </interface>
+</protocol>
