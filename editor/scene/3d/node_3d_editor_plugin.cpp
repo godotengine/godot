@@ -364,9 +364,9 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 		// Draw axis lines for the positive axes.
 		const Vector2 center = get_size() / 2.0;
 		const Vector2 diff = p_axis.screen_point - center;
-		const float line_length = MAX(diff.length() - AXIS_CIRCLE_RADIUS - 0.5 * EDSCALE, 0);
+		const real_t line_length = MAX(diff.length() - (AXIS_CIRCLE_RADIUS + 0.5f * EDSCALE), 0);
 
-		draw_line(center + diff.limit_length(0.5 * EDSCALE), center + diff.limit_length(line_length), c, 1.5 * EDSCALE, true);
+		draw_line(center + diff.limit_length(0.5f * EDSCALE), center + diff.limit_length(line_length), c, 1.5f * EDSCALE, true);
 
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c, true, -1.0, true);
 
@@ -396,8 +396,8 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 }
 
 void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
-	const Vector2 center = get_size() / 2.0;
-	const real_t radius = get_size().x / 2.0 - AXIS_CIRCLE_RADIUS - 2.0 * EDSCALE;
+	const Vector2 center = get_size() / 2.0f;
+	const real_t radius = get_size().x / 2.0f - (AXIS_CIRCLE_RADIUS + 2.0f * EDSCALE);
 	const Basis camera_basis = viewport->to_camera_transform(viewport->cursor).get_basis().inverse();
 
 	for (int i = 0; i < 3; ++i) {
