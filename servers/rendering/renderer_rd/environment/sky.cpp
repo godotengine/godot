@@ -143,10 +143,6 @@ void SkyRD::SkyShaderData::set_code(const String &p_code) {
 		depth_stencil_state.enable_depth_test = true;
 		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 
-		if (i == SKY_VERSION_BACKGROUND_MULTIVIEW_WRITE_DEPTH) {
-			depth_stencil_state.enable_depth_write = true;
-		}
-
 		if (scene_singleton->sky.sky_shader.shader.is_variant_enabled(i)) {
 			RID shader_variant = scene_singleton->sky.sky_shader.shader.version_get_shader(version, i);
 			pipelines[i].setup(shader_variant, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), depth_stencil_state, RD::PipelineColorBlendState::create_disabled(), 0);
@@ -765,7 +761,6 @@ void SkyRD::init() {
 		sky_modes.push_back("\n#define USE_CUBEMAP_PASS\n#define USE_QUARTER_RES_PASS\n"); // Quarter res Cubemap
 
 		sky_modes.push_back("\n#define USE_MULTIVIEW\n"); // Full size multiview
-		sky_modes.push_back("\n#define USE_MULTIVIEW\n#define WRITE_DEPTH\n"); // Full size multiview with depth write
 		sky_modes.push_back("\n#define USE_HALF_RES_PASS\n#define USE_MULTIVIEW\n"); // Half Res multiview
 		sky_modes.push_back("\n#define USE_QUARTER_RES_PASS\n#define USE_MULTIVIEW\n"); // Quarter res multiview
 
@@ -773,7 +768,6 @@ void SkyRD::init() {
 
 		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_BACKGROUND_MULTIVIEW, false);
-			sky_shader.shader.set_variant_enabled(SKY_VERSION_BACKGROUND_MULTIVIEW_WRITE_DEPTH, false);
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_HALF_RES_MULTIVIEW, false);
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_QUARTER_RES_MULTIVIEW, false);
 		}
@@ -1565,19 +1559,8 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 
 	sky_transform = sky_transform * sky_scene_state.cam_transform.basis;
 
-	SkyVersion version;
-	if (sky_scene_state.view_count > 1) {
-#if defined(VISIONOS_ENABLED)
-		bool is_xr_enabled = RendererCompositorRD::get_singleton()->is_xr_enabled();
-		version = is_xr_enabled ? SKY_VERSION_BACKGROUND_MULTIVIEW_WRITE_DEPTH : SKY_VERSION_BACKGROUND_MULTIVIEW;
-#else
-		version = SKY_VERSION_BACKGROUND_MULTIVIEW;
-#endif
-	} else {
-		version = SKY_VERSION_BACKGROUND;
-	}
-	PipelineCacheRD *pipeline = &shader_data->pipelines[version];
-
+	PipelineCacheRD *pipeline = &shader_data->pipelines[sky_scene_state.view_count > 1 ? SKY_VERSION_BACKGROUND_MULTIVIEW : SKY_VERSION_BACKGROUND];
+	
 	RID texture_uniform_set;
 	if (sky) {
 		texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_BACKGROUND, sky_shader.default_shader_rd, p_render_buffers);
