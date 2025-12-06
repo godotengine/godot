@@ -24,6 +24,12 @@
 				Returns the width and height of the area.
 			</description>
 		</method>
+		<method name="get_area_texture" qualifiers="const">
+			<return type="Texture2D" />
+			<description>
+				Returns the texture used for the area light.
+			</description>
+		</method>
 		<method name="get_correlated_color" qualifiers="const">
 			<return type="Color" />
 			<description>
@@ -49,6 +55,12 @@
 			<param index="0" name="area_size" type="Vector2" />
 			<description>
 				Sets the width and height of the area.
+			</description>
+		</method>
+		<method name="set_area_texture">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<description>
 			</description>
 		</method>
 		<method name="set_param">

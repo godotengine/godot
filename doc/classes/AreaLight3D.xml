@@ -27,6 +27,10 @@
 		<member name="area_size" type="Vector2" setter="set_area_size" getter="get_area_size" default="Vector2(1, 1)">
 			The extents (width and height) of the area in meters.
 		</member>
+		<member name="area_texture" type="Texture2D" setter="set_area_texture" getter="get_area_texture">
+			An optional texture to use as a light source. Changing the texture at runtime might impact performance, as it needs to be drawn to the area light atlas with filtered mipmaps.
+			If no texture is assigned, the area light emits uniform light across its surface.
+		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.5" />
 		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.03" />
 		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="1.0" />
