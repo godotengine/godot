@@ -1071,7 +1071,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS) {
-		RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_mip_texture();
+		RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture();
 
 		if (decal_atlas.is_valid()) {
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
@@ -1648,35 +1648,66 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Typed
 	return ret;
 }
 
-TypedArray<Image> RendererSceneRenderRD::bake_render_area_light_atlas(const TypedArray<Texture2D> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) {
-	/* TODO */
-	ERR_FAIL_COND_V_MSG(p_mipmaps <= 0, TypedArray<Image>(), "Mipmaps must be greater than 0");
-	ERR_FAIL_COND_V_MSG(p_size.width < pow(2, p_mipmaps), TypedArray<Image>(), "Image width must be greater than mipmaps to power of 2");
-	ERR_FAIL_COND_V_MSG(p_size.height < pow(2, p_mipmaps), TypedArray<Image>(), "Image height must be greater than  than mipmaps to power of 2");
+PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedArray<RID> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) {
+	PackedByteArray data;
+	ERR_FAIL_COND_V_MSG(p_mipmaps <= 0, data, "Mipmaps must be greater than 0");
+	ERR_FAIL_COND_V_MSG(p_size.width < pow(2, p_mipmaps), data, "Image width must be greater than mipmaps to power of 2");
+	ERR_FAIL_COND_V_MSG(p_size.height < pow(2, p_mipmaps), data, "Image height must be greater than mipmaps to power of 2");
+	ERR_FAIL_COND_V_MSG(p_size.width != nearest_power_of_2_templated(p_size.width) || p_size.height != nearest_power_of_2_templated(p_size.height), data, "Image size must be a power of 2");
+	ERR_FAIL_COND_V_MSG(p_area_light_textures.size() != p_area_light_atlas_texture_rects.size(), data, "Number of Texture2Ds and number of Rect2s must match");
 
-	TypedArray<Image> ret;
+	RD::TextureFormat tf;
+	tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	tf.width = p_size.width;
+	tf.height = p_size.height;
+	tf.mipmaps = p_mipmaps;
+	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tf.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
+	RID area_light_atlas_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	RD::get_singleton()->texture_clear(area_light_atlas_texture, Color(0, 0, 0, 0), 0, p_mipmaps, 0, 1);
 
 	for (int i = 0; i < p_mipmaps; i++) {
+		RID mip_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), area_light_atlas_texture, 0, i);
+		Vector<RID> fb;
+		fb.push_back(mip_tex);
+		RID mip_fb = RD::get_singleton()->framebuffer_create(fb);
 		int w = p_size.width / pow(2, i);
 		int h = p_size.height / pow(2, i);
 
-		Vector<uint8_t> pv;
-		pv.resize(w * h * 4);
-		for (int i = 0; i < w * h; i++) {
-			// Opaque red.
-			pv.set(i * 4 + 0, 255);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 255);
+		for (int t_idx = 0; t_idx < p_area_light_textures.size(); t_idx++) {
+			RID texture = p_area_light_textures[t_idx];
+			Rect2 uv_rect = p_area_light_atlas_texture_rects[t_idx];
+			uv_rect.position = CLAMP(uv_rect.position, Vector2(0.0, 0.0), Vector2(1.0, 1.0));
+			uv_rect.size = CLAMP(uv_rect.size, Vector2(0.0, 0.0), Vector2(1.0 - uv_rect.position.x, 1.0 - uv_rect.position.y));
+			Vector2i mip_size = p_size / pow(2, i);
+			Vector2i mip_tex_size = uv_rect.size * mip_size;
+			Rect2i uv_recti = Rect2i(uv_rect.position * mip_size, uv_rect.size * mip_size);
+			RID rd_texture = RendererRD::TextureStorage::get_singleton()->texture_get_rd_texture(texture);
+			if (i == 0) {
+				copy_effects->copy_to_fb_rect(rd_texture, mip_fb, uv_recti);
+			} else {
+				RD::TextureFormat tf_blur;
+				tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+				tf_blur.width = mip_tex_size.width;
+				tf_blur.height = mip_tex_size.height;
+				tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
+				tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+				RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
+				Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
+				if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+					copy_effects->gaussian_blur(rd_texture, blur_tex, copy_rect, mip_tex_size); // Problem: Rendering device texture owner doesnt own the texture.
+				} else {
+					copy_effects->gaussian_blur_raster(rd_texture, blur_tex, copy_rect, mip_tex_size);
+				}
+				copy_effects->copy_to_fb_rect(blur_tex, mip_fb, uv_recti);
+				RD::get_singleton()->free_rid(blur_tex);
+			}
 		}
-
-		Ref<Image> img = Image::create_from_data(h, w, false, Image::FORMAT_RGBA8, pv);
-		ret.push_back(img);
 	}
 
-	// TODO: actually copy textures and blur them with copy effects.
-
-	return ret;
+	data = RD::get_singleton()->texture_get_data(area_light_atlas_texture, 0);
+	RD::get_singleton()->free_rid(area_light_atlas_texture);
+	return data;
 }
 
 void RendererSceneRenderRD::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
