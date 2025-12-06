@@ -105,5 +105,15 @@
 				The number of intersections can be limited with the [param max_results] parameter, to reduce the processing time.
 			</description>
 		</method>
+		<method name="intersect_shape_into">
+			<return type="bool" />
+			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
+			<param index="1" name="result" type="PhysicsIntersectShapeResult2D" />
+			<description>
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space.
+				If one or more shapes are found to intersect, this method returns [code]true[/code] and writes the intersection data into the [PhysicsIntersectShapeResult2D] object passed in [param result]. If no shapes are found to intersect, it returns [code]false[/code].
+				The number of intersections can be limited using [member PhysicsIntersectShapeResult2D.max_intersections], to reduce the processing time.
+			</description>
+		</method>
 	</methods>
 </class>
