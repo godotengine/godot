@@ -138,9 +138,9 @@ static String _interpstr(SL::DataInterpolation p_interp) {
 static String _prestr(SL::DataPrecision p_pres, bool p_force_highp = false) {
 	switch (p_pres) {
 		case SL::PRECISION_LOWP:
-			return "lowp ";
+			return RS::get_singleton()->is_low_end() ? "lowp " : "";
 		case SL::PRECISION_MEDIUMP:
-			return "mediump ";
+			return RS::get_singleton()->is_low_end() ? "mediump " : "";
 		case SL::PRECISION_HIGHP:
 			return "highp ";
 		case SL::PRECISION_DEFAULT:
