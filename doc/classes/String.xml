@@ -990,6 +990,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="split_lines" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Splits the string into lines separated by line breaks. Line breaks include the newline ([code]\n[/code]) and the carriage return ([code]\r[/code]) characters.
+				[b]Note:[/b] If the last line is empty, it is not added to the result.
+			</description>
+		</method>
 		<method name="strip_edges" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="left" type="bool" default="true" />
