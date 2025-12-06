@@ -1075,7 +1075,7 @@ vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
 	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, light_projector_sampler), sample_pos, low);
 	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, light_projector_sampler), sample_pos, high);
 
-	float blend = high - clamp(lod, high-1.0, high);
+	float blend = high - clamp(lod, high - 1.0, high);
 	vec4 sample_col = mix(sample_col_high, sample_col_low, blend);
 	return sample_col.rgb * sample_col.a; // premultiply alpha channel
 }
@@ -1138,6 +1138,7 @@ void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 point
 	L[1] = M_inv * points[1];
 	L[2] = M_inv * points[2];
 	L[3] = M_inv * points[3];
+	vec3[5] L_unclipped = L;
 
 	int n = 0;
 	clip_quad_to_horizon(L, n);
@@ -1147,7 +1148,7 @@ void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 point
 	}
 
 	if (texture_rect != vec4(0.0)) {
-		tex_color = fetch_ltc_filtered_texture_with_form_factor(texture_rect, L);
+		tex_color = fetch_ltc_filtered_texture_with_form_factor(texture_rect, L_unclipped);
 	}
 
 	vec3 L_proj[5];

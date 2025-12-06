@@ -640,6 +640,7 @@ float ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4], vec4 texture_r
 	L[1] = basis * points[1];
 	L[2] = basis * points[2];
 	L[3] = basis * points[3];
+	vec3 L_unclipped[5] = L;
 
 	int n = 0;
 	clip_quad_to_horizon(L, n);
@@ -664,7 +665,7 @@ float ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4], vec4 texture_r
 	}
 
 	if (texture_rect != vec4(0.0)) {
-		tex_color = fetch_ltc_filtered_texture_with_form_factor(texture_rect, L);
+		tex_color = fetch_ltc_filtered_texture_with_form_factor(texture_rect, L_unclipped);
 	}
 
 	float I;
