@@ -520,6 +520,26 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	}
 }
 
+void EditorDockManager::_queue_update_tab_style(EditorDock *p_dock) {
+	if (dirty_docks.is_empty()) {
+		callable_mp(this, &EditorDockManager::_update_dirty_dock_tabs).call_deferred();
+	}
+	dirty_docks.insert(p_dock);
+}
+
+void EditorDockManager::_update_dirty_dock_tabs() {
+	bool update_menu = false;
+	for (EditorDock *dock : dirty_docks) {
+		update_menu = update_menu || dock->global;
+		_update_tab_style(dock);
+	}
+	dirty_docks.clear();
+
+	if (update_menu) {
+		update_docks_menu();
+	}
+}
+
 void EditorDockManager::_update_tab_style(EditorDock *p_dock) {
 	if (!p_dock->enabled || !p_dock->is_open) {
 		return; // Disabled by feature profile or manually closed by user.
@@ -533,10 +553,6 @@ void EditorDockManager::_update_tab_style(EditorDock *p_dock) {
 
 	int index = tab_container->get_tab_idx_from_control(p_dock);
 	ERR_FAIL_COND(index == -1);
-
-	if (p_dock->global) {
-		update_docks_menu();
-	}
 
 	tab_container->get_tab_bar()->set_font_color_override_all(index, p_dock->title_color);
 
@@ -902,8 +918,8 @@ void EditorDockManager::add_dock(EditorDock *p_dock) {
 
 	p_dock->dock_slot_index = p_dock->default_slot;
 	all_docks.push_back(p_dock);
-	p_dock->connect("_tab_style_changed", callable_mp(this, &EditorDockManager::_update_tab_style).bind(p_dock));
-	p_dock->connect("renamed", callable_mp(this, &EditorDockManager::_update_tab_style).bind(p_dock));
+	p_dock->connect("_tab_style_changed", callable_mp(this, &EditorDockManager::_queue_update_tab_style).bind(p_dock));
+	p_dock->connect("renamed", callable_mp(this, &EditorDockManager::_queue_update_tab_style).bind(p_dock));
 
 	if (p_dock->default_slot != DockConstants::DOCK_SLOT_NONE) {
 		open_dock(p_dock, false);
@@ -921,8 +937,8 @@ void EditorDockManager::remove_dock(EditorDock *p_dock) {
 	_move_dock(p_dock, nullptr);
 
 	all_docks.erase(p_dock);
-	p_dock->disconnect("_tab_style_changed", callable_mp(this, &EditorDockManager::_update_tab_style));
-	p_dock->disconnect("renamed", callable_mp(this, &EditorDockManager::_update_tab_style));
+	p_dock->disconnect("_tab_style_changed", callable_mp(this, &EditorDockManager::_queue_update_tab_style));
+	p_dock->disconnect("renamed", callable_mp(this, &EditorDockManager::_queue_update_tab_style));
 	_update_layout();
 }
 
