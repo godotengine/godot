@@ -856,6 +856,10 @@ public:
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_datatype_size(DataType p_type);
 	static uint32_t get_datatype_component_count(DataType p_type);
+	static DataType get_datatype_indexed_type(DataType p_type);
+	static uint32_t get_datatype_indexed_size(DataType p_type);
+	static uint32_t get_datatype_swizzle_field_count(DataType p_type);
+	static bool get_datatype_operator_result(DataType p_type, Operator p_op, DataType p_other_type, DataType *r_ret_type, bool *r_unary);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
@@ -965,6 +969,38 @@ public:
 		String file;
 		int line = 0;
 	};
+
+	struct BuiltinFuncDef {
+		enum { MAX_ARGS = 5 };
+		const char *name;
+		DataType rettype;
+		const DataType args[MAX_ARGS];
+		const char *args_names[MAX_ARGS];
+		SubClassTag tag;
+		bool high_end;
+	};
+
+	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
+		enum { MAX_ARGS = 2 };
+		const char *name;
+		const int arguments[MAX_ARGS];
+	};
+
+	struct BuiltinFuncConstArgs {
+		const char *name;
+		int arg;
+		int min;
+		int max;
+	};
+
+	struct BuiltinEntry {
+		const char *name;
+	};
+
+	static const BuiltinFuncDef builtin_func_defs[];
+	static const BuiltinFuncOutArgs builtin_func_out_args[];
+	static const BuiltinFuncConstArgs builtin_func_const_args[];
+	static const BuiltinEntry frag_only_func_defs[];
 
 private:
 	struct KeyWord {
@@ -1142,33 +1178,6 @@ private:
 	Vector<Scalar> _eval_vector(const Vector<Scalar> &p_va, const Vector<Scalar> &p_vb, DataType p_left_type, DataType p_right_type, DataType p_ret_type, Operator p_op, bool &r_is_valid);
 	Vector<Scalar> _eval_vector_transform(const Vector<Scalar> &p_va, const Vector<Scalar> &p_vb, DataType p_left_type, DataType p_right_type, DataType p_ret_type);
 
-	struct BuiltinEntry {
-		const char *name;
-	};
-
-	struct BuiltinFuncDef {
-		enum { MAX_ARGS = 5 };
-		const char *name;
-		DataType rettype;
-		const DataType args[MAX_ARGS];
-		const char *args_names[MAX_ARGS];
-		SubClassTag tag;
-		bool high_end;
-	};
-
-	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
-		enum { MAX_ARGS = 2 };
-		const char *name;
-		const int arguments[MAX_ARGS];
-	};
-
-	struct BuiltinFuncConstArgs {
-		const char *name;
-		int arg;
-		int min;
-		int max;
-	};
-
 	CompletionType completion_type;
 	ShaderNode::Uniform::Hint current_uniform_hint = ShaderNode::Uniform::HINT_NONE;
 	TextureFilter current_uniform_filter = FILTER_DEFAULT;
@@ -1192,10 +1201,6 @@ private:
 	bool is_discard_supported = false;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
-	static const BuiltinFuncDef builtin_func_defs[];
-	static const BuiltinFuncOutArgs builtin_func_out_args[];
-	static const BuiltinFuncConstArgs builtin_func_const_args[];
-	static const BuiltinEntry frag_only_func_defs[];
 
 	static bool is_const_suffix_lut_initialized;
 
