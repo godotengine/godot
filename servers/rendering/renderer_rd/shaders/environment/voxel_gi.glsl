@@ -542,16 +542,17 @@ vec3 ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4], vec4 texture_re
 	L[1] = basis * points[1];
 	L[2] = basis * points[2];
 	L[3] = basis * points[3];
-
-	vec3 light_texture = vec3(1.0);
-	if (texture_rect != vec4(0.0)) {
-		light_texture = fetch_ltc_filtered_texture_with_form_factor(texture_rect, L);
-	}
+	vec3 L_unclipped[5] = L;
 
 	int n = 0;
 	clip_quad_to_horizon(L, n);
 	if (n == 0) {
 		return vec3(0.0);
+	}
+
+	vec3 light_texture = vec3(1.0);
+	if (texture_rect != vec4(0.0)) {
+		light_texture = fetch_ltc_filtered_texture_with_form_factor(texture_rect, L_unclipped);
 	}
 
 	vec3 L_proj[5];
