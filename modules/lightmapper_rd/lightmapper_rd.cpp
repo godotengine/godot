@@ -1315,19 +1315,19 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		// area lights
 		{
-			RD::TextureFormat tf;
-			tf.width = area_light_atlas.size.width;
-			tf.height = area_light_atlas.size.height;
-			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-			tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-			tf.mipmaps = area_light_atlas.mipmap_count;
+			RD::TextureFormat tformat;
+			tformat.width = area_light_atlas.size.width;
+			tformat.height = area_light_atlas.size.height;
+			tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+			tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			tformat.mipmaps = area_light_atlas.mipmap_count;
 
 			//rd->texture_clear(area_light_atlas_tex, Color(0, 0, 0, 0), 0, area_light_atlas.mipmap_count, 0, 1); // texture recreated each time -> clearning not necessary
 
 			// now fill mipmap with data from Vector<Ref<Image>> area_light_atlas.images
 			Vector<Vector<uint8_t>> tdata;
 			tdata.push_back(area_light_atlas.atlas_data);
-			area_light_atlas_tex = rd->texture_create(tf, RD::TextureView(), tdata);
+			area_light_atlas_tex = rd->texture_create(tformat, RD::TextureView(), tdata);
 		}
 	}
 
