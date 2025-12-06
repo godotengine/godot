@@ -1671,8 +1671,6 @@ PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedA
 		Vector<RID> fb;
 		fb.push_back(mip_tex);
 		RID mip_fb = RD::get_singleton()->framebuffer_create(fb);
-		int w = p_size.width / pow(2, i);
-		int h = p_size.height / pow(2, i);
 
 		for (int t_idx = 0; t_idx < p_area_light_textures.size(); t_idx++) {
 			RID texture = p_area_light_textures[t_idx];
