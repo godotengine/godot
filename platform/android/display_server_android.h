@@ -37,6 +37,8 @@ class RenderingContextDriver;
 class RenderingDevice;
 #endif
 
+struct AndroidHdrCapabilities;
+
 class DisplayServerAndroid : public DisplayServer {
 	GDSOFTCLASS(DisplayServerAndroid, DisplayServer);
 
@@ -73,6 +75,10 @@ class DisplayServerAndroid : public DisplayServer {
 	bool keep_screen_on;
 	bool swap_buffers_flag;
 
+	bool hdr_output_requested = false;
+	float hdr_output_reference_luminance = -1.0f;
+	float hdr_output_max_luminance = -1.0f;
+
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
 #if defined(RD_ENABLED)
@@ -97,6 +103,7 @@ class DisplayServerAndroid : public DisplayServer {
 	Callable file_picker_callback;
 
 	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
+	void _update_hdr_output(const AndroidHdrCapabilities &p_hdr_capabilities);
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 
@@ -222,6 +229,22 @@ public:
 
 	virtual void window_set_color(const Color &p_color) override;
 
+	virtual bool window_is_hdr_output_supported(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_request_hdr_output(const bool p_enable, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_requested(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual bool window_is_hdr_output_enabled(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual float window_get_output_max_linear_value(WindowID p_window = MAIN_WINDOW_ID) const override;
+
 	virtual void process_events() override;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
@@ -247,6 +270,7 @@ public:
 
 	void reset_window();
 	void notify_surface_changed(int p_width, int p_height);
+	void notify_hdr_changed();
 
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
