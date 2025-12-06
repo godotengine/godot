@@ -1590,17 +1590,17 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 	}
 
 	// Select bone.
-	real_t grab_threshold = 4 * EDSCALE;
-	Vector3 ray_from = p_camera->get_global_transform().origin;
-	Transform3D gt = skeleton->get_global_transform();
-	int closest_idx = -1;
+	const Transform3D gt = skeleton->get_global_transform();
+	const Vector3 ray_from = p_camera->get_global_transform().origin;
+	const real_t grab_threshold = 4.0f * EDSCALE;
 	real_t closest_dist = 1e10;
+	int closest_idx = -1;
 	const int bone_count = skeleton->get_bone_count();
 	for (int i = 0; i < bone_count; i++) {
-		Vector3 joint_pos_3d = gt.xform(skeleton->get_bone_global_pose(i).origin);
-		Vector2 joint_pos_2d = p_camera->unproject_position(joint_pos_3d);
-		real_t dist_3d = ray_from.distance_to(joint_pos_3d);
-		real_t dist_2d = p_point.distance_to(joint_pos_2d);
+		const Vector3 joint_pos_3d = gt.xform(skeleton->get_bone_global_pose(i).origin);
+		const Vector2 joint_pos_2d = p_camera->unproject_position(joint_pos_3d);
+		const real_t dist_3d = ray_from.distance_to(joint_pos_3d);
+		const real_t dist_2d = p_point.distance_to(joint_pos_2d);
 		if (dist_2d < grab_threshold && dist_3d < closest_dist) {
 			closest_dist = dist_3d;
 			closest_idx = i;
