@@ -297,7 +297,7 @@ protected:
 	void _notification(int p_what);
 
 	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
-	void _transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key);
+	void _transform_3d_key_request(Object *sp, const String &p_sub, const Transform3D &p_key);
 	void _update_keying();
 
 public:

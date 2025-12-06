@@ -95,19 +95,19 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 
 	if (use_collision) {
 		root_collision_shape.instantiate();
-		root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
-		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
-		PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
-		PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
-		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+		root_collision_body = PhysicsServer3D::get_singleton()->body_create();
+		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PhysicsServer3D::BODY_MODE_STATIC);
+		PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_body, root_collision_shape->get_rid());
+		PhysicsServer3D::get_singleton()->body_set_space(root_collision_body, get_world_3d()->get_space());
+		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_body, get_instance_id());
 		set_collision_layer(collision_layer);
 		set_collision_mask(collision_mask);
 		set_collision_priority(collision_priority);
 		_make_dirty(); //force update
 	} else {
-		PhysicsServer3D::get_singleton()->free_rid(root_collision_instance);
-		root_collision_instance = RID();
+		PhysicsServer3D::get_singleton()->free_rid(root_collision_body);
+		root_collision_body = RID();
 		root_collision_shape.unref();
 	}
 	notify_property_list_changed();
@@ -119,8 +119,8 @@ bool CSGShape3D::is_using_collision() const {
 
 void CSGShape3D::set_collision_layer(uint32_t p_layer) {
 	collision_layer = p_layer;
-	if (root_collision_instance.is_valid()) {
-		PhysicsServer3D::get_singleton()->body_set_collision_layer(root_collision_instance, p_layer);
+	if (root_collision_body.is_valid()) {
+		PhysicsServer3D::get_singleton()->body_set_collision_layer(root_collision_body, p_layer);
 	}
 }
 
@@ -130,8 +130,8 @@ uint32_t CSGShape3D::get_collision_layer() const {
 
 void CSGShape3D::set_collision_mask(uint32_t p_mask) {
 	collision_mask = p_mask;
-	if (root_collision_instance.is_valid()) {
-		PhysicsServer3D::get_singleton()->body_set_collision_mask(root_collision_instance, p_mask);
+	if (root_collision_body.is_valid()) {
+		PhysicsServer3D::get_singleton()->body_set_collision_mask(root_collision_body, p_mask);
 	}
 }
 
@@ -176,8 +176,8 @@ bool CSGShape3D::get_collision_mask_value(int p_layer_number) const {
 }
 
 RID CSGShape3D::_get_root_collision_instance() const {
-	if (root_collision_instance.is_valid()) {
-		return root_collision_instance;
+	if (root_collision_body.is_valid()) {
+		return root_collision_body;
 	} else if (parent_shape) {
 		return parent_shape->_get_root_collision_instance();
 	}
@@ -187,8 +187,8 @@ RID CSGShape3D::_get_root_collision_instance() const {
 
 void CSGShape3D::set_collision_priority(real_t p_priority) {
 	collision_priority = p_priority;
-	if (root_collision_instance.is_valid()) {
-		PhysicsServer3D::get_singleton()->body_set_collision_priority(root_collision_instance, p_priority);
+	if (root_collision_body.is_valid()) {
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(root_collision_body, p_priority);
 	}
 }
 
@@ -897,12 +897,12 @@ void CSGShape3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (use_collision && is_root_shape()) {
 				root_collision_shape.instantiate();
-				root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
-				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
-				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-				PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
-				PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
-				PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+				root_collision_body = PhysicsServer3D::get_singleton()->body_create();
+				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PhysicsServer3D::BODY_MODE_STATIC);
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+				PhysicsServer3D::get_singleton()->body_add_shape(root_collision_body, root_collision_shape->get_rid());
+				PhysicsServer3D::get_singleton()->body_set_space(root_collision_body, get_world_3d()->get_space());
+				PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_body, get_instance_id());
 				set_collision_layer(collision_layer);
 				set_collision_mask(collision_mask);
 				set_collision_priority(collision_priority);
@@ -912,17 +912,17 @@ void CSGShape3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-				PhysicsServer3D::get_singleton()->free_rid(root_collision_instance);
-				root_collision_instance = RID();
+			if (use_collision && is_root_shape() && root_collision_body.is_valid()) {
+				PhysicsServer3D::get_singleton()->free_rid(root_collision_body);
+				root_collision_body = RID();
 				root_collision_shape.unref();
 				_clear_debug_collision_shape();
 			}
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+			if (use_collision && is_root_shape() && root_collision_body.is_valid()) {
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 			_on_transform_changed();
 		} break;
