@@ -100,7 +100,7 @@ String CSharpLanguage::get_extension() const {
 void CSharpLanguage::init() {
 #ifdef TOOLS_ENABLED
 	if (OS::get_singleton()->get_cmdline_args().find("--generate-mono-glue")) {
-		print_verbose(".NET: Skipping runtime initialization because glue generation is enabled.");
+		PRINT_VERBOSE(".NET: Skipping runtime initialization because glue generation is enabled.");
 		return;
 	}
 #endif
@@ -640,7 +640,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		return;
 	}
 
-	print_verbose(".NET: Reloading assemblies...");
+	PRINT_VERBOSE(".NET: Reloading assemblies...");
 
 	// There is no soft reloading with Mono. It's always hard reloading.
 
@@ -2653,7 +2653,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 	if (valid) {
 #ifdef DEBUG_ENABLED
-		print_verbose("Found class for script " + get_path());
+		PRINT_VERBOSE("Found class for script " + get_path());
 #endif // DEBUG_ENABLED
 
 		update_script_class_info(this);

@@ -150,7 +150,7 @@ bool try_get_dotnet_root_from_command_line(String &r_dotnet_root) {
 	}
 
 	if (!latest_sdk_path.is_empty()) {
-		print_verbose("Found .NET SDK at " + latest_sdk_path);
+		PRINT_VERBOSE("Found .NET SDK at " + latest_sdk_path);
 		// The `dotnet_root` is the parent directory.
 		r_dotnet_root = latest_sdk_path.path_join("..").simplify_path();
 		return true;
@@ -262,7 +262,7 @@ bool load_hostfxr(void *&r_hostfxr_dll_handle) {
 		return false;
 	}
 
-	print_verbose("Found hostfxr: " + hostfxr_path);
+	PRINT_VERBOSE("Found hostfxr: " + hostfxr_path);
 
 	Error err = OS::get_singleton()->open_dynamic_library(hostfxr_path, r_hostfxr_dll_handle);
 
@@ -311,7 +311,7 @@ bool load_coreclr(void *&r_coreclr_dll_handle) {
 	}
 
 	const String coreclr_name = is_monovm ? "monosgen" : "coreclr";
-	print_verbose("Found " + coreclr_name + ": " + coreclr_path);
+	PRINT_VERBOSE("Found " + coreclr_name + ": " + coreclr_path);
 
 	Error err = OS::get_singleton()->open_dynamic_library(coreclr_path, r_coreclr_dll_handle);
 
@@ -446,7 +446,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 
 	r_runtime_initialized = true;
 
-	print_verbose(".NET: hostfxr initialized");
+	PRINT_VERBOSE(".NET: hostfxr initialized");
 
 	int rc = load_assembly_and_get_function_pointer(get_data(godot_plugins_path),
 			HOSTFXR_STR("GodotPlugins.Main, GodotPlugins"),
@@ -473,7 +473,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 
 	r_runtime_initialized = true;
 
-	print_verbose(".NET: hostfxr initialized");
+	PRINT_VERBOSE(".NET: hostfxr initialized");
 
 	int rc = load_assembly_and_get_function_pointer(get_data(assembly_path),
 			get_data(str_to_hostfxr("GodotPlugins.Game.Main, " + assembly_name)),
@@ -538,7 +538,7 @@ MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p
 	String path = GodotSharpDirs::get_api_assemblies_dir();
 	path = path.path_join(assembly_name);
 
-	print_verbose(".NET: Loading assembly '" + assembly_name + "' from '" + path + "'.");
+	PRINT_VERBOSE(".NET: Loading assembly '" + assembly_name + "' from '" + path + "'.");
 
 	if (!FileAccess::exists(path)) {
 		// We could not find the assembly, return null so another hook may find it.
@@ -592,7 +592,7 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 
 	r_runtime_initialized = true;
 
-	print_verbose(".NET: CoreCLR initialized");
+	PRINT_VERBOSE(".NET: CoreCLR initialized");
 
 	coreclr_create_delegate(coreclr_handle, domain_id,
 			assembly_name.utf8().get_data(),
@@ -634,7 +634,7 @@ static bool _on_core_api_assembly_loaded() {
 }
 
 void GDMono::initialize() {
-	print_verbose(".NET: Initializing module...");
+	PRINT_VERBOSE(".NET: Initializing module...");
 
 	_init_godot_api_hashes();
 
@@ -703,7 +703,7 @@ void GDMono::initialize() {
 
 	GDMonoCache::update_godot_api_cache(managed_callbacks);
 
-	print_verbose(".NET: GodotPlugins initialized");
+	PRINT_VERBOSE(".NET: GodotPlugins initialized");
 
 	_on_core_api_assembly_loaded();
 

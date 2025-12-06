@@ -445,7 +445,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 
 	if (f.is_null()) {
 		const String &sha1 = _version_get_sha1(p_version);
-		print_verbose(vformat("Shader cache miss for %s", name.path_join(group_sha256[p_group]).path_join(sha1)));
+		PRINT_VERBOSE(vformat("Shader cache miss for %s", name.path_join(group_sha256[p_group]).path_join(sha1)));
 		return false;
 	}
 
@@ -470,7 +470,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		}
 		if (variant_size == 0) {
 			// A new variant has been requested, failing the entire load will generate it
-			print_verbose(vformat("Shader cache miss for %s due to missing variant %d", name.path_join(group_sha256[p_group]).path_join(_version_get_sha1(p_version)), variant_id));
+			PRINT_VERBOSE(vformat("Shader cache miss for %s due to missing variant %d", name.path_join(group_sha256[p_group]).path_join(_version_get_sha1(p_version)), variant_id));
 			return false;
 		}
 		Vector<uint8_t> variant_bytes;
@@ -489,7 +489,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 			p_version->variants.write[variant_id] = RID();
 			continue;
 		}
-		print_verbose(vformat("Loading cache for shader %s, variant %d", name, i));
+		PRINT_VERBOSE(vformat("Loading cache for shader %s, variant %d", name, i));
 		{
 			RID shader = RD::get_singleton()->shader_create_from_bytecode_with_samplers(p_version->variant_data[variant_id], p_version->variants[variant_id], immutable_samplers);
 			if (shader.is_null()) {
@@ -885,7 +885,7 @@ void ShaderRD::_initialize_cache() {
 			}
 		}
 
-		print_verbose("Shader '" + name + "' (group " + itos(E.key) + ") SHA256: " + group_sha256[E.key]);
+		PRINT_VERBOSE("Shader '" + name + "' (group " + itos(E.key) + ") SHA256: " + group_sha256[E.key]);
 	}
 }
 

@@ -191,7 +191,7 @@ void OpenXRSpatialEntityExtension::on_session_destroyed() {
 	// Cleanup remaining snapshot RIDs.
 	LocalVector<RID> spatial_snapshot_rids = spatial_snapshot_owner.get_owned_list();
 	if (!spatial_snapshot_rids.is_empty()) {
-		print_verbose("OpenXR: Found " + String::num_int64(spatial_snapshot_rids.size()) + " orphaned spatial snapshots"); // Don't have useful data to report here so just report count.
+		PRINT_VERBOSE("OpenXR: Found " + String::num_int64(spatial_snapshot_rids.size()) + " orphaned spatial snapshots"); // Don't have useful data to report here so just report count.
 		for (const RID &rid : spatial_snapshot_rids) {
 			free_spatial_snapshot(rid);
 		}
@@ -200,7 +200,7 @@ void OpenXRSpatialEntityExtension::on_session_destroyed() {
 	// Clean up all remaining spatial context RIDs.
 	LocalVector<RID> spatial_context_rids = spatial_context_owner.get_owned_list();
 	if (!spatial_context_rids.is_empty()) {
-		print_verbose("OpenXR: Found " + String::num_int64(spatial_context_rids.size()) + " orphaned spatial contexts"); // Don't have useful data to report here so just report count.
+		PRINT_VERBOSE("OpenXR: Found " + String::num_int64(spatial_context_rids.size()) + " orphaned spatial contexts"); // Don't have useful data to report here so just report count.
 		for (const RID &rid : spatial_context_rids) {
 			free_spatial_context(rid);
 		}
@@ -248,7 +248,7 @@ bool OpenXRSpatialEntityExtension::_load_capabilities() {
 
 			// Loop through capabilities
 			for (const XrSpatialCapabilityEXT &capability : capabilities) {
-				print_verbose("OpenXR: Found spatial entity capability " + get_spatial_capability_name(capability) + ".");
+				PRINT_VERBOSE("OpenXR: Found spatial entity capability " + get_spatial_capability_name(capability) + ".");
 
 				SpatialEntityCapabality &spatial_entity_capability = supported_capabilities[capability];
 
@@ -275,7 +275,7 @@ bool OpenXRSpatialEntityExtension::_load_capabilities() {
 						ERR_PRINT("OpenXR: Failed to get spatial entity component types [" + openxr_api->get_error_string(result) + "]");
 					} else if (is_print_verbose_enabled()) {
 						for (const XrSpatialComponentTypeEXT &component_type : spatial_entity_capability.component_types) {
-							print_verbose("- component type " + get_spatial_component_type_name(component_type));
+							PRINT_VERBOSE("- component type " + get_spatial_component_type_name(component_type));
 						}
 					}
 				}
@@ -293,7 +293,7 @@ bool OpenXRSpatialEntityExtension::_load_capabilities() {
 						ERR_PRINT("OpenXR: Failed to get spatial entity features [" + openxr_api->get_error_string(result) + "]");
 					} else if (is_print_verbose_enabled()) {
 						for (const XrSpatialCapabilityFeatureEXT &feature : spatial_entity_capability.features) {
-							print_verbose("- feature " + get_spatial_feature_name(feature));
+							PRINT_VERBOSE("- feature " + get_spatial_feature_name(feature));
 						}
 					}
 				}

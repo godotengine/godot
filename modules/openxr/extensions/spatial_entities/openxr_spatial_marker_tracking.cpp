@@ -605,7 +605,7 @@ Ref<OpenXRFutureResult> OpenXRSpatialMarkerTrackingCapability::_create_spatial_c
 	}
 
 	if (capability_configurations.is_empty()) {
-		print_verbose("OpenXR: There are no supported marker types. Marker tracking is not enabled.");
+		PRINT_VERBOSE("OpenXR: There are no supported marker types. Marker tracking is not enabled.");
 		return nullptr;
 	}
 

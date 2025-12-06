@@ -49,19 +49,19 @@ void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 
 	switch (pa_context_get_state(c)) {
 		case PA_CONTEXT_TERMINATED:
-			print_verbose("PulseAudio: context terminated");
+			PRINT_VERBOSE("PulseAudio: context terminated");
 			ad->pa_ready = -1;
 			break;
 		case PA_CONTEXT_FAILED:
-			print_verbose("PulseAudio: context failed");
+			PRINT_VERBOSE("PulseAudio: context failed");
 			ad->pa_ready = -1;
 			break;
 		case PA_CONTEXT_READY:
-			print_verbose("PulseAudio: context ready");
+			PRINT_VERBOSE("PulseAudio: context ready");
 			ad->pa_ready = 1;
 			break;
 		default:
-			print_verbose("PulseAudio: context other");
+			PRINT_VERBOSE("PulseAudio: context other");
 			// TODO: Check if we want to handle some of the other
 			// PA context states like PA_CONTEXT_UNCONNECTED.
 			break;
@@ -141,7 +141,7 @@ Error AudioDriverPulseAudio::detect_channels(bool input) {
 	if (device == "Default") {
 		device = input ? default_input_device : default_output_device;
 	}
-	print_verbose("PulseAudio: Detecting channels for device: " + device);
+	PRINT_VERBOSE("PulseAudio: Detecting channels for device: " + device);
 
 	CharString device_utf8 = device.utf8();
 
@@ -225,8 +225,8 @@ Error AudioDriverPulseAudio::init_output_device() {
 	buffer_frames = closest_power_of_2(tmp_latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
-	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
-	print_verbose("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated output latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+	PRINT_VERBOSE("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
+	PRINT_VERBOSE("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated output latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	pa_sample_spec spec;
 	spec.format = PA_SAMPLE_S16LE;
@@ -295,9 +295,9 @@ Error AudioDriverPulseAudio::init() {
 	if (ver_parts.size() >= 2) {
 		ver_ok = (ver_parts[0].to_int() >= 8); // 8.0.0
 	}
-	print_verbose(vformat("PulseAudio %s detected.", version));
+	PRINT_VERBOSE(vformat("PulseAudio %s detected.", version));
 	if (!ver_ok) {
-		print_verbose("Unsupported PulseAudio library version!");
+		PRINT_VERBOSE("Unsupported PulseAudio library version!");
 		return ERR_CANT_OPEN;
 	}
 
@@ -718,7 +718,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 			break;
 	}
 
-	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
+	PRINT_VERBOSE("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
 
 	pa_sample_spec spec;
 
@@ -750,8 +750,8 @@ Error AudioDriverPulseAudio::init_input_device() {
 
 	input_buffer_init(input_buffer_frames);
 
-	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
-	print_verbose("PulseAudio: input buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
+	PRINT_VERBOSE("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
+	PRINT_VERBOSE("PulseAudio: input buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
 
 	return OK;
 }
