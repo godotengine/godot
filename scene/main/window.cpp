@@ -702,6 +702,15 @@ void Window::_clear_window() {
 
 	bool had_focus = has_focus();
 
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+		float win_scale = DisplayServer::get_singleton()->window_get_scale(window_id);
+
+		Size2i adjusted_size = Size2i(size.width / win_scale, size.height / win_scale);
+		Size2i adjusted_pos = Size2i(position.x / win_scale, position.y / win_scale);
+
+		_rect_changed_callback(Rect2i(adjusted_pos, adjusted_size));
+	}
+
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
