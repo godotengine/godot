@@ -541,8 +541,6 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
-
-
 	{ // default area light atlas texture
 		RD::TextureFormat tformat;
 		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -2935,10 +2933,6 @@ RID TextureStorage::area_light_atlas_get_texture() const {
 	return area_light_atlas.texture;
 }
 
-RID TextureStorage::area_light_atlas_get_mip_texture() const {
-	return area_light_atlas.texture_mipmaps[5].texture; // TODO: remove
-}
-
 void TextureStorage::area_light_atlas_mark_dirty_on_texture(RID p_texture) {
 	if (area_light_atlas.textures.has(p_texture)) {
 		//belongs to area light atlas..
@@ -3064,7 +3058,7 @@ void TextureStorage::update_area_light_atlas() {
 
 		for (int i = 0; i < item_count; i++) {
 			AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(items[i].texture);
-			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2); // TODO: the offset might not be necessary
 			t->uv_rect.size = items[i].pixel_size;
 
 			t->uv_rect.position /= Size2(area_light_atlas.size);
@@ -3108,7 +3102,6 @@ void TextureStorage::update_area_light_atlas() {
 		}
 	}
 
-	RID prev_texture;
 	for (int i = 0; i < area_light_atlas.texture_mipmaps.size(); i++) {
 		const AreaLightAtlas::MipMap &mm = area_light_atlas.texture_mipmaps[i];
 
@@ -3144,12 +3137,11 @@ void TextureStorage::update_area_light_atlas() {
 						tf_blur.height = mip_tex_size.height;
 						tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
 						tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-						tf_blur.mipmaps = 1;
 						RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
 						Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
 
 						if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-							copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_tex_size, false);
+							copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_tex_size);
 						} else {
 							copy_effects->gaussian_blur_raster(src_tex->rd_texture, blur_tex, copy_rect, mip_tex_size);
 						}
@@ -3158,10 +3150,7 @@ void TextureStorage::update_area_light_atlas() {
 						RD::get_singleton()->free_rid(blur_tex);
 					}
 				}
-
-				//copy_effects->copy_to_fb_rect(prev_texture, mm.fb, Rect2i(Point2i(), mm.size));
 			}
-			prev_texture = mm.texture;
 		} else {
 			RD::get_singleton()->texture_clear(mm.texture, clear_color, 0, 1, 0, 1);
 		}
@@ -3194,10 +3183,6 @@ void TextureStorage::texture_remove_from_area_light_atlas(RID p_texture) {
 
 RID TextureStorage::decal_atlas_get_texture() const {
 	return decal_atlas.texture;
-}
-
-RID TextureStorage::decal_atlas_get_mip_texture() const { // TODO: remove
-	return decal_atlas.texture_mipmaps[4].texture;
 }
 
 RID TextureStorage::decal_atlas_get_texture_srgb() const {

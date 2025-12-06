@@ -942,7 +942,7 @@ public:
 	FUNC2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	FUNC3R(TypedArray<Image>, bake_render_uv2, RID, const TypedArray<RID> &, const Size2i &)
-	FUNC4R(TypedArray<Image>, bake_render_area_light_atlas, const TypedArray<Texture2D> &, const TypedArray<Rect2> &, const Size2i &, int)
+	FUNC4R(PackedByteArray, bake_render_area_light_atlas, const TypedArray<RID> &, const TypedArray<Rect2> &, const Size2i &, int)
 
 	FUNC1(gi_set_use_half_resolution, bool)
 

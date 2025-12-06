@@ -641,7 +641,6 @@ public:
 	void update_area_light_atlas();
 
 	RID area_light_atlas_get_texture() const;
-	RID area_light_atlas_get_mip_texture() const; // TODO: remove
 
 	_FORCE_INLINE_ Rect2 area_light_atlas_get_texture_rect(RID p_texture) {
 		AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(p_texture);
@@ -665,7 +664,6 @@ public:
 	bool owns_decal(RID p_rid) const { return decal_owner.owns(p_rid); }
 
 	RID decal_atlas_get_texture() const;
-	RID decal_atlas_get_mip_texture() const; // TODO: remove
 	RID decal_atlas_get_texture_srgb() const;
 	_FORCE_INLINE_ Rect2 decal_atlas_get_texture_rect(RID p_texture) {
 		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);

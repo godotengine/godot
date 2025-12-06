@@ -176,10 +176,10 @@ void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Ve
 	light_metadata.push_back(md);
 }
 
-void LightmapperRD::add_area_light_atlas(const Vector2i &p_size, int p_mipmap_count, const TypedArray<Image> &images) {
+void LightmapperRD::add_area_light_atlas(const Vector2i &p_size, int p_mipmap_count, const PackedByteArray &atlas_data) {
 	area_light_atlas.mipmap_count = p_mipmap_count;
 	area_light_atlas.size = p_size;
-	area_light_atlas.images = images;
+	area_light_atlas.atlas_data = atlas_data;
 }
 
 void LightmapperRD::add_probe(const Vector3 &p_position) {
@@ -1325,13 +1325,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			//rd->texture_clear(area_light_atlas_tex, Color(0, 0, 0, 0), 0, area_light_atlas.mipmap_count, 0, 1); // texture recreated each time -> clearning not necessary
 
 			// now fill mipmap with data from Vector<Ref<Image>> area_light_atlas.images
-			Vector<uint8_t> texture_bytes;
-			for (int i = 0; i < area_light_atlas.mipmap_count; i++) {
-				Ref<Image> img = area_light_atlas.images[i];
-				texture_bytes.append_array(img->get_data());
-			}
 			Vector<Vector<uint8_t>> tdata;
-			tdata.push_back(texture_bytes);
+			tdata.push_back(area_light_atlas.atlas_data);
 			area_light_atlas_tex = rd->texture_create(tf, RD::TextureView(), tdata);
 		}
 	}
