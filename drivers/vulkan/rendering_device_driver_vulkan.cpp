@@ -3925,7 +3925,14 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		if (use_respv) {
 			const bool inline_data = store_respv || !RESPV_ONLY_INLINE_SHADERS_WITH_SPEC_CONSTANTS;
 			respv::Shader respv_shader(decoded_spirv.ptr(), decoded_spirv.size(), inline_data);
-			if (store_respv) {
+			if (respv_shader.empty()) {
+#if RESPV_VERBOSE
+				print_line("re-spirv failed to parse the shader, skipping optimization.");
+#endif
+				if (store_respv) {
+					shader_info.respv_stage_shaders.push_back(respv::Shader());
+				}
+			} else if (store_respv) {
 				shader_info.respv_stage_shaders.push_back(respv_shader);
 			} else {
 				std::vector<uint8_t> respv_optimized_data;
