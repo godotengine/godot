@@ -327,7 +327,6 @@ class ScriptEditor : public PanelContainer {
 	MenuButton *debug_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 	Timer *autosave_timer = nullptr;
-	uint64_t idle = 0;
 
 	PopupMenu *recent_scripts = nullptr;
 	PopupMenu *theme_submenu = nullptr;
@@ -356,7 +355,6 @@ class ScriptEditor : public PanelContainer {
 	AcceptDialog *error_dialog = nullptr;
 	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ScriptCreateDialog *script_create_dialog = nullptr;
-	Button *scripts_visible = nullptr;
 	FindReplaceBar *find_replace_bar = nullptr;
 
 	float zoom_factor = 1.0f;

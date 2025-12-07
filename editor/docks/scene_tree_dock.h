@@ -130,7 +130,6 @@ class SceneTreeDock : public EditorDock {
 	SceneTreeEditor *scene_tree = nullptr;
 	Control *remote_tree = nullptr;
 
-	HBoxContainer *tool_hbc = nullptr;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 	void _property_selected(int p_idx);
 
@@ -167,7 +166,6 @@ class SceneTreeDock : public EditorDock {
 
 	LineEdit *filter = nullptr;
 	PopupMenu *filter_quick_menu = nullptr;
-	TextureRect *filter_icon = nullptr;
 
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_subresources = nullptr;

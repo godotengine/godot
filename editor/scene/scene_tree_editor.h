@@ -111,7 +111,6 @@ class SceneTreeEditor : public Control {
 
 	Tree *tree = nullptr;
 	Node *selected = nullptr;
-	ObjectID instance_node;
 
 	String filter;
 	String filter_term_warning;
