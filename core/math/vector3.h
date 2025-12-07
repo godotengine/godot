@@ -547,9 +547,7 @@ real_t Vector3::length_squared() const {
 
 void Vector3::normalize() {
 	real_t lengthsq = length_squared();
-	if (lengthsq == 0) {
-		x = y = z = 0;
-	} else {
+	if (lengthsq != 0) {
 		real_t length = Math::sqrt(lengthsq);
 		x /= length;
 		y /= length;

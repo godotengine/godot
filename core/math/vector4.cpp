@@ -80,9 +80,7 @@ real_t Vector4::length() const {
 
 void Vector4::normalize() {
 	real_t lengthsq = length_squared();
-	if (lengthsq == 0) {
-		x = y = z = w = 0;
-	} else {
+	if (lengthsq != 0) {
 		real_t length = Math::sqrt(lengthsq);
 		x /= length;
 		y /= length;

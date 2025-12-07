@@ -125,11 +125,7 @@ namespace Godot
         {
             real_t lengthsq = LengthSquared();
 
-            if (lengthsq == 0)
-            {
-                X = Y = Z = W = 0f;
-            }
-            else
+            if (lengthsq != 0)
             {
                 real_t length = Mathf.Sqrt(lengthsq);
                 X /= length;
