@@ -67,7 +67,10 @@ struct VariantUtilityFunctions {
 	static double signf(double x);
 	static int64_t signi(int64_t x);
 	static double pow(double x, double y);
-	static double log(double x);
+	static double log(double x, double base);
+#ifndef DISABLE_DEPRECATED
+	static double _log_compat(double x);
+#endif
 	static double exp(double x);
 	static bool is_nan(double x);
 	static bool is_inf(double x);

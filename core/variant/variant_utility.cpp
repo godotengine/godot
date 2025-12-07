@@ -333,9 +333,15 @@ double VariantUtilityFunctions::pow(double x, double y) {
 	return Math::pow(x, y);
 }
 
-double VariantUtilityFunctions::log(double x) {
-	return Math::log(x);
+double VariantUtilityFunctions::log(double x, double base) {
+	return Math::log(x, base);
 }
+
+#ifndef DISABLE_DEPRECATED
+double VariantUtilityFunctions::_log_compat(double x) {
+	return log(x, Math::E);
+}
+#endif
 
 double VariantUtilityFunctions::exp(double x) {
 	return Math::exp(x);
@@ -1843,7 +1849,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(snappedi, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(pow, sarray("base", "exp"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(log, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDRD(log, sarray("x", "base"), varray(Math::E), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR_COMPAT(log, _log_compat, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(exp, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(is_nan, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);

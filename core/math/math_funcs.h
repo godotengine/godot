@@ -197,6 +197,13 @@ _ALWAYS_INLINE_ float log(float p_x) {
 	return std::log(p_x);
 }
 
+_ALWAYS_INLINE_ double log(double p_x, double p_base) {
+	return std::log(p_x) / std::log(p_base);
+}
+_ALWAYS_INLINE_ float log(float p_x, float p_base) {
+	return std::log(p_x) / std::log(p_base);
+}
+
 _ALWAYS_INLINE_ double log1p(double p_x) {
 	return std::log1p(p_x);
 }

@@ -1,0 +1,5 @@
+GH-113736
+---------
+Validate extension JSON: Error: Field 'utility_functions/log/arguments': size changed value in new API, from 1 to 2.
+
+Optional argument added. Compatibility method registered.
