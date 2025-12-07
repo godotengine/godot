@@ -81,6 +81,8 @@ class EditorFolding;
 class EditorLayoutsDialog;
 class EditorLog;
 class EditorMainScreen;
+class LogStreamDock;
+class EditorLogStreamWebSocketSink;
 class EditorNativeShaderSourceVisualizer;
 class EditorPluginList;
 class EditorResourcePreview;
@@ -262,6 +264,9 @@ private:
 	EditorQuickOpenDialog *quick_open_dialog = nullptr;
 	EditorExport *editor_export = nullptr;
 	EditorLog *log = nullptr;
+	LogStreamDock *log_stream_dock = nullptr;
+	EditorLogStreamWebSocketSink *websocket_sink = nullptr;
+	Timer *websocket_poll_timer = nullptr;
 	EditorNativeShaderSourceVisualizer *native_shader_source_visualizer = nullptr;
 	EditorPluginList *editor_plugins_force_input_forwarding = nullptr;
 	EditorPluginList *editor_plugins_force_over = nullptr;
@@ -705,6 +710,8 @@ private:
 
 	void _progress_dialog_visibility_changed();
 	void _load_error_dialog_visibility_changed();
+	void _setup_logstream_from_settings();
+	void _poll_websocket_sink();
 
 	void _execute_upgrades();
 
