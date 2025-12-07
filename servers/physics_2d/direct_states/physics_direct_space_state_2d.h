@@ -32,6 +32,7 @@
 
 #include "core/variant/type_info.h"
 #include "servers/physics_2d/physics_server_2d_types.h"
+#include "servers/physics_2d/queries/physics_cast_motion_result_2d.h"
 #include "servers/physics_2d/queries/physics_point_intersection_result_2d.h"
 #include "servers/physics_2d/queries/physics_point_query_parameters_2d.h"
 #include "servers/physics_2d/queries/physics_ray_intersection_result_2d.h"
@@ -52,6 +53,7 @@ class PhysicsDirectSpaceState2D : public Object {
 	bool _intersect_ray_typed(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult2D> rp_result);
 	bool _intersect_point_typed(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, RequiredParam<PhysicsPointIntersectionResult2D> rp_result);
 	bool _intersect_shape_typed(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, RequiredParam<PhysicsShapeIntersectionResult2D> rp_result);
+	bool _cast_motion_typed(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, RequiredParam<PhysicsCastMotionResult2D> rp_result);
 
 protected:
 	static void _bind_methods();
