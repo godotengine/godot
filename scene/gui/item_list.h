@@ -132,7 +132,6 @@ private:
 	int max_columns = 1;
 
 	Size2 fixed_icon_size;
-	Size2 max_item_size_cache;
 	Size2 fixed_tag_icon_size;
 
 	int defer_select_single = -1;

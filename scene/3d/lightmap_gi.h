@@ -229,12 +229,6 @@ private:
 	void _assign_lightmaps();
 	void _clear_lightmaps();
 
-	struct BakeTimeData {
-		String text;
-		int pass = 0;
-		uint64_t last_step = 0;
-	};
-
 	struct BSPSimplex {
 		int vertices[4] = {};
 		int planes[4] = {};

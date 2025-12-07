@@ -126,7 +126,6 @@ private:
 
 	StringName autoplay;
 
-	bool reset_on_save = true;
 	bool movie_quit_on_finish = false;
 
 	void _play(const StringName &p_name, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);

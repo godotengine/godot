@@ -178,7 +178,6 @@ private:
 	Vector<Vector3> emission_points;
 	Vector<Vector3> emission_normals;
 	Vector<Color> emission_colors;
-	int emission_point_count = 0;
 	Vector3 emission_ring_axis;
 	real_t emission_ring_height = 0.0;
 	real_t emission_ring_radius = 0.0;

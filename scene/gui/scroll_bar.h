@@ -74,11 +74,9 @@ class ScrollBar : public Range {
 	Vector2 drag_node_accum;
 	Vector2 drag_node_from;
 	Vector2 last_drag_node_accum;
-	float last_drag_node_time = 0.0;
 	float time_since_motion = 0.0;
 	bool drag_node_touching = false;
 	bool drag_node_touching_deaccel = false;
-	bool click_handled = false;
 
 	bool scrolling = false;
 	double target_scroll = 0.0;
