@@ -62,8 +62,6 @@ class AnimationBezierTrackEdit : public Control {
 	bool read_only = false;
 	int selected_track = -1;
 
-	Vector<Rect2> view_rects;
-
 	Ref<Texture2D> bezier_icon;
 	Ref<Texture2D> bezier_handle_icon;
 	Ref<Texture2D> selected_icon;
@@ -107,8 +105,6 @@ class AnimationBezierTrackEdit : public Control {
 	bool _is_track_displayed(int p_track_index);
 	bool _is_track_curves_displayed(int p_track_index);
 
-	Vector2 insert_at_pos;
-
 	typedef Pair<int, int> IntPair;
 
 	bool moving_selection_attempt = false;
@@ -141,7 +137,6 @@ class AnimationBezierTrackEdit : public Control {
 	int moving_handle_track = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
-	int moving_handle_mode = 0; // value from Animation::HandleMode
 
 	struct PairHasher {
 		static _FORCE_INLINE_ uint32_t hash(const Pair<int, int> &p_value) {
