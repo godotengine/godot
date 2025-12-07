@@ -123,6 +123,7 @@ class PhysicsPointQueryParameters2D;
 class PhysicsPointIntersectionResult2D;
 class PhysicsShapeQueryParameters2D;
 class PhysicsShapeIntersectionResult2D;
+class PhysicsShapeCastResult2D;
 
 class PhysicsDirectSpaceState2D : public Object {
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
@@ -130,7 +131,7 @@ class PhysicsDirectSpaceState2D : public Object {
 	bool _intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult2D> rp_result);
 	bool _intersect_point(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, RequiredParam<PhysicsPointIntersectionResult2D> rp_result);
 	bool _intersect_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, RequiredParam<PhysicsShapeIntersectionResult2D> rp_result);
-	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
+	bool _cast_motion(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, RequiredParam<PhysicsShapeCastResult2D> rp_result);
 	TypedArray<Vector2> _collide_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
 
@@ -141,6 +142,7 @@ protected:
 	Dictionary _intersect_ray_bind_compat_113970(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query);
 	TypedArray<Dictionary> _intersect_point_bind_compat_113970(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
+	Vector<real_t> _cast_motion_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -818,6 +820,22 @@ public:
 	ObjectID get_collider_id(int p_collider_index) const;
 	Object *get_collider(int p_collider_index) const;
 	int get_collider_shape(int p_collider_index) const;
+};
+
+class PhysicsShapeCastResult2D : public RefCounted {
+	GDCLASS(PhysicsShapeCastResult2D, RefCounted);
+
+	friend class PhysicsDirectSpaceState2D;
+
+	real_t safe_fraction = 1.0;
+	real_t unsafe_fraction = 1.0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	real_t get_collision_safe_fraction() const;
+	real_t get_collision_unsafe_fraction() const;
 };
 
 class PhysicsTestMotionParameters2D : public RefCounted {
