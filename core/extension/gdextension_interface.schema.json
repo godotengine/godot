@@ -37,7 +37,22 @@
                         }
                     },
                     "deprecated": {
-                        "type": "string"
+                        "type": "object",
+                        "properties": {
+                            "since": {
+                                "type": "string",
+                                "pattern": "4\\.[0-9]+"
+                            },
+                            "message": {
+                                "type": "string",
+                                "pattern": "\\.$"
+                            },
+                            "replace_with": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["since"],
+                        "additionalProperties": false
                     }
                 },
                 "required": [
@@ -256,7 +271,22 @@
                         "pattern": "4\\.[0-9]+"
                     },
                     "deprecated": {
-                        "type": "string"
+                        "type": "object",
+                        "properties": {
+                            "since": {
+                                "type": "string",
+                                "pattern": "4\\.[0-9]+"
+                            },
+                            "message": {
+                                "type": "string",
+                                "pattern": "\\.$"
+                            },
+                            "replace_with": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["since"],
+                        "additionalProperties": false
                     },
                     "see": {
                         "type": "array",

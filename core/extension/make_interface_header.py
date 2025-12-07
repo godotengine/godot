@@ -54,11 +54,17 @@ extern "C" {
 """)
 
         handles = []
+        type_replacements = []
         for type in data["types"]:
             kind = type["kind"]
 
             check_type(kind, type, valid_data_types)
-            valid_data_types[type["name"]] = True
+            valid_data_types[type["name"]] = type
+
+            if "deprecated" in type:
+                check_allowed_keys(type["deprecated"], ["since"], ["message", "replace_with"])
+                if "replace_with" in type["deprecated"]:
+                    type_replacements.append((type["name"], type["deprecated"]["replace_with"]))
 
             if "description" in type:
                 write_doc(file, type["description"])
@@ -86,6 +92,17 @@ extern "C" {
             else:
                 raise Exception(f"Unknown kind of type: {kind}")
 
+        for type_name, replace_with in type_replacements:
+            if replace_with not in valid_data_types:
+                raise Exception(f"Unknown type '{replace_with}' used as replacement for '{type_name}'")
+            replacement = valid_data_types[replace_with]
+            if isinstance(replacement, dict) and "deprecated" in replacement:
+                raise Exception(
+                    f"Cannot use '{replace_with}' as replacement for '{type_name}' because it's deprecated too"
+                )
+
+        interface_replacements = []
+        valid_interfaces = {}
         for interface in data["interface"]:
             check_type("function", interface, valid_data_types)
             check_allowed_keys(
@@ -93,7 +110,23 @@ extern "C" {
                 ["name", "return_value", "arguments", "since", "description"],
                 ["see", "legacy_type_name", "deprecated"],
             )
+            valid_interfaces[interface["name"]] = interface
+            if "deprecated" in interface:
+                check_allowed_keys(interface["deprecated"], ["since"], ["message", "replace_with"])
+                if "replace_with" in interface["deprecated"]:
+                    interface_replacements.append((interface["name"], interface["deprecated"]["replace_with"]))
             write_interface(file, interface)
+
+        for function_name, replace_with in interface_replacements:
+            if replace_with not in valid_interfaces:
+                raise Exception(
+                    f"Unknown interface function '{replace_with}' used as replacement for '{function_name}'"
+                )
+            replacement = valid_interfaces[replace_with]
+            if "deprecated" in replacement:
+                raise Exception(
+                    f"Cannot use '{replace_with}' as replacement for '{function_name}' because it's deprecated too"
+                )
 
         file.write("""\
 #ifdef __cplusplus
@@ -202,14 +235,24 @@ def write_doc(file, doc, indent=""):
     file.write(indent + " */\n")
 
 
-def make_deprecated_note(type):
+def make_deprecated_message(data):
+    parts = [
+        f"Deprecated in Godot {data['since']}.",
+        data["message"] if "message" in data else "",
+        f"Use `{data['replace_with']}` instead." if "replace_with" in data else "",
+    ]
+    return " ".join([x for x in parts if x.strip() != ""])
+
+
+def make_deprecated_comment_for_type(type):
     if "deprecated" not in type:
         return ""
-    return f" /* {type['deprecated']} */"
+    message = make_deprecated_message(type["deprecated"])
+    return f" /* {message} */"
 
 
 def write_simple_type(file, type):
-    file.write(f"typedef {format_type_and_name(type['type'], type['name'])};{make_deprecated_note(type)}\n")
+    file.write(f"typedef {format_type_and_name(type['type'], type['name'])};{make_deprecated_comment_for_type(type)}\n")
 
 
 def write_enum_type(file, enum):
@@ -219,7 +262,7 @@ def write_enum_type(file, enum):
         if "description" in value:
             write_doc(file, value["description"], "\t")
         file.write(f"\t{value['name']} = {value['value']},\n")
-    file.write(f"}} {enum['name']};{make_deprecated_note(enum)}\n\n")
+    file.write(f"}} {enum['name']};{make_deprecated_comment_for_type(enum)}\n\n")
 
 
 def make_args_text(args):
@@ -234,7 +277,7 @@ def write_function_type(file, fn):
     args_text = make_args_text(fn["arguments"]) if ("arguments" in fn) else ""
     name_and_args = f"(*{fn['name']})({args_text})"
     file.write(
-        f"typedef {format_type_and_name(fn['return_value']['type'], name_and_args)};{make_deprecated_note(fn)}\n"
+        f"typedef {format_type_and_name(fn['return_value']['type'], name_and_args)};{make_deprecated_comment_for_type(fn)}\n"
     )
 
 
@@ -245,7 +288,7 @@ def write_struct_type(file, struct):
         if "description" in member:
             write_doc(file, member["description"], "\t")
         file.write(f"\t{format_type_and_name(member['type'], member['name'])};\n")
-    file.write(f"}} {struct['name']};{make_deprecated_note(struct)}\n\n")
+    file.write(f"}} {struct['name']};{make_deprecated_comment_for_type(struct)}\n\n")
 
 
 def write_interface(file, interface):
@@ -255,10 +298,7 @@ def write_interface(file, interface):
     ]
 
     if "deprecated" in interface:
-        if interface["deprecated"].lower().startswith("deprecated "):
-            parts = interface["deprecated"].split(" ", 1)
-            interface["deprecated"] = parts[1]
-        doc.append(f"@deprecated {interface['deprecated']}")
+        doc.append(f"@deprecated {make_deprecated_message(interface['deprecated'])}")
 
     doc += [
         "",
