@@ -4627,6 +4627,30 @@ String VisualShaderNodeVectorRefract::get_input_port_name(int p_port) const {
 	return String();
 }
 
+VisualShaderNodeVectorRefract::PortType VisualShaderNodeVectorRefract::get_input_port_type(int p_port) const {
+	switch (op_type) {
+		case OP_TYPE_VECTOR_2D:
+			if (p_port == 2) {
+				break;
+			}
+			return PORT_TYPE_VECTOR_2D;
+		case OP_TYPE_VECTOR_3D:
+			if (p_port == 2) {
+				break;
+			}
+			return PORT_TYPE_VECTOR_3D;
+		case OP_TYPE_VECTOR_4D:
+			if (p_port == 2) {
+				break;
+			}
+			return PORT_TYPE_VECTOR_4D;
+		default:
+			break;
+	}
+
+	return PORT_TYPE_SCALAR;
+}
+
 int VisualShaderNodeVectorRefract::get_output_port_count() const {
 	return 1;
 }
