@@ -21,6 +21,16 @@
 				[b]Note:[/b] Any [Shape2D]s that the shape is already colliding with e.g. inside of, will be ignored. Use [method collide_shape] to determine the [Shape2D]s that the shape is already colliding with.
 			</description>
 		</method>
+		<method name="cast_motion_typed">
+			<return type="bool" />
+			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
+			<param index="1" name="result" type="PhysicsCastMotionResult2D" />
+			<description>
+				Checks how far a [Shape2D] can move along a given motion without colliding. The shape and motion parameters are supplied through [PhysicsShapeQueryParameters2D].
+				If the query is successful, this method returns [code]true[/code] and writes the motion results into the [PhysicsCastMotionResult2D] object passed in [code skip-lint]result[/code]. If no collision occurs, it returns [code]false[/code].
+				[b]Note:[/b] Any [Shape2D]s that the shape is already colliding with e.g. inside of, will be ignored. Use [method collide_shape] to determine the [Shape2D]s that the shape is already colliding with.
+			</description>
+		</method>
 		<method name="collide_shape">
 			<return type="Vector2[]" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
