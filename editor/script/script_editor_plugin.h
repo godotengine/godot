@@ -523,6 +523,8 @@ class ScriptEditor : public PanelContainer {
 
 	void _history_forward();
 	void _history_back();
+	void _history_store_current_state();
+	bool _history_is_valid();
 
 	bool waiting_update_names;
 	bool lock_history = false;

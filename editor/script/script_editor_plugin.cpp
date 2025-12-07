@@ -645,21 +645,29 @@ ScriptEditorBase *ScriptEditor::_get_current_editor() const {
 	return Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(selected));
 }
 
+void ScriptEditor::_history_store_current_state() {
+	Node *n = tab_container->get_current_tab_control();
+
+	if (Object::cast_to<ScriptEditorBase>(n)) {
+		history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
+	}
+	if (Object::cast_to<EditorHelp>(n)) {
+		history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
+	}
+}
+
+bool ScriptEditor::_history_is_valid() {
+	return history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control();
+}
+
 void ScriptEditor::_update_history_arrows() {
 	script_back->set_disabled(history_pos <= 0);
 	script_forward->set_disabled(history_pos >= history.size() - 1);
 }
 
 void ScriptEditor::_save_history() {
-	if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
-		Node *n = tab_container->get_current_tab_control();
-
-		if (Object::cast_to<ScriptEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
-		}
-		if (Object::cast_to<EditorHelp>(n)) {
-			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
-		}
+	if (_history_is_valid()) {
+		_history_store_current_state();
 	}
 
 	history.resize(history_pos + 1);
@@ -674,13 +682,7 @@ void ScriptEditor::_save_history() {
 }
 
 void ScriptEditor::_save_previous_state(Dictionary p_state) {
-	if (lock_history) {
-		// Done as a result of a deferred call triggered by set_edit_state().
-		lock_history = false;
-		return;
-	}
-
-	if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
+	if (_history_is_valid()) {
 		Node *n = tab_container->get_current_tab_control();
 
 		if (Object::cast_to<ScriptTextEditor>(n)) {
@@ -712,23 +714,16 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		return;
 	}
 
-	if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
-		Node *n = tab_container->get_current_tab_control();
-
-		if (Object::cast_to<ScriptEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
-		}
-		if (Object::cast_to<EditorHelp>(n)) {
-			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
-		}
+	if (_history_is_valid()) {
+		_history_store_current_state();
 	}
 
-	history.resize(history_pos + 1);
 	ScriptHistory sh;
 	sh.control = c;
 	sh.state = Variant();
 
 	if (!lock_history && (history.is_empty() || history[history.size() - 1].control != sh.control)) {
+		history.resize(history_pos + 1);
 		history.push_back(sh);
 		history_pos++;
 	}
@@ -900,21 +895,20 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	// roll back to previous tab
 	if (p_history_back) {
 		_history_back();
-	}
-
-	//remove from history
-	history.resize(history_pos + 1);
-
-	for (int i = 0; i < history.size(); i++) {
-		if (history[i].control == tselected) {
-			history.remove_at(i);
-			i--;
-			history_pos--;
+		// remove the tabs entry from the history
+		if (history.size() > history_pos + 1) {
+			history.remove_at(history_pos + 1);
 		}
 	}
 
-	if (history_pos >= history.size()) {
-		history_pos = history.size() - 1;
+	for (int i = history.size() - 1; i >= 0; i--) {
+		if (history[i].control == tselected) {
+			history.remove_at(i);
+			// if the entry is previous to the new history_pos adjust history_pos
+			if (i <= history_pos) {
+				history_pos--;
+			}
+		}
 	}
 
 	int idx = tab_container->get_current_tab();
@@ -3854,23 +3848,16 @@ void ScriptEditor::_update_selected_editor_menu() {
 }
 
 void ScriptEditor::_update_history_pos(int p_new_pos) {
-	Node *n = tab_container->get_current_tab_control();
-
-	if (Object::cast_to<ScriptEditorBase>(n)) {
-		history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
-	}
-	if (Object::cast_to<EditorHelp>(n)) {
-		history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
-	}
+	_history_store_current_state();
 
 	history_pos = p_new_pos;
-	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(history[history_pos].control));
+	Control *n = history[history_pos].control;
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(n));
 
 	n = history[history_pos].control;
 
 	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(n);
 	if (seb) {
-		lock_history = true;
 		seb->set_edit_state(history[history_pos].state);
 		seb->ensure_focus();
 
