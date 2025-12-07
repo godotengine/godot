@@ -1068,7 +1068,7 @@ void ProjectManager::_apply_project_tags() {
 
 void ProjectManager::_set_new_tag_name(const String p_name) {
 	create_tag_dialog->get_ok_button()->set_disabled(true);
-	if (p_name.is_empty()) {
+	if (p_name.strip_edges().is_empty()) {
 		tag_error->set_text(TTRC("Tag name can't be empty."));
 		return;
 	}
