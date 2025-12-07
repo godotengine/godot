@@ -544,6 +544,14 @@ JoltBody3D::~JoltBody3D() {
 	}
 }
 
+Transform3D JoltBody3D::get_transform_unscaled() const {
+	if (in_space() && is_kinematic()) {
+		return kinematic_transform;
+	}
+
+	return JoltShapedObject3D::get_transform_unscaled();
+}
+
 void JoltBody3D::set_transform(Transform3D p_transform) {
 	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, vformat("An invalid transform was passed to physics body '%s'.", to_string()));
 

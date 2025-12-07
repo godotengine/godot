@@ -75,7 +75,7 @@ public:
 	explicit JoltShapedObject3D(ObjectType p_object_type);
 	virtual ~JoltShapedObject3D() override;
 
-	Transform3D get_transform_unscaled() const;
+	virtual Transform3D get_transform_unscaled() const;
 	Transform3D get_transform_scaled() const;
 
 	Vector3 get_scale() const { return scale; }
