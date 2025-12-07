@@ -112,17 +112,13 @@ class EditorHelp : public VBoxContainer {
 	int description_line = 0;
 
 	RichTextLabel *class_desc = nullptr;
-	HSplitContainer *h_split = nullptr;
 	inline static DocTools *doc = nullptr;
 	inline static DocTools *ext_doc = nullptr;
 
-	ConfirmationDialog *search_dialog = nullptr;
 	LineEdit *search = nullptr;
 	FindBar *find_bar = nullptr;
 	HBoxContainer *status_bar = nullptr;
 	Button *toggle_files_button = nullptr;
-
-	String base_path;
 
 	struct ThemeCache {
 		Ref<StyleBox> background_style;

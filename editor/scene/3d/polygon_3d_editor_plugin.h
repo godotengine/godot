@@ -64,8 +64,6 @@ class Polygon3DEditor : public HBoxContainer {
 	MeshInstance3D *pointsm = nullptr;
 	Ref<ArrayMesh> m;
 
-	MenuButton *options = nullptr;
-
 	int edited_point = 0;
 	Vector2 edited_point_pos;
 	PackedVector2Array pre_move_edit;

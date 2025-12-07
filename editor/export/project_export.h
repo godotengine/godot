@@ -88,7 +88,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	Label *empty_label = nullptr;
 
-	Button *button_export = nullptr;
 	bool updating = false;
 
 	RichTextLabel *result_dialog_log = nullptr;

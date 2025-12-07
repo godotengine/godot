@@ -41,7 +41,6 @@ class EditorSpinSlider : public Range {
 	String suffix;
 	int updown_offset = -1;
 	bool hover_updown = false;
-	bool mouse_hover = false;
 
 	TextureRect *grabber = nullptr;
 	int grabber_range = 1;
