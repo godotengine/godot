@@ -36,17 +36,8 @@ class Expression : public RefCounted {
 	GDCLASS(Expression, RefCounted);
 
 private:
-	struct Input {
-		Variant::Type type = Variant::NIL;
-		String name;
-	};
-
-	Vector<Input> inputs;
-	Variant::Type output_type = Variant::NIL;
-
 	String expression;
 
-	bool sequenced = false;
 	int str_ofs = 0;
 	bool expression_dirty = false;
 
