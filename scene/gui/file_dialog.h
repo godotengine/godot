@@ -374,6 +374,8 @@ protected:
 	virtual bool _should_hide_file(const String &p_file) const { return false; }
 	virtual Color _get_folder_color(const String &p_path) const { return theme_cache.folder_icon_color; }
 
+	virtual void _popup_base(const Rect2i &p_screen_rect = Rect2i()) override;
+
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }

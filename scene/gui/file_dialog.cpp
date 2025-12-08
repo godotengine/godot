@@ -95,6 +95,21 @@ bool FileDialog::_can_use_native_popup() const {
 	return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE);
 }
 
+void FileDialog::_popup_base(const Rect2i &p_screen_rect) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		ConfirmationDialog::_popup_base(p_screen_rect);
+		return;
+	}
+#endif
+
+	if (_should_use_native_popup()) {
+		_native_popup();
+	} else {
+		ConfirmationDialog::_popup_base(p_screen_rect);
+	}
+}
+
 void FileDialog::set_visible(bool p_visible) {
 	if (p_visible) {
 		_update_option_controls();
