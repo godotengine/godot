@@ -672,7 +672,8 @@ void main() {
 						d = max(d, 1.0);
 
 						if (d * inv_center_range < 1.0) { // view_pos in range
-							float attenuation = get_omni_attenuation(d, area_lights.data[light_index].inv_radius, area_lights.data[light_index].attenuation - 2.0); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+							// solid angle already decreases by inverse square, but subtracting 1 leads to results closer to spotlight, I'm somewhat unsure why
+							float attenuation = get_omni_attenuation(d, area_lights.data[light_index].inv_radius, area_lights.data[light_index].attenuation - 1.0);
 							vec3 light_points[4];
 							light_points[0] = area_lights.data[light_index].position - view_pos;
 							light_points[1] = area_lights.data[light_index].position + area_width - view_pos;
