@@ -1498,7 +1498,7 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 	sky_transform = sky_transform * sky_scene_state.cam_transform.basis;
 
 	PipelineCacheRD *pipeline = &shader_data->pipelines[sky_scene_state.view_count > 1 ? SKY_VERSION_BACKGROUND_MULTIVIEW : SKY_VERSION_BACKGROUND];
-	
+
 	RID texture_uniform_set;
 	if (sky) {
 		texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_BACKGROUND, sky_shader.default_shader_rd, p_render_buffers);
