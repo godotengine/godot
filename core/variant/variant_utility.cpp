@@ -1229,7 +1229,7 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 	return Variant::NIL;
 }
 
-#define FUNCBINDR(m_func, m_args, m_category)                                                                                                      \
+#define DEF_FUNCBINDR(m_func, m_args, m_category)                                                                                                  \
 	class Func_##m_func {                                                                                                                          \
 	public:                                                                                                                                        \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
@@ -1259,10 +1259,23 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static Variant::UtilityFunctionType get_type() {                                                                                           \
 			return m_category;                                                                                                                     \
 		}                                                                                                                                          \
-	};                                                                                                                                             \
+	};
+
+#define FUNCBINDR(m_func, m_args, m_category) \
+	DEF_FUNCBINDR(m_func, m_args, m_category) \
 	register_utility_function<Func_##m_func>(#m_func, m_args, varray())
 
-#define FUNCBINDRD(m_func, m_args, m_defvals, m_category)                                                                                          \
+#ifndef DISABLE_DEPRECATED
+#define FUNCBINDR_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	DEF_FUNCBINDR(m_func_cname, m_args, m_category)                \
+	register_utility_function_compat<Func_##m_func_cname>(#m_func, m_args, varray())
+#else
+#define FUNCBINDR_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	do {                                                           \
+	} while (0)
+#endif
+
+#define DEF_FUNCBINDRD(m_func, m_args, m_defvals, m_category)                                                                                      \
 	class Func_##m_func {                                                                                                                          \
 	public:                                                                                                                                        \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
@@ -1292,10 +1305,23 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static Variant::UtilityFunctionType get_type() {                                                                                           \
 			return m_category;                                                                                                                     \
 		}                                                                                                                                          \
-	};                                                                                                                                             \
+	};
+
+#define FUNCBINDRD(m_func, m_args, m_defvals, m_category) \
+	DEF_FUNCBINDRD(m_func, m_args, m_defvals, m_category) \
 	register_utility_function<Func_##m_func>(#m_func, m_args, m_defvals)
 
-#define FUNCBINDVR(m_func, m_args, m_category)                                                                                                     \
+#ifndef DISABLE_DEPRECATED
+#define FUNCBINDRD_COMPAT(m_func, m_func_cname, m_args, m_defvals, m_category) \
+	DEF_FUNCBINDRD(m_func_cname, m_args, m_defvals, m_category)                \
+	register_utility_function_compat<Func_##m_func_cname>(#m_func, m_args, m_defvals)
+#else
+#define FUNCBINDRD_COMPAT(m_func, m_func_cname, m_args, m_defvals, m_category) \
+	do {                                                                       \
+	} while (0)
+#endif
+
+#define DEF_FUNCBINDVR(m_func, m_args, m_category)                                                                                                 \
 	class Func_##m_func {                                                                                                                          \
 	public:                                                                                                                                        \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
@@ -1328,10 +1354,23 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static Variant::UtilityFunctionType get_type() {                                                                                           \
 			return m_category;                                                                                                                     \
 		}                                                                                                                                          \
-	};                                                                                                                                             \
+	};
+
+#define FUNCBINDVR(m_func, m_args, m_category) \
+	DEF_FUNCBINDVR(m_func, m_args, m_category) \
 	register_utility_function<Func_##m_func>(#m_func, m_args, varray())
 
-#define FUNCBINDVR2(m_func, m_args, m_category)                                                                                                    \
+#ifndef DISABLE_DEPRECATED
+#define FUNCBINDVR_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	DEF_FUNCBINDVR(m_func_cname, m_args, m_category)                \
+	register_utility_function_compat<Func_##m_func_cname>(#m_func, m_args, varray())
+#else
+#define FUNCBINDVR_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	do {                                                            \
+	} while (0)
+#endif
+
+#define DEF_FUNCBINDVR2(m_func, m_args, m_category)                                                                                                \
 	class Func_##m_func {                                                                                                                          \
 	public:                                                                                                                                        \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
@@ -1366,10 +1405,23 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static Variant::UtilityFunctionType get_type() {                                                                                           \
 			return m_category;                                                                                                                     \
 		}                                                                                                                                          \
-	};                                                                                                                                             \
+	};
+
+#define FUNCBINDVR2(m_func, m_args, m_category) \
+	DEF_FUNCBINDVR2(m_func, m_args, m_category) \
 	register_utility_function<Func_##m_func>(#m_func, m_args, varray())
 
-#define FUNCBINDVR3(m_func, m_args, m_category)                                                                                                                           \
+#ifndef DISABLE_DEPRECATED
+#define FUNCBINDVR2_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	DEF_FUNCBINDVR2(m_func_cname, m_args, m_category)                \
+	register_utility_function_compat<Func_##m_func_cname>(#m_func, m_args, varray())
+#else
+#define FUNCBINDVR2_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	do {                                                             \
+	} while (0)
+#endif
+
+#define DEF_FUNCBINDVR3(m_func, m_args, m_category)                                                                                                                       \
 	class Func_##m_func {                                                                                                                                                 \
 	public:                                                                                                                                                               \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {                        \
@@ -1404,10 +1456,23 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static Variant::UtilityFunctionType get_type() {                                                                                                                  \
 			return m_category;                                                                                                                                            \
 		}                                                                                                                                                                 \
-	};                                                                                                                                                                    \
+	};
+
+#define FUNCBINDVR3(m_func, m_args, m_category) \
+	DEF_FUNCBINDVR3(m_func, m_args, m_category) \
 	register_utility_function<Func_##m_func>(#m_func, m_args, varray())
 
-#define FUNCBINDVARARG(m_func, m_args, m_category)                                                                                                 \
+#ifndef DISABLE_DEPRECATED
+#define FUNCBINDVR3_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	DEF_FUNCBINDVR3(m_func_cname, m_args, m_category)                \
+	register_utility_function_compat<Func_##m_func_cname>(#m_func, m_args, varray())
+#else
+#define FUNCBINDVR3_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	do {                                                             \
+	} while (0)
+#endif
+
+#define DEF_FUNCBINDVARARG(m_func, m_args, m_category)                                                                                             \
 	class Func_##m_func {                                                                                                                          \
 	public:                                                                                                                                        \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
@@ -1449,10 +1514,23 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static Variant::UtilityFunctionType get_type() {                                                                                           \
 			return m_category;                                                                                                                     \
 		}                                                                                                                                          \
-	};                                                                                                                                             \
+	};
+
+#define FUNCBINDVARARG(m_func, m_args, m_category) \
+	DEF_FUNCBINDVARARG(m_func, m_args, m_category) \
 	register_utility_function<Func_##m_func>(#m_func, m_args, varray())
 
-#define FUNCBINDVARARGS(m_func, m_args, m_category)                                                                                                \
+#ifndef DISABLE_DEPRECATED
+#define FUNCBINDVARARG_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	DEF_FUNCBINDVARARG(m_func_cname, m_args, m_category)                \
+	register_utility_function_compat<Func_##m_func_cname>(#m_func, m_args, varray())
+#else
+#define FUNCBINDVARARG_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	do {                                                                \
+	} while (0)
+#endif
+
+#define DEF_FUNCBINDVARARGS(m_func, m_args, m_category)                                                                                            \
 	class Func_##m_func {                                                                                                                          \
 	public:                                                                                                                                        \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
@@ -1494,10 +1572,23 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static Variant::UtilityFunctionType get_type() {                                                                                           \
 			return m_category;                                                                                                                     \
 		}                                                                                                                                          \
-	};                                                                                                                                             \
+	};
+
+#define FUNCBINDVARARGS(m_func, m_args, m_category) \
+	DEF_FUNCBINDVARARGS(m_func, m_args, m_category) \
 	register_utility_function<Func_##m_func>(#m_func, m_args, varray())
 
-#define FUNCBINDVARARGV_CNAME(m_func, m_func_cname, m_args, m_category)                                                                            \
+#ifndef DISABLE_DEPRECATED
+#define FUNCBINDVARARGS_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	DEF_FUNCBINDVARARGS(m_func_cname, m_args, m_category)                \
+	register_utility_function_compat<Func_##m_func_cname>(#m_func, m_args, varray())
+#else
+#define FUNCBINDVARARGS_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	do {                                                                 \
+	} while (0)
+#endif
+
+#define DEF_FUNCBINDVARARGV_CNAME(m_func, m_func_cname, m_args, m_category)                                                                        \
 	class Func_##m_func {                                                                                                                          \
 	public:                                                                                                                                        \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
@@ -1538,12 +1629,27 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static Variant::UtilityFunctionType get_type() {                                                                                           \
 			return m_category;                                                                                                                     \
 		}                                                                                                                                          \
-	};                                                                                                                                             \
+	};
+
+#define FUNCBINDVARARGV(m_func, m_args, m_category)               \
+	DEF_FUNCBINDVARARGV_CNAME(m_func, m_func, m_args, m_category) \
 	register_utility_function<Func_##m_func>(#m_func, m_args, varray())
 
-#define FUNCBINDVARARGV(m_func, m_args, m_category) FUNCBINDVARARGV_CNAME(m_func, m_func, m_args, m_category)
+#define FUNCBINDVARARGV_CNAME(m_func, m_func_cname, m_args, m_category) \
+	DEF_FUNCBINDVARARGV_CNAME(m_func, m_func_cname, m_args, m_category) \
+	register_utility_function<Func_##m_func>(#m_func, m_args, varray())
 
-#define FUNCBIND(m_func, m_args, m_category)                                                                                                       \
+#ifndef DISABLE_DEPRECATED
+#define FUNCBINDVARARGV_COMPAT(m_func, m_func_cname, m_args, m_category)  \
+	FUNCBINDVARARGV_CNAME(m_func_cname, m_func_cname, m_args, m_category) \
+	register_utility_function_compat<Func_##m_func_cname>(#m_func, m_args, varray())
+#else
+#define FUNCBINDVARARGV_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	do {                                                                 \
+	} while (0)
+#endif
+
+#define DEF_FUNCBIND(m_func, m_args, m_category)                                                                                                   \
 	class Func_##m_func {                                                                                                                          \
 	public:                                                                                                                                        \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
@@ -1573,8 +1679,21 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static Variant::UtilityFunctionType get_type() {                                                                                           \
 			return m_category;                                                                                                                     \
 		}                                                                                                                                          \
-	};                                                                                                                                             \
+	};
+
+#define FUNCBIND(m_func, m_args, m_category) \
+	DEF_FUNCBIND(m_func, m_args, m_category) \
 	register_utility_function<Func_##m_func>(#m_func, m_args, varray())
+
+#ifndef DISABLE_DEPRECATED
+#define FUNCBIND_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	DEF_FUNCBIND(m_func_cname, m_args, m_category)                \
+	register_utility_function_compat<Func_##m_func_cname>(#m_func, m_args, varray())
+#else
+#define FUNCBIND_COMPAT(m_func, m_func_cname, m_args, m_category) \
+	do {                                                          \
+	} while (0)
+#endif
 
 struct VariantUtilityFunctionInfo {
 	void (*call_utility)(Variant *r_ret, const Variant **p_args, int p_argcount, const Vector<Variant> &p_defvals, Callable::CallError &r_error) = nullptr;
@@ -1588,10 +1707,46 @@ struct VariantUtilityFunctionInfo {
 	Variant::Type (*get_arg_type)(int) = nullptr;
 	Variant::Type return_type;
 	Variant::UtilityFunctionType type;
+
+	uint32_t get_hash() const {
+		uint32_t hash = hash_murmur3_one_32(is_vararg);
+		hash = hash_murmur3_one_32(returns_value, hash);
+		if (returns_value) {
+			hash = hash_murmur3_one_32(return_type, hash);
+		}
+		hash = hash_murmur3_one_32(argcount, hash);
+		for (int i = 0; i < argcount; i++) {
+			hash = hash_murmur3_one_32(get_arg_type(i), hash);
+		}
+
+		return hash_fmix32(hash);
+	}
 };
 
 static AHashMap<StringName, VariantUtilityFunctionInfo> utility_function_table;
 static List<StringName> utility_function_name_table;
+
+#ifndef DISABLE_DEPRECATED
+static AHashMap<StringName, LocalVector<VariantUtilityFunctionInfo>> utility_function_compat_table;
+#endif
+
+template <typename T>
+static void _populate_utility_function_info(VariantUtilityFunctionInfo &r_bfi, const String &p_name, const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
+	r_bfi.call_utility = T::call;
+	r_bfi.validated_call_utility = T::validated_call;
+	r_bfi.ptr_call_utility = T::ptrcall;
+	r_bfi.is_vararg = T::is_vararg();
+	r_bfi.default_arguments = p_def_args;
+	r_bfi.argnames = p_argnames;
+	r_bfi.argcount = T::get_argument_count();
+	if (!r_bfi.is_vararg) {
+		ERR_FAIL_COND_MSG(p_argnames.size() != r_bfi.argcount, vformat("Wrong number of arguments binding utility function: '%s'.", p_name));
+	}
+	r_bfi.get_arg_type = T::get_argument_type;
+	r_bfi.return_type = T::get_return_type();
+	r_bfi.type = T::get_type();
+	r_bfi.returns_value = T::has_return_type();
+}
 
 template <typename T>
 static void register_utility_function(const String &p_name, const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
@@ -1603,24 +1758,39 @@ static void register_utility_function(const String &p_name, const Vector<String>
 	ERR_FAIL_COND(utility_function_table.has(sname));
 
 	VariantUtilityFunctionInfo bfi;
-	bfi.call_utility = T::call;
-	bfi.validated_call_utility = T::validated_call;
-	bfi.ptr_call_utility = T::ptrcall;
-	bfi.is_vararg = T::is_vararg();
-	bfi.default_arguments = p_def_args;
-	bfi.argnames = p_argnames;
-	bfi.argcount = T::get_argument_count();
-	if (!bfi.is_vararg) {
-		ERR_FAIL_COND_MSG(p_argnames.size() != bfi.argcount, vformat("Wrong number of arguments binding utility function: '%s'.", name));
-	}
-	bfi.get_arg_type = T::get_argument_type;
-	bfi.return_type = T::get_return_type();
-	bfi.type = T::get_type();
-	bfi.returns_value = T::has_return_type();
+	_populate_utility_function_info<T>(bfi, name, p_argnames, p_def_args);
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(!bfi.is_vararg && bfi.argcount != bfi.argnames.size());
+#endif // DEBUG_ENABLED
 
 	utility_function_table.insert(sname, bfi);
 	utility_function_name_table.push_back(sname);
 }
+
+#ifndef DISABLE_DEPRECATED
+template <typename T>
+static void register_utility_function_compat(const String &p_name, const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
+	String name = p_name;
+	if (name.begins_with("_")) {
+		name = name.substr(1);
+	}
+	StringName sname = name;
+	ERR_FAIL_COND(!utility_function_table.has(sname));
+
+	VariantUtilityFunctionInfo bfi;
+	_populate_utility_function_info<T>(bfi, name, p_argnames, p_def_args);
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(!bfi.is_vararg && bfi.argcount != bfi.argnames.size());
+#endif // DEBUG_ENABLED
+
+	if (!utility_function_compat_table.has(name)) {
+		utility_function_compat_table.insert(name, LocalVector<VariantUtilityFunctionInfo>());
+	}
+	utility_function_compat_table[name].push_back(bfi);
+}
+#endif
 
 void Variant::_register_variant_utility_functions() {
 	// Math
@@ -1828,6 +1998,28 @@ Variant::PTRUtilityFunction Variant::get_ptr_utility_function(const StringName &
 	return bfi->ptr_call_utility;
 }
 
+Variant::PTRUtilityFunction Variant::get_ptr_utility_function_with_compatibility(const StringName &p_name, uint32_t p_hash) {
+	{
+		const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
+		if (bfi && bfi->get_hash() == p_hash) {
+			return bfi->ptr_call_utility;
+		}
+	}
+
+#ifndef DISABLE_DEPRECATED
+	const LocalVector<VariantUtilityFunctionInfo> *compat_functions = utility_function_compat_table.getptr(p_name);
+	if (compat_functions) {
+		for (const VariantUtilityFunctionInfo &bfi : *compat_functions) {
+			if (bfi.get_hash() == p_hash) {
+				return bfi.ptr_call_utility;
+			}
+		}
+	}
+#endif
+
+	return nullptr;
+}
+
 Variant::UtilityFunctionType Variant::get_utility_function_type(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
@@ -1935,18 +2127,20 @@ bool Variant::is_utility_function_vararg(const StringName &p_name) {
 uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	ERR_FAIL_NULL_V(bfi, 0);
+	return bfi->get_hash();
+}
 
-	uint32_t hash = hash_murmur3_one_32(bfi->is_vararg);
-	hash = hash_murmur3_one_32(bfi->returns_value, hash);
-	if (bfi->returns_value) {
-		hash = hash_murmur3_one_32(bfi->return_type, hash);
+Vector<uint32_t> Variant::get_utility_function_compatibility_hashes(const StringName &p_name) {
+	Vector<uint32_t> function_hashes;
+#ifndef DISABLE_DEPRECATED
+	const LocalVector<VariantUtilityFunctionInfo> *compat_functions = utility_function_compat_table.getptr(p_name);
+	if (compat_functions) {
+		for (const VariantUtilityFunctionInfo &bfi : *compat_functions) {
+			function_hashes.push_back(bfi.get_hash());
+		}
 	}
-	hash = hash_murmur3_one_32(bfi->argcount, hash);
-	for (int i = 0; i < bfi->argcount; i++) {
-		hash = hash_murmur3_one_32(bfi->get_arg_type(i), hash);
-	}
-
-	return hash_fmix32(hash);
+#endif
+	return function_hashes;
 }
 
 void Variant::get_utility_function_list(List<StringName> *r_functions) {

@@ -589,6 +589,17 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			func["is_vararg"] = Variant::is_utility_function_vararg(name);
 			func["hash"] = Variant::get_utility_function_hash(name);
 
+			Vector<uint32_t> compat_hashes = Variant::get_utility_function_compatibility_hashes(name);
+			Array compatibility;
+			if (compat_hashes.size()) {
+				for (int j = 0; j < compat_hashes.size(); j++) {
+					compatibility.push_back(compat_hashes[j]);
+				}
+			}
+			if (compatibility.size() > 0) {
+				func["hash_compatibility"] = compatibility;
+			}
+
 			Array arguments;
 			const Vector<Variant> def_args = Variant::get_utility_function_default_arguments(name);
 			int argcount = Variant::get_utility_function_argument_count(name);
