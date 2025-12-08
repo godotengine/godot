@@ -63,10 +63,17 @@ void EditorBottomPanel::_on_tab_changed(int p_idx) {
 }
 
 void EditorBottomPanel::_theme_changed() {
-	// Add margin to make space for the right side buttons.
-	icon_spacer->set_custom_minimum_size(Vector2(get_theme_constant("class_icon_size", EditorStringName(Editor)), 0));
-	Ref<StyleBox> bottom_tabbar_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox("tabbar_background", "BottomPanel")->duplicate();
-	bottom_tabbar_style->set_content_margin(SIDE_RIGHT, bottom_hbox->get_minimum_size().x + bottom_tabbar_style->get_content_margin(SIDE_LEFT));
+	int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+	int margin = bottom_hbox->get_minimum_size().x;
+	if (get_popup()) {
+		margin -= icon_width;
+	}
+
+	// Add margin to make space for the right side popup button.
+	icon_spacer->set_custom_minimum_size(Vector2(icon_width, 0));
+
+	Ref<StyleBox> bottom_tabbar_style = get_theme_stylebox(SNAME("tabbar_background"), SNAME("BottomPanel"))->duplicate();
+	bottom_tabbar_style->set_content_margin(is_layout_rtl() ? SIDE_LEFT : SIDE_RIGHT, margin + bottom_tabbar_style->get_content_margin(is_layout_rtl() ? SIDE_RIGHT : SIDE_LEFT));
 	add_theme_style_override("tabbar_background", bottom_tabbar_style);
 
 	if (get_current_tab() == -1) {
@@ -247,7 +254,6 @@ EditorBottomPanel::EditorBottomPanel() {
 	bottom_hbox = memnew(HBoxContainer);
 	bottom_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	bottom_hbox->set_anchors_and_offsets_preset(Control::PRESET_RIGHT_WIDE);
-	bottom_hbox->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	get_tab_bar()->add_child(bottom_hbox);
 
 	icon_spacer = memnew(Control);
