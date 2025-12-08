@@ -93,41 +93,7 @@ void EditorResourcePicker::_update_resource() {
 			assign_button->set_button_icon(Ref<Texture2D>());
 			assign_button->set_text(TTR("<empty>"));
 			assign_button->set_tooltip_text("");
-			make_unique_button->set_disabled(true);
-			make_unique_button->set_visible(false);
 		} else {
-			Ref<Resource> parent_res = _has_parent_resource();
-			bool unique_enable = _is_uniqueness_enabled();
-			bool unique_recursive_enabled = _is_uniqueness_enabled(true);
-			bool is_internal = EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource);
-			int num_of_copies = EditorNode::get_singleton()->get_resource_count(edited_resource);
-			make_unique_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
-			make_unique_button->set_visible((num_of_copies > 1 || !is_internal) && !Object::cast_to<Script>(edited_resource.ptr()));
-			make_unique_button->set_disabled((!unique_enable && !unique_recursive_enabled) || !editable);
-
-			String tooltip;
-
-			if (num_of_copies > 1) {
-				tooltip = vformat(TTR("This Resource is used in (%d) places."), num_of_copies);
-			} else if (!is_internal) {
-				tooltip = TTR("This Resource is external to scene.");
-			}
-
-			if (!editable) {
-				tooltip += "\n" + TTR("The Resource cannot be edited in the inspector and can't be made unique directly.") + "\n";
-			} else {
-				tooltip += unique_enable ? TTR(" Left-click to make it unique.") + "\n" : "\n";
-
-				if (unique_recursive_enabled) {
-					tooltip += TTR("It is possible to make its subresources unique. Right-click to make them unique.") + "\n";
-				}
-
-				if (!unique_enable && EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
-					tooltip += TTR("In order to duplicate it, make its parent Resource unique.") + "\n";
-				}
-			}
-
-			make_unique_button->set_tooltip_text(tooltip);
 			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->()));
 
 			if (!edited_resource->get_name().is_empty()) {
@@ -148,6 +114,43 @@ void EditorResourcePicker::_update_resource() {
 		}
 	} else if (edited_resource.is_valid()) {
 		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+	}
+
+	if (edited_resource.is_null()) {
+		make_unique_button->set_visible(false);
+	} else {
+		Ref<Resource> parent_res = _has_parent_resource();
+		bool unique_enable = _is_uniqueness_enabled();
+		bool unique_recursive_enabled = _is_uniqueness_enabled(true);
+		bool is_internal = EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource);
+		int num_of_copies = EditorNode::get_singleton()->get_resource_count(edited_resource);
+		make_unique_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
+		make_unique_button->set_visible((num_of_copies > 1 || !is_internal) && !Object::cast_to<Script>(edited_resource.ptr()));
+		make_unique_button->set_disabled((!unique_enable && !unique_recursive_enabled) || !editable);
+
+		String tooltip;
+
+		if (num_of_copies > 1) {
+			tooltip = vformat(TTR("This Resource is used in (%d) places."), num_of_copies);
+		} else if (!is_internal) {
+			tooltip = TTR("This Resource is external to scene.");
+		}
+
+		if (!editable) {
+			tooltip += "\n" + TTR("The Resource cannot be edited in the inspector and can't be made unique directly.") + "\n";
+		} else {
+			tooltip += unique_enable ? " " + TTR("Left-click to make it unique.") + "\n" : "\n";
+
+			if (unique_recursive_enabled) {
+				tooltip += TTR("It is possible to make its subresources unique. Right-click to make them unique.") + "\n";
+			}
+
+			if (!unique_enable && EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
+				tooltip += TTR("In order to duplicate it, make its parent Resource unique.") + "\n";
+			}
+		}
+
+		make_unique_button->set_tooltip_text(tooltip);
 	}
 
 	assign_button->set_disabled(!editable && edited_resource.is_null());
