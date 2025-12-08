@@ -2225,7 +2225,7 @@ void FileDialog::set_use_native_dialog(bool p_native) {
 #endif
 
 	// Replace the built-in dialog with the native one if it's currently visible.
-	if (is_inside_tree() && _should_use_native_popup()) {
+	if (is_inside_tree() && is_visible() && _should_use_native_popup()) {
 		ConfirmationDialog::set_visible(false);
 		_native_popup();
 	}
