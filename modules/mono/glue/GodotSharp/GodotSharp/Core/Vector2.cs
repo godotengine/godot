@@ -527,7 +527,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the vector scaled to unit length. Equivalent to <c>v / v.Length()</c>.
+        /// Returns the vector scaled to unit length if possible. Equivalent to <c>v / v.Length()</c> if the vector is non-0, no-op if it is.
         /// </summary>
         /// <returns>A normalized version of the vector.</returns>
         public readonly Vector2 Normalized()
