@@ -6,7 +6,6 @@ import methods
 
 BASE_TYPES = [
     "void",
-    "int",
     "int8_t",
     "uint8_t",
     "int16_t",
@@ -70,18 +69,20 @@ extern "C" {
                 write_doc(file, type["description"])
 
             if kind == "handle":
-                check_allowed_keys(type, ["name", "kind"], ["const", "parent", "description", "deprecated"])
+                check_allowed_keys(
+                    type, ["name", "kind"], ["is_const", "is_uninitialized", "parent", "description", "deprecated"]
+                )
                 if "parent" in type and type["parent"] not in handles:
                     raise UnknownTypeError(type["parent"], type["name"])
                 # @todo In the future, let's write these as `struct *` so the compiler can help us with type checking.
-                type["type"] = "void*" if not type.get("const", False) else "const void*"
+                type["type"] = "void*" if not type.get("is_const", False) else "const void*"
                 write_simple_type(file, type)
                 handles.append(type["name"])
             elif kind == "alias":
                 check_allowed_keys(type, ["name", "kind", "type"], ["description", "deprecated"])
                 write_simple_type(file, type)
             elif kind == "enum":
-                check_allowed_keys(type, ["name", "kind", "values"], ["description", "deprecated"])
+                check_allowed_keys(type, ["name", "kind", "values"], ["is_bitfield", "description", "deprecated"])
                 write_enum_type(file, type)
             elif kind == "function":
                 check_allowed_keys(type, ["name", "kind", "return_value", "arguments"], ["description", "deprecated"])
