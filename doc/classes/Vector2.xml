@@ -326,8 +326,8 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
-				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
+				Returns the vector scaled to unit length, equivalent to [code]v / v.length()[/code], or [code](0, 0)[/code] if [code]v.length() == 0[/code] (i.e. vector has only [code]0[/code] or extremely small components). See also [method is_normalized].
+				[b]Note:[/b] This function may return a vector not strictly having unit length if the input vector length is near zero.
 			</description>
 		</method>
 		<method name="orthogonal" qualifiers="const">

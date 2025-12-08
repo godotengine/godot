@@ -542,9 +542,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the vector scaled to unit length. Equivalent to <c>v / v.Length()</c>.
+        /// Returns the vector scaled to unit length if possible.
         /// </summary>
-        /// <returns>A normalized version of the vector.</returns>
+        /// <returns>A normalized version of the vector, or 0 vector if all components are 0 or near-0.</returns>
         public readonly Vector3 Normalized()
         {
             Vector3 v = this;
