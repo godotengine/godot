@@ -52,6 +52,10 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	return value;
 }
 
+Size2 EditorSpinSlider::get_minimum_size() const {
+	return Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor)));
+}
+
 String EditorSpinSlider::get_text_value() const {
 	return TranslationServer::get_singleton()->format_number(editing_integer ? itos(get_value()) : String::num(get_value(), Math::range_step_decimals(get_step())), _get_locale());
 }
@@ -465,7 +469,6 @@ void EditorSpinSlider::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
 			_update_value_input_stylebox();
 		} break;
 
