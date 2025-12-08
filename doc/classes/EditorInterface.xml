@@ -472,6 +472,7 @@
 			<param index="1" name="with_preview" type="bool" default="true" />
 			<description>
 				Saves the currently active scene as a file at [param path].
+				[b]Note:[/b] The [param with_preview] parameter has no effect.
 			</description>
 		</method>
 		<method name="select_file">
