@@ -1428,7 +1428,7 @@
 				var json = JSON.new()
 				json.parse('["a", "b", "c"]')
 				var result = json.get_data()
-				if result is Array:
+				if typeof(result) == TYPE_ARRAY:
 					print(result[0]) # Prints "a"
 				else:
 					print("Unexpected result!")

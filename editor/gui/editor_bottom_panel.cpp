@@ -39,7 +39,6 @@
 #include "editor/gui/editor_version_button.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/settings/editor_command_palette.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/separator.h"
@@ -203,12 +202,6 @@ void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool 
 	EditorDock *dock = _get_dock_from_control(p_item);
 	ERR_FAIL_NULL(dock);
 	dock->set_visible(p_visible);
-}
-
-void EditorBottomPanel::move_item_to_end(Control *p_item) {
-	EditorDock *dock = _get_dock_from_control(p_item);
-	ERR_FAIL_NULL(dock);
-	move_child(dock, -1);
 }
 
 void EditorBottomPanel::hide_bottom_panel() {

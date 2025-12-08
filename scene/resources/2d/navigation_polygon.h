@@ -41,7 +41,6 @@ class NavigationPolygon : public Resource {
 	Vector<Vector2> vertices;
 	Vector<Vector<int>> polygons;
 	Vector<Vector<Vector2>> outlines;
-	Vector<Vector<Vector2>> baked_outlines;
 
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty = true;
