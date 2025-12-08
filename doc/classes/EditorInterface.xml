@@ -245,7 +245,7 @@
 		<method name="get_unsaved_scenes" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns an array with the file paths of open and currently unsaved scenes.
+				Returns an array of file paths of currently unsaved scenes.
 			</description>
 		</method>
 		<method name="inspect_object">
