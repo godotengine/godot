@@ -54,6 +54,9 @@
                         },
                         "then": {
                             "properties": {
+                                "is_bitfield": {
+                                    "type": "boolean"
+                                },
                                 "values": {
                                     "type": "array",
                                     "items": {
@@ -91,7 +94,10 @@
                                 "parent": {
                                     "type": "string"
                                 },
-                                "const": {
+                                "is_const": {
+                                    "type": "boolean"
+                                },
+                                "is_uninitialized": {
                                     "type": "boolean"
                                 }
                             }
