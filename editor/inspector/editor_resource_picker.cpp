@@ -864,45 +864,26 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		return true;
 	}
 
-	Dictionary drag_data = p_drag_data;
-
-	Ref<Resource> res;
-	if (drag_data.has("type") && String(drag_data["type"]) == "script_list_element") {
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
-		if (se) {
-			res = se->get_edited_resource();
-		}
-	} else if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
-		res = drag_data["resource"];
-	} else if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-		Vector<String> files = drag_data["files"];
-
-		if (files.size() == 1) {
-			if (ResourceLoader::exists(files[0])) {
-				// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
-				res = ResourceLoader::load(files[0]);
-			}
-		}
+	Ref<Resource> res = _get_dropped_resource(p_drag_data);
+	if (res.is_null()) {
+		return false;
 	}
 
 	_ensure_allowed_types();
 	HashSet<StringName> allowed_types = allowed_types_with_convert;
 
-	if (res.is_valid()) {
-		String res_type = _get_resource_type(res);
+	String res_type = _get_resource_type(res);
 
-		if (_is_type_valid(res_type, allowed_types)) {
-			return true;
-		}
-
-		if (res->get_script()) {
-			StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
-			if (_is_type_valid(custom_class, allowed_types)) {
-				return true;
-			}
-		}
+	if (_is_type_valid(res_type, allowed_types)) {
+		return true;
 	}
 
+	if (res->get_script()) {
+		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
+		if (_is_type_valid(custom_class, allowed_types)) {
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -936,6 +917,36 @@ bool EditorResourcePicker::_is_custom_type_script() const {
 	return false;
 }
 
+Ref<Resource> EditorResourcePicker::_get_dropped_resource(const Variant &p_data) const {
+	Dictionary drag_data = p_data;
+	const String type = drag_data.get("type", "");
+	if (type.is_empty()) {
+		return Ref<Resource>();
+	}
+
+	Ref<Resource> res;
+	if (type == "script_list_element") {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
+		if (se) {
+			return se->get_edited_resource();
+		}
+	} else if (type == "shader_list_element") {
+		return ResourceCache::get_ref(drag_data["file_path"]);
+	} else if (type == "resource") {
+		return drag_data["resource"];
+	} else if (type == "files") {
+		Vector<String> files = drag_data["files"];
+
+		if (files.size() == 1) {
+			if (ResourceLoader::exists(files[0])) {
+				// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
+				return ResourceLoader::load(files[0]);
+			}
+		}
+	}
+	return Ref<Resource>();
+}
+
 Variant EditorResourcePicker::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (edited_resource.is_valid()) {
 		Dictionary drag_data = EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
@@ -951,28 +962,7 @@ bool EditorResourcePicker::can_drop_data_fw(const Point2 &p_point, const Variant
 }
 
 void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	ERR_FAIL_COND(!_is_drop_valid(p_data));
-
-	Dictionary drag_data = p_data;
-
-	Ref<Resource> dropped_resource;
-	if (drag_data.has("type") && String(drag_data["type"]) == "script_list_element") {
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(drag_data["script_list_element"]);
-		if (se) {
-			dropped_resource = se->get_edited_resource();
-		}
-	} else if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
-		dropped_resource = drag_data["resource"];
-	}
-
-	if (dropped_resource.is_null() && drag_data.has("type") && String(drag_data["type"]) == "files") {
-		Vector<String> files = drag_data["files"];
-
-		if (files.size() == 1) {
-			dropped_resource = ResourceLoader::load(files[0]);
-		}
-	}
-
+	Ref<Resource> dropped_resource = _get_dropped_resource(p_data);
 	if (dropped_resource.is_valid()) {
 		_ensure_allowed_types();
 		HashSet<StringName> allowed_types = allowed_types_without_convert;
