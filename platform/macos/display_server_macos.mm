@@ -1060,7 +1060,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				Vector<String> files;
 				String url;
 				url.append_utf8([[[panel URL] path] UTF8String]);
-				files.push_back(url);
+				files.push_back([panel_delegate validateFilename:url]);
 				if (callback.is_valid()) {
 					if (p_options_in_cb) {
 						Variant v_result = true;
@@ -1179,7 +1179,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				for (NSUInteger i = 0; i != [urls count]; ++i) {
 					String url;
 					url.append_utf8([[[urls objectAtIndex:i] path] UTF8String]);
-					files.push_back(url);
+					files.push_back([panel_delegate validateFilename:url]);
 				}
 				if (callback.is_valid()) {
 					if (p_options_in_cb) {
