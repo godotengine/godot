@@ -116,6 +116,7 @@ public:
 
 		bool transparent_bg = false;
 		bool use_hdr_2d = false;
+		bool tonemap_before_blending = false;
 
 		uint32_t canvas_cull_mask = 0xffffffff;
 
@@ -260,6 +261,7 @@ public:
 	void viewport_set_canvas_transform(RID p_viewport, RID p_canvas, const Transform2D &p_offset);
 	void viewport_set_transparent_background(RID p_viewport, bool p_enabled);
 	void viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr_2d);
+	void viewport_set_tonemap_before_blending(RID p_viewport, bool p_enabled);
 
 	bool viewport_is_using_hdr_2d(RID p_viewport) const;
 

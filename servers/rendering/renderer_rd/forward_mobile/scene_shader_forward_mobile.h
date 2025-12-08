@@ -132,7 +132,17 @@ public:
 		};
 
 		union {
-			float packed_2;
+			uint32_t packed_2;
+
+			struct {
+				uint32_t tonemapper_apply_before_blending : 1;
+				uint32_t tonemapper_mode : 3;
+				uint32_t tonemapper_convert_to_srgb : 1;
+			};
+		};
+
+		union {
+			float packed_3;
 			float luminance_multiplier;
 		};
 	};

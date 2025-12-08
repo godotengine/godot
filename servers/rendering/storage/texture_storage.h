@@ -158,6 +158,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) = 0;
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) = 0;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const = 0;
+	virtual void render_target_set_tonemap_before_blending(RID p_render_target, bool p_tonemap_before_blending) = 0;
+	virtual bool render_target_get_tonemap_before_blending(RID p_render_target) const = 0;
 	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) = 0;
 	virtual bool render_target_is_using_debanding(RID p_render_target) const = 0;
 

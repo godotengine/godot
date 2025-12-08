@@ -735,6 +735,7 @@ public:
 	FUNC2(viewport_set_transparent_background, RID, bool)
 	FUNC2(viewport_set_use_hdr_2d, RID, bool)
 	FUNC1RC(bool, viewport_is_using_hdr_2d, RID)
+	FUNC2(viewport_set_tonemap_before_blending, RID, bool)
 	FUNC2(viewport_set_snap_2d_transforms_to_pixel, RID, bool)
 	FUNC2(viewport_set_snap_2d_vertices_to_pixel, RID, bool)
 

@@ -1385,6 +1385,17 @@ void RendererViewport::viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr_2d
 	_configure_3d_render_buffers(viewport);
 }
 
+void RendererViewport::viewport_set_tonemap_before_blending(RID p_viewport, bool p_enabled) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+	if (viewport->tonemap_before_blending == p_enabled) {
+		return;
+	}
+
+	RSG::texture_storage->render_target_set_tonemap_before_blending(viewport->render_target, p_enabled);
+	viewport->tonemap_before_blending = p_enabled;
+}
+
 bool RendererViewport::viewport_is_using_hdr_2d(RID p_viewport) const {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL_V(viewport, false);

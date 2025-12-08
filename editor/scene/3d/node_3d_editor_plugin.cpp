@@ -3161,6 +3161,9 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	viewport->set_use_hdr_2d(use_hdr_2d);
 
+	const bool tonemap_before_blending = GLOBAL_GET("rendering/viewport/tonemap_before_blending");
+	viewport->set_tonemap_before_blending(tonemap_before_blending);
+
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
 

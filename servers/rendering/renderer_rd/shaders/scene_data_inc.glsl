@@ -81,4 +81,8 @@ struct SceneData {
 	float IBL_exposure_normalization;
 	uint camera_visible_layers;
 	float pass_alpha_multiplier;
+
+	vec4 tonemapper_params;
+	vec3 tonemapper_bcs;
+	float tonemapper_exposure;
 };
