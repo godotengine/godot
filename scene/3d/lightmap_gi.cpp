@@ -1371,9 +1371,10 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				}
 				Vector3 area_vec_x = xf.basis.get_column(Vector3::AXIS_X).normalized() * l->get_area_size().x;
 				Vector3 area_vec_y = xf.basis.get_column(Vector3::AXIS_Y).normalized() * l->get_area_size().y;
-				// normalization to make larger lights output same amount of light as smaller lights with same energy
-				float surface_area = l->get_area_size().x * l->get_area_size().y;
-				energy /= surface_area;
+				if (l->get_area_normalize_energy()) {
+					float surface_area = l->get_area_size().x * l->get_area_size().y;
+					energy /= surface_area;
+				}
 				Rect2 texture_rect = Rect2(0.0, 0.0, 0.0, 0.0);
 				if (l->get_area_texture().is_valid()) {
 					texture_rect = area_light_atlas_texture_rects[l->get_area_texture()];
