@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsCollideShapeResult2D" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores the collision points of a shape collision query.
+	</brief_description>
+	<description>
+		This class contains the contact points computed by [method PhysicsDirectSpaceState2D.collide_shape_into].
+		Each collision is represented as a pair of points: one on the query shape and one on the colliding shape.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collision_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of point pairs detected by the query.
+			</description>
+		</method>
+		<method name="get_point_on_colliding_shape" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="collision_index" type="int" />
+			<description>
+				Returns the collision point on the colliding shape for the collision at the given index.
+			</description>
+		</method>
+		<method name="get_point_on_queried_shape" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="collision_index" type="int" />
+			<description>
+				Returns the collision point on the query shape for the collision at the given index.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="max_collisions" type="int" setter="set_max_collisions" getter="get_max_collisions" default="32">
+			The maximum number of collisions this object can store.
+		</member>
+	</members>
+</class>

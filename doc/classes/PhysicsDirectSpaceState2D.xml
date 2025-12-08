@@ -28,7 +28,7 @@
 			<description>
 				Checks how far a [Shape2D] can move without colliding. All the parameters for the query, including the shape and the motion, are supplied through a [PhysicsShapeQueryParameters2D] object.
 				If the query is successful, this method returns [code]true[/code] and writes the motion results into the [PhysicsCastMotionResult2D] object passed in [param result]. If no collision occurs, it returns [code]false[/code].
-				[b]Note:[/b] Any [Shape2D]s that the shape is already colliding with e.g. inside of, will be ignored. Use [method collide_shape_no_alloc] to determine the [Shape2D]s that the shape is already colliding with.
+				[b]Note:[/b] Any [Shape2D]s that the shape is already colliding with e.g. inside of, will be ignored. Use [method collide_shape_into] to determine the [Shape2D]s that the shape is already colliding with.
 			</description>
 		</method>
 		<method name="collide_shape">
@@ -38,6 +38,16 @@
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. The resulting array contains a list of points where the shape intersects another. Like with [method intersect_shape], the number of returned results can be limited to save processing time.
 				Returned points are a list of pairs of contact points. For each pair the first one is in the shape passed in [PhysicsShapeQueryParameters2D] object, second one is in the collided shape from the physics space.
+			</description>
+		</method>
+		<method name="collide_shape_into">
+			<return type="bool" />
+			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
+			<param index="1" name="result" type="PhysicsCollideShapeResult2D" />
+			<description>
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space.
+				If intersections are found, this method returns [code]true[/code] and writes the collision points into the [PhysicsCollideShapeResult2D] object passed in [param result]. If no intersections are found, it returns [code]false[/code].
+				The number of returned results can be limited using [member PhysicsCollideShapeResult2D.max_collisions], to reduce the processing time.
 			</description>
 		</method>
 		<method name="get_rest_info">
