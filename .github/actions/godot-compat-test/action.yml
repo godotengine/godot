@@ -1,0 +1,32 @@
+name: Godot hash compatibility test
+description: Check if methods with given hashes used by the older GDExtensions still can be loaded with given Godot version.
+
+inputs:
+  bin:
+    description: Path to the Godot binary.
+    required: true
+    type: string
+  reftags:
+    description: Reference tags of Godot versions to check (comma separated).
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Extract GDExtension interface
+      shell: sh
+      run: |
+        ${{ inputs.bin }} --headless --dump-gdextension-interface
+        mv gdextension_interface.h tests/compatibility_test/src/deps/
+
+    - name: Build minimal GDExtension
+      shell: sh
+      run: scons --directory=./tests/compatibility_test
+
+    - name: Download reference GDExtension API JSON and try to load it
+      shell: sh
+      env:
+        GODOT4_BIN: ${{ inputs.bin }}
+        REFTAGS: ${{ inputs.reftags }}
+      run: ./tests/compatibility_test/run_compatibility_test.py

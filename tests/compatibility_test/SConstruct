@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+import os
+
+from SCons import Script
+
+TARGET_PATH = "godot/"
+TARGET_NAME = "compatibility_test"
+
+
+env = Script.Environment()
+
+env.Append(CPPPATH=["src"])
+env.Append(CFLAGS=["-O0", "-g"])
+
+sources = env.Glob("src/*.c")
+library = env.SharedLibrary(
+    target=os.path.join(TARGET_PATH, TARGET_NAME),
+    source=sources,
+)
+
+env.Default(library)
