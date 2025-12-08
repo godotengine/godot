@@ -1078,6 +1078,11 @@ void ProjectManager::_set_new_tag_name(const String p_name) {
 		return;
 	}
 
+	if(p_name.length() == 1 && p_name[0] == ' '){
+		tag_error->set_text(TTRC("Tag name can't be a single space."));
+		return;
+	}
+
 	bool was_underscore = false;
 	for (const char32_t &c : p_name.span()) {
 		// Treat spaces as underscores, as we convert spaces to underscores automatically in the tag input field.
