@@ -198,6 +198,9 @@ TEST_CASE("[Vector3] Normalization methods") {
 	CHECK_MESSAGE(
 			Vector3(1, 1, 1).normalized().is_equal_approx(Vector3(Math::SQRT13, Math::SQRT13, Math::SQRT13)),
 			"Vector3 normalized should work as expected.");
+	CHECK_MESSAGE(
+			Vector3(0, 0, 0).normalized() == Vector3(0, 0, 0),
+			"Vector3 normalized should leave 0 vector unchanged.");
 
 	Vector3 vector = Vector3(3.2, -5.4, 6);
 	vector.normalize();

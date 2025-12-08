@@ -130,6 +130,9 @@ TEST_CASE("[Vector4] Normalization methods") {
 	CHECK_MESSAGE(
 			Vector4(1, 1, 1, 1).normalized().is_equal_approx(Vector4(0.5, 0.5, 0.5, 0.5)),
 			"Vector4 normalized should work as expected.");
+	CHECK_MESSAGE(
+			Vector4(0, 0, 0, 0).normalized() == Vector4(0, 0, 0, 0),
+			"Vector4 normalized should leave 0 vector unchanged.");
 }
 
 TEST_CASE("[Vector4] Operators") {
