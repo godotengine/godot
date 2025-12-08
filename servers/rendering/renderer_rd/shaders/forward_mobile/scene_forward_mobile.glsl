@@ -1761,7 +1761,6 @@ void main() {
 
 				hvec3 l1 = (l1_r + l1_g + l1_b) / half(3.0);
 				float l1_len = max(length(l1), half(1e-5));
-				
 				hvec3 lightmap_direction = hvec3(l1 / l1_len);
 
 				hvec3 L_view = hvec3(normalize(mat3(transpose(lightmaps.data[ofs].normal_xform)) * lightmap_direction));
