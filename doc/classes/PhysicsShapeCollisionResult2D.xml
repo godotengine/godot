@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsShapeCollisionResult2D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collision_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_point_a" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_point_b" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="get_max_collisions" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_max_collisions">
+			<return type="void" />
+			<param index="0" name="max_collisions" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
