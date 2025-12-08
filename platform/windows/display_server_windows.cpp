@@ -1625,7 +1625,7 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 #ifdef RD_ENABLED
 	if (rendering_context != nullptr) {
-		_create_rendering_context_window(window_id);
+		_create_rendering_context_window(window_id, rendering_driver);
 	}
 #endif
 #ifdef GLES3_ENABLED
@@ -6606,7 +6606,7 @@ void DisplayServerWindows::_destroy_window(WindowID p_window_id) {
 }
 
 #ifdef RD_ENABLED
-Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id) {
+Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id, const String &p_rendering_driver) {
 	DEV_ASSERT(rendering_context != nullptr);
 
 	WindowData &wd = windows[p_window_id];
@@ -6620,19 +6620,19 @@ Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_i
 #endif
 	} wpd;
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (p_rendering_driver == "vulkan") {
 		wpd.vulkan.window = wd.hWnd;
 		wpd.vulkan.instance = hInstance;
 	}
 #endif
 #ifdef D3D12_ENABLED
-	if (rendering_driver == "d3d12") {
+	if (p_rendering_driver == "d3d12") {
 		wpd.d3d12.window = wd.hWnd;
 	}
 #endif
 
 	Error err = rendering_context->window_create(p_window_id, &wpd);
-	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", rendering_driver));
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", p_rendering_driver));
 
 	rendering_context->window_set_size(p_window_id, wd.width, wd.height);
 	wd.rendering_context_window_created = true;
@@ -7224,7 +7224,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 					main_window_created = true;
 				}
 
-				if (_create_rendering_context_window(MAIN_WINDOW_ID) == OK) {
+				if (_create_rendering_context_window(MAIN_WINDOW_ID, tested_rendering_driver) == OK) {
 					rendering_device = memnew(RenderingDevice);
 					if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) == OK) {
 #ifdef VULKAN_ENABLED
