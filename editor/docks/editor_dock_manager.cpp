@@ -866,7 +866,7 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 	}
 
 	if (!p_dock->is_open) {
-		open_dock(p_dock);
+		open_dock(p_dock, false);
 	}
 
 	if (p_dock->dock_window) {
@@ -874,7 +874,11 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 		return;
 	}
 
-	if (!docks_visible && p_dock->get_parent() != EditorNode::get_bottom_panel()) {
+	if (p_dock->get_parent() == EditorNode::get_bottom_panel()) {
+		if (EditorNode::get_bottom_panel()->is_locked()) {
+			return;
+		}
+	} else if (!docks_visible) {
 		return;
 	}
 
