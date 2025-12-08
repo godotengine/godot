@@ -1852,7 +1852,7 @@ void fragment_shader(in SceneData scene_data) {
 			vec3 sh_light = lm_light_l0;
 			sh_light += lm_light_l0 * lm_light_l1n1 * n.y * 4.0;
 			sh_light += lm_light_l0 * lm_light_l1_0 * n.z * 4.0;
-			sh_light += lm_light_l0 * lm_light_l1p1 * n.x  * 4.0;
+			sh_light += lm_light_l0 * lm_light_l1p1 * n.x * 4.0;
 			sh_light *= lightmaps.data[ofs].exposure_normalization;
 			ambient_light += sh_light;
 
