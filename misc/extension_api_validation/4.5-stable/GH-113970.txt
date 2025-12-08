@@ -30,6 +30,10 @@ Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_shape/arguments': default_value was removed.
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/cast_motion/return_value': type changed value in new API, from "PackedFloat32Array" to "bool".
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/cast_motion/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/collide_shape/return_value': type changed value in new API, from "typedarray::Vector2" to "bool".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/collide_shape/arguments/1': type changed value in new API, from "int" to "PhysicsShapeCollisionResult2D".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/collide_shape/arguments/1': meta changed value in new API, from "int32" to "required".
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/collide_shape/arguments': default_value was removed.
 
 New result type argument added; return type modified.
 Compatibility methods registered.

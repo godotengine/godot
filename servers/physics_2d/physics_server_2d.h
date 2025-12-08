@@ -124,6 +124,7 @@ class PhysicsPointIntersectionResult2D;
 class PhysicsShapeQueryParameters2D;
 class PhysicsShapeIntersectionResult2D;
 class PhysicsShapeCastResult2D;
+class PhysicsShapeCollisionResult2D;
 
 class PhysicsDirectSpaceState2D : public Object {
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
@@ -132,7 +133,7 @@ class PhysicsDirectSpaceState2D : public Object {
 	bool _intersect_point(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, RequiredParam<PhysicsPointIntersectionResult2D> rp_result);
 	bool _intersect_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, RequiredParam<PhysicsShapeIntersectionResult2D> rp_result);
 	bool _cast_motion(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, RequiredParam<PhysicsShapeCastResult2D> rp_result);
-	TypedArray<Vector2> _collide_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
+	bool _collide_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, RequiredParam<PhysicsShapeCollisionResult2D> rp_result);
 	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
 
 protected:
@@ -143,6 +144,7 @@ protected:
 	TypedArray<Dictionary> _intersect_point_bind_compat_113970(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
+	TypedArray<Vector2> _collide_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -836,6 +838,32 @@ protected:
 public:
 	real_t get_collision_safe_fraction() const;
 	real_t get_collision_unsafe_fraction() const;
+};
+
+class PhysicsShapeCollisionResult2D : public RefCounted {
+	GDCLASS(PhysicsShapeCollisionResult2D, RefCounted);
+
+	friend class PhysicsDirectSpaceState2D;
+
+	PackedVector2Array result;
+	int collision_count;
+
+protected:
+	static void _bind_methods();
+
+public:
+	PhysicsShapeCollisionResult2D(int p_max_collisions = 32) {
+		result.resize(2 * p_max_collisions);
+		collision_count = 0;
+	}
+
+	int get_max_collisions() const { return result.size() / 2; }
+	void set_max_collisions(int p_max_collisions) { result.resize(2 * p_max_collisions); }
+
+	int get_collision_count() const;
+
+	Vector2 get_collision_point_a(int p_collision_index = 0) const;
+	Vector2 get_collision_point_b(int p_collision_index = 0) const;
 };
 
 class PhysicsTestMotionParameters2D : public RefCounted {
