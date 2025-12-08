@@ -3443,8 +3443,8 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	bool using_fractional = p_ws->preferred_fractional_scale > 0;
 
 	// If neither is true we no-op.
-	bool scale_changed = true;
-	bool size_changed = true;
+	bool scale_changed = false;
+	bool size_changed = false;
 
 	if (p_ws->rect.size.width != p_width || p_ws->rect.size.height != p_height) {
 		p_ws->rect.size.width = p_width;
