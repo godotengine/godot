@@ -436,7 +436,7 @@
 		<method name="reload_all_scenes">
 			<return type="void" />
 			<description>
-				Reloads all open scenes in the editor.
+				Reloads all scenes currently open in the editor.
 			</description>
 		</method>
 		<method name="reload_scene_from_path">
