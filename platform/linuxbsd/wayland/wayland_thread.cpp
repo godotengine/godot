@@ -1588,7 +1588,7 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 
 	ERR_FAIL_NULL(ss);
 
-	// TODO: Handle touch.
+	// Touch handling.
 	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
 		if (!ss->wl_touch) {
 			ss->cursor_surface = wl_compositor_create_surface(ss->registry->wl_compositor);
@@ -1727,15 +1727,15 @@ void WaylandThread::_wl_touch_on_down(void *data, struct wl_touch *wl_touch,
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread *wayland_thread = ss->wayland_thread;
-	ERR_FAIL_NULL(wayland_thread);
+	PointerData &pd = ss->pointer_data_buffer;
 
 	double scale = window_state_get_scale_factor(ws);
-	Vector2 position = Vector2(wl_fixed_to_double(x), wl_fixed_to_double(y)) * scale;
+	Vector2 position = Vector2(wl_fixed_to_double(x), wl_fixed_to_double(y));
 
 	TouchData &bf = ss->touch_data_buffer;
 	TouchPoint &td = bf.touchs[id];
 
+	td.relative = Vector2();
 	td.position = position;
 	td.time = time;
 	td.double_tap = false;
@@ -1747,28 +1747,16 @@ void WaylandThread::_wl_touch_on_down(void *data, struct wl_touch *wl_touch,
 
 	td.last_position = position;
 	td.last_time = time;
-	td.pen_inverted = false;
-	td.tilt = Vector2();
-	td.orientation = 0.0;
 	td.pressed = true;
+	td.is_activing = true;
+	bf.touched_id = pd.pointed_id;
+	bf.last_touched_id = pd.last_pointed_id;
 
-	Ref<InputEventScreenTouch> ev;
-	ev.instantiate();
-	ev->set_pressed(true);
-	ev->set_double_tap(td.double_tap);
-	ev->set_position(position);
-	ev->set_canceled(td.canceled);
-	ev->set_index(id);
-
-	bf.touched_id = ws->id;
-	bf.last_touched_id = ws->id;
-
-	ev->set_window_id(bf.touched_id);
-	Ref<InputEventMessage> msg;
-	msg.instantiate();
-	msg->event = ev;
-	wayland_thread->push_message(msg);
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Touch down in window %d, id: %d", ws->id, id));
+
+	if (wl_touch_get_version(wl_touch) < WL_TOUCH_FRAME_SINCE_VERSION) {
+		_wl_touch_on_frame(data, wl_touch);
+	}
 }
 
 void WaylandThread::_wl_touch_on_up(void *data, struct wl_touch *wl_touch,
@@ -1794,26 +1782,20 @@ void WaylandThread::_wl_touch_on_up(void *data, struct wl_touch *wl_touch,
 	if (ws == nullptr) {
 		return;
 	}
+
 	TouchPoint &td = bf.touchs[id];
 
+	td.relative = Vector2();
 	td.pressed = false;
+	td.is_activing = true;
 	td.time = time;
 	td.last_time = time;
 
-	Ref<InputEventScreenTouch> ev;
-	ev.instantiate();
-	ev->set_pressed(false);
-	ev->set_position(td.position);
-	ev->set_index(id);
-	ev->set_double_tap(td.double_tap);
-	ev->set_canceled(td.canceled);
-	ev->set_window_id(bf.touched_id);
-	bf.last_touched_id = ws->id;
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Touch up in window %d, id: %d", ws->id, id));
 
-	Ref<InputEventMessage> msg;
-	msg.instantiate();
-	msg->event = ev;
-	wayland_thread->push_message(msg);
+	if (wl_touch_get_version(wl_touch) < WL_TOUCH_FRAME_SINCE_VERSION) {
+		_wl_touch_on_frame(data, wl_touch);
+	}
 }
 
 void WaylandThread::_wl_touch_on_motion(void *data, struct wl_touch *wl_touch,
@@ -1845,45 +1827,23 @@ void WaylandThread::_wl_touch_on_motion(void *data, struct wl_touch *wl_touch,
 		return;
 	}
 
-	double scale = window_state_get_scale_factor(ws);
-
 	td.position = position;
 	td.time = time;
 	td.index = id;
 	td.pressed = true;
+	td.is_activing = true;
 
 	if (td.time != td.last_time) {
-		Ref<InputEventScreenDrag> ev;
-		ev.instantiate();
-
-		ev->set_window_id(bf.touched_id);
-
-		ev->set_position(td.position * scale);
-
-		Vector2 pos_delta = (td.position - td.last_position);
-
-		if (td.time != td.last_time) {
-			uint32_t time_delta = td.time - td.last_time;
-
-			ev->set_relative(pos_delta * scale);
-			ev->set_relative_screen_position(pos_delta);
-			ev->set_velocity((Vector2)pos_delta * scale / time_delta);
-			ev->set_screen_velocity((Vector2)pos_delta / time_delta);
-		}
-
-		ev->set_index(id);
-		ev->set_pressure(td.pressure);
-		ev->set_pen_inverted(td.pen_inverted);
-
-		Ref<InputEventMessage> msg;
-		msg.instantiate();
-
-		msg->event = ev;
-
-		wayland_thread->push_message(msg);
+		td.relative = Vector2(td.position - td.last_position);
 	}
 	td.last_time = time;
 	td.last_position = position;
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Touch motion in window %d, id: %d", ws->id, id));
+
+	if (wl_touch_get_version(wl_touch) < WL_TOUCH_FRAME_SINCE_VERSION) {
+		_wl_touch_on_frame(data, wl_touch);
+	}
 }
 
 void WaylandThread::_wl_touch_on_frame(void *data, struct wl_touch *wl_touch) {
@@ -1929,6 +1889,50 @@ void WaylandThread::_wl_touch_on_frame(void *data, struct wl_touch *wl_touch) {
 		bf.last_touched_id = bf.touched_id;
 		return;
 	}
+
+	double scale = window_state_get_scale_factor(ws);
+	for (KeyValue<int32_t, TouchPoint> &pair : bf.touchs) {
+		TouchPoint &td = pair.value;
+		if (!td.is_activing) {
+			continue;
+		}
+		td.is_activing = false;
+		if (td.relative != Vector2()) {
+			Ref<InputEventScreenDrag> ev;
+			ev.instantiate();
+
+			ev->set_window_id(bf.touched_id);
+			ev->set_position(td.position * scale);
+			uint32_t time_delta = td.time - td.last_time;
+
+			ev->set_relative(td.relative * scale);
+			ev->set_relative_screen_position(td.relative);
+			ev->set_velocity(td.relative * scale / time_delta);
+			ev->set_screen_velocity(td.relative / time_delta);
+
+			ev->set_index(td.index);
+
+			Ref<InputEventMessage> msg;
+			msg.instantiate();
+			msg->event = ev;
+			wayland_thread->push_message(msg);
+		} else {
+			Ref<InputEventScreenTouch> ev;
+			ev.instantiate();
+
+			ev->set_window_id(bf.touched_id);
+			ev->set_pressed(td.pressed);
+			ev->set_position(td.position * scale);
+			ev->set_index(td.index);
+			ev->set_double_tap(td.double_tap);
+			td.double_tap = false;
+
+			Ref<InputEventMessage> msg;
+			msg.instantiate();
+			msg->event = ev;
+			wayland_thread->push_message(msg);
+		}
+	}
 }
 
 void WaylandThread::_wl_touch_on_cancel(void *data, struct wl_touch *wl_touch) {
@@ -1940,15 +1944,16 @@ void WaylandThread::_wl_touch_on_cancel(void *data, struct wl_touch *wl_touch) {
 
 	TouchData &bf = ss->touch_data_buffer;
 
-	for (uint32_t i = 0; i < bf.touchs.size(); i++) {
-		TouchPoint &td = bf.touchs[i];
-		if (td.pressed == true) {
+	for (KeyValue<int32_t, TouchPoint> &pair : bf.touchs) {
+		TouchPoint &td = pair.value;
+		if (td.is_activing == true) {
 			td.canceled = true;
+			td.is_activing = false;
 			Ref<InputEventScreenTouch> ev;
 			ev.instantiate();
 			ev->set_pressed(false);
 			ev->set_position(td.position);
-			ev->set_index(i);
+			ev->set_index(td.index);
 			ev->set_double_tap(td.double_tap);
 			ev->set_canceled(td.canceled);
 			ev->set_window_id(bf.touched_id);
@@ -1962,48 +1967,9 @@ void WaylandThread::_wl_touch_on_cancel(void *data, struct wl_touch *wl_touch) {
 }
 
 void WaylandThread::_wl_touch_on_shape(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t major, wl_fixed_t minor) {
-	// I don't know how to detect touch pressure, so let's assume using the touch shape to simulate the value of touch pressure.
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	TouchData &bf = ss->touch_data_buffer;
-
-	if (!bf.touchs.has(id)) {
-		return;
-	}
-	TouchPoint &td = bf.touchs[id];
-	// Calculate the area of the ellipse (π * a * b) as the basis for pressure.
-	double area = Math::PI * wl_fixed_to_double(major) * wl_fixed_to_double(minor);
-	double normalized_pressure = Math::sqrt(area / 400.0);
-	// Map the area to a pressure range of [0.0, 1.0] and use the square root to make the curve more natural.
-	td.pressure = CLAMP(normalized_pressure, 0.0, 1.0);
-	td.pen_inverted = true;
-
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Touch shape for id %d: major=%.2f, minor=%.2f, area=%.2f, pressure=%.2f", id, wl_fixed_to_double(major), wl_fixed_to_double(minor), area, td.pressure));
 }
 
 void WaylandThread::_wl_touch_on_orientation(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t orientation) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	TouchData &bf = ss->touch_data_buffer;
-
-	if (!bf.touchs.has(id)) {
-		return;
-	}
-
-	TouchPoint &td = bf.touchs[id];
-	td.orientation = wl_fixed_to_double(orientation);
-	double effective_orient = td.orientation;
-
-	// Convert the heading angle to a tilt vector
-	// Assume tilt.x represents tilt left and right, tilt.y represents tilt up and down
-	// Use sin and cos for projection, and multiply by a fixed tilt amplitude (converted to radians)
-	double tilt_rad = Math::deg_to_rad(15.0);
-	td.tilt.x = Math::sin(effective_orient) * tilt_rad; // Left and right components
-	td.tilt.y = -Math::cos(effective_orient) * tilt_rad; // Vertical component (sign depends on the coordinate system)
-	td.pen_inverted = true;
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Touch orientation for id %d: %.2f rad -> tilt (%.2f, %.2f)", id, td.orientation, td.tilt.x, td.tilt.y));
 }
 
 void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -3746,8 +3712,8 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	bool using_fractional = p_ws->preferred_fractional_scale > 0;
 
 	// If neither is true we no-op.
-	bool scale_changed = false;
-	bool size_changed = false;
+	bool scale_changed = true;
+	bool size_changed = true;
 
 	if (p_ws->rect.size.width != p_width || p_ws->rect.size.height != p_height) {
 		p_ws->rect.size.width = p_width;

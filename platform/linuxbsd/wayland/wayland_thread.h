@@ -356,12 +356,8 @@ public:
 	struct TouchPoint {
 		Point2 position;
 		Point2 last_position;
-		double orientation = 0.0;
-		double pressure = 0.0;
 
 		Vector2 relative;
-		Vector2 velocity;
-		Vector2 tilt;
 		uint32_t index = 0;
 
 		uint32_t time = 0;
@@ -370,13 +366,13 @@ public:
 		bool pressed = false;
 		bool canceled = false;
 		bool double_tap = false;
-		bool pen_inverted = false;
+		bool is_activing = false;
 	};
 
 	struct TouchData {
-		HashMap<int32_t, TouchPoint> touchs;
-		DisplayServer::WindowID touched_id = 0;
-		DisplayServer::WindowID last_touched_id = 0;
+		AHashMap<int32_t, TouchPoint> touchs;
+		DisplayServer::WindowID touched_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServer::WindowID last_touched_id = DisplayServer::INVALID_WINDOW_ID;
 	};
 
 	struct PointerData {
