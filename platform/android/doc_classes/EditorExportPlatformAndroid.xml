@@ -630,6 +630,7 @@
 		</member>
 		<member name="shader_baker/enabled" type="bool" setter="" getter="">
 			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
+			[b]Note:[/b] When exporting as a dedicated server, the shader baker is always disabled since no rendering is performed.
 		</member>
 		<member name="user_data_backup/allow" type="bool" setter="" getter="">
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.
