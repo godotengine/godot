@@ -487,7 +487,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/check_for_updates", int(default_update_mode), "Disable Update Checks,Check Newest Preview,Check Newest Stable,Check Newest Patch"); // Uses EngineUpdateLabel::UpdateMode.
 	}
 
-	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_native_file_dialogs", false, "", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/expand_to_title", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 
