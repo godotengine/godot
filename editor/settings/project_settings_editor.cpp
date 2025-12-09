@@ -65,7 +65,7 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	autoload_settings->update_autoload();
 	group_settings->update_groups();
 	plugin_settings->update_plugins();
-	import_defaults_editor->clear();
+	import_defaults_editor->update_editors();
 
 	if (p_clear_filter) {
 		search_box->clear();
