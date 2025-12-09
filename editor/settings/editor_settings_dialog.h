@@ -47,8 +47,6 @@ class TreeItem;
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
-	bool updating = false;
-
 	TabContainer *tabs = nullptr;
 	Control *tab_general = nullptr;
 	Control *tab_shortcuts = nullptr;

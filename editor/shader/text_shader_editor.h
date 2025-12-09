@@ -143,10 +143,8 @@ class TextShaderEditor : public ShaderEditor {
 	Button *site_search = nullptr;
 	PopupMenu *context_menu = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
-	uint64_t idle = 0;
 
 	GotoLinePopup *goto_line_popup = nullptr;
-	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
 
 	ShaderTextEditor *code_editor = nullptr;

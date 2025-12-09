@@ -177,7 +177,6 @@ private:
 	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
-	TextureRect *search_icon = nullptr;
 	HBoxContainer *path_hb = nullptr;
 
 	FileListDisplayMode file_list_display_mode;
