@@ -152,10 +152,7 @@ Files: metal/metal_objects.*
  metal/rendering_context_driver.*
  metal/rendering_device_driver.*
  platform/ios/*
- servers/rendering/renderer_compositor.h
- servers/rendering/renderer_rd/environment/sky.*
  servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.*
- servers/rendering/renderer_rd/renderer_compositor_rd.*
  servers/rendering/rendering_device.*
  servers/rendering/rendering_device_driver.*
  servers/rendering/rendering_device_graph.*
