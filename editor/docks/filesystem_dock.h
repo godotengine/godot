@@ -284,7 +284,6 @@ private:
 	void _set_file_display(bool p_active);
 	void _fs_changed();
 
-	void _select_file(const String &p_path, bool p_select_in_favorites = false, bool p_navigate = true);
 	void _tree_activate_file();
 	void _file_list_activate_file(int p_idx);
 	void _file_multi_selected(int p_index, bool p_selected);
@@ -381,6 +380,7 @@ private:
 
 public:
 	static FileSystemDock *get_singleton() { return singleton; }
+	static DependencyEditorOwners *get_owners_editor_singleton() { return singleton->owners_editor; }
 
 protected:
 	void _notification(int p_what);
@@ -408,6 +408,7 @@ public:
 	String get_current_directory() const;
 	String get_folder_path_at_mouse_position() const;
 
+	void open_file(const String &p_path, bool p_select_in_favorites = false, bool p_navigate = true);
 	void navigate_to_path(const String &p_path);
 	void focus_on_path();
 	void focus_on_filter();
