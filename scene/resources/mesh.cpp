@@ -1346,6 +1346,16 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 
 #ifndef DISABLE_DEPRECATED
 	// Kept for compatibility from 3.x to 4.0.
+	if (p_name == "blend_shape/names") {
+		_set_blend_shape_names(p_value);
+		return true;
+	}
+
+	if (p_name == "blend_shape/mode") {
+		set_blend_shape_mode(BlendShapeMode(int(p_value)));
+		return true;
+	}
+
 	if (!sname.begins_with("surfaces")) {
 		return false;
 	}
