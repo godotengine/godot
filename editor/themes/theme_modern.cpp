@@ -2425,4 +2425,10 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	Ref<StyleBoxFlat> tile_expand_style = p_config.base_style->duplicate();
 	tile_expand_style->set_corner_radius_all(0);
 	p_theme->set_stylebox("expand_panel", "TileSetEditor", tile_expand_style);
+
+	// CreateDialog.
+	{
+		p_theme->set_type_variation("CreateDialogTree", "Tree");
+		p_theme->set_stylebox(SceneStringName(panel), "CreateDialogTree", EditorThemeManager::make_flat_stylebox(p_config.dark_color_1, 4, 4, 4, 4, p_config.corner_radius));
+	}
 }
