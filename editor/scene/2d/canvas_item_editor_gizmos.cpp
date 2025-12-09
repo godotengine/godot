@@ -31,6 +31,7 @@
 #include "canvas_item_editor_gizmos.h"
 
 #include "core/math/geometry_2d.h"
+#include "editor/editor_node.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "scene/resources/mesh.h"
 
@@ -60,6 +61,8 @@ void EditorCanvasItemGizmo::clear() {
 		if (instance.instance.is_valid()) {
 			RS::get_singleton()->free_rid(instance.instance);
 			instance.instance = RID();
+			RS::get_singleton()->free_rid(instance.handle_multimesh);
+			instance.handle_multimesh = RID();
 		}
 	}
 
@@ -274,7 +277,7 @@ void EditorCanvasItemGizmo::add_collision_polygon(const Vector<Vector2> &p_polyg
 	collision_polygons.push_back(p_polygon);
 }
 
-void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, const Color &p_color, const Vector<int> &p_ids, bool p_secondary) {
+void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, Ref<Texture2D> p_texture, const Vector<int> &p_ids, bool p_secondary) {
 	if (!is_selected() || !is_editable()) {
 		return;
 	}
@@ -290,54 +293,38 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, const 
 		ERR_FAIL_COND_MSG(p_handles.size() != p_ids.size(), "The number of IDs should be the same as the number of handles.");
 	}
 
+	// TODO: GIZMOS - implement hover support
 	bool is_current_hover_gizmo = CanvasItemEditor::get_singleton()->get_current_hover_gizmo() == this;
 	bool current_hover_handle_secondary;
 	int current_hover_handle = CanvasItemEditor::get_singleton()->get_current_hover_gizmo_handle(current_hover_handle_secondary);
 
-	Vector<Vector3> vertices;
-	vertices.resize(p_handles.size());
-	for (int i = 0; i < p_handles.size(); i++) {
-		vertices.write[i] = Vector3(p_handles[i].x, p_handles[i].y, 0);
+	Ref<Texture2D> texture = p_texture;
+	if (p_texture.is_null()) {
+		texture = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
+	}
+	// shouldn't happen but better be safe
+	ERR_FAIL_NULL(texture);
+	Size2 texture_size = texture->get_size();
+
+	Control *viewport = CanvasItemEditor::get_singleton()->get_viewport_control();
+
+	// we draw handles in viewport space so they will change position with zoom/pan but not scale
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * canvas_item->get_screen_transform();
+
+	int64_t handle_count = p_handles.size();
+	for (const Vector2 &h : p_handles) {
+		Vector2 position = xform.xform(h);
+		Instance ins;
+		ins.create_instance(viewport, hidden);
+		instances.push_back(ins);
+		// TODO: GIZMOS - the handles currently draw over the rulers when panning, we probably don't want this.
+		RS::get_singleton()->canvas_item_add_texture_rect(ins.instance, Rect2(position - texture_size / 2, texture_size), texture->get_rid());
 	}
 
-	Instance ins;
-	Ref<ArrayMesh> mesh;
-	mesh.instantiate();
-
-	Array a;
-	a.resize(RS::ARRAY_MAX);
-	a[RS::ARRAY_VERTEX] = vertices;
-	Vector<Color> colors;
-	{
-		colors.resize(p_handles.size());
-		Color *w = colors.ptrw();
-		for (int i = 0; i < p_handles.size(); i++) {
-			int id = p_ids.is_empty() ? i : p_ids[i];
-
-			Color col(1, 1, 1, 1);
-			if (is_handle_highlighted(id, p_secondary)) {
-				col = Color(0, 0, 1, 0.9);
-			}
-
-			if (!is_current_hover_gizmo || current_hover_handle != id || p_secondary != current_hover_handle_secondary) {
-				col.a = 0.8;
-			}
-
-			w[i] = col;
-		}
-	}
-	a[RS::ARRAY_COLOR] = colors;
-	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_POINTS, a);
-	if (valid) {
-		RS::get_singleton()->canvas_item_add_mesh(ins.instance, mesh->get_rid(), Transform2D(), p_color);
-		ins.create_instance(canvas_item, hidden);
-	}
-
-	instances.push_back(ins);
-
+	// update internal handle lists
 	int current_size = handle_list.size();
-	handle_list.resize(current_size + p_handles.size());
-	for (int i = 0; i < p_handles.size(); i++) {
+	handle_list.resize(current_size + handle_count);
+	for (int i = 0; i < handle_count; i++) {
 		handle_list.write[current_size + i] = p_handles[i];
 	}
 
@@ -401,7 +388,7 @@ void EditorCanvasItemGizmo::handles_intersect_point(const Point2 &p_point, bool 
 		return;
 	}
 
-	Transform2D screen_transform = canvas_item->get_global_transform_with_canvas() * canvas_item->get_viewport()->get_screen_transform();
+	Transform2D screen_transform = CanvasItemEditor::get_singleton()->get_canvas_transform() * canvas_item->get_screen_transform();
 	float min_d = 1e20;
 
 	for (int i = 0; i < secondary_handles.size(); i++) {
@@ -636,7 +623,7 @@ void EditorCanvasItemGizmoPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_handle_value, "gizmo", "handle_id", "secondary");
 
 	GDVIRTUAL_BIND(_begin_handle_action, "gizmo", "handle_id", "secondary");
-	GDVIRTUAL_BIND(_set_handle, "gizmo", "handle_id", "secondary", "screen_pos");
+	GDVIRTUAL_BIND(_set_handle, "gizmo", "handle_id", "secondary", "position");
 	GDVIRTUAL_BIND(_commit_handle, "gizmo", "handle_id", "secondary", "restore", "cancel");
 
 	GDVIRTUAL_BIND(_subgizmos_intersect_point, "gizmo", "screen_pos");
@@ -708,8 +695,8 @@ void EditorCanvasItemGizmoPlugin::begin_handle_action(const EditorCanvasItemGizm
 	GDVIRTUAL_CALL(_begin_handle_action, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary);
 }
 
-void EditorCanvasItemGizmoPlugin::set_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Point2 &p_screen_pos) {
-	GDVIRTUAL_CALL(_set_handle, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, p_screen_pos);
+void EditorCanvasItemGizmoPlugin::set_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Point2 &p_point) {
+	GDVIRTUAL_CALL(_set_handle, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, p_point);
 }
 
 void EditorCanvasItemGizmoPlugin::commit_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
