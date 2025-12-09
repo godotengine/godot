@@ -406,7 +406,9 @@ void VisionOSXRInterface::pre_render() {
 
 Vector<BlitToScreen> VisionOSXRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
-	// We're overriding the color and depth textures, no need for screen blits
+	// We're overriding the color and depth textures, no need for screen blits, return empty BlitToScreen vector
+	// However, we need to acquire the dummy frame buffer
+	RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
 	return Vector<BlitToScreen>();
 }
 

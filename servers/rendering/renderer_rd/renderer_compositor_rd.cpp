@@ -36,14 +36,10 @@
 #include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
 
-Error RendererCompositorRD::prepare_screen_for_drawing(DisplayServer::WindowID p_screen) {
-	return RD::get_singleton()->screen_prepare_for_drawing(p_screen);
-}
-
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
-	Error err = prepare_screen_for_drawing(p_screen);
+	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
 	if (err != OK) {
-		// if result != OK, Window is minimized and does not have valid swapchain, skip drawing without printing errors.
+		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
 		return;
 	}
 

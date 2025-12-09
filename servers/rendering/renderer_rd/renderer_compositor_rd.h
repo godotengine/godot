@@ -123,7 +123,6 @@ public:
 
 	void initialize() override;
 	void begin_frame(double frame_step) override;
-	Error prepare_screen_for_drawing(DisplayServer::WindowID p_screen) override;
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) override;
 
 	bool is_opengl() override { return false; }
