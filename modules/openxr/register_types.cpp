@@ -75,6 +75,7 @@
 #include "extensions/openxr_pico_controller_extension.h"
 #include "extensions/openxr_render_model_extension.h"
 #include "extensions/openxr_valve_analog_threshold_extension.h"
+#include "extensions/openxr_valve_controller_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
 #include "extensions/spatial_entities/openxr_spatial_entity_extension.h"
@@ -164,6 +165,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMxInkExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRValveControllerExtension));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
 			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);
