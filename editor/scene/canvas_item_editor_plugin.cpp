@@ -46,7 +46,6 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
-#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -1693,6 +1692,57 @@ bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEven
 	return false;
 }
 
+bool CanvasItemEditor::_gui_input_gizmos(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseMotion> m = p_event;
+	Ref<InputEventMouseButton> b = p_event;
+
+	if (drag_type == DRAG_NONE && selected_canvas_item) {
+		Vector<Ref<CanvasItemGizmo>> gizmos = selected_canvas_item->get_gizmos();
+
+		// mouse clicks
+		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
+			Point2 pos = b->get_position();
+			for (const Ref<CanvasItemGizmo> &ci_gizmo : gizmos) {
+				Ref<EditorCanvasItemGizmo> editor_gizmo = ci_gizmo;
+				if (editor_gizmo.is_valid()) {
+					int index;
+					bool secondary;
+					editor_gizmo->handles_intersect_point(pos, b->is_shift_pressed(), index, secondary);
+					if (index > -1) {
+						drag_selection = List<CanvasItem *>();
+						drag_selection.push_back(selected_canvas_item);
+						drag_type = DRAG_GIZMO_HANDLE;
+						current_gizmo = editor_gizmo;
+						current_gizmo_handle = index;
+						current_gizmo_handle_secondary = secondary;
+						current_gizmo_initial_value = editor_gizmo->get_handle_value(index, secondary);
+						editor_gizmo->begin_handle_action(index, secondary);
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	// mouse drags
+	if (m.is_valid() && drag_type == DRAG_GIZMO_HANDLE) {
+		// handles are supplied in local space around the canvas item, so we need to convert the mouse
+		// position back into local coordinates.
+		Transform2D xform = (get_canvas_transform() * selected_canvas_item->get_screen_transform()).affine_inverse();
+		current_gizmo->set_handle(current_gizmo_handle, current_gizmo_handle_secondary, xform.xform(m->get_position()));
+		viewport->queue_redraw();
+		return true;
+	}
+
+	// mouse releases
+	if (drag_type == DRAG_GIZMO_HANDLE && b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
+		_commit_drag();
+		return true;
+	}
+
+	return false;
+}
+
 bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
@@ -2791,6 +2841,8 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			// print_line("Rotate");
 		} else if (_gui_input_move(p_event)) {
 			// print_line("Move");
+		} else if (_gui_input_gizmos(p_event)) {
+			// print_line("Gizmos");
 		} else if (_gui_input_anchors(p_event)) {
 			// print_line("Anchors");
 		} else if (_gui_input_ruler_tool(p_event)) {
@@ -2986,6 +3038,11 @@ void CanvasItemEditor::_commit_drag() {
 									drag_selection.front()->get()->_edit_get_position().y),
 							true);
 				}
+			} break;
+
+			case DRAG_GIZMO_HANDLE: {
+				// gizmo plugin is responsible for undo/redo
+				current_gizmo->commit_handle(current_gizmo_handle, current_gizmo_handle_secondary, current_gizmo_initial_value, false);
 			} break;
 
 			default:
@@ -4225,6 +4282,12 @@ void CanvasItemEditor::_draw_message() {
 				}
 			} break;
 
+			case DRAG_GIZMO_HANDLE: {
+				StringName gizmo_name = current_gizmo->get_handle_name(current_gizmo_handle, current_gizmo_handle_secondary);
+				Variant value = current_gizmo->get_handle_value(current_gizmo_handle, current_gizmo_handle_secondary);
+				message = TTR("Changing:") + " " + gizmo_name + " to " + value.stringify();
+			} break;
+
 			default:
 				break;
 		}
@@ -4314,6 +4377,8 @@ void CanvasItemEditor::_draw_viewport() {
 
 	EditorNode::get_singleton()->get_editor_plugins_over()->forward_canvas_draw_over_viewport(viewport);
 	EditorNode::get_singleton()->get_editor_plugins_force_over()->forward_canvas_force_draw_over_viewport(viewport);
+
+	update_all_gizmos();
 
 	if (show_rulers) {
 		_draw_rulers();
@@ -4534,6 +4599,44 @@ void CanvasItemEditor::_selection_changed() {
 }
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
+	if (p_canvas_item != selected_canvas_item) {
+		if (selected_canvas_item) {
+			Vector<Ref<CanvasItemGizmo>> gizmos = selected_canvas_item->get_gizmos();
+			for (const Ref<CanvasItemGizmo> &gizmo : gizmos) {
+				Ref<EditorCanvasItemGizmo> editor_gizmo = gizmo;
+				if (editor_gizmo.is_null()) {
+					continue;
+				}
+				editor_gizmo->set_selected(false);
+			}
+
+			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item);
+			if (se) {
+				se->gizmo.unref();
+				se->subgizmos.clear();
+			}
+
+			selected_canvas_item->update_gizmos();
+		}
+
+		selected_canvas_item = p_canvas_item;
+		current_hover_gizmo = Ref<EditorCanvasItemGizmo>();
+		current_hover_gizmo_handle = -1;
+		current_hover_gizmo_handle_secondary = false;
+
+		if (selected_canvas_item) {
+			Vector<Ref<CanvasItemGizmo>> gizmos = selected_canvas_item->get_gizmos();
+			for (const Ref<CanvasItemGizmo> &gizmo : gizmos) {
+				Ref<EditorCanvasItemGizmo> editor_gizmo = gizmo;
+				if (editor_gizmo.is_null()) {
+					continue;
+				}
+				editor_gizmo->set_selected(true);
+			}
+			selected_canvas_item->update_gizmos();
+		}
+	}
+
 	if (!p_canvas_item) {
 		return;
 	}
@@ -5635,12 +5738,13 @@ void CanvasItemEditor::_request_gizmo_for_id(ObjectID p_id) {
 }
 
 void _update_all_canvas_item_gizmos(Node *p_node) {
-	for (int i = p_node->get_child_count() - 1; i >= 0; --i) {
-		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node->get_child(i));
-		if (canvas_item) {
-			canvas_item->update_gizmos();
-		}
+	ERR_FAIL_NULL(p_node);
+	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
+	if (canvas_item) {
+		canvas_item->update_gizmos();
+	}
 
+	for (int i = p_node->get_child_count() - 1; i >= 0; --i) {
 		_update_all_canvas_item_gizmos(p_node->get_child(i));
 	}
 }

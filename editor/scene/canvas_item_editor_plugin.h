@@ -181,7 +181,8 @@ private:
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
-		DRAG_KEY_MOVE
+		DRAG_KEY_MOVE,
+		DRAG_GIZMO_HANDLE
 	};
 
 	enum GridVisibility {
@@ -379,6 +380,11 @@ private:
 	bool is_hovering_h_guide = false;
 	bool is_hovering_v_guide = false;
 
+	Ref<EditorCanvasItemGizmo> current_gizmo = nullptr;
+	int current_gizmo_handle = -1;
+	bool current_gizmo_handle_secondary = false;
+	Variant current_gizmo_initial_value;
+
 	bool updating_value_dialog = false;
 	Transform2D original_transform;
 
@@ -490,6 +496,7 @@ private:
 
 	void _draw_viewport();
 
+	bool _gui_input_gizmos(const Ref<InputEvent> &p_event);
 	bool _gui_input_anchors(const Ref<InputEvent> &p_event);
 	bool _gui_input_move(const Ref<InputEvent> &p_event);
 	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
@@ -626,12 +633,16 @@ public:
 
 	/* GIZMOS */
 
+	Ref<CanvasItemGizmo> current_hover_gizmo;
+	int current_hover_gizmo_handle;
+	bool current_hover_gizmo_handle_secondary;
+
 	// TODO: GIZMOS actually implement this.
 	bool is_current_selected_gizmo(const EditorCanvasItemGizmo *p_gizmo);
-	Ref<EditorCanvasItemGizmo> get_current_hover_gizmo() { return Ref<EditorCanvasItemGizmo>(); }
+	Ref<EditorCanvasItemGizmo> get_current_hover_gizmo() { return current_hover_gizmo; }
 	int get_current_hover_gizmo_handle(bool &r_secondary) const {
-		r_secondary = false;
-		return -1;
+		r_secondary = current_hover_gizmo_handle_secondary;
+		return current_hover_gizmo_handle;
 	}
 	bool is_subgizmo_selected(int p_id) { return false; }
 	Vector<int> get_subgizmo_selection() { return Vector<int>(); }
