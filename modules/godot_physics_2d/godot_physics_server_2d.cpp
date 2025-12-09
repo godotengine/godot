@@ -781,6 +781,13 @@ Variant GodotPhysicsServer2D::body_get_state(RID p_body, BodyState p_state) cons
 	return body->get_state(p_state);
 }
 
+void GodotPhysicsServer2D::body_flush_kinematic_transform(RID p_body) {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->flush_kinematic_transform();
+}
+
 void GodotPhysicsServer2D::body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);

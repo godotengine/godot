@@ -33,6 +33,7 @@
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("flush_kinematic_transform"), &PhysicsBody2D::flush_kinematic_transform);
 	ClassDB::bind_method(D_METHOD("get_gravity"), &PhysicsBody2D::get_gravity);
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
@@ -135,6 +136,10 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion
 	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+}
+
+void PhysicsBody2D::flush_kinematic_transform() {
+	PhysicsServer2D::get_singleton()->body_flush_kinematic_transform(get_rid());
 }
 
 Vector2 PhysicsBody2D::get_gravity() const {

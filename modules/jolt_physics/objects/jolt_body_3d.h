@@ -157,6 +157,8 @@ public:
 
 	void set_transform(Transform3D p_transform);
 
+	void flush_kinematic_transform();
+
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
 	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_value);
 

@@ -19,6 +19,13 @@
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
+		<method name="flush_kinematic_transform">
+			<return type="void" />
+			<description>
+				Updates the transform of a kinematic body in the server to the pending transform immediately without modifying velocities.
+				[b]Note:[/b] This method will not do anything if the new transform has not already been sent to the server. Call [method Node3D.force_update_transform] to send the transform to the server.
+			</description>
+		</method>
 		<method name="get_axis_lock" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />

@@ -105,7 +105,9 @@ class GodotBody3D : public GodotCollisionObject3D {
 
 	bool continuous_cd = false;
 	bool can_sleep = true;
+#ifndef DISABLE_DEPRECATED
 	bool first_time_kinematic = false;
+#endif
 
 	void _mass_properties_changed();
 	virtual void _shapes_changed() override;
@@ -150,6 +152,10 @@ class GodotBody3D : public GodotCollisionObject3D {
 	friend class GodotPhysicsDirectBodyState3D; // i give up, too many functions to expose
 
 public:
+#ifndef DISABLE_DEPRECATED
+	static inline bool kinematic_body_initial_teleport = false;
+#endif
+
 	void set_state_sync_callback(const Callable &p_callable);
 	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 
@@ -298,6 +304,8 @@ public:
 
 	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
+
+	void flush_kinematic_transform();
 
 	_FORCE_INLINE_ void set_continuous_collision_detection(bool p_enable) { continuous_cd = p_enable; }
 	_FORCE_INLINE_ bool is_continuous_collision_detection_enabled() const { return continuous_cd; }

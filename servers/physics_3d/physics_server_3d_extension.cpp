@@ -264,6 +264,8 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_body_set_state, "body", "state", "value");
 	GDVIRTUAL_BIND(_body_get_state, "body", "state");
 
+	GDVIRTUAL_BIND(_body_flush_kinematic_transform, "body");
+
 	GDVIRTUAL_BIND(_body_apply_central_impulse, "body", "impulse");
 	GDVIRTUAL_BIND(_body_apply_impulse, "body", "impulse", "position");
 	GDVIRTUAL_BIND(_body_apply_torque_impulse, "body", "impulse");
