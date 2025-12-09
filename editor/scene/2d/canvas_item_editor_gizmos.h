@@ -39,6 +39,7 @@ class EditorCanvasItemGizmo : public CanvasItemGizmo {
 
 	struct Instance {
 		RID instance;
+		RID handle_multimesh;
 		Transform2D xform;
 
 		void create_instance(CanvasItem *p_base, bool p_hidden = false);
@@ -91,7 +92,7 @@ public:
 	void add_collision_rect(const Rect2 &p_rect);
 	void add_collision_polygon(const Vector<Vector2> &p_polygon);
 
-	void add_handles(const Vector<Vector2> &p_handles, const Color &p_color, const Vector<int> &p_ids = Vector<int>(), bool p_secondary = false);
+	void add_handles(const Vector<Vector2> &p_handles, Ref<Texture2D> p_texture, const Vector<int> &p_ids = Vector<int>(), bool p_secondary = false);
 
 	virtual bool is_handle_highlighted(int p_id, bool p_secondary) const;
 	virtual String get_handle_name(int p_id, bool p_secondary) const;
