@@ -35,6 +35,27 @@
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 
+class DeprecatedShaderTypes {
+	struct Type {
+		HashMap<StringName, ShaderLanguage::FunctionInfo> functions;
+		Vector<ShaderLanguage::ModeInfo> modes;
+		Vector<ShaderLanguage::ModeInfo> stencil_modes;
+	};
+
+	HashMap<RS::ShaderMode, Type> shader_modes;
+	HashSet<String> shader_types;
+
+public:
+	static ShaderLanguage::BuiltInInfo constt(ShaderLanguage::DataType p_type) {
+		return ShaderLanguage::BuiltInInfo(p_type, true);
+	}
+	const HashMap<StringName, ShaderLanguage::FunctionInfo> &get_functions(RS::ShaderMode p_mode);
+	const Vector<ShaderLanguage::ModeInfo> &get_modes(RS::ShaderMode p_mode);
+	const HashSet<String> &get_types();
+
+	DeprecatedShaderTypes();
+};
+
 class ShaderDeprecatedConverter {
 public:
 	using TokenType = ShaderLanguage::TokenType;
@@ -220,6 +241,8 @@ private:
 	static const char *removed_types[];
 	static const char *old_builtin_funcs[];
 	static HashSet<String> _new_builtin_funcs;
+	// TODO: make this a static singleton
+	DeprecatedShaderTypes deprecated_shader_types;
 	String old_code;
 	List<Token> code_tokens;
 	List<Token>::Element *curr_ptr = nullptr;
@@ -232,6 +255,12 @@ private:
 
 	HashMap<String, StructDecl> struct_decls;
 	RenderingServer::ShaderMode shader_mode = RenderingServer::ShaderMode::SHADER_MAX;
+	ShaderLanguage::ShaderCompileInfo info;
+	ShaderLanguage::ShaderCompileInfo deprecated_info;
+
+	HashSet<String> all_renames;
+	HashMap<TokenType, String> new_reserved_word_renames;
+	HashMap<String, HashMap<String, String>> scope_to_built_in_renames;
 
 	bool warning_comments = true;
 	bool verbose_comments = false;
@@ -273,8 +302,11 @@ private:
 	TokenType _peek_tk_type(int64_t p_count, List<Token>::Element **r_pos = nullptr) const;
 
 	bool scope_has_decl(const String &p_scope, const String &p_name) const;
-	bool _handle_new_keyword_rename(TokenE *p_pos, bool p_detected_3x, HashMap<TokenType, String> &p_func_renames);
-	TokenE *_rename_keyword_id(TokenE *p_pos, bool p_detected_3x, const HashMap<TokenType, String> &p_func_renames);
+	String _get_printable_scope_name_of_built_in(const String &p_name, const String &p_scope) const;
+	bool token_is_new_built_in(const TokenE *p_token) const;
+	bool _handle_decl_rename(TokenE *p_pos, bool p_detected_3x);
+	bool _token_has_rename(const TokenE *p_token, const String &p_scope) const;
+	TokenE *_rename_id(TokenE *p_pos, bool p_detected_3x);
 
 	bool _has_any_preprocessor_directives();
 	bool _is_code_deprecated();
@@ -292,6 +324,7 @@ private:
 	bool _add_comment_at_eol(const String &p_comment, List<Token>::Element *p_pos);
 	bool _process_func_decl_statement(TokenE *p_start_tok, TokenE *p_type_tok, bool p_second_pass = false);
 	bool _process_decl_statement(TokenE *p_start_tok, TokenE *p_type_tok, const String &p_scope = "<global>", bool p_func_args = false);
+	String _get_scope_for_token(const TokenE *p_token) const;
 	bool _parse_decls(bool p_first_pass);
 	bool _process_decl_if_exist(const String &p_current_func, bool p_first_pass);
 	bool _insert_uniform_declaration(const String &p_name);

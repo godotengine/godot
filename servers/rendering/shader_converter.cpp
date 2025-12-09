@@ -31,8 +31,277 @@
 #ifndef DISABLE_DEPRECATED
 
 #include "shader_converter.h"
+#include "shader_types.h"
 
 #define SL ShaderLanguage
+
+DeprecatedShaderTypes::DeprecatedShaderTypes() {
+	/*************** SPATIAL ***********************/
+
+	shader_modes[RS::SHADER_SPATIAL].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VERTEX"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["NORMAL"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["TANGENT"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["BINORMAL"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["POSITION"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["UV"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["UV2"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["POINT_SIZE"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["INSTANCE_ID"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["INSTANCE_CUSTOM"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VERTEX_ID"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["ROUGHNESS"] = ShaderLanguage::TYPE_FLOAT;
+
+	//builtins
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["WORLD_MATRIX"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["INV_CAMERA_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CAMERA_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["PROJECTION_MATRIX"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["MODELVIEW_MATRIX"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["INV_PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_MONO_LEFT"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_RIGHT"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["NODE_POSITION_WORLD"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CAMERA_POSITION_WORLD"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CAMERA_DIRECTION_WORLD"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["NODE_POSITION_VIEW"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].main_function = true;
+
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VERTEX"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["FRONT_FACING"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["NORMAL"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["TANGENT"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["BINORMAL"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["NORMALMAP"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["NORMALMAP_DEPTH"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["UV2"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ALBEDO"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["METALLIC"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SPECULAR"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ROUGHNESS"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM_TINT"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT_GLOSS"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ANISOTROPY"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ANISOTROPY_FLOW"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SSS_STRENGTH"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["TRANSMISSION"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["AO"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["AO_LIGHT_AFFECT"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["EMISSION"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SCREEN_TEXTURE"] = ShaderLanguage::TYPE_SAMPLER2D;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["DEPTH_TEXTURE"] = ShaderLanguage::TYPE_SAMPLER2D;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["DEPTH"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SCREEN_UV"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["POINT_COORD"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_SCISSOR"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_MONO_LEFT"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_RIGHT"] = constt(ShaderLanguage::TYPE_INT);
+
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
+
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["WORLD_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["INV_CAMERA_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CAMERA_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["INV_PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["NODE_POSITION_WORLD"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CAMERA_POSITION_WORLD"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CAMERA_DIRECTION_WORLD"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["NODE_POSITION_VIEW"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].can_discard = true;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].main_function = true;
+
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["WORLD_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["INV_CAMERA_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["CAMERA_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["INV_PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
+
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["NORMAL"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["UV2"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["VIEW"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["LIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["LIGHT_COLOR"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ATTENUATION"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ALBEDO"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["TRANSMISSION"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["METALLIC"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ROUGHNESS"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["DIFFUSE_LIGHT"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["SPECULAR_LIGHT"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ALPHA"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].can_discard = true;
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].main_function = true;
+
+	//order used puts first enum mode (default) first
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "blend_mix" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "blend_add" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "blend_sub" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "blend_mul" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "depth_draw_opaque" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "depth_draw_always" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "depth_draw_never" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "depth_draw_alpha_prepass" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "depth_test_disable" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "cull_back" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "cull_front" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "cull_disabled" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "unshaded" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "diffuse_lambert" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "diffuse_lambert_wrap" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "diffuse_oren_nayar" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "diffuse_burley" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "diffuse_toon" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular_schlick_ggx" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular_blinn" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular_phong" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular_toon" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "specular_disabled" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "skip_vertex_transform" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "world_vertex_coords" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "ensure_correct_normals" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "shadows_disabled" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "ambient_light_disabled" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "shadow_to_opacity" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "vertex_lighting" });
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "async_visible" });
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back({ "async_hidden" });
+
+	/************ CANVAS ITEM **************************/
+
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["VERTEX"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["UV"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["MODULATE"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["POINT_SIZE"] = ShaderLanguage::TYPE_FLOAT;
+
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["WORLD_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["EXTRA_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["INSTANCE_CUSTOM"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["AT_LIGHT_PASS"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["TEXTURE_PIXEL_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["INSTANCE_ID"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["VERTEX_ID"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].main_function = true;
+
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["NORMAL"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["NORMALMAP"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["NORMALMAP_DEPTH"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["MODULATE"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["TEXTURE"] = constt(ShaderLanguage::TYPE_SAMPLER2D);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["TEXTURE_PIXEL_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["NORMAL_TEXTURE"] = constt(ShaderLanguage::TYPE_SAMPLER2D);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["SCREEN_UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["SCREEN_PIXEL_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["POINT_COORD"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["AT_LIGHT_PASS"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].built_ins["SCREEN_TEXTURE"] = constt(ShaderLanguage::TYPE_SAMPLER2D);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].can_discard = true;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].main_function = true;
+
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["NORMAL"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["MODULATE"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["TEXTURE"] = constt(ShaderLanguage::TYPE_SAMPLER2D);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["TEXTURE_PIXEL_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["SCREEN_UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_VEC"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["SHADOW_VEC"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_HEIGHT"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_COLOR"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["SHADOW_COLOR"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].built_ins["POINT_COORD"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].can_discard = true;
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["light"].main_function = true;
+
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "skip_vertex_transform" });
+
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "blend_mix" });
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "blend_add" });
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "blend_sub" });
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "blend_mul" });
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "blend_premul_alpha" });
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "blend_disabled" });
+
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "unshaded" });
+	shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ "light_only" });
+
+	/************ PARTICLES **************************/
+
+	shader_modes[RS::SHADER_PARTICLES].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["VELOCITY"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["MASS"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["ACTIVE"] = ShaderLanguage::TYPE_BOOL;
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["RESTART"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["CUSTOM"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["LIFETIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["DELTA"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["NUMBER"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["EMISSION_TRANSFORM"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["RANDOM_SEED"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].main_function = true;
+
+	shader_modes[RS::SHADER_PARTICLES].modes.push_back({ "disable_force" });
+	shader_modes[RS::SHADER_PARTICLES].modes.push_back({ "disable_velocity" });
+	shader_modes[RS::SHADER_PARTICLES].modes.push_back({ "keep_data" });
+
+	shader_types.insert("spatial");
+	shader_types.insert("canvas_item");
+	shader_types.insert("particles");
+}
+
+const HashMap<StringName, ShaderLanguage::FunctionInfo> &DeprecatedShaderTypes::get_functions(RS::ShaderMode p_mode) {
+	return shader_modes[p_mode].functions;
+}
+
+const Vector<ShaderLanguage::ModeInfo> &DeprecatedShaderTypes::get_modes(RS::ShaderMode p_mode) {
+	return shader_modes[p_mode].modes;
+}
+
+const HashSet<String> &DeprecatedShaderTypes::get_types() {
+	return shader_types;
+}
 
 const char *ShaderDeprecatedConverter::old_builtin_funcs[]{
 	"abs",
@@ -1228,6 +1497,8 @@ void ShaderDeprecatedConverter::reset() {
 	scope_declarations.clear();
 	after_shader_decl = code_tokens.front();
 	curr_ptr = code_tokens.front();
+	new_reserved_word_renames.clear();
+	scope_to_built_in_renames.clear();
 	report.clear();
 }
 
@@ -1407,6 +1678,7 @@ bool ShaderDeprecatedConverter::_parse_struct() {
 	struct_decl.body_end_pos = struct_body_end;
 	struct_decls[struct_name] = struct_decl;
 	String struct_scope = "struct." + struct_name;
+	scope_declarations[struct_scope] = HashSet<String>();
 	for (TokenE *tk = struct_body_start; tk != struct_body_end; tk = get_next_token()) {
 		if (!_process_decl_if_exist(struct_scope, false)) {
 			return false;
@@ -1415,6 +1687,35 @@ bool ShaderDeprecatedConverter::_parse_struct() {
 
 	reset_to(struct_body_end);
 	return true;
+}
+
+String ShaderDeprecatedConverter::_get_scope_for_token(const TokenE *p_token) const {
+	for (const KeyValue<String, HashSet<String>> &E : scope_declarations) {
+		const String &scope = E.key;
+		if (scope.begins_with("struct.")) {
+			const String &struct_name = scope.substr(7);
+			if (struct_decls.has(struct_name)) {
+				const StructDecl &struct_decl = struct_decls[struct_name];
+				TokenE *pos = struct_decl.body_start_pos;
+				while (pos != struct_decl.body_end_pos) {
+					if (pos == p_token) {
+						return scope;
+					}
+					pos = pos->next();
+				}
+			}
+		} else if (function_decls.has(scope)) {
+			const FunctionDecl &func_decl = function_decls[scope];
+			TokenE *pos = func_decl.args_start_pos;
+			while (pos != func_decl.body_end_pos) {
+				if (pos == p_token) {
+					return scope;
+				}
+				pos = pos->next();
+			}
+		}
+	}
+	return "<global>";
 }
 
 // Past the start and type tokens, at the id or bracket open token.
@@ -1563,6 +1864,7 @@ bool ShaderDeprecatedConverter::_process_func_decl_statement(TokenE *p_start_tok
 	COND_LINE_MSG_FAIL(func.body_end_pos->get().type != TT::TK_CURLY_BRACKET_CLOSE, func.body_start_pos->get().line, RTR("Expected '}' bracket"));
 	if (p_first_pass) { // p_first_pass == false means the functions have already been processed.
 		function_decls[name] = func;
+		scope_declarations[name] = HashSet<String>();
 #ifdef DEBUG_ENABLED
 	} else {
 		if (!function_decls.has(name)) {
@@ -1671,7 +1973,8 @@ bool ShaderDeprecatedConverter::_process_decl_if_exist(const String &p_curr_func
 		// Backup to before the curly bracket open.
 		get_prev_token();
 	} else if (!p_first_pass) { // Other non-uniform declaration (global const, varying, locals, etc.).
-		if (!_process_decl_statement(start_pos, type_pos, p_curr_func)) {
+		String scope = _get_scope_for_token(id_tok);
+		if (!_process_decl_statement(start_pos, type_pos, scope)) {
 			return false;
 		}
 	}
@@ -1736,6 +2039,13 @@ bool ShaderDeprecatedConverter::_preprocess_code() {
 		shader_mode = get_shader_mode_from_string(mode_string);
 	}
 	after_shader_decl = get_pos();
+	info.functions = ShaderTypes::get_singleton()->get_functions(shader_mode);
+	info.render_modes = ShaderTypes::get_singleton()->get_modes(shader_mode);
+	info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(shader_mode);
+	info.shader_types = ShaderTypes::get_singleton()->get_types();
+	deprecated_info.functions = deprecated_shader_types.get_functions(shader_mode);
+	deprecated_info.render_modes = deprecated_shader_types.get_modes(shader_mode);
+	deprecated_info.shader_types = deprecated_shader_types.get_types();
 
 	/***
 	 * The first pass gets the uniform declarations; we require this is to ensure idempotency for inserting new uniforms and replacing type hints.
@@ -1913,6 +2223,8 @@ bool ShaderDeprecatedConverter::_is_code_deprecated() {
 			return true;
 		} else if (tokentype_is_new_reserved_keyword(uni.name_pos->get().type)) { // Uniform name is a new reserved keyword.
 			return true;
+		} else if (token_is_new_built_in(uni.name_pos)) { // Uniform name is a built-in.
+			return true;
 		} else if (uni.has_interp_qual()) { // Newer versions of Godot disallow interpolation qualifiers for uniforms.
 			return true;
 		}
@@ -1927,11 +2239,15 @@ bool ShaderDeprecatedConverter::_is_code_deprecated() {
 		const StructDecl &struct_decl = E.value;
 		if (tokentype_is_new_reserved_keyword(struct_decl.name_pos->get().type)) { // Struct identifier is new reserved keyword.
 			return true;
+		} else if (token_is_new_built_in(struct_decl.name_pos)) { // Struct identifier is a built-in.
+			return true;
 		}
 		for (const KeyValue<String, VarDecl> &v : struct_decl.members) {
 			if (v.value.type_pos->get().type == TT::TK_IDENTIFIER && has_removed_type(get_token_literal_text(v.value.type_pos->get()))) { // Unported 3.x type.
 				return true;
 			} else if (tokentype_is_new_reserved_keyword(v.value.name_pos->get().type)) { // Struct member identifier is new reserved keyword.
+				return true;
+			} else if (token_is_new_built_in(v.value.name_pos)) { // Struct member identifier is a built-in.
 				return true;
 			}
 		}
@@ -1947,6 +2263,8 @@ bool ShaderDeprecatedConverter::_is_code_deprecated() {
 			return true;
 		} else if (tokentype_is_new_reserved_keyword(func.name_pos->get().type)) { // Function identifier is new reserved keyword.
 			return true;
+		} else if (token_is_new_built_in(func.name_pos)) { // Function identifier is a built-in.
+			return true;
 		} else if (id_is_new_builtin_func(name)) { // Declaration of function with the same name as a new built-in function.
 			return true;
 		}
@@ -1957,6 +2275,8 @@ bool ShaderDeprecatedConverter::_is_code_deprecated() {
 			if (var_decl.type_pos->get().type == TT::TK_IDENTIFIER && has_removed_type(get_token_literal_text(var_decl.type_pos->get()))) { // Unported 3.x type.
 				return true;
 			} else if (tokentype_is_new_reserved_keyword(var_decl.name_pos->get().type)) { // Id is new reserved keyword.
+				return true;
+			} else if (token_is_new_built_in(var_decl.name_pos)) { // Id is a built-in.
 				return true;
 			}
 		}
@@ -2043,27 +2363,115 @@ bool ShaderDeprecatedConverter::_check_deprecated_type(TokenE *p_type_pos) {
 	return true;
 }
 
-ShaderDeprecatedConverter::TokenE *ShaderDeprecatedConverter::_rename_keyword_id(TokenE *p_pos, bool p_detected_3x, const HashMap<TokenType, String> &p_new_reserved_word_renames) {
-	String rename = p_new_reserved_word_renames[p_pos->get().type];
-	reset_to(p_pos);
-	return replace_curr(mk_tok(TT::TK_IDENTIFIER, rename), "Identifier '%s' is a reserved word in this version of Godot, renamed to '%s'.");
+String ShaderDeprecatedConverter::_get_printable_scope_name_of_built_in(const String &p_name, const String &p_current_scope) const {
+	String scope = p_current_scope;
+	if (is_renamed_main_function(shader_mode, p_current_scope)) {
+		scope = get_main_function_rename(p_current_scope);
+	}
+	if (info.functions.has(scope) && info.functions[scope].built_ins.has(p_name)) {
+		return scope;
+	}
+	if (info.functions.has("global") && info.functions["global"].built_ins.has(p_name)) {
+		return "global";
+	}
+	if (info.functions.has("constants") && info.functions["constants"].built_ins.has(p_name)) {
+		return "constants";
+	}
+	return String();
 }
 
-bool ShaderDeprecatedConverter::_handle_new_keyword_rename(TokenE *p_pos, bool p_detected_3x, HashMap<TokenType, String> &p_new_reserved_word_renames) {
+bool ShaderDeprecatedConverter::token_is_new_built_in(const TokenE *p_pos) const {
+	ERR_FAIL_NULL_V(p_pos, {});
+	String name = get_token_literal_text(p_pos->get());
+	String scope = _get_scope_for_token(p_pos);
+	if (deprecated_info.functions.has(scope) && deprecated_info.functions[scope].built_ins.has(name)) {
+		return false;
+	} else if (deprecated_info.functions["global"].built_ins.has(name)) {
+		return false;
+	}
+	return !_get_printable_scope_name_of_built_in(name, scope).is_empty();
+}
+
+bool ShaderDeprecatedConverter::_token_has_rename(const TokenE *p_pos, const String &p_scope) const {
+	ERR_FAIL_NULL_V(p_pos, false);
+	if (tokentype_is_new_reserved_keyword(p_pos->get().type)) {
+		return new_reserved_word_renames.has(p_pos->get().type);
+	}
+	String name = get_token_literal_text(p_pos->get());
+	if (scope_to_built_in_renames.has(p_scope) && scope_to_built_in_renames[p_scope].has(name)) {
+		return true;
+	} else if (scope_to_built_in_renames.has("<global>") && scope_to_built_in_renames["<global>"].has(name)) {
+		return true;
+	}
+	return false;
+}
+
+ShaderDeprecatedConverter::TokenE *ShaderDeprecatedConverter::_rename_id(TokenE *p_pos, bool p_detected_3x) {
+	String rename;
+	String comment_format;
+	if (new_reserved_word_renames.has(p_pos->get().type)) {
+		rename = new_reserved_word_renames[p_pos->get().type];
+		comment_format = "Identifier '%s' is a reserved word in this version of Godot, renamed to '%s'";
+	} else {
+		String scope = _get_scope_for_token(p_pos);
+		String name = get_token_literal_text(p_pos->get());
+		if (scope_to_built_in_renames.has(scope) && scope_to_built_in_renames[scope].has(name)) {
+			rename = scope_to_built_in_renames[scope][name];
+		} else if (scope_to_built_in_renames.has("<global>") && scope_to_built_in_renames["<global>"].has(name)) {
+			rename = scope_to_built_in_renames["<global>"][name];
+		}
+		comment_format = "Identifier '%s' is a built-in in the '" + _get_printable_scope_name_of_built_in(name, scope) + "' scope, renamed to '%s'";
+	}
+	ERR_FAIL_COND_V(rename.is_empty(), nullptr);
+	reset_to(p_pos);
+	return replace_curr(mk_tok(TT::TK_IDENTIFIER, rename), comment_format);
+}
+
+bool ShaderDeprecatedConverter::_handle_decl_rename(TokenE *p_pos, bool p_detected_3x) {
+	ERR_FAIL_NULL_V(p_pos, false);
 	TokenType tk_type = p_pos->get().type;
 	String name = get_token_literal_text(p_pos->get());
-	if (tokentype_is_new_reserved_keyword(tk_type)) {
+	bool is_built_in = token_is_new_built_in(p_pos);
+	bool is_new_reserved_keyword = tokentype_is_new_reserved_keyword(tk_type);
+	if (is_built_in || is_new_reserved_keyword) {
 		if (!p_detected_3x) {
 			// If we're not sure it's a 3.x shader, just add a comment.
-			_add_comment_before(vformat(RTR("Identifier '%s' is a reserved word in this version of Godot."), name), p_pos);
+			String comment;
+			String scope = _get_scope_for_token(p_pos);
+			if (is_built_in) {
+				comment = vformat(RTR("Identifier '%s' is a built-in in the %s scope."), name, _get_printable_scope_name_of_built_in(name, scope));
+			} else {
+				comment = vformat(RTR("Identifier '%s' is a reserved word in this version of Godot."), name);
+			}
+			_add_comment_before(comment, p_pos);
 			return false;
 		}
-		if (!p_new_reserved_word_renames.has(tk_type)) {
-			String rename = name + String("_");
-			while (function_decls.has(rename) || uniform_decls.has(rename) || var_decls.has(rename) || struct_decls.has(rename)) {
-				rename += "_";
+		if (is_new_reserved_keyword) {
+			if (!new_reserved_word_renames.has(tk_type)) {
+				String rename = name + String("_");
+				while (all_renames.has(rename) || function_decls.has(rename) || uniform_decls.has(rename) || var_decls.has(rename) || struct_decls.has(rename)) {
+					rename += "_";
+				}
+				new_reserved_word_renames[tk_type] = rename;
+				all_renames.insert(rename);
 			}
-			p_new_reserved_word_renames[tk_type] = rename;
+		} else {
+			String scope = _get_scope_for_token(p_pos);
+			if (!scope_to_built_in_renames.has(scope)) {
+				scope_to_built_in_renames[scope] = HashMap<String, String>();
+			}
+			if (!scope_to_built_in_renames[scope].has(name)) {
+				String rename = name + String("_");
+				while (all_renames.has(rename) ||
+						function_decls.has(rename) ||
+						uniform_decls.has(rename) ||
+						var_decls.has(rename) ||
+						struct_decls.has(rename)) {
+					rename += "_";
+				}
+				scope_to_built_in_renames[scope][name] = rename;
+				all_renames.insert(rename);
+			}
 		}
 		return true;
 	}
@@ -2138,7 +2546,6 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 
 	// Renaming new reserved keywords used as identifiers (e.g "global", "instance").
 	// To ensure idempotency, we only do this if we know for certain that the new keyword was used in a declaration.
-	HashMap<TokenType, String> new_reserved_word_renames;
 	HashMap<String, String> func_renames;
 	HashMap<String, String> struct_renames;
 	HashMap<String, String> struct_member_renames;
@@ -2150,16 +2557,16 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 			return false;
 		}
 
-		if (_handle_new_keyword_rename(uni.name_pos, detected_3x, new_reserved_word_renames)) {
-			uni.name_pos = _rename_keyword_id(uni.name_pos, detected_3x, new_reserved_word_renames);
+		if (_handle_decl_rename(uni.name_pos, detected_3x)) {
+			uni.name_pos = _rename_id(uni.name_pos, detected_3x);
 			reset_to(after_shader_decl);
 		}
 	}
 
 	for (KeyValue<String, StructDecl> &E : struct_decls) {
 		StructDecl &struct_decl = E.value;
-		if (_handle_new_keyword_rename(struct_decl.name_pos, detected_3x, new_reserved_word_renames)) {
-			struct_decl.name_pos = _rename_keyword_id(struct_decl.name_pos, detected_3x, new_reserved_word_renames);
+		if (_handle_decl_rename(struct_decl.name_pos, detected_3x)) {
+			struct_decl.name_pos = _rename_id(struct_decl.name_pos, detected_3x);
 			struct_renames[E.key] = get_token_literal_text(struct_decl.name_pos->get());
 			reset_to(after_shader_decl);
 		}
@@ -2169,8 +2576,8 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 				return false;
 			}
 			String type = get_token_literal_text(var.type_pos->get());
-			if (_handle_new_keyword_rename(var.name_pos, detected_3x, new_reserved_word_renames)) {
-				var.name_pos = _rename_keyword_id(var.name_pos, detected_3x, new_reserved_word_renames);
+			if (_handle_decl_rename(var.name_pos, detected_3x)) {
+				var.name_pos = _rename_id(var.name_pos, detected_3x);
 				struct_member_renames[M.key] = get_token_literal_text(var.name_pos->get());
 				reset_to(after_shader_decl);
 			}
@@ -2198,15 +2605,15 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 			}
 		}
 
-		if (_handle_new_keyword_rename(E.value[0].name_pos, detected_3x, new_reserved_word_renames)) {
+		if (_handle_decl_rename(E.value[0].name_pos, detected_3x)) {
 			for (VarDecl &var_decl : E.value) {
 				// replace the identifier
 				reset_to(var_decl.name_pos);
 				if (var_decl.name_pos == var_decl.start_pos) {
-					var_decl.name_pos = _rename_keyword_id(var_decl.name_pos, detected_3x, new_reserved_word_renames);
+					var_decl.name_pos = _rename_id(var_decl.name_pos, detected_3x);
 					var_decl.start_pos = var_decl.name_pos;
 				} else {
-					var_decl.name_pos = _rename_keyword_id(var_decl.name_pos, detected_3x, new_reserved_word_renames);
+					var_decl.name_pos = _rename_id(var_decl.name_pos, detected_3x);
 				}
 				reset_to(after_shader_decl);
 			}
@@ -2279,8 +2686,8 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 			reset_to(var.name_pos);
 			var.name_pos = replace_curr(mk_tok(TT::TK_IDENTIFIER, rename), "Function '%s' is a built-in function in this version of Godot, renamed to '%s'.");
 			reset_to(after_shader_decl);
-		} else if (_handle_new_keyword_rename(var.name_pos, detected_3x, new_reserved_word_renames)) {
-			var.name_pos = _rename_keyword_id(var.name_pos, detected_3x, new_reserved_word_renames);
+		} else if (_handle_decl_rename(var.name_pos, detected_3x)) {
+			var.name_pos = _rename_id(var.name_pos, detected_3x);
 			reset_to(after_shader_decl);
 		}
 	}
@@ -2310,9 +2717,9 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 			continue;
 		}
 		String cur_tok_text = get_token_literal_text(cur_tok->get());
-		if (cur_tok->get().pos != NEW_IDENT && new_reserved_word_renames.has(cur_tok->get().type)) {
+		if (cur_tok->get().pos != NEW_IDENT && _token_has_rename(cur_tok, curr_func)) {
 			if (peek_prev_tk_type() == TT::TK_PERIOD && struct_member_renames.has(cur_tok_text)) {
-				cur_tok = _rename_keyword_id(cur_tok, detected_3x, new_reserved_word_renames);
+				cur_tok = _rename_id(cur_tok, detected_3x);
 				continue;
 			}
 			if (!(scope_has_decl(curr_func, cur_tok_text) || (function_decls.has(cur_tok_text) && peek_next_tk_type() == TT::TK_PARENTHESIS_OPEN))) {
@@ -2326,7 +2733,7 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 			} else if (all_hints.has(cur_tok)) {
 				continue; // Hint, don't replace it.
 			}
-			cur_tok = _rename_keyword_id(cur_tok, detected_3x, new_reserved_word_renames);
+			cur_tok = _rename_id(cur_tok, detected_3x);
 			continue;
 		}
 		switch (cur_tok->get().type) {
@@ -2520,6 +2927,47 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 						insert_after(mk_tok(TT::TK_PARENTHESIS_CLOSE), cur_tok);
 					}
 					insert_before(right_hand_prefix, cur_tok);
+
+				} else if (cur_tok_text == "WORLD_MATRIX" && has_builtin_rename(shader_mode, cur_tok_text, curr_func) && !scope_has_decl(curr_func, cur_tok_text)) {
+					String rename = get_builtin_rename(cur_tok_text);
+					cur_tok = replace_curr(mk_tok(TT::TK_IDENTIFIER, rename), "Built-in '%s' is renamed to '%s'.");
+					// detect left-hand usage; if detected, comment out the entire line
+					if (peek_next_tk_type() == TT::TK_BRACKET_OPEN) {
+						// WORLD_MATRIX[3] = vec3(0.0);
+						get_next_token(); // consume bracket open
+						TokenE *end = _get_end_of_closure();
+						if (end) {
+							reset_to(end);
+							if (end->get().type == TT::TK_BRACKET_CLOSE) {
+								while (peek_next_tk_type() == TT::TK_PERIOD && peek_next_tk_type() != TT::TK_EOF) {
+									// WORLD_MATRIX[3].xyz = 0.0;
+									get_next_token(); // consume period
+									get_next_token(); // consume member access
+								}
+							}
+						}
+					}
+					switch (peek_next_tk_type()) {
+						case TT::TK_OP_ASSIGN:
+						case TT::TK_OP_ASSIGN_ADD:
+						case TT::TK_OP_ASSIGN_SUB:
+						case TT::TK_OP_ASSIGN_MUL:
+						case TT::TK_OP_ASSIGN_DIV:
+						case TT::TK_OP_ASSIGN_MOD:
+						case TT::TK_OP_ASSIGN_BIT_AND:
+						case TT::TK_OP_ASSIGN_BIT_OR:
+						case TT::TK_OP_ASSIGN_BIT_XOR: {
+							TokenE *end = _get_end_of_closure();
+							TokenE *before = code_tokens.insert_before(cur_tok, mk_tok(TT::TK_BLOCK_COMMENT, "/*"));
+							_add_comment_before("MODEL_MATRIX is a constant in this version of Godot; left-hand usage is not supported.", before, true);
+							insert_after(mk_tok(TT::TK_BLOCK_COMMENT, "*/"), end);
+							break;
+						} break;
+
+						default: {
+						} break;
+					}
+					reset_to(cur_tok);
 				} else if (has_builtin_rename(shader_mode, cur_tok_text, curr_func) && !scope_has_decl(curr_func, cur_tok_text)) {
 					String rename = get_builtin_rename(cur_tok_text);
 					cur_tok = replace_curr(mk_tok(TT::TK_IDENTIFIER, rename), "Built-in '%s' is renamed to '%s'.");
@@ -2553,12 +3001,16 @@ String ShaderDeprecatedConverter::emit_code() const {
 			} break;
 			case TT::TK_BLOCK_COMMENT: {
 				if (tk.pos == NEW_IDENT) {
-					if (warning_comments && tok_text.contains("!convert WARNING:")) {
-						new_code += tok_text;
-					} else if (verbose_comments && tok_text.contains("!convert")) {
-						new_code += tok_text;
+					if (tok_text.contains("!convert WARNING:")) {
+						if (warning_comments) {
+							new_code += tok_text;
+						}
+					} else if (tok_text.contains("!convert")) {
+						if (verbose_comments) {
+							new_code += tok_text;
+						}
 					} else {
-						break;
+						new_code += tok_text;
 					}
 				} else {
 					new_code += tok_text;

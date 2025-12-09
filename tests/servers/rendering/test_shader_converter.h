@@ -778,6 +778,80 @@ TEST_CASE("[ShaderDeprecatedConverter] Replacement of reserved keywords used as 
 	}
 }
 
+TEST_CASE("[ShaderDeprecatedConverter] Replacement of new built-ins used as identifiers") {
+	static constexpr const char *global_code_template = R"(
+	shader_type %s;
+	const float %s = 1.0;
+	void foo() {
+		float bar = %s * 3.0;
+	})";
+	static constexpr const char *non_global_code_template = R"(
+	shader_type %s;
+	void %s() {
+		float %s = 1.0;
+		float bar = %s * 3.0;
+	})";
+	DeprecatedShaderTypes deprecated_shader_types;
+
+	for (int i = 0; i <= RS::SHADER_PARTICLES; i++) {
+		SL::ShaderCompileInfo info;
+		RS::ShaderMode mode = static_cast<RS::ShaderMode>(i);
+		String mode_name = get_shader_mode_name(mode);
+		const HashMap<StringName, ShaderLanguage::FunctionInfo> &deprecated_functions = deprecated_shader_types.get_functions(mode);
+		List<String> function_renames;
+		ShaderDeprecatedConverter::_get_function_renames_list(&function_renames);
+		HashMap<String, String> function_rename_map;
+		for (const String &func_rename : function_renames) {
+			if (ShaderDeprecatedConverter::is_renamed_main_function(mode, func_rename)) {
+				function_rename_map[ShaderDeprecatedConverter::get_main_function_rename(func_rename)] = func_rename;
+			}
+		}
+
+		get_compile_info(info, mode);
+		for (const KeyValue<StringName, SL::FunctionInfo> &func : info.functions) {
+			String func_name = String(func.key);
+			String renamed_func_name = func_name;
+
+			if (function_rename_map.has(func_name)) {
+				func_name = function_rename_map[renamed_func_name];
+			}
+			for (const KeyValue<StringName, SL::BuiltInInfo> &builtin : func.value.built_ins) {
+				if (deprecated_functions.has(func_name) && deprecated_functions[func_name].built_ins.has(builtin.key)) {
+					continue;
+				}
+				String builtin_name = String(builtin.key);
+				String renamed_builtin = builtin_name + "_";
+
+				if (func_name == "global" || func_name == "constants") {
+					SUBCASE((builtin_name + " renamed in global scope").utf8().get_data()) {
+						String code = vformat(global_code_template, mode_name, builtin_name, builtin_name);
+						String expected = vformat(global_code_template, mode_name, renamed_builtin, renamed_builtin);
+						TEST_CONVERSION(code, expected, true);
+					}
+					SUBCASE((builtin_name + "renamed in all scopes").utf8().get_data()) {
+						String code = vformat(non_global_code_template, mode_name, "foo", builtin_name, builtin_name);
+						String expected = vformat(non_global_code_template, mode_name, "foo", renamed_builtin, renamed_builtin);
+						TEST_CONVERSION(code, expected, true);
+					}
+				} else {
+					SUBCASE((builtin_name + " renamed in " + renamed_func_name + " scope").utf8().get_data()) {
+						String code = vformat(non_global_code_template, mode_name, func_name, builtin_name, builtin_name);
+						String expected = vformat(non_global_code_template, mode_name, renamed_func_name, renamed_builtin, renamed_builtin);
+						TEST_CONVERSION(code, expected, true);
+					}
+
+					SUBCASE((builtin_name + " not renamed outside of " + renamed_func_name + " scope").utf8().get_data()) {
+						String code = vformat(global_code_template, mode_name, builtin_name, builtin_name);
+						TEST_CONVERSION(code, code, false);
+					}
+				}
+			}
+		}
+	}
+}
+
+// TODO: WORLD_MATRIX TESTS
+
 TEST_CASE("[ShaderDeprecatedConverter] Convert default 3.x nodetree shader") {
 	static const char *default_3x_nodtree_shader =
 			R"(shader_type spatial;
