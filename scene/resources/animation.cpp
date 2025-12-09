@@ -33,10 +33,6 @@
 
 #include "core/io/marshalls.h"
 
-#define _LOAD_COMPAT_META_PROPERTY "_load_compat"
-#define _TRANSFORM_TRACK_LIST_META_PROPERTY "_transform_track_list"
-#define _TRANSFORM_TRACK_DATA_META_PROPERTY(m_track_idx) "_transform_track_data__" + String::num_int64(m_track_idx)
-
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
 
@@ -111,15 +107,10 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 			} else {
 #ifndef DISABLE_DEPRECATED
 				// for compatibility with 3.x animations
-				if (get_meta(_LOAD_COMPAT_META_PROPERTY, false)) { // Only do compatibility conversions if we are loading a resource.
+				if (_started_load) { // Only do compatibility conversions if we are loading a resource.
 					if (type == "transform") {
 						WARN_DEPRECATED_MSG("Animation uses old 'transform' track types, which is deprecated (and loads slower). Consider re-importing or re-saving the resource.");
-						PackedInt32Array track_list = get_meta(_TRANSFORM_TRACK_LIST_META_PROPERTY, PackedInt32Array());
-						track_list.push_back(track);
-						set_meta(_TRANSFORM_TRACK_LIST_META_PROPERTY, track_list);
-						Dictionary track_data;
-						track_data["type"] = "transform";
-						set_meta(_TRANSFORM_TRACK_DATA_META_PROPERTY(track), track_data);
+						_transform_track_data[track] = { { { "type", "transform" } } };
 						// Add an empty track that will get replaced after we are finished loading, so we don't throw off the track indices.
 						add_track(TYPE_ANIMATION, track);
 						return true;
@@ -157,14 +148,10 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 			return true;
 		}
 		// If we have a transform track, we need to store the data in the metadata to be able to convert it to the new format after the load is finished.
-		if (get_meta(_LOAD_COMPAT_META_PROPERTY, false)) { // Only do this on resource loads, not on editor changes
+		if (_started_load) { // Only do this on resource loads, not on editor changes
 			// check the metadata to see if this track is a transform track that we are holding on to
-			PackedInt32Array transform_tracks = get_meta(_TRANSFORM_TRACK_LIST_META_PROPERTY, PackedInt32Array());
-			if (transform_tracks.has(track)) {
-				// get the track data
-				Dictionary track_data = get_meta(_TRANSFORM_TRACK_DATA_META_PROPERTY(track), Dictionary());
-				track_data[what] = p_value;
-				set_meta(_TRANSFORM_TRACK_DATA_META_PROPERTY(track), track_data);
+			if (_transform_track_data.has(track)) {
+				_transform_track_data[track][what] = p_value;
 				return true;
 			}
 		}
@@ -5389,31 +5376,24 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 
 void Animation::_start_load(const StringName &p_res_format_type, int p_res_format_version) {
 #ifndef DISABLE_DEPRECATED
-	set_meta(_LOAD_COMPAT_META_PROPERTY, true);
+	_started_load = true;
 #endif
 }
 
 void Animation::_finish_load(const StringName &p_res_format_type, int p_res_format_version) {
 #ifndef DISABLE_DEPRECATED // 3.x compatibility, convert transform tracks to separate tracks
-	if (!has_meta(_LOAD_COMPAT_META_PROPERTY)) {
+	if (!_started_load) {
 		return;
 	}
-	set_meta(_LOAD_COMPAT_META_PROPERTY, Variant());
-	if (!has_meta(_TRANSFORM_TRACK_LIST_META_PROPERTY)) {
-		return;
-	}
-	PackedInt32Array transform_track_list = get_meta(_TRANSFORM_TRACK_LIST_META_PROPERTY, PackedInt32Array());
-	set_meta(_TRANSFORM_TRACK_LIST_META_PROPERTY, Variant());
-	if (transform_track_list.is_empty()) {
-		return;
-	}
+	_started_load = false;
 	int offset = 0;
-	for (int track_idx : transform_track_list) {
+	for (const KeyValue<int, Dictionary> &E : _transform_track_data) {
+		int track_idx = E.key;
 		// now that we have all the tracks, we need to split the transform tracks into separate tracks
 		// this is because the current animation player doesn't support transform tracks
 		// so we need to split them into separate position, rotation, and scale tracks
 		// No need to worry about compression here; this was added in 4.x and wasn't backported to 3.x.
-		Dictionary track_data = get_meta(_TRANSFORM_TRACK_DATA_META_PROPERTY(track_idx), Dictionary());
+		const Dictionary &track_data = E.value;
 		if (track_data.is_empty()) {
 			continue;
 		}
@@ -5466,7 +5446,7 @@ void Animation::_finish_load(const StringName &p_res_format_type, int p_res_form
 		add_track(TYPE_POSITION_3D, track_idx + offset);
 		for (int j = 0; j < c_track_keys.size(); j++) {
 			String key = c_track_keys[j];
-			Variant &value = track_data[key];
+			const Variant &value = track_data[key];
 			if (key == "path") {
 				node_path = value;
 			}
@@ -5494,11 +5474,9 @@ void Animation::_finish_load(const StringName &p_res_format_type, int p_res_form
 		_set("tracks/" + itos(track_idx + offset) + "/relative_to_rest", is_bone_transform);
 		offset++;
 		offset--; // subtract 1 because we removed the dummy track
-		// erase the track data
-		set_meta(_TRANSFORM_TRACK_DATA_META_PROPERTY(track_idx), Variant());
 	}
 	// erase the track list
-	set_meta(_TRANSFORM_TRACK_LIST_META_PROPERTY, Variant());
+	_transform_track_data.clear();
 #endif // DISABLE_DEPRECATED
 }
 

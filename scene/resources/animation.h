@@ -295,6 +295,11 @@ private:
 
 	void _track_update_hash(int p_track);
 
+#ifndef DISABLE_DEPRECATED
+	bool _started_load = false;
+	HashMap<int, Dictionary> _transform_track_data;
+#endif
+
 	/* Animation compression page format (version 1):
 	 *
 	 * Animation uses bitwidth based compression separated into small pages. The intention is that pages fit easily in the cache, so decoding is cache efficient.
