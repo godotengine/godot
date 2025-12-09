@@ -332,11 +332,13 @@
             "name": "GDExtensionConstVariantPtr",
             "kind": "handle",
             "parent": "GDExtensionVariantPtr",
-            "const": true
+            "is_const": true
         },
         {
             "name": "GDExtensionUninitializedVariantPtr",
-            "kind": "handle"
+            "kind": "handle",
+            "parent": "GDExtensionVariantPtr",
+            "is_uninitialized": true
         },
         {
             "name": "GDExtensionStringNamePtr",
@@ -346,11 +348,13 @@
             "name": "GDExtensionConstStringNamePtr",
             "kind": "handle",
             "parent": "GDExtensionStringNamePtr",
-            "const": true
+            "is_const": true
         },
         {
             "name": "GDExtensionUninitializedStringNamePtr",
-            "kind": "handle"
+            "kind": "handle",
+            "parent": "GDExtensionStringNamePtr",
+            "is_uninitialized": true
         },
         {
             "name": "GDExtensionStringPtr",
@@ -360,11 +364,13 @@
             "name": "GDExtensionConstStringPtr",
             "kind": "handle",
             "parent": "GDExtensionStringPtr",
-            "const": true
+            "is_const": true
         },
         {
             "name": "GDExtensionUninitializedStringPtr",
-            "kind": "handle"
+            "kind": "handle",
+            "parent": "GDExtensionStringPtr",
+            "is_uninitialized": true
         },
         {
             "name": "GDExtensionObjectPtr",
@@ -374,12 +380,13 @@
             "name": "GDExtensionConstObjectPtr",
             "kind": "handle",
             "parent": "GDExtensionObjectPtr",
-            "const": true
+            "is_const": true
         },
         {
             "name": "GDExtensionUninitializedObjectPtr",
+            "kind": "handle",
             "parent": "GDExtensionObjectPtr",
-            "kind": "handle"
+            "is_uninitialized": true
         },
         {
             "name": "GDExtensionTypePtr",
@@ -389,16 +396,18 @@
             "name": "GDExtensionConstTypePtr",
             "kind": "handle",
             "parent": "GDExtensionTypePtr",
-            "const": true
+            "is_const": true
         },
         {
             "name": "GDExtensionUninitializedTypePtr",
-            "kind": "handle"
+            "kind": "handle",
+            "parent": "GDExtensionTypePtr",
+            "is_uninitialized": true
         },
         {
             "name": "GDExtensionMethodBindPtr",
             "kind": "handle",
-            "const": true
+            "is_const": true
         },
         {
             "name": "GDExtensionInt",
@@ -423,7 +432,7 @@
             "name": "GDExtensionConstRefPtr",
             "kind": "handle",
             "parent": "GDExtensionRefPtr",
-            "const": true
+            "is_const": true
         },
         {
             "name": "GDExtensionCallErrorType",
@@ -573,7 +582,7 @@
                 },
                 {
                     "name": "p_argument_count",
-                    "type": "int"
+                    "type": "int32_t"
                 }
             ]
         },
@@ -759,7 +768,7 @@
                 },
                 {
                     "name": "p_argument_count",
-                    "type": "int"
+                    "type": "int32_t"
                 }
             ]
         },
@@ -1864,6 +1873,7 @@
         {
             "name": "GDExtensionClassMethodFlags",
             "kind": "enum",
+            "is_bitfield": true,
             "values": [
                 {
                     "name": "GDEXTENSION_METHOD_FLAG_NORMAL",
@@ -6815,14 +6825,14 @@
                 },
                 {
                     "name": "p_elements",
-                    "type": "int",
+                    "type": "int32_t",
                     "description": [
                         "The number of element needed in the group."
                     ]
                 },
                 {
                     "name": "p_tasks",
-                    "type": "int",
+                    "type": "int32_t",
                     "description": [
                         "The number of tasks needed in the group."
                     ]

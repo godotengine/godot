@@ -97,7 +97,7 @@ void GDExtensionInterfaceHeaderGenerator::generate_gdextension_interface_header(
 		}
 		String kind = type_dict["kind"];
 		if (kind == "handle") {
-			type_dict["type"] = type_dict.get("const", false) ? "const void*" : "void*";
+			type_dict["type"] = type_dict.get("is_const", false) ? "const void*" : "void*";
 			write_simple_type(fa, type_dict);
 		} else if (kind == "alias") {
 			write_simple_type(fa, type_dict);
