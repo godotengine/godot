@@ -32,7 +32,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "core/templates/pair.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 
@@ -250,7 +249,7 @@ private:
 	static RS::ShaderMode get_shader_mode_from_string(const String &p_mode);
 
 	String get_token_literal_text(const Token &p_tk) const;
-	static Token mkTok(TokenType p_type, const StringName &p_text = StringName(), double constant = 0, uint16_t p_line = 0);
+	static Token mk_tok(TokenType p_type, const StringName &p_text = StringName(), double p_constant = 0.0, uint16_t p_line = 0);
 	static bool token_is_skippable(const Token &p_tk);
 	bool token_is_type(const Token &p_tk);
 	static bool token_is_hint(const Token &p_tk);
@@ -268,14 +267,14 @@ private:
 	bool insert_before(const Vector<Token> &p_token_list, List<Token>::Element *p_pos);
 	bool insert_after(const Token &p_token, List<Token>::Element *p_pos);
 	bool insert_before(const Token &p_token, List<Token>::Element *p_pos);
-	List<Token>::Element *replace_curr(const Token &p_token, String comment_prefix = String());
+	List<Token>::Element *replace_curr(const Token &p_token, const String &p_comment_prefix = String());
 	List<Token>::Element *_get_next_token_ptr(List<Token>::Element *p_curr_ptr) const;
 	List<Token>::Element *_get_prev_token_ptr(List<Token>::Element *p_curr_ptr) const;
 	TokenType _peek_tk_type(int64_t p_count, List<Token>::Element **r_pos = nullptr) const;
 
 	bool scope_has_decl(const String &p_scope, const String &p_name) const;
-	bool _handle_new_keyword_rename(TokenE *pos, bool p_detected_3x, HashMap<TokenType, String> &p_func_renames);
-	TokenE *_rename_keyword_id(TokenE *pos, bool p_detected_3x, const HashMap<TokenType, String> &p_func_renames);
+	bool _handle_new_keyword_rename(TokenE *p_pos, bool p_detected_3x, HashMap<TokenType, String> &p_func_renames);
+	TokenE *_rename_keyword_id(TokenE *p_pos, bool p_detected_3x, const HashMap<TokenType, String> &p_func_renames);
 
 	bool _has_any_preprocessor_directives();
 	bool _is_code_deprecated();
@@ -288,13 +287,13 @@ private:
 	bool _parse_struct();
 	bool _skip_struct();
 	bool _check_deprecated_type(TokenE *p_type_tok);
-	bool _add_to_report(int p_line, const String &p_msg, int level = 0);
-	bool _add_comment_before(const String &p_comment, List<Token>::Element *p_pos, bool warning = true);
+	bool _add_to_report(int p_line, const String &p_msg, int p_level = 0);
+	bool _add_comment_before(const String &p_comment, List<Token>::Element *p_pos, bool p_warning = true);
 	bool _add_comment_at_eol(const String &p_comment, List<Token>::Element *p_pos);
 	bool _process_func_decl_statement(TokenE *p_start_tok, TokenE *p_type_tok, bool p_second_pass = false);
 	bool _process_decl_statement(TokenE *p_start_tok, TokenE *p_type_tok, const String &p_scope = "<global>", bool p_func_args = false);
 	bool _parse_decls(bool p_first_pass);
-	bool _process_decl_if_exist(String p_curr_func, bool p_first_pass);
+	bool _process_decl_if_exist(const String &p_current_func, bool p_first_pass);
 	bool _insert_uniform_declaration(const String &p_name);
 	List<Token>::Element *_remove_from_curr_to(List<Token>::Element *p_end);
 	List<Token>::Element *_get_end_of_closure();

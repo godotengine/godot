@@ -1406,7 +1406,7 @@ TextShaderEditor::TextShaderEditor() {
 	confirm_convert_shader->set_text(TTR("This shader does not appear to be a 3.x shader.\nAre you sure you want to convert it?"));
 	confirm_convert_shader->get_ok_button()->set_text(TTR("Convert"));
 	confirm_convert_shader->get_cancel_button()->set_text(TTR("Cancel"));
-	confirm_convert_shader->connect("confirmed", callable_mp(this, &TextShaderEditor::_convert_shader));
+	confirm_convert_shader->connect(SceneStringName(confirmed), callable_mp(this, &TextShaderEditor::_convert_shader));
 	add_child(confirm_convert_shader);
 #endif
 	_editor_settings_changed();

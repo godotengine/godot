@@ -1016,7 +1016,7 @@ String ShaderLanguage::token_debug(const String &p_code, bool p_debug_parse) {
 		output += itos(tk_line) + " (" + itos(tk.pos) + ":" + itos(tk.pos + tk.length) + "): " + get_token_text(tk) + "  [" + literal_text;
 		String suffix = "]\n";
 		// add error string if invalid float constant
-		if (debug_parse && tk.type == TK_FLOAT_CONSTANT && literal_text.ends_with("f") && !literal_text.contains(".") && !literal_text.contains("e")) {
+		if (debug_parse && tk.type == TK_FLOAT_CONSTANT && literal_text.ends_with("f") && !literal_text.contains_char('.') && !literal_text.contains_char('e')) {
 			output += " (Invalid float constant)]\n";
 		} else {
 			output += "]\n";

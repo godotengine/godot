@@ -384,7 +384,7 @@ TEST_CASE("[ShaderDeprecatedConverter] Built-in renames") {
 				// Now get the funcs applicable for this mode and built-in.
 				for (const String &func : rename_func_map[mode][builtin]) {
 					// The built-in should not be present in the built-ins list.
-					auto &finfo = info.functions[func];
+					const ShaderLanguage::FunctionInfo &finfo = info.functions[func];
 					if (finfo.built_ins.has(builtin)) {
 						WARN_PRINT(vformat("Renamed 3.x Built-in %s is present in function %s", builtin, func));
 					}
@@ -453,7 +453,7 @@ TEST_CASE("[ShaderDeprecatedConverter] MODULATE is not a built-in") {
 	get_compile_info(info, RS::ShaderMode::SHADER_CANVAS_ITEM);
 	SUBCASE("MODULATE is not a built-in") {
 		for (const String &func : Vector<String>{ "vertex", "fragment", "light" }) {
-			auto &finfo = info.functions[func];
+			const ShaderLanguage::FunctionInfo &finfo = info.functions[func];
 			CHECK_FALSE(finfo.built_ins.has("MODULATE"));
 		}
 	}
@@ -568,7 +568,7 @@ TEST_CASE("[ShaderDeprecatedConverter] Handling of renamed render_modes") {
 	SUBCASE("Renamed render modes are not currently valid render modes") {
 		ShaderLanguage::ShaderCompileInfo info;
 		get_compile_info(info, RS::SHADER_SPATIAL);
-		for (const auto &render_mode : info.render_modes) {
+		for (const ShaderLanguage::ModeInfo &render_mode : info.render_modes) {
 			if (render_modes_set.has(render_mode.name)) {
 				WARN_PRINT(vformat("Renamed 3.x Render Mode %s is present in render modes", render_mode.name));
 			}
@@ -601,7 +601,7 @@ TEST_CASE("[ShaderDeprecatedConverter] Handling of removed render_modes") {
 	SUBCASE("Removed render modes are not currently valid render modes") {
 		ShaderLanguage::ShaderCompileInfo info;
 		get_compile_info(info, RS::SHADER_SPATIAL);
-		for (const auto &render_mode : info.render_modes) {
+		for (const ShaderLanguage::ModeInfo &render_mode : info.render_modes) {
 			if (render_modes_set.has(render_mode.name)) {
 				WARN_PRINT(vformat("Removed 3.x Render Mode %s is present in render modes", render_mode.name));
 			}
