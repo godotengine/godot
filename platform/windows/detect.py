@@ -24,6 +24,8 @@ def try_cmd(test, prefix, arch, check_clang=False):
     archs = ["x86_64", "x86_32", "arm64", "arm32"]
     if arch:
         archs = [arch]
+    if os.name == "nt":
+        archs += [""]
 
     for a in archs:
         try:
