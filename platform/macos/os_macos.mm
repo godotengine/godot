@@ -1088,8 +1088,6 @@ static void handle_interrupt(int sig) {
 }
 
 void OS_MacOS_NSApp::start_main() {
-	godot_init_profiler();
-
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);
