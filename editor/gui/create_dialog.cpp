@@ -929,6 +929,7 @@ CreateDialog::CreateDialog() {
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
 	search_options->connect("button_clicked", callable_mp(this, &CreateDialog::_script_button_clicked));
+	search_options->set_theme_type_variation("TreeSecondary");
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	help_bit = memnew(EditorHelpBit);
