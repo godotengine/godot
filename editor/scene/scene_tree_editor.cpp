@@ -322,8 +322,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			item = tree->get_root();
 			if (!item) {
 				item = tree->create_item(nullptr);
-				index = 0;
 			}
+			index = 0;
 		} else {
 			index = p_node->get_index(false);
 			item = tree->create_item(p_parent, index);
@@ -926,17 +926,17 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		return;
 	}
 
-	Node *scene_node = get_scene_node();
-
-	if (node_cache.current_scene_node != scene_node) {
-		_reset();
-		marked.clear();
-		node_cache.current_scene_node = scene_node;
-		node_cache.force_update = true;
-	}
-
 	if (!update_when_invisible && !is_visible_in_tree()) {
 		return;
+	}
+
+	Node *scene_node = get_scene_node();
+	const ObjectID scene_id = scene_node ? scene_node->get_instance_id() : ObjectID();
+	if (node_cache.current_scene_id != scene_id) {
+		_reset();
+		marked.clear();
+		node_cache.current_scene_id = scene_id;
+		node_cache.force_update = true;
 	}
 
 	if (tree->is_editing()) {
@@ -947,7 +947,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	last_hash = hash_djb2_one_64(0);
 
-	if (node_cache.current_scene_node) {
+	if (node_cache.current_scene_id.is_valid()) {
 		// Handle pinning/unpinning the animation player only do this once per iteration.
 		Node *pinned_node = AnimationPlayerEditor::get_singleton()->get_editing_node();
 		// If pinned state changed, update the currently pinned node.
@@ -2481,7 +2481,7 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 			}
 		}
 
-		if (current_scene_node != p_node) {
+		if (current_scene_id != p_node->get_instance_id()) {
 			// Do not remove from the Tree control here. See delete_pending below.
 			I->value.item->deselect(0);
 			I->value.delete_serial = delete_serial;
