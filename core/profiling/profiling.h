@@ -76,8 +76,16 @@ const tracy::SourceLocationData *intern_source_location(const void *p_function_p
 	tracy::ScopedZone __godot_tracy_zone_##m_group_name(TracyInternal::intern_source_location(m_ptr, m_file, m_function, m_line))
 
 // Memory allocation
-#define GodotProfileAlloc(m_ptr, m_size) TracyAlloc(m_ptr, m_size)
+#ifdef GODOT_PROFILER_TRACK_MEMORY
+#define GodotProfileAlloc(m_ptr, m_size)                       \
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wmaybe-uninitialized") \
+	TracyAlloc(m_ptr, m_size);                                 \
+	GODOT_GCC_WARNING_POP
 #define GodotProfileFree(m_ptr) TracyFree(m_ptr)
+#else
+#define GodotProfileAlloc(m_ptr, m_size)
+#define GodotProfileFree(m_ptr)
+#endif
 
 void godot_init_profiler();
 void godot_cleanup_profiler();

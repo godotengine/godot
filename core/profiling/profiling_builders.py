@@ -9,6 +9,8 @@ def profiler_gen_builder(target, source, env):
             file.write("#define GODOT_USE_TRACY\n")
             if env["profiler_sample_callstack"]:
                 file.write("#define TRACY_CALLSTACK 62\n")
+            if env["profiler_track_memory"]:
+                file.write("#define GODOT_PROFILER_TRACK_MEMORY\n")
         if env["profiler"] == "perfetto":
             file.write("#define GODOT_USE_PERFETTO\n")
         if env["profiler"] == "instruments":
