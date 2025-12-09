@@ -98,6 +98,8 @@ void godot_cleanup_profiler();
 
 #include <perfetto.h>
 
+#include "core/typedefs.h"
+
 PERFETTO_DEFINE_CATEGORIES(
 		perfetto::Category("godot")
 				.SetDescription("All Godot Events"), );
