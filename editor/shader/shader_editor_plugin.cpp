@@ -461,6 +461,7 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 		shader_list->show(); // Make sure the panel is visible, because it can't be toggled without open shaders.
 		shader_tabs->hide();
 		files_split->add_child(file_menu);
+		file_menu->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
 	} else {
 		_switch_to_editor(edited_shaders[shader_tabs->get_current_tab()].shader_editor);
 	}
@@ -768,8 +769,11 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor, bool p_focus)
 	if (file_menu->get_parent() != nullptr) {
 		file_menu->get_parent()->remove_child(file_menu);
 	}
+
 	shader_tabs->show();
 	p_editor->use_menu_bar(file_menu);
+	file_menu->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
 	if (p_focus) {
 		TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(p_editor);
 		if (text_shader_editor) {
