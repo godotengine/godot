@@ -416,12 +416,20 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 			String animation_path = String(get_animation()->track_get_path(get_track()));
 			animation_path = animation_path.replace(":frame", ":animation");
 			int animation_track = get_animation()->find_track(animation_path, get_animation()->track_get_type(get_track()));
-			float track_time = get_animation()->track_get_key_time(get_track(), p_index);
-			int animation_index = get_animation()->track_find_key(animation_track, track_time);
-			animation_name = get_animation()->track_get_key_value(animation_track, animation_index);
+
+			if (animation_track != -1) {
+				float track_time = get_animation()->track_get_key_time(get_track(), p_index);
+				int animation_index = get_animation()->track_find_key(animation_track, track_time);
+				if (animation_index != -1) {
+					animation_name = get_animation()->track_get_key_value(animation_track, animation_index);
+				}
+			}
 		}
 
-		Ref<Texture2D> texture = sf->get_frame_texture(animation_name, frame);
+		Ref<Texture2D> texture;
+		if (!animation_name.is_empty()) {
+			texture = sf->get_frame_texture(animation_name, frame);
+		}
 		if (texture.is_null()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
 		}
@@ -508,12 +516,20 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 			String animation_path = String(get_animation()->track_get_path(get_track()));
 			animation_path = animation_path.replace(":frame", ":animation");
 			int animation_track = get_animation()->find_track(animation_path, get_animation()->track_get_type(get_track()));
-			float track_time = get_animation()->track_get_key_time(get_track(), p_index);
-			int animation_index = get_animation()->track_find_key(animation_track, track_time);
-			animation_name = get_animation()->track_get_key_value(animation_track, animation_index);
+
+			if (animation_track != -1) {
+				float track_time = get_animation()->track_get_key_time(get_track(), p_index);
+				int animation_index = get_animation()->track_find_key(animation_track, track_time);
+				if (animation_index != -1) {
+					animation_name = get_animation()->track_get_key_value(animation_track, animation_index);
+				}
+			}
 		}
 
-		texture = sf->get_frame_texture(animation_name, frame);
+		if (!animation_name.is_empty()) {
+			texture = sf->get_frame_texture(animation_name, frame);
+		}
+
 		if (texture.is_null()) {
 			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
 			return;
