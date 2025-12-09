@@ -298,6 +298,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(PhysicsShapeIntersectionResult2D);
 	GDREGISTER_CLASS(PhysicsShapeCastResult2D);
 	GDREGISTER_CLASS(PhysicsShapeCollisionResult2D);
+	GDREGISTER_CLASS(PhysicsShapeRestInfoResult2D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
 
