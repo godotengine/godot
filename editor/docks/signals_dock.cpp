@@ -32,7 +32,6 @@
 
 #include "editor/scene/connections_dialog.h"
 #include "editor/settings/editor_command_palette.h"
-#include "editor/themes/editor_scale.h"
 
 void SignalsDock::update_lists() {
 	connections->update_tree();
@@ -49,12 +48,9 @@ SignalsDock::SignalsDock() {
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_signals", TTRC("Open Signals Dock")));
 	set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
 
-	VBoxContainer *main_vb = memnew(VBoxContainer);
-	add_child(main_vb);
-
 	connections = memnew(ConnectionsDock);
-	main_vb->add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(connections);
 }
 
 SignalsDock::~SignalsDock() {

@@ -103,7 +103,7 @@ class SceneTreeDock : public EditorDock {
 
 	int current_option = 0;
 
-	VBoxContainer *main_vbox = nullptr;
+	MarginContainer *main_mc = nullptr;
 
 	CreateDialog *create_dialog = nullptr;
 	RenameDialog *rename_dialog = nullptr;
@@ -128,7 +128,7 @@ class SceneTreeDock : public EditorDock {
 	HBoxContainer *button_hb = nullptr;
 	Button *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree = nullptr;
-	Control *remote_tree = nullptr;
+	Tree *remote_tree = nullptr;
 
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 	void _property_selected(int p_idx);
@@ -336,7 +336,7 @@ public:
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 	EditorData *get_editor_data() { return editor_data; }
 
-	void add_remote_tree_editor(Control *p_remote);
+	void add_remote_tree_editor(Tree *p_remote);
 	void show_remote_tree();
 	void hide_remote_tree();
 	void show_tab_buttons();

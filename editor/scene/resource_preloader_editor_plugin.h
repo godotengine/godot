@@ -50,8 +50,11 @@ class ResourcePreloaderEditor : public EditorDock {
 
 	Button *load = nullptr;
 	Button *paste = nullptr;
+	MarginContainer *mc = nullptr;
 	Tree *tree = nullptr;
-	bool loading_scene;
+
+	bool horizontal = false;
+	bool loading_scene = false;
 
 	EditorFileDialog *file = nullptr;
 
@@ -73,8 +76,9 @@ class ResourcePreloaderEditor : public EditorDock {
 
 protected:
 	void _notification(int p_what);
-
 	static void _bind_methods();
+
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
 
 public:
 	void edit(ResourcePreloader *p_preloader);
