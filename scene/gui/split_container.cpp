@@ -993,7 +993,7 @@ void SplitContainer::_remove_valid_child(Control *p_control) {
 	}
 	// Only use desired sizes to change the split offset after the first time a child is removed.
 	// This allows adding children to not affect the split offsets when creating.
-	can_use_desired_sizes = valid_children.size() > 1u;
+	can_use_desired_sizes = true;
 
 	_update_default_dragger_positions();
 	queue_sort();

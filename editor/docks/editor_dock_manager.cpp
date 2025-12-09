@@ -932,7 +932,9 @@ void EditorDockManager::set_docks_visible(bool p_show) {
 	}
 	docks_visible = p_show;
 	for (int i = 0; i < DockConstants::DOCK_SLOT_BOTTOM; i++) {
-		dock_slots[i].container->set_visible(docks_visible && dock_slots[i].container->get_tab_count() > 0);
+		// Show and hide in reverse order due to the SplitContainer prioritizing the last split offset.
+		TabContainer *container = dock_slots[docks_visible ? i : DockConstants::DOCK_SLOT_BOTTOM - i - 1].container;
+		container->set_visible(docks_visible && container->get_tab_count() > 0);
 	}
 	_update_layout();
 }
