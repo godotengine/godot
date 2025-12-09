@@ -2373,7 +2373,7 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_tree->set_column_title(3, TTRC("Usage"));
 		vmem_tree->set_column_custom_minimum_width(3, 80 * EDSCALE);
 		vmem_tree->set_hide_root(true);
-		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
 		mc->add_child(vmem_tree);
 		vmem_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_vmem_item_activated));
 
