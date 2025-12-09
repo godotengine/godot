@@ -156,8 +156,6 @@ Files: metal/metal_objects.*
  servers/rendering/renderer_rd/environment/sky.*
  servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.*
  servers/rendering/renderer_rd/renderer_compositor_rd.*
- servers/rendering/renderer_scene_cull.*
- servers/rendering/renderer_viewport.*
  servers/rendering/rendering_device.*
  servers/rendering/rendering_device_driver.*
  servers/rendering/rendering_device_graph.*
