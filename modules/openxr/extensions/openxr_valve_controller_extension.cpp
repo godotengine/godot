@@ -53,9 +53,9 @@ void OpenXRValveControllerExtension::on_register_metadata() {
 	OpenXRInteractionProfileMetadata *openxr_metadata = OpenXRInteractionProfileMetadata::get_singleton();
 	ERR_FAIL_NULL(openxr_metadata);
 
-	{ // Valve Frame controller
+	{ // Valve Steam Frame controller
 		const String profile_path = "/interaction_profiles/valve/frame_controller";
-		openxr_metadata->register_interaction_profile("Valve Frame controller", profile_path, XR_VALVE_FRAME_CONTROLLER_INTERACTION_EXTENSION_NAME);
+		openxr_metadata->register_interaction_profile("Valve Steam Frame controller", profile_path, XR_VALVE_FRAME_CONTROLLER_INTERACTION_EXTENSION_NAME);
 		for (const String user_path : { "/user/hand/left", "/user/hand/right" }) {
 			openxr_metadata->register_io_path(profile_path, "Grip pose", user_path, user_path + "/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 			openxr_metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
