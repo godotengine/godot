@@ -1119,14 +1119,14 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 		}
 
 		Ref<Resource> edited_res = se->get_edited_resource();
-
 		if (!edited_res->is_built_in()) {
 			continue; // External script, who cares.
 		}
 
-		if (edited_res->get_path().get_slice("::", 0) == p_parent_path) {
-			se->tag_saved_version();
+		if (edited_res->get_path().get_slice("::", 0) != p_parent_path) {
+			continue; // Wrong scene.
 		}
+		se->tag_saved_version();
 
 		Ref<Script> scr = edited_res;
 		if (scr.is_valid()) {
@@ -1766,6 +1766,7 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_ALL), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
+	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_TABS_BELOW), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_DOCS), !_has_docs_tab());
 
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_RUN), res.is_null());
