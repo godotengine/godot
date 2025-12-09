@@ -543,24 +543,29 @@ void EditorDockManager::_update_tab_style(EditorDock *p_dock) {
 	const TabStyle style = (tab_container == EditorNode::get_bottom_panel())
 			? (TabStyle)EDITOR_GET("interface/editor/bottom_dock_tab_style").operator int()
 			: (TabStyle)EDITOR_GET("interface/editor/dock_tab_style").operator int();
+
 	const Ref<Texture2D> icon = _get_dock_icon(p_dock, callable_mp((Control *)tab_container, &Control::get_editor_theme_icon));
 	bool assign_icon = p_dock->force_show_icon;
+	String tooltip;
 	switch (style) {
 		case TabStyle::TEXT_ONLY: {
 			tab_container->set_tab_title(index, p_dock->get_display_title());
-			tab_container->set_tab_tooltip(index, String());
 		} break;
 		case TabStyle::ICON_ONLY: {
 			tab_container->set_tab_title(index, icon.is_valid() ? String() : p_dock->get_display_title());
-			tab_container->set_tab_tooltip(index, p_dock->get_display_title());
+			tooltip = TTR(p_dock->get_display_title());
 			assign_icon = true;
 		} break;
 		case TabStyle::TEXT_AND_ICON: {
 			tab_container->set_tab_title(index, p_dock->get_display_title());
-			tab_container->set_tab_tooltip(index, String());
 			assign_icon = true;
 		} break;
 	}
+
+	if (p_dock->shortcut.is_valid() && p_dock->shortcut->has_valid_event()) {
+		tooltip += (tooltip.is_empty() ? "" : "\n") + TTR(p_dock->shortcut->get_name()) + " (" + p_dock->shortcut->get_as_text() + ")";
+	}
+	tab_container->set_tab_tooltip(index, tooltip);
 
 	if (assign_icon) {
 		tab_container->set_tab_icon(index, icon);
