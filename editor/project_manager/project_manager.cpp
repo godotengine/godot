@@ -43,6 +43,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_version_button.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
@@ -1944,6 +1945,7 @@ ProjectManager::ProjectManager() {
 
 ProjectManager::~ProjectManager() {
 	singleton = nullptr;
+	EditorInspector::cleanup_plugins();
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}
