@@ -378,6 +378,7 @@ SectionedInspector::SectionedInspector() :
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
+	inspector->set_theme_type_variation("TreeSecondary");
 
 	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }

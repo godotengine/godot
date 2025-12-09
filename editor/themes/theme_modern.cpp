@@ -1938,6 +1938,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Sidebars.
 		{
+			p_theme->set_type_variation("ScrollContainerSecondary", "ScrollContainer");
 			p_theme->set_type_variation("TreeSecondary", "Tree");
 			p_theme->set_type_variation("ItemListSecondary", "ItemList");
 
@@ -1948,6 +1949,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 				style_sidebar->set_border_color(p_config.extra_border_color_2);
 			}
 
+			p_theme->set_stylebox(SceneStringName(panel), "ScrollContainerSecondary", style_sidebar);
 			p_theme->set_stylebox(SceneStringName(panel), "TreeSecondary", style_sidebar);
 			p_theme->set_stylebox(SceneStringName(panel), "ItemListSecondary", style_sidebar);
 			// Use it for EditorDebuggerInspector in StackTrace to keep the default 3-column layout,

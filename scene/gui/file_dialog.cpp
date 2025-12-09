@@ -2466,6 +2466,7 @@ FileDialog::FileDialog() {
 	file_list = memnew(ItemList);
 	file_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	file_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	file_list->set_theme_type_variation("ItemListSecondary");
 	file_list->set_accessibility_name(ETR("Directories & Files:"));
 	file_list->set_allow_rmb_select(true);
 	file_vbox->add_child(file_list);

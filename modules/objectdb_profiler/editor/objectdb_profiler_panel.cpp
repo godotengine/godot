@@ -381,6 +381,7 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 	snapshot_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	snapshot_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	snapshot_list->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	snapshot_list->set_theme_type_variation("TreeSecondary");
 
 	snapshot_list->set_allow_rmb_select(true);
 	snapshot_list->connect("item_mouse_selected", callable_mp(this, &ObjectDBProfilerPanel::_snapshot_rmb));
