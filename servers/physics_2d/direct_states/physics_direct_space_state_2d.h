@@ -34,6 +34,7 @@
 #include "servers/physics_2d/physics_server_2d_types.h"
 #include "servers/physics_2d/queries/physics_cast_motion_result_2d.h"
 #include "servers/physics_2d/queries/physics_collide_shape_result_2d.h"
+#include "servers/physics_2d/queries/physics_get_rest_info_result_2d.h"
 #include "servers/physics_2d/queries/physics_intersect_point_result_2d.h"
 #include "servers/physics_2d/queries/physics_intersect_ray_result_2d.h"
 #include "servers/physics_2d/queries/physics_intersect_shape_result_2d.h"
@@ -56,6 +57,7 @@ class PhysicsDirectSpaceState2D : public Object {
 	bool _intersect_shape_into(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, RequiredParam<PhysicsIntersectShapeResult2D> p_result);
 	bool _cast_motion_into(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, RequiredParam<PhysicsCastMotionResult2D> p_result);
 	bool _collide_shape_into(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, RequiredParam<PhysicsCollideShapeResult2D> p_result);
+	bool _get_rest_info_into(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, RequiredParam<PhysicsGetRestInfoResult2D> p_result);
 
 protected:
 	static void _bind_methods();
