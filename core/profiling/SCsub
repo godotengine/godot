@@ -46,8 +46,10 @@ def find_tracy_path(path: pathlib.Path) -> pathlib.Path:
 
 if env["profiler"]:
     if env["profiler"] == "instruments":
-        # Nothing else to do for Instruments.
-        pass
+        if env["profiler_sample_callstack"]:
+            print("profiler_sample_callstack ignored. Please configure callstack sampling in Instruments instead.")
+        if env["profiler_track_memory"]:
+            print("profiler_track_memory ignored. Please configure memory tracking in Instruments instead.")
     elif env["profiler"] == "tracy":
         if not env["profiler_path"]:
             print("profiler_path must be set when using the tracy profiler. Aborting.")
@@ -65,6 +67,8 @@ if env["profiler"]:
 
             # 62 is the maximum supported callstack depth reported by the tracy docs.
             env_tracy.Append(CPPDEFINES=[("TRACY_CALLSTACK", 62)])
+        if env["profiler_track_memory"]:
+            env_tracy.Append(CPPDEFINES=["GODOT_PROFILER_TRACK_MEMORY"])
         env_tracy.disable_warnings()
         env_tracy.add_source_files(env.core_sources, str((profiler_path / "TracyClient.cpp").absolute()))
     elif env["profiler"] == "perfetto":
@@ -78,6 +82,9 @@ if env["profiler"]:
         if env["profiler_sample_callstack"]:
             print("Perfetto does not support call stack sampling. Aborting.")
             Exit(255)
+        if env["profiler_track_memory"]:
+            print("Perfetto does not support memory tracking. Aborting.")
+            Exit(255)
         env_perfetto.disable_warnings()
         env_perfetto.Prepend(CPPPATH=[str(profiler_path.absolute())])
         env_perfetto.add_source_files(env.core_sources, str((profiler_path / "perfetto.cc").absolute()))
@@ -85,4 +92,8 @@ elif env["profiler_path"]:
     print("profiler is required if profiler_path is set. Aborting.")
     Exit(255)
 
-env.CommandNoCache("profiling.gen.h", [env.Value(env["profiler"])], env.Run(profiling_builders.profiler_gen_builder))
+env.CommandNoCache(
+    "profiling.gen.h",
+    [env.Value(env["profiler"]), env.Value(env["profiler_sample_callstack"]), env.Value(env["profiler_track_memory"])],
+    env.Run(profiling_builders.profiler_gen_builder),
+)
