@@ -215,6 +215,14 @@ opts.Add(
         False,
     )
 )
+opts.Add(
+    BoolVariable(
+        "profiler_track_memory",
+        "Profile memory allocations, if the profiler supports it.",
+        False,
+    )
+)
+
 
 # Advanced options
 opts.Add(
