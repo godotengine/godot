@@ -107,7 +107,8 @@ class CommandQueueMT {
 
 	static const uint32_t DEFAULT_COMMAND_MEM_SIZE_KB = 64;
 
-	bool unique_flusher = false;
+	inline static thread_local bool flushing = false;
+
 	BinaryMutex mutex;
 	LocalVector<uint8_t> command_mem;
 	ConditionVariable sync_cond_var;
@@ -157,10 +158,20 @@ class CommandQueueMT {
 	}
 
 	void _flush() {
+		// Safeguard against trying to re-lock the binary mutex.
+		if (flushing) {
+			return;
+		}
+
+		flushing = true;
+
 		MutexLock lock(mutex);
 
 		if (unlikely(flush_read_ptr)) {
-			// Re-entrant call.
+			// Another thread is flushing.
+			lock.temp_unlock(); // Not really temp.
+			sync();
+			flushing = false;
 			return;
 		}
 
@@ -177,17 +188,9 @@ class CommandQueueMT {
 			CommandBase *cmd_local = reinterpret_cast<CommandBase *>(cmd_local_mem);
 			memcpy(cmd_local_mem, (char *)cmd_original, size);
 
-			if (unique_flusher) {
-				// A single thread will pump; the lock is only needed for the command queue itself.
-				lock.temp_unlock();
-				cmd_local->call();
-				lock.temp_relock();
-			} else {
-				// At least we can unlock during WTP operations.
-				uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(lock);
-				cmd_local->call();
-				WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
-			}
+			lock.temp_unlock();
+			cmd_local->call();
+			lock.temp_relock();
 
 			if (unlikely(cmd_local->sync)) {
 				sync_head++;
@@ -206,6 +209,8 @@ class CommandQueueMT {
 		flush_read_ptr = 0;
 
 		_prevent_sync_wraparound();
+
+		flushing = false;
 	}
 
 	_FORCE_INLINE_ void _wait_for_sync(MutexLock<BinaryMutex> &p_lock) {
@@ -270,8 +275,7 @@ public:
 		pump_task_id = p_task_id;
 	}
 
-	CommandQueueMT(bool p_unique_flusher = false) :
-			unique_flusher(p_unique_flusher) {
+	CommandQueueMT() {
 		command_mem.reserve(DEFAULT_COMMAND_MEM_SIZE_KB * 1024);
 	}
 };
