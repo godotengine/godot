@@ -138,6 +138,7 @@
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particle_process_material.h"
+#include "scene/resources/placeholder_audio_stream.h"
 #include "scene/resources/placeholder_textures.h"
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/resources/resource_format_text.h"
@@ -1120,6 +1121,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AudioStreamPlayer);
 	GDREGISTER_CLASS(AudioStreamWAV);
 	GDREGISTER_CLASS(AudioStreamPolyphonic);
+	GDREGISTER_CLASS(PlaceholderAudioStream);
 	GDREGISTER_ABSTRACT_CLASS(AudioStreamPlaybackPolyphonic);
 
 	OS::get_singleton()->yield(); // may take time to init
