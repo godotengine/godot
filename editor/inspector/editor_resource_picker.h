@@ -121,7 +121,7 @@ class EditorResourcePicker : public HBoxContainer {
 	void _gather_resources_to_duplicate(const Ref<Resource> p_resource, TreeItem *p_item, const String &p_property_name = "") const;
 	void _duplicate_selected_resources();
 	bool _is_uniqueness_enabled(bool p_check_recursive = false);
-	Ref<Resource> _has_parent_resource();
+	Ref<Resource> _get_parent_resource();
 
 protected:
 	virtual void _update_resource();
