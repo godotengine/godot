@@ -32,6 +32,7 @@
 
 #include "scene/gui/control.h"
 #include "scene/resources/text_paragraph.h"
+#include "servers/display/accessibility_server.h"
 
 class VBoxContainer;
 class HScrollBar;
@@ -181,17 +182,17 @@ private:
 
 	_FORCE_INLINE_ void _unlink_from_tree() {
 		if (accessibility_row_element.is_valid()) {
-			DisplayServer::get_singleton()->accessibility_free_element(accessibility_row_element);
+			AccessibilityServer::get_singleton()->free_element(accessibility_row_element);
 			accessibility_row_element = RID();
 		}
 		for (Cell &cell : cells) {
 			if (cell.accessibility_cell_element.is_valid()) {
-				DisplayServer::get_singleton()->accessibility_free_element(cell.accessibility_cell_element);
+				AccessibilityServer::get_singleton()->free_element(cell.accessibility_cell_element);
 				cell.accessibility_cell_element = RID();
 			}
 			for (Cell::Button &btn : cell.buttons) {
 				if (btn.accessibility_button_element.is_valid()) {
-					DisplayServer::get_singleton()->accessibility_free_element(btn.accessibility_button_element);
+					AccessibilityServer::get_singleton()->free_element(btn.accessibility_button_element);
 					btn.accessibility_button_element = RID();
 				}
 			}

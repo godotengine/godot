@@ -33,10 +33,18 @@
 #include "drivers/png/image_loader_png.h"
 #include "drivers/png/resource_saver_png.h"
 
+#ifdef ACCESSKIT_ENABLED
+#include "drivers/accesskit/accessibility_server_accesskit.h"
+#endif
+
 static Ref<ImageLoaderPNG> image_loader_png;
 static Ref<ResourceSaverPNG> resource_saver_png;
 
 void register_core_driver_types() {
+#ifdef ACCESSKIT_ENABLED
+	AccessibilityServerAccessKit::register_create_func();
+#endif
+
 	image_loader_png.instantiate();
 	ImageLoader::add_image_format_loader(image_loader_png);
 
