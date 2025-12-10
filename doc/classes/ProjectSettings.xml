@@ -272,6 +272,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility/general/accessibility_driver" type="String" setter="" getter="" default="&quot;accesskit&quot;">
+			Accessibility driver:
+			-[b]accesskit[/b] (default): AccessKit driver.
+			-[b]dummy[/b]: Dummy driver, screen reader support is disabled.
+		</member>
 		<member name="accessibility/general/accessibility_support" type="int" setter="" getter="" default="0" keywords="screen reader">
 			Accessibility support mode:
 			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).

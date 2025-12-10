@@ -37,6 +37,7 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_server.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "tests/display_server_mock.h"
@@ -177,6 +178,14 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			Error err = OK;
 			OS::get_singleton()->set_has_server_feature_callback(nullptr);
+
+			for (int i = 0; i < AccessibilityServer::get_create_function_count(); i++) {
+				if (String("dummy") == AccessibilityServer::get_create_function_name(i)) {
+					AccessibilityServer::create(i, err);
+					break;
+				}
+			}
+
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				if (String("mock") == DisplayServer::get_create_function_name(i)) {
 					DisplayServer::create(i, "", DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServer::VSyncMode::VSYNC_ENABLED, 0, nullptr, Vector2i(0, 0), DisplayServer::SCREEN_PRIMARY, DisplayServer::CONTEXT_EDITOR, 0, err);
@@ -336,6 +345,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			RenderingServer::get_singleton()->global_shader_parameters_clear();
 			RenderingServer::get_singleton()->finish();
 			memdelete(RenderingServer::get_singleton());
+		}
+
+		if (AccessibilityServer::get_singleton()) {
+			memdelete(AccessibilityServer::get_singleton());
 		}
 
 		if (DisplayServer::get_singleton()) {

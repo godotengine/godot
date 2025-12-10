@@ -35,6 +35,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
@@ -206,19 +207,19 @@ void SplitContainerDragger::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPLITTER);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, RTR("Drag to resize"));
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SPLITTER);
+			AccessibilityServer::get_singleton()->update_set_name(ae, RTR("Drag to resize"));
 
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
 			if (sc->collapsed || sc->valid_children.size() < 2u || !sc->dragging_enabled) {
 				return;
 			}
 			sc->clamp_split_offset(dragger_index);
-			DisplayServer::get_singleton()->accessibility_update_set_num_value(ae, sc->get_split_offset(dragger_index));
+			AccessibilityServer::get_singleton()->update_set_num_value(ae, sc->get_split_offset(dragger_index));
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_DECREMENT, callable_mp(this, &SplitContainerDragger::_accessibility_action_dec));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &SplitContainerDragger::_accessibility_action_inc));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &SplitContainerDragger::_accessibility_action_set_value));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_DECREMENT, callable_mp(this, &SplitContainerDragger::_accessibility_action_dec));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &SplitContainerDragger::_accessibility_action_inc));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &SplitContainerDragger::_accessibility_action_set_value));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

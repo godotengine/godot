@@ -34,6 +34,7 @@
 #include "core/string/translation_server.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 Size2 ProgressBar::get_minimum_size() const {
 	Size2 minimum_size = theme_cache.background_style->get_minimum_size();
@@ -61,7 +62,7 @@ void ProgressBar::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_PROGRESS_INDICATOR);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_PROGRESS_INDICATOR);
 		} break;
 
 		case NOTIFICATION_DRAW: {

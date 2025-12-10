@@ -1095,7 +1095,7 @@ ProjectDialog::ProjectDialog() {
 
 	msg = memnew(Label);
 	msg->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	msg->set_accessibility_live(DisplayServer::LIVE_POLITE);
+	msg->set_accessibility_live(AccessibilityServerEnums::LIVE_POLITE);
 	msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	msg->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	msg->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);

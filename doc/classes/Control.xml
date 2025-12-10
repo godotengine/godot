@@ -998,7 +998,7 @@
 		<member name="accessibility_labeled_by_nodes" type="NodePath[]" setter="set_accessibility_labeled_by_nodes" getter="get_accessibility_labeled_by_nodes" default="[]">
 			The paths to the nodes which label this node.
 		</member>
-		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="DisplayServer.AccessibilityLiveMode" default="0">
+		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="AccessibilityServer.AccessibilityLiveMode" default="0">
 			The mode with which a live region updates. A live region is a [Node] that is updated as a result of an external event when the user's focus may be elsewhere.
 		</member>
 		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">

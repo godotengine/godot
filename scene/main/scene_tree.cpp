@@ -54,6 +54,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
 #ifndef _3D_DISABLED
@@ -212,9 +213,9 @@ bool SceneTree::is_accessibility_enabled() const {
 		return false;
 	}
 
-	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
+	AccessibilityServerEnums::AccessibilityMode accessibility_mode = AccessibilityServer::get_singleton()->get_mode();
 	int screen_reader_active = DisplayServer::get_singleton()->accessibility_screen_reader_active();
-	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_active != 1))) {
+	if ((accessibility_mode == AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_active != 1))) {
 		return false;
 	}
 	return true;
@@ -225,8 +226,8 @@ bool SceneTree::is_accessibility_supported() const {
 		return false;
 	}
 
-	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
-	if (accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+	AccessibilityServerEnums::AccessibilityMode accessibility_mode = AccessibilityServer::get_singleton()->get_mode();
+	if (accessibility_mode == AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_DISABLED) {
 		return false;
 	}
 	return true;
@@ -289,7 +290,7 @@ void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_
 			new_focus_element = w_this->get_focused_accessibility_element();
 		}
 
-		DisplayServer::get_singleton()->accessibility_update_set_focus(new_focus_element);
+		AccessibilityServer::get_singleton()->update_set_focus(new_focus_element);
 	}
 
 	// Cleanup.
@@ -310,7 +311,7 @@ void SceneTree::_flush_accessibility_changes() {
 		accessibility_last_update = time;
 
 		// Push update to the accessibility driver.
-		DisplayServer::get_singleton()->accessibility_update_if_active(callable_mp(this, &SceneTree::_process_accessibility_changes));
+		AccessibilityServer::get_singleton()->update_if_active(callable_mp(this, &SceneTree::_process_accessibility_changes));
 	}
 }
 
