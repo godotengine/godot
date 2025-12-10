@@ -34,7 +34,7 @@ repos:
         stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.1
+    rev: v0.14.7
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -64,16 +64,6 @@ repos:
         files: ^core/extension/gdextension_interface\.json$
         args: ["--schemafile", "core/extension/gdextension_interface.schema.json"]
 
-  ### Requires Docker; look into alternative implementation.
-  # - repo: https://github.com/comkieffer/pre-commit-xmllint.git
-  #   rev: 1.0.0
-  #   hooks:
-  #     - id: xmllint
-  #       language: docker
-  #       types_or: [text]
-  #       files: ^(doc/classes|.*/doc_classes)/.*\.xml$
-  #       args: [--schema, doc/class.xsd]
-
   - repo: local
     hooks:
       - id: make-rst
@@ -98,6 +88,13 @@ repos:
         entry: python tests/python_build/validate_builders.py
         pass_filenames: false
         files: ^(gles3|glsl)_builders\.py$
+
+      - id: validate-xml
+        name: validate-xml
+        language: python
+        entry: python misc/scripts/validate_xml.py
+        files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+        additional_dependencies: [xmlschema]
 
       - id: eslint
         name: eslint

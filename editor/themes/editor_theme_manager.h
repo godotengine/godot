@@ -77,7 +77,7 @@ public:
 		int class_icon_size = 16;
 		bool enable_touch_optimizations = false;
 		float gizmo_handle_scale = 1.0;
-		int color_picker_button_height = 28;
+		int inspector_property_height = 28;
 		float subresource_hue_tint = 0.0;
 		float dragging_hover_wait_msec = 0;
 
@@ -204,7 +204,7 @@ public:
 
 private:
 	static Ref<EditorTheme> _create_base_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
-	static ThemeConfiguration _create_theme_config(const Ref<EditorTheme> &p_theme);
+	static ThemeConfiguration _create_theme_config();
 
 	static void _populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 	static void _populate_visual_shader_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);

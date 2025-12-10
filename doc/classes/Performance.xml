@@ -203,7 +203,7 @@
 			Output latency of the [AudioServer]. Equivalent to calling [method AudioServer.get_output_latency], it is not recommended to call this every frame.
 		</constant>
 		<constant name="NAVIGATION_ACTIVE_MAPS" value="24" enum="Monitor">
-			Number of active navigation maps in [NavigationServer2D] and [NavigationServer3D]. This also includes the two empty default navigation maps created by World2D and World3D.
+			Number of active navigation maps in [NavigationServer2D] and [NavigationServer3D]. This also includes the empty default navigation maps created by [World2D] and [World3D] instances.
 		</constant>
 		<constant name="NAVIGATION_REGION_COUNT" value="25" enum="Monitor">
 			Number of active navigation regions in [NavigationServer2D] and [NavigationServer3D].
@@ -248,7 +248,7 @@
 			Number of pipeline compilations that were triggered to optimize the current scene. These compilations are done in the background and should not cause any stutters whatsoever.
 		</constant>
 		<constant name="NAVIGATION_2D_ACTIVE_MAPS" value="39" enum="Monitor">
-			Number of active navigation maps in the [NavigationServer2D]. This also includes the two empty default navigation maps created by World2D.
+			Number of active navigation maps in the [NavigationServer2D]. This also includes the empty default navigation maps created by [World2D] instances.
 		</constant>
 		<constant name="NAVIGATION_2D_REGION_COUNT" value="40" enum="Monitor">
 			Number of active navigation regions in the [NavigationServer2D].
@@ -278,7 +278,7 @@
 			Number of active navigation obstacles in the [NavigationServer2D].
 		</constant>
 		<constant name="NAVIGATION_3D_ACTIVE_MAPS" value="49" enum="Monitor">
-			Number of active navigation maps in the [NavigationServer3D]. This also includes the two empty default navigation maps created by World3D.
+			Number of active navigation maps in the [NavigationServer3D]. This also includes the empty default navigation maps created by [World3D] instances.
 		</constant>
 		<constant name="NAVIGATION_3D_REGION_COUNT" value="50" enum="Monitor">
 			Number of active navigation regions in the [NavigationServer3D].

@@ -39,7 +39,6 @@ class DebugAdapterServer : public EditorPlugin {
 	DebugAdapterProtocol protocol;
 
 	int remote_port = 6006;
-	bool thread_running = false;
 	bool started = false;
 	bool polling = false;
 	static void thread_func(void *p_userdata);

@@ -266,7 +266,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
@@ -430,18 +430,15 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 						node = root->get_node(path);
 					}
 
-					String text;
-
 					if (node) {
-						int ofs = 0;
+						int ofs = h_separation;
 
 						Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node);
 
-						text = node->get_name();
-						ofs += h_separation;
-
-						TextLine text_buf = TextLine(text, font, font_size);
-						text_buf.set_width(limit - ofs - icon->get_width() - h_separation);
+						TextLine text_buf = TextLine(node->get_name(), font, font_size);
+						int total_icon_width = icon->get_width() + solo->get_width() + visibility_visible->get_width() + lock->get_width() + remove->get_width();
+						int total_icon_separation = h_separation * 5;
+						text_buf.set_width(limit - ofs - total_icon_width - total_icon_separation);
 
 						int h = MAX(text_buf.get_size().y, icon->get_height());
 

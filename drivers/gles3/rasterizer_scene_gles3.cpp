@@ -683,8 +683,9 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 		}
 	}
 
+	bool sun_scatter_enabled = environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
 	glBindBufferBase(GL_UNIFORM_BUFFER, SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, sky_globals.directional_light_buffer);
-	if (shader_data->uses_light || (environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001)) {
+	if (shader_data->uses_light || sun_scatter_enabled) {
 		sky_globals.directional_light_count = 0;
 		for (int i = 0; i < (int)p_lights.size(); i++) {
 			GLES3::LightInstance *li = GLES3::LightStorage::get_singleton()->get_light_instance(p_lights[i]);
@@ -926,10 +927,12 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	RS::SkyMode sky_mode = sky->mode;
 
 	if (sky_mode == RS::SKY_MODE_AUTOMATIC) {
+		bool sun_scatter_enabled = environment_get_fog_enabled(p_env) && environment_get_fog_sun_scatter(p_env) > 0.001;
+
 		if ((shader_data->uses_time || shader_data->uses_position) && sky->radiance_size == 256) {
 			update_single_frame = true;
 			sky_mode = RS::SKY_MODE_REALTIME;
-		} else if (shader_data->uses_light || shader_data->ubo_size > 0) {
+		} else if (shader_data->uses_light || sun_scatter_enabled || shader_data->ubo_size > 0) {
 			update_single_frame = false;
 			sky_mode = RS::SKY_MODE_INCREMENTAL;
 		} else {
@@ -2380,9 +2383,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 
 		tonemap_ubo.exposure = environment_get_exposure(render_data.environment);
-		tonemap_ubo.white = environment_get_white(render_data.environment);
 		tonemap_ubo.tonemapper = int32_t(environment_get_tone_mapper(render_data.environment));
-
+		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(render_data.environment, false);
+		tonemap_ubo.tonemapper_params[0] = params.tonemapper_params[0];
+		tonemap_ubo.tonemapper_params[1] = params.tonemapper_params[1];
+		tonemap_ubo.tonemapper_params[2] = params.tonemapper_params[2];
+		tonemap_ubo.tonemapper_params[3] = params.tonemapper_params[3];
 		tonemap_ubo.brightness = environment_get_adjustments_brightness(render_data.environment);
 		tonemap_ubo.contrast = environment_get_adjustments_contrast(render_data.environment);
 		tonemap_ubo.saturation = environment_get_adjustments_saturation(render_data.environment);
@@ -2840,7 +2846,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		glow_hdr_bleed_threshold = environment_get_glow_hdr_bleed_threshold(p_render_data->environment);
 		glow_hdr_bleed_scale = environment_get_glow_hdr_bleed_scale(p_render_data->environment);
 		glow_hdr_luminance_cap = environment_get_glow_hdr_luminance_cap(p_render_data->environment);
-		srgb_white = environment_get_white(p_render_data->environment);
+		srgb_white = environment_get_white(p_render_data->environment, false);
 	}
 
 	if (glow_enabled) {

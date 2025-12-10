@@ -1981,7 +1981,8 @@ void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPres
 	r_features->push_back("etc2");
 	r_features->push_back("astc");
 
-	if (p_preset->get("shader_baker/enabled")) {
+	if (!p_preset->is_dedicated_server() && p_preset->get("shader_baker/enabled")) {
+		// Don't use the shader baker if exporting as a dedicated server, as no rendering is performed.
 		r_features->push_back("shader_baker");
 	}
 
@@ -2184,11 +2185,11 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data_backup/allow"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args", PROPERTY_HINT_NONE, "monospace"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "apk_expansion/enable"), false, false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/SALT"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/public_key", PROPERTY_HINT_MULTILINE_TEXT), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/public_key", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), "", false, true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "permissions/custom_permissions"), PackedStringArray()));
 

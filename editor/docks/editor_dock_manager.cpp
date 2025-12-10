@@ -406,7 +406,7 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 	Point2 dock_screen_pos = p_dock->get_screen_position();
 
 	WindowWrapper *wrapper = memnew(WindowWrapper);
-	wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), p_dock->get_display_title()));
+	wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR(p_dock->get_display_title())));
 	wrapper->set_margins_enabled(true);
 
 	EditorNode::get_singleton()->get_gui_base()->add_child(wrapper);
@@ -620,7 +620,9 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 		window_dump["window_screen_rect"] = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
 
 		String name = dock->get_effective_layout_key();
-		floating_docks_dump[name] = window_dump;
+		if (!dock->transient) {
+			floating_docks_dump[name] = window_dump;
+		}
 
 		// Append to regular dock section so we know where to restore it to.
 		int dock_slot_id = dock->dock_slot_index;
@@ -671,8 +673,15 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 		}
 	}
 
-	for (int i = 0; i < hsplits.size(); i++) {
-		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), int(hsplits[i]->get_split_offset() / EDSCALE));
+	PackedInt32Array split_offsets = main_hsplit->get_split_offsets();
+	int index = 0;
+	for (int i = 0; i < vsplits.size(); i++) {
+		int value = 0;
+		if (vsplits[i]->is_visible() && index < split_offsets.size()) {
+			value = split_offsets[index] / EDSCALE;
+			index++;
+		}
+		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), value);
 	}
 }
 
@@ -753,21 +762,22 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 	}
 
 	// Load SplitContainer offsets.
+	PackedInt32Array offsets;
 	for (int i = 0; i < vsplits.size(); i++) {
 		if (!p_layout->has_section_key(p_section, "dock_split_" + itos(i + 1))) {
 			continue;
 		}
 		int ofs = p_layout->get_value(p_section, "dock_split_" + itos(i + 1));
 		vsplits[i]->set_split_offset(ofs);
-	}
 
-	for (int i = 0; i < hsplits.size(); i++) {
-		if (!p_layout->has_section_key(p_section, "dock_hsplit_" + itos(i + 1))) {
-			continue;
+		// Only visible ones need a split offset for the main hsplit, even though they all have a value saved.
+		if (vsplits[i]->is_visible() && p_layout->has_section_key(p_section, "dock_hsplit_" + itos(i + 1))) {
+			int offset = p_layout->get_value(p_section, "dock_hsplit_" + itos(i + 1));
+			offsets.push_back(offset * EDSCALE);
 		}
-		int ofs = p_layout->get_value(p_section, "dock_hsplit_" + itos(i + 1));
-		hsplits[i]->set_split_offset(ofs * EDSCALE);
 	}
+	main_hsplit->set_split_offsets(offsets);
+
 	update_docks_menu();
 }
 
@@ -834,6 +844,15 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 	_update_layout();
 }
 
+void EditorDockManager::make_dock_floating(EditorDock *p_dock) {
+	ERR_FAIL_NULL(p_dock);
+	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot make unknown dock '%s' floating.", p_dock->get_display_title()));
+
+	if (!p_dock->dock_window) {
+		_open_dock_in_window(p_dock);
+	}
+}
+
 TabContainer *EditorDockManager::get_dock_tab_container(Control *p_dock) const {
 	return Object::cast_to<TabContainer>(p_dock->get_parent());
 }
@@ -847,7 +866,7 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 	}
 
 	if (!p_dock->is_open) {
-		open_dock(p_dock);
+		open_dock(p_dock, false);
 	}
 
 	if (p_dock->dock_window) {
@@ -855,7 +874,11 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 		return;
 	}
 
-	if (!docks_visible) {
+	if (p_dock->get_parent() == EditorNode::get_bottom_panel()) {
+		if (EditorNode::get_bottom_panel()->is_locked()) {
+			return;
+		}
+	} else if (!docks_visible) {
 		return;
 	}
 
@@ -903,7 +926,7 @@ void EditorDockManager::set_docks_visible(bool p_show) {
 		return;
 	}
 	docks_visible = p_show;
-	for (int i = 0; i < DockConstants::DOCK_SLOT_MAX; i++) {
+	for (int i = 0; i < DockConstants::DOCK_SLOT_BOTTOM; i++) {
 		dock_slots[i].container->set_visible(docks_visible && dock_slots[i].container->get_tab_count() > 0);
 	}
 	_update_layout();
@@ -931,8 +954,8 @@ void EditorDockManager::add_vsplit(DockSplitContainer *p_split) {
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
 }
 
-void EditorDockManager::add_hsplit(DockSplitContainer *p_split) {
-	hsplits.push_back(p_split);
+void EditorDockManager::set_hsplit(DockSplitContainer *p_split) {
+	main_hsplit = p_split;
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
 }
 
@@ -946,6 +969,7 @@ void EditorDockManager::register_dock_slot(DockConstants::DockSlot p_dock_slot, 
 	slot.container = p_tab_container;
 	p_tab_container->set_popup(dock_context_popup);
 	p_tab_container->connect("pre_popup_pressed", callable_mp(dock_context_popup, &DockContextPopup::select_current_dock_in_dock_slot).bind(p_dock_slot));
+	p_tab_container->get_tab_bar()->set_switch_on_release(true);
 	p_tab_container->get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &EditorDockManager::_dock_container_popup).bind(p_tab_container));
 	p_tab_container->set_drag_to_rearrange_enabled(true);
 	p_tab_container->set_tabs_rearrange_group(1);
@@ -969,10 +993,6 @@ void EditorDockManager::register_dock_slot(DockConstants::DockSlot p_dock_slot, 
 
 	dock_slots[p_dock_slot] = slot;
 	slot.drag_hint->set_slot(p_dock_slot);
-}
-
-int EditorDockManager::get_hsplit_count() const {
-	return hsplits.size();
 }
 
 int EditorDockManager::get_vsplit_count() const {
@@ -1051,6 +1071,7 @@ void DockContextPopup::_tab_move_right() {
 
 void DockContextPopup::_close_dock() {
 	hide();
+	context_dock->emit_signal("closed");
 	dock_manager->close_dock(context_dock);
 }
 
@@ -1206,7 +1227,7 @@ void DockContextPopup::_dock_select_draw() {
 
 void DockContextPopup::_update_buttons() {
 	TabContainer *context_tab_container = dock_manager->get_dock_tab_container(context_dock);
-	if (context_dock->global) {
+	if (context_dock->global || context_dock->closable) {
 		close_button->set_tooltip_text(TTRC("Close this dock."));
 		close_button->set_disabled(false);
 	} else {

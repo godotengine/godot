@@ -35,6 +35,7 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "scene/gui/graph_element.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/panel_container.h"
 #include "scene/main/timer.h"
@@ -1014,13 +1015,13 @@ void PopupMenu::_draw_items() {
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : ((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index ? theme_cache.font_hover_color : theme_cache.font_color));
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color));
 			} else {
 				Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : ((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index ? theme_cache.font_hover_color : theme_cache.font_color));
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color));
 			}
 		}
 
@@ -1035,7 +1036,7 @@ void PopupMenu::_draw_items() {
 			if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 				items[i].accel_text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 			}
-			items[i].accel_text_buf->draw(ci, text_pos, i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_accelerator_color);
+			items[i].accel_text_buf->draw(ci, text_pos, ((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_accelerator_color);
 		}
 
 		// Cache the item vertical offset from the first item and the height.
@@ -3372,12 +3373,29 @@ void PopupMenu::_popup_base(const Rect2i &p_bounds) {
 }
 
 void PopupMenu::_pre_popup() {
-	Size2 scale = get_force_native() ? get_parent_viewport()->get_popup_base_transform_native().get_scale() : get_parent_viewport()->get_popup_base_transform().get_scale();
-	CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
-	if (c) {
-		scale *= c->get_global_transform_with_canvas().get_scale();
+	real_t popup_scale = 1.0;
+	bool scale_with_parent = true;
+
+	// Disable content scaling to avoid too tiny or too big menus when using GraphEdit zoom, applied only if menu is a child of GraphElement.
+	Node *p = get_parent();
+	while (p) {
+		GraphElement *ge = Object::cast_to<GraphElement>(p);
+		if (ge) {
+			scale_with_parent = ge->is_scaling_menus();
+			break;
+		}
+		p = p->get_parent();
 	}
-	real_t popup_scale = MIN(scale.x, scale.y);
+
+	if (scale_with_parent) {
+		Size2 scale = get_force_native() ? get_parent_viewport()->get_popup_base_transform_native().get_scale() : get_parent_viewport()->get_popup_base_transform().get_scale();
+		CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
+		if (c) {
+			scale *= c->get_global_transform_with_canvas().get_scale();
+		}
+		popup_scale = MIN(scale.x, scale.y);
+	}
+
 	set_content_scale_factor(popup_scale);
 	if (is_wrapping_controls()) {
 		Size2 minsize = get_contents_minimum_size() * popup_scale;

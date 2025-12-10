@@ -1068,7 +1068,7 @@ void ProjectManager::_apply_project_tags() {
 
 void ProjectManager::_set_new_tag_name(const String p_name) {
 	create_tag_dialog->get_ok_button()->set_disabled(true);
-	if (p_name.is_empty()) {
+	if (p_name.strip_edges().is_empty()) {
 		tag_error->set_text(TTRC("Tag name can't be empty."));
 		return;
 	}
@@ -1370,7 +1370,7 @@ ProjectManager::ProjectManager() {
 		FileDialog::set_get_thumbnail_callback(callable_mp_static(ProjectManager::_file_dialog_get_thumbnail));
 
 		FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-		FileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+		FileDialog::set_default_display_mode((FileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 		int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
 		if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.

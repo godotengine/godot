@@ -670,13 +670,14 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 		prop_name = p_property;
 	}
 
-	Variant value;
-	if (p_field.is_empty()) {
-		// Whole value.
-		value = p_value;
-	} else {
-		// Only one field.
-		value = fieldwise_assign(obj->get(prop_name), p_value, p_field);
+	Variant value = p_value;
+	if (p_value.is_string() && (obj->get_static_property_type(prop_name) == Variant::OBJECT || p_property == "script")) {
+		value = ResourceLoader::load(p_value);
+	}
+
+	if (!p_field.is_empty()) {
+		// Only one specific field.
+		value = fieldwise_assign(obj->get(prop_name), value, p_field);
 	}
 
 	obj->set(prop_name, value);
@@ -833,6 +834,9 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 			if (exported_members.has(E)) {
 				continue; // Exported variables already show up in the inspector.
 			}
+			if (String(E).begins_with("@")) {
+				continue; // Skip groups.
+			}
 
 			Variant m;
 			if (p_instance->get(E, m)) {
@@ -860,7 +864,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 	Array send_props;
-	for (SceneDebuggerObject::SceneDebuggerProperty &property : properties) {
+	for (SceneDebuggerProperty &property : properties) {
 		const PropertyInfo &pi = property.first;
 		Variant &var = property.second;
 

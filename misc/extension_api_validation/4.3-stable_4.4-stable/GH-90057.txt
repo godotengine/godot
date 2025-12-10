@@ -1,0 +1,6 @@
+GH-90057
+--------
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/open_scene_from_path/arguments': size changed value in new API, from 1 to 2.
+
+Added optional argument to open_scene_from_path to create a new inherited scene.
+Compatibility method registered.

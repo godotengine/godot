@@ -64,6 +64,7 @@ private:
 	DockConstants::DockSlot default_slot = DockConstants::DOCK_SLOT_NONE;
 	bool global = true;
 	bool transient = false;
+	bool closable = false;
 
 	BitField<DockLayout> available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_FLOATING;
 
@@ -101,6 +102,9 @@ public:
 
 	void set_transient(bool p_transient) { transient = p_transient; }
 	bool is_transient() const { return transient; }
+
+	void set_closable(bool p_closable) { closable = p_closable; }
+	bool is_closable() const { return closable; }
 
 	void set_icon_name(const StringName &p_name);
 	StringName get_icon_name() const { return icon_name; }

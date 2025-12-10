@@ -34,11 +34,11 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h" // For onion skinning.
@@ -140,23 +140,27 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			tool_anim->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
-
-			onion_skinning->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
-
-			blend_editor.next->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
-
 			get_tree()->connect(SNAME("node_removed"), callable_mp(this, &AnimationPlayerEditor::_node_removed));
+		} break;
 
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect(SNAME("node_removed"), callable_mp(this, &AnimationPlayerEditor::_node_removed));
+		} break;
+
+		case NOTIFICATION_READY: {
 			EditorNode::get_singleton()->connect("scene_changed", callable_mp(this, &AnimationPlayerEditor::_find_player));
 
 			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
+
+			_update_playback_tooltips();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			}
+
+			_update_playback_tooltips();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -929,7 +933,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 			}
 
 			_update_player();
-			EditorNode::get_bottom_panel()->make_item_visible(this);
+			make_visible();
 			set_process(true);
 			ensure_visibility();
 
@@ -1200,6 +1204,14 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 			library->hide();
 		}
 	}
+}
+
+void AnimationPlayerEditor::_update_playback_tooltips() {
+	stop->set_tooltip_text(TTR("Pause/Stop Animation") + " (" + ED_GET_SHORTCUT("animation_editor/stop_animation")->get_as_text() + ")");
+	play->set_tooltip_text(TTR("Play Animation from Start") + " (" + ED_GET_SHORTCUT("animation_editor/play_animation_from_start")->get_as_text() + ")");
+	play_from->set_tooltip_text(TTR("Play Animation") + " (" + ED_GET_SHORTCUT("animation_editor/play_animation")->get_as_text() + ")");
+	play_bw_from->set_tooltip_text(TTR("Play Animation Backwards") + " (" + ED_GET_SHORTCUT("animation_editor/play_animation_backwards")->get_as_text() + ")");
+	play_bw->set_tooltip_text(TTR("Play Animation Backwards from End") + " (" + ED_GET_SHORTCUT("animation_editor/play_animation_from_end")->get_as_text() + ")");
 }
 
 void AnimationPlayerEditor::_ensure_dummy_player() {
@@ -2042,11 +2054,19 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	plugin = p_plugin;
 	singleton = this;
 
+	set_name(TTRC("Animation"));
+	set_icon_name("Animation");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTRC("Toggle Animation Dock"), KeyModifierMask::ALT | Key::N));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+
 	set_focus_mode(FOCUS_ALL);
 	set_process_shortcut_input(true);
 
+	VBoxContainer *main_vbox_container = memnew(VBoxContainer);
+	add_child(main_vbox_container);
 	HBoxContainer *hb = memnew(HBoxContainer);
-	add_child(hb);
+	main_vbox_container->add_child(hb);
 
 	HBoxContainer *playback_container = memnew(HBoxContainer);
 	playback_container->set_layout_direction(LAYOUT_DIRECTION_LTR);
@@ -2054,27 +2074,22 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
-	play_bw_from->set_tooltip_text(TTR("Play Animation Backwards"));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
-	play_bw->set_tooltip_text(TTR("Play Animation Backwards from End"));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation(SceneStringName(FlatButton));
-	stop->set_tooltip_text(TTR("Pause/Stop Animation"));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
 	play->set_theme_type_variation(SceneStringName(FlatButton));
-	play->set_tooltip_text(TTR("Play Animation from Start"));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
-	play_from->set_tooltip_text(TTR("Play Animation"));
 	playback_container->add_child(play_from);
 
 	frame = memnew(SpinBox);
@@ -2114,6 +2129,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTRC("Remove")), TOOL_REMOVE_ANIM);
 	tool_anim->set_disabled(true);
+	tool_anim->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 	hb->add_child(tool_anim);
 
 	animation = memnew(OptionButton);
@@ -2163,6 +2179,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_skinning->get_popup()->add_check_item(TTR("Differences Only"), ONION_SKINNING_DIFFERENCES_ONLY);
 	onion_skinning->get_popup()->add_check_item(TTR("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
 	onion_skinning->get_popup()->add_check_item(TTR("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
+	onion_skinning->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 	hb->add_child(onion_skinning);
 
 	hb->add_child(memnew(VSeparator));
@@ -2226,6 +2243,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	blend_editor.next = memnew(OptionButton);
 	blend_editor.next->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	blend_editor.next->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
 
 	autoplay->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
@@ -2241,7 +2259,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	frame->connect(SceneStringName(value_changed), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(false));
 	scale->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
-	add_child(track_editor);
+	main_vbox_container->add_child(track_editor);
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	track_editor->connect(SNAME("timeline_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_seek));
 	track_editor->connect(SNAME("animation_len_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_anim_len_changed));
@@ -2309,7 +2327,7 @@ AnimationPlayerEditor::~AnimationPlayerEditor() {
 
 void AnimationPlayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			Node3DEditor::get_singleton()->connect(SNAME("transform_key_request"), callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
 			InspectorDock::get_inspector_singleton()->connect(SNAME("property_keyed"), callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
 			anim_editor->get_track_editor()->connect(SNAME("keying_changed"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
@@ -2437,7 +2455,7 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 		if (AnimationTreeEditor::get_singleton() && AnimationTreeEditor::get_singleton()->is_visible_in_tree()) {
 			return;
 		}
-		EditorNode::get_bottom_panel()->make_item_visible(anim_editor);
+		anim_editor->make_visible();
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
 	}
@@ -2445,7 +2463,7 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 	anim_editor = memnew(AnimationPlayerEditor(this));
-	EditorNode::get_bottom_panel()->add_item(TTRC("Animation"), anim_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTRC("Toggle Animation Bottom Panel"), KeyModifierMask::ALT | Key::N));
+	EditorDockManager::get_singleton()->add_dock(anim_editor);
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {

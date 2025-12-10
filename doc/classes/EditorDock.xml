@@ -77,6 +77,7 @@
 			<return type="void" />
 			<description>
 				Opens the dock. It will appear in the last used dock slot. If the dock has no default slot, it will be opened floating.
+				[b]Note:[/b] This does not focus the dock. If you want to open and focus the dock, use [method make_visible].
 			</description>
 		</method>
 	</methods>
@@ -84,7 +85,9 @@
 		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="5">
 			The available layouts for this dock, as a bitmask. By default, the dock allows vertical and floating layouts.
 		</member>
-		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
+		<member name="closable" type="bool" setter="set_closable" getter="is_closable" default="false">
+			If [code]true[/code], the dock can be closed with the Close button in the context popup. Docks with [member global] enabled are always closable.
+		</member>
 		<member name="default_slot" type="int" setter="set_default_slot" getter="get_default_slot" enum="EditorPlugin.DockSlot" default="-1">
 			The default dock slot used when adding the dock with [method EditorPlugin.add_dock].
 			After the dock is added, it can be moved to a different slot and the editor will automatically remember its position between sessions. If you remove and re-add the dock, it will be reset to default.
@@ -99,7 +102,7 @@
 			If [code]true[/code], the dock will always display an icon, regardless of [member EditorSettings.interface/editor/dock_tab_style] or [member EditorSettings.interface/editor/bottom_dock_tab_style].
 		</member>
 		<member name="global" type="bool" setter="set_global" getter="is_global" default="true">
-			If [code]true[/code], the dock appears in the [b]Editor &gt; Editor Docks[/b] menu and can be closed. Non-global docks can still be closed using [method close].
+			If [code]true[/code], the dock appears in the [b]Editor &gt; Editor Docks[/b] menu and can be closed. Non-global docks can still be closed using [method close] or when [member closable] is [code]true[/code].
 		</member>
 		<member name="icon_name" type="StringName" setter="set_icon_name" getter="get_icon_name" default="&amp;&quot;&quot;">
 			The icon for the dock, as a name from the [code]EditorIcons[/code] theme type in the editor theme. You can find the list of available icons [url=https://godot-editor-icons.github.io/]here[/url].
@@ -117,6 +120,13 @@
 			If [code]true[/code], the dock is not automatically opened or closed when loading an editor layout, only moved. It also can't be opened using a shortcut. This is meant for docks that are opened and closed in specific cases, such as when selecting a [TileMap] or [AnimationTree] node.
 		</member>
 	</members>
+	<signals>
+		<signal name="closed">
+			<description>
+				Emitted when the dock is closed with the Close button in the context popup, before it's removed from its parent. See [member closable].
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="DOCK_LAYOUT_VERTICAL" value="1" enum="DockLayout" is_bitfield="true">
 			Allows placing the dock in the vertical dock slots on either side of the editor.

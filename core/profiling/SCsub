@@ -12,35 +12,49 @@ Import("env")
 env.add_source_files(env.core_sources, "*.cpp")
 
 
-def get_profiler_and_path_from_path(path: pathlib.Path) -> tuple[str, pathlib.Path]:
+def find_perfetto_path(path: pathlib.Path) -> pathlib.Path:
     if not path.is_dir():
         print("profiler_path must be empty or point to a directory.")
         Exit(255)
 
     if (path / "sdk" / "perfetto.cc").is_file():
         # perfetto root directory.
-        return "perfetto", path / "sdk"
+        return path / "sdk"
     if (path / "perfetto.cc").is_file():
         # perfetto sdk directory.
-        return "perfetto", path
+        return path
 
-    if (path / "public" / "TracyClient.cpp").is_file():
-        # tracy root directory
-        return "tracy", path / "public"
-    if (path / "TracyClient.cpp").is_file():
-        # tracy public directory
-        return "tracy", path
-
-    print("Unrecognized profiler_path option. Please set a path to either tracy or perfetto.")
+    print("Invalid profiler_path. Unable to find perfetto.cc.")
     Exit(255)
 
 
-env["profiler"] = None
-if env["profiler_path"]:
-    profiler_name, profiler_path = get_profiler_and_path_from_path(pathlib.Path(env["profiler_path"]))
-    env["profiler"] = profiler_name
+def find_tracy_path(path: pathlib.Path) -> pathlib.Path:
+    if not path.is_dir():
+        print("profiler_path must point to a directory.")
+        Exit(255)
 
-    if profiler_name == "tracy":
+    if (path / "public" / "TracyClient.cpp").is_file():
+        # tracy root directory
+        return path / "public"
+    if (path / "TracyClient.cpp").is_file():
+        # tracy public directory
+        return path
+
+    print("Invalid profiler_path. Unable to find TracyClient.cpp.")
+    Exit(255)
+
+
+if env["profiler"]:
+    if env["profiler"] == "instruments":
+        if env["profiler_sample_callstack"]:
+            print("profiler_sample_callstack ignored. Please configure callstack sampling in Instruments instead.")
+        if env["profiler_track_memory"]:
+            print("profiler_track_memory ignored. Please configure memory tracking in Instruments instead.")
+    elif env["profiler"] == "tracy":
+        if not env["profiler_path"]:
+            print("profiler_path must be set when using the tracy profiler. Aborting.")
+            Exit(255)
+        profiler_path = find_tracy_path(pathlib.Path(env["profiler_path"]))
         env.Prepend(CPPPATH=[str(profiler_path.absolute())])
 
         env_tracy = env.Clone()
@@ -53,18 +67,33 @@ if env["profiler_path"]:
 
             # 62 is the maximum supported callstack depth reported by the tracy docs.
             env_tracy.Append(CPPDEFINES=[("TRACY_CALLSTACK", 62)])
+        if env["profiler_track_memory"]:
+            env_tracy.Append(CPPDEFINES=["GODOT_PROFILER_TRACK_MEMORY"])
         env_tracy.disable_warnings()
         env_tracy.add_source_files(env.core_sources, str((profiler_path / "TracyClient.cpp").absolute()))
-    elif profiler_name == "perfetto":
+    elif env["profiler"] == "perfetto":
+        if not env["profiler_path"]:
+            print("profiler_path must be set when using the perfetto profiler. Aborting.")
+            Exit(255)
+        profiler_path = find_perfetto_path(pathlib.Path(env["profiler_path"]))
         env.Prepend(CPPPATH=[str(profiler_path.absolute())])
 
         env_perfetto = env.Clone()
         if env["profiler_sample_callstack"]:
             print("Perfetto does not support call stack sampling. Aborting.")
             Exit(255)
+        if env["profiler_track_memory"]:
+            print("Perfetto does not support memory tracking. Aborting.")
+            Exit(255)
         env_perfetto.disable_warnings()
         env_perfetto.Prepend(CPPPATH=[str(profiler_path.absolute())])
         env_perfetto.add_source_files(env.core_sources, str((profiler_path / "perfetto.cc").absolute()))
+elif env["profiler_path"]:
+    print("profiler is required if profiler_path is set. Aborting.")
+    Exit(255)
 
-
-env.CommandNoCache("profiling.gen.h", [env.Value(env["profiler"])], env.Run(profiling_builders.profiler_gen_builder))
+env.CommandNoCache(
+    "profiling.gen.h",
+    [env.Value(env["profiler"]), env.Value(env["profiler_sample_callstack"]), env.Value(env["profiler_track_memory"])],
+    env.Run(profiling_builders.profiler_gen_builder),
+)

@@ -39,7 +39,6 @@
 #include "editor/gui/editor_version_button.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/settings/editor_command_palette.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/separator.h"
@@ -64,10 +63,17 @@ void EditorBottomPanel::_on_tab_changed(int p_idx) {
 }
 
 void EditorBottomPanel::_theme_changed() {
-	// Add margin to make space for the right side buttons.
-	icon_spacer->set_custom_minimum_size(Vector2(get_theme_constant("class_icon_size", EditorStringName(Editor)), 0));
-	Ref<StyleBox> bottom_tabbar_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox("tabbar_background", "BottomPanel")->duplicate();
-	bottom_tabbar_style->set_content_margin(SIDE_RIGHT, bottom_hbox->get_minimum_size().x + bottom_tabbar_style->get_content_margin(SIDE_LEFT));
+	int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+	int margin = bottom_hbox->get_minimum_size().x;
+	if (get_popup()) {
+		margin -= icon_width;
+	}
+
+	// Add margin to make space for the right side popup button.
+	icon_spacer->set_custom_minimum_size(Vector2(icon_width, 0));
+
+	Ref<StyleBox> bottom_tabbar_style = get_theme_stylebox(SNAME("tabbar_background"), SNAME("BottomPanel"))->duplicate();
+	bottom_tabbar_style->set_content_margin(is_layout_rtl() ? SIDE_LEFT : SIDE_RIGHT, margin + bottom_tabbar_style->get_content_margin(is_layout_rtl() ? SIDE_RIGHT : SIDE_LEFT));
 	add_theme_style_override("tabbar_background", bottom_tabbar_style);
 
 	if (get_current_tab() == -1) {
@@ -79,20 +85,16 @@ void EditorBottomPanel::_theme_changed() {
 }
 
 void EditorBottomPanel::set_bottom_panel_offset(int p_offset) {
-	Control *current_tab = get_current_tab_control();
+	EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
 	if (current_tab) {
-		String name = current_tab->get_name();
-		String key = name.to_snake_case();
-		dock_offsets[key] = p_offset;
+		dock_offsets[current_tab->get_effective_layout_key()] = p_offset;
 	}
 }
 
 int EditorBottomPanel::get_bottom_panel_offset() {
-	Control *current_tab = get_current_tab_control();
+	EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
 	if (current_tab) {
-		String name = current_tab->get_name();
-		String key = name.to_snake_case();
-		return dock_offsets[key];
+		return dock_offsets[current_tab->get_effective_layout_key()];
 	}
 	return 0;
 }
@@ -119,26 +121,28 @@ void EditorBottomPanel::_repaint() {
 	pin_button->set_visible(!panel_collapsed);
 	expand_button->set_visible(!panel_collapsed);
 	if (expand_button->is_pressed()) {
-		EditorNode::get_top_split()->set_visible(panel_collapsed);
+		_expand_button_toggled(!panel_collapsed);
+	} else {
+		_theme_changed();
 	}
-
-	_theme_changed();
 }
 
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
-	p_config_file->set_value(p_section, "selected_bottom_panel_item", get_current_tab() != -1 ? Variant(get_current_tab()) : Variant());
-
+	Dictionary offsets;
 	for (const KeyValue<String, int> &E : dock_offsets) {
-		p_config_file->set_value(p_section, "dock_" + E.key + "_offset", E.value);
+		offsets[E.key] = E.value;
 	}
+	p_config_file->set_value(p_section, "bottom_panel_offsets", offsets);
 }
 
 void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section) {
-	for (const Control *dock : bottom_docks) {
-		String name = dock->get_name();
-		String key = name.to_snake_case();
-		dock_offsets[key] = p_config_file->get_value(p_section, "dock_" + key + "_offset", 0);
+	const Dictionary offsets = p_config_file->get_value(p_section, "bottom_panel_offsets", Dictionary());
+	const LocalVector<Variant> offset_list = offsets.get_key_list();
+
+	for (const Variant &v : offset_list) {
+		dock_offsets[v] = offsets[v];
 	}
+	_update_center_split_offset();
 }
 
 void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool p_ignore_lock) {
@@ -150,12 +154,6 @@ void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool 
 	EditorDock *dock = _get_dock_from_control(p_item);
 	ERR_FAIL_NULL(dock);
 	dock->set_visible(p_visible);
-}
-
-void EditorBottomPanel::move_item_to_end(Control *p_item) {
-	EditorDock *dock = _get_dock_from_control(p_item);
-	ERR_FAIL_NULL(dock);
-	move_child(dock, -1);
 }
 
 void EditorBottomPanel::hide_bottom_panel() {
@@ -256,7 +254,6 @@ EditorBottomPanel::EditorBottomPanel() {
 	bottom_hbox = memnew(HBoxContainer);
 	bottom_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	bottom_hbox->set_anchors_and_offsets_preset(Control::PRESET_RIGHT_WIDE);
-	bottom_hbox->set_h_grow_direction(Control::GROW_DIRECTION_END);
 	get_tab_bar()->add_child(bottom_hbox);
 
 	icon_spacer = memnew(Control);

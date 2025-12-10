@@ -683,7 +683,7 @@
 			<return type="String" />
 			<param index="0" name="chars" type="String" />
 			<description>
-				Removes any occurrence of the characters in [param chars]. See also [method remove_char].
+				Removes all occurrences of the characters in [param chars]. See also [method remove_char].
 			</description>
 		</method>
 		<method name="repeat" qualifiers="const">

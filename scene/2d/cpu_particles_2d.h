@@ -122,14 +122,6 @@ private:
 		}
 	};
 
-	struct SortAxis {
-		const Particle *particles = nullptr;
-		Vector2 axis;
-		bool operator()(int p_a, int p_b) const {
-			return axis.dot(particles[p_a].transform[2]) < axis.dot(particles[p_b].transform[2]);
-		}
-	};
-
 	//
 
 	bool one_shot = false;
@@ -178,7 +170,6 @@ private:
 	Vector<Vector2> emission_points;
 	Vector<Vector2> emission_normals;
 	Vector<Color> emission_colors;
-	int emission_point_count = 0;
 	real_t emission_ring_inner_radius = 0.8;
 	real_t emission_ring_radius = 1.0;
 

@@ -1523,6 +1523,14 @@
 				Sets the variables to be used with the "tonemap" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
+		<method name="environment_set_tonemap_agx_contrast">
+			<return type="void" />
+			<param index="0" name="env" type="RID" />
+			<param index="1" name="agx_contrast" type="float" />
+			<description>
+				See [member Environment.tonemap_agx_contrast] for more details.
+			</description>
+		</method>
 		<method name="environment_set_volumetric_fog">
 			<return type="void" />
 			<param index="0" name="env" type="RID" />
@@ -5509,8 +5517,7 @@
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_AGX" value="4" enum="EnvironmentToneMapper">
-			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
-			[b]Note:[/b] [member Environment.tonemap_white] is fixed at a value of [code]16.29[/code], which makes [constant ENV_TONE_MAPPER_AGX] unsuitable for use with the Mobile rendering method.
+			Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
 		</constant>
 		<constant name="ENV_SSR_ROUGHNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
 			Lowest quality of roughness filter for screen-space reflections. Rough materials will not have blurrier screen-space reflections compared to smooth (non-rough) materials. This is the fastest option.

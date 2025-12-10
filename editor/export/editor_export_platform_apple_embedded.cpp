@@ -52,7 +52,8 @@ void EditorExportPlatformAppleEmbedded::get_preset_features(const Ref<EditorExpo
 	r_features->push_back("etc2");
 	r_features->push_back("astc");
 
-	if (p_preset->get("shader_baker/enabled")) {
+	if (!p_preset->is_dedicated_server() && p_preset->get("shader_baker/enabled")) {
+		// Don't use the shader baker if exporting as a dedicated server, as no rendering is performed.
 		r_features->push_back("shader_baker");
 	}
 
@@ -263,7 +264,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
@@ -302,7 +303,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "entitlements/increased_memory_limit"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "entitlements/game_center"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/push_notifications", PROPERTY_HINT_ENUM, "Disabled,Production,Development"), "Disabled"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_gaming_tier"), false));
@@ -2423,7 +2424,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 						const Dictionary &device_info = devices[i];
 						const Dictionary &conn_props = device_info["connectionProperties"];
 						const Dictionary &dev_props = device_info["deviceProperties"];
-						if (conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
+						if (dev_props.has("developerModeStatus") && conn_props.has("pairingState") && conn_props.has("transportType") && conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
 							Device nd;
 							nd.id = device_info["identifier"];
 							nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";

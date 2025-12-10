@@ -779,9 +779,14 @@ ImportDock::ImportDock() {
 	preset->get_popup()->connect("index_pressed", callable_mp(this, &ImportDock::_preset_selected));
 	hb->add_child(preset);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	content->add_child(mc);
+
 	import_opts = memnew(EditorInspector);
-	content->add_child(import_opts);
-	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->add_child(import_opts);
+	import_opts->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	import_opts->connect("property_edited", callable_mp(this, &ImportDock::_property_edited));
 	import_opts->connect("property_toggled", callable_mp(this, &ImportDock::_property_toggled));
 	// Make it possible to display tooltips stored in the XML class reference.

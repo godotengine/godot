@@ -272,7 +272,15 @@ void ScriptEditorDebugger::request_remote_evaluate(const String &p_expression, i
 }
 
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field) {
-	Array msg = { p_obj_id, p_prop, p_value };
+	Array msg = { p_obj_id, p_prop };
+
+	Ref<Resource> res = p_value;
+	if (res.is_valid() && !res->get_path().is_empty()) {
+		msg.append(res->get_path());
+	} else {
+		msg.append(p_value);
+	}
+
 	if (p_field.is_empty()) {
 		_put_msg("scene:set_object_property", msg);
 	} else {
@@ -2130,15 +2138,9 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
 		docontinue->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
-		HSplitContainer *parent_sc = memnew(HSplitContainer);
-		vbc->add_child(parent_sc);
-		parent_sc->set_v_size_flags(SIZE_EXPAND_FILL);
-		parent_sc->set_split_offset(500 * EDSCALE);
-
 		HSplitContainer *sc = memnew(HSplitContainer);
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
-		sc->set_h_size_flags(SIZE_EXPAND_FILL);
-		parent_sc->add_child(sc);
+		vbc->add_child(sc);
 
 		VBoxContainer *stack_vb = memnew(VBoxContainer);
 		stack_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -2204,7 +2206,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 		breakpoints_tree->create_item();
 
-		parent_sc->add_child(breakpoints_tree);
+		sc->add_child(breakpoints_tree);
 		tabs->add_child(dbg);
 
 		breakpoints_menu = memnew(PopupMenu);
@@ -2350,14 +2352,12 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_refresh->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
 		vmem_export->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
-		VBoxContainer *vmmc = memnew(VBoxContainer);
-		vmem_tree = memnew(Tree);
-		vmem_tree->set_v_size_flags(SIZE_EXPAND_FILL);
-		vmem_tree->set_h_size_flags(SIZE_EXPAND_FILL);
-		vmmc->add_child(vmem_tree);
-		vmmc->set_v_size_flags(SIZE_EXPAND_FILL);
-		vmem_vb->add_child(vmmc);
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontalWindow");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		vmem_vb->add_child(mc);
 
+		vmem_tree = memnew(Tree);
 		vmem_vb->set_name(TTRC("Video RAM"));
 		vmem_tree->set_columns(4);
 		vmem_tree->set_column_titles_visible(true);
@@ -2373,6 +2373,8 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_tree->set_column_title(3, TTRC("Usage"));
 		vmem_tree->set_column_custom_minimum_width(3, 80 * EDSCALE);
 		vmem_tree->set_hide_root(true);
+		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+		mc->add_child(vmem_tree);
 		vmem_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_vmem_item_activated));
 
 		tabs->add_child(vmem_vb);

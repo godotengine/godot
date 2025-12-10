@@ -88,7 +88,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	Label *empty_label = nullptr;
 
-	Button *button_export = nullptr;
 	bool updating = false;
 
 	RichTextLabel *result_dialog_log = nullptr;
@@ -219,7 +218,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _script_encryption_key_visibility_changed(bool p_visible);
 	bool _validate_script_encryption_key(const String &p_key);
 
-	void _script_export_mode_changed(int p_mode);
+	void _script_export_mode_changed(EditorExportPreset::ScriptExportMode p_mode);
 
 	void _open_key_help_link();
 

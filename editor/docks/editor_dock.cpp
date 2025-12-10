@@ -60,6 +60,10 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_transient"), &EditorDock::is_transient);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient"), "set_transient", "is_transient");
 
+	ClassDB::bind_method(D_METHOD("set_closable", "closable"), &EditorDock::set_closable);
+	ClassDB::bind_method(D_METHOD("is_closable"), &EditorDock::is_closable);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closable"), "set_closable", "is_closable");
+
 	ClassDB::bind_method(D_METHOD("set_icon_name", "icon_name"), &EditorDock::set_icon_name);
 	ClassDB::bind_method(D_METHOD("get_icon_name"), &EditorDock::get_icon_name);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "icon_name"), "set_icon_name", "get_icon_name");
@@ -88,6 +92,8 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_layouts"), &EditorDock::get_available_layouts);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2,Floating:3"), "set_available_layouts", "get_available_layouts");
 
+	ADD_SIGNAL(MethodInfo("closed"));
+
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_VERTICAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_HORIZONTAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_FLOATING);
@@ -99,13 +105,12 @@ void EditorDock::_bind_methods() {
 }
 
 EditorDock::EditorDock() {
-	set_clip_contents(true);
 	add_user_signal(MethodInfo("tab_style_changed"));
 }
 
 void EditorDock::open() {
 	if (!is_open) {
-		EditorDockManager::get_singleton()->open_dock(this);
+		EditorDockManager::get_singleton()->open_dock(this, false);
 	}
 }
 

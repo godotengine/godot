@@ -33,8 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 
 HashMap<String, String> OpenXRActionMapEditor::interaction_profile_editors;
@@ -384,7 +384,7 @@ void OpenXRActionMapEditor::_do_remove_interaction_profile_editor(OpenXRInteract
 }
 
 void OpenXRActionMapEditor::open_action_map(const String &p_path) {
-	EditorNode::get_bottom_panel()->make_item_visible(this);
+	make_visible();
 
 	// out with the old...
 	_clear_action_map();
@@ -430,11 +430,20 @@ String OpenXRActionMapEditor::get_binding_modifier_editor_class(const String &p_
 }
 
 OpenXRActionMapEditor::OpenXRActionMapEditor() {
-	undo_redo = EditorUndoRedoManager::get_singleton();
+	set_name(TTRC("OpenXR Action Map"));
+	set_icon_name("OpenXRActionMap");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTRC("Toggle OpenXR Action Map Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_custom_minimum_size(Size2(0.0, 300.0 * EDSCALE));
 
+	undo_redo = EditorUndoRedoManager::get_singleton();
+
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
+
 	top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	main_vb->add_child(top_hb);
 
 	header_label = memnew(Label);
 	header_label->set_text(String(TTR("Action Map")));
@@ -475,7 +484,7 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	tabs->set_theme_type_variation("TabContainerOdd");
 	tabs->connect("tab_changed", callable_mp(this, &OpenXRActionMapEditor::_on_tabs_tab_changed));
 	tabs->connect("tab_button_pressed", callable_mp(this, &OpenXRActionMapEditor::_on_tab_button_pressed));
-	add_child(tabs);
+	main_vb->add_child(tabs);
 
 	actionsets_scroll = memnew(ScrollContainer);
 	actionsets_scroll->set_h_size_flags(SIZE_EXPAND_FILL);

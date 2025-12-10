@@ -659,8 +659,6 @@ private:
 	bool draw_tabs = false;
 	bool draw_spaces = false;
 
-	RID accessibility_text_root_element_nl;
-
 	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
 	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;
 

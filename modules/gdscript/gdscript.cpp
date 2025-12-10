@@ -1074,6 +1074,19 @@ void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
 }
 
+void GDScript::set_path_cache(const String &p_path) {
+	if (is_root_script()) {
+		Script::set_path_cache(p_path);
+	}
+
+	path = p_path;
+	path_valid = true;
+
+	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
+		kv.value->set_path_cache(p_path);
+	}
+}
+
 void GDScript::set_path(const String &p_path, bool p_take_over) {
 	if (is_root_script()) {
 		Script::set_path(p_path, p_take_over);

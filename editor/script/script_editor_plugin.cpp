@@ -43,6 +43,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/doc/editor_help_search.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/signals_dock.h"
@@ -52,7 +53,6 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/code_editor.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/window_wrapper.h"
@@ -1119,14 +1119,14 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 		}
 
 		Ref<Resource> edited_res = se->get_edited_resource();
-
 		if (!edited_res->is_built_in()) {
 			continue; // External script, who cares.
 		}
 
-		if (edited_res->get_path().get_slice("::", 0) == p_parent_path) {
-			se->tag_saved_version();
+		if (edited_res->get_path().get_slice("::", 0) != p_parent_path) {
+			continue; // Wrong scene.
 		}
+		se->tag_saved_version();
 
 		Ref<Script> scr = edited_res;
 		if (scr.is_valid()) {
@@ -1766,6 +1766,7 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_ALL), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
+	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_TABS_BELOW), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_DOCS), !_has_docs_tab());
 
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_RUN), res.is_null());
@@ -4146,9 +4147,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	panel->set_replace_text(find_in_files_dialog->get_replace_text());
 	panel->start_search();
 
-	EditorNode::get_bottom_panel()->move_item_to_end(find_in_files);
-	find_in_files_button->show();
-	EditorNode::get_bottom_panel()->make_item_visible(find_in_files);
+	find_in_files->make_visible();
 }
 
 void ScriptEditor::_on_find_in_files_modified_files(const PackedStringArray &paths) {
@@ -4168,11 +4167,6 @@ void ScriptEditor::_update_code_editor_zoom_factor(CodeTextEditor *p_code_text_e
 	if (p_code_text_editor && p_code_text_editor->is_visible_in_tree() && zoom_factor != p_code_text_editor->get_zoom_factor()) {
 		p_code_text_editor->set_zoom_factor(zoom_factor);
 	}
-}
-
-void ScriptEditor::_on_find_in_files_close_button_clicked() {
-	EditorNode::get_bottom_panel()->hide_bottom_panel();
-	find_in_files_button->hide();
 }
 
 void ScriptEditor::_window_changed(bool p_visible) {
@@ -4549,13 +4543,12 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(false));
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(true));
 	add_child(find_in_files_dialog);
+
 	find_in_files = memnew(FindInFilesContainer);
-	find_in_files_button = EditorNode::get_bottom_panel()->add_item(TTRC("Search Results"), find_in_files, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_search_results_bottom_panel", TTRC("Toggle Search Results Bottom Panel")));
-	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
+	EditorDockManager::get_singleton()->add_dock(find_in_files);
+	find_in_files->close();
 	find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
-	find_in_files->connect("close_button_clicked", callable_mp(this, &ScriptEditor::_on_find_in_files_close_button_clicked));
-	find_in_files_button->hide();
 
 	history_pos = -1;
 

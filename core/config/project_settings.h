@@ -223,6 +223,7 @@ public:
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;
 	AutoloadInfo get_autoload(const StringName &p_name) const;
+	void fix_autoload_paths();
 
 	const HashMap<StringName, String> &get_global_groups_list() const;
 	void add_global_group(const StringName &p_name, const String &p_description);

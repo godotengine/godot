@@ -55,6 +55,7 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/text_edit.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
@@ -150,6 +151,7 @@ EditorPropertyVariant::EditorPropertyVariant() {
 
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
+	edit_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit_button->set_accessibility_name(TTRC("Edit"));
 	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyVariant::_popup_edit_menu));
 	content->add_child(edit_button);
@@ -157,8 +159,32 @@ EditorPropertyVariant::EditorPropertyVariant() {
 
 ///////////////////// TEXT /////////////////////////
 
+void EditorPropertyText::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
+		} break;
+	}
+}
+
 void EditorPropertyText::_set_read_only(bool p_read_only) {
 	text->set_editable(!p_read_only);
+}
+
+void EditorPropertyText::_update_theme() {
+	Ref<Font> font;
+	int font_size;
+
+	if (monospaced) {
+		font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+		font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
+	} else {
+		font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
+		font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+	}
+
+	text->add_theme_font_override(SceneStringName(font), font);
+	text->add_theme_font_size_override(SceneStringName(font_size), font_size);
 }
 
 void EditorPropertyText::_text_submitted(const String &p_string) {
@@ -227,6 +253,14 @@ void EditorPropertyText::set_placeholder(const String &p_string) {
 	text->set_placeholder(p_string);
 }
 
+void EditorPropertyText::set_monospaced(bool p_monospaced) {
+	if (p_monospaced == monospaced) {
+		return;
+	}
+	monospaced = p_monospaced;
+	_update_theme();
+}
+
 EditorPropertyText::EditorPropertyText() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -265,11 +299,11 @@ void EditorPropertyMultilineText::_open_big_text() {
 		big_text = memnew(TextEdit);
 		if (expression) {
 			big_text->set_syntax_highlighter(text->get_syntax_highlighter());
-			big_text->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
-			big_text->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 		}
 		big_text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
-		big_text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+		big_text->set_line_wrapping_mode(wrap_lines
+						? TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY
+						: TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
 		big_text_dialog = memnew(AcceptDialog);
 		big_text_dialog->add_child(big_text);
 		big_text_dialog->set_title(TTR("Edit Text:"));
@@ -279,6 +313,8 @@ void EditorPropertyMultilineText::_open_big_text() {
 	big_text_dialog->popup_centered_clamped(Size2(1000, 900) * EDSCALE, 0.8);
 	big_text->set_text(text->get_text());
 	big_text->grab_focus();
+
+	_update_theme();
 }
 
 void EditorPropertyMultilineText::update_property() {
@@ -292,34 +328,75 @@ void EditorPropertyMultilineText::update_property() {
 	}
 }
 
+void EditorPropertyMultilineText::_update_theme() {
+	Ref<Texture2D> df = get_editor_theme_icon(SNAME("DistractionFree"));
+	open_big_text->set_button_icon(df);
+
+	Ref<Font> font;
+	int font_size;
+	if (expression) {
+		font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
+		font_size = get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts));
+	} else {
+		// Non expression.
+		if (monospaced) {
+			font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+			font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
+		} else {
+			font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
+			font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
+		}
+	}
+	text->add_theme_font_override(SceneStringName(font), font);
+	text->add_theme_font_size_override(SceneStringName(font_size), font_size);
+	text->set_line_wrapping_mode(wrap_lines
+					? TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY
+					: TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+	if (big_text) {
+		big_text->add_theme_font_override(SceneStringName(font), font);
+		big_text->add_theme_font_size_override(SceneStringName(font_size), font_size);
+		big_text->set_line_wrapping_mode(wrap_lines
+						? TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY
+						: TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+	}
+
+	text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
+}
+
 void EditorPropertyMultilineText::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			Ref<Texture2D> df = get_editor_theme_icon(SNAME("DistractionFree"));
-			open_big_text->set_button_icon(df);
-
-			Ref<Font> font;
-			int font_size;
-			if (expression) {
-				font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
-				font_size = get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts));
-
-				text->add_theme_font_override(SceneStringName(font), font);
-				text->add_theme_font_size_override(SceneStringName(font_size), font_size);
-				if (big_text) {
-					big_text->add_theme_font_override(SceneStringName(font), font);
-					big_text->add_theme_font_size_override(SceneStringName(font_size), font_size);
-				}
-			} else {
-				font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
-				font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
-			}
-			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
+			_update_theme();
 		} break;
 	}
 }
 
-EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
+void EditorPropertyMultilineText::EditorPropertyMultilineText::set_monospaced(bool p_monospaced) {
+	if (p_monospaced == monospaced) {
+		return;
+	}
+	monospaced = p_monospaced;
+	_update_theme();
+}
+
+bool EditorPropertyMultilineText::EditorPropertyMultilineText::get_monospaced() {
+	return monospaced;
+}
+
+void EditorPropertyMultilineText::EditorPropertyMultilineText::set_wrap_lines(bool p_wrap_lines) {
+	if (p_wrap_lines == wrap_lines) {
+		return;
+	}
+	wrap_lines = p_wrap_lines;
+	_update_theme();
+}
+
+bool EditorPropertyMultilineText::EditorPropertyMultilineText::get_wrap_lines() {
+	return wrap_lines;
+}
+
+EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) :
+		expression(p_expression) {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_theme_constant_override("separation", 0);
 	add_child(hb);
@@ -333,12 +410,13 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 	open_big_text = memnew(Button);
 	open_big_text->set_accessibility_name(TTRC("Open Text Edit Dialog"));
 	open_big_text->set_flat(true);
+	open_big_text->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	open_big_text->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyMultilineText::_open_big_text));
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;
 	big_text = nullptr;
-	if (p_expression) {
-		expression = true;
+
+	if (expression) {
 		Ref<EditorStandardSyntaxHighlighter> highlighter;
 		highlighter.instantiate();
 		text->set_syntax_highlighter(highlighter);
@@ -482,6 +560,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
 	option_button->set_flat(true);
+	option_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
 	option_button->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyTextEnum::_option_selected));
@@ -489,6 +568,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	edit_button = memnew(Button);
 	edit_button->set_accessibility_name(TTRC("Edit"));
 	edit_button->set_flat(true);
+	edit_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit_button->hide();
 	default_layout->add_child(edit_button);
 	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyTextEnum::_edit_custom_value));
@@ -502,12 +582,14 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	accept_button = memnew(Button);
 	accept_button->set_accessibility_name(TTRC("Accept Custom Value Edit"));
 	accept_button->set_flat(true);
+	accept_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit_custom_layout->add_child(accept_button);
 	accept_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyTextEnum::_custom_value_accepted));
 
 	cancel_button = memnew(Button);
 	cancel_button->set_accessibility_name(TTRC("Cancel Custom Value Edit"));
 	cancel_button->set_flat(true);
+	cancel_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit_custom_layout->add_child(cancel_button);
 	cancel_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyTextEnum::_custom_value_canceled));
 
@@ -571,6 +653,7 @@ EditorPropertyLocale::EditorPropertyLocale() {
 	locale_edit = memnew(Button);
 	locale_edit->set_accessibility_name(TTRC("Edit"));
 	locale_edit->set_clip_text(true);
+	locale_edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	locale_hb->add_child(locale_edit);
 	add_focusable(locale);
 	dialog = nullptr;
@@ -742,11 +825,13 @@ EditorPropertyPath::EditorPropertyPath() {
 	toggle_uid->set_accessibility_name(TTRC("Toggle Display UID"));
 	toggle_uid->set_tooltip_text(TTRC("Toggles displaying between path and UID.\nThe UID is the actual value of this property."));
 	toggle_uid->set_pressed(false);
+	toggle_uid->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	path_hb->add_child(toggle_uid);
 	add_focusable(toggle_uid);
 	toggle_uid->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyPath::_toggle_uid_display));
 
 	path_edit = memnew(Button);
+	path_edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	path_edit->set_accessibility_name(TTRC("Edit"));
 	path_hb->add_child(path_edit);
 	add_focusable(path);
@@ -785,6 +870,7 @@ void EditorPropertyClassName::_dialog_created() {
 EditorPropertyClassName::EditorPropertyClassName() {
 	property = memnew(Button);
 	property->set_clip_text(true);
+	property->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(property);
 	add_focusable(property);
 	property->set_text(selected_type);
@@ -879,6 +965,7 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
+	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(options);
 	add_focusable(options);
@@ -1546,6 +1633,7 @@ void EditorPropertyObjectID::setup(const String &p_base_type) {
 
 EditorPropertyObjectID::EditorPropertyObjectID() {
 	edit = memnew(Button);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit->set_accessibility_name(TTRC("Edit"));
 	add_child(edit);
 	add_focusable(edit);
@@ -1572,6 +1660,7 @@ void EditorPropertySignal::update_property() {
 
 EditorPropertySignal::EditorPropertySignal() {
 	edit = memnew(Button);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit->set_accessibility_name(TTRC("Edit"));
 	add_child(edit);
 	add_focusable(edit);
@@ -1592,6 +1681,7 @@ void EditorPropertyCallable::update_property() {
 
 EditorPropertyCallable::EditorPropertyCallable() {
 	edit = memnew(Button);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit->set_accessibility_name(TTRC("Edit"));
 	add_child(edit);
 	add_focusable(edit);
@@ -2314,6 +2404,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	warning = memnew(Button);
 	warning->set_text(TTR("Temporary Euler may be changed implicitly!"));
 	warning->set_clip_text(true);
+	warning->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	warning->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyQuaternion::_warning_pressed));
 	warning_dialog = memnew(AcceptDialog);
 	add_child(warning_dialog);
@@ -2343,6 +2434,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	edit_button->set_accessibility_name(TTRC("Edit"));
 	edit_button->set_flat(true);
 	edit_button->set_toggle_mode(true);
+	edit_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	default_layout->add_child(edit_button);
 	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyQuaternion::_edit_custom_value));
 
@@ -2821,14 +2913,6 @@ void EditorPropertyColor::_popup_closed() {
 	}
 }
 
-void EditorPropertyColor::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			picker->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
-		} break;
-	}
-}
-
 void EditorPropertyColor::update_property() {
 	picker->set_pick_color(get_edited_property_display_value());
 	const Color color = picker->get_pick_color();
@@ -2862,6 +2946,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker = memnew(ColorPickerButton);
 	add_child(picker);
 	picker->set_flat(true);
+	picker->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
 	picker->connect("picker_created", callable_mp(this, &EditorPropertyColor::_picker_created), CONNECT_ONE_SHOT);
 }
@@ -3170,6 +3255,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign = memnew(Button);
 	assign->set_accessibility_name(TTRC("Assign Node"));
 	assign->set_flat(true);
+	assign->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -3889,7 +3975,14 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
 				return get_input_action_editor(p_hint_text, false);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
-				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
+				Vector<String> options = p_hint_text.split(",", false);
+				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(false));
+				if (options.has("monospace")) {
+					editor->set_monospaced(true);
+				}
+				if (options.has("no_wrap")) {
+					editor->set_wrap_lines(false);
+				}
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_EXPRESSION) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(true));
@@ -3916,6 +4009,12 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
+
+				Vector<String> hints = p_hint_text.split(",");
+				if (hints.has("monospace")) {
+					editor->set_monospaced(true);
+				}
+
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
 					editor->set_placeholder(p_hint_text);
 				} else if (p_hint == PROPERTY_HINT_PASSWORD) {

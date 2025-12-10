@@ -43,15 +43,11 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
-		if (!c) {
-			continue;
-		}
-		if (c == h_scroll || c == v_scroll || c == focus_panel) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
 
 		Size2 child_min_size = c->get_combined_minimum_size();
-
 		largest_child_min_size = largest_child_min_size.max(child_min_size);
 	}
 
@@ -359,27 +355,30 @@ void ScrollContainer::_reposition_children() {
 	}
 
 	if (reserve_vscroll) {
-		size.x -= v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
+		int width = v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
+		size.x -= width;
+		if (rtl) {
+			ofs.x += width;
+		}
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
-		if (!c || c->is_internal()) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
-		Size2 minsize = c->get_combined_minimum_size();
 
+		Size2 minsize = c->get_combined_minimum_size();
 		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
+
 		if (c->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.width = MAX(size.width, minsize.width);
 		}
 		if (c->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.height = MAX(size.height, minsize.height);
 		}
+
 		r.position += ofs;
-		if (rtl && reserve_vscroll) {
-			r.position.x += v_scroll->get_minimum_size().x;
-		}
 		r.position = r.position.floor();
 		fit_child_in_rect(c, r);
 	}
@@ -770,7 +769,7 @@ PackedStringArray ScrollContainer::get_configuration_warnings() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
-		if (!c || c->is_internal()) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
 

@@ -30,6 +30,7 @@
 
 #include "editor_file_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/settings/editor_settings.h"
@@ -89,6 +90,26 @@ void EditorFileDialog::_validate_property(PropertyInfo &p_property) const {
 	// Hide properties controlled by editor settings.
 	if (p_property.name == "use_native_dialog" || p_property.name == "show_hidden_files" || p_property.name == "display_mode") {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
+void EditorFileDialog::_dir_contents_changed() {
+	bool scan_required = false;
+	switch (get_access()) {
+		case FileDialog::ACCESS_RESOURCES: {
+			scan_required = true;
+		} break;
+		case FileDialog::ACCESS_USERDATA: {
+			// Directories within the project dir are unlikely to be accessed.
+		} break;
+		case FileDialog::ACCESS_FILESYSTEM: {
+			// Directories within the project dir may still be accessed.
+			const String localized_path = ProjectSettings::get_singleton()->localize_path(get_current_dir());
+			scan_required = localized_path.is_resource_file();
+		} break;
+	}
+	if (scan_required) {
+		EditorFileSystem::get_singleton()->scan_changes();
 	}
 }
 

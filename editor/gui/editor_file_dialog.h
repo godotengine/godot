@@ -41,6 +41,7 @@ class EditorFileDialog : public FileDialog {
 
 protected:
 	virtual void _item_menu_id_pressed(int p_option) override;
+	virtual void _dir_contents_changed() override;
 
 	virtual bool _should_use_native_popup() const override;
 	virtual bool _should_hide_file(const String &p_file) const override;
