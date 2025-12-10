@@ -92,7 +92,8 @@ public:
 			TYPE_BUFFER_UPDATE,
 			TYPE_COMPUTE_LIST,
 			TYPE_DRAW_LIST,
-			TYPE_TEXTURE_CLEAR,
+			TYPE_TEXTURE_CLEAR_COLOR,
+			TYPE_TEXTURE_CLEAR_DEPTH_STENCIL,
 			TYPE_TEXTURE_COPY,
 			TYPE_TEXTURE_GET_DATA,
 			TYPE_TEXTURE_RESOLVE,
@@ -414,10 +415,17 @@ private:
 		}
 	};
 
-	struct RecordedTextureClearCommand : RecordedCommand {
+	struct RecordedTextureClearColorCommand : RecordedCommand {
 		RDD::TextureID texture;
 		RDD::TextureSubresourceRange range;
 		Color color;
+	};
+
+	struct RecordedTextureClearDepthStencilCommand : RecordedCommand {
+		RDD::TextureID texture;
+		RDD::TextureSubresourceRange range;
+		float depth;
+		uint8_t stencil;
 	};
 
 	struct RecordedTextureCopyCommand : RecordedCommand {
@@ -813,7 +821,8 @@ public:
 	void add_draw_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_draw_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
 	void add_draw_list_end();
-	void add_texture_clear(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range);
+	void add_texture_clear_color(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range);
+	void add_texture_clear_depth_stencil(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, float p_depth, uint8_t p_stencil, const RDD::TextureSubresourceRange &p_range);
 	void add_texture_copy(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, VectorView<RDD::TextureCopyRegion> p_texture_copy_regions);
 	void add_texture_get_data(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, VectorView<RDD::BufferTextureCopyRegion> p_buffer_texture_copy_regions, ResourceTracker *p_dst_tracker = nullptr);
 	void add_texture_resolve(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, uint32_t p_src_layer, uint32_t p_src_mipmap, uint32_t p_dst_layer, uint32_t p_dst_mipmap);

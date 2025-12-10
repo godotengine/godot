@@ -2562,6 +2562,7 @@ void RenderingDeviceDriverD3D12::command_pool_free(CommandPoolID p_cmd_pool) {
 
 		resource_descriptor_heap_pool.free(cmd_buf_info->uav_alloc);
 		rtv_descriptor_heap_pool.free(cmd_buf_info->rtv_alloc);
+		dsv_descriptor_heap_pool.free(cmd_buf_info->dsv_alloc);
 
 		VersatileResource::free(resources_allocator, cmd_buf_info);
 	}
@@ -2606,6 +2607,7 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 
 	CPUDescriptorHeapPool::Allocation uav_alloc;
 	CPUDescriptorHeapPool::Allocation rtv_alloc;
+	CPUDescriptorHeapPool::Allocation dsv_alloc;
 
 	if (list_type != D3D12_COMMAND_LIST_TYPE_COPY) {
 		Error err = resource_descriptor_heap_pool.allocate(1, device.Get(), uav_alloc);
@@ -2614,6 +2616,13 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 		err = rtv_descriptor_heap_pool.allocate(1, device.Get(), rtv_alloc);
 		if (unlikely(err != OK)) {
 			resource_descriptor_heap_pool.free(uav_alloc);
+			ERR_FAIL_V(CommandBufferID());
+		}
+
+		err = dsv_descriptor_heap_pool.allocate(1, device.Get(), dsv_alloc);
+		if (unlikely(err != OK)) {
+			resource_descriptor_heap_pool.free(uav_alloc);
+			rtv_descriptor_heap_pool.free(rtv_alloc);
 			ERR_FAIL_V(CommandBufferID());
 		}
 	}
@@ -2626,6 +2635,7 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 
 	cmd_buf_info->uav_alloc = uav_alloc;
 	cmd_buf_info->rtv_alloc = rtv_alloc;
+	cmd_buf_info->dsv_alloc = dsv_alloc;
 
 	// Add this command buffer to the command pool's list of command buffers.
 	command_pool->command_buffers.add(&cmd_buf_info->command_buffer_info_elem);
@@ -3033,7 +3043,7 @@ D3D12_UNORDERED_ACCESS_VIEW_DESC RenderingDeviceDriverD3D12::_make_ranged_uav_fo
 	return uav_desc;
 }
 
-D3D12_DEPTH_STENCIL_VIEW_DESC RenderingDeviceDriverD3D12::_make_dsv_for_texture(const TextureInfo *p_texture_info) {
+D3D12_DEPTH_STENCIL_VIEW_DESC RenderingDeviceDriverD3D12::_make_dsv_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases) {
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc = {};
 	dsv_desc.Format = RD_TO_D3D12_FORMAT[p_texture_info->format].dsv_format;
 	dsv_desc.Flags = D3D12_DSV_FLAG_NONE;
@@ -3041,23 +3051,23 @@ D3D12_DEPTH_STENCIL_VIEW_DESC RenderingDeviceDriverD3D12::_make_dsv_for_texture(
 	switch (p_texture_info->view_descs.srv.ViewDimension) {
 		case D3D12_SRV_DIMENSION_TEXTURE1D: {
 			dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE1D;
-			dsv_desc.Texture1D.MipSlice = p_texture_info->base_mip;
+			dsv_desc.Texture1D.MipSlice = p_texture_info->base_mip + p_mipmap_offset;
 		} break;
 		case D3D12_SRV_DIMENSION_TEXTURE1DARRAY: {
 			dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE1DARRAY;
-			dsv_desc.Texture1DArray.MipSlice = p_texture_info->base_mip;
-			dsv_desc.Texture1DArray.FirstArraySlice = p_texture_info->base_layer;
-			dsv_desc.Texture1DArray.ArraySize = p_texture_info->view_descs.srv.Texture1DArray.ArraySize;
+			dsv_desc.Texture1DArray.MipSlice = (p_add_bases ? p_texture_info->base_mip : 0) + p_mipmap_offset;
+			dsv_desc.Texture1DArray.FirstArraySlice = (p_add_bases ? p_texture_info->base_layer : 0) + p_layer_offset;
+			dsv_desc.Texture1DArray.ArraySize = p_layers == UINT32_MAX ? p_texture_info->view_descs.srv.Texture1DArray.ArraySize : p_layers;
 		} break;
 		case D3D12_SRV_DIMENSION_TEXTURE2D: {
 			dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-			dsv_desc.Texture2D.MipSlice = p_texture_info->view_descs.srv.Texture2D.MostDetailedMip;
+			dsv_desc.Texture2D.MipSlice = (p_add_bases ? p_texture_info->base_mip : 0) + p_mipmap_offset;
 		} break;
 		case D3D12_SRV_DIMENSION_TEXTURE2DARRAY: {
 			dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
-			dsv_desc.Texture2DArray.MipSlice = p_texture_info->base_mip;
-			dsv_desc.Texture2DArray.FirstArraySlice = p_texture_info->base_layer;
-			dsv_desc.Texture2DArray.ArraySize = p_texture_info->view_descs.srv.Texture2DArray.ArraySize;
+			dsv_desc.Texture2DArray.MipSlice = (p_add_bases ? p_texture_info->base_mip : 0) + p_mipmap_offset;
+			dsv_desc.Texture2DArray.FirstArraySlice = (p_add_bases ? p_texture_info->base_layer : 0) + p_layer_offset;
+			dsv_desc.Texture2DArray.ArraySize = p_layers == UINT32_MAX ? p_texture_info->view_descs.srv.Texture2DArray.ArraySize : p_layers;
 		} break;
 		case D3D12_SRV_DIMENSION_TEXTURE2DMS: {
 			dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
@@ -3065,8 +3075,20 @@ D3D12_DEPTH_STENCIL_VIEW_DESC RenderingDeviceDriverD3D12::_make_dsv_for_texture(
 		} break;
 		case D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY: {
 			dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMSARRAY;
-			dsv_desc.Texture2DMSArray.FirstArraySlice = p_texture_info->base_layer;
-			dsv_desc.Texture2DMSArray.ArraySize = p_texture_info->view_descs.srv.Texture2DMSArray.ArraySize;
+			dsv_desc.Texture2DMSArray.FirstArraySlice = (p_add_bases ? p_texture_info->base_layer : 0) + p_layer_offset;
+			dsv_desc.Texture2DMSArray.ArraySize = p_layers == UINT32_MAX ? p_texture_info->view_descs.srv.Texture2DMSArray.ArraySize : p_layers;
+		} break;
+		case D3D12_SRV_DIMENSION_TEXTURECUBE: {
+			dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+			dsv_desc.Texture2DArray.MipSlice = (p_add_bases ? p_texture_info->base_mip : 0) + p_mipmap_offset;
+			dsv_desc.Texture2DArray.FirstArraySlice = (p_add_bases ? p_texture_info->base_layer : 0) + p_layer_offset;
+			dsv_desc.Texture2DArray.ArraySize = p_layers == UINT32_MAX ? 6 : p_layers;
+		} break;
+		case D3D12_SRV_DIMENSION_TEXTURECUBEARRAY: {
+			dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+			dsv_desc.Texture2DArray.MipSlice = (p_add_bases ? p_texture_info->base_mip : 0) + p_mipmap_offset;
+			dsv_desc.Texture2DArray.FirstArraySlice = (p_add_bases ? p_texture_info->base_layer : 0) + p_layer_offset;
+			dsv_desc.Texture2DArray.ArraySize = p_layers == UINT32_MAX ? (p_texture_info->view_descs.srv.TextureCubeArray.NumCubes * 6) : p_layers;
 		} break;
 		default: {
 			DEV_ASSERT(false);
@@ -3139,7 +3161,7 @@ RDD::FramebufferID RenderingDeviceDriverD3D12::_framebuffer_create(RenderPassID 
 			fb_info->attachments.push_back(p_attachments[i]);
 			color_idx++;
 		} else if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
-			D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc = _make_dsv_for_texture(tex_info);
+			D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc = _make_dsv_for_texture(tex_info, 0, 0, UINT32_MAX);
 			device->CreateDepthStencilView(tex_info->resource, &dsv_desc, get_cpu_handle(fb_info->dsv_alloc.cpu_handle, depth_stencil_idx, dsv_descriptor_heap_pool.increment_size));
 
 			fb_info->attachments_handle_inds[i] = depth_stencil_idx;
@@ -3966,6 +3988,59 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 		}
 	} else {
 		ERR_FAIL_MSG("Cannot clear texture because its format does not support UAV writes. You'll need to update its contents through another method.");
+	}
+}
+
+void RenderingDeviceDriverD3D12::command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) {
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
+	if (tex_info->main_texture) {
+		tex_info = tex_info->main_texture;
+	}
+
+	if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
+		if (!barrier_capabilities.enhanced_barriers_supported) {
+			uint32_t num_planes = format_get_plane_count(tex_info->format);
+
+			for (uint32_t i = 0; i < p_subresources.layer_count; i++) {
+				for (uint32_t j = 0; j < p_subresources.mipmap_count; j++) {
+					UINT subresource = D3D12CalcSubresource(
+							p_subresources.base_mipmap + j,
+							p_subresources.base_layer + i,
+							0,
+							tex_info->desc.MipLevels,
+							tex_info->desc.ArraySize());
+					_resource_transition_batch(cmd_buf_info, tex_info, subresource, num_planes, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+				}
+			}
+			_resource_transitions_flush(cmd_buf_info);
+		}
+
+		D3D12_CLEAR_FLAGS clear_flags = {};
+		if (p_subresources.aspect.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT)) {
+			clear_flags |= D3D12_CLEAR_FLAG_DEPTH;
+		}
+		if (p_subresources.aspect.has_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT)) {
+			clear_flags |= D3D12_CLEAR_FLAG_STENCIL;
+		}
+
+		for (uint32_t i = 0; i < p_subresources.mipmap_count; i++) {
+			D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc = _make_dsv_for_texture(tex_info, p_subresources.base_mipmap + i, p_subresources.base_layer, p_subresources.layer_count, false);
+			device->CreateDepthStencilView(
+					tex_info->resource,
+					&dsv_desc,
+					cmd_buf_info->dsv_alloc.cpu_handle);
+
+			cmd_buf_info->cmd_list->ClearDepthStencilView(
+					cmd_buf_info->dsv_alloc.cpu_handle,
+					clear_flags,
+					p_depth,
+					p_stencil,
+					0,
+					nullptr);
+		}
+	} else {
+		ERR_FAIL_MSG("Cannot clear depth because the texture was not created with the depth attachment bit. You'll need to update its contents through another method.");
 	}
 }
 

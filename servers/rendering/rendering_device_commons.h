@@ -1012,6 +1012,7 @@ protected:
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
 	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = nullptr, uint32_t *r_blockh = nullptr, uint32_t *r_depth = nullptr);
 	static uint32_t get_image_required_mipmaps(uint32_t p_width, uint32_t p_height, uint32_t p_depth);
+	static bool format_has_depth(DataFormat p_format);
 	static bool format_has_stencil(DataFormat p_format);
 	static uint32_t format_get_plane_count(DataFormat p_format);
 
