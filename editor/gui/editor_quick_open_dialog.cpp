@@ -800,7 +800,7 @@ void QuickOpenResultContainer::_select_item(int p_index) {
 
 	result_items[selection_index]->highlight_item(true);
 	bool in_history = history_set.has(candidates[selection_index].file_path);
-	file_details_path->set_text(get_selected() + (in_history ? TTR(" (recently opened)") : ""));
+	file_details_path->set_text(get_selected() + (in_history ? vformat(" %s", TTR("(recently opened)")) : ""));
 
 	emit_signal(SNAME("selection_changed"));
 

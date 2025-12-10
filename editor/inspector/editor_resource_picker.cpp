@@ -116,7 +116,7 @@ void EditorResourcePicker::_update_resource() {
 			if (!editable) {
 				tooltip += "\n" + TTR("The Resource cannot be edited in the inspector and can't be made unique directly.") + "\n";
 			} else {
-				tooltip += unique_enable ? TTR(" Left-click to make it unique.") + "\n" : "\n";
+				tooltip += unique_enable ? vformat(" %s\n", TTR("Left-click to make it unique.")) : "\n";
 
 				if (unique_recursive_enabled) {
 					tooltip += TTR("It is possible to make its subresources unique. Right-click to make them unique.") + "\n";
