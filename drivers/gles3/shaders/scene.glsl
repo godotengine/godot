@@ -1493,6 +1493,11 @@ float SchlickFresnel(float u) {
 	return m2 * m2 * m; // pow(m,5)
 }
 
+float V_Kelemen(float LdotH) {
+	// Kelemen 2001, "A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling"
+	return 0.25 / (LdotH * LdotH + 1e-4);
+}
+
 void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_directional, float attenuation, vec3 f0, float roughness, float metallic, float specular_amount, vec3 albedo, inout float alpha, vec2 screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
@@ -1531,6 +1536,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 1e-4);
 
+	float cc_attenuation = 1.0;
+
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	vec3 H = normalize(V + L);
 #endif
@@ -1542,6 +1549,21 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	float cLdotH = clamp(A + dot(L, H), 0.0, 1.0);
 #endif
+
+#if defined(LIGHT_CLEARCOAT_USED)
+	// Clearcoat ignores normal_map, use vertex normal instead
+	float ccNdotL = clamp(A + dot(vertex_normal, L), 0.0, 1.0);
+	float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
+	float cLdotH5 = SchlickFresnel(cLdotH);
+
+	float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
+	float Gr = V_Kelemen(cLdotH);
+	float Fr = mix(0.04, 1.0, cLdotH5) * clearcoat;
+	cc_attenuation = 1.0 - Fr;
+	float clearcoat_specular_brdf_NL = Dr * Gr * Fr * ccNdotL;
+
+	specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
+#endif // LIGHT_CLEARCOAT_USED
 
 	if (metallic < 1.0) {
 		float diffuse_brdf_NL; // BRDF times N.L for calculating diffuse radiance
@@ -1564,10 +1586,10 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		diffuse_brdf_NL = cNdotL * (1.0 / M_PI);
 #endif
 
-		diffuse_light += light_color * diffuse_brdf_NL * attenuation;
+		diffuse_light += light_color * diffuse_brdf_NL * attenuation * cc_attenuation;
 
 #if defined(LIGHT_BACKLIGHT_USED)
-		diffuse_light += light_color * (vec3(1.0 / M_PI) - diffuse_brdf_NL) * backlight * attenuation;
+		diffuse_light += light_color * (vec3(1.0 / M_PI) - diffuse_brdf_NL) * backlight * attenuation * cc_attenuation;
 #endif
 
 #if defined(LIGHT_RIM_USED)
@@ -1609,7 +1631,9 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif // LIGHT_ANISOTROPY_USED
 	   // F
+#if !defined(LIGHT_CLEARCOAT_USED)
 		float cLdotH5 = SchlickFresnel(cLdotH);
+#endif
 		// Calculate Fresnel using cheap approximate specular occlusion term from Filament:
 		// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
 		float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
@@ -1617,27 +1641,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 
 		vec3 specular_brdf_NL = cNdotL * D * F * G;
 
-		specular_light += specular_brdf_NL * light_color * attenuation * specular_amount;
+		specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
 #endif
-
-#if defined(LIGHT_CLEARCOAT_USED)
-		// Clearcoat ignores normal_map, use vertex normal instead
-		float ccNdotL = max(min(A + dot(vertex_normal, L), 1.0), 0.0);
-		float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
-		float ccNdotV = max(dot(vertex_normal, V), 1e-4);
-
-#if !defined(SPECULAR_SCHLICK_GGX)
-		float cLdotH5 = SchlickFresnel(cLdotH);
-#endif
-		float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
-		float Gr = 0.25 / (cLdotH * cLdotH + 1e-4);
-		float Fr = mix(.04, 1.0, cLdotH5);
-		float clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
-
-		specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
-		// TODO: Clearcoat adds light to the scene right now (it is non-energy conserving), both diffuse and specular need to be scaled by (1.0 - FR)
-		// but to do so we need to rearrange this entire function
-#endif // LIGHT_CLEARCOAT_USED
 	}
 
 #ifdef USE_SHADOW_TO_OPACITY
