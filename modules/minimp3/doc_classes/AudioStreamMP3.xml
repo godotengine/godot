@@ -60,5 +60,11 @@
 		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" default="0.0">
 			Time in seconds at which the stream starts after being looped.
 		</member>
+		<member name="tags" type="Dictionary" setter="set_tags" getter="get_tags" default="{}">
+			Contains user-defined tags if found in the MP3 data.
+			Commonly used tags include [code]title[/code], [code]artist[/code], [code]album[/code], [code]tracknumber[/code], and [code]date[/code] ([code]date[/code] does not have a standard date format).
+			[b]Note:[/b] No tag is [i]guaranteed[/i] to be present in every file, so make sure to account for the keys not always existing.
+			[b]Note:[/b] Only MP3 files with tags in ID3v2 format are currently supported.
+		</member>
 	</members>
 </class>
