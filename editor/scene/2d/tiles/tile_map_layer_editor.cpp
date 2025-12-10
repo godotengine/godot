@@ -4420,7 +4420,7 @@ void TileMapLayerEditor::update_layout(DockLayout p_layout) {
 	tile_map_toolbar->set_h_size_flags(is_vertical ? SIZE_SHRINK_BEGIN : SIZE_EXPAND_FILL);
 	tile_map_toolbar->set_v_size_flags(is_vertical ? SIZE_EXPAND_FILL : SIZE_SHRINK_BEGIN);
 
-	main_box_container->move_child(padding_control, is_vertical ? 0 : 3);
+	main_box_container->move_child(padding_control, is_vertical ? 0 : 2);
 
 	if (is_vertical) {
 		tile_map_wide_toolbar->add_child(tabs_bar);
