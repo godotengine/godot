@@ -409,19 +409,22 @@ Color Color::named(const String &p_name, const Color &p_default) {
 	return named_colors[idx].color;
 }
 
+static HashMap<String, int> _init_named_colors_map() {
+	HashMap<String, int> named_colors_hashmap;
+	const int named_color_count = Color::get_named_color_count();
+	for (int i = 0; i < named_color_count; i++) {
+		named_colors_hashmap[String(named_colors[i].name).remove_char('_')] = i;
+	}
+	return named_colors_hashmap;
+}
+
 int Color::find_named_color(const String &p_name) {
 	String name = p_name;
 	// Normalize name.
 	name = name.remove_chars(" -_'.");
 	name = name.to_upper();
 
-	static HashMap<String, int> named_colors_hashmap;
-	if (unlikely(named_colors_hashmap.is_empty())) {
-		const int named_color_count = get_named_color_count();
-		for (int i = 0; i < named_color_count; i++) {
-			named_colors_hashmap[String(named_colors[i].name).remove_char('_')] = i;
-		}
-	}
+	static const HashMap<String, int> named_colors_hashmap = _init_named_colors_map();
 
 	const HashMap<String, int>::ConstIterator E = named_colors_hashmap.find(name);
 	if (E) {
