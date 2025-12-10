@@ -821,6 +821,21 @@ uint32_t RenderingDeviceCommons::get_image_required_mipmaps(uint32_t p_width, ui
 	return mipmaps;
 }
 
+bool RenderingDeviceCommons::format_has_depth(DataFormat p_format) {
+	switch (p_format) {
+		case DATA_FORMAT_D16_UNORM:
+		case DATA_FORMAT_X8_D24_UNORM_PACK32:
+		case DATA_FORMAT_D32_SFLOAT:
+		case DATA_FORMAT_D16_UNORM_S8_UINT:
+		case DATA_FORMAT_D24_UNORM_S8_UINT:
+		case DATA_FORMAT_D32_SFLOAT_S8_UINT:
+			return true;
+		default: {
+		}
+	}
+	return false;
+}
+
 bool RenderingDeviceCommons::format_has_stencil(DataFormat p_format) {
 	switch (p_format) {
 		case DATA_FORMAT_S8_UINT:
