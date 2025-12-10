@@ -107,6 +107,16 @@ var test_color: Array
   hint=TYPE_STRING hint_string="<Color>/<COLOR_NO_ALPHA>:" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_color_packed: PackedColorArray
   hint=TYPE_STRING hint_string="<Color>/<COLOR_NO_ALPHA>:" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_suffix: Array
+  hint=TYPE_STRING hint_string="<int>/<SUFFIX>:m" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_suffix_vector: Array
+  hint=TYPE_STRING hint_string="<Vector3>/<SUFFIX>:m" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_suffix_packed_byte: PackedByteArray
+  hint=TYPE_STRING hint_string="<int>/<SUFFIX>:m" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_suffix_packed32: PackedInt32Array
+  hint=TYPE_STRING hint_string="<int>/<SUFFIX>:m" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_suffix_packed64: PackedInt64Array
+  hint=TYPE_STRING hint_string="<int>/<SUFFIX>:m" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_packed_byte_array: PackedByteArray
   hint=TYPE_STRING hint_string="<int>:" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_packed_int32_array: PackedInt32Array

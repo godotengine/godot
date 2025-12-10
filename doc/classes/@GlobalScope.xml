@@ -2975,7 +2975,11 @@
 		<constant name="PROPERTY_HINT_FILE_PATH" value="44" enum="PropertyHint">
 			Like [constant PROPERTY_HINT_FILE], but the property is stored as a raw path, not UID. That means the reference will be broken if you move the file. Consider using [constant PROPERTY_HINT_FILE] when possible.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SUFFIX" value="45" enum="PropertyHint">
+			Hints that an [int], [float], or vector property should show a suffix after the value, specified via the first hint string.
+			Additionally, the hint string [code]"radians_as_degrees"[/code] can be included to edit radian angles in degrees.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="46" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
