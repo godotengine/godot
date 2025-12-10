@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/run/embedded_process.h"
+#include "servers/display/display_server.h"
 
 class DisplayServerMacOS;
 class EmbeddedProcessMacOS;

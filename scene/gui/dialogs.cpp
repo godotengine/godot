@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "scene/gui/line_edit.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 // AcceptDialog
 
@@ -56,7 +57,7 @@ void AcceptDialog::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_DIALOG);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_DIALOG);
 		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
 			if (is_visible()) {
