@@ -39,6 +39,8 @@ constexpr uint64_t INDEX_SHIFT = 32;
 Ref<AudioStreamPlayback> AudioStreamPolyphonic::instantiate_playback() {
 	Ref<AudioStreamPlaybackPolyphonic> playback;
 	playback.instantiate();
+	playback->stream_polyphonic = Ref<AudioStreamPolyphonic>((AudioStreamPolyphonic *)this);
+	playback->volume_linear_smooth = playback->stream_polyphonic->volume_linear;
 	playback->streams.resize(polyphony);
 	return playback;
 }
@@ -136,6 +138,9 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 		p_buffer[i] = AudioFrame(0, 0);
 	}
 
+	// This stream's volume.
+	float volume_linear_start = volume_linear_smooth;
+
 	for (Stream &s : streams) {
 		if (!s.active.is_set()) {
 			continue;
@@ -149,6 +154,7 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 			continue;
 		}
 
+		// Child stream's volume,
 		float volume_db = s.volume_db; // Copy because it can be overridden at any time.
 		float next_volume = Math::db_to_linear(volume_db);
 		s.prev_volume_db = volume_db;
@@ -166,13 +172,14 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 			s.stream_playback->start(s.play_offset);
 			s.pending_play.clear();
 		}
-		float prev_volume = Math::db_to_linear(s.prev_volume_db);
 
+		float prev_volume = Math::db_to_linear(s.prev_volume_db);
 		float volume_inc = (next_volume - prev_volume) / float(p_frames);
+		volume_inc += (stream_polyphonic->volume_linear - volume_linear_smooth) / p_frames;
 
 		int todo = p_frames;
 		int offset = 0;
-		float volume = prev_volume;
+		float volume = prev_volume * volume_linear_start;
 
 		bool stream_done = false;
 
@@ -205,6 +212,7 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 		}
 	}
 
+	volume_linear_smooth = stream_polyphonic->volume_linear;
 	return p_frames;
 }
 

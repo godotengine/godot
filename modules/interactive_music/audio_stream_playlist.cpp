@@ -36,6 +36,7 @@ Ref<AudioStreamPlayback> AudioStreamPlaylist::instantiate_playback() {
 	Ref<AudioStreamPlaybackPlaylist> playback_playlist;
 	playback_playlist.instantiate();
 	playback_playlist->playlist = Ref<AudioStreamPlaylist>(this);
+	playback_playlist->volume_linear_smooth = playback_playlist->playlist->volume_linear;
 	playback_playlist->_update_playback_instances();
 	playbacks.insert(playback_playlist.operator->());
 	return playback_playlist;
@@ -264,6 +265,9 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 	double time_dec = (1.0 / AudioServer::get_singleton()->get_mix_rate());
 	double fade_dec = (1.0 / playlist->fade_time) / AudioServer::get_singleton()->get_mix_rate();
 
+	float volume_increment = (playlist->volume_linear - volume_linear_smooth) / p_frames;
+	float volume_accumulated = volume_linear_smooth;
+
 	int todo = p_frames;
 
 	while (todo) {
@@ -360,12 +364,15 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 				}
 			}
 
+			*p_buffer *= volume_accumulated;
+			volume_accumulated += volume_increment;
 			p_buffer++;
 		}
 
 		todo -= to_mix;
 	}
 
+	volume_linear_smooth = playlist->volume_linear;
 	return p_frames;
 }
 

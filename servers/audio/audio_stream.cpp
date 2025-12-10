@@ -330,6 +330,14 @@ Ref<AudioSample> AudioStream::generate_sample() const {
 	return sample;
 }
 
+void AudioStream::set_volume_db(float p_volume) {
+	volume_linear = Math::db_to_linear(p_volume);
+}
+
+float AudioStream::get_volume_db() const {
+	return Math::linear_to_db(volume_linear);
+}
+
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
@@ -337,6 +345,10 @@ void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_be_sampled"), &AudioStream::can_be_sampled);
 	ClassDB::bind_method(D_METHOD("generate_sample"), &AudioStream::generate_sample);
 	ClassDB::bind_method(D_METHOD("is_meta_stream"), &AudioStream::is_meta_stream);
+	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStream::set_volume_db);
+	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStream::get_volume_db);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-24,24,0.001,or_less,or_greater,exp,suffix:dB"), "set_volume_db", "get_volume_db");
 
 	GDVIRTUAL_BIND(_instantiate_playback);
 	GDVIRTUAL_BIND(_get_stream_name);
@@ -358,9 +370,11 @@ Ref<AudioStreamPlayback> AudioStreamMicrophone::instantiate_playback() {
 	Ref<AudioStreamPlaybackMicrophone> playback;
 	playback.instantiate();
 
+	playback->microphone = Ref<AudioStreamMicrophone>((AudioStreamMicrophone *)this);
+	playback->volume_linear_smooth = playback->microphone->volume_linear;
+
 	playbacks.insert(playback.ptr());
 
-	playback->microphone = Ref<AudioStreamMicrophone>((AudioStreamMicrophone *)this);
 	playback->active = false;
 
 	return playback;
@@ -393,6 +407,7 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 #endif
 
 	int mixed_frames = p_frames;
+	float volume_increment = (microphone->volume_linear - volume_linear_smooth) / p_frames;
 
 	if (playback_delay > input_size) {
 		for (int i = 0; i < p_frames; i++) {
@@ -411,12 +426,17 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 					input_ofs = 0;
 				}
 
+				l *= volume_linear_smooth;
+				r *= volume_linear_smooth;
+				volume_linear_smooth += volume_increment;
+
 				p_buffer[i] = AudioFrame(l, r);
 			} else {
 				p_buffer[i] = AudioFrame(0.0f, 0.0f);
 			}
 		}
 	}
+	volume_linear_smooth = microphone->volume_linear;
 
 #ifdef DEBUG_ENABLED
 	if (input_ofs > input_position && (int)(input_ofs - input_position) < (p_frames * 2)) {
@@ -593,8 +613,9 @@ AudioStreamRandomizer::PlaybackMode AudioStreamRandomizer::get_playback_mode() c
 Ref<AudioStreamPlayback> AudioStreamRandomizer::instance_playback_random() {
 	Ref<AudioStreamPlaybackRandomizer> playback;
 	playback.instantiate();
-	playbacks.insert(playback.ptr());
 	playback->randomizer = Ref<AudioStreamRandomizer>((AudioStreamRandomizer *)this);
+	playback->volume_linear_smooth = playback->randomizer->volume_linear;
+	playbacks.insert(playback.ptr());
 
 	double total_weight = 0;
 	Vector<PoolEntry> local_pool;
@@ -647,8 +668,9 @@ Ref<AudioStreamPlayback> AudioStreamRandomizer::instance_playback_no_repeats() {
 	}
 
 	playback.instantiate();
-	playbacks.insert(playback.ptr());
 	playback->randomizer = Ref<AudioStreamRandomizer>((AudioStreamRandomizer *)this);
+	playback->volume_linear_smooth = playback->randomizer->volume_linear;
+	playbacks.insert(playback.ptr());
 	double chosen_cumulative_weight = Math::random(0.0, total_weight);
 	double cumulative_weight = 0;
 	for (PoolEntry &entry : local_pool) {
@@ -670,8 +692,9 @@ Ref<AudioStreamPlayback> AudioStreamRandomizer::instance_playback_no_repeats() {
 Ref<AudioStreamPlayback> AudioStreamRandomizer::instance_playback_sequential() {
 	Ref<AudioStreamPlaybackRandomizer> playback;
 	playback.instantiate();
-	playbacks.insert(playback.ptr());
 	playback->randomizer = Ref<AudioStreamRandomizer>((AudioStreamRandomizer *)this);
+	playback->volume_linear_smooth = playback->randomizer->volume_linear;
+	playbacks.insert(playback.ptr());
 
 	Vector<Ref<AudioStream>> local_pool;
 	for (const PoolEntry &entry : audio_stream_pool) {
@@ -859,9 +882,12 @@ void AudioStreamPlaybackRandomizer::tag_used_streams() {
 int AudioStreamPlaybackRandomizer::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (playing.is_valid()) {
 		int mixed_samples = playing->mix(p_buffer, p_rate_scale * pitch_scale, p_frames);
+		float volume_increment = (randomizer->volume_linear - volume_linear_smooth) / p_frames;
 		for (int samp = 0; samp < mixed_samples; samp++) {
-			p_buffer[samp] *= volume_scale;
+			p_buffer[samp] *= volume_scale * volume_linear_smooth;
+			volume_linear_smooth += volume_increment;
 		}
+		volume_linear_smooth = randomizer->volume_linear;
 		return mixed_samples;
 	} else {
 		for (int i = 0; i < p_frames; i++) {

@@ -140,6 +140,22 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 			}
 		}
 	}
+
+	if (vorbis_stream->volume_linear != 1.0f || volume_linear_smooth != 1.0f) {
+		if (vorbis_stream->volume_linear != volume_linear_smooth) {
+			float volume_increment = (vorbis_stream->volume_linear - volume_linear_smooth) / p_frames;
+			for (int i = 0; i < p_frames; i++) {
+				p_buffer[i] *= volume_linear_smooth;
+				volume_linear_smooth += volume_increment;
+			}
+			volume_linear_smooth = vorbis_stream->volume_linear;
+		} else {
+			for (int i = 0; i < p_frames; i++) {
+				p_buffer[i] *= vorbis_stream->volume_linear;
+			}
+		}
+	}
+
 	return p_frames - todo;
 }
 
@@ -416,6 +432,7 @@ Ref<AudioStreamPlayback> AudioStreamOggVorbis::instantiate_playback() {
 
 	ovs.instantiate();
 	ovs->vorbis_stream = Ref<AudioStreamOggVorbis>(this);
+	ovs->volume_linear_smooth = ovs->vorbis_stream->volume_linear;
 	ovs->vorbis_data = packet_sequence;
 	ovs->frames_mixed = 0;
 	ovs->active = false;

@@ -70,6 +70,7 @@ Ref<AudioStreamPlayback> AudioStreamGenerator::instantiate_playback() {
 	Ref<AudioStreamGeneratorPlayback> playback;
 	playback.instantiate();
 	playback->generator = this;
+	playback->volume_linear_smooth = playback->generator->volume_linear;
 	uint32_t target_buffer_size = _get_target_rate() * buffer_len;
 	playback->buffer.resize(nearest_shift(target_buffer_size));
 	playback->buffer.clear();
@@ -177,6 +178,21 @@ int AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_fram
 	}
 
 	buffer.read(p_buffer, read_amount);
+
+	if (generator->volume_linear != 1.0f || volume_linear_smooth != 1.0f) {
+		if (generator->volume_linear != volume_linear_smooth) {
+			float volume_increment = (generator->volume_linear - volume_linear_smooth) / p_frames;
+			for (int i = 0; i < p_frames; i++) {
+				p_buffer[i] *= volume_linear_smooth;
+				volume_linear_smooth += volume_increment;
+			}
+			volume_linear_smooth = generator->volume_linear;
+		} else {
+			for (int i = 0; i < p_frames; i++) {
+				p_buffer[i] *= generator->volume_linear;
+			}
+		}
+	}
 
 	if (read_amount < p_frames) {
 		// Fill with zeros as fallback in case of buffer underrun.

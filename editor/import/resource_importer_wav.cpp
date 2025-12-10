@@ -84,17 +84,24 @@ void ResourceImporterWAV::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_mode", PROPERTY_HINT_ENUM, "Detect From WAV,Disabled,Forward,Ping-Pong,Backward", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_begin"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_end"), -1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "edit/volume_db", PROPERTY_HINT_RANGE, "-24,24,0.001,or_greater,or_less,exp,suffix:db"), 0.0));
 	// Quite OK Audio is lightweight enough and supports virtually every significant AudioStreamWAV feature.
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "PCM (Uncompressed),IMA ADPCM,Quite OK Audio"), 2));
 }
 
 Error ResourceImporterWAV::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	Dictionary options;
+
+	float volume_db = p_options["edit/volume_db"];
+
 	for (const KeyValue<StringName, Variant> &pair : p_options) {
 		options[pair.key] = pair.value;
 	}
 
 	Ref<AudioStreamWAV> sample = AudioStreamWAV::load_from_file(p_source_file, options);
+
+	sample->set_volume_db(volume_db);
+
 	ResourceSaver::save(sample, p_save_path + ".sample");
 	return OK;
 }
