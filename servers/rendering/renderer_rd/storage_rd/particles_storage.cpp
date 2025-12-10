@@ -491,6 +491,20 @@ void ParticlesStorage::particles_set_transform_align(RID p_particles, RS::Partic
 	particles->transform_align = p_transform_align;
 }
 
+void ParticlesStorage::particles_set_transform_align_custom_src(RID p_particles, RS::ParticlesAlignCustomSrc p_transform_align_custom_src) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_src = p_transform_align_custom_src;
+}
+
+void ParticlesStorage::particles_set_transform_align_rotation_axis(RID p_particles, RS::ParticlesAlignRotationAxis p_rotation_axis) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->rotation_axis = p_rotation_axis;
+}
+
 void ParticlesStorage::particles_set_process_material(RID p_particles, RID p_material) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
@@ -1295,6 +1309,8 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	copy_push_constant.align_up[2] = p_up_axis.z;
 
 	copy_push_constant.align_mode = particles->transform_align;
+	copy_push_constant.transform_align_src = particles->transform_align_src;
+	copy_push_constant.subtype = uint32_t(particles->rotation_axis);
 
 	if (do_sort) {
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -1632,7 +1648,7 @@ void ParticlesStorage::update_particles() {
 				copy_push_constant.inv_emission_transform[9] = inv.origin.x;
 				copy_push_constant.inv_emission_transform[10] = inv.origin.y;
 				copy_push_constant.inv_emission_transform[11] = inv.origin.z;
-				}
+			}
 
 			copy_push_constant.total_particles = total_amount;
 			copy_push_constant.frame_remainder = particles->interpolate ? particles->frame_remainder : 0.0;
@@ -1640,6 +1656,8 @@ void ParticlesStorage::update_particles() {
 			copy_push_constant.align_up[0] = 0;
 			copy_push_constant.align_up[1] = 0;
 			copy_push_constant.align_up[2] = 0;
+			copy_push_constant.transform_align_src = particles->transform_align_src;
+			copy_push_constant.subtype = uint32_t(particles->rotation_axis);
 
 			if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
 				copy_push_constant.trail_size = particles->trail_bind_poses.size();
