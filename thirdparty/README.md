@@ -132,6 +132,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-disable-exceptions.patch` (GH-80796)
+- `0002-llvm-21-header.patch` (GH-113850)
 
 
 ## cvtt
