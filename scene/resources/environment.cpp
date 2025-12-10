@@ -1133,6 +1133,12 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
+	if (p_property.name == "tonemap_exposure") {
+		if (bg_mode == BG_CANVAS && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
 	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX)) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
