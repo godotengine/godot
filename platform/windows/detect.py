@@ -387,8 +387,6 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     ## Compile/link flags
 
-    env["MAXLINELENGTH"] = 8192  # Windows Vista and beyond, so always applicable.
-
     if env["silence_msvc"] and not env.GetOption("clean"):
         from tempfile import mkstemp
 
@@ -631,10 +629,28 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
 
 
+WINPATHSEP_RE = re.compile(r"\\([^\"'\\]|$)")
+
+
+def tempfile_arg_esc_func(arg):
+    from SCons.Subst import quote_spaces
+
+    arg = quote_spaces(arg)
+    # GCC requires double Windows slashes, let's use UNIX separator
+    return WINPATHSEP_RE.sub(r"/\1", arg)
+
+
 def configure_mingw(env: "SConsEnvironment"):
     # Workaround for MinGW. See:
     # https://www.scons.org/wiki/LongCmdLinesOnWin32
     env.use_windows_spawn_fix()
+
+    # In case the command line to AR is too long, use a response file.
+    env["ARCOM_ORIG"] = env["ARCOM"]
+    env["ARCOM"] = "${TEMPFILE('$ARCOM_ORIG', '$ARCOMSTR')}"
+    env["TEMPFILESUFFIX"] = ".rsp"
+    if os.name == "nt":
+        env["TEMPFILEARGESCFUNC"] = tempfile_arg_esc_func
 
     ## Build type
 
