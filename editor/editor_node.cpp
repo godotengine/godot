@@ -1713,20 +1713,27 @@ void EditorNode::save_resource(const Ref<Resource> &p_resource) {
 }
 
 void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path) {
+	String resource_path = p_resource->get_path();
+	bool is_resource = resource_path.is_resource_file();
+
 	{
-		String path = p_resource->get_path();
-		if (!path.is_resource_file()) {
-			int srpos = path.find("::");
-			if (srpos != -1) {
-				String base = path.substr(0, srpos);
-				if (!get_edited_scene() || get_edited_scene()->get_scene_file_path() != base) {
+		// Early exit checks.
+
+		if (is_resource) {
+			if (FileAccess::exists(resource_path + ".import")) {
+				show_warning(TTR("This resource can't be saved because it was imported from another file. Make it unique first."));
+				return;
+			}
+		} else {
+			int separator_pos = resource_path.find("::");
+			if (separator_pos != -1) {
+				String base = resource_path.substr(0, separator_pos);
+				String base_resource_type = ResourceLoader::get_resource_type(base);
+				if (base_resource_type == "PackedScene" && (!get_edited_scene() || get_edited_scene()->get_scene_file_path() != base)) {
 					show_warning(TTR("This resource can't be saved because it does not belong to the edited scene. Make it unique first."));
 					return;
 				}
 			}
-		} else if (FileAccess::exists(path + ".import")) {
-			show_warning(TTR("This resource can't be saved because it was imported from another file. Make it unique first."));
-			return;
 		}
 	}
 
@@ -1735,7 +1742,6 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 
 	current_menu_option = RESOURCE_SAVE_AS;
 	List<String> extensions;
-	Ref<PackedScene> sd = memnew(PackedScene);
 	ResourceSaver::get_recognized_extensions(p_resource, &extensions);
 	file->clear_filters();
 
@@ -1754,30 +1760,33 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		preferred.move_to_back(res_element);
 	}
 
+	String resource_name_snake_case = p_resource->get_class().to_snake_case();
+	String new_resource_name_snake_case;
+	if (!preferred.is_empty()) {
+		new_resource_name_snake_case = "new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower();
+	}
+
 	if (!p_at_path.is_empty()) {
 		file->set_current_dir(p_at_path);
-		if (p_resource->get_path().is_resource_file()) {
-			file->set_current_file(p_resource->get_path().get_file());
+		if (is_resource) {
+			file->set_current_file(resource_path.get_file());
 		} else {
-			if (!preferred.is_empty()) {
-				String resource_name_snake_case = p_resource->get_class().to_snake_case();
-				file->set_current_file("new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower());
-			} else {
-				file->set_current_file(String());
-			}
+			file->set_current_file(new_resource_name_snake_case);
 		}
 	} else if (!p_resource->get_path().get_base_dir().is_empty()) {
-		file->set_current_path(p_resource->get_path());
-		if (!extensions.is_empty()) {
-			const String ext = p_resource->get_path().get_extension().to_lower();
-			if (extensions.find(ext) == nullptr) {
-				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions.front()->get()));
+		if (is_resource) {
+			if (!extensions.is_empty()) {
+				const String ext = resource_path.get_extension().to_lower();
+				if (extensions.find(ext) == nullptr) {
+					file->set_current_path(resource_path.replacen("." + ext, "." + extensions.front()->get()));
+				}
 			}
+		} else {
+			file->set_current_file(new_resource_name_snake_case);
 		}
 	} else if (!preferred.is_empty()) {
-		const String resource_name_snake_case = p_resource->get_class().to_snake_case();
-		const String existing = "new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower();
-		file->set_current_path(existing);
+		file->set_current_file(new_resource_name_snake_case);
+		file->set_current_path(new_resource_name_snake_case);
 	}
 	file->set_title(TTR("Save Resource As..."));
 	file->popup_file_dialog();
