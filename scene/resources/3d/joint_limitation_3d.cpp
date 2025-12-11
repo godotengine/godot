@@ -32,6 +32,10 @@
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/scene/3d/node_3d_editor_gizmos.h"
+#endif // TOOLS_ENABLED
+
 Quaternion JointLimitation3D::make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const {
 	const double ALMOST_ONE = 1.0 - CMP_EPSILON;
 	// The default is to interpret the forward vector as the +Y axis.
@@ -59,7 +63,19 @@ Vector3 JointLimitation3D::solve(const Vector3 &p_local_forward_vector, const Ve
 }
 
 #ifdef TOOLS_ENABLED
-void JointLimitation3D::draw_shape(Ref<SurfaceTool> &p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const {
+void JointLimitation3D::draw_shape(Ref<SurfaceTool> &p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color, int p_bone_index) const {
 	//
+}
+
+void JointLimitation3D::add_gizmo_mesh(EditorNode3DGizmo *p_gizmo, const Transform3D &p_transform, float p_bone_length, const Color &p_color, int p_bone_index) const {
+	Ref<SurfaceTool> surface_tool;
+	surface_tool.instantiate();
+	draw_shape(surface_tool, p_transform, p_bone_length, p_color, p_bone_index);
+
+	Ref<Material> material = surface_tool->get_material();
+	Ref<ArrayMesh> mesh = surface_tool->commit(Ref<ArrayMesh>());
+	if (mesh.is_valid() && mesh->get_surface_count() > 0) {
+		p_gizmo->add_mesh(mesh, material);
+	}
 }
 #endif // TOOLS_ENABLED
