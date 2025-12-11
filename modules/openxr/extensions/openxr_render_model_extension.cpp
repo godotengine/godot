@@ -756,7 +756,7 @@ void OpenXRRenderModelExtension::_clear_render_model_data() {
 
 bool OpenXRRenderModelData::parse_gltf_document(const PackedByteArray &p_bytes) {
 #ifndef MODULE_GLTF_ENABLED
-	ERR_FAIL_V_MSG(false, "OpenXR: Cannot parse GLTF render model data because the glTF module is disabled (module_gltf_enabled=no).");
+	ERR_FAIL_V_MSG(false, "OpenXR: Cannot parse glTF render model data because the glTF module is disabled (module_gltf_enabled=no).");
 #else
 	// State holds our data, document parses GLTF
 	Ref<GLTFState> new_state;
