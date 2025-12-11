@@ -86,7 +86,7 @@ void EditorDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_dock_shortcut", "shortcut"), &EditorDock::set_dock_shortcut);
 	ClassDB::bind_method(D_METHOD("get_dock_shortcut"), &EditorDock::get_dock_shortcut);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_shortcut", PROPERTY_HINT_RESOURCE_TYPE, "ShortCut"), "set_dock_shortcut", "get_dock_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_dock_shortcut", "get_dock_shortcut");
 
 	ClassDB::bind_method(D_METHOD("set_default_slot", "slot"), &EditorDock::_set_default_slot_bind);
 	ClassDB::bind_method(D_METHOD("get_default_slot"), &EditorDock::_get_default_slot_bind);
@@ -176,10 +176,19 @@ void EditorDock::set_title_color(const Color &p_color) {
 }
 
 void EditorDock::set_dock_shortcut(const Ref<Shortcut> &p_shortcut) {
-	shortcut = p_shortcut;
-	if (global && is_inside_tree()) {
-		EditorDockManager::get_singleton()->update_docks_menu();
+	if (shortcut == p_shortcut) {
+		return;
 	}
+
+	const Callable changed_callback = callable_mp(this, &EditorDock::_emit_changed);
+	if (shortcut.is_valid()) {
+		shortcut->disconnect_changed(changed_callback);
+	}
+	shortcut = p_shortcut;
+	if (shortcut.is_valid()) {
+		shortcut->connect_changed(changed_callback);
+	}
+	_emit_changed();
 }
 
 void EditorDock::set_default_slot(DockConstants::DockSlot p_slot) {
