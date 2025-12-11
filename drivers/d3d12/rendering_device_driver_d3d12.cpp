@@ -2062,7 +2062,7 @@ static D3D12_BARRIER_ACCESS _rd_texture_layout_access_mask(RDD::TextureLayout p_
 
 static void _rd_access_to_d3d12_and_mask(BitField<RDD::BarrierAccessBits> p_access, RDD::TextureLayout p_texture_layout, D3D12_BARRIER_ACCESS &r_access, D3D12_BARRIER_SYNC &r_sync_mask) {
 	r_access = D3D12_BARRIER_ACCESS_COMMON;
-	r_sync_mask = D3D12_BARRIER_SYNC_NONE;
+	r_sync_mask = D3D12_BARRIER_SYNC_ALL;
 
 	if (p_access.has_flag(RDD::BARRIER_ACCESS_INDIRECT_COMMAND_READ_BIT)) {
 		r_access |= D3D12_BARRIER_ACCESS_INDIRECT_ARGUMENT;
