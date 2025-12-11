@@ -1,0 +1,6 @@
+GH-94322
+--------
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/popup_node_selector/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/popup_property_selector/arguments': size changed value in new API, from 3 to 4.
+
+Added optional argument to popup_property_selector and popup_node_selector to specify the current value.

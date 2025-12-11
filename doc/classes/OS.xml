@@ -187,7 +187,12 @@
 		<method name="get_cmdline_args">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the command-line arguments passed to the engine.
+				Returns the command-line arguments passed to the engine, excluding arguments processed by the engine, such as [code]--headless[/code] and [code]--fullscreen[/code].
+				[codeblock]
+				# Godot has been executed with the following command:
+				# godot --headless --verbose --scene my_scene.tscn --custom
+				OS.get_cmdline_args() # Returns ["--scene", "my_scene.tscn", "--custom"]
+				[/codeblock]
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [member ProjectSettings.editor/run/main_run_args] to define command-line arguments to be passed by the editor when running the project.
@@ -231,12 +236,12 @@
 				Returns the command-line user arguments passed to the engine. User arguments are ignored by the engine and reserved for the user. They are passed after the double dash [code]--[/code] argument. [code]++[/code] may be used when [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				[codeblock]
 				# Godot has been executed with the following command:
-				# godot --fullscreen -- --level=2 --hardcore
+				# godot --fullscreen --custom -- --level=2 --hardcore
 
-				OS.get_cmdline_args()      # Returns ["--fullscreen", "--level=2", "--hardcore"]
+				OS.get_cmdline_args()      # Returns ["--custom"]
 				OS.get_cmdline_user_args() # Returns ["--level=2", "--hardcore"]
 				[/codeblock]
-				To get all passed arguments, use [method get_cmdline_args].
+				To get arguments passed before [code]--[/code] or [code]++[/code], use [method get_cmdline_args].
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
@@ -611,6 +616,25 @@
 				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
 				The second element holds the driver version. For example, on the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
 				[b]Note:[/b] This method is only supported on Linux/BSD and Windows when not running in headless mode. On other platforms, it returns an empty array.
+				[b]Note:[/b] This method will run slowly the first time it is called in a session; it can take several seconds depending on the operating system and hardware. It is blocking if called on the main thread, so it's recommended to call it on a separate thread using [Thread]. This allows the engine to keep running while the information is being retrieved. However, [method get_video_adapter_driver_info] is [i]not[/i] thread-safe, so it should not be called from multiple threads at the same time.
+				[codeblocks]
+				[gdscript]
+				var thread = Thread.new()
+
+				func _ready():
+					thread.start(
+						func():
+							var driver_info = OS.get_video_adapter_driver_info()
+							if not driver_info.is_empty():
+								print("Driver: %s %s" % [driver_info[0], driver_info[1]])
+							else:
+								print("Driver: (unknown)")
+					)
+
+				func _exit_tree():
+					thread.wait_to_finish()
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">

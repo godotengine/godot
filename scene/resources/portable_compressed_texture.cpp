@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "scene/resources/bit_map.h"
+#include "servers/rendering/rendering_server.h"
 
 static const char *compression_mode_names[7] = {
 	"Lossless", "Lossy", "Basis Universal", "S3TC", "ETC2", "BPTC", "ASTC"
@@ -400,6 +401,6 @@ void PortableCompressedTexture2D::_bind_methods() {
 PortableCompressedTexture2D::~PortableCompressedTexture2D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(texture);
+		RenderingServer::get_singleton()->free_rid(texture);
 	}
 }

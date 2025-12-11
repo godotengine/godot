@@ -76,13 +76,19 @@ private:
 	jmethodID _begin_benchmark_measure = nullptr;
 	jmethodID _end_benchmark_measure = nullptr;
 	jmethodID _dump_benchmark = nullptr;
-	jmethodID _has_feature = nullptr;
+	jmethodID _check_internal_feature_support = nullptr;
 	jmethodID _sign_apk = nullptr;
 	jmethodID _verify_apk = nullptr;
 	jmethodID _enable_immersive_mode = nullptr;
 	jmethodID _is_in_immersive_mode = nullptr;
+	jmethodID _set_window_color = nullptr;
 	jmethodID _on_editor_workspace_selected = nullptr;
 	jmethodID _get_activity = nullptr;
+	jmethodID _build_env_connect = nullptr;
+	jmethodID _build_env_disconnect = nullptr;
+	jmethodID _build_env_execute = nullptr;
+	jmethodID _build_env_cancel = nullptr;
+	jmethodID _build_env_clean_project = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -128,7 +134,7 @@ public:
 	Vector<String> get_gdextension_list_config_file() const;
 
 	// Return true if the given feature is supported.
-	bool has_feature(const String &p_feature) const;
+	bool check_internal_feature_support(const String &p_feature) const;
 
 	// Sign and verify apks
 	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
@@ -137,5 +143,13 @@ public:
 	void enable_immersive_mode(bool p_enabled);
 	bool is_in_immersive_mode();
 
+	void set_window_color(const Color &p_color);
+
 	void on_editor_workspace_selected(const String &p_workspace);
+
+	bool build_env_connect(const Callable &p_callback);
+	void build_env_disconnect();
+	int build_env_execute(const String &p_build_tool, const List<String> &p_arguments, const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_output_callback, const Callable &p_result_callback);
+	void build_env_cancel(int p_job_id);
+	void build_env_clean_project(const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_callback);
 };

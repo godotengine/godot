@@ -21,19 +21,7 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 		$SCRIPTCALL\\
 		if (_get_extension()) {\\
 			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
-				MethodInfo mi = _gdvirtual_##$VARNAME##_get_method_info();\\
-				uint32_t hash = mi.get_compatibility_hash();\\
-				_gdvirtual_##$VARNAME = nullptr;\\
-				if (_get_extension()->get_virtual_call_data2 && _get_extension()->call_virtual_with_data) {\\
-					_gdvirtual_##$VARNAME = _get_extension()->get_virtual_call_data2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
-				} else if (_get_extension()->get_virtual2) {\\
-					_gdvirtual_##$VARNAME = (void *)_get_extension()->get_virtual2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
-				}\\
-				_GDVIRTUAL_GET_DEPRECATED(_gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT)\\
-				_GDVIRTUAL_TRACK(_gdvirtual_##$VARNAME);\\
-				if (_gdvirtual_##$VARNAME == nullptr) {\\
-					_gdvirtual_##$VARNAME = reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR);\\
-				}\\
+			    _gdvirtual_init_method_ptr(_gdvirtual_##$VARNAME##_get_method_info().get_compatibility_hash(), _gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT);\\
 			}\\
 			if (_gdvirtual_##$VARNAME != reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {\\
 				$CALLPTRARGS\\
@@ -57,19 +45,7 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 		$SCRIPTHASMETHOD\\
 		if (_get_extension()) {\\
 			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
-				MethodInfo mi = _gdvirtual_##$VARNAME##_get_method_info();\\
-				uint32_t hash = mi.get_compatibility_hash();\\
-				_gdvirtual_##$VARNAME = nullptr;\\
-				if (_get_extension()->get_virtual_call_data2 && _get_extension()->call_virtual_with_data) {\\
-					_gdvirtual_##$VARNAME = _get_extension()->get_virtual_call_data2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
-				} else if (_get_extension()->get_virtual2) {\\
-					_gdvirtual_##$VARNAME = (void *)_get_extension()->get_virtual2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
-				}\\
-				_GDVIRTUAL_GET_DEPRECATED(_gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT)\\
-				_GDVIRTUAL_TRACK(_gdvirtual_##$VARNAME);\\
-				if (_gdvirtual_##$VARNAME == nullptr) {\\
-					_gdvirtual_##$VARNAME = reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR);\\
-				}\\
+			    _gdvirtual_init_method_ptr(_gdvirtual_##$VARNAME##_get_method_info().get_compatibility_hash(), _gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT);\\
 			}\\
 			if (_gdvirtual_##$VARNAME != reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {\\
 				return true;\\
@@ -151,6 +127,15 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
         callsiargs = f"Variant vargs[{argcount}] = {{ "
         callsiargptrs = f"\t\t\tconst Variant *vargptrs[{argcount}] = {{ "
         callptrargsptr = f"\t\t\tGDExtensionConstTypePtr argptrs[{argcount}] = {{ "
+
+        if method_info:
+            method_info += "\\\n\t\t"
+        method_info += (
+            "_gdvirtual_set_method_info_args<"
+            + ", ".join(f"m_type{i + 1}" for i in range(argcount))
+            + ">(method_info);"
+        )
+
     callptrargs = ""
     for i in range(argcount):
         if i > 0:
@@ -162,16 +147,10 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
             callptrargsptr += ", "
         argtext += f"m_type{i + 1}"
         callargtext += f"m_type{i + 1} arg{i + 1}"
-        callsiargs += f"arg{i + 1}"
+        callsiargs += f"VariantInternal::make(arg{i + 1})"
         callsiargptrs += f"&vargs[{i}]"
-        callptrargs += (
-            f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1} = (PtrToArg<m_type{i + 1}>::EncodeT)arg{i + 1};\\\n"
-        )
+        callptrargs += f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1}; PtrToArg<m_type{i + 1}>::encode(arg{i + 1}, &argval{i + 1});\\\n"
         callptrargsptr += f"&argval{i + 1}"
-        if method_info:
-            method_info += "\\\n\t\t"
-        method_info += f"method_info.arguments.push_back(GetTypeInfo<m_type{i + 1}>::get_class_info());\\\n"
-        method_info += f"\t\tmethod_info.arguments_metadata.push_back(GetTypeInfo<m_type{i + 1}>::METADATA);"
 
     if argcount:
         callsiargs += " };\\\n"
@@ -221,30 +200,11 @@ def run(target, source, env):
 
 inline constexpr uintptr_t _INVALID_GDVIRTUAL_FUNC_ADDR = static_cast<uintptr_t>(-1);
 
-#ifdef TOOLS_ENABLED
-#define _GDVIRTUAL_TRACK(m_virtual)\\
-	if (_get_extension()->reloadable) {\\
-		VirtualMethodTracker *tracker = memnew(VirtualMethodTracker);\\
-		tracker->method = (void **)&m_virtual;\\
-		tracker->next = virtual_method_list;\\
-		virtual_method_list = tracker;\\
-	}
-#else
-#define _GDVIRTUAL_TRACK(m_virtual)
-#endif
-
-#ifndef DISABLE_DEPRECATED
-#define _GDVIRTUAL_GET_DEPRECATED(m_virtual, m_name_sn, m_compat)\\
-	else if (m_compat || ClassDB::get_virtual_method_compatibility_hashes(get_class_static(), m_name_sn).size() == 0) {\\
-		if (_get_extension()->get_virtual_call_data && _get_extension()->call_virtual_with_data) {\\
-			m_virtual = _get_extension()->get_virtual_call_data(_get_extension()->class_userdata, &m_name_sn);\\
-		} else if (_get_extension()->get_virtual) {\\
-			m_virtual = (void *)_get_extension()->get_virtual(_get_extension()->class_userdata, &m_name_sn);\\
-		}\\
-	}
-#else
-#define _GDVIRTUAL_GET_DEPRECATED(m_name, m_name_sn, m_compat)
-#endif
+template <typename... Args>
+void _gdvirtual_set_method_info_args(MethodInfo &p_method_info) {
+	p_method_info.arguments = { GetTypeInfo<Args>::get_class_info()... };
+	p_method_info.arguments_metadata = { GetTypeInfo<Args>::METADATA... };
+}
 
 """
 

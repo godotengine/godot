@@ -44,8 +44,8 @@ class EditorResourcePreviewGenerator : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL1RC(bool, _handles, String)
-	GDVIRTUAL3RC(Ref<Texture2D>, _generate, Ref<Resource>, Vector2i, Dictionary)
+	GDVIRTUAL1RC_REQUIRED(bool, _handles, String)
+	GDVIRTUAL3RC_REQUIRED(Ref<Texture2D>, _generate, Ref<Resource>, Vector2i, Dictionary)
 	GDVIRTUAL3RC(Ref<Texture2D>, _generate_from_path, String, Vector2i, Dictionary)
 	GDVIRTUAL0RC(bool, _generate_small_preview_automatically)
 	GDVIRTUAL0RC(bool, _can_generate_small_preview)
@@ -53,7 +53,8 @@ protected:
 	class DrawRequester : public Object {
 		Semaphore semaphore;
 
-		Variant _post_semaphore();
+		void _post_semaphore();
+		void _prepare_draw(RID p_viewport);
 
 	public:
 		void request_and_wait(RID p_viewport);
@@ -68,6 +69,7 @@ public:
 
 	virtual bool generate_small_preview_automatically() const;
 	virtual bool can_generate_small_preview() const;
+	void request_draw_and_wait(RID viewport) const;
 };
 
 class EditorResourcePreview : public Node {
@@ -79,9 +81,7 @@ class EditorResourcePreview : public Node {
 	struct QueueItem {
 		Ref<Resource> resource;
 		String path;
-		ObjectID id;
-		StringName function;
-		Variant userdata;
+		Callable callback;
 	};
 
 	List<QueueItem> queue;
@@ -102,7 +102,7 @@ class EditorResourcePreview : public Node {
 
 	HashMap<String, Item> cache;
 
-	void _preview_ready(const String &p_path, int p_hash, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud, const Dictionary &p_metadata);
+	void _preview_ready(const String &p_path, int p_hash, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, const Callable &p_callback, const Dictionary &p_metadata);
 	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base, Dictionary &p_metadata);
 
 	int small_thumbnail_size = -1;
@@ -119,6 +119,10 @@ class EditorResourcePreview : public Node {
 
 	void _update_thumbnail_sizes();
 
+	// TODO: These should be deprecated and the new methods exposed instead.
+	void _queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
+	void _queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -131,10 +135,8 @@ public:
 		Ref<Texture2D> small_preview;
 	};
 
-	// p_receiver_func callback has signature (String p_path, Ref<Texture2D> p_preview, Ref<Texture2D> p_preview_small, Variant p_userdata)
-	// p_preview will be null if there was an error
-	void queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
-	void queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
+	void queue_resource_preview(const String &p_path, const Callable &p_callback);
+	void queue_edited_resource_preview(const Ref<Resource> &p_res, const Callable &p_callback);
 	const Dictionary get_preview_metadata(const String &p_path) const;
 
 	PreviewItem get_resource_preview_if_available(const String &p_path);

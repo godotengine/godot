@@ -120,7 +120,7 @@ private:
 
 	void free_interaction_profiles();
 
-	void _set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye);
+	void _set_default_pos(Transform3D &r_transform, double p_world_scale, uint64_t p_eye);
 
 	void handle_hand_tracking(const String &p_path, OpenXRHandTrackingExtension::HandTrackedHands p_hand);
 
@@ -213,7 +213,7 @@ public:
 	void on_state_stopping();
 	void on_state_loss_pending();
 	void on_state_exiting();
-	void on_reference_space_change_pending();
+	void on_reference_space_change_pending(XrReferenceSpaceType p_type);
 	void on_refresh_rate_changes(float p_new_rate);
 	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
 

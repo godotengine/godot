@@ -233,6 +233,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
+				[b]Note:[/b] A negative value of [param from] is converted to a starting index by counting back from the last possible index with enough space to find [param what].
 			</description>
 		</method>
 		<method name="findn" qualifiers="const">
@@ -331,7 +332,7 @@
 			<param index="1" name="slice" type="int" />
 			<description>
 				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns the original string if [param delimiter] does not occur in the string. Returns an empty string if the [param slice] does not exist.
-				This is faster than [method split], if you only need one substring.
+				This is faster than [method split], if you only need one or two substrings.
 				[codeblock]
 				print("i/am/example/hi".get_slice("/", 2)) # Prints "example"
 				[/codeblock]
@@ -342,6 +343,11 @@
 			<param index="0" name="delimiter" type="String" />
 			<description>
 				Returns the total number of slices when the string is split with the given [param delimiter] (see [method split]).
+				Use [method get_slice] to extract a specific slice.
+				[codeblock]
+				print("i/am/example/string".get_slice_count("/")) # Prints '4'.
+				print("i am example string".get_slice_count("/")) # Prints '1'.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_slicec" qualifiers="const">
@@ -350,7 +356,8 @@
 			<param index="1" name="slice" type="int" />
 			<description>
 				Splits the string using a Unicode character with code [param delimiter] and returns the substring at index [param slice]. Returns an empty string if the [param slice] does not exist.
-				This is faster than [method split], if you only need one substring.
+				This is faster than [method split], if you only need one or two substrings.
+				This is a Unicode version of [method get_slice].
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">
@@ -775,7 +782,7 @@
 			<return type="String" />
 			<param index="0" name="chars" type="String" />
 			<description>
-				Removes any occurrence of the characters in [param chars]. See also [method remove_char].
+				Removes all occurrences of the characters in [param chars]. See also [method remove_char].
 			</description>
 		</method>
 		<method name="repeat" qualifiers="const">
@@ -829,6 +836,8 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the string. This method is the reverse of [method find].
+				[b]Note:[/b] A negative value of [param from] is converted to a starting index by counting back from the last possible index with enough space to find [param what].
+				[b]Note:[/b] A value of [param from] that is greater than the last possible index with enough space to find [param what] is considered out-of-bounds, and returns [code]-1[/code].
 			</description>
 		</method>
 		<method name="rfindn" qualifiers="const">

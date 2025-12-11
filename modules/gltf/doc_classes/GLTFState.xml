@@ -39,12 +39,12 @@
 				The [param parent_node_index] parameter is the index of the parent [GLTFNode] in the state. If [code]-1[/code], the node will be a root node, otherwise the new node will be added to the parent's list of children. The index will also be written to the [member GLTFNode.parent] property of the new node.
 			</description>
 		</method>
-		<method name="get_accessors">
+		<method name="get_accessors" qualifiers="const">
 			<return type="GLTFAccessor[]" />
 			<description>
 			</description>
 		</method>
-		<method name="get_additional_data">
+		<method name="get_additional_data" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="extension_name" type="StringName" />
 			<description>
@@ -52,66 +52,67 @@
 				The argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the return value can be anything you set. If nothing was set, the return value is [code]null[/code].
 			</description>
 		</method>
-		<method name="get_animation_player">
+		<method name="get_animation_player" qualifiers="const">
 			<return type="AnimationPlayer" />
-			<param index="0" name="idx" type="int" />
+			<param index="0" name="anim_player_index" type="int" />
 			<description>
 				Returns the [AnimationPlayer] node with the given index. These nodes are only used during the export process when converting Godot [AnimationPlayer] nodes to glTF animations.
 			</description>
 		</method>
-		<method name="get_animation_players_count">
+		<method name="get_animation_players_count" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="idx" type="int" />
+			<param index="0" name="anim_player_index" type="int" />
 			<description>
 				Returns the number of [AnimationPlayer] nodes in this [GLTFState]. These nodes are only used during the export process when converting Godot [AnimationPlayer] nodes to glTF animations.
 			</description>
 		</method>
-		<method name="get_animations">
+		<method name="get_animations" qualifiers="const">
 			<return type="GLTFAnimation[]" />
 			<description>
 				Returns an array of all [GLTFAnimation]s in the glTF file. When importing, these will be generated as animations in an [AnimationPlayer] node. When exporting, these will be generated from Godot [AnimationPlayer] nodes.
 			</description>
 		</method>
-		<method name="get_buffer_views">
+		<method name="get_buffer_views" qualifiers="const">
 			<return type="GLTFBufferView[]" />
 			<description>
 			</description>
 		</method>
-		<method name="get_cameras">
+		<method name="get_cameras" qualifiers="const">
 			<return type="GLTFCamera[]" />
 			<description>
 				Returns an array of all [GLTFCamera]s in the glTF file. These are the cameras that the [member GLTFNode.camera] index refers to.
 			</description>
 		</method>
-		<method name="get_handle_binary_image">
+		<method name="get_handle_binary_image" qualifiers="const" deprecated="Use [member handle_binary_image_mode] instead.">
 			<return type="int" />
 			<description>
+				Deprecated untyped alias for [member handle_binary_image_mode]. When importing a glTF file with unimported raw binary images embedded inside of binary blob buffers, in data URIs, or separate files not imported by Godot, this controls how the images are handled.
 			</description>
 		</method>
-		<method name="get_images">
+		<method name="get_images" qualifiers="const">
 			<return type="Texture2D[]" />
 			<description>
 				Gets the images of the glTF file as an array of [Texture2D]s. These are the images that the [member GLTFTexture.src_image] index refers to.
 			</description>
 		</method>
-		<method name="get_lights">
+		<method name="get_lights" qualifiers="const">
 			<return type="GLTFLight[]" />
 			<description>
 				Returns an array of all [GLTFLight]s in the glTF file. These are the lights that the [member GLTFNode.light] index refers to.
 			</description>
 		</method>
-		<method name="get_materials">
+		<method name="get_materials" qualifiers="const">
 			<return type="Material[]" />
 			<description>
 			</description>
 		</method>
-		<method name="get_meshes">
+		<method name="get_meshes" qualifiers="const">
 			<return type="GLTFMesh[]" />
 			<description>
 				Returns an array of all [GLTFMesh]es in the glTF file. These are the meshes that the [member GLTFNode.mesh] index refers to.
 			</description>
 		</method>
-		<method name="get_node_index">
+		<method name="get_node_index" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="scene_node" type="Node" />
 			<description>
@@ -119,50 +120,50 @@
 				[b]Note:[/b] Not every Godot scene node will have a corresponding [GLTFNode], and not every [GLTFNode] will have a scene node generated. If there is no [GLTFNode] index for this scene node, [code]-1[/code] is returned.
 			</description>
 		</method>
-		<method name="get_nodes">
+		<method name="get_nodes" qualifiers="const">
 			<return type="GLTFNode[]" />
 			<description>
 				Returns an array of all [GLTFNode]s in the glTF file. These are the nodes that [member GLTFNode.children] and [member root_nodes] refer to. This includes nodes that may not be generated in the Godot scene, or nodes that may generate multiple Godot scene nodes.
 			</description>
 		</method>
-		<method name="get_scene_node">
+		<method name="get_scene_node" qualifiers="const">
 			<return type="Node" />
-			<param index="0" name="idx" type="int" />
+			<param index="0" name="gltf_node_index" type="int" />
 			<description>
 				Returns the Godot scene node that corresponds to the same index as the [GLTFNode] it was generated from. This is the inverse of [method get_node_index]. Useful during the import process.
 				[b]Note:[/b] Not every [GLTFNode] will have a scene node generated, and not every generated scene node will have a corresponding [GLTFNode]. If there is no scene node for this [GLTFNode] index, [code]null[/code] is returned.
 			</description>
 		</method>
-		<method name="get_skeletons">
+		<method name="get_skeletons" qualifiers="const">
 			<return type="GLTFSkeleton[]" />
 			<description>
 				Returns an array of all [GLTFSkeleton]s in the glTF file. These are the skeletons that the [member GLTFNode.skeleton] index refers to.
 			</description>
 		</method>
-		<method name="get_skins">
+		<method name="get_skins" qualifiers="const">
 			<return type="GLTFSkin[]" />
 			<description>
 				Returns an array of all [GLTFSkin]s in the glTF file. These are the skins that the [member GLTFNode.skin] index refers to.
 			</description>
 		</method>
-		<method name="get_texture_samplers">
+		<method name="get_texture_samplers" qualifiers="const">
 			<return type="GLTFTextureSampler[]" />
 			<description>
 				Retrieves the array of texture samplers that are used by the textures contained in the glTF.
 			</description>
 		</method>
-		<method name="get_textures">
+		<method name="get_textures" qualifiers="const">
 			<return type="GLTFTexture[]" />
 			<description>
 			</description>
 		</method>
-		<method name="get_unique_animation_names">
+		<method name="get_unique_animation_names" qualifiers="const">
 			<return type="String[]" />
 			<description>
 				Returns an array of unique animation names. This is only used during the import process.
 			</description>
 		</method>
-		<method name="get_unique_names">
+		<method name="get_unique_names" qualifiers="const">
 			<return type="String[]" />
 			<description>
 				Returns an array of unique node names. This is used in both the import process and export process.
@@ -203,10 +204,11 @@
 				Sets the [GLTFCamera]s in the state. These are the cameras that the [member GLTFNode.camera] index refers to.
 			</description>
 		</method>
-		<method name="set_handle_binary_image">
+		<method name="set_handle_binary_image" deprecated="Use [member handle_binary_image_mode] instead.">
 			<return type="void" />
 			<param index="0" name="method" type="int" />
 			<description>
+				Deprecated untyped alias for [member handle_binary_image_mode]. When importing a glTF file with unimported raw binary images embedded inside of binary blob buffers, in data URIs, or separate files not imported by Godot, this controls how the images are handled.
 			</description>
 		</method>
 		<method name="set_images">
@@ -305,6 +307,10 @@
 		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">
 			The binary buffer attached to a .glb file.
 		</member>
+		<member name="handle_binary_image_mode" type="int" setter="set_handle_binary_image_mode" getter="get_handle_binary_image_mode" enum="GLTFState.HandleBinaryImageMode" default="1">
+			When importing a glTF file with unimported raw binary images embedded inside of binary blob buffers, in data URIs, or separate files not imported by Godot, this controls how the images are handled. Images can be discarded, saved as separate files, or embedded in the scene lossily or losslessly. See [enum HandleBinaryImageMode] for options.
+			This property does nothing for image files in the [code]res://[/code] folder imported by Godot, as those are handled by Godot's image importer directly, and then the Godot scene generated from the glTF file will use the images as Godot imported them.
+		</member>
 		<member name="import_as_skeleton_bones" type="bool" setter="set_import_as_skeleton_bones" getter="get_import_as_skeleton_bones" default="false">
 			If [code]true[/code], forces all GLTFNodes in the document to be bones of a single [Skeleton3D] Godot node.
 		</member>
@@ -325,16 +331,30 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="HANDLE_BINARY_DISCARD_TEXTURES" value="0">
+		<constant name="HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES" value="0" enum="HandleBinaryImageMode">
+			When importing a glTF file with embedded binary images, discards all images and uses untextured materials in their place. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
+		</constant>
+		<constant name="HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES" value="1" enum="HandleBinaryImageMode">
+			When importing a glTF file with embedded binary images, extracts them and saves them to their own files. This allows the image to be imported by Godot's image importer, which can then have their import options customized by the user, including optionally compressing the image to VRAM texture formats.
+			This will save the images's bytes exactly as-is, without recompression. For image formats supplied by glTF extensions, the file will have a filename ending with the file extension supplied by [method GLTFDocumentExtension._get_image_file_extension] of the extension class.
+			[b]Note:[/b] This option is editor-only. At runtime, this acts the same as [constant HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED].
+		</constant>
+		<constant name="HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU" value="2" enum="HandleBinaryImageMode">
+			When importing a glTF file with embedded binary images, embeds textures VRAM compressed with Basis Universal into the generated scene. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
+		</constant>
+		<constant name="HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED" value="3" enum="HandleBinaryImageMode">
+			When importing a glTF file with embedded binary images, embeds textures compressed losslessly into the generated scene. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
+		</constant>
+		<constant name="HANDLE_BINARY_DISCARD_TEXTURES" value="0" deprecated="Use [constant HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES] instead.">
 			Discards all embedded textures and uses untextured materials.
 		</constant>
-		<constant name="HANDLE_BINARY_EXTRACT_TEXTURES" value="1">
+		<constant name="HANDLE_BINARY_EXTRACT_TEXTURES" value="1" deprecated="Use [constant HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES] instead.">
 			Extracts embedded textures to be reimported and compressed. Editor only. Acts as uncompressed at runtime.
 		</constant>
-		<constant name="HANDLE_BINARY_EMBED_AS_BASISU" value="2">
+		<constant name="HANDLE_BINARY_EMBED_AS_BASISU" value="2" deprecated="Use [constant HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU] instead.">
 			Embeds textures VRAM compressed with Basis Universal into the generated scene.
 		</constant>
-		<constant name="HANDLE_BINARY_EMBED_AS_UNCOMPRESSED" value="3">
+		<constant name="HANDLE_BINARY_EMBED_AS_UNCOMPRESSED" value="3" deprecated="Use [constant HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED] instead.">
 			Embeds textures compressed losslessly into the generated scene, matching old behavior.
 		</constant>
 	</constants>

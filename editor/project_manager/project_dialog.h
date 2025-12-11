@@ -80,6 +80,7 @@ private:
 	HBoxContainer *default_files_container = nullptr;
 	Ref<ButtonGroup> renderer_button_group;
 	bool rendering_device_supported = false;
+	bool rendering_device_checked = false;
 	Label *rd_not_supported = nullptr;
 
 	Label *msg = nullptr;
@@ -151,7 +152,7 @@ public:
 	void set_duplicate_can_edit(bool p_duplicate_can_edit);
 
 	void ask_for_path_and_show();
-	void show_dialog(bool p_reset_name = true);
+	void show_dialog(bool p_reset_name = true, bool p_is_confirmed = true);
 
 	ProjectDialog();
 };

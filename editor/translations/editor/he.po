@@ -40,12 +40,13 @@
 # yoval keshet <keshetyoval@gmail.com>, 2024.
 # Walter Le <ravkavonline.shun821@passinbox.com>, 2025.
 # Nimrod Perez <nimrod.peretz@gmail.com>, 2025.
+# Eli Silver <elinxsilver@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-27 16:23+0000\n"
+"PO-Revision-Date: 2025-08-13 00:48+0000\n"
 "Last-Translator: Nimrod Perez <nimrod.peretz@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
@@ -100,10 +101,22 @@ msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "תנועת העכבר במיקום (%s) עם מהירות (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "ציר X מוט שמאלי, ג׳ויסטיק 1 ציר X"
+msgstr "ציר-X מוט שמאלי, ג׳ויסטיק 0 ציר-X"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "ציר Y מוט שמאלי, ג׳ויסטיק 1 ציר Y"
+msgstr "ציר-Y מוט שמאלי, ג׳ויסטיק 0 ציר-Y"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "ציר-X מוט ימני, ג׳ויסטיק 1 ציר-X"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "מוט ימני ציר-Y, ג׳ויסטיק 1 ציר-Y"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "ג׳ויסטיק 2 ציר-X, הדק שמאלי, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "ג׳ויסטיק 2 ציר-Y, הדק ימני, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
 msgstr "ג׳ויסטיק 3 ציר-X"
@@ -120,20 +133,14 @@ msgstr "ג׳ויסטיק 4 ציר-Y"
 msgid "Unknown Joypad Axis"
 msgstr "ציר ג׳ויפד לא ידוע"
 
-msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
-msgstr "ג׳ויסטיק על ציר %d (%s) עם הערך %.2f"
-
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "כפתור פעולה, Sony Cross, Xbox A, Nintendo B"
 
-msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "פעולה ימני, Sony Circle, Xbox B, Nintendo A"
-
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "פעולה שמאלי, Sony Square, Xbox X, נינטנדו Y"
+msgstr "פעולה שמאלית, Sony Square, Xbox X, נינטנדו Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "פעולה עליון, Sony Triangle, Xbox Y, נינטנדו X"
+msgstr "פעולה עליונה, Sony Triangle, Xbox Y, נינטנדו X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
 msgstr "חזור , Sony בחר, Xbox חזור, נינטנדו -"
@@ -165,11 +172,24 @@ msgstr "כרית כיוונית ימין"
 msgid "Joypad Button %d"
 msgstr "כפתור אמצעי %d"
 
+msgid "Pressure:"
+msgstr "לחץ:"
+
 msgid "canceled"
 msgstr "בוטל"
 
+msgid "touched"
+msgstr "נגע"
+
 msgid "released"
 msgstr "שוחרר"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "מסך %s ב-%s עם %s נקודות נגיעה"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "מסך נגרר עם %s נקודות נגיעה במיקום (%s) עם מהירות של (%s)"
 
 msgid "Accept"
 msgstr "אישור"
@@ -3123,9 +3143,6 @@ msgstr "הרצת סצנה בהתאמה אישית."
 msgid "Network Profiler"
 msgstr "מאפיין רשת"
 
-msgid "Select Mode"
-msgstr "בחירת מצב"
-
 msgid "Clear All"
 msgstr "ניקוי הכל"
 
@@ -3276,6 +3293,9 @@ msgstr "חצי רזולוציה"
 
 msgid "Audio Listener"
 msgstr "מאזין לשמע"
+
+msgid "Select Mode"
+msgstr "בחירת מצב"
 
 msgid "Move Mode"
 msgstr "מצב תנועה"

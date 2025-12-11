@@ -4,7 +4,7 @@
  *
  *   The FreeType glyph rasterizer (body).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -251,7 +251,11 @@
   /* On the other hand, SMulDiv means `Slow MulDiv', and is used typically */
   /* for clipping computations.  It simply uses the FT_MulDiv() function   */
   /* defined in `ftcalc.h'.                                                */
-#define SMulDiv_No_Round  FT_MulDiv_No_Round
+#ifdef FT_INT64
+#define SMulDiv( a, b, c )  (Long)( (FT_Int64)(a) * (b) / (c) )
+#else
+#define SMulDiv  FT_MulDiv_No_Round
+#endif
 
   /* The rasterizer is a very general purpose component; please leave */
   /* the following redefinitions there (you never know your target    */
@@ -653,7 +657,7 @@
       ras.cProfile->height = 0;
     }
 
-    ras.cProfile->flags  = ras.dropOutControl;
+    ras.cProfile->flags = ras.dropOutControl;
 
     switch ( aState )
     {
@@ -967,14 +971,14 @@
       goto Fin;
     }
 
-    Ix     = SMulDiv_No_Round( e - y1, Dx, Dy );
+    Ix     = SMulDiv( e - y1, Dx, Dy );
     x1    += Ix;
     *top++ = x1;
 
     if ( --size )
     {
       Ax = Dx * ( e - y1 )    - Dy * Ix;  /* remainder */
-      Ix = FMulDiv( ras.precision, Dx, Dy );
+      Ix = SMulDiv( ras.precision, Dx, Dy );
       Rx = Dx * ras.precision - Dy * Ix;  /* remainder */
       Dx = 1;
 
@@ -1090,8 +1094,8 @@
     PLong  top;
 
 
-    y1  = arc[degree].y;
-    y2  = arc[0].y;
+    y1 = arc[degree].y;
+    y2 = arc[0].y;
 
     if ( y2 < miny || y1 > maxy )
       return SUCCESS;

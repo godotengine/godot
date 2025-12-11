@@ -40,7 +40,7 @@
 #include "drivers/unix/file_access_unix_pipe.h"
 #include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -756,6 +756,11 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 	}
 
 	if (pid == 0) {
+		// The new process
+		// Create a new session-ID so parent won't wait for it.
+		// This ensures the process won't go zombie at the end.
+		setsid();
+
 		// The child process.
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
@@ -795,7 +800,7 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 
 	Ref<FileAccessUnixPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], 0, p_blocking);
+	err_pipe->open_existing(pipe_err[0], -1, p_blocking);
 
 	ProcessInfo pi;
 	process_map_mutex.lock();
@@ -815,7 +820,7 @@ int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_op
 	while (true) {
 		pid_t pid = waitpid(p_pid, r_status, p_options);
 		if (pid != -1) {
-			// Thread exited normally.
+			// When `p_options` has `WNOHANG`, 0 can be returned if the process is still running.
 			if (r_pid) {
 				*r_pid = pid;
 			}
@@ -845,24 +850,19 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 	pid_t pid = -1;
 	int status = 0;
 	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG, &pid);
-	if (result == 0) {
+	if (result == 0 && pid == 0) {
 		// Thread is still running.
-		if (pi && pid == p_pid) {
-			pi->exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : status;
-		}
 		return true;
 	}
 
-	ERR_FAIL_COND_V_MSG(result == -1, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
-	// Thread exited normally.
+	ERR_FAIL_COND_V_MSG(result != 0, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
 
+	// Thread exited normally.
 	status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 
 	if (pi) {
 		pi->is_running = false;
-		if (pid == p_pid) {
-			pi->exit_code = status;
-		}
+		pi->exit_code = status;
 	}
 
 	if (r_status) {
@@ -1096,6 +1096,16 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+String OS_Unix::get_cwd() const {
+	String dir;
+	char real_current_dir_name[2048];
+	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ".");
+	if (dir.append_utf8(real_current_dir_name) != OK) {
+		dir = real_current_dir_name;
+	}
+	return dir;
+}
+
 bool OS_Unix::has_environment(const String &p_var) const {
 	return getenv(p_var.utf8().get_data()) != nullptr;
 }
@@ -1130,8 +1140,8 @@ String OS_Unix::get_user_data_dir(const String &p_user_dir) const {
 String OS_Unix::get_executable_path() const {
 #ifdef __linux__
 	//fix for running from a symlink
-	char buf[256];
-	memset(buf, 0, 256);
+	char buf[PATH_MAX];
+	memset(buf, 0, PATH_MAX);
 	ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf));
 	String b;
 	if (len > 0) {

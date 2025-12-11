@@ -136,17 +136,15 @@ class TextShaderEditor : public ShaderEditor {
 		EDIT_EMOJI_AND_SYMBOL,
 	};
 
-	HBoxContainer *hbc = nullptr;
+	HBoxContainer *menu_bar_hbox = nullptr;
 	MenuButton *edit_menu = nullptr;
 	MenuButton *search_menu = nullptr;
 	PopupMenu *bookmarks_menu = nullptr;
 	Button *site_search = nullptr;
 	PopupMenu *context_menu = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
-	uint64_t idle = 0;
 
 	GotoLinePopup *goto_line_popup = nullptr;
-	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
 
 	ShaderTextEditor *code_editor = nullptr;
@@ -191,12 +189,14 @@ protected:
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) override;
 	virtual void edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) override;
+	virtual void use_menu_bar(MenuButton *p_file_menu) override;
 
 	virtual void apply_shaders() override;
 	virtual bool is_unsaved() const override;
 	virtual void save_external_data(const String &p_str = "") override;
+	virtual void set_toggle_list_control(Control *p_toggle_list_control) override;
+	virtual void update_toggle_files_button() override;
 	virtual void validate_script() override;
-	virtual Control *get_top_bar() override;
 
 	bool was_compilation_successful() const { return compilation_success; }
 	bool get_trim_trailing_whitespace_on_save() const { return trim_trailing_whitespace_on_save; }

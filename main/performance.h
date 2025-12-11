@@ -45,24 +45,17 @@ class Performance : public Object {
 	static Performance *singleton;
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _add_custom_monitor_bind_compat_110433(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args);
+	static void _bind_compatibility_methods();
+#endif
+
 	int _get_node_count() const;
+	int _get_orphan_node_count() const;
 
 	double _process_time;
 	double _physics_process_time;
 	double _navigation_process_time;
-
-	class MonitorCall {
-		Callable _callable;
-		Vector<Variant> _arguments;
-
-	public:
-		MonitorCall(Callable p_callable, Vector<Variant> p_arguments);
-		MonitorCall();
-		Variant call(bool &r_error, String &r_error_message);
-	};
-
-	HashMap<StringName, MonitorCall> _monitor_map;
-	uint64_t _monitor_modification_time;
 
 public:
 	enum Monitor {
@@ -90,6 +83,7 @@ public:
 		PHYSICS_3D_COLLISION_PAIRS,
 		PHYSICS_3D_ISLAND_COUNT,
 		AUDIO_OUTPUT_LATENCY,
+		// Deprecated, use the 2D/3D specific ones instead.
 		NAVIGATION_ACTIVE_MAPS,
 		NAVIGATION_REGION_COUNT,
 		NAVIGATION_AGENT_COUNT,
@@ -115,6 +109,7 @@ public:
 		NAVIGATION_2D_EDGE_CONNECTION_COUNT,
 		NAVIGATION_2D_EDGE_FREE_COUNT,
 		NAVIGATION_2D_OBSTACLE_COUNT,
+#ifndef _3D_DISABLED
 		NAVIGATION_3D_ACTIVE_MAPS,
 		NAVIGATION_3D_REGION_COUNT,
 		NAVIGATION_3D_AGENT_COUNT,
@@ -125,13 +120,15 @@ public:
 		NAVIGATION_3D_EDGE_CONNECTION_COUNT,
 		NAVIGATION_3D_EDGE_FREE_COUNT,
 		NAVIGATION_3D_OBSTACLE_COUNT,
+#endif // _3D_DISABLED
 		MONITOR_MAX
 	};
 
 	enum MonitorType {
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_TIME
+		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_PERCENTAGE,
 	};
 
 	double get_monitor(Monitor p_monitor) const;
@@ -143,17 +140,35 @@ public:
 	void set_physics_process_time(double p_pt);
 	void set_navigation_process_time(double p_pt);
 
-	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args);
+	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args, MonitorType p_type = MONITOR_TYPE_QUANTITY);
 	void remove_custom_monitor(const StringName &p_id);
 	bool has_custom_monitor(const StringName &p_id);
 	Variant get_custom_monitor(const StringName &p_id);
 	TypedArray<StringName> get_custom_monitor_names();
+	Vector<int> get_custom_monitor_types();
 
 	uint64_t get_monitor_modification_time();
 
 	static Performance *get_singleton() { return singleton; }
 
 	Performance();
+
+private:
+	class MonitorCall {
+		MonitorType _type = MONITOR_TYPE_QUANTITY;
+		Callable _callable;
+		Vector<Variant> _arguments;
+
+	public:
+		MonitorCall(MonitorType p_type, const Callable &p_callable, const Vector<Variant> &p_arguments);
+		MonitorCall();
+		Variant call(bool &r_error, String &r_error_message);
+		inline MonitorType get_monitor_type() const { return _type; }
+	};
+
+	HashMap<StringName, MonitorCall> _monitor_map;
+	uint64_t _monitor_modification_time;
 };
 
 VARIANT_ENUM_CAST(Performance::Monitor);
+VARIANT_ENUM_CAST(Performance::MonitorType);

@@ -31,22 +31,25 @@
 #include "editor_zoom_widget.h"
 
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
 void EditorZoomWidget::_update_zoom_label() {
+	const String &lang = _get_locale();
+
 	String zoom_text;
 	// The zoom level displayed is relative to the editor scale
 	// (like in most image editors). Its lower bound is clamped to 1 as some people
 	// lower the editor scale to increase the available real estate,
 	// even if their display doesn't have a particularly low DPI.
 	if (zoom >= 10) {
-		zoom_text = TS->format_number(rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100)));
+		zoom_text = TranslationServer::get_singleton()->format_number(rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100)), lang);
 	} else {
 		// 2 decimal places if the zoom is below 10%, 1 decimal place if it's below 1000%.
-		zoom_text = TS->format_number(rtos(Math::snapped((zoom / MAX(1, EDSCALE)) * 100, (zoom >= 0.1) ? 0.1 : 0.01)));
+		zoom_text = TranslationServer::get_singleton()->format_number(rtos(Math::snapped((zoom / MAX(1, EDSCALE)) * 100, (zoom >= 0.1) ? 0.1 : 0.01)), lang);
 	}
-	zoom_text += " " + TS->percent_sign();
+	zoom_text += " " + TranslationServer::get_singleton()->get_percent_sign(lang);
 	zoom_reset->set_text(zoom_text);
 }
 

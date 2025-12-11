@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
 class RenderingContextDriver;
@@ -110,7 +110,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
@@ -219,6 +219,8 @@ public:
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+
+	virtual void window_set_color(const Color &p_color) override;
 
 	virtual void process_events() override;
 

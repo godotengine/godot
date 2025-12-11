@@ -2974,7 +2974,9 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 
 		// Check metadata.
 		CHECK(code_edit->get_folded_lines().size() == 1);
+		CHECK(code_edit->get_folded_lines_bind().size() == 1);
 		CHECK((int)code_edit->get_folded_lines()[0] == 0);
+		CHECK((int)code_edit->get_folded_lines_bind()[0] == 0);
 
 		// Cannot unfold nested.
 		code_edit->unfold_line(1);
@@ -2990,6 +2992,7 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 
 		// Check metadata.
 		CHECK(code_edit->get_folded_lines().size() == 0);
+		CHECK(code_edit->get_folded_lines_bind().size() == 0);
 
 		code_edit->fold_all_lines();
 		CHECK(code_edit->is_line_folded(0));
@@ -4155,15 +4158,15 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			/* Single click selects. */
-			caret_pos.y += code_edit->get_line_height() * 2;
+			caret_pos.y += code_edit->get_line_height();
 			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(caret_pos, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
-			CHECK(code_edit->get_code_completion_selected_index() == 2);
+			CHECK(code_edit->get_code_completion_selected_index() == 1);
 
 			/* Double click inserts. */
 			SEND_GUI_DOUBLE_CLICK(caret_pos, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == -1);
-			CHECK(code_edit->get_line(0) == "item_2");
+			CHECK(code_edit->get_line(0) == "item_1");
 
 			code_edit->set_auto_brace_completion_enabled(false);
 

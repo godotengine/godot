@@ -1,10 +1,10 @@
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
+using Microsoft.CodeAnalysis.Testing;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Godot.SourceGenerators.Tests;
 
@@ -12,7 +12,7 @@ public static class CSharpCodeFixVerifier<TCodeFix, TAnalyzer>
     where TCodeFix : CodeFixProvider, new()
     where TAnalyzer : DiagnosticAnalyzer, new()
 {
-    public class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, XUnitVerifier>
+    public class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
     {
         public Test()
         {

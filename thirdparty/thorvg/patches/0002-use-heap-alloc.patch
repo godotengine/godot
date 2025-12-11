@@ -1,0 +1,44 @@
+diff --git a/thirdparty/thorvg/src/loaders/svg/tvgXmlParser.cpp b/thirdparty/thorvg/src/loaders/svg/tvgXmlParser.cpp
+index 81d5c098a2..4c0a0f53db 100644
+--- a/thirdparty/thorvg/src/loaders/svg/tvgXmlParser.cpp
++++ b/thirdparty/thorvg/src/loaders/svg/tvgXmlParser.cpp
+@@ -475,11 +475,14 @@ bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAt
+     if (!buf) return false;
+ 
+     end = buf + bufLength;
+-    key = (char*)alloca(end - buf + 1);
+-    val = (char*)alloca(end - buf + 1);
+ 
+     if (buf == end) return true;
+ 
++    char* key_buf = (char*)malloc(end - buf + 1);
++    char* val_buf = (char*)malloc(end - buf + 1);
++
++    key = key_buf;
++    val = val_buf;
+     do {
+         char* sep = (char*)strchr(buf, ':');
+         next = (char*)strchr(buf, ';');
+@@ -487,7 +490,11 @@ bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAt
+         if (auto src = strstr(buf, "src")) {//src tag from css font-face contains extra semicolon
+             if (src < sep) {
+                 if (next + 1 < end) next = (char*)strchr(next + 1, ';');
+-                else return true;
++                else {
++                    free(key_buf);
++                    free(val_buf);
++                    return true;
++                }
+             }
+         }
+ 
+@@ -534,6 +541,9 @@ bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAt
+         buf = next + 1;
+     } while (true);
+ 
++    free(key_buf);
++    free(val_buf);
++
+     return true;
+ }
+ 

@@ -32,9 +32,9 @@
 
 #include "../gltf_defines.h"
 
-#include "core/io/resource.h"
+#include "gltf_buffer_view.h"
 
-struct GLTFAccessor : public Resource {
+class GLTFAccessor : public Resource {
 	GDCLASS(GLTFAccessor, Resource);
 	friend class GLTFDocument;
 
@@ -80,6 +80,31 @@ private:
 	GLTFBufferViewIndex sparse_values_buffer_view = 0;
 	int64_t sparse_values_byte_offset = 0;
 
+	// Trivial helper functions.
+	void _calculate_min_and_max(const PackedFloat64Array &p_numbers);
+	void _determine_pad_skip(int64_t &r_skip_every, int64_t &r_skip_bytes) const;
+	int64_t _determine_padded_byte_count(int64_t p_raw_byte_size) const;
+	PackedFloat64Array _filter_numbers(const PackedFloat64Array &p_numbers) const;
+	static String _get_component_type_name(const GLTFComponentType p_component);
+	static GLTFComponentType _get_indices_component_type_for_size(const int64_t p_size);
+	static GLTFAccessorType _get_accessor_type_from_str(const String &p_string);
+	String _get_accessor_type_name() const;
+	int64_t _get_vector_size() const;
+	static int64_t _get_numbers_per_variant_for_gltf(Variant::Type p_variant_type);
+	static int64_t _get_bytes_per_component(const GLTFComponentType p_component_type);
+	int64_t _get_bytes_per_vector() const;
+
+	// Private decode functions.
+	PackedInt64Array _decode_sparse_indices(const Ref<GLTFState> &p_gltf_state, const Vector<Ref<GLTFBufferView>> &p_buffer_views) const;
+	template <typename T>
+	Vector<T> _decode_raw_numbers(const Ref<GLTFState> &p_gltf_state, const Vector<Ref<GLTFBufferView>> &p_buffer_views, bool p_sparse_values) const;
+	template <typename T>
+	Vector<T> _decode_as_numbers(const Ref<GLTFState> &p_gltf_state) const;
+
+	// Private encode functions.
+	PackedFloat64Array _encode_variants_as_floats(const Array &p_input_data, Variant::Type p_variant_type) const;
+	void _store_sparse_indices_into_state(const Ref<GLTFState> &p_gltf_state, const PackedInt64Array &p_sparse_indices, const bool p_deduplicate = true);
+
 protected:
 	static void _bind_methods();
 
@@ -106,6 +131,7 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
+	// Property getters and setters.
 	GLTFBufferViewIndex get_buffer_view() const;
 	void set_buffer_view(GLTFBufferViewIndex p_buffer_view);
 
@@ -128,10 +154,10 @@ public:
 	void set_type(int p_accessor_type);
 
 	Vector<double> get_min() const;
-	void set_min(Vector<double> p_min);
+	void set_min(const Vector<double> &p_min);
 
 	Vector<double> get_max() const;
-	void set_max(Vector<double> p_max);
+	void set_max(const Vector<double> &p_max);
 
 	int64_t get_sparse_count() const;
 	void set_sparse_count(int64_t p_sparse_count);
@@ -150,6 +176,46 @@ public:
 
 	int64_t get_sparse_values_byte_offset() const;
 	void set_sparse_values_byte_offset(int64_t p_sparse_values_byte_offset);
+
+	bool is_equal_exact(const Ref<GLTFAccessor> &p_other) const;
+
+	// High-level decode functions.
+	PackedColorArray decode_as_colors(const Ref<GLTFState> &p_gltf_state) const;
+	PackedFloat32Array decode_as_float32s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedFloat64Array decode_as_float64s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedInt32Array decode_as_int32s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedInt64Array decode_as_int64s(const Ref<GLTFState> &p_gltf_state) const;
+	Vector<Quaternion> decode_as_quaternions(const Ref<GLTFState> &p_gltf_state) const;
+	PackedVector2Array decode_as_vector2s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedVector3Array decode_as_vector3s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedVector4Array decode_as_vector4s(const Ref<GLTFState> &p_gltf_state) const;
+	Array decode_as_variants(const Ref<GLTFState> &p_gltf_state, Variant::Type p_variant_type) const;
+
+	// Low-level encode functions.
+	static GLTFComponentType get_minimal_integer_component_type_from_ints(const PackedInt64Array &p_numbers);
+	PackedByteArray encode_floats_as_bytes(const PackedFloat64Array &p_input_numbers);
+	PackedByteArray encode_ints_as_bytes(const PackedInt64Array &p_input_numbers);
+	PackedByteArray encode_variants_as_bytes(const Array &p_input_data, Variant::Type p_variant_type);
+
+	GLTFAccessorIndex store_accessor_data_into_state(const Ref<GLTFState> &p_gltf_state, const PackedByteArray &p_data_bytes, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const GLTFBufferIndex p_buffer_index = 0, const bool p_deduplicate = true);
+	static Ref<GLTFAccessor> make_new_accessor_without_data(GLTFAccessorType p_accessor_type = TYPE_SCALAR, GLTFComponentType p_component_type = COMPONENT_TYPE_SINGLE_FLOAT);
+
+	// High-level encode functions.
+	static GLTFAccessorIndex encode_new_accessor_from_colors(const Ref<GLTFState> &p_gltf_state, const PackedColorArray &p_input_data, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_accessor_from_float64s(const Ref<GLTFState> &p_gltf_state, const PackedFloat64Array &p_input_data, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_accessor_from_int32s(const Ref<GLTFState> &p_gltf_state, const PackedInt32Array &p_input_data, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_accessor_from_int64s(const Ref<GLTFState> &p_gltf_state, const PackedInt64Array &p_input_data, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_accessor_from_quaternions(const Ref<GLTFState> &p_gltf_state, const Vector<Quaternion> &p_input_data, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_accessor_from_variants(const Ref<GLTFState> &p_gltf_state, const Array &p_input_data, Variant::Type p_variant_type, GLTFAccessorType p_accessor_type = TYPE_SCALAR, GLTFComponentType p_component_type = COMPONENT_TYPE_SINGLE_FLOAT, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_accessor_from_vector2s(const Ref<GLTFState> &p_gltf_state, const PackedVector2Array &p_input_data, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_accessor_from_vector3s(const Ref<GLTFState> &p_gltf_state, const PackedVector3Array &p_input_data, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_accessor_from_vector4s(const Ref<GLTFState> &p_gltf_state, const PackedVector4Array &p_input_data, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_accessor_from_vector4is(const Ref<GLTFState> &p_gltf_state, const Vector<Vector4i> &p_input_data, const GLTFBufferView::ArrayBufferTarget p_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+	static GLTFAccessorIndex encode_new_sparse_accessor_from_vec3s(const Ref<GLTFState> &p_gltf_state, const PackedVector3Array &p_input_data, const PackedVector3Array &p_base_reference_data, const double p_tolerance_multiplier = 1.0, const GLTFBufferView::ArrayBufferTarget p_main_buffer_view_target = GLTFBufferView::TARGET_NONE, const bool p_deduplicate = true);
+
+	// Dictionary conversion.
+	static Ref<GLTFAccessor> from_dictionary(const Dictionary &p_dict);
+	Dictionary to_dictionary() const;
 };
 
 VARIANT_ENUM_CAST(GLTFAccessor::GLTFAccessorType);

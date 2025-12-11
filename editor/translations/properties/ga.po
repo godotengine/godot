@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-06-09 23:47+0000\n"
+"PO-Revision-Date: 2025-09-14 16:20+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ga/>\n"
@@ -17,10 +17,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 :(n>6 "
 "&& n<11) ? 3 : 4;\n"
-"X-Generator: Weblate 5.12-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Application"
-msgstr "Iarratas"
+msgstr "Feidhmchlár"
 
 msgid "Config"
 msgstr "Cumraíocht"
@@ -439,6 +439,9 @@ msgstr "Domhain"
 msgid "Map Use Async Iterations"
 msgstr "Léarscáil Úsáid Async Iterations"
 
+msgid "Region Use Async Iterations"
+msgstr "Úsáid Réigiún Athruithe Asyncrónacha"
+
 msgid "Avoidance"
 msgstr "Seachaint"
 
@@ -705,6 +708,9 @@ msgstr "Eagar Sonraí"
 
 msgid "Max Pending Connections"
 msgstr "Naisc Max ar Feitheamh"
+
+msgid "Neighbor Filter Enabled"
+msgstr "Scagaire Comharsanachta Cumasaithe"
 
 msgid "Region"
 msgstr "Réigiún"
@@ -1171,6 +1177,9 @@ msgstr "Fórsa Díchumasaigh Comhbhrú Mogalra"
 msgid "Node"
 msgstr "Nód"
 
+msgid "Node Type"
+msgstr "Cineál Nóid"
+
 msgid "Script"
 msgstr "Script"
 
@@ -1360,6 +1369,9 @@ msgstr "Cineál Fréamh"
 msgid "Root Name"
 msgstr "Fréamhainm"
 
+msgid "Root Script"
+msgstr "Script Fréimhe"
+
 msgid "Apply Root Scale"
 msgstr "Cuir Fréamhscála i bhFeidhm"
 
@@ -1416,6 +1428,15 @@ msgstr "Iompórtáil Script"
 
 msgid "Materials"
 msgstr "Ábhair"
+
+msgid "Extract"
+msgstr "Sliocht"
+
+msgid "Extract Format"
+msgstr "Formáid Sliocht"
+
+msgid "Extract Path"
+msgstr "Cosán Sliocht"
 
 msgid "Antialiasing"
 msgstr "Antialiasing"
@@ -2639,6 +2660,9 @@ msgstr "Cruth Cnámh"
 msgid "Path 3D Tilt Disk Size"
 msgstr "Conair 3D Tilt Diosca Méid"
 
+msgid "Lightmap GI Probe Size"
+msgstr "Méid Braiteoir GI Léarscáil Solais"
+
 msgid "Primary Grid Steps"
 msgstr "Céimeanna Eangach Príomhúla"
 
@@ -3281,6 +3305,9 @@ msgstr "Próifíl Idirghníomhaíochta Láimhe"
 msgid "Eye Gaze Interaction"
 msgstr "Idirghníomhaíocht Súl"
 
+msgid "Render Model"
+msgstr "Samhail Rindreála"
+
 msgid "Binding Modifiers"
 msgstr "Mionathraitheoirí Ceangailteacha"
 
@@ -3628,6 +3655,138 @@ msgstr "Ná Cuir Breiseáin as an áireamh"
 
 msgid "Renamed in Godot 4 Hint"
 msgstr "Athainmníodh i Godot 4 Hint"
+
+msgid "Unassigned Variable"
+msgstr "Samhail Rindreála"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "Athróg Neamhshannta Op Sannadh"
+
+msgid "Unused Variable"
+msgstr "Athróg Neamhúsáidte"
+
+msgid "Unused Local Constant"
+msgstr "Tairiseach Áitiúil Neamhúsáidte"
+
+msgid "Unused Private Class Variable"
+msgstr "Athróg Ranga Príobháideach Neamhúsáidte"
+
+msgid "Unused Parameter"
+msgstr "Paraiméadar Neamhúsáidte"
+
+msgid "Unused Signal"
+msgstr "Comhartha Neamhúsáidte"
+
+msgid "Shadowed Variable"
+msgstr "Athróg Scáthaithe"
+
+msgid "Shadowed Variable Base Class"
+msgstr "Rang Bunathróg Scáthaithe"
+
+msgid "Shadowed Global Identifier"
+msgstr "Aitheantóir Domhanda Scáthaithe"
+
+msgid "Unreachable Code"
+msgstr "Cód Do-shroichte"
+
+msgid "Unreachable Pattern"
+msgstr "Patrún Do-shroichte"
+
+msgid "Standalone Expression"
+msgstr "Léiriú Neamhspleách"
+
+msgid "Standalone Ternary"
+msgstr "Tríonóideach Neamhspleách"
+
+msgid "Incompatible Ternary"
+msgstr "Trínártha Neamh-chomhoiriúnach"
+
+msgid "Untyped Declaration"
+msgstr "Dearbhú Gan Chlóscríobh"
+
+msgid "Inferred Declaration"
+msgstr "Dearbhú Infheistithe"
+
+msgid "Unsafe Property Access"
+msgstr "Rochtain Neamhshábháilte ar Mhaoin"
+
+msgid "Unsafe Method Access"
+msgstr "Rochtain Modh Neamhshábháilte"
+
+msgid "Unsafe Cast"
+msgstr "Teilgean Neamhshábháilte"
+
+msgid "Unsafe Call Argument"
+msgstr "Argóint Glao Neamhshábháilte"
+
+msgid "Unsafe Void Return"
+msgstr "Tuairisceán Neamhshábháilte"
+
+msgid "Return Value Discarded"
+msgstr "Luach Tuairisceáin Caillte"
+
+msgid "Static Called On Instance"
+msgstr "Glaoite Statach ar Chás"
+
+msgid "Missing Tool"
+msgstr "Uirlis ar Iarraidh"
+
+msgid "Redundant Static Unload"
+msgstr "Díluchtú Statach Iomarcach"
+
+msgid "Redundant Await"
+msgstr "Fanacht Iomarcach"
+
+msgid "Assert Always True"
+msgstr "Dearbhaigh Fíor i gCónaí"
+
+msgid "Assert Always False"
+msgstr "Dearbhaigh i gcónaí bréagach"
+
+msgid "Integer Division"
+msgstr "Roinnt Slánuimhir"
+
+msgid "Narrowing Conversion"
+msgstr "Comhshó a chúngú"
+
+msgid "Int As Enum Without Cast"
+msgstr "Int Mar Enum Gan Réitigh"
+
+msgid "Int As Enum Without Match"
+msgstr "Int Mar Uimhir Gan Mheaitseáil"
+
+msgid "Enum Variable Without Default"
+msgstr "Athróg Enum Gan Réamhshocrú"
+
+msgid "Empty File"
+msgstr "Comhad Folamh"
+
+msgid "Deprecated Keyword"
+msgstr "Eochairfhocal atá imithe i léig"
+
+msgid "Confusable Identifier"
+msgstr "Aitheantóir Mearbhallta"
+
+msgid "Confusable Local Declaration"
+msgstr "Dearbhú Áitiúil Mearbhallta"
+
+msgid "Confusable Local Usage"
+msgstr "Úsáid Áitiúil Mhearbhallta"
+
+msgid "Confusable Capture Reassignment"
+msgstr "Athshannadh Gabhála Mearbhallta"
+
+msgid "Inference On Variant"
+msgstr "Inference On Leagan"
+
+msgid "Native Method Override"
+msgstr "Sárú Modh Dúchasach"
+
+msgid "Get Node Default Without Onready"
+msgstr "Faigh Nód Réamhshocraithe Gan Onready"
+
+msgid "Onready With Export"
+msgstr "Réidh le hEaspórtáil"
 
 msgid "Language Server"
 msgstr "Freastalaí Teanga"
@@ -4460,6 +4619,9 @@ msgstr "Nuashonrú Cnámh"
 msgid "Tracker"
 msgstr "Lorgaire"
 
+msgid "Make Local to Pose"
+msgstr "Déan Áitiúil le Posáil"
+
 msgid "Subject"
 msgstr "Ábhar"
 
@@ -4607,6 +4769,9 @@ msgstr "Comhadlann Tógála Gradle"
 msgid "Android Source Template"
 msgstr "Teimpléad Foinse Android"
 
+msgid "Compress Native Libraries"
+msgstr "Comhbhrúigh Leabharlanna Dúchasacha"
+
 msgid "Export Format"
 msgstr "Easpórtáil Formáid"
 
@@ -4684,6 +4849,9 @@ msgstr "Svaidhpeáil chun é a dhífhostú"
 
 msgid "Immersive Mode"
 msgstr "Mód tumtha"
+
+msgid "Edge to Edge"
+msgstr "Imeall go hImeall"
 
 msgid "Support Small"
 msgstr "Tacú le Fiontair Bheaga"
@@ -5026,6 +5194,9 @@ msgstr "Cur Síos ar Úsáid Imleabhair Inbhainte"
 
 msgid "Removable Volumes Usage Description Localized"
 msgstr "Inbhainte Imleabhair Cur síos Úsáid Logánaithe"
+
+msgid "Min visionOS Version"
+msgstr "Leagan OS Min vision"
 
 msgid "Web"
 msgstr "Gréasán"
@@ -5626,6 +5797,18 @@ msgstr "Simpligh an Cosán"
 
 msgid "Simplify Epsilon"
 msgstr "Simpligh Epsilon"
+
+msgid "Path Return Max Length"
+msgstr "Fad Uasta Fillte an Chosáin"
+
+msgid "Path Return Max Radius"
+msgstr "Ga Uasta Fillte na Cosáin"
+
+msgid "Path Search Max Polygons"
+msgstr "Uasmhéid Polagán Cuardaigh Cosáin"
+
+msgid "Path Search Max Distance"
+msgstr "Uasmhéid Cuardaigh Cosáin"
 
 msgid "Avoidance Enabled"
 msgstr "Seachaint Cumasaithe"
@@ -7633,6 +7816,27 @@ msgstr "Scagaire Ainm Comhaid"
 msgid "Use Native Dialog"
 msgstr "Úsáid Dialóg Dhúchasach"
 
+msgid "Hidden Files Toggle Enabled"
+msgstr "Cumasaigh Comhaid Fholaithe"
+
+msgid "File Filter Toggle Enabled"
+msgstr "Cumasaigh Scagaire Comhad"
+
+msgid "File Sort Options Enabled"
+msgstr "Roghanna Sórtála Comhad Cumasaithe"
+
+msgid "Folder Creation Enabled"
+msgstr "Cumasaíodh Cruthú Fillteán"
+
+msgid "Favorites Enabled"
+msgstr "Roghanna Cumasaithe"
+
+msgid "Recent List Enabled"
+msgstr "Liosta Le Déanaí Cumasaithe"
+
+msgid "Layout Toggle Enabled"
+msgstr "Cumasaigh an Leagan Amach"
+
 msgid "Last Wrap Alignment"
 msgstr "Ailíniú Timfhilleadh Deiridh"
 
@@ -7743,6 +7947,9 @@ msgstr "Dath Tint"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Déan neamhaird den chineál ceangail neamhbhailí"
+
+msgid "Slots Focus Mode"
+msgstr "Mód Fócais Sliotán"
 
 msgid "Select Mode"
 msgstr "Roghnaigh Mód"
@@ -8017,6 +8224,9 @@ msgstr "Scrollaigh Gníomhach"
 msgid "Scroll Following"
 msgstr "Scrollaigh tar éis"
 
+msgid "Scroll Following Visible Characters"
+msgstr "Scrollaigh i ndiaidh Carachtair Infheicthe"
+
 msgid "Tab Size"
 msgstr "Méid na gCluaisíní"
 
@@ -8079,6 +8289,9 @@ msgstr "Cuir tic sa Líon"
 
 msgid "Ticks on Borders"
 msgstr "Sceartáin ar Theorainneacha"
+
+msgid "Ticks Position"
+msgstr "Seasamh na dTicéad"
 
 msgid "Update on Text Changed"
 msgstr "Nuashonrú ar théacs athraithe"
@@ -9515,6 +9728,9 @@ msgstr "Scáthóir"
 msgid "Depth Draw Mode"
 msgstr "Mód Tarraingthe Doimhneachta"
 
+msgid "Depth Test"
+msgstr "Tástáil Doimhneachta"
+
 msgid "Shading"
 msgstr "Scáthú"
 
@@ -9691,6 +9907,18 @@ msgstr "Msdf"
 
 msgid "Pixel Range"
 msgstr "Raon Picteilíní"
+
+msgid "Stencil"
+msgstr "Stionsal"
+
+msgid "Compare"
+msgstr "Déan comparáid"
+
+msgid "Reference"
+msgstr "Tagairt"
+
+msgid "Outline Thickness"
+msgstr "Tiús Imlíne"
 
 msgid "Convex Hull Downsampling"
 msgstr "Downsampling Cabhail Dronnach"
@@ -10012,6 +10240,12 @@ msgstr "Port Aschurtha le haghaidh Réamhamhairc"
 
 msgid "Modes"
 msgstr "Móid"
+
+msgid "Stencil Modes"
+msgstr "Móid Stionsal"
+
+msgid "Stencil Flags"
+msgstr "Bratacha Stionsal"
 
 msgid "Input Name"
 msgstr "Ainm Ionchurtha"
@@ -10390,6 +10624,9 @@ msgstr "Ionad Grabber"
 
 msgid "Grabber Offset"
 msgstr "Fritháireamh Grabber"
+
+msgid "Tick Offset"
+msgstr "Fritháireamh Tic"
 
 msgid "Updown"
 msgstr "Suas an Dún"
@@ -10937,6 +11174,9 @@ msgstr "Fócas Réamhshocraithe"
 msgid "Preset BG"
 msgstr "Réamhshocrú BG"
 
+msgid "Horizontal Rule"
+msgstr "Riail Chothrománach"
+
 msgid "Normal Font"
 msgstr "Gnáthchló"
 
@@ -10993,6 +11233,15 @@ msgstr "Folínigh Alfa"
 
 msgid "Strikethrough Alpha"
 msgstr "Alfa Stróic Tríd"
+
+msgid "Touch Dragger Color"
+msgstr "Dath Tarraingthe Tadhaill"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Dath Brúite le Tarraingt Tadhaill"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Dath Luascáin Tadhaill Tarraingthe"
 
 msgid "H Touch Dragger"
 msgstr "Dragaire H Touch"
@@ -11288,6 +11537,21 @@ msgstr "Scríbhneoir Scannáin"
 msgid "Speaker Mode"
 msgstr "Mód Cainteoir"
 
+msgid "Video Quality"
+msgstr "Cáilíocht Físeáin"
+
+msgid "OGV"
+msgstr "OGV"
+
+msgid "Audio Quality"
+msgstr "Cáilíocht Fuaime"
+
+msgid "Encoding Speed"
+msgstr "Luas Ionchódaithe"
+
+msgid "Keyframe Interval"
+msgstr "Eatramh Eochairfhráma"
+
 msgid "Movie File"
 msgstr "Comhad Scannáin"
 
@@ -11311,6 +11575,9 @@ msgstr "Rids Cosán"
 
 msgid "Path Owner IDs"
 msgstr "IDanna Úinéir an Chosáin"
+
+msgid "Path Length"
+msgstr "Fad na Cosáin"
 
 msgid "Default Cell Size"
 msgstr "Méid Réamhshocraithe na Cille"
@@ -11606,6 +11873,15 @@ msgstr "Ceo Díchumasaithe"
 msgid "Specular Occlusion Disabled"
 msgstr "Díchumasaíodh Oclúchadh Speictreach"
 
+msgid "Read"
+msgstr "Léigh"
+
+msgid "Write"
+msgstr "Scríobh"
+
+msgid "Write Depth Fail"
+msgstr "Teip Doimhneachta Scríbhneoireachta"
+
 msgid "Light Only"
 msgstr "Solas Amháin"
 
@@ -11626,6 +11902,36 @@ msgstr "Úsáid Pas Leath-Res"
 
 msgid "Use Quarter Res Pass"
 msgstr "Úsáid Pas Ceathrú Res"
+
+msgid "Float Comparison"
+msgstr "Comparáid Snámh"
+
+msgid "Unused Constant"
+msgstr "Tairiseach Neamhúsáidte"
+
+msgid "Unused Function"
+msgstr "Feidhm Neamhúsáidte"
+
+msgid "Unused Struct"
+msgstr "Struchtúr Neamhúsáidte"
+
+msgid "Unused Uniform"
+msgstr "Éide Neamhúsáidte"
+
+msgid "Unused Varying"
+msgstr "Neamhúsáidte Éagsúil"
+
+msgid "Unused Local Variable"
+msgstr "Athróg Áitiúil Neamhúsáidte"
+
+msgid "Formatting Error"
+msgstr "Earráid Formáidithe"
+
+msgid "Device Limit Exceeded"
+msgstr "Teorainn na Gléas Sáraithe"
+
+msgid "Magic Position Write"
+msgstr "Scríobh Suíomh Draíochta"
 
 msgid "Internal Size"
 msgstr "Méid Inmheánach"
@@ -11923,6 +12229,9 @@ msgstr "Leagan Amach Subpixel LCD"
 
 msgid "Include Text Server Data"
 msgstr "Cuir Sonraí Freastalaí Téacs san áireamh"
+
+msgid "Line Breaking Strictness"
+msgstr "Déine Briste Líne"
 
 msgid "Has Tracking Data"
 msgstr "An bhfuil Sonraí Rianaithe aige"

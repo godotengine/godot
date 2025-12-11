@@ -32,6 +32,7 @@
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/mesh.h"
 
 #ifndef NAVIGATION_3D_DISABLED
 class NavigationMesh;
@@ -48,7 +49,7 @@ protected:
 	Ref<Skin> skin;
 	Ref<Skin> skin_internal;
 	Ref<SkinReference> skin_ref;
-	NodePath skeleton_path = NodePath("..");
+	NodePath skeleton_path;
 
 	LocalVector<float> blend_shape_tracks;
 	HashMap<StringName, int> blend_shape_properties;
@@ -70,6 +71,13 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::MESH_INSTANCE_3D;
+
+#ifndef DISABLE_DEPRECATED
+	static inline bool use_parent_skeleton_compat = false;
+	static inline bool upgrading_skeleton_compat = false;
+#endif
+
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 

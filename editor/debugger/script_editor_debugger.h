@@ -125,6 +125,7 @@ private:
 	Button *copy = nullptr;
 	Button *step = nullptr;
 	Button *next = nullptr;
+	Button *out = nullptr;
 	Button *dobreak = nullptr;
 	Button *docontinue = nullptr;
 	// Reference to "Remote" tab in scene tree. Needed by _live_edit_set and buttons state.
@@ -185,6 +186,9 @@ private:
 	void _select_thread(int p_index);
 
 	bool debug_mute_audio = false;
+	bool audio_muted_on_break = false;
+	void _mute_audio_on_break(bool p_mute);
+	void _send_debug_mute_audio_msg(bool p_mute);
 
 	EditorDebuggerNode::CameraOverride camera_override;
 
@@ -203,6 +207,10 @@ private:
 	void _msg_scene_click_ctrl(uint64_t p_thread_id, const Array &p_data);
 	void _msg_scene_scene_tree(uint64_t p_thread_id, const Array &p_data);
 	void _msg_scene_inspect_objects(uint64_t p_thread_id, const Array &p_data);
+#ifndef DISABLE_DEPRECATED
+	void _msg_scene_inspect_object(uint64_t p_thread_id, const Array &p_data);
+#endif // DISABLE_DEPRECATED
+	void _msg_scene_debug_mute_audio(uint64_t p_thread_id, const Array &p_data);
 	void _msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data);
 	void _msg_servers_drawn(uint64_t p_thread_id, const Array &p_data);
 	void _msg_stack_dump(uint64_t p_thread_id, const Array &p_data);
@@ -315,6 +323,7 @@ public:
 	void debug_ignore_error_breaks();
 	void debug_copy();
 
+	void debug_out();
 	void debug_next();
 	void debug_step();
 	void debug_break();

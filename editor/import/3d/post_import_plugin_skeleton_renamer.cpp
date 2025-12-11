@@ -187,15 +187,15 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 		// Main process of renaming bones.
 		{
 			// Apply pre-renaming result to prepared main rename map.
-			Vector<String> remove_queue;
-			for (HashMap<String, String>::Iterator E = main_rename_map.begin(); E; ++E) {
-				if (pre_rename_map.has(E->key)) {
-					remove_queue.push_back(E->key);
+			LocalVector<String> remove_queue;
+			for (const KeyValue<String, String> &kv : main_rename_map) {
+				if (pre_rename_map.has(kv.key)) {
+					remove_queue.push_back(kv.key);
 				}
 			}
-			for (int i = 0; i < remove_queue.size(); i++) {
-				main_rename_map.insert(pre_rename_map[remove_queue[i]], main_rename_map[remove_queue[i]]);
-				main_rename_map.erase(remove_queue[i]);
+			for (const String &key : remove_queue) {
+				main_rename_map.insert(pre_rename_map[key], main_rename_map[key]);
+				main_rename_map.erase(key);
 			}
 			_internal_process(p_category, p_base_scene, p_node, p_resource, p_options, main_rename_map);
 		}

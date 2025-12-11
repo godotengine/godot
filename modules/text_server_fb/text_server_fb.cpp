@@ -51,8 +51,10 @@ using namespace godot;
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "core/io/file_access.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
@@ -61,11 +63,17 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4458) // "Declaration of 'identifier' hides class member".
+
 #include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
+
+GODOT_GCC_WARNING_POP
+GODOT_MSVC_WARNING_POP
 #endif
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -304,9 +312,15 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 				}
 			} else if (p_color_size == 4) {
 				for (int i = 0; i < texsize * texsize * p_color_size; i += 4) { // FORMAT_RGBA8, Color font, Multichannel(+True) SDF.
-					w[i + 0] = 255;
-					w[i + 1] = 255;
-					w[i + 2] = 255;
+					if (p_msdf) {
+						w[i + 0] = 0;
+						w[i + 1] = 0;
+						w[i + 2] = 0;
+					} else {
+						w[i + 0] = 255;
+						w[i + 1] = 255;
+						w[i + 2] = 255;
+					}
 					w[i + 3] = 0;
 				}
 			} else {
@@ -3271,7 +3285,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 		}
 	}
 
-	for (int i = p_shaped->first_span; i <= p_shaped->last_span; i++) {
+	for (int i = MAX(0, p_shaped->first_span); i <= MIN(p_shaped->last_span, parent->spans.size() - 1); i++) {
 		ShapedTextDataFallback::Span span = parent->spans[i];
 		span.start = MAX(p_shaped->start, span.start);
 		span.end = MIN(p_shaped->end, span.end);
@@ -3308,6 +3322,39 @@ void TextServerFallback::_shaped_text_clear(const RID &p_shaped) {
 	sd->last_span = 0;
 	sd->objects.clear();
 	invalidate(sd);
+}
+
+RID TextServerFallback::_shaped_text_duplicate(const RID &p_shaped) {
+	_THREAD_SAFE_METHOD_
+
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, RID());
+
+	MutexLock lock(sd->mutex);
+
+	ShapedTextDataFallback *new_sd = memnew(ShapedTextDataFallback);
+	new_sd->parent = p_shaped;
+	new_sd->start = sd->start;
+	new_sd->end = sd->end;
+	new_sd->text = sd->text;
+	new_sd->orientation = sd->orientation;
+	new_sd->direction = sd->direction;
+	new_sd->custom_punct = sd->custom_punct;
+	new_sd->para_direction = sd->para_direction;
+	new_sd->line_breaks_valid = sd->line_breaks_valid;
+	new_sd->justification_ops_valid = sd->justification_ops_valid;
+	new_sd->sort_valid = false;
+	new_sd->upos = sd->upos;
+	new_sd->uthk = sd->uthk;
+	new_sd->runs.clear();
+	new_sd->runs_dirty = true;
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		new_sd->extra_spacing[i] = sd->extra_spacing[i];
+	}
+	full_copy(new_sd);
+	new_sd->valid.clear();
+
+	return shaped_owner.make_rid(new_sd);
 }
 
 void TextServerFallback::_shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
@@ -3818,6 +3865,14 @@ String TextServerFallback::_shaped_get_text(const RID &p_shaped) const {
 	return sd->text;
 }
 
+bool TextServerFallback::_shaped_text_has_object(const RID &p_shaped, const Variant &p_key) const {
+	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, false);
+
+	MutexLock lock(sd->mutex);
+	return sd->objects.has(p_key);
+}
+
 bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, double p_baseline) {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_NULL_V(sd, false);
@@ -4061,6 +4116,10 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 							new_sd->ascent = MAX(new_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 							new_sd->descent = MAX(new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 						}
+					}
+					if (new_sd->glyphs.is_empty() && gl.x_off < 0.0) {
+						gl.advance += -gl.x_off;
+						gl.x_off = 0.0;
 					}
 					new_sd->width += gl.advance * gl.repeat;
 				}
@@ -4461,10 +4520,27 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 					}
 				}
 
+				bool fb_use_msdf = key.msdf;
+#ifdef MODULE_FREETYPE_ENABLED
+				if (fb_use_msdf) {
+					FontFallback *fd = _get_font_data(sysf.rid);
+					if (fd) {
+						MutexLock lock(fd->mutex);
+						Vector2i size = _get_size(fd, 16);
+						FontForSizeFallback *ffsd = nullptr;
+						if (_ensure_cache_for_size(fd, size, ffsd)) {
+							if (ffsd && (FT_HAS_COLOR(ffsd->face) || !FT_IS_SCALABLE(ffsd->face))) {
+								fb_use_msdf = false;
+							}
+						}
+					}
+				}
+#endif
+
 				_font_set_antialiasing(sysf.rid, key.antialiasing);
 				_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);
 				_font_set_generate_mipmaps(sysf.rid, key.mipmaps);
-				_font_set_multichannel_signed_distance_field(sysf.rid, key.msdf);
+				_font_set_multichannel_signed_distance_field(sysf.rid, fb_use_msdf);
 				_font_set_msdf_pixel_range(sysf.rid, key.msdf_range);
 				_font_set_msdf_size(sysf.rid, key.msdf_source_size);
 				_font_set_fixed_size(sysf.rid, key.fixed_size);
@@ -4510,6 +4586,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	bool add_ellipsis = p_trim_flags.has_flag(OVERRUN_ADD_ELLIPSIS);
 	bool cut_per_word = p_trim_flags.has_flag(OVERRUN_TRIM_WORD_ONLY);
 	bool enforce_ellipsis = p_trim_flags.has_flag(OVERRUN_ENFORCE_ELLIPSIS);
+	bool short_string_ellipsis = p_trim_flags.has_flag(OVERRUN_SHORT_STRING_ELLIPSIS);
 	bool justification_aware = p_trim_flags.has_flag(OVERRUN_JUSTIFICATION_AWARE);
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
@@ -4542,7 +4619,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	// Find usable fonts, if fonts from the last glyph do not have required chars.
 	RID dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
-	if (add_ellipsis || enforce_ellipsis) {
+	if (add_ellipsis || enforce_ellipsis || short_string_ellipsis) {
 		if (!_font_has_char(dot_gl_font_rid, sd->el_char)) {
 			const Array &fonts = spans[span_size - 1].fonts;
 			for (int i = 0; i < fonts.size(); i++) {
@@ -4595,8 +4672,8 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 		}
 	}
 
-	int32_t dot_gl_idx = ((add_ellipsis || enforce_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, (found_el_char ? sd->el_char : '.'), 0) : -1;
-	Vector2 dot_adv = ((add_ellipsis || enforce_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
+	int32_t dot_gl_idx = ((add_ellipsis || enforce_ellipsis || short_string_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, (found_el_char ? sd->el_char : '.'), 0) : -1;
+	Vector2 dot_adv = ((add_ellipsis || enforce_ellipsis || short_string_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
 	int32_t whitespace_gl_idx = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_index(whitespace_gl_font_rid, last_gl_font_size, ' ', 0) : -1;
 	Vector2 whitespace_adv = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_advance(whitespace_gl_font_rid, last_gl_font_size, whitespace_gl_idx) : Vector2();
 
@@ -4610,12 +4687,12 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	double width_without_el = width;
 
 	int trim_pos = 0;
-	int ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
+	int ellipsis_pos = (enforce_ellipsis || short_string_ellipsis) ? 0 : -1;
 
 	int last_valid_cut = -1;
 	int last_valid_cut_witout_el = -1;
 
-	if (enforce_ellipsis && (width + ellipsis_width <= p_width)) {
+	if ((enforce_ellipsis || short_string_ellipsis) && (width + ellipsis_width <= p_width)) {
 		trim_pos = -1;
 		ellipsis_pos = sd_size;
 	} else {
@@ -4630,7 +4707,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 					width = width_without_el;
 					break;
 				}
-				if (!enforce_ellipsis && width <= p_width && last_valid_cut_witout_el == -1) {
+				if (!(enforce_ellipsis || short_string_ellipsis) && width <= p_width && last_valid_cut_witout_el == -1) {
 					if (cut_per_word && above_min_char_threshold) {
 						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 							last_valid_cut_witout_el = i;
@@ -4641,7 +4718,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 						width_without_el = width;
 					}
 				}
-				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
+				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis || short_string_ellipsis) ? ellipsis_width : 0) <= p_width) {
 					if (cut_per_word && above_min_char_threshold) {
 						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 							last_valid_cut = i;
@@ -4652,7 +4729,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 					if (last_valid_cut != -1) {
 						trim_pos = last_valid_cut;
 
-						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
+						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis || short_string_ellipsis) && width - ellipsis_width <= p_width) {
 							ellipsis_pos = trim_pos;
 						}
 						break;
@@ -4664,12 +4741,12 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	sd->overrun_trim_data.trim_pos = trim_pos;
 	sd->overrun_trim_data.ellipsis_pos = ellipsis_pos;
-	if (trim_pos == 0 && enforce_ellipsis && add_ellipsis) {
+	if (trim_pos == 0 && (enforce_ellipsis || short_string_ellipsis) && add_ellipsis) {
 		sd->overrun_trim_data.ellipsis_pos = 0;
 	}
 
-	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis) {
-		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis)) {
+	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis || short_string_ellipsis) {
+		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis || short_string_ellipsis)) {
 			// Insert an additional space when cutting word bound for aesthetics.
 			if (cut_per_word && (ellipsis_pos > 0)) {
 				Glyph gl;
@@ -4789,6 +4866,17 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 			sd->glyphs.push_back(gl);
 		} else {
 			// Text span.
+			int last_non_zero_w = sd->end - 1;
+			if (i == sd->spans.size() - 1) {
+				for (int j = span.end - 1; j >= span.start; j--) {
+					last_non_zero_w = j;
+					uint32_t idx = (int32_t)sd->text[j - sd->start];
+					if (!is_control(idx) && !(idx >= 0x200B && idx <= 0x200D)) {
+						break;
+					}
+				}
+			}
+
 			RID prev_font;
 			for (int j = span.start; j < span.end; j++) {
 				Glyph gl;
@@ -4798,7 +4886,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				gl.count = 1;
 				gl.font_size = span.font_size;
 				gl.index = (int32_t)sd->text[j - sd->start]; // Use codepoint.
-				if (gl.index == 0x0009 || gl.index == 0x000b) {
+				bool zw = (gl.index >= 0x200b && gl.index <= 0x200d);
+				if (gl.index == 0x0009 || gl.index == 0x000b || zw) {
 					gl.index = 0x0020;
 				}
 				if (!sd->preserve_control && is_control(gl.index)) {
@@ -4844,8 +4933,11 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 							sd->descent = MAX(sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 						}
 					}
-					if (j < sd->end - 1) {
-						// Do not add extra spacing to the last glyph of the string.
+					if (zw) {
+						gl.advance = 0.0;
+					}
+					if ((j < last_non_zero_w) && !Math::is_zero_approx(gl.advance)) {
+						// Do not add extra spacing to the last glyph of the string and zero width glyphs.
 						if (is_whitespace(sd->text[j - sd->start])) {
 							gl.advance += sd->extra_spacing[SPACING_SPACE] + _font_get_spacing(gl.font_rid, SPACING_SPACE);
 						} else {

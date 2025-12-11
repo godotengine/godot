@@ -74,7 +74,7 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: 1.60 (323239a6a5ffa57d6570cfc403be99156e33a8b0, 2025)
+- Version: git (b1110111d4a93c7dd7de93ce3d9ed8fcdfd114f2, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -88,8 +88,9 @@ Patches:
 - `0001-external-zstd-pr344.patch` (GH-73441)
 - `0002-external-tinyexr.patch` (GH-97582)
 - `0003-remove-tinydds-qoi.patch` (GH-97582)
-- `0004-ambiguous-calls.patch` (GH-103968)
-- `0005-msvc-include-ctype.patch` (GH-106155)
+- `0004-clang-warning-exclude.patch` (GH-111346)
+- `0005-unused-typedef.patch` (GH-111445)
+- `0006-explicit-includes.patch` (GH-111557)
 
 
 ## brotli
@@ -131,6 +132,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-disable-exceptions.patch` (GH-80796)
+- `0002-llvm-21-header.patch` (GH-113850)
 
 
 ## cvtt
@@ -200,6 +202,20 @@ Patches:
 - `0001-ciso646-version.patch` (GH-105913)
 
 
+## dr_libs
+
+- Upstream: https://github.com/mackron/dr_libs
+- Version: mp3-0.7.2 (547c211a87a06a42bf62c1366616aa14b57dd429, 2025)
+- License: Public Domain or Unlicense or MIT-0
+
+Files extracted from upstream source:
+
+- `dr_mp3.h`
+- `LICENSE`
+
+`dr_bridge.h` is a Godot file and should be preserved on updates.
+
+
 ## embree
 
 - Upstream: https://github.com/embree/embree
@@ -220,6 +236,7 @@ Patches:
 - `0003-emscripten-nthreads.patch` (GH-69799)
 - `0004-mingw-no-cpuidex.patch` (GH-92488)
 - `0005-mingw-llvm-arm64.patch` (GH-93364)
+- `0006-explicit-includes.patch` (GH-111557)
 
 The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree release and apply patches automatically.
@@ -274,13 +291,13 @@ Patches:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
   * License: Apache 2.0
+- `Inter*.woff2`:
+  * Upstream: https://github.com/rsms/inter
+  * Version: v4.1 (e3a3d4c57d5ecc01453a575621882a384c1995a3, 2024)
+  * License: OFL-1.1
 - `JetBrainsMono_Regular.woff2`:
   * Upstream: https://github.com/JetBrains/JetBrainsMono
   * Version: 2.304 (cd5227bd1f61dff3bbd6c814ceaf7ffd95e947d9, 2023)
-  * License: OFL-1.1
-- `NotoSans*.woff2`:
-  * Upstream: https://github.com/notofonts/latin-greek-cyrillic
-  * Version: 2.012 (9ea0c8d37bff0c0067b03777f40aa04f2bf78f99, 2023)
   * License: OFL-1.1
 - `NotoSansBengali*.woff2`:
   * Upstream: https://github.com/notofonts/bengali
@@ -323,9 +340,9 @@ Patches:
   * Version: 2.001 (09af528011390f35abf15cf86068dae208f512c4, 2022)
   * License: OFL-1.1
 - `OpenSans_SemiBold.woff2`:
-  * Upstream: https://fonts.google.com/specimen/Open+Sans
-  * Version: 1.10 (downloaded from Google Fonts in February 2021)
-  * License: Apache 2.0
+  * Upstream: https://github.com/googlefonts/opensans
+  * Version: git (bd7e37632246368c60fdcbd374dbf9bad11969b6, 2023)
+  * License: OFL-1.1
 - `Vazirmatn*.woff2`:
   * Upstream: https://github.com/rastikerdar/vazirmatn
   * Version: 33.003 (83629f877e8f084cc07b47030b5d3a0ff06c76ec, 2022)
@@ -340,8 +357,8 @@ for UI.
 
 ## freetype
 
-- Upstream: https://www.freetype.org
-- Version: 2.13.3 (42608f77f20749dd6ddc9e0536788eaad70ea4b5, 2024)
+- Upstream: https://gitlab.freedesktop.org/freetype/freetype
+- Version: 2.14.1 (526ec5c47b9ebccc4754c85ac0c0cdf7c85a5e9b, 2025)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -436,7 +453,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 11.3.2 (4e3df1c1383481ed5717603d5dd3453a04fb16ba, 2025)
+- Version: 12.1.0 (a790c38b782f9d8e6f0299d2837229e5726fc669, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -492,7 +509,7 @@ Files generated from upstream source:
 ## jolt_physics
 
 - Upstream: https://github.com/jrouwe/JoltPhysics
-- Version: 5.3.0 (0373ec0dd762e4bc2f6acdb08371ee84fa23c6db, 2025)
+- Version: 5.4.0 (036ea7b1d717b3e713ac9d8cbd47118fb9cd5d60, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -566,7 +583,7 @@ Patches:
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
-- Version: 1.3.5 (e1774cd77f471443541596e09078e78fdc342e4f, 2021)
+- Version: 1.3.6 (be05b13e98b048f0b5a0f5fa8ce514d56db5f822, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -579,7 +596,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.48 (ea127968204cc5d10f3fc9250c306b9e8cbd9b80, 2025)
+- Version: 1.6.51 (49363adcfaf098748d7a4c8c624ad8c45a8c3a86, 2025)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -654,7 +671,7 @@ File extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 3.6.4 (c765c831e5c2a0971410692f92f7a81d6ec65ec2, 2025)
+- Version: 3.6.5 (e185d7fd85499c8ce5ca2a54f5cf8fe7dbe3f8df, 2025)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -664,7 +681,7 @@ File extracted from upstream release tarball:
 - From `library/` to `thirdparty/mbedtls/library/`:
   - All `.c` and `.h` files
   - Except `bignum_mod.c`, `block_cipher.c`, `ecp_curves_new.c`, `lmots.c`,
-  `lms.c`, `bignum_core_invasive.h`
+    `lms.c`
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
@@ -679,7 +696,7 @@ Patches:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.24 (7b2d4f4c817aea55d74dcd65d9763ac2ca608026, 2025)
+- Version: 0.25 (6daea4695c48338363b08022d2fb15deaef6ac09, 2025)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -707,24 +724,7 @@ Patches:
 
 - `0001-disable-exceptions.patch` (GH-85039)
 - `0002-clang-std-replacements-leak.patch` (GH-85208)
-
-
-## minimp3
-
-- Upstream: https://github.com/lieff/minimp3
-- Version: git (afb604c06bc8beb145fecd42c0ceb5bda8795144, 2021)
-- License: CC0 1.0
-
-Files extracted from upstream repository:
-
-- `minimp3.h`
-- `minimp3_ex.h`
-- `LICENSE`
-
-Patches:
-
-- `0001-msvc-arm.patch` (GH-64921)
-- `0002-msvc-warnings.patch` (GH-66545)
+- `0003-explicit-includes.patch` (GH-111557)
 
 
 ## miniupnpc
@@ -864,7 +864,7 @@ Files extracted from the upstream source:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.49 (977f6675bc0057d5a54ed290cb5c71c699b1c0ab, 2025)
+- Version: 1.1.53 (75c53b6e853dc12c7b3c771edc9c9c841b15faaa, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -888,6 +888,8 @@ Exclude:
   `*.{def,expsym,in,json,map,pom,rc,txt}`
 - All dotfiles
 
+Additional:
+- Update `openxrLoaderVersion` in `platform/android/java/app/config.gradle`
 
 ## pcre2
 
@@ -916,6 +918,19 @@ Files extracted from upstream source:
 
 - `Recast/` folder without `CMakeLists.txt`
 - `License.txt`
+
+
+## re-spirv
+
+- Upstream: https://github.com/renderbag/re-spirv
+- Version: git (5af3b606e6aaf11bae8dc7b5cd236c943e24865e, 2025)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `re-spirv.cpp`
+- `re-spirv.h`
+- `LICENSE`
 
 
 ## rvo2
@@ -972,6 +987,8 @@ Patches:
 - `0003-std-include.patch` (GH-108144)
 - `0004-errno-include.patch` (GH-108354)
 - `0005-fix-libudev-dbus.patch` (GH-108373)
+- `0006-fix-cs-environ.patch` (GH-109283)
+- `0007-macos-joypad-name.patch` (GH-110500)
 
 The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
 Its version and license is described in this file under `hidapi`.
@@ -993,6 +1010,16 @@ Versions of this SDK do not have to match the `vulkan` section, as this SDK is r
 to generate Metal source from Vulkan SPIR-V.
 
 
+## spirv-headers
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Headers
+- Version: vulkan-sdk-1.4.328.1 (01e0577914a75a2569c846778c2f93aa8e6feddd, 2025)
+
+Files extracted from upstream source:
+- `include/spirv/unified1` folder with only `spirv.h` and `spirv.hpp`
+- `LICENSE`
+
+
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
@@ -1012,7 +1039,7 @@ Patches:
 
 - `0001-specialization-constants.patch` (GH-50325)
 - `0002-zero-size-for-sc-sized-arrays.patch` (GH-94985)
-
+- `0003-spirv-headers.patch` (GH-111452)
 
 ## swappy-frame-pacing
 
@@ -1041,6 +1068,8 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
+- `0002-use-heap-alloc.patch` (GH-109530)
+- `0003-explicit-includes.patch` (GH-111557)
 
 
 ## tinyexr
@@ -1155,7 +1184,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.33 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2024)
+- Version: 1.45 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1188,6 +1217,10 @@ Files extracted from upstream source:
 - `unstable/xdg-foreign/README`
 - `unstable/xdg-foreign/xdg-foreign-unstable-v1.xml`
 - `COPYING`
+
+The following files are extracted from thirdparty sources:
+
+- `mesa/wayland-drm.xml`: https://gitlab.freedesktop.org/mesa/mesa/-/blob/mesa-25.3.0/src/egl/wayland/wayland-drm/wayland-drm.xml
 
 
 ## wslay

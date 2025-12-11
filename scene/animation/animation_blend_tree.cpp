@@ -270,9 +270,12 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		pi.end = cur_len;
 		if (play_mode == PLAY_MODE_FORWARD) {
 			pi.time = cur_playback_time;
-			pi.delta = cur_delta;
 		} else {
 			pi.time = anim_size - cur_playback_time;
+		}
+		if (node_backward ? cur_backward : !cur_backward) {
+			pi.delta = cur_delta;
+		} else {
 			pi.delta = -cur_delta;
 		}
 		pi.weight = 1.0;
@@ -384,9 +387,9 @@ void AnimationNodeAnimation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "play_mode", PROPERTY_HINT_ENUM, "Forward,Backward"), "set_play_mode", "get_play_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "advance_on_start"), "set_advance_on_start", "is_advance_on_start");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_custom_timeline"), "set_use_custom_timeline", "is_using_custom_timeline");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "timeline_length", PROPERTY_HINT_RANGE, "0.001,60,0.001,or_greater,or_less,hide_slider,suffix:s"), "set_timeline_length", "get_timeline_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "timeline_length", PROPERTY_HINT_RANGE, "0.001,60,0.001,or_greater,or_less,hide_control,suffix:s"), "set_timeline_length", "get_timeline_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch_time_scale"), "set_stretch_time_scale", "is_stretching_time_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "start_offset", PROPERTY_HINT_RANGE, "-60,60,0.001,or_greater,or_less,hide_slider,suffix:s"), "set_start_offset", "get_start_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "start_offset", PROPERTY_HINT_RANGE, "-60,60,0.001,or_greater,or_less,hide_control,suffix:s"), "set_start_offset", "get_start_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 
 	BIND_ENUM_CONSTANT(PLAY_MODE_FORWARD);
@@ -527,6 +530,14 @@ bool AnimationNodeOneShot::is_loop_broken_at_end() const {
 	return break_loop_at_end;
 }
 
+void AnimationNodeOneShot::set_abort_on_reset(bool p_enable) {
+	abort_on_reset = p_enable;
+}
+
+bool AnimationNodeOneShot::is_aborted_on_reset() const {
+	return abort_on_reset;
+}
+
 String AnimationNodeOneShot::get_caption() const {
 	return "OneShot";
 }
@@ -547,7 +558,6 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	set_parameter(request, ONE_SHOT_REQUEST_NONE);
 
 	bool is_shooting = true;
-	bool clear_remaining_fade = false;
 	bool is_fading_out = cur_active == true && cur_internal_active == false;
 
 	double p_time = p_playback_info.time;
@@ -556,15 +566,25 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
-	if (Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking) {
-		clear_remaining_fade = true; // Reset occurs.
+	bool do_start = cur_request == ONE_SHOT_REQUEST_FIRE;
+
+	bool is_reset = Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking;
+	if (is_reset && cur_internal_active) {
+		do_start = true;
 	}
 
-	bool do_start = cur_request == ONE_SHOT_REQUEST_FIRE;
-	if (cur_request == ONE_SHOT_REQUEST_ABORT) {
+	bool is_abort = cur_request == ONE_SHOT_REQUEST_ABORT;
+	if (is_reset && (is_fading_out || (abort_on_reset && cur_active))) {
+		is_abort = true;
+	}
+
+	if (is_abort) {
 		set_parameter(internal_active, false);
 		set_parameter(active, false);
 		set_parameter(time_to_restart, -1);
+		set_parameter(fade_out_remaining, 0);
+		cur_fade_out_remaining = 0;
+		is_fading_out = false;
 		is_shooting = false;
 	} else if (cur_request == ONE_SHOT_REQUEST_FADE_OUT && !is_fading_out) { // If fading, keep current fade.
 		if (cur_active) {
@@ -592,17 +612,6 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	}
 
 	bool os_seek = p_seek;
-
-	if (clear_remaining_fade) {
-		os_seek = false;
-		cur_fade_out_remaining = 0;
-		set_parameter(fade_out_remaining, 0);
-		if (is_fading_out) {
-			is_fading_out = false;
-			set_parameter(internal_active, false);
-			set_parameter(active, false);
-		}
-	}
 
 	if (!is_shooting) {
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
@@ -721,6 +730,9 @@ void AnimationNodeOneShot::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_break_loop_at_end", "enable"), &AnimationNodeOneShot::set_break_loop_at_end);
 	ClassDB::bind_method(D_METHOD("is_loop_broken_at_end"), &AnimationNodeOneShot::is_loop_broken_at_end);
 
+	ClassDB::bind_method(D_METHOD("set_abort_on_reset", "enable"), &AnimationNodeOneShot::set_abort_on_reset);
+	ClassDB::bind_method(D_METHOD("is_aborted_on_reset"), &AnimationNodeOneShot::is_aborted_on_reset);
+
 	ClassDB::bind_method(D_METHOD("set_autorestart", "active"), &AnimationNodeOneShot::set_auto_restart_enabled);
 	ClassDB::bind_method(D_METHOD("has_autorestart"), &AnimationNodeOneShot::is_auto_restart_enabled);
 
@@ -740,6 +752,7 @@ void AnimationNodeOneShot::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fadeout_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_fadeout_time", "get_fadeout_time");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fadeout_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_fadeout_curve", "get_fadeout_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "break_loop_at_end"), "set_break_loop_at_end", "is_loop_broken_at_end");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "abort_on_reset"), "set_abort_on_reset", "is_aborted_on_reset");
 
 	ADD_GROUP("Auto Restart", "autorestart_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autorestart"), "set_autorestart", "has_autorestart");

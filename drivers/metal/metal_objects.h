@@ -51,6 +51,7 @@
 /**************************************************************************/
 
 #import "metal_device_properties.h"
+#import "metal_objects_shared.h"
 #import "metal_utils.h"
 #import "pixel_formats.h"
 #import "sha256_digest.h"
@@ -64,40 +65,11 @@
 #import <simd/simd.h>
 #import <zlib.h>
 #import <initializer_list>
+#import <memory>
 #import <optional>
 
-// These types can be used in Vector and other containers that use
-// pointer operations not supported by ARC.
-namespace MTL {
-#define MTL_CLASS(name)                               \
-	class name {                                      \
-	public:                                           \
-		name(id<MTL##name> obj = nil) : m_obj(obj) {} \
-		operator id<MTL##name>() const {              \
-			return m_obj;                             \
-		}                                             \
-		id<MTL##name> m_obj;                          \
-	};
-
-MTL_CLASS(Texture)
-
-} //namespace MTL
-
-enum ShaderStageUsage : uint32_t {
-	None = 0,
-	Vertex = RDD::SHADER_STAGE_VERTEX_BIT,
-	Fragment = RDD::SHADER_STAGE_FRAGMENT_BIT,
-	TesselationControl = RDD::SHADER_STAGE_TESSELATION_CONTROL_BIT,
-	TesselationEvaluation = RDD::SHADER_STAGE_TESSELATION_EVALUATION_BIT,
-	Compute = RDD::SHADER_STAGE_COMPUTE_BIT,
-};
-
-_FORCE_INLINE_ ShaderStageUsage &operator|=(ShaderStageUsage &p_a, int p_b) {
-	p_a = ShaderStageUsage(uint32_t(p_a) | uint32_t(p_b));
-	return p_a;
-}
-
 enum StageResourceUsage : uint32_t {
+	ResourceUnused = 0,
 	VertexRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_VERTEX * 2),
 	VertexWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_VERTEX * 2),
 	FragmentRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_FRAGMENT * 2),
@@ -110,8 +82,60 @@ enum StageResourceUsage : uint32_t {
 	ComputeWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_COMPUTE * 2),
 };
 
-typedef LocalVector<__unsafe_unretained id<MTLResource>> ResourceVector;
+typedef id<MTLResource> __unsafe_unretained MTLResourceUnsafe;
+
+template <>
+struct HashMapHasherDefaultImpl<MTLResourceUnsafe> {
+	static _FORCE_INLINE_ uint32_t hash(const MTLResourceUnsafe p_pointer) { return hash_one_uint64((uint64_t)p_pointer); }
+};
+
+typedef LocalVector<MTLResourceUnsafe> ResourceVector;
 typedef HashMap<StageResourceUsage, ResourceVector> ResourceUsageMap;
+
+struct ResourceUsageEntry {
+	StageResourceUsage usage = ResourceUnused;
+	uint32_t unused = 0;
+
+	ResourceUsageEntry() {}
+	ResourceUsageEntry(StageResourceUsage p_usage) :
+			usage(p_usage) {}
+};
+
+template <>
+struct is_zero_constructible<ResourceUsageEntry> : std::true_type {};
+
+/*! Track the cumulative usage for a resource during a render or compute pass */
+typedef HashMap<MTLResourceUnsafe, ResourceUsageEntry> ResourceToStageUsage;
+
+/*! Track resource and ensure they are resident prior to dispatch or draw commands.
+ *
+ * The primary purpose of this data structure is to track all the resources that must be made resident prior
+ * to issuing the next dispatch or draw command. It aggregates all resources used from argument buffers.
+ *
+ * As an optimization, this data structure also tracks previous usage for resources, so that
+ * it may avoid binding them again in later commands if the resource is already resident and its usage flagged.
+ */
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) ResourceTracker {
+	// A constant specifying how many iterations a resource can remain in
+	// the _previous HashSet before it will be removed permanently.
+	//
+	// Keeping them in the _previous HashMap reduces churn if resources are regularly
+	// bound. 256 is arbitrary, but if an object remains unused for 256 encoders,
+	// it will be released.
+	static constexpr uint32_t RESOURCE_UNUSED_CLEANUP_COUNT = 256;
+
+	// Used as a scratch buffer to periodically clean up resources from _previous.
+	ResourceVector _scratch;
+	// Tracks all resources and their prior usage for the duration of the encoder.
+	ResourceToStageUsage _previous;
+	// Tracks resources for the current command that must be made resident
+	ResourceUsageMap _current;
+
+	void merge_from(const ResourceUsageMap &p_from);
+	void encode(id<MTLRenderCommandEncoder> __unsafe_unretained p_enc);
+	void encode(id<MTLComputeCommandEncoder> __unsafe_unretained p_enc);
+	void reset();
+};
 
 enum class MDCommandBufferStateType {
 	None,
@@ -130,51 +154,15 @@ class MDRenderPass;
 class MDPipeline;
 class MDRenderPipeline;
 class MDComputePipeline;
-class MDFrameBuffer;
 class RenderingDeviceDriverMetal;
 class MDUniformSet;
 class MDShader;
 
+struct MetalBufferDynamicInfo;
+
+using RDM = RenderingDeviceDriverMetal;
+
 #pragma mark - Resource Factory
-
-struct ClearAttKey {
-	const static uint32_t COLOR_COUNT = MAX_COLOR_ATTACHMENT_COUNT;
-	const static uint32_t DEPTH_INDEX = COLOR_COUNT;
-	const static uint32_t STENCIL_INDEX = DEPTH_INDEX + 1;
-	const static uint32_t ATTACHMENT_COUNT = STENCIL_INDEX + 1;
-
-	enum Flags : uint16_t {
-		CLEAR_FLAGS_NONE = 0,
-		CLEAR_FLAGS_LAYERED = 1 << 0,
-	};
-
-	Flags flags = CLEAR_FLAGS_NONE;
-	uint16_t sample_count = 0;
-	uint16_t pixel_formats[ATTACHMENT_COUNT] = { 0 };
-
-	_FORCE_INLINE_ void set_color_format(uint32_t p_idx, MTLPixelFormat p_fmt) { pixel_formats[p_idx] = p_fmt; }
-	_FORCE_INLINE_ void set_depth_format(MTLPixelFormat p_fmt) { pixel_formats[DEPTH_INDEX] = p_fmt; }
-	_FORCE_INLINE_ void set_stencil_format(MTLPixelFormat p_fmt) { pixel_formats[STENCIL_INDEX] = p_fmt; }
-	_FORCE_INLINE_ MTLPixelFormat depth_format() const { return (MTLPixelFormat)pixel_formats[DEPTH_INDEX]; }
-	_FORCE_INLINE_ MTLPixelFormat stencil_format() const { return (MTLPixelFormat)pixel_formats[STENCIL_INDEX]; }
-	_FORCE_INLINE_ void enable_layered_rendering() { flags::set(flags, CLEAR_FLAGS_LAYERED); }
-
-	_FORCE_INLINE_ bool is_enabled(uint32_t p_idx) const { return pixel_formats[p_idx] != 0; }
-	_FORCE_INLINE_ bool is_depth_enabled() const { return pixel_formats[DEPTH_INDEX] != 0; }
-	_FORCE_INLINE_ bool is_stencil_enabled() const { return pixel_formats[STENCIL_INDEX] != 0; }
-	_FORCE_INLINE_ bool is_layered_rendering_enabled() const { return flags::any(flags, CLEAR_FLAGS_LAYERED); }
-
-	_FORCE_INLINE_ bool operator==(const ClearAttKey &p_rhs) const {
-		return memcmp(this, &p_rhs, sizeof(ClearAttKey)) == 0;
-	}
-
-	uint32_t hash() const {
-		uint32_t h = hash_murmur3_one_32(flags);
-		h = hash_murmur3_one_32(sample_count, h);
-		h = hash_murmur3_buffer(pixel_formats, ATTACHMENT_COUNT * sizeof(pixel_formats[0]), h);
-		return hash_fmix32(h);
-	}
-};
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDResourceFactory {
 private:
@@ -196,7 +184,7 @@ public:
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDResourceCache {
 private:
-	typedef HashMap<ClearAttKey, id<MTLRenderPipelineState>, HashableHasher<ClearAttKey>> HashMap;
+	typedef HashMap<ClearAttKey, id<MTLRenderPipelineState>> HashMap;
 	std::unique_ptr<MDResourceFactory> resource_factory;
 	HashMap clear_states;
 
@@ -307,12 +295,126 @@ public:
 	MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses);
 };
 
+struct BindingCache {
+	struct BufferBinding {
+		id<MTLBuffer> __unsafe_unretained buffer = nil;
+		NSUInteger offset = 0;
+
+		bool operator!=(const BufferBinding &p_other) const {
+			return buffer != p_other.buffer || offset != p_other.offset;
+		}
+	};
+
+	LocalVector<id<MTLTexture> __unsafe_unretained> textures;
+	LocalVector<id<MTLSamplerState> __unsafe_unretained> samplers;
+	LocalVector<BufferBinding> buffers;
+
+	_FORCE_INLINE_ void clear() {
+		textures.clear();
+		samplers.clear();
+		buffers.clear();
+	}
+
+private:
+	template <typename T>
+	_FORCE_INLINE_ void ensure_size(LocalVector<T> &p_vec, uint32_t p_required) {
+		if (p_vec.size() < p_required) {
+			p_vec.resize_initialized(p_required);
+		}
+	}
+
+public:
+	_FORCE_INLINE_ bool update(NSRange p_range, id<MTLTexture> __unsafe_unretained const *p_values) {
+		if (p_range.length == 0) {
+			return false;
+		}
+		uint32_t required = (uint32_t)(p_range.location + p_range.length);
+		ensure_size(textures, required);
+		bool changed = false;
+		for (NSUInteger i = 0; i < p_range.length; ++i) {
+			uint32_t slot = (uint32_t)(p_range.location + i);
+			id<MTLTexture> value = p_values[i];
+			if (textures[slot] != value) {
+				textures[slot] = value;
+				changed = true;
+			}
+		}
+		return changed;
+	}
+
+	_FORCE_INLINE_ bool update(NSRange p_range, id<MTLSamplerState> __unsafe_unretained const *p_values) {
+		if (p_range.length == 0) {
+			return false;
+		}
+		uint32_t required = (uint32_t)(p_range.location + p_range.length);
+		ensure_size(samplers, required);
+		bool changed = false;
+		for (NSUInteger i = 0; i < p_range.length; ++i) {
+			uint32_t slot = (uint32_t)(p_range.location + i);
+			id<MTLSamplerState> __unsafe_unretained value = p_values[i];
+			if (samplers[slot] != value) {
+				samplers[slot] = value;
+				changed = true;
+			}
+		}
+		return changed;
+	}
+
+	_FORCE_INLINE_ bool update(NSRange p_range, id<MTLBuffer> __unsafe_unretained const *p_values, const NSUInteger *p_offsets) {
+		if (p_range.length == 0) {
+			return false;
+		}
+		uint32_t required = (uint32_t)(p_range.location + p_range.length);
+		ensure_size(buffers, required);
+		BufferBinding *buffers_ptr = buffers.ptr() + p_range.location;
+		bool changed = false;
+		for (NSUInteger i = 0; i < p_range.length; ++i) {
+			BufferBinding &binding = *buffers_ptr;
+			BufferBinding new_binding = {
+				.buffer = p_values[i],
+				.offset = p_offsets[i],
+			};
+			if (binding != new_binding) {
+				binding = new_binding;
+				changed = true;
+			}
+			++buffers_ptr;
+		}
+		return changed;
+	}
+
+	_FORCE_INLINE_ bool update(id<MTLBuffer> __unsafe_unretained p_buffer, NSUInteger p_offset, uint32_t p_index) {
+		uint32_t required = p_index + 1;
+		ensure_size(buffers, required);
+		BufferBinding &binding = buffers.ptr()[p_index];
+		BufferBinding new_binding = {
+			.buffer = p_buffer,
+			.offset = p_offset,
+		};
+		if (binding != new_binding) {
+			binding = new_binding;
+			return true;
+		}
+		return false;
+	}
+};
+
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDCommandBuffer {
+	friend class MDUniformSet;
+
 private:
 #pragma mark - Common State
 
 	// From RenderingDevice
 	static constexpr uint32_t MAX_PUSH_CONSTANT_SIZE = 128;
+
+	uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE];
+	uint32_t push_constant_data_len = 0;
+	uint32_t push_constant_binding = UINT32_MAX;
+
+	BindingCache binding_cache;
+
+	void reset();
 
 	RenderingDeviceDriverMetal *device_driver = nullptr;
 	id<MTLCommandQueue> queue = nil;
@@ -329,6 +431,16 @@ private:
 
 	void _end_compute_dispatch();
 	void _end_blit();
+	id<MTLBlitCommandEncoder> _ensure_blit_encoder();
+
+	enum class CopySource {
+		Buffer,
+		Texture,
+	};
+	void _copy_texture_buffer(CopySource p_source,
+			RDD::TextureID p_texture,
+			RDD::BufferID p_buffer,
+			VectorView<RDD::BufferTextureCopyRegion> p_regions);
 
 #pragma mark - Render
 
@@ -366,7 +478,7 @@ public:
 		uint32_t index_offset = 0;
 		LocalVector<id<MTLBuffer> __unsafe_unretained> vertex_buffers;
 		LocalVector<NSUInteger> vertex_offsets;
-		ResourceUsageMap resource_usage;
+		ResourceTracker resource_tracker;
 		// clang-format off
 		enum DirtyFlag: uint16_t {
 			DIRTY_NONE     = 0,
@@ -385,11 +497,9 @@ public:
 		BitField<DirtyFlag> dirty = DIRTY_NONE;
 
 		LocalVector<MDUniformSet *> uniform_sets;
+		uint32_t dynamic_offsets = 0;
 		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
 		uint64_t uniform_set_mask = 0;
-		uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE];
-		uint32_t push_constant_data_len = 0;
-		uint32_t push_constant_bindings[2] = { 0 };
 
 		_FORCE_INLINE_ void reset();
 		void end_encoding();
@@ -444,13 +554,6 @@ public:
 			dirty.set_flag(DirtyFlag::DIRTY_UNIFORMS);
 		}
 
-		_FORCE_INLINE_ void mark_push_constants_dirty() {
-			if (push_constant_data_len == 0) {
-				return;
-			}
-			dirty.set_flag(DirtyFlag::DIRTY_PUSH);
-		}
-
 		_FORCE_INLINE_ void mark_blend_dirty() {
 			if (!blend_constants.has_value()) {
 				return;
@@ -492,7 +595,7 @@ public:
 	struct ComputeState {
 		MDComputePipeline *pipeline = nullptr;
 		id<MTLComputeCommandEncoder> encoder = nil;
-		ResourceUsageMap resource_usage;
+		ResourceTracker resource_tracker;
 		// clang-format off
 		enum DirtyFlag: uint16_t {
 			DIRTY_NONE     = 0,
@@ -505,11 +608,9 @@ public:
 		BitField<DirtyFlag> dirty = DIRTY_NONE;
 
 		LocalVector<MDUniformSet *> uniform_sets;
+		uint32_t dynamic_offsets = 0;
 		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
 		uint64_t uniform_set_mask = 0;
-		uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE];
-		uint32_t push_constant_data_len = 0;
-		uint32_t push_constant_bindings[1] = { 0 };
 
 		_FORCE_INLINE_ void reset();
 		void end_encoding();
@@ -525,14 +626,6 @@ public:
 			}
 			dirty.set_flag(DirtyFlag::DIRTY_UNIFORMS);
 		}
-
-		_FORCE_INLINE_ void mark_push_constants_dirty() {
-			if (push_constant_data_len == 0) {
-				return;
-			}
-			dirty.set_flag(DirtyFlag::DIRTY_PUSH);
-		}
-
 	} compute;
 
 	// State specific to a blit pass.
@@ -551,16 +644,12 @@ public:
 	void commit();
 	void end();
 
-	id<MTLBlitCommandEncoder> blit_command_encoder();
-	void encodeRenderCommandEncoderWithDescriptor(MTLRenderPassDescriptor *p_desc, NSString *p_label);
-
 	void bind_pipeline(RDD::PipelineID p_pipeline);
 	void encode_push_constant_data(RDD::ShaderID p_shader, VectorView<uint32_t> p_data);
 
 #pragma mark - Render Commands
 
-	void render_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index);
-	void render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
+	void render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets);
 	void render_clear_attachments(VectorView<RDD::AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects);
 	void render_set_viewport(VectorView<Rect2i> p_viewports);
 	void render_set_scissor(VectorView<Rect2i> p_scissors);
@@ -575,7 +664,7 @@ public:
 			uint32_t p_instance_count,
 			uint32_t p_base_vertex,
 			uint32_t p_first_instance);
-	void render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets);
+	void render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets);
 	void render_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint64_t p_offset);
 
 	void render_draw_indexed(uint32_t p_index_count,
@@ -593,10 +682,28 @@ public:
 
 #pragma mark - Compute Commands
 
-	void compute_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index);
-	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
+	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets);
 	void compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
 	void compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset);
+
+#pragma mark - Transfer
+
+private:
+	void encodeRenderCommandEncoderWithDescriptor(MTLRenderPassDescriptor *p_desc, NSString *p_label);
+
+public:
+	void resolve_texture(RDD::TextureID p_src_texture, RDD::TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, RDD::TextureID p_dst_texture, RDD::TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap);
+	void clear_color_texture(RDD::TextureID p_texture, RDD::TextureLayout p_texture_layout, const Color &p_color, const RDD::TextureSubresourceRange &p_subresources);
+	void clear_buffer(RDD::BufferID p_buffer, uint64_t p_offset, uint64_t p_size);
+	void copy_buffer(RDD::BufferID p_src_buffer, RDD::BufferID p_dst_buffer, VectorView<RDD::BufferCopyRegion> p_regions);
+	void copy_texture(RDD::TextureID p_src_texture, RDD::TextureID p_dst_texture, VectorView<RDD::TextureCopyRegion> p_regions);
+	void copy_buffer_to_texture(RDD::BufferID p_src_buffer, RDD::TextureID p_dst_texture, VectorView<RDD::BufferTextureCopyRegion> p_regions);
+	void copy_texture_to_buffer(RDD::TextureID p_src_texture, RDD::BufferID p_dst_buffer, VectorView<RDD::BufferTextureCopyRegion> p_regions);
+
+#pragma mark - Debugging
+
+	void begin_label(const char *p_label_name, const Color &p_color);
+	void end_label();
 
 	MDCommandBuffer(id<MTLCommandQueue> p_queue, RenderingDeviceDriverMetal *p_device_driver) :
 			device_driver(p_device_driver), queue(p_queue) {
@@ -613,43 +720,44 @@ public:
 #define MTLBindingAccessWriteOnly MTLArgumentAccessWriteOnly
 #endif
 
-struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) BindingInfo {
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformInfo {
+	uint32_t binding;
+	BitField<RDD::ShaderStage> active_stages;
 	MTLDataType dataType = MTLDataTypeNone;
-	uint32_t index = 0;
 	MTLBindingAccess access = MTLBindingAccessReadOnly;
 	MTLResourceUsage usage = 0;
 	MTLTextureType textureType = MTLTextureType2D;
-	int imageFormat = 0;
+	uint32_t imageFormat = 0;
 	uint32_t arrayLength = 0;
-	bool isMultisampled = false;
+	bool isMultisampled = 0;
 
-	inline MTLArgumentDescriptor *new_argument_descriptor() const {
-		MTLArgumentDescriptor *desc = MTLArgumentDescriptor.argumentDescriptor;
-		desc.dataType = dataType;
-		desc.index = index;
-		desc.access = access;
-		desc.textureType = textureType;
-		desc.arrayLength = arrayLength;
-		return desc;
+	struct Indexes {
+		uint32_t buffer = UINT32_MAX;
+		uint32_t texture = UINT32_MAX;
+		uint32_t sampler = UINT32_MAX;
+	};
+	Indexes slot;
+	Indexes arg_buffer;
+
+	enum class IndexType {
+		SLOT,
+		ARG,
+	};
+
+	_FORCE_INLINE_ Indexes &get_indexes(IndexType p_type) {
+		switch (p_type) {
+			case IndexType::SLOT:
+				return slot;
+			case IndexType::ARG:
+				return arg_buffer;
+		}
 	}
-};
-
-using RDC = RenderingDeviceCommons;
-
-typedef API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) HashMap<RDC::ShaderStage, BindingInfo> BindingInfoMap;
-
-struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformInfo {
-	uint32_t binding;
-	ShaderStageUsage active_stages = None;
-	BindingInfoMap bindings;
-	BindingInfoMap bindings_secondary;
 };
 
 struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformSet {
 	LocalVector<UniformInfo> uniforms;
+	LocalVector<uint32_t> dynamic_uniforms;
 	uint32_t buffer_size = 0;
-	HashMap<RDC::ShaderStage, uint32_t> offsets;
-	HashMap<RDC::ShaderStage, id<MTLArgumentEncoder>> encoders;
 };
 
 struct ShaderCacheEntry;
@@ -688,13 +796,6 @@ enum class ShaderLoadStrategy {
 									data:(dispatch_data_t)data;
 @end
 
-template <>
-struct HashMapComparatorDefault<SHA256Digest> {
-	static bool compare(const SHA256Digest &p_lhs, const SHA256Digest &p_rhs) {
-		return memcmp(p_lhs.data, p_rhs.data, CC_SHA256_DIGEST_LENGTH) == 0;
-	}
-};
-
 /// A cache entry for a Metal shader library.
 struct ShaderCacheEntry {
 	RenderingDeviceDriverMetal &owner;
@@ -715,10 +816,48 @@ struct ShaderCacheEntry {
 	~ShaderCacheEntry() = default;
 };
 
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) DynamicOffsetLayout {
+	struct Data {
+		uint8_t offset : 4;
+		uint8_t count : 4;
+	};
+
+	union {
+		Data data[MAX_DYNAMIC_BUFFERS];
+		uint64_t _val = 0;
+	};
+
+public:
+	_FORCE_INLINE_ bool is_empty() const { return _val == 0; }
+
+	_FORCE_INLINE_ uint32_t get_count(uint32_t p_set_index) const {
+		return data[p_set_index].count;
+	}
+
+	_FORCE_INLINE_ uint32_t get_offset(uint32_t p_set_index) const {
+		return data[p_set_index].offset;
+	}
+
+	_FORCE_INLINE_ void set_offset_count(uint32_t p_set_index, uint8_t p_offset, uint8_t p_count) {
+		data[p_set_index].offset = p_offset;
+		data[p_set_index].count = p_count;
+	}
+
+	_FORCE_INLINE_ uint32_t get_offset_index_shift(uint32_t p_set_index, uint32_t p_dynamic_index = 0) const {
+		return (data[p_set_index].offset + p_dynamic_index) * 4u;
+	}
+};
+
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDShader {
 public:
 	CharString name;
 	Vector<UniformSet> sets;
+	struct {
+		BitField<RDD::ShaderStage> stages = {};
+		uint32_t binding = UINT32_MAX;
+		uint32_t size = 0;
+	} push_constants;
+	DynamicOffsetLayout dynamic_offset_layout;
 	bool uses_argument_buffers = true;
 
 	MDShader(CharString p_name, Vector<UniformSet> p_sets, bool p_uses_argument_buffers) :
@@ -728,10 +867,6 @@ public:
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDComputeShader final : public MDShader {
 public:
-	struct {
-		int32_t binding = -1;
-		uint32_t size = 0;
-	} push_constants;
 	MTLSize local = {};
 
 	MDLibrary *kernel;
@@ -741,16 +876,6 @@ public:
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDRenderShader final : public MDShader {
 public:
-	struct {
-		struct {
-			int32_t binding = -1;
-			uint32_t size = 0;
-		} vert;
-		struct {
-			int32_t binding = -1;
-			uint32_t size = 0;
-		} frag;
-	} push_constants;
 	bool needs_view_mask_buffer = false;
 
 	MDLibrary *vert;
@@ -783,33 +908,69 @@ struct HashMapComparatorDefault<RDD::ShaderID> {
 	}
 };
 
-struct BoundUniformSet {
-	id<MTLBuffer> buffer;
-	ResourceUsageMap usage_to_resources;
+template <>
+struct HashMapComparatorDefault<RDD::BufferID> {
+	static bool compare(const RDD::BufferID &p_lhs, const RDD::BufferID &p_rhs) {
+		return p_lhs.id == p_rhs.id;
+	}
+};
 
-	/// Perform a 2-way merge each key of `ResourceVector` resources from this set into the
-	/// destination set.
-	///
-	/// Assumes the vectors of resources are sorted.
-	void merge_into(ResourceUsageMap &p_dst) const;
+template <>
+struct HashMapComparatorDefault<RDD::TextureID> {
+	static bool compare(const RDD::TextureID &p_lhs, const RDD::TextureID &p_rhs) {
+		return p_lhs.id == p_rhs.id;
+	}
+};
+
+template <>
+struct HashMapHasherDefaultImpl<RDD::BufferID> {
+	static _FORCE_INLINE_ uint32_t hash(const RDD::BufferID &p_value) {
+		return HashMapHasherDefaultImpl<uint64_t>::hash(p_value.id);
+	}
+};
+
+template <>
+struct HashMapHasherDefaultImpl<RDD::TextureID> {
+	static _FORCE_INLINE_ uint32_t hash(const RDD::TextureID &p_value) {
+		return HashMapHasherDefaultImpl<uint64_t>::hash(p_value.id);
+	}
+};
+
+// A type used to encode resources directly to a MTLCommandEncoder
+struct DirectEncoder {
+	id<MTLCommandEncoder> __unsafe_unretained encoder;
+	BindingCache &cache;
+	enum Mode {
+		RENDER,
+		COMPUTE
+	};
+	Mode mode;
+
+	void set(id<MTLBuffer> __unsafe_unretained *p_buffers, const NSUInteger *p_offsets, NSRange p_range);
+	void set(id<MTLBuffer> __unsafe_unretained p_buffer, const NSUInteger p_offset, uint32_t p_index);
+	void set(id<MTLTexture> __unsafe_unretained *p_textures, NSRange p_range);
+	void set(id<MTLSamplerState> __unsafe_unretained *p_samplers, NSRange p_range);
+
+	DirectEncoder(id<MTLCommandEncoder> __unsafe_unretained p_encoder, BindingCache &p_cache) :
+			encoder(p_encoder), cache(p_cache) {
+		if ([p_encoder conformsToProtocol:@protocol(MTLRenderCommandEncoder)]) {
+			mode = RENDER;
+		} else {
+			mode = COMPUTE;
+		}
+	}
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDUniformSet {
-private:
-	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
-	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
-	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
-	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
-
 public:
-	uint32_t index;
+	uint32_t index = 0;
+	id<MTLBuffer> arg_buffer = nil;
+	ResourceUsageMap usage_to_resources;
 	LocalVector<RDD::BoundUniform> uniforms;
-	HashMap<MDShader *, BoundUniformSet> bound_uniforms;
 
-	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
-	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
-
-	BoundUniformSet &bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index);
+	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets, uint32_t p_frame_idx, uint32_t p_frame_count);
+	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets, uint32_t p_frame_idx, uint32_t p_frame_count);
+	void bind_uniforms_direct(MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index, uint32_t p_dynamic_offsets);
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDPipeline {
@@ -912,72 +1073,13 @@ public:
 	~MDComputePipeline() final = default;
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDFrameBuffer {
-	Vector<MTL::Texture> textures;
-
-public:
-	Size2i size;
-	MDFrameBuffer(Vector<MTL::Texture> p_textures, Size2i p_size) :
-			textures(p_textures), size(p_size) {}
-	MDFrameBuffer() {}
-
-	/// Returns the texture at the given index.
-	_ALWAYS_INLINE_ MTL::Texture get_texture(uint32_t p_idx) const {
-		return textures[p_idx];
-	}
-
-	/// Returns true if the texture at the given index is not nil.
-	_ALWAYS_INLINE_ bool has_texture(uint32_t p_idx) const {
-		return textures[p_idx] != nil;
-	}
-
-	/// Set the texture at the given index.
-	_ALWAYS_INLINE_ void set_texture(uint32_t p_idx, MTL::Texture p_texture) {
-		textures.write[p_idx] = p_texture;
-	}
-
-	/// Unset or nil the texture at the given index.
-	_ALWAYS_INLINE_ void unset_texture(uint32_t p_idx) {
-		textures.write[p_idx] = nil;
-	}
-
-	/// Resizes buffers to the specified size.
-	_ALWAYS_INLINE_ void set_texture_count(uint32_t p_size) {
-		textures.resize(p_size);
-	}
-
-	virtual ~MDFrameBuffer() = default;
-};
-
-// These functions are used to convert between Objective-C objects and
-// the RIDs used by Godot, respecting automatic reference counting.
 namespace rid {
-
-// Converts an Objective-C object to a pointer, and incrementing the
-// reference count.
-_FORCE_INLINE_ void *owned(id p_id) {
-	return (__bridge_retained void *)p_id;
-}
-
 #define MAKE_ID(FROM, TO)                \
 	_FORCE_INLINE_ TO make(FROM p_obj) { \
 		return TO(owned(p_obj));         \
 	}
 
-MAKE_ID(id<MTLTexture>, RDD::TextureID)
-MAKE_ID(id<MTLBuffer>, RDD::BufferID)
-MAKE_ID(id<MTLSamplerState>, RDD::SamplerID)
-MAKE_ID(MTLVertexDescriptor *, RDD::VertexFormatID)
 MAKE_ID(id<MTLCommandQueue>, RDD::CommandPoolID)
 
-// Converts a pointer to an Objective-C object without changing the reference count.
-_FORCE_INLINE_ auto get(RDD::ID p_id) {
-	return (p_id.id) ? (__bridge ::id)(void *)p_id.id : nil;
-}
-
-// Converts a pointer to an Objective-C object, and decrements the reference count.
-_FORCE_INLINE_ auto release(RDD::ID p_id) {
-	return (__bridge_transfer ::id)(void *)p_id.id;
-}
-
-} // namespace rid
+#undef MAKE_ID
+} //namespace rid

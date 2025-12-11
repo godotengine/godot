@@ -974,6 +974,7 @@ int mbedtls_mpi_random(mbedtls_mpi *X,
  * \brief          Compute the greatest common divisor: G = gcd(A, B)
  *
  * \param G        The destination MPI. This must point to an initialized MPI.
+ *                 This will always be positive or 0.
  * \param A        The first operand. This must point to an initialized MPI.
  * \param B        The second operand. This must point to an initialized MPI.
  *
@@ -988,10 +989,12 @@ int mbedtls_mpi_gcd(mbedtls_mpi *G, const mbedtls_mpi *A,
  * \brief          Compute the modular inverse: X = A^-1 mod N
  *
  * \param X        The destination MPI. This must point to an initialized MPI.
+ *                 The value returned on success will be between [1, N-1].
  * \param A        The MPI to calculate the modular inverse of. This must point
- *                 to an initialized MPI.
+ *                 to an initialized MPI. This value can be negative, in which
+ *                 case a positive answer will still be returned in \p X.
  * \param N        The base of the modular inversion. This must point to an
- *                 initialized MPI.
+ *                 initialized MPI and be greater than one.
  *
  * \return         \c 0 if successful.
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.

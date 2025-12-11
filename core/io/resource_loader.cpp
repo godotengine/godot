@@ -43,7 +43,7 @@
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
@@ -174,7 +174,7 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 		}
 	}
 
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed to load resource '%s'. ResourceFormatLoader::load was not implemented for this resource type.", p_path));
+	return Ref<Resource>();
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -666,6 +666,14 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 float ResourceLoader::_dependency_get_progress(const String &p_path) {
 	if (thread_load_tasks.has(p_path)) {
 		ThreadLoadTask &load_task = thread_load_tasks[p_path];
+		if (load_task.in_progress_check) {
+			// Given the fact that any resource loaded when an outer stack frame is
+			// loading another one is considered a dependency of it, for progress
+			// tracking purposes, a cycle can happen if even if the original resource
+			// graphs involved have none. For instance, preload() can cause this.
+			return load_task.max_reported_progress;
+		}
+		load_task.in_progress_check = true;
 		float current_progress = 0.0;
 		int dep_count = load_task.sub_tasks.size();
 		if (dep_count > 0) {
@@ -679,6 +687,7 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 			current_progress = load_task.progress;
 		}
 		load_task.max_reported_progress = MAX(load_task.max_reported_progress, current_progress);
+		load_task.in_progress_check = false;
 		return load_task.max_reported_progress;
 	} else {
 		return 1.0; //assume finished loading it so it no longer exists
@@ -697,10 +706,17 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		}
 
 		String local_path = _validate_local_path(p_path);
-		ERR_FAIL_COND_V_MSG(!thread_load_tasks.has(local_path), THREAD_LOAD_INVALID_RESOURCE, "Bug in ResourceLoader logic, please report.");
+		LoadToken *load_token = user_load_tokens[p_path];
+		ThreadLoadTask *load_task_ptr;
 
-		ThreadLoadTask &load_task = thread_load_tasks[local_path];
-		status = load_task.status;
+		if (load_token->task_if_unregistered) {
+			load_task_ptr = load_token->task_if_unregistered;
+		} else {
+			ERR_FAIL_COND_V_MSG(!thread_load_tasks.has(local_path), THREAD_LOAD_INVALID_RESOURCE, "Bug in ResourceLoader logic, please report.");
+			load_task_ptr = &thread_load_tasks[local_path];
+		}
+
+		status = load_task_ptr->status;
 		if (r_progress) {
 			*r_progress = _dependency_get_progress(local_path);
 		}
@@ -708,10 +724,10 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		// Support userland polling in a loop on the main thread.
 		if (Thread::is_main_thread() && status == THREAD_LOAD_IN_PROGRESS) {
 			uint64_t frame = Engine::get_singleton()->get_process_frames();
-			if (frame == load_task.last_progress_check_main_thread_frame) {
+			if (frame == load_task_ptr->last_progress_check_main_thread_frame) {
 				ensure_progress = true;
 			} else {
-				load_task.last_progress_check_main_thread_frame = frame;
+				load_task_ptr->last_progress_check_main_thread_frame = frame;
 			}
 		}
 	}
@@ -745,8 +761,23 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 
 		// Support userland requesting on the main thread before the load is reported to be complete.
 		if (Thread::is_main_thread() && !load_token->local_path.is_empty()) {
-			const ThreadLoadTask &load_task = thread_load_tasks[load_token->local_path];
-			while (load_task.status == THREAD_LOAD_IN_PROGRESS) {
+			ThreadLoadTask *load_task_ptr;
+
+			if (load_token->task_if_unregistered) {
+				load_task_ptr = load_token->task_if_unregistered;
+			} else {
+				if (!thread_load_tasks.has(load_token->local_path)) {
+					print_error("Bug in ResourceLoader logic, please report.");
+					if (r_error) {
+						*r_error = ERR_BUG;
+					}
+					return Ref<Resource>();
+				}
+
+				load_task_ptr = &thread_load_tasks[load_token->local_path];
+			}
+
+			while (load_task_ptr->status == THREAD_LOAD_IN_PROGRESS) {
 				thread_load_lock.temp_unlock();
 				bool exit = !_ensure_load_progress();
 				OS::get_singleton()->delay_usec(1000);
@@ -1068,20 +1099,6 @@ void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_f
 	--loader_count;
 }
 
-int ResourceLoader::get_import_order(const String &p_path) {
-	String local_path = _path_remap(_validate_local_path(p_path));
-
-	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path)) {
-			continue;
-		}
-
-		return loader[i]->get_import_order(p_path);
-	}
-
-	return 0;
-}
-
 String ResourceLoader::get_import_group_file(const String &p_path) {
 	String local_path = _path_remap(_validate_local_path(p_path));
 
@@ -1189,7 +1206,10 @@ String ResourceLoader::get_resource_script_class(const String &p_path) {
 }
 
 ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
-	String local_path = _validate_local_path(p_path);
+	const String local_path = _validate_local_path(p_path);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return ResourceUID::get_singleton()->get_path_id(local_path);
+	}
 
 	for (int i = 0; i < loader_count; i++) {
 		ResourceUID::ID id = loader[i]->get_resource_uid(local_path);
@@ -1199,21 +1219,6 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	}
 
 	return ResourceUID::INVALID_ID;
-}
-
-bool ResourceLoader::has_custom_uid_support(const String &p_path) {
-	String local_path = _validate_local_path(p_path);
-
-	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path)) {
-			continue;
-		}
-		if (loader[i]->has_custom_uid_support()) {
-			return true;
-		}
-	}
-
-	return false;
 }
 
 bool ResourceLoader::should_create_uid_file(const String &p_path) {
@@ -1465,8 +1470,8 @@ void ResourceLoader::add_custom_loaders() {
 
 	String custom_loader_base_class = ResourceFormatLoader::get_class_static();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 
 	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);

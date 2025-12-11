@@ -32,6 +32,7 @@
 
 #include "core/io/config_file.h"
 #include "core/io/resource_importer.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_inspector.h"
 #include "scene/gui/box_container.h"
@@ -41,16 +42,15 @@
 #include "scene/gui/popup_menu.h"
 
 class ImportDockParameters;
-class ImportDock : public VBoxContainer {
-	GDCLASS(ImportDock, VBoxContainer);
+class VBoxContainer;
+
+class ImportDock : public EditorDock {
+	GDCLASS(ImportDock, EditorDock);
 
 	Label *imported = nullptr;
 	OptionButton *import_as = nullptr;
 	MenuButton *preset = nullptr;
 	EditorInspector *import_opts = nullptr;
-
-	List<PropertyInfo> properties;
-	HashMap<StringName, Variant> property_values;
 
 	ConfirmationDialog *reimport_confirm = nullptr;
 	Label *cleanup_warning = nullptr;

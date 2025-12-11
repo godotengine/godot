@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 /*************************************************************************/
 
@@ -66,6 +66,7 @@ public:
 	RID get_rid() const;
 
 	void clear();
+	Ref<TextLine> duplicate() const;
 
 	void set_direction(TextServer::Direction p_direction);
 	TextServer::Direction get_direction() const;
@@ -85,6 +86,7 @@ public:
 	bool add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", const Variant &p_meta = Variant());
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1, float p_baseline = 0.0);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, float p_baseline = 0.0);
+	bool has_object(Variant p_key) const;
 
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;

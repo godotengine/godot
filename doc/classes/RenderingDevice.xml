@@ -198,6 +198,7 @@
 			<description>
 				Creates a new compute pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] is freed.
 			</description>
 		</method>
 		<method name="compute_pipeline_is_valid">
@@ -334,6 +335,17 @@
 				Binds [param vertex_array] to the specified [param draw_list].
 			</description>
 		</method>
+		<method name="draw_list_bind_vertex_buffers_format">
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="vertex_format" type="int" />
+			<param index="2" name="vertex_count" type="int" />
+			<param index="3" name="vertex_buffers" type="RID[]" />
+			<param index="4" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
+			<description>
+				Binds a set of [param vertex_buffers] directly to the specified [param draw_list] using [param vertex_format] without creating a vertex array RID. Provide the number of vertices in [param vertex_count]; optional per-buffer byte [param offsets] may also be supplied.
+			</description>
+		</method>
 		<method name="draw_list_disable_scissor">
 			<return type="void" />
 			<param index="0" name="draw_list" type="int" />
@@ -416,6 +428,7 @@
 			<description>
 				Creates a new framebuffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param textures] is freed.
 			</description>
 		</method>
 		<method name="framebuffer_create_empty">
@@ -437,6 +450,7 @@
 			<description>
 				Creates a new multipass framebuffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param textures] is freed.
 			</description>
 		</method>
 		<method name="framebuffer_format_create">
@@ -695,6 +709,7 @@
 			<description>
 				Creates a new index array. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param index_buffer] is freed.
 			</description>
 		</method>
 		<method name="index_buffer_create">
@@ -733,6 +748,7 @@
 			<description>
 				Creates a new render pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] is freed.
 			</description>
 		</method>
 		<method name="render_pipeline_is_valid">
@@ -944,6 +960,7 @@
 			<param index="1" name="with_texture" type="RID" />
 			<description>
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture].
+				This will be freed automatically when the [param with_texture] is freed.
 			</description>
 		</method>
 		<method name="texture_create_shared_from_slice">
@@ -958,6 +975,7 @@
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture]'s [param layer] and [param mipmap]. The number of included mipmaps from the original texture can be controlled using the [param mipmaps] parameter. Only relevant for textures with multiple layers, such as 3D textures, texture arrays and cubemaps. For single-layer textures, use [method texture_create_shared].
 				For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
 				[b]Note:[/b] Layer slicing is only supported for 2D texture arrays, not 3D textures or cubemaps.
+				This will be freed automatically when the [param with_texture] is freed.
 			</description>
 		</method>
 		<method name="texture_get_data">
@@ -1089,6 +1107,7 @@
 			<description>
 				Creates a new uniform set. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] or any of the RIDs in the [param uniforms] is freed.
 			</description>
 		</method>
 		<method name="uniform_set_is_valid">
@@ -1106,6 +1125,8 @@
 			<param index="3" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
 			<description>
 				Creates a vertex array based on the specified buffers. Optionally, [param offsets] (in bytes) may be defined for each buffer.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param src_buffers] is freed.
 			</description>
 		</method>
 		<method name="vertex_buffer_create">
@@ -1163,6 +1184,7 @@
 		<constant name="DRIVER_RESOURCE_COMMAND_QUEUE" value="3" enum="DriverResource">
 			The main graphics-compute command queue ([code]rid[/code] parameter is ignored).
 			- Vulkan: [code]VkQueue[/code].
+			- D3D12: [code]ID3D12CommandQueue[/code].
 			- Metal: [code]MTLCommandQueue[/code].
 		</constant>
 		<constant name="DRIVER_RESOURCE_QUEUE_FAMILY" value="4" enum="DriverResource">
@@ -1171,6 +1193,7 @@
 		</constant>
 		<constant name="DRIVER_RESOURCE_TEXTURE" value="5" enum="DriverResource">
 			- Vulkan: [code]VkImage[/code].
+			- D3D12: [code]ID3D12Resource[/code].
 		</constant>
 		<constant name="DRIVER_RESOURCE_TEXTURE_VIEW" value="6" enum="DriverResource">
 			The view of an owned or shared texture.
@@ -1271,7 +1294,7 @@
 			8-bit-per-channel signed integer red channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8_SRGB" value="14" enum="DataFormat">
-			8-bit-per-channel unsigned floating-point red channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
+			8-bit-per-channel unsigned floating-point red channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8_UNORM" value="15" enum="DataFormat">
 			8-bit-per-channel unsigned floating-point red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
@@ -1292,7 +1315,7 @@
 			8-bit-per-channel signed integer red/green channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8_SRGB" value="21" enum="DataFormat">
-			8-bit-per-channel unsigned floating-point red/green channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
+			8-bit-per-channel unsigned floating-point red/green channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_UNORM" value="22" enum="DataFormat">
 			8-bit-per-channel unsigned floating-point red/green/blue channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
@@ -1313,7 +1336,7 @@
 			8-bit-per-channel signed integer red/green/blue channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_SRGB" value="28" enum="DataFormat">
-			8-bit-per-channel unsigned floating-point red/green/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
+			8-bit-per-channel unsigned floating-point red/green/blue channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_UNORM" value="29" enum="DataFormat">
 			8-bit-per-channel unsigned floating-point blue/green/red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
@@ -1334,7 +1357,7 @@
 			8-bit-per-channel signed integer blue/green/red channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_SRGB" value="35" enum="DataFormat">
-			8-bit-per-channel unsigned floating-point blue/green/red data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
+			8-bit-per-channel unsigned floating-point blue/green/red data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8A8_UNORM" value="36" enum="DataFormat">
 			8-bit-per-channel unsigned floating-point red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
@@ -1355,7 +1378,7 @@
 			8-bit-per-channel signed integer red/green/blue/alpha channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8A8_SRGB" value="42" enum="DataFormat">
-			8-bit-per-channel unsigned floating-point red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
+			8-bit-per-channel unsigned floating-point red/green/blue/alpha channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8A8_UNORM" value="43" enum="DataFormat">
 			8-bit-per-channel unsigned floating-point blue/green/red/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
@@ -1376,7 +1399,7 @@
 			8-bit-per-channel signed integer blue/green/red/alpha channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8A8_SRGB" value="49" enum="DataFormat">
-			8-bit-per-channel unsigned floating-point blue/green/red/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
+			8-bit-per-channel unsigned floating-point blue/green/red/alpha channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A8B8G8R8_UNORM_PACK32" value="50" enum="DataFormat">
 			8-bit-per-channel unsigned floating-point alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Values are in the [code][0.0, 1.0][/code] range.
@@ -1397,7 +1420,7 @@
 			8-bit-per-channel signed integer alpha/red/green/blue channel data format, packed in 32 bits. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A8B8G8R8_SRGB_PACK32" value="56" enum="DataFormat">
-			8-bit-per-channel unsigned floating-point alpha/red/green/blue channel data format with normalized value and non-linear sRGB encoding, packed in 32 bits. Values are in the [code][0.0, 1.0][/code] range.
+			8-bit-per-channel unsigned floating-point alpha/red/green/blue channel data format with normalized value and nonlinear sRGB encoding, packed in 32 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A2R10G10B10_UNORM_PACK32" value="57" enum="DataFormat">
 			Unsigned floating-point alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of red, 10 bits of green and 10 bits of blue. Values are in the [code][0.0, 1.0][/code] range.
@@ -1622,25 +1645,25 @@
 			VRAM-compressed unsigned red/green/blue channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel and 5 bits of blue channel. Using BC1 texture compression (also known as S3TC DXT1).
 		</constant>
 		<constant name="DATA_FORMAT_BC1_RGB_SRGB_BLOCK" value="131" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel and 5 bits of blue channel. Using BC1 texture compression (also known as S3TC DXT1).
+			VRAM-compressed unsigned red/green/blue channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, and 5 bits of blue channel. Using BC1 texture compression (also known as S3TC DXT1).
 		</constant>
 		<constant name="DATA_FORMAT_BC1_RGBA_UNORM_BLOCK" value="132" enum="DataFormat">
 			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 1 bit of alpha channel. Using BC1 texture compression (also known as S3TC DXT1).
 		</constant>
 		<constant name="DATA_FORMAT_BC1_RGBA_SRGB_BLOCK" value="133" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 1 bit of alpha channel. Using BC1 texture compression (also known as S3TC DXT1).
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel, and 1 bit of alpha channel. Using BC1 texture compression (also known as S3TC DXT1).
 		</constant>
 		<constant name="DATA_FORMAT_BC2_UNORM_BLOCK" value="134" enum="DataFormat">
 			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 4 bits of alpha channel. Using BC2 texture compression (also known as S3TC DXT3).
 		</constant>
 		<constant name="DATA_FORMAT_BC2_SRGB_BLOCK" value="135" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 4 bits of alpha channel. Using BC2 texture compression (also known as S3TC DXT3).
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel, and 4 bits of alpha channel. Using BC2 texture compression (also known as S3TC DXT3).
 		</constant>
 		<constant name="DATA_FORMAT_BC3_UNORM_BLOCK" value="136" enum="DataFormat">
 			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 8 bits of alpha channel. Using BC3 texture compression (also known as S3TC DXT5).
 		</constant>
 		<constant name="DATA_FORMAT_BC3_SRGB_BLOCK" value="137" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 8 bits of alpha channel. Using BC3 texture compression (also known as S3TC DXT5).
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel, and 8 bits of alpha channel. Using BC3 texture compression (also known as S3TC DXT5).
 		</constant>
 		<constant name="DATA_FORMAT_BC4_UNORM_BLOCK" value="138" enum="DataFormat">
 			VRAM-compressed unsigned red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 8 bits of red channel. Using BC4 texture compression.
@@ -1664,25 +1687,25 @@
 			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Also known as BPTC LDR.
 		</constant>
 		<constant name="DATA_FORMAT_BC7_SRGB_BLOCK" value="145" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Also known as BPTC LDR.
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Also known as BPTC LDR.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK" value="146" enum="DataFormat">
 			VRAM-compressed unsigned red/green/blue channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK" value="147" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
+			VRAM-compressed unsigned red/green/blue channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK" value="148" enum="DataFormat">
 			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bit of precision each, with alpha using 1 bit of precision. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK" value="149" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bit of precision each, with alpha using 1 bit of precision. Using ETC2 texture compression.
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bit of precision each, with alpha using 1 bit of precision. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK" value="150" enum="DataFormat">
 			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bits of precision each, with alpha using 8 bits of precision. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK" value="151" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bits of precision each, with alpha using 8 bits of precision. Using ETC2 texture compression.
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and nonlinear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bits of precision each, with alpha using 8 bits of precision. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11_UNORM_BLOCK" value="152" enum="DataFormat">
 			11-bit VRAM-compressed unsigned red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
@@ -1700,85 +1723,85 @@
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 4×4 blocks (highest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_4x4_SRGB_BLOCK" value="157" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 4×4 blocks (highest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 4×4 blocks (highest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_5x4_UNORM_BLOCK" value="158" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 5×4 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_5x4_SRGB_BLOCK" value="159" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 5×4 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 5×4 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_5x5_UNORM_BLOCK" value="160" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 5×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_5x5_SRGB_BLOCK" value="161" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 5×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 5×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_6x5_UNORM_BLOCK" value="162" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 6×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_6x5_SRGB_BLOCK" value="163" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 6×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 6×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_6x6_UNORM_BLOCK" value="164" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 6×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_6x6_SRGB_BLOCK" value="165" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 6×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 6×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x5_UNORM_BLOCK" value="166" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 8×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x5_SRGB_BLOCK" value="167" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 8×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 8×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x6_UNORM_BLOCK" value="168" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 8×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x6_SRGB_BLOCK" value="169" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 8×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 8×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x8_UNORM_BLOCK" value="170" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 8×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x8_SRGB_BLOCK" value="171" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 8×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 8×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x5_UNORM_BLOCK" value="172" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 10×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x5_SRGB_BLOCK" value="173" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 10×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 10×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x6_UNORM_BLOCK" value="174" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 10×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x6_SRGB_BLOCK" value="175" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 10×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 10×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x8_UNORM_BLOCK" value="176" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 10×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x8_SRGB_BLOCK" value="177" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 10×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 10×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x10_UNORM_BLOCK" value="178" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 10×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x10_SRGB_BLOCK" value="179" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 10×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 10×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_12x10_UNORM_BLOCK" value="180" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 12×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_12x10_SRGB_BLOCK" value="181" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 12×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 12×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_12x12_UNORM_BLOCK" value="182" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 12 blocks (lowest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_12x12_SRGB_BLOCK" value="183" enum="DataFormat">
-			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 12 blocks (lowest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
+			VRAM-compressed unsigned floating-point data format with normalized value and nonlinear sRGB encoding, packed in 12 blocks (lowest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_G8B8G8R8_422_UNORM" value="184" enum="DataFormat">
 			8-bit-per-channel unsigned floating-point green/blue/red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
@@ -1991,6 +2014,9 @@
 		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits" is_bitfield="true">
 			Texture can be used as a depth/stencil attachment in a framebuffer.
 		</constant>
+		<constant name="TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT" value="4096" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be used as a depth/stencil resolve attachment in a framebuffer.
+		</constant>
 		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits" is_bitfield="true">
 			Texture can be used as a [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#descriptorsets-storageimage]storage image[/url].
 		</constant>
@@ -2149,7 +2175,17 @@
 		<constant name="UNIFORM_TYPE_INPUT_ATTACHMENT" value="9" enum="UniformType">
 			Input attachment uniform.
 		</constant>
-		<constant name="UNIFORM_TYPE_MAX" value="10" enum="UniformType">
+		<constant name="UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC" value="10" enum="UniformType">
+			Same as UNIFORM_TYPE_UNIFORM_BUFFER but for buffers created with BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT.
+			[b]Note:[/b] This flag is not available to GD users due to being too dangerous (i.e. wrong usage can result in visual glitches).
+			It's exposed in case GD users receive a buffer created with such flag from Godot.
+		</constant>
+		<constant name="UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC" value="11" enum="UniformType">
+			Same as UNIFORM_TYPE_STORAGE_BUFFER but for buffers created with BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT.
+			[b]Note:[/b] This flag is not available to GD users due to being too dangerous (i.e. wrong usage can result in visual glitches).
+			It's exposed in case GD users receive a buffer created with such flag from Godot.
+		</constant>
+		<constant name="UNIFORM_TYPE_MAX" value="12" enum="UniformType">
 			Represents the size of the [enum UniformType] enum.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_POINTS" value="0" enum="RenderPrimitive">

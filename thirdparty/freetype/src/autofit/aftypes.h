@@ -4,7 +4,7 @@
  *
  *   Auto-fitter types (specification only).
  *
- * Copyright (C) 2003-2024 by
+ * Copyright (C) 2003-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -35,6 +35,7 @@
 
 #include <freetype/freetype.h>
 #include <freetype/ftoutln.h>
+#include <freetype/internal/fthash.h>
 #include <freetype/internal/ftobjs.h>
 #include <freetype/internal/ftdebug.h>
 
@@ -406,6 +407,7 @@ extern void*  af_debug_hints_;
 
   typedef struct AF_FaceGlobalsRec_*  AF_FaceGlobals;
 
+
   /* This is the main structure that combines everything.  Autofit modules */
   /* specific to writing systems derive their structures from it, for      */
   /* example `AF_LatinMetrics'.                                            */
@@ -417,6 +419,8 @@ extern void*  af_debug_hints_;
     FT_Bool         digits_have_same_width;
 
     AF_FaceGlobals  globals;    /* to access properties */
+
+    FT_Hash  reverse_charmap;
 
   } AF_StyleMetricsRec;
 

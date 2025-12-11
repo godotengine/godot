@@ -56,6 +56,7 @@ class CreateDialog : public ConfirmationDialog {
 
 	String base_type;
 	bool is_base_type_node = false;
+	bool allow_abstract_scripts = false;
 	String icon_fallback;
 	String preferred_search_result_type;
 
@@ -125,6 +126,7 @@ public:
 	void set_preferred_search_result_type(const String &p_preferred_type) { preferred_search_result_type = p_preferred_type; }
 
 	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_current_type = "", const String &p_current_name = "");
+	void for_inherit();
 
 	CreateDialog();
 };

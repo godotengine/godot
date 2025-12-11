@@ -33,7 +33,6 @@
 #include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "scene/main/canvas_item.h"
-#include "scene/main/timer.h"
 #include "scene/resources/theme.h"
 
 class Viewport;
@@ -47,9 +46,11 @@ class Control : public CanvasItem {
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::CONTROL;
+
 	enum Anchor {
 		ANCHOR_BEGIN = 0,
 		ANCHOR_END = 1
@@ -211,6 +212,7 @@ private:
 		real_t rotation = 0.0;
 		Vector2 scale = Vector2(1, 1);
 		Vector2 pivot_offset;
+		Vector2 pivot_offset_ratio;
 
 		Point2 pos_cache;
 		Size2 size_cache;
@@ -394,6 +396,12 @@ protected:
 	void _accessibility_action_hide_tooltip(const Variant &p_data);
 	void _accessibility_action_scroll_into_view(const Variant &p_data);
 
+#ifndef DISABLE_DEPRECATED
+	bool _has_focus_bind_compat_110250() const;
+	void _grab_focus_bind_compat_110250();
+	static void _bind_compatibility_methods();
+#endif //DISABLE_DEPRECATED
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
@@ -407,9 +415,9 @@ protected:
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
 
 	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
-	GDVIRTUAL1RC(String, _get_accessibility_container_name, const Node *)
+	GDVIRTUAL1RC(String, _get_accessibility_container_name, RequiredParam<const Node>)
 
-	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
+	GDVIRTUAL1(_gui_input, RequiredParam<InputEvent>)
 
 public:
 	enum {
@@ -457,7 +465,7 @@ public:
 	virtual bool _edit_use_rect() const override;
 #endif // DEBUG_ENABLED
 
-	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
+	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	// Editor integration.
 
@@ -528,8 +536,11 @@ public:
 	void set_rotation_degrees(real_t p_degrees);
 	real_t get_rotation() const;
 	real_t get_rotation_degrees() const;
+	void set_pivot_offset_ratio(const Vector2 &p_ratio);
+	Vector2 get_pivot_offset_ratio() const;
 	void set_pivot_offset(const Vector2 &p_pivot);
 	Vector2 get_pivot_offset() const;
+	Vector2 get_combined_pivot_offset() const;
 
 	void update_minimum_size();
 
@@ -592,8 +603,8 @@ public:
 	FocusMode get_focus_mode_with_override() const;
 	void set_focus_behavior_recursive(FocusBehaviorRecursive p_focus_behavior_recursive);
 	FocusBehaviorRecursive get_focus_behavior_recursive() const;
-	bool has_focus() const;
-	void grab_focus();
+	bool has_focus(bool p_ignore_hidden_focus = false) const;
+	void grab_focus(bool p_hide_focus = false);
 	void grab_click_focus();
 	void release_focus();
 
@@ -663,9 +674,9 @@ public:
 	void begin_bulk_theme_override();
 	void end_bulk_theme_override();
 
-	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
-	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
-	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
+	void add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> rp_icon);
+	void add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> rp_style);
+	void add_theme_font_override(const StringName &p_name, RequiredParam<Font> rp_font);
 	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);

@@ -32,6 +32,7 @@
 #include "editor_interface.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
@@ -58,6 +59,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/packed_scene.h"
 #include "scene/resources/theme.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
@@ -75,7 +77,7 @@ EditorCommandPalette *EditorInterface::get_command_palette() const {
 	return EditorCommandPalette::get_singleton();
 }
 
-EditorFileSystem *EditorInterface::get_resource_file_system() const {
+EditorFileSystem *EditorInterface::get_resource_filesystem() const {
 	return EditorFileSystem::get_singleton();
 }
 
@@ -213,18 +215,18 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		ERR_CONTINUE(img.is_null() || img->is_empty());
 		Ref<ImageTexture> it = ImageTexture::create_from_image(img);
 
-		RS::get_singleton()->free(inst);
+		RS::get_singleton()->free_rid(inst);
 
 		textures.push_back(it);
 	}
 
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(scenario);
+	RS::get_singleton()->free_rid(viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(camera);
+	RS::get_singleton()->free_rid(scenario);
 
 	return textures;
 }
@@ -363,6 +365,28 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed"));
 }
 
+void EditorInterface::add_root_node(Node *p_node) {
+	if (EditorNode::get_singleton()->get_edited_scene()) {
+		ERR_PRINT("EditorInterface::add_root_node: The current scene already has a root node.");
+		return;
+	}
+
+	const String &scene_path = p_node->get_scene_file_path();
+	if (!scene_path.is_empty()) {
+		Ref<PackedScene> scene = ResourceLoader::load(scene_path);
+		if (scene.is_valid()) {
+			memfree(scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE)); // Ensure node cache.
+
+			p_node->set_scene_inherited_state(scene->get_state());
+			p_node->set_scene_file_path(String());
+		}
+	}
+
+	EditorNode::get_singleton()->set_edited_scene(p_node);
+	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+	EditorSceneTabs::get_singleton()->update_scene_tabs();
+}
+
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
 	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
 }
@@ -416,6 +440,26 @@ bool EditorInterface::is_multi_window_enabled() const {
 
 float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
+}
+
+String EditorInterface::get_editor_language() const {
+	return EditorSettings::get_singleton()->get_language();
+}
+
+bool EditorInterface::is_node_3d_snap_enabled() const {
+	return Node3DEditor::get_singleton()->is_snap_enabled();
+}
+
+real_t EditorInterface::get_node_3d_translate_snap() const {
+	return Node3DEditor::get_singleton()->get_translate_snap();
+}
+
+real_t EditorInterface::get_node_3d_rotate_snap() const {
+	return Node3DEditor::get_singleton()->get_rotate_snap();
+}
+
+real_t EditorInterface::get_node_3d_scale_snap() const {
+	return Node3DEditor::get_singleton()->get_scale_snap();
 }
 
 void EditorInterface::popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect) {
@@ -661,6 +705,16 @@ void EditorInterface::reload_scene_from_path(const String &scene_path) {
 	EditorNode::get_singleton()->reload_scene(scene_path);
 }
 
+void EditorInterface::set_object_edited(Object *p_object, bool p_edited) {
+	ERR_FAIL_NULL_MSG(p_object, "Cannot change edited status on a null object.");
+	p_object->set_edited(p_edited);
+}
+
+bool EditorInterface::is_object_edited(Object *p_object) const {
+	ERR_FAIL_NULL_V_MSG(p_object, false, "Cannot check edit status on a null object.");
+	return p_object->is_edited();
+}
+
 Node *EditorInterface::get_edited_scene_root() const {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
@@ -778,7 +832,7 @@ void EditorInterface::_bind_methods() {
 	// Editor tools.
 
 	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
-	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
+	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_filesystem);
 	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
@@ -806,6 +860,12 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_multi_window_enabled"), &EditorInterface::is_multi_window_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
+	ClassDB::bind_method(D_METHOD("get_editor_language"), &EditorInterface::get_editor_language);
+
+	ClassDB::bind_method(D_METHOD("is_node_3d_snap_enabled"), &EditorInterface::is_node_3d_snap_enabled);
+	ClassDB::bind_method(D_METHOD("get_node_3d_translate_snap"), &EditorInterface::get_node_3d_translate_snap);
+	ClassDB::bind_method(D_METHOD("get_node_3d_rotate_snap"), &EditorInterface::get_node_3d_rotate_snap);
+	ClassDB::bind_method(D_METHOD("get_node_3d_scale_snap"), &EditorInterface::get_node_3d_scale_snap);
 
 	ClassDB::bind_method(D_METHOD("popup_dialog", "dialog", "rect"), &EditorInterface::popup_dialog, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_dialog_centered", "dialog", "minsize"), &EditorInterface::popup_dialog_centered, DEFVAL(Size2i()));
@@ -845,9 +905,14 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath", "set_inherited"), &EditorInterface::open_scene_from_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
 
+	ClassDB::bind_method(D_METHOD("set_object_edited", "object", "edited"), &EditorInterface::set_object_edited);
+	ClassDB::bind_method(D_METHOD("is_object_edited", "object"), &EditorInterface::is_object_edited);
+
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
 	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
+
+	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorInterface::add_root_node);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));

@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/3d/mesh_instance_3d.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class PhysicsBody3D;
 
@@ -177,12 +177,11 @@ public:
 	real_t get_drag_coefficient();
 
 	TypedArray<PhysicsBody3D> get_collision_exceptions();
-	void add_collision_exception_with(Node *p_node);
-	void remove_collision_exception_with(Node *p_node);
+	void add_collision_exception_with(RequiredParam<Node> rp_node);
+	void remove_collision_exception_with(RequiredParam<Node> rp_node);
 
 	Vector3 get_point_transform(int p_point_index);
 
-	void pin_point_toggle(int p_point_index);
 	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
 	bool is_point_pinned(int p_point_index) const;
 

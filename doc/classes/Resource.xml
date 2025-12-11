@@ -66,8 +66,7 @@
 			<return type="Resource" />
 			<param index="0" name="deep_subresources_mode" type="int" enum="Resource.DeepDuplicateMode" default="1" />
 			<description>
-				Duplicates this resource, deeply, like [method duplicate][code](true)[/code], with extra control over how subresources are handled.
-				[param deep_subresources_mode] must be one of the values from [enum DeepDuplicateMode].
+				Duplicates this resource, deeply, like [method duplicate] when passing [code]true[/code], with extra control over how subresources are handled.
 			</description>
 		</method>
 		<method name="emit_changed">

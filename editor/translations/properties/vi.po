@@ -30,13 +30,14 @@
 # Đăng khoa Phạm <phamkhoafunny@gmail.com>, 2024.
 # xanhAD <tnhuthao414@gmail.com>, 2024.
 # a <anhkietcb2008@gmail.com>, 2024.
+# Đức Anh Nguyễn <ducnah2132k9@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-12-12 20:14+0000\n"
-"Last-Translator: a <anhkietcb2008@gmail.com>\n"
+"PO-Revision-Date: 2025-08-25 17:35+0000\n"
+"Last-Translator: Đức Anh Nguyễn <ducnah2132k9@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/vi/>\n"
 "Language: vi\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.9-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Application"
 msgstr "Ứng dụng"
@@ -103,8 +104,17 @@ msgstr "Tự động Đồng ý Thoát"
 msgid "Quit on Go Back"
 msgstr "Trở lại"
 
+msgid "Accessibility"
+msgstr "Khả năng hiển thị"
+
 msgid "General"
 msgstr "Tổng quan"
+
+msgid "Accessibility Support"
+msgstr "Trình soạn tập lệnh"
+
+msgid "Updates per Second"
+msgstr "Cập nhật mỗi giây"
 
 msgid "Display"
 msgstr "Hiển thị"
@@ -150,6 +160,12 @@ msgstr "Mở rộng tiêu đề"
 
 msgid "No Focus"
 msgstr "Đường dẫn Tập trung"
+
+msgid "Sharp Corners"
+msgstr "Độ sắc nét"
+
+msgid "Maximize Disabled"
+msgstr "Các mục tắt"
 
 msgid "Window Width Override"
 msgstr "Ghi đè chiều rộng cửa sổ"
@@ -211,8 +227,17 @@ msgstr "Cửa sổ phụ"
 msgid "Embed Subwindows"
 msgstr "Nhúng cửa sổ phụ"
 
+msgid "Frame Pacing"
+msgstr "Tuỳ chọn bổ sung:"
+
 msgid "Android"
 msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "Xem Khung hình Liên tiếp"
+
+msgid "Swappy Mode"
+msgstr "Chế độ chọn"
 
 msgid "Physics"
 msgstr "Vật lí"

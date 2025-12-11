@@ -362,7 +362,7 @@
 		<method name="move_to_center">
 			<return type="void" />
 			<description>
-				Centers a native window on the current screen and an embedded window on its embedder [Viewport].
+				Centers the window in the current screen. If the window is embedded, it is centered in the embedder [Viewport] instead.
 			</description>
 		</method>
 		<method name="move_to_foreground" deprecated="Use [method Window.grab_focus] instead.">
@@ -691,6 +691,9 @@
 			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
 			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
 		</member>
+		<member name="nonclient_area" type="Rect2i" setter="set_nonclient_area" getter="get_nonclient_area" default="Rect2i(0, 0, 0, 0)">
+			If set, defines the window's custom decoration area which will receive mouse input, even if normal input to the window is blocked (such as when it has an exclusive child opened). See also [signal nonclient_window_input].
+		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
 		</member>
@@ -803,6 +806,12 @@
 				Emitted when the mouse cursor leaves the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 			</description>
 		</signal>
+		<signal name="nonclient_window_input">
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Emitted when the mouse event is received by the custom decoration area defined by [member nonclient_area], and normal input to the window is blocked (such as when it has an exclusive child opened). [param event]'s position is in the embedder's coordinate system.
+			</description>
+		</signal>
 		<signal name="theme_changed">
 			<description>
 				Emitted when the [constant NOTIFICATION_THEME_CHANGED] notification is sent.
@@ -904,7 +913,8 @@
 		</constant>
 		<constant name="FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="Flags">
 			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
 			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</constant>
 		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">

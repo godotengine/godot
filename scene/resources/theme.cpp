@@ -176,8 +176,10 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 // Static helpers.
 bool Theme::is_valid_type_name(const String &p_name) {
-	for (int i = 0; i < p_name.length(); i++) {
-		if (!is_ascii_identifier_char(p_name[i])) {
+	int len = p_name.length();
+	const char32_t *str = p_name.ptr();
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_identifier_char(str[i])) {
 			return false;
 		}
 	}
@@ -188,12 +190,26 @@ bool Theme::is_valid_item_name(const String &p_name) {
 	if (p_name.is_empty()) {
 		return false;
 	}
-	for (int i = 0; i < p_name.length(); i++) {
-		if (!is_ascii_identifier_char(p_name[i])) {
+	int len = p_name.length();
+	const char32_t *str = p_name.ptr();
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_identifier_char(str[i])) {
 			return false;
 		}
 	}
 	return true;
+}
+
+String Theme::validate_type_name(const String &p_name) {
+	String type_name = p_name.strip_edges();
+	int len = type_name.length();
+	char32_t *buffer = type_name.ptrw();
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_identifier_char(buffer[i])) {
+			buffer[i] = '_';
+		}
+	}
+	return type_name;
 }
 
 // Fallback values for theme item types, configurable per theme.

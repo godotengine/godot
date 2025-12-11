@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
+#include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_settings.h"
@@ -43,6 +44,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
@@ -242,6 +244,35 @@ void ProjectDialog::_validate_path() {
 			if (!is_folder_empty) {
 				_set_message(TTRC("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING, target_path_input_type);
 			}
+		}
+	}
+
+	// Check if the target path is a subdirectory of original when duplicating
+	if (mode == MODE_DUPLICATE) {
+		String base_path = original_project_path;
+		String duplicate_target = target_path;
+
+		// Ensure the paths end with a slash
+		if (!base_path.ends_with("/")) {
+			base_path += "/";
+		}
+
+		if (!duplicate_target.ends_with("/")) {
+			duplicate_target += "/";
+		}
+
+		bool is_subdirectory_or_equal;
+
+		if (d->is_case_sensitive(base_path) || d->is_case_sensitive(duplicate_target)) {
+			is_subdirectory_or_equal = duplicate_target.begins_with(base_path);
+		} else {
+			base_path = base_path.to_lower();
+			String target_lower = duplicate_target.to_lower();
+			is_subdirectory_or_equal = target_lower.begins_with(base_path);
+		}
+
+		if (is_subdirectory_or_equal) {
+			_set_message(TTRC("Cannot duplicate a project into itself."), MESSAGE_ERROR, target_path_input_type);
 		}
 	}
 }
@@ -535,7 +566,7 @@ void ProjectDialog::ok_pressed() {
 			project_features.push_back("Mobile");
 		} else if (renderer_type == "gl_compatibility") {
 			project_features.push_back("GL Compatibility");
-			// Also change the default rendering method for the mobile override.
+			// Also change the default renderer for the mobile override.
 			initial_settings["rendering/renderer/rendering_method.mobile"] = "gl_compatibility";
 		} else {
 			WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
@@ -545,6 +576,11 @@ void ProjectDialog::ok_pressed() {
 		initial_settings["application/config/features"] = project_features;
 		initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 		initial_settings["application/config/icon"] = "res://icon.svg";
+		ProjectSettings::CustomMap extra_settings = EditorNode::get_initial_settings();
+		for (const KeyValue<String, Variant> &extra_setting : extra_settings) {
+			// Merge with other initial settings defined above.
+			initial_settings[extra_setting.key] = extra_setting.value;
+		}
 
 		Error err = ProjectSettings::get_singleton()->save_custom(path.path_join("project.godot"), initial_settings, Vector<String>(), false);
 		if (err != OK) {
@@ -795,7 +831,10 @@ void ProjectDialog::ask_for_path_and_show() {
 	_browse_project_path();
 }
 
-void ProjectDialog::show_dialog(bool p_reset_name) {
+void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
+	if (mode == MODE_IMPORT && !p_is_confirmed) {
+		return;
+	}
 	if (mode == MODE_RENAME) {
 		// Name and path are set in `ProjectManager::_rename_project`.
 		project_path->set_editable(false);
@@ -813,7 +852,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		renderer_container->hide();
 		default_files_container->hide();
 
-		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 		callable_mp(project_name, &LineEdit::select_all).call_deferred();
 	} else {
 		if (p_reset_name) {
@@ -860,12 +899,29 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			set_title(TTRC("Create New Project"));
 			set_ok_button_text(TTRC("Create"));
 
+			if (!rendering_device_checked) {
+				rendering_device_supported = DisplayServer::is_rendering_device_supported();
+
+				if (!rendering_device_supported) {
+					List<BaseButton *> buttons;
+					renderer_button_group->get_buttons(&buttons);
+					for (BaseButton *button : buttons) {
+						if (button->get_meta(SNAME("rendering_method")) == "gl_compatibility") {
+							button->set_pressed(true);
+							break;
+						}
+					}
+				}
+				_renderer_selected();
+				rendering_device_checked = true;
+			}
+
 			name_container->show();
 			install_path_container->hide();
 			renderer_container->show();
 			default_files_container->show();
 
-			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		} else if (mode == MODE_INSTALL) {
 			set_title(TTR("Install Project:") + " " + zip_title);
@@ -878,7 +934,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			renderer_container->hide();
 			default_files_container->hide();
 
-			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred(false);
 		} else if (mode == MODE_DUPLICATE) {
 			set_title(TTRC("Duplicate Project"));
 			set_ok_button_text(TTRC("Duplicate"));
@@ -891,7 +947,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 				edit_check_box->hide();
 			}
 
-			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		}
 
@@ -922,11 +978,10 @@ void ProjectDialog::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 			fdialog_project = memnew(EditorFileDialog);
-			fdialog_project->set_previews_enabled(false); // Crucial, otherwise the engine crashes.
 			fdialog_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 			fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 			fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
-			fdialog_project->connect("canceled", callable_mp(this, &ProjectDialog::show_dialog).bind(false), CONNECT_DEFERRED);
+			fdialog_project->connect("canceled", callable_mp(this, &ProjectDialog::show_dialog).bind(false, false), CONNECT_DEFERRED);
 			callable_mp((Node *)this, &Node::add_sibling).call_deferred(fdialog_project, false);
 		} break;
 	}
@@ -952,6 +1007,7 @@ ProjectDialog::ProjectDialog() {
 	project_name = memnew(LineEdit);
 	project_name->set_virtual_keyboard_show_on_focus(false);
 	project_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	project_name->set_accessibility_name(TTRC("Project Name:"));
 	name_container->add_child(project_name);
 
 	project_path_container = memnew(VBoxContainer);
@@ -1018,6 +1074,7 @@ ProjectDialog::ProjectDialog() {
 
 	msg = memnew(Label);
 	msg->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	msg->set_accessibility_live(DisplayServer::LIVE_POLITE);
 	msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	msg->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	msg->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1042,15 +1099,10 @@ ProjectDialog::ProjectDialog() {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
 
-	rendering_device_supported = DisplayServer::is_rendering_device_supported();
-
-	if (!rendering_device_supported) {
-		default_renderer_type = "gl_compatibility";
-	}
-
 	Button *rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Forward+"));
+	rs_button->set_accessibility_name(TTRC("Renderer:"));
 #ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
@@ -1063,6 +1115,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Mobile"));
+	rs_button->set_accessibility_name(TTRC("Renderer:"));
 #ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
@@ -1075,12 +1128,18 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Compatibility"));
+	rs_button->set_accessibility_name(TTRC("Renderer:"));
 #if !defined(GLES3_ENABLED)
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
 	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
+	LinkButton *ri_link = memnew(LinkButton);
+	ri_link->set_text(TTRC("More information"));
+	ri_link->set_uri(GODOT_VERSION_DOCS_URL "/tutorials/rendering/renderers.html");
+	ri_link->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	rvb->add_child(ri_link);
 #if defined(GLES3_ENABLED)
 	if (default_renderer_type == "gl_compatibility") {
 		rs_button->set_pressed(true);
@@ -1106,8 +1165,6 @@ ProjectDialog::ProjectDialog() {
 	rd_not_supported->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	rd_not_supported->set_visible(false);
 	renderer_container->add_child(rd_not_supported);
-
-	_renderer_selected();
 
 	l = memnew(Label);
 	l->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -1135,7 +1192,6 @@ ProjectDialog::ProjectDialog() {
 	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	default_files_container->add_child(spacer);
 	fdialog_install = memnew(EditorFileDialog);
-	fdialog_install->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
 	fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(fdialog_install);
 

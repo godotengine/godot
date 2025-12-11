@@ -136,27 +136,24 @@ void CanvasItem::_redraw_callback() {
 		return;
 	}
 
-	RID ci = get_canvas_item();
-	RenderingServer::get_singleton()->canvas_item_clear(ci);
-	//todo updating = true - only allow drawing here
+	if (draw_commands_dirty) {
+		RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
+		draw_commands_dirty = false;
+	}
+
 	if (is_visible_in_tree()) {
 		drawing = true;
-		Ref<TextServer> ts = TextServerManager::get_singleton()->get_primary_interface();
-		if (ts.is_valid()) {
-			ts->set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
-		}
+		TextServer::set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringName(draw));
 		GDVIRTUAL_CALL(_draw);
 		current_item_drawn = nullptr;
-		if (ts.is_valid()) {
-			ts->set_current_drawn_item_oversampling(0.0);
-		}
+		TextServer::set_current_drawn_item_oversampling(0.0);
 		drawing = false;
+		draw_commands_dirty = true;
 	}
-	//todo updating = false
-	pending_update = false; // don't change to false until finished drawing (avoid recursive update)
+	pending_update = false; // Don't change to false until finished drawing (avoid recursive update).
 }
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
@@ -282,7 +279,6 @@ void CanvasItem::_enter_canvas() {
 		}
 	}
 
-	pending_update = false;
 	queue_redraw();
 
 	notification(NOTIFICATION_ENTER_CANVAS);
@@ -317,8 +313,15 @@ void CanvasItem::_notification(int p_what) {
 
 				if (ci) {
 					parent_visible_in_tree = ci->is_visible_in_tree();
-					C = ci->children_items.push_back(this);
+
+					data.index_in_parent = ci->data.canvas_item_children.size();
+					ci->data.canvas_item_children.push_back(this);
 				} else {
+					if (data.index_in_parent != UINT32_MAX) {
+						data.index_in_parent = UINT32_MAX;
+						ERR_PRINT("CanvasItem ENTER_TREE detected without EXIT_TREE, recovering.");
+					}
+
 					CanvasLayer *cl = Object::cast_to<CanvasLayer>(parent);
 
 					if (cl) {
@@ -388,10 +391,27 @@ void CanvasItem::_notification(int p_what) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
 			_exit_canvas();
-			if (C) {
-				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
-				C = nullptr;
+
+			CanvasItem *parent = Object::cast_to<CanvasItem>(get_parent());
+			if (parent) {
+				if (data.index_in_parent != UINT32_MAX) {
+					// Aliases
+					uint32_t c = data.index_in_parent;
+					LocalVector<CanvasItem *> &parent_children = parent->data.canvas_item_children;
+
+					parent_children.remove_at_unordered(c);
+
+					// After unordered remove, we need to inform the moved child
+					// what their new id is in the parent children list.
+					if (parent_children.size() > c) {
+						parent_children[c]->data.index_in_parent = c;
+					}
+				} else {
+					ERR_PRINT("CanvasItem index_in_parent unset at EXIT_TREE.");
+				}
 			}
+			data.index_in_parent = UINT32_MAX;
+
 			if (window) {
 				window->disconnect(SceneStringName(visibility_changed), callable_mp(this, &CanvasItem::_window_visibility_changed));
 				window = nullptr;
@@ -752,8 +772,10 @@ void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vect
 	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width, bool p_antialiased) {
+void CanvasItem::draw_ellipse_arc(const Vector2 &p_center, real_t p_major, real_t p_minor, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+
 	Vector<Point2> points;
 	points.resize(p_point_count);
 	Point2 *points_ptr = points.ptrw();
@@ -762,10 +784,17 @@ void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_sta
 	const real_t delta_angle = CLAMP(p_end_angle - p_start_angle, -Math::TAU, Math::TAU);
 	for (int i = 0; i < p_point_count; i++) {
 		real_t theta = (i / (p_point_count - 1.0f)) * delta_angle + p_start_angle;
-		points_ptr[i] = p_center + Vector2(Math::cos(theta), Math::sin(theta)) * p_radius;
+		points_ptr[i] = p_center + Vector2(p_major * Math::cos(theta), p_minor * Math::sin(theta));
 	}
 
 	draw_polyline(points, p_color, p_width, p_antialiased);
+}
+
+void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width, bool p_antialiased) {
+	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+
+	draw_ellipse_arc(p_center, p_radius, p_radius, p_start_angle, p_end_angle, p_point_count, p_color, p_width, p_antialiased);
 }
 
 void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width, bool p_antialiased) {
@@ -812,18 +841,18 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 	}
 }
 
-void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &p_color, bool p_filled, real_t p_width, bool p_antialiased) {
+void CanvasItem::draw_ellipse(const Point2 &p_pos, real_t p_major, real_t p_minor, const Color &p_color, bool p_filled, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
 	if (p_filled) {
 		if (p_width != -1.0) {
-			WARN_PRINT("The draw_circle() \"width\" argument has no effect when \"filled\" is \"true\".");
+			WARN_PRINT("The \"width\" argument has no effect when \"filled\" is \"true\".");
 		}
 
-		RenderingServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius, p_color, p_antialiased);
-	} else if (p_width >= 2.0 * p_radius) {
-		RenderingServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius + 0.5 * p_width, p_color, p_antialiased);
+		RenderingServer::get_singleton()->canvas_item_add_ellipse(canvas_item, p_pos, p_major, p_minor, p_color, p_antialiased);
+	} else if (p_width >= 2.0 * MAX(p_major, p_minor)) {
+		RenderingServer::get_singleton()->canvas_item_add_ellipse(canvas_item, p_pos, p_major + 0.5 * p_width, p_minor + 0.5 * p_width, p_color, p_antialiased);
 	} else {
 		// Tessellation count is hardcoded. Keep in sync with the same variable in `RendererCanvasCull::canvas_item_add_circle()`.
 		const int circle_segments = 64;
@@ -836,8 +865,8 @@ void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &
 
 		for (int i = 0; i < circle_segments; i++) {
 			float angle = i * circle_point_step;
-			points_ptr[i].x = Math::cos(angle) * p_radius;
-			points_ptr[i].y = Math::sin(angle) * p_radius;
+			points_ptr[i].x = Math::cos(angle) * p_major;
+			points_ptr[i].y = Math::sin(angle) * p_minor;
 			points_ptr[i] += p_pos;
 		}
 		points_ptr[circle_segments] = points_ptr[0];
@@ -848,49 +877,56 @@ void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &
 	}
 }
 
-void CanvasItem::draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate) {
+void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &p_color, bool p_filled, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	ERR_FAIL_COND(p_texture.is_null());
+	draw_ellipse(p_pos, p_radius, p_radius, p_color, p_filled, p_width, p_antialiased);
+}
+
+void CanvasItem::draw_texture(RequiredParam<Texture2D> rp_texture, const Point2 &p_pos, const Color &p_modulate) {
+	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+
+	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
 
 	p_texture->draw(canvas_item, p_pos, p_modulate, false);
 }
 
-void CanvasItem::draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) {
+void CanvasItem::draw_texture_rect(RequiredParam<Texture2D> rp_texture, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	ERR_FAIL_COND(p_texture.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
 	p_texture->draw_rect(canvas_item, p_rect, p_tile, p_modulate, p_transpose);
 }
 
-void CanvasItem::draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {
+void CanvasItem::draw_texture_rect_region(RequiredParam<Texture2D> rp_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	ERR_FAIL_COND(p_texture.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
 	p_texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
-void CanvasItem::draw_msdf_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, double p_outline, double p_pixel_range, double p_scale) {
+void CanvasItem::draw_msdf_texture_rect_region(RequiredParam<Texture2D> rp_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, double p_outline, double p_pixel_range, double p_scale) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	ERR_FAIL_COND(p_texture.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
 	RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(canvas_item, p_rect, p_texture->get_rid(), p_src_rect, p_modulate, p_outline, p_pixel_range, p_scale);
 }
 
-void CanvasItem::draw_lcd_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate) {
+void CanvasItem::draw_lcd_texture_rect_region(RequiredParam<Texture2D> rp_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	ERR_FAIL_COND(p_texture.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
 	RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(canvas_item, p_rect, p_texture->get_rid(), p_src_rect, p_modulate);
 }
 
-void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect) {
+void CanvasItem::draw_style_box(RequiredParam<StyleBox> rp_style_box, const Rect2 &p_rect) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	ERR_FAIL_COND(p_style_box.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_style_box, rp_style_box);
 
 	p_style_box->draw(canvas_item, p_rect);
 }
@@ -907,8 +943,7 @@ void CanvasItem::draw_set_transform(const Point2 &p_offset, real_t p_rot, const 
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	Transform2D xform(p_rot, p_offset);
-	xform.scale_basis(p_scale);
+	Transform2D xform(p_rot, p_scale, 0.0, p_offset);
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(canvas_item, xform);
 }
 
@@ -960,67 +995,67 @@ void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Colo
 	draw_polygon(p_points, { p_color }, p_uvs, p_texture);
 }
 
-void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform, const Color &p_modulate) {
+void CanvasItem::draw_mesh(RequiredParam<Mesh> rp_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform, const Color &p_modulate) {
 	ERR_THREAD_GUARD;
-	ERR_FAIL_COND(p_mesh.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_mesh, rp_mesh);
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 
 	RenderingServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), p_transform, p_modulate, texture_rid);
 }
 
-void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture) {
+void CanvasItem::draw_multimesh(RequiredParam<MultiMesh> rp_multimesh, const Ref<Texture2D> &p_texture) {
 	ERR_THREAD_GUARD;
-	ERR_FAIL_COND(p_multimesh.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_multimesh, rp_multimesh);
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RenderingServer::get_singleton()->canvas_item_add_multimesh(canvas_item, p_multimesh->get_rid(), texture_rid);
 }
 
-void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
+void CanvasItem::draw_string(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	ERR_FAIL_COND(p_font.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
 
 	p_font->draw_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_modulate, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
+void CanvasItem::draw_multiline_string(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	ERR_FAIL_COND(p_font.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
 
 	p_font->draw_multiline_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_string_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
+void CanvasItem::draw_string_outline(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	ERR_FAIL_COND(p_font.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
 
 	p_font->draw_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_size, p_modulate, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_multiline_string_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
+void CanvasItem::draw_multiline_string_outline(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	ERR_FAIL_COND(p_font.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
 
 	p_font->draw_multiline_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_size, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, int p_font_size, const Color &p_modulate, float p_oversampling) const {
+void CanvasItem::draw_char(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_char, int p_font_size, const Color &p_modulate, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_char.length() != 1);
-	ERR_FAIL_COND(p_font.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
 
 	p_font->draw_char(canvas_item, p_pos, p_char[0], p_font_size, p_modulate, p_oversampling);
 }
 
-void CanvasItem::draw_char_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, int p_font_size, int p_size, const Color &p_modulate, float p_oversampling) const {
+void CanvasItem::draw_char_outline(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_char, int p_font_size, int p_size, const Color &p_modulate, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_char.length() != 1);
-	ERR_FAIL_COND(p_font.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
 
 	p_font->draw_char_outline(canvas_item, p_pos, p_char[0], p_font_size, p_size, p_modulate, p_oversampling);
 }
@@ -1057,11 +1092,11 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 	}
 
-	for (CanvasItem *ci : p_node->children_items) {
-		if (ci->top_level) {
-			continue;
+	for (uint32_t n = 0; n < p_node->data.canvas_item_children.size(); n++) {
+		CanvasItem *ci = p_node->data.canvas_item_children[n];
+		if (!ci->top_level) {
+			_notify_transform(ci);
 		}
-		_notify_transform(ci);
 	}
 }
 
@@ -1222,9 +1257,9 @@ Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) cons
 	return local_matrix.xform(screen_point);
 }
 
-Ref<InputEvent> CanvasItem::make_input_local(const Ref<InputEvent> &p_event) const {
+RequiredResult<InputEvent> CanvasItem::make_input_local(RequiredParam<InputEvent> rp_event) const {
 	ERR_READ_THREAD_GUARD_V(Ref<InputEvent>());
-	ERR_FAIL_COND_V(p_event.is_null(), p_event);
+	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, Ref<InputEvent>());
 	ERR_FAIL_COND_V(!is_inside_tree(), p_event);
 
 	return p_event->xformed_by((get_canvas_transform() * get_global_transform()).affine_inverse());
@@ -1354,11 +1389,13 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_dashed_line", "from", "to", "color", "width", "dash", "aligned", "antialiased"), &CanvasItem::draw_dashed_line, DEFVAL(-1.0), DEFVAL(2.0), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(-1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_ellipse_arc", "center", "major", "minor", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_ellipse_arc, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_arc, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline", "points", "color", "width", "antialiased"), &CanvasItem::draw_multiline, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_multiline_colors, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled", "width", "antialiased"), &CanvasItem::draw_rect, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_circle", "position", "radius", "color", "filled", "width", "antialiased"), &CanvasItem::draw_circle, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_ellipse", "position", "major", "minor", "color", "filled", "width", "antialiased"), &CanvasItem::draw_ellipse, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(true));
@@ -1453,6 +1490,9 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_parent_material"), "set_use_parent_material", "get_use_parent_material");
 	// ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),"set_transform_notify","is_transform_notify_enabled");
+
+	// Supply property explicitly; workaround for GH-111431 docs issue.
+	ADD_PROPERTY_DEFAULT("physics_interpolation_mode", PhysicsInterpolationMode::PHYSICS_INTERPOLATION_MODE_INHERIT);
 
 	ADD_SIGNAL(MethodInfo("draw"));
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
@@ -1612,9 +1652,11 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	_update_self_texture_filter(texture_filter_cache);
 
 	if (p_propagate) {
-		for (CanvasItem *E : children_items) {
-			if (!E->top_level && E->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
-				E->_update_texture_filter_changed(true);
+		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
+			CanvasItem *ci = data.canvas_item_children[n];
+
+			if (!ci->top_level && ci->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
+				ci->_update_texture_filter_changed(true);
 			}
 		}
 	}
@@ -1666,9 +1708,10 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	_update_self_texture_repeat(texture_repeat_cache);
 
 	if (p_propagate) {
-		for (CanvasItem *E : children_items) {
-			if (!E->top_level && E->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
-				E->_update_texture_repeat_changed(true);
+		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
+			CanvasItem *ci = data.canvas_item_children[n];
+			if (!ci->top_level && ci->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
+				ci->_update_texture_repeat_changed(true);
 			}
 		}
 	}
@@ -1728,12 +1771,14 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat_in_tree() const {
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
+	_define_ancestry(AncestralClass::CANVAS_ITEM);
+
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();
 }
 
 CanvasItem::~CanvasItem() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(canvas_item);
+	RenderingServer::get_singleton()->free_rid(canvas_item);
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -1915,5 +1960,5 @@ CanvasTexture::CanvasTexture() {
 }
 CanvasTexture::~CanvasTexture() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(canvas_texture);
+	RS::get_singleton()->free_rid(canvas_texture);
 }

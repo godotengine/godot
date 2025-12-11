@@ -272,7 +272,7 @@ Pair<ShaderRD *, RID> SceneShaderForwardClustered::ShaderData::get_native_shader
 }
 
 uint16_t SceneShaderForwardClustered::ShaderData::_get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const {
-	uint32_t ubershader_base = p_ubershader ? ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL : 0;
+	uint32_t ubershader_base = p_ubershader ? ShaderVersion::SHADER_VERSION_COLOR_PASS : 0;
 	switch (p_pipeline_version) {
 		case PIPELINE_VERSION_DEPTH_PASS:
 			return ShaderVersion::SHADER_VERSION_DEPTH_PASS + ubershader_base;
@@ -289,9 +289,9 @@ uint16_t SceneShaderForwardClustered::ShaderData::_get_shader_version(PipelineVe
 		case PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW:
 			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW + ubershader_base;
 		case PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL:
-			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL;
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ubershader_base;
 		case PIPELINE_VERSION_DEPTH_PASS_WITH_SDF:
-			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_SDF;
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_SDF + ubershader_base;
 		case PIPELINE_VERSION_COLOR_PASS: {
 			int shader_flags = 0;
 
@@ -315,7 +315,7 @@ uint16_t SceneShaderForwardClustered::ShaderData::_get_shader_version(PipelineVe
 				shader_flags |= SHADER_COLOR_PASS_FLAG_MULTIVIEW;
 			}
 
-			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_COLOR_PASS + shader_flags;
+			return ShaderVersion::SHADER_VERSION_COLOR_PASS * 2 + shader_flags;
 		} break;
 		default: {
 			DEV_ASSERT(false && "Unknown pipeline version.");
@@ -411,7 +411,14 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 		RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS,
 	};
 
-	RD::RenderPrimitive primitive_rd = uses_point_size ? RD::RENDER_PRIMITIVE_POINTS : primitive_rd_table[p_pipeline_key.primitive_type];
+	bool emulate_point_size_flag = uses_point_size && SceneShaderForwardClustered::singleton->emulate_point_size;
+
+	RD::RenderPrimitive primitive_rd;
+	if (uses_point_size) {
+		primitive_rd = emulate_point_size_flag ? RD::RENDER_PRIMITIVE_TRIANGLES : RD::RENDER_PRIMITIVE_POINTS;
+	} else {
+		primitive_rd = primitive_rd_table[p_pipeline_key.primitive_type];
+	}
 
 	RD::PipelineRasterizationState raster_state;
 	raster_state.cull_mode = p_pipeline_key.cull_mode;
@@ -479,6 +486,13 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 
 	sc.constant_id = 1;
 	sc.int_value = p_pipeline_key.shader_specialization.packed_1;
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
+	specialization_constants.push_back(sc);
+
+	sc = {}; // Sanitize value bits. "bool_value" only assigns 8 bits and keeps the remaining bits intact.
+	sc.constant_id = 2;
+	sc.bool_value = emulate_point_size_flag;
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
 	specialization_constants.push_back(sc);
 
 	RID shader_rid = get_shader_variant(p_pipeline_key.version, p_pipeline_key.color_pass_flags, p_pipeline_key.ubershader);
@@ -606,8 +620,8 @@ SceneShaderForwardClustered::SceneShaderForwardClustered() {
 SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	RD::get_singleton()->free(default_vec4_xform_buffer);
-	RD::get_singleton()->free(shadow_sampler);
+	RD::get_singleton()->free_rid(default_vec4_xform_buffer);
+	RD::get_singleton()->free_rid(shadow_sampler);
 
 	material_storage->shader_free(overdraw_material_shader);
 	material_storage->shader_free(default_shader);
@@ -621,6 +635,8 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 void SceneShaderForwardClustered::init(const String p_defines) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
+	emulate_point_size = !RD::get_singleton()->has_feature(RD::SUPPORTS_POINT_SIZE);
+
 	{
 		Vector<ShaderRD::VariantDefine> shader_versions;
 		for (uint32_t ubershader = 0; ubershader < 2; ubershader++) {
@@ -632,10 +648,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n", false)); // SHADER_VERSION_DEPTH_PASS_MULTIVIEW
 			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n", false)); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW
 			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_ADVANCED_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_VOXEL_GI\n", false)); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_ADVANCED, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n", false)); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_ADVANCED, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_SDF\n", false)); // SHADER_VERSION_DEPTH_PASS_WITH_SDF
 		}
-
-		shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_ADVANCED, "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n", false)); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
-		shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_ADVANCED, "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_SDF\n", false)); // SHADER_VERSION_DEPTH_PASS_WITH_SDF
 
 		Vector<String> color_pass_flags = {
 			"\n#define UBERSHADER\n", // SHADER_COLOR_PASS_FLAG_UBERSHADER
@@ -668,7 +683,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 			shader_versions.push_back(ShaderRD::VariantDefine(group, version, false));
 		}
 
-		shader.initialize(shader_versions, p_defines);
+		Vector<uint64_t> dynamic_buffers;
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(RenderForwardClustered::RENDER_PASS_UNIFORM_SET, 2));
+		shader.initialize(shader_versions, p_defines, Vector<RD::PipelineImmutableSampler>(), dynamic_buffers);
 
 		if (RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			shader.enable_group(SHADER_GROUP_MULTIVIEW);
@@ -700,9 +717,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["UV"] = "uv_interp";
 		actions.renames["UV2"] = "uv2_interp";
 		actions.renames["COLOR"] = "color_interp";
-		actions.renames["POINT_SIZE"] = "gl_PointSize";
-		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
-		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
+		actions.renames["POINT_SIZE"] = "point_size";
+		actions.renames["INSTANCE_ID"] = "INSTANCE_INDEX";
+		actions.renames["VERTEX_ID"] = "VERTEX_INDEX";
 		actions.renames["Z_CLIP_SCALE"] = "z_clip_scale";
 
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
@@ -747,7 +764,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["AO"] = "ao";
 		actions.renames["AO_LIGHT_AFFECT"] = "ao_light_affect";
 		actions.renames["EMISSION"] = "emission";
-		actions.renames["POINT_COORD"] = "gl_PointCoord";
+		actions.renames["POINT_COORD"] = "point_coord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 		actions.renames["SCREEN_UV"] = "screen_uv";
 		actions.renames["DEPTH"] = "gl_FragDepth";
@@ -763,10 +780,10 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
 
 		actions.renames["NODE_POSITION_WORLD"] = "read_model_matrix[3].xyz";
-		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
-		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.inv_view_matrix[2].xyz";
+		actions.renames["CAMERA_POSITION_WORLD"] = "inv_view_matrix[3].xyz";
+		actions.renames["CAMERA_DIRECTION_WORLD"] = "inv_view_matrix[2].xyz";
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
-		actions.renames["NODE_POSITION_VIEW"] = "(scene_data.view_matrix * read_model_matrix)[3].xyz";
+		actions.renames["NODE_POSITION_VIEW"] = "(read_view_matrix * read_model_matrix)[3].xyz";
 
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
@@ -828,6 +845,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 
 		actions.usage_defines["MODEL_MATRIX"] = "#define MODEL_MATRIX_USED\n";
 
+		actions.usage_defines["POINT_SIZE"] = "#define POINT_SIZE_USED\n";
+		actions.usage_defines["POINT_COORD"] = "#define POINT_COORD_USED\n";
+
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
 		actions.render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
@@ -870,7 +890,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardClustered::MATERIAL_UNIFORM_SET;
 		actions.base_uniform_string = "material.";
-		actions.base_varying_index = 14;
+		actions.base_varying_index = 15;
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;

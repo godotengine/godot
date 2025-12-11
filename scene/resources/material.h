@@ -34,7 +34,7 @@
 #include "core/templates/self_list.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class Material : public Resource {
 	GDCLASS(Material, Resource);
@@ -64,7 +64,6 @@ protected:
 
 	void _mark_ready();
 	void _mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader);
-	bool _is_initialized() { return init_state == INIT_STATE_READY; }
 
 	GDVIRTUAL0RC_REQUIRED(RID, _get_shader_rid)
 	GDVIRTUAL0RC_REQUIRED(Shader::Mode, _get_shader_mode)
@@ -75,6 +74,9 @@ public:
 		RENDER_PRIORITY_MAX = RS::MATERIAL_RENDER_PRIORITY_MAX,
 		RENDER_PRIORITY_MIN = RS::MATERIAL_RENDER_PRIORITY_MIN,
 	};
+
+	bool _is_initialized() { return init_state == INIT_STATE_READY; }
+
 	void set_next_pass(const Ref<Material> &p_pass);
 	Ref<Material> get_next_pass() const;
 
@@ -549,7 +551,6 @@ private:
 	float anisotropy = 0.0f;
 	float heightmap_scale = 0.0f;
 	float subsurface_scattering_strength = 0.0f;
-	float transmittance_amount = 0.0f;
 	Color transmittance_color;
 	float transmittance_depth = 0.0f;
 	float transmittance_boost = 0.0f;
@@ -876,7 +877,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, RID *r_shader_rid = nullptr);
+	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, bool p_texture_repeat = false, RID *r_shader_rid = nullptr);
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;

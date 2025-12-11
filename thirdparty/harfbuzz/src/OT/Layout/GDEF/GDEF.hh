@@ -977,7 +977,7 @@ struct GDEF
       }
 
 #ifndef HB_NO_GDEF_CACHE
-      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_set_digests);
+      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_sets);
 #endif
     }
     ~accelerator_t () { table.destroy (); }
@@ -1006,14 +1006,16 @@ struct GDEF
     {
       return
 #ifndef HB_NO_GDEF_CACHE
-	     mark_glyph_set_digests[set_index].may_have (glyph_id) &&
+	     mark_glyph_sets[set_index].may_have (glyph_id)
+#else
+	     table->mark_set_covers (set_index, glyph_id)
 #endif
-	     table->mark_set_covers (set_index, glyph_id);
+      ;
     }
 
     hb_blob_ptr_t<GDEF> table;
 #ifndef HB_NO_GDEF_CACHE
-    hb_vector_t<hb_set_digest_t> mark_glyph_set_digests;
+    hb_vector_t<hb_bit_set_t> mark_glyph_sets;
     mutable hb_cache_t<21, 3> glyph_props_cache;
     static_assert (sizeof (glyph_props_cache) == 512, "");
 #endif

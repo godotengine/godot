@@ -30,6 +30,8 @@
 
 #include "texture_rd.h"
 
+#include "servers/rendering/rendering_server.h"
+
 ////////////////////////////////////////////////////////////////////////////
 // Texture2DRD
 
@@ -76,7 +78,7 @@ void Texture2DRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 	if (p_texture_rd_rid.is_valid()) {
 		RS::get_singleton()->call_on_render_thread(callable_mp(this, &Texture2DRD::_set_texture_rd_rid).bind(p_texture_rd_rid));
 	} else if (texture_rid.is_valid()) {
-		RS::get_singleton()->free(texture_rid);
+		RS::get_singleton()->free_rid(texture_rid);
 		texture_rid = RID();
 		size = Size2i();
 
@@ -120,7 +122,7 @@ Texture2DRD::Texture2DRD() {
 Texture2DRD::~Texture2DRD() {
 	if (texture_rid.is_valid()) {
 		ERR_FAIL_NULL(RS::get_singleton());
-		RS::get_singleton()->free(texture_rid);
+		RS::get_singleton()->free_rid(texture_rid);
 		texture_rid = RID();
 	}
 }
@@ -179,7 +181,7 @@ void TextureLayeredRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 	if (p_texture_rd_rid.is_valid()) {
 		RS::get_singleton()->call_on_render_thread(callable_mp(this, &TextureLayeredRD::_set_texture_rd_rid).bind(p_texture_rd_rid));
 	} else if (texture_rid.is_valid()) {
-		RS::get_singleton()->free(texture_rid);
+		RS::get_singleton()->free_rid(texture_rid);
 		texture_rid = RID();
 		image_format = Image::FORMAT_MAX;
 		size = Size2i();
@@ -251,7 +253,7 @@ TextureLayeredRD::TextureLayeredRD(LayeredType p_layer_type) {
 TextureLayeredRD::~TextureLayeredRD() {
 	if (texture_rid.is_valid()) {
 		ERR_FAIL_NULL(RS::get_singleton());
-		RS::get_singleton()->free(texture_rid);
+		RS::get_singleton()->free_rid(texture_rid);
 		texture_rid = RID();
 	}
 }
@@ -301,7 +303,7 @@ void Texture3DRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 	if (p_texture_rd_rid.is_valid()) {
 		RS::get_singleton()->call_on_render_thread(callable_mp(this, &Texture3DRD::_set_texture_rd_rid).bind(p_texture_rd_rid));
 	} else if (texture_rid.is_valid()) {
-		RS::get_singleton()->free(texture_rid);
+		RS::get_singleton()->free_rid(texture_rid);
 		texture_rid = RID();
 		image_format = Image::FORMAT_MAX;
 		size = Vector3i();
@@ -352,7 +354,7 @@ Texture3DRD::Texture3DRD() {
 Texture3DRD::~Texture3DRD() {
 	if (texture_rid.is_valid()) {
 		ERR_FAIL_NULL(RS::get_singleton());
-		RS::get_singleton()->free(texture_rid);
+		RS::get_singleton()->free_rid(texture_rid);
 		texture_rid = RID();
 	}
 }

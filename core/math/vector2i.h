@@ -32,12 +32,18 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Vector2;
 
 struct [[nodiscard]] Vector2i {
-	static const int AXIS_COUNT = 2;
+	static const Vector2i LEFT;
+	static const Vector2i RIGHT;
+	static const Vector2i UP;
+	static const Vector2i DOWN;
+
+	static constexpr int AXIS_COUNT = 2;
 
 	enum Axis {
 		AXIS_X,
@@ -142,6 +148,12 @@ struct [[nodiscard]] Vector2i {
 	explicit operator String() const;
 	operator Vector2() const;
 
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_32(uint32_t(x));
+		h = hash_murmur3_one_32(uint32_t(y), h);
+		return hash_fmix32(h);
+	}
+
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
 	constexpr Vector2i() :
 			x(0), y(0) {}
@@ -149,6 +161,11 @@ struct [[nodiscard]] Vector2i {
 			x(p_x), y(p_y) {}
 	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
+
+inline constexpr Vector2i Vector2i::LEFT = { -1, 0 };
+inline constexpr Vector2i Vector2i::RIGHT = { 1, 0 };
+inline constexpr Vector2i Vector2i::UP = { 0, -1 };
+inline constexpr Vector2i Vector2i::DOWN = { 0, 1 };
 
 constexpr Vector2i Vector2i::operator+(const Vector2i &p_v) const {
 	return Vector2i(x + p_v.x, y + p_v.y);

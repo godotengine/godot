@@ -334,11 +334,11 @@ float AnimationNodeStateMachinePlayback::get_current_length() const {
 	return current_nti.length;
 }
 
-float AnimationNodeStateMachinePlayback::get_fade_from_play_pos() const {
+float AnimationNodeStateMachinePlayback::get_fading_from_play_pos() const {
 	return fadeing_from_nti.position;
 }
 
-float AnimationNodeStateMachinePlayback::get_fade_from_length() const {
+float AnimationNodeStateMachinePlayback::get_fading_from_length() const {
 	return fadeing_from_nti.length;
 }
 
@@ -1215,6 +1215,10 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_play_position"), &AnimationNodeStateMachinePlayback::get_current_play_pos);
 	ClassDB::bind_method(D_METHOD("get_current_length"), &AnimationNodeStateMachinePlayback::get_current_length);
 	ClassDB::bind_method(D_METHOD("get_fading_from_node"), &AnimationNodeStateMachinePlayback::get_fading_from_node);
+	ClassDB::bind_method(D_METHOD("get_fading_from_play_position"), &AnimationNodeStateMachinePlayback::get_fading_from_play_pos);
+	ClassDB::bind_method(D_METHOD("get_fading_from_length"), &AnimationNodeStateMachinePlayback::get_fading_from_length);
+	ClassDB::bind_method(D_METHOD("get_fading_position"), &AnimationNodeStateMachinePlayback::get_fading_pos);
+	ClassDB::bind_method(D_METHOD("get_fading_length"), &AnimationNodeStateMachinePlayback::get_fading_time);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::_get_travel_path);
 
 	ADD_SIGNAL(MethodInfo(SceneStringName(state_started), PropertyInfo(Variant::STRING_NAME, "state")));
@@ -1534,9 +1538,7 @@ bool AnimationNodeStateMachine::_can_connect(const StringName &p_name) {
 	}
 
 	String node_name = p_name;
-	Vector<String> path = node_name.split("/");
-
-	if (path.size() < 2) {
+	if (node_name.get_slice_count("/") < 2) {
 		return false;
 	}
 

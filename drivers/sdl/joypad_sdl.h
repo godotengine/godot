@@ -35,22 +35,25 @@
 
 typedef uint32_t SDL_JoystickID;
 typedef struct HWND__ *HWND;
+typedef struct SDL_Joystick SDL_Joystick;
+typedef struct SDL_Gamepad SDL_Gamepad;
 
 class JoypadSDL {
 public:
 	JoypadSDL();
+#ifdef WINDOWS_ENABLED
+	JoypadSDL(HWND p_helper_window);
+#endif
 	~JoypadSDL();
 
 	static JoypadSDL *get_singleton();
 
 	Error initialize();
 	void process_events();
-#ifdef WINDOWS_ENABLED
-	void setup_sdl_helper_window(HWND p_hwnd);
-#endif
 
 private:
-	struct Joypad {
+	class Joypad : public Input::JoypadFeatures {
+	public:
 		bool attached = false;
 		StringName guid;
 
@@ -58,6 +61,12 @@ private:
 
 		bool supports_force_feedback = false;
 		uint64_t ff_effect_timestamp = 0;
+
+		virtual bool has_joy_light() const override;
+		virtual bool set_joy_light(const Color &p_color) override;
+
+		SDL_Joystick *get_sdl_joystick() const;
+		SDL_Gamepad *get_sdl_gamepad() const;
 	};
 
 	static JoypadSDL *singleton;

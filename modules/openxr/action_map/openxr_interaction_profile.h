@@ -54,14 +54,14 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<OpenXRIPBinding> new_binding(const Ref<OpenXRAction> p_action, const String &p_binding_path); // Helper function for adding a new binding.
+	static Ref<OpenXRIPBinding> new_binding(const Ref<OpenXRAction> &p_action, const String &p_binding_path); // Helper function for adding a new binding.
 
 	OpenXRActionMap *get_action_map() { return action_map; } // Return the action map we're a part of.
 
 	void set_action(const Ref<OpenXRAction> &p_action); // Set the action for this binding.
 	Ref<OpenXRAction> get_action() const; // Get the action for this binding.
 
-	void set_binding_path(const String &path);
+	void set_binding_path(const String &p_path);
 	String get_binding_path() const;
 
 	int get_binding_modifier_count() const; // Retrieve the number of binding modifiers in this profile path
@@ -75,12 +75,12 @@ public:
 
 	// Deprecated.
 #ifndef DISABLE_DEPRECATED
-	void set_paths(const PackedStringArray p_paths); // Set our paths (for loading from resource), needed for loading old action maps.
+	void set_paths(const PackedStringArray &p_paths); // Set our paths (for loading from resource), needed for loading old action maps.
 	PackedStringArray get_paths() const; // Get our paths (for saving to resource), needed for converted old action maps.
 	int get_path_count() const; // Get the number of io paths.
-	bool has_path(const String p_path) const; // Has this io path.
-	void add_path(const String p_path); // Add an io path.
-	void remove_path(const String p_path); // Remove an io path.
+	bool has_path(const String &p_path) const; // Has this io path.
+	void add_path(const String &p_path); // Add an io path.
+	void remove_path(const String &p_path); // Remove an io path.
 #endif // DISABLE_DEPRECATED
 
 	// TODO add validation that we can display in the interface that checks if no two paths belong to the same top level path
@@ -108,7 +108,7 @@ public:
 
 	OpenXRActionMap *get_action_map() { return action_map; }
 
-	void set_interaction_profile_path(const String p_input_profile_path); // Set our input profile path
+	void set_interaction_profile_path(const String &p_input_profile_path); // Set our input profile path
 	String get_interaction_profile_path() const; // get our input profile path
 
 	int get_binding_count() const; // Retrieve the number of bindings in this profile path

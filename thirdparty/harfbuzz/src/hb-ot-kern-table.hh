@@ -92,9 +92,10 @@ struct KernSubTableFormat3
   {
     set_t set;
     if (likely (glyphCount))
-      set.add_range (0, glyphCount - 1);
-    left_set.union_ (set);
-    right_set.union_ (set);
+    {
+      left_set.add_range (0, num_glyphs - 1);
+      right_set.add_range (0, num_glyphs - 1);
+    }
   }
 
   protected:

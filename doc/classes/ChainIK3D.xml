@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ChainIK3D" inherits="IKModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [SkeletonModifier3D] to apply inverse kinematics to bone chains containing an arbitrary number of bones.
+	</brief_description>
+	<description>
+		Base class of [SkeletonModifier3D] that automatically generates a joint list from the bones between the root bone and the end bone.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_end_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the end bone index of the bone chain.
+			</description>
+		</method>
+		<method name="get_end_bone_direction" qualifiers="const">
+			<return type="int" enum="SkeletonModifier3D.BoneDirection" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the tail direction of the end bone of the bone chain when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="get_end_bone_length" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the end bone tail length of the bone chain when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="get_end_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the end bone name of the bone chain.
+			</description>
+		</method>
+		<method name="get_joint_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the bone index at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="get_joint_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the bone name at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="get_joint_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the joint count of the bone chain's joint list.
+			</description>
+		</method>
+		<method name="get_root_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the root bone index of the bone chain.
+			</description>
+		</method>
+		<method name="get_root_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the root bone name of the bone chain.
+			</description>
+		</method>
+		<method name="is_end_bone_extended" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the end bone is extended to have a tail.
+			</description>
+		</method>
+		<method name="set_end_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone" type="int" />
+			<description>
+				Sets the end bone index of the bone chain.
+			</description>
+		</method>
+		<method name="set_end_bone_direction">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_direction" type="int" enum="SkeletonModifier3D.BoneDirection" />
+			<description>
+				Sets the end bone tail direction of the bone chain when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="set_end_bone_length">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="length" type="float" />
+			<description>
+				Sets the end bone tail length of the bone chain when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="set_end_bone_name">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_name" type="String" />
+			<description>
+				Sets the end bone name of the bone chain.
+				[b]Note:[/b] The end bone must be the root bone or a child of the root bone. If they are the same, the tail must be extended by [method set_extend_end_bone] to modify the bone.
+			</description>
+		</method>
+		<method name="set_extend_end_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code], the end bone is extended to have a tail.
+				The extended tail config is allocated to the last element in the joint list. In other words, if you set [param enabled] to [code]false[/code], the config of the last element in the joint list has no effect in the simulated result.
+			</description>
+		</method>
+		<method name="set_root_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone" type="int" />
+			<description>
+				Sets the root bone index of the bone chain.
+			</description>
+		</method>
+		<method name="set_root_bone_name">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_name" type="String" />
+			<description>
+				Sets the root bone name of the bone chain.
+			</description>
+		</method>
+	</methods>
+</class>

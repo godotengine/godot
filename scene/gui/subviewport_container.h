@@ -51,7 +51,7 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
-	GDVIRTUAL1RC(bool, _propagate_input_event, Ref<InputEvent>);
+	GDVIRTUAL1RC(bool, _propagate_input_event, RequiredParam<InputEvent>);
 
 public:
 	void set_stretch(bool p_enable);

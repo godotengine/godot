@@ -33,6 +33,7 @@
 
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_plugin.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -47,6 +48,7 @@
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/plugins/editor_plugin_list.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
@@ -79,6 +81,7 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_remove(p_name);
 }
 
+#ifndef DISABLE_DEPRECATED
 Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL_V(p_control, nullptr);
 	return EditorNode::get_bottom_panel()->add_item(p_title, p_control, p_shortcut);
@@ -86,22 +89,45 @@ Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const Stri
 
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL(p_control);
-	EditorDockManager::get_singleton()->add_dock(p_control, String(), EditorDockManager::DockSlot(p_slot), p_shortcut);
+	ERR_FAIL_COND(legacy_docks.has(p_control));
+
+	EditorDock *dock = memnew(EditorDock);
+	dock->set_title(p_control->get_name());
+	dock->set_dock_shortcut(p_shortcut);
+	dock->set_default_slot((DockConstants::DockSlot)p_slot);
+	dock->add_child(p_control);
+	legacy_docks[p_control] = dock;
+
+	EditorDockManager::get_singleton()->add_dock(dock);
 }
 
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-	EditorDockManager::get_singleton()->remove_dock(p_control);
+	ERR_FAIL_COND(!legacy_docks.has(p_control));
+
+	EditorDockManager::get_singleton()->remove_dock(legacy_docks[p_control]);
+	legacy_docks[p_control]->queue_free();
+	legacy_docks.erase(p_control);
+}
+
+void EditorPlugin::set_dock_tab_icon(Control *p_control, const Ref<Texture2D> &p_icon) {
+	ERR_FAIL_NULL(p_control);
+	ERR_FAIL_COND(!legacy_docks.has(p_control));
+	legacy_docks[p_control]->set_dock_icon(p_icon);
 }
 
 void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 	EditorNode::get_bottom_panel()->remove_item(p_control);
 }
+#endif
 
-void EditorPlugin::set_dock_tab_icon(Control *p_control, const Ref<Texture2D> &p_icon) {
-	ERR_FAIL_NULL(p_control);
-	EditorDockManager::get_singleton()->set_dock_tab_icon(p_control, p_icon);
+void EditorPlugin::add_dock(EditorDock *p_dock) {
+	EditorDockManager::get_singleton()->add_dock(p_dock);
+}
+
+void EditorPlugin::remove_dock(EditorDock *p_dock) {
+	EditorDockManager::get_singleton()->remove_dock(p_dock);
 }
 
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location, Control *p_control) {
@@ -223,14 +249,12 @@ PopupMenu *EditorPlugin::get_export_as_menu() {
 
 void EditorPlugin::set_input_event_forwarding_always_enabled() {
 	input_event_forwarding_always_enabled = true;
-	EditorPluginList *always_input_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_input_forwarding();
-	always_input_forwarding_list->add_plugin(this);
+	EditorNode::get_singleton()->get_editor_plugins_force_input_forwarding()->add_plugin(this);
 }
 
 void EditorPlugin::set_force_draw_over_forwarding_enabled() {
 	force_draw_over_forwarding_enabled = true;
-	EditorPluginList *always_draw_over_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_over();
-	always_draw_over_forwarding_list->add_plugin(this);
+	EditorNode::get_singleton()->get_editor_plugins_force_over()->add_plugin(this);
 }
 
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {
@@ -531,6 +555,13 @@ bool EditorPlugin::build() {
 	return success;
 }
 
+void EditorPlugin::run_scene(const String &p_scene, Vector<String> &r_args) {
+	Vector<String> new_args;
+	if (GDVIRTUAL_CALL(_run_scene, p_scene, r_args, new_args)) {
+		r_args = new_args;
+	}
+}
+
 void EditorPlugin::queue_save_layout() {
 	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
@@ -588,19 +619,24 @@ void EditorPlugin::_notification(int p_what) {
 }
 
 void EditorPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_dock", "dock"), &EditorPlugin::add_dock);
+	ClassDB::bind_method(D_METHOD("remove_dock", "dock"), &EditorPlugin::remove_dock);
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
-	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title", "shortcut"), &EditorPlugin::add_control_to_bottom_panel, DEFVAL(Ref<Shortcut>()));
-	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control", "shortcut"), &EditorPlugin::add_control_to_dock, DEFVAL(Ref<Shortcut>()));
-	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
-	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
 	ClassDB::bind_method(D_METHOD("remove_control_from_container", "container", "control"), &EditorPlugin::remove_control_from_container);
-	ClassDB::bind_method(D_METHOD("set_dock_tab_icon", "control", "icon"), &EditorPlugin::set_dock_tab_icon);
 	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "callable"), &EditorPlugin::add_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("get_export_as_menu"), &EditorPlugin::get_export_as_menu);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control", "shortcut"), &EditorPlugin::add_control_to_dock, DEFVAL(Ref<Shortcut>()));
+	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
+	ClassDB::bind_method(D_METHOD("set_dock_tab_icon", "control", "icon"), &EditorPlugin::set_dock_tab_icon);
+	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title", "shortcut"), &EditorPlugin::add_control_to_bottom_panel, DEFVAL(Ref<Shortcut>()));
+	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
+#endif
 
 	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);
@@ -665,6 +701,7 @@ void EditorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_set_window_layout, "configuration");
 	GDVIRTUAL_BIND(_get_window_layout, "configuration");
 	GDVIRTUAL_BIND(_build);
+	GDVIRTUAL_BIND(_run_scene, "scene", "args");
 	GDVIRTUAL_BIND(_enable_plugin);
 	GDVIRTUAL_BIND(_disable_plugin);
 
@@ -688,6 +725,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_LEFT);
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_RIGHT);
 
+	BIND_ENUM_CONSTANT(DOCK_SLOT_NONE);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UR);
@@ -696,6 +734,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BL);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
 
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_PASS);

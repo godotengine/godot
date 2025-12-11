@@ -60,6 +60,7 @@ private:
 
 	TypedArray<uint64_t> inspected_object_ids;
 	int debugger_id = 0;
+	bool new_session = false;
 	bool updating_scene_tree = false;
 	bool scrolling_to_item = false;
 	bool notify_selection_queued = false;
@@ -72,6 +73,7 @@ private:
 	String last_filter;
 
 	void _scene_tree_folded(Object *p_obj);
+	void _scene_tree_selected();
 	void _scene_tree_selection_changed(TreeItem *p_item, int p_column, bool p_selected);
 	void _scene_tree_nothing_selected();
 	void _notify_selection_changed();
@@ -91,6 +93,7 @@ public:
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 
+	void set_new_session() { new_session = true; }
 	void update_icon_max_width();
 	String get_selected_path();
 	ObjectID get_selected_object();

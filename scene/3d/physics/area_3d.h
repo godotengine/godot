@@ -204,8 +204,8 @@ public:
 	bool has_overlapping_bodies() const;
 	bool has_overlapping_areas() const;
 
-	bool overlaps_area(Node *p_area) const;
-	bool overlaps_body(Node *p_body) const;
+	bool overlaps_area(RequiredParam<Node> rp_area) const;
+	bool overlaps_body(RequiredParam<Node> rp_body) const;
 
 	void set_audio_bus_override(bool p_override);
 	bool is_overriding_audio_bus() const;

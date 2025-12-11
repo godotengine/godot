@@ -516,29 +516,25 @@ void validate_class(const Context &p_context, const ExposedClass &p_exposed_clas
 }
 
 void add_exposed_classes(Context &r_context) {
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	class_list.sort_custom<StringName::AlphCompare>();
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
 
-	while (class_list.size()) {
-		StringName class_name = class_list.front()->get();
+	for (uint32_t class_list_idx = 0; class_list_idx < class_list.size(); class_list_idx++) {
+		StringName class_name = class_list[class_list_idx];
 
 		ClassDB::APIType api_type = ClassDB::get_api_type(class_name);
 
 		if (api_type == ClassDB::API_NONE) {
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_exposed(class_name)) {
 			INFO(vformat("Ignoring class '%s' because it's not exposed.", class_name));
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(class_name)) {
 			INFO(vformat("Ignoring class '%s' because it's not enabled.", class_name));
-			class_list.pop_front();
 			continue;
 		}
 
@@ -718,7 +714,7 @@ void add_exposed_classes(Context &r_context) {
 
 		// Add signals
 
-		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
 
 		for (const KeyValue<StringName, MethodInfo> &K : signal_map) {
 			SignalData signal;
@@ -815,7 +811,6 @@ void add_exposed_classes(Context &r_context) {
 		}
 
 		r_context.exposed_classes.insert(class_name, exposed_class);
-		class_list.pop_front();
 	}
 }
 

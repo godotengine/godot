@@ -30,6 +30,7 @@
 
 #include "editor_scene_tabs.h"
 
+#include "core/config/project_settings.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -42,6 +43,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
@@ -53,6 +55,8 @@ void EditorSceneTabs::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tabbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
 			scene_tabs->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+
+			scene_list->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			scene_tab_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
@@ -111,7 +115,7 @@ void EditorSceneTabs::_scene_tab_hovered(int p_tab) {
 	} else {
 		String path = EditorNode::get_editor_data().get_scene_path(p_tab);
 		if (!path.is_empty()) {
-			EditorResourcePreview::get_singleton()->queue_resource_preview(path, this, "_tab_preview_done", p_tab);
+			EditorResourcePreview::get_singleton()->queue_resource_preview(path, callable_mp(this, &EditorSceneTabs::_tab_preview_done).bind(p_tab));
 		}
 	}
 }
@@ -192,11 +196,16 @@ void EditorSceneTabs::_update_context_menu() {
 	DISABLE_LAST_OPTION_IF(!can_save_all_scenes);
 
 	if (tab_id >= 0) {
+		const String scene_path = EditorNode::get_editor_data().get_scene_path(tab_id);
+		const String main_scene_path = GLOBAL_GET("application/run/main_scene");
+
 		scene_tabs_context_menu->add_separator();
 		scene_tabs_context_menu->add_item(TTR("Show in FileSystem"), SCENE_SHOW_IN_FILESYSTEM);
-		DISABLE_LAST_OPTION_IF(!ResourceLoader::exists(EditorNode::get_editor_data().get_scene_path(tab_id)));
+		DISABLE_LAST_OPTION_IF(!ResourceLoader::exists(scene_path));
 		scene_tabs_context_menu->add_item(TTR("Play This Scene"), SCENE_RUN);
 		DISABLE_LAST_OPTION_IF(no_root_node);
+		scene_tabs_context_menu->add_item(TTR("Set as Main Scene"), EditorNode::SCENE_TAB_SET_AS_MAIN_SCENE);
+		DISABLE_LAST_OPTION_IF(no_root_node || (!main_scene_path.is_empty() && ResourceUID::ensure_path(main_scene_path) == scene_path));
 
 		scene_tabs_context_menu->add_separator();
 		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_scene"), EditorNode::SCENE_CLOSE);
@@ -208,11 +217,19 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(EditorNode::get_editor_data().get_edited_scene_count() <= 1);
 		scene_tabs_context_menu->add_item(TTR("Close Tabs to the Right"), SCENE_CLOSE_RIGHT);
 		DISABLE_LAST_OPTION_IF(EditorNode::get_editor_data().get_edited_scene_count() == tab_id + 1);
-		scene_tabs_context_menu->add_item(TTR("Close All Tabs"), SCENE_CLOSE_ALL);
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), EditorNode::SCENE_CLOSE_ALL);
+		scene_tabs_context_menu->set_item_text(-1, TTRC("Close All Tabs"));
 
 		const PackedStringArray paths = { EditorNode::get_editor_data().get_scene_path(tab_id) };
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, paths);
 	} else {
+		scene_tabs_context_menu->add_separator();
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/reopen_closed_scene"), EditorNode::SCENE_OPEN_PREV);
+		scene_tabs_context_menu->set_item_text(-1, TTRC("Undo Close Tab"));
+		DISABLE_LAST_OPTION_IF(!EditorNode::get_singleton()->has_previous_closed_scenes());
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), EditorNode::SCENE_CLOSE_ALL);
+		scene_tabs_context_menu->set_item_text(-1, TTRC("Close All Tabs"));
+
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, {});
 	}
 #undef DISABLE_LAST_OPTION_IF
@@ -223,6 +240,16 @@ void EditorSceneTabs::_update_context_menu() {
 void EditorSceneTabs::_custom_menu_option(int p_option) {
 	if (p_option >= EditorContextMenuPlugin::BASE_ID) {
 		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, p_option, last_hovered_tab >= 0 ? EditorNode::get_editor_data().get_scene_path(last_hovered_tab) : String());
+	}
+}
+
+void EditorSceneTabs::_update_scene_list() {
+	PopupMenu *popup = scene_list->get_popup();
+	popup->clear();
+
+	for (int i = 0; i < scene_tabs->get_tab_count(); i++) {
+		popup->add_item(scene_tabs->get_tab_title(i), i);
+		popup->set_item_icon(i, scene_tabs->get_tab_icon(i));
 	}
 }
 
@@ -275,7 +302,7 @@ void EditorSceneTabs::_update_tab_titles() {
 		Node *type_node = EditorNode::get_editor_data().get_edited_scene_root(i);
 		Ref<Texture2D> icon;
 		if (type_node) {
-			icon = EditorNode::get_singleton()->get_object_icon(type_node, "Node");
+			icon = EditorNode::get_singleton()->get_object_icon(type_node);
 		}
 		scene_tabs->set_tab_icon(i, icon);
 
@@ -337,8 +364,7 @@ void EditorSceneTabs::_scene_tabs_resized() {
 	}
 }
 
-void EditorSceneTabs::_tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
-	int p_tab = p_udata;
+void EditorSceneTabs::_tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_tab) {
 	if (p_preview.is_valid()) {
 		tab_preview->set_texture(p_preview);
 
@@ -395,8 +421,6 @@ int EditorSceneTabs::get_current_tab() const {
 void EditorSceneTabs::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab_index")));
 	ADD_SIGNAL(MethodInfo("tab_closed", PropertyInfo(Variant::INT, "tab_index")));
-
-	ClassDB::bind_method("_tab_preview_done", &EditorSceneTabs::_tab_preview_done);
 }
 
 EditorSceneTabs::EditorSceneTabs() {
@@ -444,6 +468,15 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tab_add_ph->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
 	tabbar_container->add_child(scene_tab_add_ph);
+
+	scene_list = memnew(MenuButton);
+	scene_list->set_flat(false);
+	scene_list->set_accessibility_name(TTRC("Show Opened Scenes List"));
+	scene_list->set_shortcut(ED_SHORTCUT("editor/show_opened_scenes_list", TTRC("Show Opened Scenes List"), KeyModifierMask::ALT | Key::T));
+	scene_list->get_popup()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	scene_list->get_popup()->connect("about_to_popup", callable_mp(this, &EditorSceneTabs::_update_scene_list));
+	scene_list->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorSceneTabs::_scene_tab_changed));
+	tabbar_container->add_child(scene_list);
 
 	// On-hover tab preview.
 

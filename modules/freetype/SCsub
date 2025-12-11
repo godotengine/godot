@@ -62,15 +62,21 @@ if env["builtin_freetype"]:
     if env["brotli"]:
         env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
 
-    env_freetype.Prepend(CPPEXTPATH=[thirdparty_dir + "/include"])
+    env_freetype.Prepend(CPPPATH=[thirdparty_dir + "/include"])
     # Also needed in main env for scene/
-    env.Prepend(CPPEXTPATH=[thirdparty_dir + "/include"])
+    env.Prepend(CPPPATH=[thirdparty_dir + "/include"])
 
     env_freetype.Append(CPPDEFINES=["FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_USE_PNG", "FT_CONFIG_OPTION_SYSTEM_ZLIB"])
 
     # Also requires libpng headers
     if env["builtin_libpng"]:
-        env_freetype.Prepend(CPPEXTPATH=["#thirdparty/libpng"])
+        env_freetype.Prepend(CPPPATH=["#thirdparty/libpng"])
+
+    if "text_server_adv" in env.module_list:
+        # HarfBuzz is only available if TextServerAdvanced is enabled
+        env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_HARFBUZZ"])
+        if env["builtin_harfbuzz"]:
+            env_freetype.Prepend(CPPPATH=["#thirdparty/harfbuzz/src/"])
 
     sfnt = thirdparty_dir + "src/sfnt/sfnt.c"
     # Must be done after all CPPDEFINES are being set so we can copy them.

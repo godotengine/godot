@@ -84,24 +84,26 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [param delta] parameter will [i]generally[/i] be constant (see exceptions below). [param delta] is in seconds.
-				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
+				Called once on each physics tick, and allows Nodes to synchronize their logic with physics ticks. [param delta] is the logical time between physics ticks in seconds and is equal to [member Engine.time_scale] / [member Engine.physics_ticks_per_second].
+				It is only called if physics processing is enabled for this Node, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Processing happens in order of [member process_physics_priority], lower priority values are called first. Nodes with the same priority are processed in tree order, or top to bottom as seen in the editor (also known as pre-order traversal).
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
-				[b]Note:[/b] [param delta] will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				[b]Note:[/b] Accumulated [param delta] may diverge from real world seconds.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [param delta] time since the previous frame is not constant. [param delta] is in seconds.
-				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
+				Called on each idle frame, prior to rendering, and after physics ticks have been processed. [param delta] is the time between frames in seconds.
+				It is only called if processing is enabled for this Node, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Processing happens in order of [member process_priority], lower priority values are called first. Nodes with the same priority are processed in tree order, or top to bottom as seen in the editor (also known as pre-order traversal).
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
-				[b]Note:[/b] [param delta] will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				[b]Note:[/b] When the engine is struggling and the frame rate is lowered, [param delta] will increase. When [param delta] is increased, it's capped at a maximum of [member Engine.time_scale] * [member Engine.max_physics_steps_per_frame] / [member Engine.physics_ticks_per_second]. As a result, accumulated [param delta] may not represent real world time.
+				[b]Note:[/b] When [code]--fixed-fps[/code] is enabled or the engine is running in Movie Maker mode (see [MovieWriter]), process [param delta] will always be the same for every frame, regardless of how much time the frame took to render.
+				[b]Note:[/b] Frame delta may be post-processed by [member OS.delta_smoothing] if this is enabled for the project.
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -194,7 +196,7 @@
 			<param index="1" name="persistent" type="bool" default="false" />
 			<description>
 				Adds the node to the [param group]. Groups can be helpful to organize a subset of nodes, for example [code]"enemies"[/code] or [code]"collectables"[/code]. See notes in the description, and the group methods in [SceneTree].
-				If [param persistent] is [code]true[/code], the group will be stored when saved inside a [PackedScene]. All groups created and displayed in the Node dock are persistent.
+				If [param persistent] is [code]true[/code], the group will be stored when saved inside a [PackedScene]. All groups created and displayed in the Groups dock are persistent.
 				[b]Note:[/b] To improve performance, the order of group names is [i]not[/i] guaranteed and may vary between project runs. Therefore, do not rely on the group order.
 				[b]Note:[/b] [SceneTree]'s group methods will [i]not[/i] work on this node if not inside the tree (see [method is_inside_tree]).
 			</description>
@@ -278,8 +280,9 @@
 			<return type="Node" />
 			<param index="0" name="flags" type="int" default="15" />
 			<description>
-				Duplicates the node, returning a new node with all of its properties, signals, groups, and children copied from the original. The behavior can be tweaked through the [param flags] (see [enum DuplicateFlags]). Internal nodes are not duplicated.
+				Duplicates the node, returning a new node with all of its properties, signals, groups, and children copied from the original, recursively. The behavior can be tweaked through the [param flags] (see [enum DuplicateFlags]). Internal nodes are not duplicated.
 				[b]Note:[/b] For nodes with a [Script] attached, if [method Object._init] has been defined with required parameters, the duplicated node will not have a [Script].
+				[b]Note:[/b] By default, this method will duplicate only properties marked for serialization (i.e. using [constant @GlobalScope.PROPERTY_USAGE_STORAGE], or in GDScript, [annotation @GDScript.@export]). If you want to duplicate all properties, use [constant DUPLICATE_INTERNAL_STATE].
 			</description>
 		</method>
 		<method name="find_child" qualifiers="const">
@@ -761,7 +764,7 @@
 			<return type="void" />
 			<description>
 				Prints all orphan nodes (nodes outside the [SceneTree]). Useful for debugging.
-				[b]Note:[/b] This method only works in debug builds. Does nothing in a project exported in release mode.
+				[b]Note:[/b] This method only works in debug builds. It does nothing in a project exported in release mode.
 			</description>
 		</method>
 		<method name="print_tree">
@@ -1035,7 +1038,7 @@
 	</methods>
 	<members>
 		<member name="auto_translate_mode" type="int" setter="set_auto_translate_mode" getter="get_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
-			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). Also decides if the node's strings should be parsed for POT generation.
+			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). Also decides if the node's strings should be parsed for translation template generation.
 			[b]Note:[/b] For the root node, auto translate mode can also be set via [member ProjectSettings.internationalization/rendering/root_node_auto_translate].
 		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
@@ -1163,6 +1166,7 @@
 		<constant name="NOTIFICATION_EXIT_TREE" value="11">
 			Notification received when the node is about to exit a [SceneTree]. See [method _exit_tree].
 			This notification is received [i]after[/i] the related [signal tree_exiting] signal.
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" deprecated="This notification is no longer sent by the engine. Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.">
 		</constant>
@@ -1296,7 +1300,7 @@
 		</constant>
 		<constant name="NOTIFICATION_OS_IME_UPDATE" value="2013">
 			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
-			Implemented only on macOS.
+			Implemented on desktop and web platforms.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_RESUMED" value="2014">
 			Notification received from the OS when the application is resumed.
@@ -1378,6 +1382,16 @@
 		<constant name="DUPLICATE_USE_INSTANTIATION" value="8" enum="DuplicateFlags">
 			Duplicate using [method PackedScene.instantiate]. If the node comes from a scene saved on disk, reuses [method PackedScene.instantiate] as the base for the duplicated node and its children.
 		</constant>
+		<constant name="DUPLICATE_INTERNAL_STATE" value="16" enum="DuplicateFlags">
+			Duplicate also non-serializable variables (i.e. without [constant @GlobalScope.PROPERTY_USAGE_STORAGE]).
+		</constant>
+		<constant name="DUPLICATE_DEFAULT" value="15" enum="DuplicateFlags">
+			Duplicate using default flags. This constant is useful to add or remove a single flag.
+			[codeblock]
+			# Duplicate non-exported variables.
+			var dupe = duplicate(DUPLICATE_DEFAULT | DUPLICATE_INTERNAL_STATE)
+			[/codeblock]
+		</constant>
 		<constant name="INTERNAL_MODE_DISABLED" value="0" enum="InternalMode">
 			The node will not be internal.
 		</constant>
@@ -1395,7 +1409,7 @@
 		</constant>
 		<constant name="AUTO_TRANSLATE_MODE_DISABLED" value="2" enum="AutoTranslateMode">
 			Never automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_ALWAYS].
-			String parsing for POT generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
+			String parsing for translation template generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
 		</constant>
 	</constants>
 </class>

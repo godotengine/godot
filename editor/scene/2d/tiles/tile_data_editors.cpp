@@ -50,7 +50,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;
@@ -1075,7 +1075,7 @@ void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_s
 void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
 	if (drag_type == DRAG_TYPE_PAINT_RECT) {
 		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+		Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 
 		p_canvas_item->draw_set_transform_matrix(p_transform);
 
@@ -1308,7 +1308,7 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 		Color color = Color(1, 1, 1);
 		if (p_selected) {
 			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+			Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 			selection_color.set_v(0.9);
 			color = selection_color;
 		} else if (is_visible_in_tree()) {
@@ -1402,7 +1402,7 @@ void TileDataTextureOriginEditor::draw_over_tile(CanvasItem *p_canvas_item, Tran
 	Color color = Color(1.0, 1.0, 1.0);
 	if (p_selected) {
 		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+		Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		color = selection_color;
 	}
 
@@ -1440,7 +1440,7 @@ void TileDataPositionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 	Color color = Color(1.0, 1.0, 1.0);
 	if (p_selected) {
 		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+		Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		color = selection_color;
 	}
 	Ref<Texture2D> position_icon = TileSetEditor::get_singleton()->get_editor_theme_icon(SNAME("EditorPosition"));
@@ -1454,7 +1454,7 @@ void TileDataYSortEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D 
 	Color color = Color(1.0, 1.0, 1.0);
 	if (p_selected) {
 		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+		Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		color = selection_color;
 	}
 	Vector2 texture_origin = tile_data->get_texture_origin();
@@ -1479,7 +1479,7 @@ void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 	ERR_FAIL_NULL(tile_data);
 
 	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+	Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	Color color = grid_color.darkened(0.2);
 	if (p_selected) {
 		color = selection_color.darkened(0.2);
@@ -1817,7 +1817,7 @@ void TileDataCollisionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfor
 	Vector<Color> color;
 	if (p_selected) {
 		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+		Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		selection_color.a = 0.7;
 		color.push_back(selection_color);
 	} else {
@@ -1887,7 +1887,7 @@ void TileDataTerrainsEditor::_update_terrain_selector() {
 
 		// Kind of a hack to set icons.
 		// We could provide a way to modify that in the EditorProperty.
-		OptionButton *option_button = Object::cast_to<OptionButton>(terrain_property_editor->get_child(0));
+		OptionButton *option_button = terrain_property_editor->get_option_button();
 		for (int terrain = 0; terrain < tile_set->get_terrains_count(terrain_set); terrain++) {
 			option_button->set_item_icon(terrain + 1, icons[terrain_set][terrain]);
 		}
@@ -2009,7 +2009,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 	if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET_RECT) {
 		// Draw selection rectangle.
 		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+		Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 
 		p_canvas_item->draw_set_transform_matrix(p_transform);
 
@@ -3009,7 +3009,7 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 #endif // DEBUG_ENABLED
 		if (p_selected) {
 			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+			Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 			selection_color.a = 0.7;
 			color = selection_color;
 		}

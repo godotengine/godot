@@ -1,0 +1,6 @@
+GH-75746
+--------
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/add_code_completion_option/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Hash changed for 'classes/CodeEdit/methods/add_code_completion_option', from EC613224 to 611C3D20. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.

@@ -30,7 +30,10 @@
 
 #pragma once
 
-#include "core/variant/variant.h"
+#include "core/templates/span.h"
+
+class Variant;
+class String;
 
 extern void (*_print_func)(String);
 
@@ -41,16 +44,9 @@ struct PrintHandlerList {
 	void *userdata = nullptr;
 
 	PrintHandlerList *next = nullptr;
-
-	PrintHandlerList() {}
 };
 
-String stringify_variants(const Variant &p_var);
-
-template <typename... Args>
-String stringify_variants(const Variant &p_var, Args... p_args) {
-	return p_var.operator String() + " " + stringify_variants(p_args...);
-}
+String stringify_variants(const Span<Variant> &p_vars);
 
 void add_print_handler(PrintHandlerList *p_handler);
 void remove_print_handler(const PrintHandlerList *p_handler);
@@ -69,20 +65,14 @@ extern bool is_print_verbose_enabled();
 		}                                 \
 	}
 
-inline void print_line(const Variant &v) {
-	__print_line(stringify_variants(v));
-}
-
-inline void print_line_rich(const Variant &v) {
-	__print_line_rich(stringify_variants(v));
+template <typename... Args>
+void print_line(Args... p_args) {
+	Variant variants[sizeof...(p_args)] = { p_args... };
+	__print_line(stringify_variants(Span(variants)));
 }
 
 template <typename... Args>
-void print_line(const Variant &p_var, Args... p_args) {
-	__print_line(stringify_variants(p_var, p_args...));
-}
-
-template <typename... Args>
-void print_line_rich(const Variant &p_var, Args... p_args) {
-	__print_line_rich(stringify_variants(p_var, p_args...));
+void print_line_rich(Args... p_args) {
+	Variant variants[sizeof...(p_args)] = { p_args... };
+	__print_line_rich(stringify_variants(Span(variants)));
 }

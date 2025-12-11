@@ -32,7 +32,7 @@
 #include "hb.hh"
 
 
-#line 36 "hb-buffer-deserialize-text-unicode.hh"
+#line 33 "hb-buffer-deserialize-text-unicode.hh"
 static const unsigned char _deserialize_text_unicode_trans_keys[] = {
 	0u, 0u, 43u, 102u, 48u, 102u, 48u, 124u, 48u, 57u, 62u, 124u, 48u, 124u, 60u, 117u, 
 	85u, 117u, 85u, 117u, 0
@@ -150,12 +150,12 @@ _hb_buffer_deserialize_text_unicode (hb_buffer_t *buffer,
   hb_glyph_info_t info = {0};
   const hb_glyph_position_t pos = {0};
   
-#line 154 "hb-buffer-deserialize-text-unicode.hh"
+#line 147 "hb-buffer-deserialize-text-unicode.hh"
 	{
 	cs = deserialize_text_unicode_start;
 	}
 
-#line 159 "hb-buffer-deserialize-text-unicode.hh"
+#line 150 "hb-buffer-deserialize-text-unicode.hh"
 	{
 	int _slen;
 	int _trans;
@@ -215,7 +215,7 @@ _resume:
 	hb_memset (&info, 0, sizeof (info));
 }
 	break;
-#line 219 "hb-buffer-deserialize-text-unicode.hh"
+#line 203 "hb-buffer-deserialize-text-unicode.hh"
 	}
 
 _again:
@@ -238,7 +238,7 @@ _again:
 	*end_ptr = p;
 }
 	break;
-#line 242 "hb-buffer-deserialize-text-unicode.hh"
+#line 224 "hb-buffer-deserialize-text-unicode.hh"
 	}
 	}
 

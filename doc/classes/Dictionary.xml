@@ -94,7 +94,7 @@
 		pointsDict["Blue"] = 150; // Add "Blue" as a key and assign 150 as its value.
 		[/csharp]
 		[/codeblocks]
-		Finally, dictionaries can contain different types of keys and values in the same dictionary:
+		Finally, untyped dictionaries can contain different types of keys and values in the same dictionary:
 		[codeblocks]
 		[gdscript]
 		# This is a valid dictionary.
@@ -131,6 +131,39 @@
 		{
 			// `fruit` is the key, `amount` is the value.
 		}
+		[/csharp]
+		[/codeblocks]
+		To enforce a certain type for keys and values, you can create a [i]typed dictionary[/i]. Typed dictionaries can only contain keys and values of the given types, or that inherit from the given classes:
+		[codeblocks]
+		[gdscript]
+		# Creates a typed dictionary with String keys and int values.
+		# Attempting to use any other type for keys or values will result in an error.
+		var typed_dict: Dictionary[String, int] = {
+			"some_key": 1,
+			"some_other_key": 2,
+		}
+
+		# Creates a typed dictionary with String keys and values of any type.
+		# Attempting to use any other type for keys will result in an error.
+		var typed_dict_key_only: Dictionary[String, Variant] = {
+			"some_key": 12.34,
+			"some_other_key": "string",
+		}
+		[/gdscript]
+		[csharp]
+		// Creates a typed dictionary with String keys and int values.
+		// Attempting to use any other type for keys or values will result in an error.
+		var typedDict = new Godot.Collections.Dictionary&lt;String, int&gt; {
+			{"some_key", 1},
+			{"some_other_key", 2},
+		};
+
+		// Creates a typed dictionary with String keys and values of any type.
+		// Attempting to use any other type for keys will result in an error.
+		var typedDictKeyOnly = new Godot.Collections.Dictionary&lt;String, Variant&gt; {
+			{"some_key", 12.34},
+			{"some_other_key", "string"},
+		};
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
@@ -196,7 +229,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="deep_subresources_mode" type="int" default="1" />
 			<description>
-				Duplicates this dictionary, deeply, like [method duplicate][code](true)[/code], with extra control over how subresources are handled.
+				Duplicates this dictionary, deeply, like [method duplicate] when passing [code]true[/code], with extra control over how subresources are handled.
 				[param deep_subresources_mode] must be one of the values from [enum Resource.DeepDuplicateMode]. By default, only internal resources will be duplicated (recursively).
 			</description>
 		</method>
@@ -475,7 +508,7 @@
 			<param index="0" name="key" type="Variant" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Sets the value of the element at the given [param key] to the given [param value]. This is the same as using the [code][][/code] operator ([code]array[index] = value[/code]).
+				Sets the value of the element at the given [param key] to the given [param value]. Returns [code]true[/code] if the value is set successfully. Fails and returns [code]false[/code] if the dictionary is read-only, or if [param key] and [param value] don't match the dictionary's types. This is the same as using the [code][][/code] operator ([code]dict[key] = value[/code]).
 			</description>
 		</method>
 		<method name="size" qualifiers="const">

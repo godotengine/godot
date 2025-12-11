@@ -1,0 +1,5 @@
+GH-84792
+--------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/environment_set_fog/arguments': size changed value in new API, from 10 to 11.
+
+Added fog mode argument. Compatibility method registered.

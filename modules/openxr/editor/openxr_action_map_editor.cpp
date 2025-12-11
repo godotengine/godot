@@ -31,9 +31,10 @@
 #include "openxr_action_map_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 
 HashMap<String, String> OpenXRActionMapEditor::interaction_profile_editors;
@@ -73,7 +74,7 @@ void OpenXRActionMapEditor::_notification(int p_what) {
 	}
 }
 
-OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set_editor(Ref<OpenXRActionSet> p_action_set) {
+OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set_editor(const Ref<OpenXRActionSet> &p_action_set) {
 	ERR_FAIL_COND_V(p_action_set.is_null(), nullptr);
 
 	OpenXRActionSetEditor *action_set_editor = memnew(OpenXRActionSetEditor(action_map, p_action_set));
@@ -95,7 +96,7 @@ void OpenXRActionMapEditor::_create_action_sets() {
 	}
 }
 
-OpenXRInteractionProfileEditorBase *OpenXRActionMapEditor::_add_interaction_profile_editor(Ref<OpenXRInteractionProfile> p_interaction_profile) {
+OpenXRInteractionProfileEditorBase *OpenXRActionMapEditor::_add_interaction_profile_editor(const Ref<OpenXRInteractionProfile> &p_interaction_profile) {
 	ERR_FAIL_COND_V(p_interaction_profile.is_null(), nullptr);
 
 	String profile_path = p_interaction_profile->get_interaction_profile_path();
@@ -141,7 +142,7 @@ void OpenXRActionMapEditor::_create_interaction_profiles() {
 	}
 }
 
-OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set(String p_name) {
+OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set(const String &p_name) {
 	ERR_FAIL_COND_V(action_map.is_null(), nullptr);
 	Ref<OpenXRActionSet> new_action_set;
 
@@ -163,7 +164,7 @@ OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set(String p_name) {
 	return action_set_editor;
 }
 
-void OpenXRActionMapEditor::_remove_action_set(String p_name) {
+void OpenXRActionMapEditor::_remove_action_set(const String &p_name) {
 	ERR_FAIL_COND(action_map.is_null());
 	Ref<OpenXRActionSet> action_set = action_map->find_action_set(p_name);
 	ERR_FAIL_COND(action_set.is_null());
@@ -231,7 +232,7 @@ void OpenXRActionMapEditor::_on_remove_action_set(Object *p_action_set_editor) {
 	action_map->set_edited(true);
 }
 
-void OpenXRActionMapEditor::_on_action_removed(Ref<OpenXRAction> p_action) {
+void OpenXRActionMapEditor::_on_action_removed(const Ref<OpenXRAction> &p_action) {
 	for (int i = 0; i < tabs->get_tab_count(); i++) {
 		// First tab won't be an interaction profile editor, but being thorough..
 		OpenXRInteractionProfileEditorBase *interaction_profile_editor = Object::cast_to<OpenXRInteractionProfileEditorBase>(tabs->get_tab_control(i));
@@ -253,7 +254,7 @@ void OpenXRActionMapEditor::_on_add_interaction_profile() {
 	select_interaction_profile_dialog->open(already_selected);
 }
 
-void OpenXRActionMapEditor::_on_interaction_profile_selected(const String p_path) {
+void OpenXRActionMapEditor::_on_interaction_profile_selected(const String &p_path) {
 	ERR_FAIL_COND(action_map.is_null());
 
 	Ref<OpenXRInteractionProfile> new_profile;
@@ -272,7 +273,7 @@ void OpenXRActionMapEditor::_on_interaction_profile_selected(const String p_path
 	tabs->set_current_tab(tabs->get_tab_count() - 1);
 }
 
-void OpenXRActionMapEditor::_load_action_map(const String p_path, bool p_create_new_if_missing) {
+void OpenXRActionMapEditor::_load_action_map(const String &p_path, bool p_create_new_if_missing) {
 	Error err = OK;
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->file_exists(p_path)) {
@@ -382,8 +383,8 @@ void OpenXRActionMapEditor::_do_remove_interaction_profile_editor(OpenXRInteract
 	action_map->remove_interaction_profile(interaction_profile);
 }
 
-void OpenXRActionMapEditor::open_action_map(String p_path) {
-	EditorNode::get_bottom_panel()->make_item_visible(this);
+void OpenXRActionMapEditor::open_action_map(const String &p_path) {
+	make_visible();
 
 	// out with the old...
 	_clear_action_map();
@@ -429,11 +430,20 @@ String OpenXRActionMapEditor::get_binding_modifier_editor_class(const String &p_
 }
 
 OpenXRActionMapEditor::OpenXRActionMapEditor() {
-	undo_redo = EditorUndoRedoManager::get_singleton();
+	set_name(TTRC("OpenXR Action Map"));
+	set_icon_name("OpenXRActionMap");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTRC("Toggle OpenXR Action Map Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_custom_minimum_size(Size2(0.0, 300.0 * EDSCALE));
 
+	undo_redo = EditorUndoRedoManager::get_singleton();
+
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
+
 	top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	main_vb->add_child(top_hb);
 
 	header_label = memnew(Label);
 	header_label->set_text(String(TTR("Action Map")));
@@ -474,7 +484,7 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	tabs->set_theme_type_variation("TabContainerOdd");
 	tabs->connect("tab_changed", callable_mp(this, &OpenXRActionMapEditor::_on_tabs_tab_changed));
 	tabs->connect("tab_button_pressed", callable_mp(this, &OpenXRActionMapEditor::_on_tab_button_pressed));
-	add_child(tabs);
+	main_vb->add_child(tabs);
 
 	actionsets_scroll = memnew(ScrollContainer);
 	actionsets_scroll->set_h_size_flags(SIZE_EXPAND_FILL);

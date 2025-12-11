@@ -71,7 +71,6 @@ class MenuBar : public Control {
 	int active_menu = -1;
 
 	Vector2i old_mouse_pos;
-	ObjectID shortcut_context;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal;

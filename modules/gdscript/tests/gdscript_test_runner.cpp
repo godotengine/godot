@@ -76,7 +76,7 @@ void init_autoloads() {
 			// Cache the scene reference before loading it (for cyclic references)
 			Ref<PackedScene> scn;
 			scn.instantiate();
-			scn->set_path(info.path);
+			scn->set_path(ResourceUID::ensure_path(info.path));
 			scn->reload_from_file();
 			ERR_CONTINUE_MSG(scn.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
@@ -145,6 +145,7 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	if (do_init_languages) {
 		init_language(p_source_dir);
 	}
+
 #ifdef DEBUG_ENABLED
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
@@ -153,12 +154,16 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 			// TODO: Add ability for test scripts to specify which warnings to enable/disable for testing.
 			continue;
 		}
-		String warning_setting = GDScriptWarning::get_settings_path_from_code((GDScriptWarning::Code)i);
-		ProjectSettings::get_singleton()->set_setting(warning_setting, (int)GDScriptWarning::WARN);
+		const String setting_path = GDScriptWarning::get_setting_path_from_code((GDScriptWarning::Code)i);
+		ProjectSettings::get_singleton()->set_setting(setting_path, (int)GDScriptWarning::WARN);
 	}
-#endif
 
-	// Enable printing to show results
+	// Force the call, since the language is initialized **before** applying project settings
+	// and the `settings_changed` signal is emitted with `call_deferred()`.
+	GDScriptParser::update_project_settings();
+#endif // DEBUG_ENABLED
+
+	// Enable printing to show results.
 	CoreGlobals::print_line_enabled = true;
 	CoreGlobals::print_error_enabled = true;
 }
@@ -282,7 +287,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 			} else if (binary_tokens && next.ends_with(".textonly.gd")) {
 				next = dir->get_next();
 				continue;
-			} else if (next.get_extension().to_lower() == "gd") {
+			} else if (next.has_extension("gd")) {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
 				Error open_err = OK;

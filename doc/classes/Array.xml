@@ -4,7 +4,7 @@
 		A built-in data structure that holds a sequence of elements.
 	</brief_description>
 	<description>
-		An array data structure that can contain a sequence of elements of any [Variant] type. Elements are accessed by a numerical index starting at [code]0[/code]. Negative indices are used to count from the back ([code]-1[/code] is the last element, [code]-2[/code] is the second to last, etc.).
+		An array data structure that can contain a sequence of elements of any [Variant] type by default. Values can optionally be constrained to a specific type by creating a [i]typed array[/i]. Elements are accessed by a numerical index starting at [code]0[/code]. Negative indices are used to count from the back ([code]-1[/code] is the last element, [code]-2[/code] is the second to last, etc.).
 		[codeblocks]
 		[gdscript]
 		var array = ["First", 2, 3, "Last"]
@@ -15,6 +15,10 @@
 		array[1] = "Second"
 		print(array[1])  # Prints "Second"
 		print(array[-3]) # Prints "Second"
+
+		# This typed array can only contain integers.
+		# Attempting to add any other type will result in an error.
+		var typed_array: Array[int] = [1, 2, 3]
 		[/gdscript]
 		[csharp]
 		Godot.Collections.Array array = ["First", 2, 3, "Last"];
@@ -25,6 +29,10 @@
 		array[1] = "Second";
 		GD.Print(array[1]); // Prints "Second"
 		GD.Print(array[^3]); // Prints "Second"
+
+		// This typed array can only contain integers.
+		// Attempting to add any other type will result in an error.
+		Godot.Collections.Array&lt;int&gt; typedArray = [1, 2, 3];
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Arrays are always passed by [b]reference[/b]. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
@@ -340,7 +348,7 @@
 			<return type="Array" />
 			<param index="0" name="deep_subresources_mode" type="int" default="1" />
 			<description>
-				Duplicates this array, deeply, like [method duplicate][code](true)[/code], with extra control over how subresources are handled.
+				Duplicates this array, deeply, like [method duplicate] when passing [code]true[/code], with extra control over how subresources are handled.
 				[param deep_subresources_mode] must be one of the values from [enum Resource.DeepDuplicateMode]. By default, only internal resources will be duplicated (recursively).
 			</description>
 		</method>
@@ -435,7 +443,7 @@
 			<return type="Variant" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the element at the given [param index] in the array. If [param index] out-of-bounds or negative, this method fails and returns [code]null[/code].
+				Returns the element at the given [param index] in the array. If [param index] is out-of-bounds or negative, this method fails and returns [code]null[/code].
 				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>
@@ -490,7 +498,7 @@
 			<return type="int" />
 			<description>
 				Returns a hashed 32-bit integer value representing the array and its contents.
-				[b]Note:[/b] Arrays with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, arrays with different hash values are guaranteed to be different.
+				[b]Note:[/b] Arrays with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the contrary, arrays with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="insert">
@@ -676,7 +684,6 @@
 				Removes the element from the array at the given index ([param position]). If the index is out of bounds, this method fails. If the index is negative, [param position] is considered relative to the end of the array.
 				If you need to return the removed element, use [method pop_at]. To remove an element by value, use [method erase] instead.
 				[b]Note:[/b] This method shifts every element's index after [param position] back, which may have a noticeable performance cost, especially on larger arrays.
-				[b]Note:[/b] The [param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array, use [code]arr.resize(arr.size() - 1)[/code].
 			</description>
 		</method>
 		<method name="resize">

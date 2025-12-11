@@ -34,19 +34,22 @@
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/separator.h"
+#include "scene/main/timer.h"
 #include "scene/resources/font.h"
-#include "servers/audio_server.h"
+#include "scene/resources/style_box_flat.h"
+#include "servers/audio/audio_server.h"
 
 void EditorAudioBus::_update_visible_channels() {
 	int i = 0;
@@ -86,10 +89,11 @@ void EditorAudioBus::_notification(int p_what) {
 
 			disabled_vu = get_editor_theme_icon(SNAME("BusVuFrozen"));
 
-			Color solo_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.9, 1.74, 0.83);
-			Color mute_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(2.35, 1.03, 1.03);
-			Color bypass_color = EditorThemeManager::is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(1.03, 2.04, 2.35);
-			float darkening_factor = EditorThemeManager::is_dark_theme() ? 0.15 : 0.65;
+			bool dark_icon_and_font = EditorThemeManager::is_dark_icon_and_font();
+			Color solo_color = dark_icon_and_font ? Color(1.0, 0.89, 0.22) : Color(1.9, 1.74, 0.83);
+			Color mute_color = dark_icon_and_font ? Color(1.0, 0.16, 0.16) : Color(2.35, 1.03, 1.03);
+			Color bypass_color = dark_icon_and_font ? Color(0.13, 0.8, 1.0) : Color(1.03, 2.04, 2.35);
+			float darkening_factor = dark_icon_and_font ? 0.15 : 0.65;
 			Color solo_color_darkened = solo_color.darkened(darkening_factor);
 			Color mute_color_darkened = mute_color.darkened(darkening_factor);
 			Color bypass_color_darkened = bypass_color.darkened(darkening_factor);
@@ -1074,6 +1078,11 @@ void EditorAudioBusDrop::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dropped"));
 }
 
+void EditorAudioBuses::_update_file_label_size() {
+	int label_min_width = file->get_minimum_size().x + file->get_character_bounds(0).size.x;
+	file->set_custom_minimum_size(Size2(label_min_width, 0));
+}
+
 void EditorAudioBuses::_rebuild_buses() {
 	for (int i = bus_hb->get_child_count() - 1; i >= 0; i--) {
 		EditorAudioBus *audio_bus = Object::cast_to<EditorAudioBus>(bus_hb->get_child(i));
@@ -1103,7 +1112,7 @@ void EditorAudioBuses::_rebuild_buses() {
 
 EditorAudioBuses *EditorAudioBuses::register_editor() {
 	EditorAudioBuses *audio_buses = memnew(EditorAudioBuses);
-	EditorNode::get_bottom_panel()->add_item(TTRC("Audio"), audio_buses, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Bottom Panel"), KeyModifierMask::ALT | Key::A));
+	EditorDockManager::get_singleton()->add_dock(audio_buses);
 	return audio_buses;
 }
 
@@ -1111,6 +1120,7 @@ void EditorAudioBuses::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			bus_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			_update_file_label_size();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1142,6 +1152,13 @@ void EditorAudioBuses::_notification(int p_what) {
 				AudioServer::get_singleton()->set_edited(false);
 				save_timer->start();
 			}
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				break;
+			}
+
+			_update_file_label_size();
 		} break;
 	}
 }
@@ -1310,14 +1327,30 @@ void EditorAudioBuses::_bind_methods() {
 }
 
 EditorAudioBuses::EditorAudioBuses() {
+	set_name(TTRC("Audio"));
+	set_icon_name("AudioStreamPlayer");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Dock"), KeyModifierMask::ALT | Key::A));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
+
 	top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	main_vb->add_child(top_hb);
 
 	edited_path = ResourceUID::ensure_path(GLOBAL_GET("audio/buses/default_bus_layout"));
 
+	Label *layout_label = memnew(Label(TTRC("Layout:")));
+	top_hb->add_child(layout_label);
+
 	file = memnew(Label);
-	file->set_text(vformat("%s %s", TTR("Layout:"), edited_path.get_file()));
-	file->set_clip_text(true);
+	const String _file_name = edited_path.get_file();
+	file->set_text(_file_name);
+	file->set_tooltip_text(_file_name);
+	file->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	file->set_mouse_filter(MOUSE_FILTER_PASS);
+	file->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
 	top_hb->add_child(file);
 
@@ -1354,10 +1387,16 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb->add_child(_new);
 	_new->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_new_layout));
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(mc);
+
 	bus_scroll = memnew(ScrollContainer);
-	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	bus_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	add_child(bus_scroll);
+	bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
+	bus_scroll->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
+	mc->add_child(bus_scroll);
+
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 	bus_scroll->add_child(bus_hb);
@@ -1365,7 +1404,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	save_timer = memnew(Timer);
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
-	add_child(save_timer);
+	main_vb->add_child(save_timer);
 	save_timer->connect("timeout", callable_mp(this, &EditorAudioBuses::_server_save));
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1385,7 +1424,7 @@ EditorAudioBuses::EditorAudioBuses() {
 }
 
 void EditorAudioBuses::open_layout(const String &p_path) {
-	EditorNode::get_bottom_panel()->make_item_visible(this);
+	make_visible();
 
 	const String path = ResourceUID::ensure_path(p_path);
 
@@ -1401,7 +1440,11 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	}
 
 	edited_path = path;
-	file->set_text(vformat("%s %s", TTR("Layout:"), path.get_file()));
+	const String _file_name = edited_path.get_file();
+	file->set_text(_file_name);
+	file->set_tooltip_text(_file_name);
+	_update_file_label_size();
+
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);

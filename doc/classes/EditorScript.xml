@@ -40,7 +40,7 @@
 				This method is executed by the Editor when [b]File &gt; Run[/b] is used.
 			</description>
 		</method>
-		<method name="add_root_node">
+		<method name="add_root_node" deprecated="Use [method EditorInterface.add_root_node] instead.">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
 			<description>
@@ -53,7 +53,7 @@
 				Returns the [EditorInterface] singleton instance.
 			</description>
 		</method>
-		<method name="get_scene" qualifiers="const">
+		<method name="get_scene" qualifiers="const" deprecated="Use [method EditorInterface.get_edited_scene_root] instead.">
 			<return type="Node" />
 			<description>
 				Returns the edited (current) scene's root [Node]. Equivalent of [method EditorInterface.get_edited_scene_root].
