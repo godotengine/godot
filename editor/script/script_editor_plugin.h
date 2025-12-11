@@ -524,6 +524,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool waiting_update_names;
 	bool lock_history = false;
+	void _unlock_history();
 
 	void _help_class_open(const String &p_class);
 	void _help_class_goto(const String &p_desc);

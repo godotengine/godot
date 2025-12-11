@@ -476,6 +476,7 @@
 				node.CallDeferred(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
+				For methods that are deferred from the same thread, the order of execution at idle time is identical to the order in which [code skip-lint]call_deferred[/code] was called.
 				See also [method Callable.call_deferred].
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 				[b]Note:[/b] If you're looking to delay the function call by a frame, refer to the [signal SceneTree.process_frame] and [signal SceneTree.physics_frame] signals.
