@@ -185,7 +185,7 @@ private:
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
 		DRAG_KEY_MOVE,
-		DRAG_GIZMO_HANDLE
+		DRAG_GIZMO_HANDLE,
 	};
 
 	enum GridVisibility {
