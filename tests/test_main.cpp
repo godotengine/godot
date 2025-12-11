@@ -139,12 +139,14 @@
 #include "tests/scene/test_instance_placeholder.h"
 #include "tests/scene/test_node.h"
 #include "tests/scene/test_node_2d.h"
+#include "tests/scene/test_orm_material_3d.h"
 #include "tests/scene/test_packed_scene.h"
 #include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
 #include "tests/scene/test_sprite_2d.h"
 #include "tests/scene/test_sprite_frames.h"
+#include "tests/scene/test_standard_material_3d.h"
 #include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_texture_progress_bar.h"
 #include "tests/scene/test_theme.h"
@@ -177,11 +179,13 @@
 #include "tests/scene/test_copy_transform_modifier_3d.h"
 #include "tests/scene/test_decal.h"
 #include "tests/scene/test_gltf_document.h"
+#include "tests/scene/test_orm_material_3d.h"
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
 #include "tests/scene/test_skeleton_3d.h"
 #include "tests/scene/test_sky.h"
+#include "tests/scene/test_standard_material_3d.h"
 #endif // _3D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
