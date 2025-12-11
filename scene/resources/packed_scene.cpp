@@ -662,8 +662,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 
 		Callable callable(cto, snames[c.method]);
-
 		Array binds;
+
 		if (c.flags & CONNECT_APPEND_SOURCE_OBJECT) {
 			binds.push_back(cfrom);
 		}
@@ -1179,24 +1179,27 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 			Callable base_callable;
 
 			if (c.callable.is_custom()) {
-				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(c.callable.get_custom());
-				if (ccb) {
-					binds = ccb->get_binds();
-					unbinds = ccb->get_unbound_arguments_count();
+				CallableCustom *next_callable = c.callable.get_custom();
 
-					base_callable = ccb->get_callable();
-				}
-
-				CallableCustomUnbind *ccu = dynamic_cast<CallableCustomUnbind *>(c.callable.get_custom());
+				CallableCustomUnbind *ccu = dynamic_cast<CallableCustomUnbind *>(next_callable);
 				if (ccu) {
-					ccu->get_bound_arguments(binds);
 					unbinds = ccu->get_unbinds();
 					base_callable = ccu->get_callable();
+
+					if (base_callable.is_custom()) {
+						next_callable = base_callable.get_custom();
+					}
 				}
 
-				// The source object may already be bound, ignore it to avoid saving the source object.
-				if ((c.flags & CONNECT_APPEND_SOURCE_OBJECT) && (p_node == binds[0])) {
-					binds.remove_at(0);
+				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(next_callable);
+				if (ccb) {
+					binds = ccb->get_binds();
+					base_callable = ccb->get_callable();
+
+					// The source object may already be bound, ignore it to avoid saving the source object.
+					if ((c.flags & CONNECT_APPEND_SOURCE_OBJECT) && (p_node == binds[0])) {
+						binds.remove_at(0);
+					}
 				}
 			} else {
 				base_callable = c.callable;
