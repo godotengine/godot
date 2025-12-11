@@ -507,6 +507,10 @@ void GameView::_embedded_process_focused() {
 }
 
 void GameView::_editor_or_project_settings_changed() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	// Update the window size and aspect ratio.
 	_update_embed_window_size();
 
