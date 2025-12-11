@@ -98,7 +98,7 @@ String EditorCanvasItemGizmo::get_handle_name(int p_id, bool p_secondary) const 
 }
 
 bool EditorCanvasItemGizmo::is_handle_highlighted(int p_id, bool p_secondary) const {
-	bool success;
+	bool success = false;
 	if (GDVIRTUAL_CALL(_is_handle_highlighted, p_id, p_secondary, success)) {
 		return success;
 	}
@@ -145,7 +145,7 @@ void EditorCanvasItemGizmo::commit_handle(int p_id, bool p_secondary, const Vari
 }
 
 int EditorCanvasItemGizmo::subgizmos_intersect_point(const Point2 &p_point) const {
-	int id;
+	int id = -1;
 	if (GDVIRTUAL_CALL(_subgizmos_intersect_point, p_point, id)) {
 		return id;
 	}
@@ -299,11 +299,11 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, Ref<Te
 	int current_hover_handle = CanvasItemEditor::get_singleton()->get_current_hover_gizmo_handle(current_hover_handle_secondary);
 
 	Ref<Texture2D> texture = p_texture;
-	if (p_texture.is_null()) {
+	if (texture.is_null()) {
 		texture = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
 	}
 	// shouldn't happen but better be safe
-	ERR_FAIL_NULL(texture);
+	ERR_FAIL_COND(texture.is_null());
 	Size2 texture_size = texture->get_size();
 
 	Control *viewport = CanvasItemEditor::get_singleton()->get_viewport_control();
