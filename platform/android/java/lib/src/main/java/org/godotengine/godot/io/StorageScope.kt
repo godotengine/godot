@@ -77,6 +77,7 @@ internal enum class StorageScope {
 		private val internalAppDir: String? = context.filesDir.canonicalPath
 		private val internalCacheDir: String? = context.cacheDir.canonicalPath
 		private val externalAppDir: String? = context.getExternalFilesDir(null)?.canonicalPath
+		private val obbDir: String? = context.obbDir.canonicalPath
 		private val sharedDir : String? = Environment.getExternalStorageDirectory().canonicalPath
 		private val downloadsSharedDir: String? = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).canonicalPath
 		private val documentsSharedDir: String? = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).canonicalPath
@@ -137,6 +138,10 @@ internal enum class StorageScope {
 
 			val rootDir: String? = System.getenv("ANDROID_ROOT")
 			if (rootDir != null && canonicalPathFile.startsWith(rootDir)) {
+				return APP
+			}
+
+			if (obbDir != null && canonicalPathFile.startsWith(obbDir)) {
 				return APP
 			}
 
