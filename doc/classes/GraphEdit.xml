@@ -275,6 +275,12 @@
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
+		<method name="has_connection" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="node" type="StringName" />
+			<description>
+			</description>
+		</method>
 		<method name="is_node_connected">
 			<return type="bool" />
 			<param index="0" name="from_node" type="StringName" />
