@@ -79,6 +79,7 @@ private:
 	void _poll();
 	void _write_out();
 	void _read_in();
+	void _disconnect_with_error(const String &p_reason);
 	static Error _try_connect(Ref<StreamPeerSocket> p_stream);
 
 public:
