@@ -3336,6 +3336,8 @@ RID TextServerFallback::_shaped_text_duplicate(const RID &p_shaped) {
 	new_sd->parent = p_shaped;
 	new_sd->start = sd->start;
 	new_sd->end = sd->end;
+	new_sd->first_span = sd->first_span;
+	new_sd->last_span = sd->last_span;
 	new_sd->text = sd->text;
 	new_sd->orientation = sd->orientation;
 	new_sd->direction = sd->direction;
@@ -3351,7 +3353,12 @@ RID TextServerFallback::_shaped_text_duplicate(const RID &p_shaped) {
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		new_sd->extra_spacing[i] = sd->extra_spacing[i];
 	}
-	full_copy(new_sd);
+	for (const KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : sd->objects) {
+		new_sd->objects[E.key] = E.value;
+	}
+	for (int i = 0; i < sd->spans.size(); i++) {
+		new_sd->spans.push_back(sd->spans[i]);
+	}
 	new_sd->valid.clear();
 
 	return shaped_owner.make_rid(new_sd);
