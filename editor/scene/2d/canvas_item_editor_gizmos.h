@@ -142,7 +142,6 @@ class EditorCanvasItemGizmoPlugin : public Resource {
 public:
 	static const int VISIBLE = 0;
 	static const int HIDDEN = 1;
-	static const int ON_TOP = 2;
 
 protected:
 	int current_state;

@@ -312,13 +312,21 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, Ref<Te
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * canvas_item->get_screen_transform();
 
 	int64_t handle_count = p_handles.size();
-	for (const Vector2 &h : p_handles) {
-		Vector2 position = xform.xform(h);
+	for (int i = 0; i < handle_count; i++) {
+		Vector2 position = xform.xform(p_handles[i]);
+		int id = p_ids.is_empty() ? i : p_ids[i];
+
 		Instance ins;
 		ins.create_instance(viewport, hidden);
 		instances.push_back(ins);
+
+		Color modulate = Color(1, 1, 1, 1.0);
+		if (is_handle_highlighted(id, p_secondary)) {
+			modulate = Color(0, 0, 1, 0.9);
+		}
+
 		// TODO: GIZMOS - the handles currently draw over the rulers when panning, we probably don't want this.
-		RS::get_singleton()->canvas_item_add_texture_rect(ins.instance, Rect2(position - texture_size / 2, texture_size), texture->get_rid());
+		RS::get_singleton()->canvas_item_add_texture_rect(ins.instance, Rect2(position - texture_size / 2, texture_size), texture->get_rid(), false, modulate);
 	}
 
 	// update internal handle lists
