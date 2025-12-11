@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
+#include "modules/modules_enabled.gen.h"
 #include "servers/xr/xr_server.h"
 
 OpenXRRenderModelExtension *OpenXRRenderModelExtension::singleton = nullptr;
@@ -337,6 +338,9 @@ bool OpenXRRenderModelExtension::has_render_model(RID p_render_model) const {
 }
 
 RID OpenXRRenderModelExtension::render_model_create(XrRenderModelIdEXT p_render_model_id) {
+#ifndef MODULE_GLTF_ENABLED
+	ERR_FAIL_V_MSG(RID(), "OpenXR render model creation requires the glTF module, which is disabled (module_gltf_enabled=no).");
+#else
 	ERR_FAIL_COND_V_MSG(!render_model_ext, RID(), "Render model extension hasn't been enabled.");
 
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
@@ -418,6 +422,7 @@ RID OpenXRRenderModelExtension::render_model_create(XrRenderModelIdEXT p_render_
 	emit_signal(SNAME("render_model_added"), new_rid);
 
 	return new_rid;
+#endif // MODULE_GLT_ENABLED
 }
 
 RID OpenXRRenderModelExtension::_render_model_create(uint64_t p_render_model_id) {
@@ -750,6 +755,9 @@ void OpenXRRenderModelExtension::_clear_render_model_data() {
 }
 
 bool OpenXRRenderModelData::parse_gltf_document(const PackedByteArray &p_bytes) {
+#ifndef MODULE_GLTF_ENABLED
+	ERR_FAIL_V_MSG(false, "OpenXR: Cannot parse glTF render model data because the glTF module is disabled (module_gltf_enabled=no).");
+#else
 	// State holds our data, document parses GLTF
 	Ref<GLTFState> new_state;
 	new_state.instantiate();
@@ -764,13 +772,18 @@ bool OpenXRRenderModelData::parse_gltf_document(const PackedByteArray &p_bytes) 
 	gltf_document = new_gltf_document;
 	gltf_state = new_state;
 	return true;
+#endif // MODULE_GLTF_ENABLED
 }
 
 Node3D *OpenXRRenderModelData::new_scene_instance() {
+#ifndef MODULE_GLTF_ENABLED
+	return nullptr;
+#else
 	ERR_FAIL_COND_V(gltf_document.is_null(), nullptr);
 	ERR_FAIL_COND_V(gltf_state.is_null(), nullptr);
 
 	return Object::cast_to<Node3D>(gltf_document->generate_scene(gltf_state));
+#endif // MODULE_GLTF_ENABLED
 }
 
 void OpenXRRenderModelData::set_node_names(const PackedStringArray &p_node_names) {
