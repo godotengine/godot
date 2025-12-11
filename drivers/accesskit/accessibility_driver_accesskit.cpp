@@ -612,6 +612,13 @@ _FORCE_INLINE_ void AccessibilityDriverAccessKit::_ensure_node(const RID &p_id, 
 
 		wd->update.insert(p_id);
 		p_ae->node = accesskit_node_new(p_ae->role);
+
+		// Re-apply stored name if any, so nodes recreated by _ensure_node
+		// retain their label even if the caller doesn't re-set all properties.
+		if (!p_ae->name.is_empty() || !p_ae->name_extra_info.is_empty()) {
+			String full_name = p_ae->name + " " + p_ae->name_extra_info;
+			accesskit_node_set_label(p_ae->node, full_name.utf8().ptr());
+		}
 	}
 }
 
