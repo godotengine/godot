@@ -50,7 +50,7 @@ public:
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
-	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) override;
+	virtual void draw_key_link(int p_index_from, int p_index_to, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) override;
 };
 
 class AnimationTrackEditAudio : public AnimationTrackEdit {
@@ -150,7 +150,7 @@ public:
 	virtual void draw_bg(int p_clip_left, int p_clip_right) override;
 	virtual void draw_fg(int p_clip_left, int p_clip_right) override;
 	virtual int get_key_height() const override;
-	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) override;
+	virtual void draw_key_link(int p_index_from, int p_index_to, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) override;
 };
 
 class AnimationTrackEditDefaultPlugin : public AnimationTrackEditPlugin {
