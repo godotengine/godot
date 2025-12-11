@@ -141,6 +141,8 @@ private:
 	virtual void _top_level_changed();
 	virtual void _top_level_changed_on_parent();
 
+	CanvasItem *_get_parent_item_deep() const;
+
 	void _redraw_callback();
 
 	void _enter_canvas();
