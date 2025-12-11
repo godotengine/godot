@@ -60,6 +60,11 @@ class GodotAppTest {
 		private val TEST_COMMAND_LINE_PARAMS = arrayOf("This is a test")
 	}
 
+	private fun getTestPlugin(): GodotAppInstrumentedTestPlugin? {
+		return GodotPluginRegistry.getPluginRegistry()
+			.getPlugin("GodotAppInstrumentedTestPlugin") as GodotAppInstrumentedTestPlugin?
+	}
+
 	/**
 	 * Runs the JavaClassWrapper tests via the GodotAppInstrumentedTestPlugin.
 	 */
@@ -67,8 +72,7 @@ class GodotAppTest {
 	fun runJavaClassWrapperTests() {
 		ActivityScenario.launch(GodotApp::class.java).use { scenario ->
 			scenario.onActivity { activity ->
-				val testPlugin = GodotPluginRegistry.getPluginRegistry()
-					.getPlugin("GodotAppInstrumentedTestPlugin") as GodotAppInstrumentedTestPlugin?
+				val testPlugin = getTestPlugin()
 				assertNotNull(testPlugin)
 
 				Log.d(TAG, "Waiting for the Godot main loop to start...")
@@ -80,6 +84,28 @@ class GodotAppTest {
 				result.exceptionOrNull()?.let { throw it }
 				assertTrue(result.isSuccess)
 				Log.d(TAG, "Passed ${result.getOrNull()} tests")
+			}
+		}
+	}
+
+	/**
+	 * Runs file access related tests.
+	 */
+	@Test
+	fun runFileAccessTests() {
+		ActivityScenario.launch(GodotApp::class.java).use { scenario ->
+			scenario.onActivity { activity ->
+				val testPlugin = getTestPlugin()
+				assertNotNull(testPlugin)
+
+				Log.d(TAG, "Waiting for the Godot main loop to start...")
+				testPlugin.waitForGodotMainLoopStarted()
+
+				Log.d(TAG, "Running FileAccess tests...")
+				val result = testPlugin.runFileAccessTests()
+				assertNotNull(result)
+				result.exceptionOrNull()?.let { throw it }
+				assertTrue(result.isSuccess)
 			}
 		}
 	}
