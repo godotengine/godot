@@ -279,6 +279,31 @@
 			<return type="bool" />
 			<param index="0" name="node" type="StringName" />
 			<description>
+				Returns [code]true[/code] if the [param node] [GraphNode] has at least one connection.
+				Otherwise, returns [code]false[/code].
+
+				If there are no connections, [get_connection_list_from_node()] will return an empty array.
+
+				[b]Example:[/b] Get all connections on a specific port:
+				[codeblock]
+				func get_connection_list_from_port(node, port):
+					var result = []
+					if has_connection(node):
+						var connections = get_connection_list_from_node(node)
+						for connection in connections:
+							var dict = {}
+							if connection["from_node"] == node and connection["from_port"] == port:
+								dict["node"] = connection["to_node"]
+								dict["port"] = connection["to_port"]
+								dict["type"] = "left"
+								result.push_back(dict)
+							elif connection["to_node"] == node and connection["to_port"] == port:
+								dict["node"] = connection["from_node"]
+								dict["port"] = connection["from_port"]
+								dict["type"] = "right"
+								result.push_back(dict)
+					return result
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_node_connected">
