@@ -1026,7 +1026,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool draw_sky_fog_only = false;
 	// We invert luminance_multiplier for sky so that we can combine it with exposure value.
 	float inverse_luminance_multiplier = 1.0 / rb->get_luminance_multiplier();
-	float sky_luminance_multiplier = 1.0 / 2.0; // Hardcoded since sky always uses LDR in the mobile renderer
+	float sky_luminance_multiplier = inverse_luminance_multiplier;
 	float sky_brightness_multiplier = 1.0;
 
 	Color clear_color = p_default_bg_color;
