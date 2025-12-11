@@ -2335,36 +2335,37 @@ void AnimationTrackEdit::_notification(int p_what) {
 			{
 				float scale = timeline->get_zoom_scale();
 
+				// Pre-calculate the actual order of the keys. This is needed as a move might be happening
+				// which might cause the keys to be in a different order than their current indices.
+				Vector<Pair<float, int>> sorted_keys;
+
 				for (int i = 0; i < animation->track_get_key_count(track); i++) {
-					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
+					float time_offset = animation->track_get_key_time(track, i) - timeline->get_value();
 					if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-						offset = offset + editor->get_moving_selection_offset();
-					}
-					offset = offset * scale + limit;
-					if (i < animation->track_get_key_count(track) - 1) {
-						float offset_n = animation->track_get_key_time(track, i + 1) - timeline->get_value();
-						if (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) {
-							offset_n = offset_n + editor->get_moving_selection_offset();
-						}
-						offset_n = offset_n * scale + limit;
-						float offset_last = limit_end;
-						if (i < animation->track_get_key_count(track) - 2) {
-							offset_last = animation->track_get_key_time(track, i + 2) - timeline->get_value();
-							if (editor->is_key_selected(track, i + 2) && editor->is_moving_selection()) {
-								offset_last = offset_last + editor->get_moving_selection_offset();
-							}
-							offset_last = offset_last * scale + limit;
-						}
-						int limit_string = (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) ? int(offset_last) : int(offset_n);
-						if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-							limit_string = int(MAX(limit_end, offset_last));
-						}
-						draw_key_link(i, scale, int(offset), int(offset_n), limit, limit_end);
-						draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_string);
-						continue;
+						time_offset += editor->get_moving_selection_offset();
 					}
 
-					draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_end);
+					float screen_pos = time_offset * scale + limit;
+					sorted_keys.push_back(Pair<float, int>(screen_pos, i));
+				}
+
+				sorted_keys.sort();
+
+				for (int i = 0; i < sorted_keys.size(); i++) {
+					float offset = sorted_keys[i].first;
+					int original_index = sorted_keys[i].second;
+					bool selected = editor->is_key_selected(track, original_index);
+
+					if (i < sorted_keys.size() - 1) {
+						float offset_n = sorted_keys[i + 1].first;
+
+						int next_original_index = sorted_keys[i + 1].second;
+
+						draw_key_link(original_index, next_original_index, scale, int(offset), int(offset_n), limit, limit_end);
+						draw_key(original_index, scale, int(offset), selected, limit, MIN(offset_n, limit_end));
+					} else {
+						draw_key(original_index, scale, int(offset), selected, limit, limit_end);
+					}
 				}
 			}
 
@@ -2591,7 +2592,7 @@ bool AnimationTrackEdit::is_key_selectable_by_distance() const {
 	return true;
 }
 
-void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
+void AnimationTrackEdit::draw_key_link(int p_index_from, int p_index_to, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	if (p_next_x < p_clip_left) {
 		return;
 	}
@@ -2599,8 +2600,8 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 		return;
 	}
 
-	Variant current = animation->track_get_key_value(get_track(), p_index);
-	Variant next = animation->track_get_key_value(get_track(), p_index + 1);
+	Variant current = animation->track_get_key_value(get_track(), p_index_from);
+	Variant next = animation->track_get_key_value(get_track(), p_index_to);
 	if (current != next || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_METHOD) {
 		return;
 	}
@@ -2666,7 +2667,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		}
 		text += ")";
 
-		int limit = ((p_selected && editor->is_moving_selection()) || editor->is_function_name_pressed()) ? 0 : MAX(0, p_clip_right - p_x - icon_to_draw->get_width() * 2);
+		int limit = editor->is_function_name_pressed() ? 0 : MAX(0, p_clip_right - p_x - icon_to_draw->get_width() * 2);
 
 		if (limit > 0) {
 			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
