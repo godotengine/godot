@@ -39,15 +39,18 @@
 #include "Jolt/Physics/SoftBody/SoftBodyCreationSettings.h"
 #include "Jolt/Physics/SoftBody/SoftBodySharedSettings.h"
 
+class JoltArea3D;
 class JoltSpace3D;
 
 class JoltSoftBody3D final : public JoltObject3D {
 	HashSet<int> pinned_vertices;
-	LocalVector<RID> exceptions;
+
+	LocalVector<int> mesh_to_physics;
+	LocalVector<JoltArea3D *> areas;
 	LocalVector<Vector3> normals;
+	LocalVector<RID> exceptions;
 
 	RID mesh;
-	LocalVector<int> mesh_to_physics;
 
 	JPH::SoftBodyCreationSettings *jolt_settings = new JPH::SoftBodyCreationSettings();
 
@@ -86,6 +89,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	void _vertices_changed();
 	void _exceptions_changed();
 	void _motion_changed();
+	void _transform_changed();
 
 public:
 	JoltSoftBody3D();
@@ -97,6 +101,9 @@ public:
 
 	const LocalVector<RID> &get_collision_exceptions() const { return exceptions; }
 
+	void add_area(JoltArea3D *p_area);
+	void remove_area(JoltArea3D *p_area);
+
 	virtual bool can_interact_with(const JoltBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltSoftBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltArea3D &p_other) const override;
@@ -104,6 +111,8 @@ public:
 	virtual bool reports_contacts() const override { return false; }
 
 	virtual Vector3 get_velocity_at_position(const Vector3 &p_position) const override;
+
+	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) override;
 
 	void set_mesh(const RID &p_mesh);
 
