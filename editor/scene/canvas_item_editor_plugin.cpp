@@ -1713,8 +1713,7 @@ bool CanvasItemEditor::_gui_input_gizmos(const Ref<InputEvent> &p_event) {
 		// mouse clicks
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
 			Point2 pos = b->get_position();
-			for (const Ref<CanvasItemGizmo> &ci_gizmo : gizmos) {
-				Ref<EditorCanvasItemGizmo> editor_gizmo = ci_gizmo;
+			for (Ref<EditorCanvasItemGizmo> editor_gizmo : gizmos) {
 				if (editor_gizmo.is_valid()) {
 					int index;
 					bool secondary;
@@ -4638,8 +4637,7 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 	if (p_canvas_item != selected_canvas_item) {
 		if (selected_canvas_item) {
 			Vector<Ref<CanvasItemGizmo>> gizmos = selected_canvas_item->get_gizmos();
-			for (const Ref<CanvasItemGizmo> &gizmo : gizmos) {
-				Ref<EditorCanvasItemGizmo> editor_gizmo = gizmo;
+			for (Ref<EditorCanvasItemGizmo> editor_gizmo : gizmos) {
 				if (editor_gizmo.is_null()) {
 					continue;
 				}
@@ -4662,8 +4660,7 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 
 		if (selected_canvas_item) {
 			Vector<Ref<CanvasItemGizmo>> gizmos = selected_canvas_item->get_gizmos();
-			for (const Ref<CanvasItemGizmo> &gizmo : gizmos) {
-				Ref<EditorCanvasItemGizmo> editor_gizmo = gizmo;
+			for (Ref<EditorCanvasItemGizmo> editor_gizmo : gizmos) {
 				if (editor_gizmo.is_null()) {
 					continue;
 				}
