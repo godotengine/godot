@@ -195,7 +195,6 @@ JoltShapedObject3D::JoltShapedObject3D(ObjectType p_object_type) :
 	jolt_settings->mRestitution = 0.0f;
 	jolt_settings->mLinearDamping = 0.0f;
 	jolt_settings->mAngularDamping = 0.0f;
-	jolt_settings->mGravityFactor = 0.0f;
 }
 
 JoltShapedObject3D::~JoltShapedObject3D() {

@@ -42,38 +42,6 @@
 #include "jolt_physics_direct_body_state_3d.h"
 #include "jolt_soft_body_3d.h"
 
-namespace {
-
-template <typename TValue, typename TGetter>
-bool integrate(TValue &p_value, PhysicsServer3D::AreaSpaceOverrideMode p_mode, TGetter &&p_getter) {
-	switch (p_mode) {
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED: {
-			return false;
-		}
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE: {
-			p_value += p_getter();
-			return false;
-		}
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-			p_value += p_getter();
-			return true;
-		}
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE: {
-			p_value = p_getter();
-			return true;
-		}
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-			p_value = p_getter();
-			return false;
-		}
-		default: {
-			ERR_FAIL_V_MSG(false, vformat("Unhandled override mode: '%d'. This should not happen. Please report this.", p_mode));
-		}
-	}
-}
-
-} // namespace
-
 JPH::BroadPhaseLayer JoltBody3D::_get_broad_phase_layer() const {
 	switch (mode) {
 		case PhysicsServer3D::BODY_MODE_STATIC: {
@@ -319,7 +287,7 @@ void JoltBody3D::_update_gravity(JPH::Body &p_jolt_body) {
 	bool gravity_done = false;
 
 	for (const JoltArea3D *area : areas) {
-		gravity_done = integrate(gravity, area->get_gravity_mode(), [&]() {
+		gravity_done = JoltArea3D::apply_override(gravity, area->get_gravity_mode(), [&]() {
 			return area->compute_gravity(position);
 		});
 
@@ -332,7 +300,7 @@ void JoltBody3D::_update_gravity(JPH::Body &p_jolt_body) {
 		gravity += space->get_default_area()->compute_gravity(position);
 	}
 
-	gravity *= gravity_scale;
+	gravity *= p_jolt_body.GetMotionPropertiesUnchecked()->GetGravityFactor();
 }
 
 void JoltBody3D::_update_damp() {
@@ -348,13 +316,13 @@ void JoltBody3D::_update_damp() {
 
 	for (const JoltArea3D *area : areas) {
 		if (!linear_damp_done) {
-			linear_damp_done = integrate(total_linear_damp, area->get_linear_damp_mode(), [&]() {
+			linear_damp_done = JoltArea3D::apply_override(total_linear_damp, area->get_linear_damp_mode(), [&]() {
 				return area->get_linear_damp();
 			});
 		}
 
 		if (!angular_damp_done) {
-			angular_damp_done = integrate(total_angular_damp, area->get_angular_damp_mode(), [&]() {
+			angular_damp_done = JoltArea3D::apply_override(total_angular_damp, area->get_angular_damp_mode(), [&]() {
 				return area->get_angular_damp();
 			});
 		}
@@ -1247,14 +1215,20 @@ void JoltBody3D::set_friction(float p_friction) {
 	}
 }
 
-void JoltBody3D::set_gravity_scale(float p_scale) {
-	if (gravity_scale == p_scale) {
-		return;
+float JoltBody3D::get_gravity_scale() const {
+	if (!in_space()) {
+		return jolt_settings->mGravityFactor;
+	} else {
+		return jolt_body->GetMotionPropertiesUnchecked()->GetGravityFactor();
 	}
+}
 
-	gravity_scale = p_scale;
-
-	_motion_changed();
+void JoltBody3D::set_gravity_scale(float p_scale) {
+	if (!in_space()) {
+		jolt_settings->mGravityFactor = p_scale;
+	} else {
+		jolt_body->GetMotionPropertiesUnchecked()->SetGravityFactor(p_scale);
+	}
 }
 
 void JoltBody3D::set_linear_damp(float p_damp) {

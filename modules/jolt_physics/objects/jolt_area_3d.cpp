@@ -40,16 +40,6 @@
 #include "jolt_group_filter.h"
 #include "jolt_soft_body_3d.h"
 
-namespace {
-
-constexpr double AREA_DEFAULT_WIND_MAGNITUDE = 0.0;
-constexpr double AREA_DEFAULT_WIND_ATTENUATION = 0.0;
-
-const Vector3 AREA_DEFAULT_WIND_SOURCE = Vector3();
-const Vector3 AREA_DEFAULT_WIND_DIRECTION = Vector3();
-
-} // namespace
-
 JPH::BroadPhaseLayer JoltArea3D::_get_broad_phase_layer() const {
 	return monitorable ? JoltBroadPhaseLayer::AREA_DETECTABLE : JoltBroadPhaseLayer::AREA_UNDETECTABLE;
 }
@@ -109,7 +99,7 @@ void JoltArea3D::_dequeue_call_queries() {
 }
 
 void JoltArea3D::_add_shape_pair(Overlap &p_overlap, const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id) {
-	const JoltShapedObject3D *other_object = space->try_get_shaped(p_body_id);
+	const JoltObject3D *other_object = space->try_get_object(p_body_id);
 	ERR_FAIL_NULL(other_object);
 
 	p_overlap.rid = other_object->get_rid();
@@ -117,8 +107,12 @@ void JoltArea3D::_add_shape_pair(Overlap &p_overlap, const JPH::BodyID &p_body_i
 
 	HashMap<ShapeIDPair, ShapeIndexPair, ShapeIDPair>::Iterator shape_pair = p_overlap.shape_pairs.find(ShapeIDPair(p_other_shape_id, p_self_shape_id));
 	if (shape_pair == p_overlap.shape_pairs.end()) {
-		const int other_shape_index = other_object->find_shape_index(p_other_shape_id);
-		const int self_shape_index = find_shape_index(p_self_shape_id);
+		int other_shape_index = 0;
+		int self_shape_index = find_shape_index(p_self_shape_id);
+		if (const JoltShapedObject3D *other_shaped = other_object->as_shaped()) {
+			other_shape_index = other_shaped->find_shape_index(p_other_shape_id);
+		}
+
 		shape_pair = p_overlap.shape_pairs.insert(ShapeIDPair(p_other_shape_id, p_self_shape_id), ShapeIndexPair(other_shape_index, self_shape_index));
 	}
 
@@ -129,7 +123,6 @@ void JoltArea3D::_add_shape_pair(Overlap &p_overlap, const JPH::BodyID &p_body_i
 
 bool JoltArea3D::_remove_shape_pair(Overlap &p_overlap, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id) {
 	HashMap<ShapeIDPair, ShapeIndexPair, ShapeIDPair>::Iterator shape_pair = p_overlap.shape_pairs.find(ShapeIDPair(p_other_shape_id, p_self_shape_id));
-
 	if (shape_pair == p_overlap.shape_pairs.end()) {
 		return false;
 	}
@@ -198,14 +191,18 @@ void JoltArea3D::_report_event(const Callable &p_callback, PhysicsServer3D::Area
 }
 
 void JoltArea3D::_notify_body_entered(const JPH::BodyID &p_body_id) {
-	if (JoltBody3D *other_body = space->try_get_body(p_body_id)) {
-		other_body->add_area(this);
+	if (JoltBody3D *body = space->try_get_body(p_body_id)) {
+		body->add_area(this);
+	} else if (JoltSoftBody3D *soft_body = space->try_get_soft_body(p_body_id)) {
+		soft_body->add_area(this);
 	}
 }
 
 void JoltArea3D::_notify_body_exited(const JPH::BodyID &p_body_id) {
-	if (JoltBody3D *other_body = space->try_get_body(p_body_id)) {
-		other_body->remove_area(this);
+	if (JoltBody3D *body = space->try_get_body(p_body_id)) {
+		body->remove_area(this);
+	} else if (JoltSoftBody3D *soft_body = space->try_get_soft_body(p_body_id)) {
+		soft_body->remove_area(this);
 	}
 }
 
@@ -234,12 +231,6 @@ void JoltArea3D::_update_group_filter() {
 	jolt_body->GetCollisionGroup().SetGroupFilter(JoltGroupFilter::instance);
 }
 
-void JoltArea3D::_update_default_gravity() {
-	if (is_default_area()) {
-		space->get_physics_system().SetGravity(to_jolt(gravity_vector) * gravity);
-	}
-}
-
 void JoltArea3D::_space_changing() {
 	JoltShapedObject3D::_space_changing();
 
@@ -251,7 +242,6 @@ void JoltArea3D::_space_changed() {
 	JoltShapedObject3D::_space_changed();
 
 	_update_group_filter();
-	_update_default_gravity();
 }
 
 void JoltArea3D::_events_changed() {
@@ -270,23 +260,9 @@ void JoltArea3D::_monitorable_changed() {
 	_update_object_layer();
 }
 
-void JoltArea3D::_gravity_changed() {
-	_update_default_gravity();
-}
-
 JoltArea3D::JoltArea3D() :
 		JoltShapedObject3D(OBJECT_TYPE_AREA),
 		call_queries_element(this) {
-}
-
-bool JoltArea3D::is_default_area() const {
-	return space != nullptr && space->get_default_area() == this;
-}
-
-void JoltArea3D::set_default_area(bool p_value) {
-	if (p_value) {
-		_update_default_gravity();
-	}
 }
 
 void JoltArea3D::set_transform(Transform3D p_transform) {
@@ -342,16 +318,17 @@ Variant JoltArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 			return get_priority();
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
-			return AREA_DEFAULT_WIND_MAGNITUDE;
+			// This parameter is named incorrectly. It's actually a pressure.
+			return get_wind_pressure();
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
-			return AREA_DEFAULT_WIND_SOURCE;
+			return get_wind_source();
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
-			return AREA_DEFAULT_WIND_DIRECTION;
+			return get_wind_direction();
 		}
 		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
-			return AREA_DEFAULT_WIND_ATTENUATION;
+			return get_wind_attenuation_factor();
 		}
 		default: {
 			ERR_FAIL_V_MSG(Variant(), vformat("Unhandled area parameter: '%d'. This should not happen. Please report this.", p_param));
@@ -392,24 +369,17 @@ void JoltArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Variant
 			set_priority(p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
-			if (!Math::is_equal_approx((double)p_value, AREA_DEFAULT_WIND_MAGNITUDE)) {
-				WARN_PRINT(vformat("Invalid wind force magnitude for '%s'. Area wind force magnitude is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
-			}
+			// This parameter is named incorrectly. It's actually a pressure.
+			set_wind_pressure(p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
-			if (!((Vector3)p_value).is_equal_approx(AREA_DEFAULT_WIND_SOURCE)) {
-				WARN_PRINT(vformat("Invalid wind source for '%s'. Area wind source is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
-			}
+			set_wind_source(p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
-			if (!((Vector3)p_value).is_equal_approx(AREA_DEFAULT_WIND_DIRECTION)) {
-				WARN_PRINT(vformat("Invalid wind direction for '%s'. Area wind direction is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
-			}
+			set_wind_direction(p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
-			if (!Math::is_equal_approx((double)p_value, AREA_DEFAULT_WIND_ATTENUATION)) {
-				WARN_PRINT(vformat("Invalid wind attenuation for '%s'. Area wind attenuation is not supported when using Jolt Physics. Any such value will be ignored.", to_string()));
-			}
+			set_wind_attenuation_factor(p_value);
 		} break;
 		default: {
 			ERR_FAIL_MSG(vformat("Unhandled area parameter: '%d'. This should not happen. Please report this.", p_param));
@@ -452,7 +422,7 @@ bool JoltArea3D::can_monitor(const JoltBody3D &p_other) const {
 }
 
 bool JoltArea3D::can_monitor(const JoltSoftBody3D &p_other) const {
-	return false;
+	return is_monitoring_bodies() && (collision_mask & p_other.get_collision_layer()) != 0;
 }
 
 bool JoltArea3D::can_monitor(const JoltArea3D &p_other) const {
@@ -464,65 +434,11 @@ bool JoltArea3D::can_interact_with(const JoltBody3D &p_other) const {
 }
 
 bool JoltArea3D::can_interact_with(const JoltSoftBody3D &p_other) const {
-	return false;
+	return can_monitor(p_other);
 }
 
 bool JoltArea3D::can_interact_with(const JoltArea3D &p_other) const {
 	return can_monitor(p_other) || p_other.can_monitor(*this);
-}
-
-Vector3 JoltArea3D::get_velocity_at_position(const Vector3 &p_position) const {
-	return Vector3();
-}
-
-void JoltArea3D::set_point_gravity(bool p_enabled) {
-	if (point_gravity == p_enabled) {
-		return;
-	}
-
-	point_gravity = p_enabled;
-
-	_gravity_changed();
-}
-
-void JoltArea3D::set_gravity(float p_gravity) {
-	if (gravity == p_gravity) {
-		return;
-	}
-
-	gravity = p_gravity;
-
-	_gravity_changed();
-}
-
-void JoltArea3D::set_point_gravity_distance(float p_distance) {
-	if (point_gravity_distance == p_distance) {
-		return;
-	}
-
-	point_gravity_distance = p_distance;
-
-	_gravity_changed();
-}
-
-void JoltArea3D::set_gravity_mode(OverrideMode p_mode) {
-	if (gravity_mode == p_mode) {
-		return;
-	}
-
-	gravity_mode = p_mode;
-
-	_gravity_changed();
-}
-
-void JoltArea3D::set_gravity_vector(const Vector3 &p_vector) {
-	if (gravity_vector == p_vector) {
-		return;
-	}
-
-	gravity_vector = p_vector;
-
-	_gravity_changed();
 }
 
 Vector3 JoltArea3D::compute_gravity(const Vector3 &p_position) const {

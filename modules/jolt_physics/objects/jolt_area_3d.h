@@ -101,6 +101,8 @@ private:
 	OverlapsById areas_by_id;
 
 	Vector3 gravity_vector = Vector3(0, -1, 0);
+	Vector3 wind_source;
+	Vector3 wind_direction;
 
 	Callable body_monitor_callback;
 	Callable area_monitor_callback;
@@ -110,6 +112,8 @@ private:
 	float point_gravity_distance = 0.0f;
 	float linear_damp = 0.1f;
 	float angular_damp = 0.1f;
+	float wind_pressure = 0.0f;
+	float wind_attenuation_factor = 0.0f;
 
 	OverrideMode gravity_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
 	OverrideMode linear_damp_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
@@ -144,7 +148,6 @@ private:
 
 	void _update_sleeping();
 	void _update_group_filter();
-	void _update_default_gravity();
 
 	virtual void _space_changing() override;
 	virtual void _space_changed() override;
@@ -152,13 +155,9 @@ private:
 	void _body_monitoring_changed();
 	void _area_monitoring_changed();
 	void _monitorable_changed();
-	void _gravity_changed();
 
 public:
 	JoltArea3D();
-
-	bool is_default_area() const;
-	void set_default_area(bool p_value);
 
 	void set_transform(Transform3D p_transform);
 
@@ -186,21 +185,21 @@ public:
 	virtual bool can_interact_with(const JoltSoftBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltArea3D &p_other) const override;
 
-	virtual Vector3 get_velocity_at_position(const Vector3 &p_position) const override;
+	virtual Vector3 get_velocity_at_position(const Vector3 &p_position) const override { return Vector3(); }
 
 	virtual bool reports_contacts() const override { return false; }
 
 	bool is_point_gravity() const { return point_gravity; }
-	void set_point_gravity(bool p_enabled);
+	void set_point_gravity(bool p_enabled) { point_gravity = p_enabled; }
 
 	float get_priority() const { return priority; }
 	void set_priority(float p_priority) { priority = p_priority; }
 
 	float get_gravity() const { return gravity; }
-	void set_gravity(float p_gravity);
+	void set_gravity(float p_gravity) { gravity = p_gravity; }
 
 	float get_point_gravity_distance() const { return point_gravity_distance; }
-	void set_point_gravity_distance(float p_distance);
+	void set_point_gravity_distance(float p_distance) { point_gravity_distance = p_distance; }
 
 	float get_linear_damp() const { return linear_damp; }
 	void set_area_linear_damp(float p_damp) { linear_damp = p_damp; }
@@ -209,7 +208,7 @@ public:
 	void set_area_angular_damp(float p_damp) { angular_damp = p_damp; }
 
 	OverrideMode get_gravity_mode() const { return gravity_mode; }
-	void set_gravity_mode(OverrideMode p_mode);
+	void set_gravity_mode(OverrideMode p_mode) { gravity_mode = p_mode; }
 
 	OverrideMode get_linear_damp_mode() const { return linear_damp_mode; }
 	void set_linear_damp_mode(OverrideMode p_mode) { linear_damp_mode = p_mode; }
@@ -218,7 +217,19 @@ public:
 	void set_angular_damp_mode(OverrideMode p_mode) { angular_damp_mode = p_mode; }
 
 	Vector3 get_gravity_vector() const { return gravity_vector; }
-	void set_gravity_vector(const Vector3 &p_vector);
+	void set_gravity_vector(const Vector3 &p_vector) { gravity_vector = p_vector; }
+
+	float get_wind_pressure() const { return wind_pressure; }
+	void set_wind_pressure(float p_wind_pressure) { wind_pressure = p_wind_pressure; }
+
+	float get_wind_attenuation_factor() const { return wind_attenuation_factor; }
+	void set_wind_attenuation_factor(float p_wind_attenuation_factor) { wind_attenuation_factor = p_wind_attenuation_factor; }
+
+	const Vector3 &get_wind_source() const { return wind_source; }
+	void set_wind_source(const Vector3 &p_wind_source) { wind_source = p_wind_source; }
+
+	const Vector3 &get_wind_direction() const { return wind_direction; }
+	void set_wind_direction(const Vector3 &p_wind_direction) { wind_direction = p_wind_direction; }
 
 	Vector3 compute_gravity(const Vector3 &p_position) const;
 
@@ -236,4 +247,37 @@ public:
 
 	virtual bool has_custom_center_of_mass() const override { return false; }
 	virtual Vector3 get_center_of_mass_custom() const override { return Vector3(); }
+
+	// Incorporates the value provided by `p_getter` into `p_value` according to the override mode `p_mode`.
+	// Returns true if further calls to this function should stop (i.e. value has been replaced entirely).
+	template <typename TValue, typename TGetter>
+	static bool apply_override(TValue &p_value, PhysicsServer3D::AreaSpaceOverrideMode p_mode, TGetter &&p_getter);
 };
+
+template <typename TValue, typename TGetter>
+inline bool JoltArea3D::apply_override(TValue &p_value, PhysicsServer3D::AreaSpaceOverrideMode p_mode, TGetter &&p_getter) {
+	switch (p_mode) {
+		case PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED: {
+			return false;
+		}
+		case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE: {
+			p_value += p_getter();
+			return false;
+		}
+		case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+			p_value += p_getter();
+			return true;
+		}
+		case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE: {
+			p_value = p_getter();
+			return true;
+		}
+		case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+			p_value = p_getter();
+			return false;
+		}
+		default: {
+			ERR_FAIL_V_MSG(false, vformat("Unhandled override mode: '%d'. This should not happen. Please report this.", p_mode));
+		}
+	}
+}
