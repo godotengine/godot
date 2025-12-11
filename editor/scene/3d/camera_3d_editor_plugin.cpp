@@ -86,8 +86,10 @@ void Camera3DPreview::_update_sub_viewport_size() {
 }
 
 void Camera3DPreview::_camera_exiting() {
-	sub_viewport->queue_free();
-	sub_viewport = nullptr;
+	if(sub_viewport != nullptr) {
+		sub_viewport->queue_free();
+		sub_viewport = nullptr;
+	}
 }
 
 Camera3DPreview::Camera3DPreview(Camera3D *p_camera) :
