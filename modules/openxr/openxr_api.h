@@ -364,6 +364,7 @@ private:
 		LocalVector<XrCompositionLayerProjectionView> projection_views;
 		LocalVector<XrCompositionLayerDepthInfoKHR> depth_views; // Only used by Composition Layer Depth Extension if available
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
+		bool use_subsampled_images = true; // We need to default to true for the warning to be shown if we fallback immediately at startup.
 		bool view_pose_valid = false;
 
 		double z_near = 0.0;
@@ -523,6 +524,9 @@ public:
 
 	bool get_foveation_dynamic() const;
 	void set_foveation_dynamic(bool p_foveation_dynamic);
+
+	bool get_foveation_with_subsampled_images() const;
+	void set_foveation_with_subsampled_images(bool p_enabled);
 
 	// Play space.
 	Size2 get_play_space_bounds() const;

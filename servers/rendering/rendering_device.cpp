@@ -1332,6 +1332,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	texture.base_layer = 0;
 	texture.is_resolve_buffer = format.is_resolve_buffer;
 	texture.is_discardable = format.is_discardable;
+	texture.is_subsampled = format.is_subsampled;
 	texture.usage_flags = format.usage_bits & ~forced_usage_bits;
 	texture.samples = format.samples;
 	texture.allowed_shared_formats = format.shareable_formats;
