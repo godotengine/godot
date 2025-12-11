@@ -275,6 +275,7 @@ public:
 			VmaAllocation handle = nullptr;
 			VmaAllocationInfo info = {};
 		} allocation; // All 0/null if just a view.
+		bool is_subsampled = false;
 #ifdef DEBUG_ENABLED
 		bool created_from_extension = false;
 		bool transient = false;
