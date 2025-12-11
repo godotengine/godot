@@ -1757,10 +1757,10 @@ void SceneTreeDock::_notification(int p_what) {
 			if (show_create_root != create_root_dialog->is_visible_in_tree() && !remote_tree->is_visible()) {
 				if (show_create_root) {
 					create_root_dialog->show();
-					scene_tree->hide();
+					main_mc->hide();
 				} else {
 					create_root_dialog->hide();
-					scene_tree->show();
+					main_mc->show();
 				}
 			}
 		} break;
