@@ -149,7 +149,9 @@ private:
 		VIEW_FRAME_TO_SELECTION,
 		PREVIEW_CANVAS_SCALE,
 		SKELETON_MAKE_BONES,
-		SKELETON_SHOW_BONES
+		SKELETON_SHOW_BONES,
+		// offset for the first user-defined gizmo plugin
+		SHOW_USER_DEFINED_GIZMO = 10000,
 	};
 
 	enum DragType {
@@ -429,7 +431,7 @@ private:
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 
-	void _update_gizmos_menu() {} // TODO: GIZMOS, implement.
+	void _update_gizmos_menu();
 
 	void _prepare_view_menu();
 	void _popup_callback(int p_op);
