@@ -1277,7 +1277,7 @@
 			[b]Note:[/b] Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.
 		</member>
 		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
-			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.
+			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-bundle.crt]included Mozilla certificate bundle[/url] will be used.
 		</member>
 		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="">
 			If [code]true[/code], enable TLSv1.3 negotiation.
