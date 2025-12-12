@@ -74,7 +74,7 @@ const Engine = (function () {
 			 * @param {string=} basePath Base path of the engine to load.
 			 * @return {Promise} A ``Promise`` that resolves once the engine is loaded and initialized.
 			 */
-			init: function (basePath) {
+			init: async function (basePath) {
 				if (initPromise) {
 					return initPromise;
 				}
@@ -86,28 +86,18 @@ const Engine = (function () {
 					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm`]);
 				}
 				const me = this;
-				function doInit(promise) {
-					// Care! Promise chaining is bogus with old emscripten versions.
-					// This caused a regression with the Mono build (which uses an older emscripten version).
-					// Make sure to test that when refactoring.
-					return new Promise(function (resolve, reject) {
-						promise.then(function (response) {
-							const cloned = new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] });
-							Godot(me.config.getModuleConfig(loadPath, cloned)).then(function (module) {
-								const paths = me.config.persistentPaths;
-								module['initFS'](paths).then(function (err) {
-									me.rtenv = module;
-									if (me.config.unloadAfterInit) {
-										Engine.unload();
-									}
-									resolve();
-								});
-							});
-						});
-					});
+				async function doInit(response) {
+					const module = await Godot(me.config.getModuleConfig(loadPath, response));
+					const paths = me.config.persistentPaths;
+					// TODO: Handle `err`
+					const err = await module['initFS'](paths); // eslint-disable-line no-unused-vars
+					me.rtenv = module; // eslint-disable-line require-atomic-updates
+					if (me.config.unloadAfterInit) {
+						Engine.unload();
+					}
 				}
 				preloader.setProgressFunc(this.config.onProgress);
-				initPromise = doInit(loadPromise);
+				initPromise = doInit(await loadPromise); // eslint-disable-line require-atomic-updates
 				return initPromise;
 			},
 

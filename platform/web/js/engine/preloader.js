@@ -1,29 +1,28 @@
 const Preloader = /** @constructor */ function () { // eslint-disable-line no-unused-vars
-	function getTrackedResponse(response, load_status) {
-		function onloadprogress(reader, controller) {
-			return reader.read().then(function (result) {
-				if (load_status.done) {
-					return Promise.resolve();
-				}
-				if (result.value) {
-					controller.enqueue(result.value);
-					load_status.loaded += result.value.length;
-				}
-				if (!result.done) {
-					return onloadprogress(reader, controller);
-				}
-				load_status.done = true;
+	function trackResponse(response, load_status) {
+		async function trackReader(reader) {
+			const result = await reader.read();
+			if (load_status.done) {
 				return Promise.resolve();
-			});
+			}
+			if (result.value) {
+				load_status.loaded += result.value.length;
+			}
+			if (!result.done) {
+				return trackReader(reader);
+			}
+			load_status.done = true;
+			return Promise.resolve();
 		}
-		const reader = response.body.getReader();
-		return new Response(new ReadableStream({
-			start: function (controller) {
-				onloadprogress(reader, controller).then(function () {
-					controller.close();
-				});
-			},
-		}), { headers: response.headers });
+
+		// Start the reader in parallel of the main response.
+		const reader = response.clone().body.getReader();
+		trackReader(reader).catch((_err) => {
+			// TODO: Handle `_err`
+		});
+
+		// We need to keep the original response intact as much as possible.
+		return response;
 	}
 
 	function loadFetch(file, tracker, fileSize, raw) {
@@ -36,11 +35,11 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			if (!response.ok) {
 				return Promise.reject(new Error(`Failed loading file '${file}'`));
 			}
-			const tr = getTrackedResponse(response, tracker[file]);
+			trackResponse(response, tracker[file]);
 			if (raw) {
-				return Promise.resolve(tr);
+				return response;
 			}
-			return tr.arrayBuffer();
+			return response.arrayBuffer();
 		});
 	}
 
