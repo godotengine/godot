@@ -510,9 +510,9 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 
 			// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
 			colors["text_editor/theme/highlighting/background_color"] = p_config.dark_icon_and_font ? p_config.dark_color_2 : p_config.dark_color_3;
-			colors["text_editor/theme/highlighting/completion_background_color"] = p_config.dark_icon_and_font ? p_config.base_color : p_config.dark_color_2;
-			colors["text_editor/theme/highlighting/completion_selected_color"] = alpha1;
-			colors["text_editor/theme/highlighting/completion_existing_color"] = alpha2;
+			colors["text_editor/theme/highlighting/completion_background_color"] = p_config.dark_icon_and_font ? p_config.base_color : p_config.mono_color_inv.lerp(p_config.mono_color, 0.05);
+			colors["text_editor/theme/highlighting/completion_selected_color"] = p_config.dark_icon_and_font ? alpha1 : p_config.mono_color_inv.lerp(p_config.mono_color, 0.12);
+			colors["text_editor/theme/highlighting/completion_existing_color"] = p_config.dark_icon_and_font ? alpha2 : p_config.mono_color_inv.lerp(p_config.mono_color, 0.35);
 			// Same opacity as the scroll grabber editor icon.
 			colors["text_editor/theme/highlighting/completion_scroll_color"] = Color(mono_value, mono_value, mono_value, 0.29);
 			colors["text_editor/theme/highlighting/completion_scroll_hovered_color"] = Color(mono_value, mono_value, mono_value, 0.4);
