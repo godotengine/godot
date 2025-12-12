@@ -324,7 +324,7 @@
 		</member>
 		<member name="tonemap_exposure" type="float" setter="set_tonemap_exposure" getter="get_tonemap_exposure" default="1.0">
 			Adjusts the brightness of values before they are provided to the tonemapper. Higher [member tonemap_exposure] values result in a brighter image. See also [member tonemap_white].
-			[b]Note:[/b] Values provided to the tonemapper will also be multiplied by [code]2.0[/code] and [code]1.8[/code] for [constant TONE_MAPPER_FILMIC] and [constant TONE_MAPPER_ACES] respectively to produce a similar apparent brightness as [constant TONE_MAPPER_LINEAR].
+			[b]Note:[/b] [member tonemap_exposure] is not available when using the Compatibility renderer with the [constant BG_CANVAS] background mode.
 		</member>
 		<member name="tonemap_mode" type="int" setter="set_tonemapper" getter="get_tonemapper" enum="Environment.ToneMapper" default="0">
 			The tonemapping mode to use. Tonemapping is the process that "converts" HDR values to be suitable for rendering on an LDR display. (Godot doesn't support rendering on HDR displays yet.)
