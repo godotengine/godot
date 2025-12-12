@@ -276,7 +276,7 @@ class SceneTreeDock : public EditorDock {
 
 	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *p_parent, int p_pos);
 	void _perform_create_audio_stream_players(const Vector<String> &p_files, Node *p_parent, int p_pos);
-	void _replace_with_branch_scene(const String &p_file, Node *base);
+	void _replace_with_branch_scene(const String &p_file, Node *p_base);
 
 	void _remote_tree_selected();
 	void _local_tree_selected();
