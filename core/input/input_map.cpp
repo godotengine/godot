@@ -54,6 +54,8 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("action_get_events", "action"), &InputMap::_action_get_events);
 	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action", "exact_match"), &InputMap::event_is_action, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("load_from_project_settings"), &InputMap::load_from_project_settings);
+
+	ADD_SIGNAL(MethodInfo("project_settings_loaded"));
 }
 
 /**
@@ -329,6 +331,8 @@ void InputMap::load_from_project_settings() {
 			action_add_event(name, event);
 		}
 	}
+
+	emit_signal("project_settings_loaded");
 }
 
 struct _BuiltinActionDisplayName {
