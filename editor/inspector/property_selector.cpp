@@ -32,6 +32,7 @@
 
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
@@ -145,6 +146,7 @@ void PropertySelector::_update_search() {
 
 			TreeItem *item = search_options->create_item(category ? category : root);
 			item->set_text(0, E.name);
+			item->set_custom_font(0, get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 			item->set_metadata(0, E.name);
 			item->set_icon(0, search_options->get_editor_theme_icon(Variant::get_type_name(E.type)));
 
@@ -306,6 +308,7 @@ void PropertySelector::_update_search() {
 			}
 
 			item->set_text(0, desc);
+			item->set_custom_font(0, get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
@@ -504,6 +507,7 @@ void PropertySelector::_create_subproperty(TreeItem *p_parent_item, const String
 
 	TreeItem *item = search_options->create_item(p_parent_item);
 	item->set_text(0, p_name);
+	item->set_custom_font(0, get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 	item->set_metadata(0, String(p_parent_item->get_metadata(0)) + ":" + p_name);
 	item->set_icon(0, search_options->get_editor_theme_icon(Variant::get_type_name(p_type)));
 
