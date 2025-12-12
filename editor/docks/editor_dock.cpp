@@ -90,13 +90,14 @@ void EditorDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_available_layouts", "layouts"), &EditorDock::set_available_layouts);
 	ClassDB::bind_method(D_METHOD("get_available_layouts"), &EditorDock::get_available_layouts);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2,Floating:3"), "set_available_layouts", "get_available_layouts");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2,Floating:3,Main Screen:4"), "set_available_layouts", "get_available_layouts");
 
 	ADD_SIGNAL(MethodInfo("closed"));
 
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_VERTICAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_HORIZONTAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_FLOATING);
+	BIND_BITFIELD_FLAG(DOCK_LAYOUT_MAIN_SCREEN);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_ALL);
 
 	GDVIRTUAL_BIND(_update_layout, "layout");

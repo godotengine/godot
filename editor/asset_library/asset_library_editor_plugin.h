@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/asset_library/editor_asset_installer.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/grid_container.h"
@@ -182,8 +183,8 @@ public:
 	EditorAssetLibraryItemDownload();
 };
 
-class EditorAssetLibrary : public PanelContainer {
-	GDCLASS(EditorAssetLibrary, PanelContainer);
+class EditorAssetLibrary : public EditorDock {
+	GDCLASS(EditorAssetLibrary, EditorDock);
 
 	String host;
 
@@ -346,7 +347,7 @@ public:
 	static bool is_available();
 
 	virtual String get_plugin_name() const override { return TTRC("AssetLib"); }
-	bool has_main_screen() const override { return true; }
+	// bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }
 	virtual void make_visible(bool p_visible) override;
