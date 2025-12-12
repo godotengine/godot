@@ -1,0 +1,55 @@
+name: Export Godot project
+description: Export a test Godot project.
+
+inputs:
+  bin:
+    description: The path to the Godot executable
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Import resources and export project
+      shell: sh
+      run: |
+        git clone --depth=1 https://github.com/godotengine/godot-tests.git /tmp/godot-tests
+
+        echo "Exporting project for Linux (PCK)"
+        ${{ inputs.bin }} --headless --path /tmp/godot-tests/tests/project_export/ --export-pack "Linux" /tmp/test_project.pck 2>&1 | tee log.txt || true
+        GODOT_CHECK_CI_LOG_ALL_ERRORS=1 misc/scripts/check_ci_log.py log.txt
+
+        echo "Exporting project for Linux (ZIP)"
+        ${{ inputs.bin }} --headless --path /tmp/godot-tests/tests/project_export/ --export-pack "Linux" /tmp/test_project.zip 2>&1 | tee log.txt || true
+        GODOT_CHECK_CI_LOG_ALL_ERRORS=1 misc/scripts/check_ci_log.py log.txt
+
+        echo "Exporting project for Linux as dedicated server (PCK)"
+        ${{ inputs.bin }} --headless --path /tmp/godot-tests/tests/project_export/ --export-pack "Linux Server" /tmp/test_project_server.pck 2>&1 | tee log.txt || true
+        GODOT_CHECK_CI_LOG_ALL_ERRORS=1 misc/scripts/check_ci_log.py log.txt
+
+    - name: Run project files from folder
+      shell: sh
+      run: |
+        xvfb-run ${{ inputs.bin }} --path /tmp/godot-tests/tests/project_export/ --language fr --resolution 64x64 --write-movie /tmp/test_project_folder.png --quit 2>&1 | tee log.txt || true
+        GODOT_CHECK_CI_LOG_ALL_ERRORS=1 misc/scripts/check_ci_log.py log.txt
+
+        ${{ inputs.bin }} --headless --path /tmp/godot-tests/tests/project_export/ --quit 2>&1 | tee log.txt || true
+        GODOT_CHECK_CI_LOG_ALL_ERRORS=1 misc/scripts/check_ci_log.py log.txt
+
+    - name: Run exported project PCK/ZIP
+      shell: sh
+      run: |
+        xvfb-run ${{ inputs.bin }} --main-pack /tmp/test_project.pck --language fr --resolution 64x64 --write-movie /tmp/test_project_pck.png --quit 2>&1 | tee log.txt || true
+        GODOT_CHECK_CI_LOG_ALL_ERRORS=1 misc/scripts/check_ci_log.py log.txt
+
+        xvfb-run ${{ inputs.bin }} --main-pack /tmp/test_project.zip --language fr --resolution 64x64 --write-movie /tmp/test_project_zip.png --quit 2>&1 | tee log.txt || true
+        GODOT_CHECK_CI_LOG_ALL_ERRORS=1 misc/scripts/check_ci_log.py log.txt
+
+        # Headless mode is implied for dedicated server PCKs.
+        ${{ inputs.bin }} --main-pack /tmp/test_project_server.pck --quit 2>&1 | tee log.txt || true
+        GODOT_CHECK_CI_LOG_ALL_ERRORS=1 misc/scripts/check_ci_log.py log.txt
+
+        echo "Checking whether video output from project folder and exported project match..."
+        md5sum /tmp/test_project*.png | md5sum --check
+
+        echo "Checking whether audio output from project folder and exported project match..."
+        md5sum /tmp/test_project*.wav | md5sum --check
