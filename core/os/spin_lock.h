@@ -80,11 +80,15 @@ _ALWAYS_INLINE_ static void _cpu_pause() {
 #if defined(__i386__) || defined(__x86_64__) // x86.
 	__builtin_ia32_pause();
 #elif defined(__arm__) || defined(__aarch64__) // ARM.
-	asm volatile("yield");
+	// Use memory clobber to prevent
+	// reorder/optimization by the compiler.
+	asm volatile("yield" ::: "memory");
 #elif defined(__powerpc__) // PowerPC.
-	asm volatile("or 27,27,27");
+	asm volatile("or 27,27,27" ::: "memory");
 #elif defined(__riscv) // RISC-V.
-	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
+	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010" ::: "memory");
+#elif defined(__loongarch64) // Loongarch64.
+	asm volatile("nop" ::: "memory");
 #endif
 #endif
 }
