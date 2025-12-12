@@ -414,9 +414,13 @@ void ScrollBar::_notification(int p_what) {
 
 				} else {
 					if (time_since_motion == 0 || time_since_motion > 0.1) {
+						double delta = get_process_delta_time();
+						if (delta == 0) {
+							delta = CMP_EPSILON;
+						}
 						Vector2 diff = drag_node_accum - last_drag_node_accum;
 						last_drag_node_accum = drag_node_accum;
-						drag_node_speed = diff / get_process_delta_time();
+						drag_node_speed = diff / delta;
 					}
 
 					time_since_motion += get_process_delta_time();

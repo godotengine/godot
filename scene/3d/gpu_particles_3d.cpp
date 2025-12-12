@@ -511,7 +511,11 @@ void GPUParticles3D::_notification(int p_what) {
 		// Use internal process when emitting and one_shot is on so that when
 		// the shot ends the editor can properly update.
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			const Vector3 velocity = (get_global_position() - previous_position) / get_process_delta_time();
+			double delta = get_process_delta_time();
+			if (delta == 0) {
+				delta = CMP_EPSILON;
+			}
+			const Vector3 velocity = (get_global_position() - previous_position) / delta;
 
 			if (velocity != previous_velocity) {
 				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
@@ -540,9 +544,13 @@ void GPUParticles3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			double delta = get_physics_process_delta_time();
+			if (delta == 0) {
+				delta = CMP_EPSILON;
+			}
 			// Update velocity in physics process, so that velocity calculations remain correct
 			// if the physics tick rate is lower than the rendered framerate (especially without physics interpolation).
-			const Vector3 velocity = (get_global_position() - previous_position) / get_physics_process_delta_time();
+			const Vector3 velocity = (get_global_position() - previous_position) / delta;
 
 			if (velocity != previous_velocity) {
 				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
