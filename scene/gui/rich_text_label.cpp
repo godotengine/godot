@@ -865,7 +865,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 
 			float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 			if (i > 0) {
-				h += theme_cache.paragraph_separation;
+				h += theme_cache.paragraph_separation + theme_cache.line_separation;
 			}
 			if (frame->min_size_over.y > 0) {
 				h = MAX(h, frame->min_size_over.y);
@@ -874,7 +874,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 				h = MIN(h, frame->max_size_over.y);
 			}
 			yofs += h;
-			prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
+			prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation + theme_cache.paragraph_separation;
 
 			frame->lines[i].offset += offset;
 			row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
@@ -1621,7 +1621,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 			// Do not apply to the last line to avoid cutting text.
 			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 		} else {
-			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation + theme_cache.paragraph_separation;
 		}
 	}
 	float vbegin = 0, vsep = 0;
@@ -1653,7 +1653,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	while (ofs.y < size.height && from_line < to_line) {
 		MutexLock lock(main->lines[from_line].text_buf->get_mutex());
 		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, vsep, p_click, r_click_frame, r_click_line, r_click_item, r_click_char, false, p_meta);
-		ofs.y += main->lines[from_line].text_buf->get_size().y + (main->lines[from_line].text_buf->get_line_count() - 1) * (theme_cache.line_separation + vsep) + (theme_cache.paragraph_separation + vsep);
+		ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * (theme_cache.line_separation + vsep) + (theme_cache.paragraph_separation);
 		if (((r_click_item != nullptr) && ((*r_click_item) != nullptr)) || ((r_click_frame != nullptr) && ((*r_click_frame) != nullptr))) {
 			if (r_outside != nullptr) {
 				*r_outside = false;
@@ -1886,10 +1886,10 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		}
 
 		if (line == text_buf->get_line_count() - 1) {
-			off.y += TS->shaped_text_get_descent(rid) + theme_cache.paragraph_separation + p_vsep;
-		} else {
-			off.y += TS->shaped_text_get_descent(rid) + theme_cache.line_separation + p_vsep;
+			off.y += TS->shaped_text_get_descent(rid) + theme_cache.paragraph_separation;
 		}
+
+		off.y += TS->shaped_text_get_descent(rid) + theme_cache.line_separation + p_vsep;
 	}
 
 	// Text line hit.
@@ -2428,7 +2428,7 @@ void RichTextLabel::_notification(int p_what) {
 					// Do not apply to the last line to avoid cutting text.
 					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 				} else {
-					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
+					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation + theme_cache.paragraph_separation;
 				}
 			}
 			float vbegin = 0, vsep = 0;
@@ -2606,7 +2606,7 @@ void RichTextLabel::_notification(int p_what) {
 					// Do not apply to the last line to avoid cutting text.
 					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 				} else {
-					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
+					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation + theme_cache.paragraph_separation;
 				}
 			}
 			float vbegin = 0, vsep = 0;
@@ -2651,7 +2651,7 @@ void RichTextLabel::_notification(int p_what) {
 				if (drawn_lines > 0) {
 					visible_paragraph_count++;
 				}
-				ofs.y += main->lines[from_line].text_buf->get_size().y + (main->lines[from_line].text_buf->get_line_count() - 1) * (theme_cache.line_separation + vsep) + (theme_cache.paragraph_separation + vsep);
+				ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * (theme_cache.line_separation + vsep) + (theme_cache.paragraph_separation);
 				from_line++;
 			}
 			if (scroll_follow_visible_characters && scroll_active) {
@@ -7484,7 +7484,7 @@ int RichTextLabel::get_content_height() const {
 			// Do not apply to the last line to avoid cutting text.
 			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 		} else {
-			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation + theme_cache.paragraph_separation;
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation + theme_cache.paragraph_separation;
 		}
 	}
 	return total_height;
