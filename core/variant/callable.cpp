@@ -136,12 +136,7 @@ Callable Callable::bindv(const Array &p_arguments) {
 		return *this; // No point in creating a new callable if nothing is bound.
 	}
 
-	Vector<Variant> args;
-	args.resize(p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
-		args.write[i] = p_arguments[i];
-	}
-	return Callable(memnew(CallableCustomBind(*this, args)));
+	return Callable(memnew(CallableCustomBind(*this, Vector(p_arguments.as_vector()))));
 }
 
 Callable Callable::unbind(int p_argcount) const {
@@ -217,12 +212,7 @@ void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments) const {
 Array Callable::get_bound_arguments() const {
 	Vector<Variant> arr;
 	get_bound_arguments_ref(arr);
-	Array ret;
-	ret.resize(arr.size());
-	for (int i = 0; i < arr.size(); i++) {
-		ret[i] = arr[i];
-	}
-	return ret;
+	return Array(std::move(arr));
 }
 
 int Callable::get_unbound_arguments_count() const {
