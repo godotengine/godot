@@ -194,7 +194,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _asset_file_selected(const String &p_file);
 	void _update_repository_options();
 
-	PanelContainer *library_scroll_bg = nullptr;
+	MarginContainer *library_mc = nullptr;
 	ScrollContainer *library_scroll = nullptr;
 	VBoxContainer *library_vb = nullptr;
 	VBoxContainer *library_message_box = nullptr;
