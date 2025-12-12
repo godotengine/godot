@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Skin" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A list of inverse bind poses and corresponding bones.
 	</brief_description>
 	<description>
+		[Skin] contains a list of bind pose matrices and a list of either bone names if bones are named or bone indices if bones are not named. The bind pose matrix, also called offset matrix or inverse bind matrix, is a [Transform3D] offset that is multiplied with a bone's transform to get from vertex space to bone space. Used by [Skeleton3D] and [GPUParticles3D].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,6 +14,7 @@
 			<param index="0" name="bone" type="int" />
 			<param index="1" name="pose" type="Transform3D" />
 			<description>
+				Adds a bind pose matrix of [param pose] and associated bone index [param bone] to the bind pose list and increases the bind count by 1.
 			</description>
 		</method>
 		<method name="add_named_bind">
@@ -19,34 +22,40 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="pose" type="Transform3D" />
 			<description>
+				Like [method add_bind] but adds a bone [param name] instead of a bone index.
 			</description>
 		</method>
 		<method name="clear_binds">
 			<return type="void" />
 			<description>
+				Clears the bind pose list.
 			</description>
 		</method>
 		<method name="get_bind_bone" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="bind_index" type="int" />
 			<description>
+				Returns the bone index associated with bind pose [param bind_index].
 			</description>
 		</method>
 		<method name="get_bind_count" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the length of the bind pose list.
 			</description>
 		</method>
 		<method name="get_bind_name" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="bind_index" type="int" />
 			<description>
+				Returns the bone name associated with bind pose [param bind_index].
 			</description>
 		</method>
 		<method name="get_bind_pose" qualifiers="const">
 			<return type="Transform3D" />
 			<param index="0" name="bind_index" type="int" />
 			<description>
+				Returns the bind pose matrix at [param bind_index].
 			</description>
 		</method>
 		<method name="set_bind_bone">
@@ -54,12 +63,14 @@
 			<param index="0" name="bind_index" type="int" />
 			<param index="1" name="bone" type="int" />
 			<description>
+				Sets the bone index of bind pose [param bind_index] to the given index [param bone].
 			</description>
 		</method>
 		<method name="set_bind_count">
 			<return type="void" />
 			<param index="0" name="bind_count" type="int" />
 			<description>
+				Resizes the bind pose list to a length of [param bind_count].
 			</description>
 		</method>
 		<method name="set_bind_name">
@@ -67,6 +78,7 @@
 			<param index="0" name="bind_index" type="int" />
 			<param index="1" name="name" type="StringName" />
 			<description>
+				Sets the name of the bone in bind pose [param bind_index] to [param name].
 			</description>
 		</method>
 		<method name="set_bind_pose">
@@ -74,6 +86,7 @@
 			<param index="0" name="bind_index" type="int" />
 			<param index="1" name="pose" type="Transform3D" />
 			<description>
+				Assigns the bind pose [param bind_index] with the given offset matrix [param pose].
 			</description>
 		</method>
 	</methods>
