@@ -1073,6 +1073,13 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			}
 			return true;
 		}
+
+		// "free()" is registered as a special method in virtual_methods_map, which is not available
+		// in release export, so we handle it here as a special case.
+		if (p_method == CoreStringName(free_)) {
+			*r_info = MethodInfo("free");
+			return true;
+		}
 #endif // DEBUG_ENABLED
 
 		if (p_no_inheritance) {
