@@ -56,6 +56,8 @@ protected:
 	bool connected = false;
 	bool blocking = true;
 	bool broadcast = false;
+	bool reuse_addr = false;
+	bool reuse_port = false;
 	UDPServer *udp_server = nullptr;
 	Ref<NetSocket> _sock;
 
@@ -90,6 +92,8 @@ public:
 	int get_available_packet_count() const override;
 	int get_max_packet_size() const override;
 	void set_broadcast_enabled(bool p_enabled);
+	void set_reuse_address_enabled(bool p_reuse_addr);
+	void set_reuse_port_enabled(bool p_reuse_port);
 	Error join_multicast_group(IPAddress p_multi_address, const String &p_if_name);
 	Error leave_multicast_group(IPAddress p_multi_address, const String &p_if_name);
 
