@@ -39,14 +39,12 @@ void UndoRedo::Operation::delete_reference() {
 	if (type != Operation::TYPE_REFERENCE) {
 		return;
 	}
-	if (ref.is_valid()) {
-		ref.unref();
-	} else {
-		Object *obj = ObjectDB::get_instance(object);
-		if (obj) {
-			memdelete(obj);
-		}
+
+	Object *obj = object.get_validated_object();
+	if (obj && !object.is_ref_counted()) {
+		memdelete(obj);
 	}
+	object = Variant();
 }
 
 void UndoRedo::discard_redo() {
@@ -155,10 +153,7 @@ void UndoRedo::add_do_method(const Callable &p_callable) {
 
 	Operation do_op;
 	do_op.callable = p_callable;
-	do_op.object = object_id;
-	if (Object::cast_to<RefCounted>(object)) {
-		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(object));
-	}
+	do_op.object = object ? Variant(object) : Variant();
 	do_op.type = Operation::TYPE_METHOD;
 	do_op.name = p_callable.get_method();
 	if (do_op.name == StringName()) {
@@ -185,10 +180,7 @@ void UndoRedo::add_undo_method(const Callable &p_callable) {
 
 	Operation undo_op;
 	undo_op.callable = p_callable;
-	undo_op.object = object_id;
-	if (Object::cast_to<RefCounted>(object)) {
-		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(object));
-	}
+	undo_op.object = object ? Variant(object) : Variant();
 	undo_op.type = Operation::TYPE_METHOD;
 	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	undo_op.name = p_callable.get_method();
@@ -204,12 +196,9 @@ void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, c
 	ERR_FAIL_NULL(p_object);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
-	Operation do_op;
-	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<RefCounted>(p_object)) {
-		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
-	}
 
+	Operation do_op;
+	do_op.object = p_object;
 	do_op.type = Operation::TYPE_PROPERTY;
 	do_op.name = p_property;
 	do_op.value = p_value;
@@ -227,11 +216,7 @@ void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property,
 	}
 
 	Operation undo_op;
-	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<RefCounted>(p_object)) {
-		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
-	}
-
+	undo_op.object = p_object;
 	undo_op.type = Operation::TYPE_PROPERTY;
 	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	undo_op.name = p_property;
@@ -243,12 +228,9 @@ void UndoRedo::add_do_reference(Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
-	Operation do_op;
-	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<RefCounted>(p_object)) {
-		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
-	}
 
+	Operation do_op;
+	do_op.object = p_object;
 	do_op.type = Operation::TYPE_REFERENCE;
 	actions.write[current_action + 1].do_ops.push_back(do_op);
 }
@@ -264,11 +246,7 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 	}
 
 	Operation undo_op;
-	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<RefCounted>(p_object)) {
-		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
-	}
-
+	undo_op.object = p_object;
 	undo_op.type = Operation::TYPE_REFERENCE;
 	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
@@ -353,8 +331,8 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execu
 	for (; E; E = E->next()) {
 		Operation &op = E->get();
 
-		Object *obj = ObjectDB::get_instance(op.object);
-		if (!obj) { //may have been deleted and this is fine
+		Object *obj = op.object.get_validated_object();
+		if (!obj && op.object.get_type() == Variant::OBJECT) { // May have been deleted and this is fine.
 			continue;
 		}
 
