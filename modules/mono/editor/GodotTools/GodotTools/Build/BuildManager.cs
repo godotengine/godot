@@ -272,11 +272,12 @@ namespace GodotTools.Build
             string configuration,
             string? platform = null,
             bool rebuild = false,
-            bool onlyClean = false
+            bool onlyClean = false,
+            bool selfContained = true
         )
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
-                restore: true, rebuild, onlyClean);
+                restore: true, rebuild, onlyClean, selfContained);
 
             // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
             if (platform != null || Utils.OS.PlatformNameMap.TryGetValue(OS.GetName(), out platform))
@@ -293,11 +294,12 @@ namespace GodotTools.Build
             string platform,
             string runtimeIdentifier,
             string publishOutputDir,
-            bool includeDebugSymbols = true
+            bool includeDebugSymbols = true,
+            bool selfContained = true
         )
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
-                runtimeIdentifier, publishOutputDir, restore: true, rebuild: false, onlyClean: false);
+                runtimeIdentifier, publishOutputDir, restore: true, rebuild: false, onlyClean: false, selfContained);
 
             if (!includeDebugSymbols)
             {
@@ -329,9 +331,10 @@ namespace GodotTools.Build
             string platform,
             string runtimeIdentifier,
             string publishOutputDir,
-            bool includeDebugSymbols = true
+            bool includeDebugSymbols = true,
+            bool selfContained = true
         ) => PublishProjectBlocking(CreatePublishBuildInfo(configuration,
-            platform, runtimeIdentifier, publishOutputDir, includeDebugSymbols));
+            platform, runtimeIdentifier, publishOutputDir, includeDebugSymbols, selfContained));
 
         public static bool GenerateXCFrameworkBlocking(
             List<string> outputPaths,
