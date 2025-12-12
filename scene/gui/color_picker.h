@@ -168,11 +168,6 @@ public:
 	};
 
 private:
-	static inline Ref<Shader> wheel_shader;
-	static inline Ref<Shader> circle_shader;
-	static inline Ref<Shader> circle_ok_color_shader;
-	static inline Ref<Shader> rectangle_ok_color_hs_shader;
-	static inline Ref<Shader> rectangle_ok_color_hl_shader;
 	static inline List<Color> preset_cache;
 	static inline List<Color> recent_preset_cache;
 
@@ -217,6 +212,7 @@ private:
 	Button *btn_pick = nullptr;
 	Label *palette_name = nullptr;
 	String palette_path;
+	bool presets_just_loaded = false;
 	Button *btn_preset = nullptr;
 	Button *btn_recent_preset = nullptr;
 	PopupMenu *shape_popup = nullptr;
@@ -434,9 +430,6 @@ public:
 	HSlider *get_slider(int idx);
 	Vector<float> get_active_slider_values();
 
-	static void init_shaders();
-	static void finish_shaders();
-
 	void add_mode(ColorMode *p_mode);
 	void add_shape(ColorPickerShape *p_shape);
 
@@ -522,6 +515,7 @@ class ColorPickerButton : public Button {
 	Color color;
 	bool edit_alpha = true;
 	bool edit_intensity = true;
+	bool popup_was_open = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
@@ -541,6 +535,7 @@ class ColorPickerButton : public Button {
 protected:
 	void _notification(int);
 	static void _bind_methods();
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void set_pick_color(const Color &p_color);

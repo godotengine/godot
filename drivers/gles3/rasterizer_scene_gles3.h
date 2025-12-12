@@ -449,14 +449,14 @@ private:
 
 		struct TonemapUBO {
 			float exposure = 1.0;
-			float white = 1.0;
 			int32_t tonemapper = 0;
 			int32_t pad = 0;
-
 			int32_t pad2 = 0;
+			float tonemapper_params[4] = { 0.0, 0.0, 0.0, 0.0 };
 			float brightness = 1.0;
 			float contrast = 1.0;
 			float saturation = 1.0;
+			int32_t pad3 = 0;
 		};
 		static_assert(sizeof(TonemapUBO) % 16 == 0, "Tonemap UBO size must be a multiple of 16 bytes");
 
@@ -757,7 +757,6 @@ protected:
 	float ssao_fadeout_to = 300.0;
 
 	bool glow_bicubic_upscale = false;
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
 	bool lightmap_bicubic_upscale = false;
 
@@ -878,6 +877,7 @@ public:
 
 	void environment_glow_set_use_bicubic_upscale(bool p_enable) override;
 
+	void environment_set_ssr_half_size(bool p_half_size) override;
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override;
 
 	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;

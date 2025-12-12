@@ -1,0 +1,7 @@
+GH-88418
+--------
+Validate extension JSON: API was removed: classes/GDExtension/methods/close_library
+Validate extension JSON: API was removed: classes/GDExtension/methods/initialize_library
+Validate extension JSON: API was removed: classes/GDExtension/methods/open_library
+
+Since it was basically impossible to use these methods in any useful way, the GDExtension team agreed that breaking compatibility by removing them was OK.

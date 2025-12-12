@@ -37,6 +37,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
 
 class AcceptDialog;
@@ -333,6 +334,7 @@ private:
 	Vector<Node3D *> selection_results_menu;
 	bool clicked_wants_append = false;
 	bool selection_in_progress = false;
+	bool movement_threshold_passed = false;
 
 	PopupMenu *selection_menu = nullptr;
 
@@ -364,6 +366,11 @@ private:
 		TRANSFORM_XZ,
 		TRANSFORM_XY,
 	};
+	enum TransformType {
+		POSITION,
+		ROTATION,
+		SCALE,
+	};
 
 	struct EditData {
 		TransformMode mode;
@@ -393,6 +400,7 @@ private:
 		int numeric_next_decimal = 0;
 
 		Vector3 rotation_axis;
+		Vector3 view_axis_local;
 		double accumulated_rotation_angle = 0.0;
 		double display_rotation_angle = 0.0;
 		Vector3 initial_click_vector;
@@ -403,6 +411,7 @@ private:
 	struct Cursor {
 		Vector3 pos;
 		real_t x_rot, y_rot, distance, fov_scale;
+		real_t unsnapped_x_rot, unsnapped_y_rot;
 		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
@@ -411,6 +420,8 @@ private:
 			// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
 			x_rot = 0.5;
 			y_rot = -0.5;
+			unsnapped_x_rot = x_rot;
+			unsnapped_y_rot = y_rot;
 			distance = 4;
 			fov_scale = 1.0;
 			region_select = false;
@@ -521,7 +532,9 @@ private:
 
 	void _project_settings_changed();
 
-	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal);
+	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal, bool p_view_axis = false);
+
+	void _reset_transform(TransformType p_type);
 
 	void begin_transform(TransformMode p_mode, bool instant);
 	void commit_transform();
@@ -646,10 +659,11 @@ public:
 	static const unsigned int VIEWPORTS_COUNT = 4;
 
 	enum ToolMode {
-		TOOL_MODE_SELECT,
+		TOOL_MODE_TRANSFORM,
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
 		TOOL_MODE_SCALE,
+		TOOL_MODE_SELECT,
 		TOOL_MODE_LIST_SELECT,
 		TOOL_LOCK_SELECTED,
 		TOOL_UNLOCK_SELECTED,
@@ -697,10 +711,10 @@ private:
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3], axis_gizmo[3];
 	Ref<StandardMaterial3D> gizmo_color[3];
 	Ref<StandardMaterial3D> plane_gizmo_color[3];
-	Ref<ShaderMaterial> rotate_gizmo_color[3];
+	Ref<ShaderMaterial> rotate_gizmo_color[4];
 	Ref<StandardMaterial3D> gizmo_color_hl[3];
 	Ref<StandardMaterial3D> plane_gizmo_color_hl[3];
-	Ref<ShaderMaterial> rotate_gizmo_color_hl[3];
+	Ref<ShaderMaterial> rotate_gizmo_color_hl[4];
 
 	Ref<Node3DGizmo> current_hover_gizmo;
 	int current_hover_gizmo_handle;
@@ -746,10 +760,11 @@ private:
 	} gizmo;
 
 	enum MenuOption {
-		MENU_TOOL_SELECT,
+		MENU_TOOL_TRANSFORM,
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,
 		MENU_TOOL_SCALE,
+		MENU_TOOL_SELECT,
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
@@ -788,9 +803,9 @@ private:
 
 	bool snap_enabled;
 	bool snap_key_enabled;
-	LineEdit *snap_translate = nullptr;
-	LineEdit *snap_rotate = nullptr;
-	LineEdit *snap_scale = nullptr;
+	EditorSpinSlider *snap_translate = nullptr;
+	EditorSpinSlider *snap_rotate = nullptr;
+	EditorSpinSlider *snap_scale = nullptr;
 
 	LineEdit *xform_translate[3];
 	LineEdit *xform_rotate[3];
@@ -815,7 +830,6 @@ private:
 	HashMap<Control *, VSeparator *> context_toolbar_separators;
 
 	void _update_context_toolbar();
-	void _on_editor_settings_changed();
 
 	void _generate_selection_boxes();
 

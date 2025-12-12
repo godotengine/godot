@@ -230,6 +230,25 @@ Object::Connection::operator Variant() const {
 	return d;
 }
 
+void ObjectGDExtension::create_gdtype() {
+	ERR_FAIL_COND(gdtype);
+
+	gdtype = memnew(GDType(ClassDB::get_gdtype(parent_class_name), class_name));
+}
+
+void ObjectGDExtension::destroy_gdtype() {
+	ERR_FAIL_COND(!gdtype);
+
+	memdelete(const_cast<GDType *>(gdtype));
+	gdtype = nullptr;
+}
+
+ObjectGDExtension::~ObjectGDExtension() {
+	if (gdtype) {
+		memdelete(const_cast<GDType *>(gdtype));
+	}
+}
+
 bool Object::Connection::operator<(const Connection &p_conn) const {
 	if (signal == p_conn.signal) {
 		return callable < p_conn.callable;
@@ -279,6 +298,7 @@ bool Object::_predelete() {
 		}
 		_extension = nullptr;
 		_extension_instance = nullptr;
+		// _gdtype_ptr = nullptr; // The pointer already set to nullptr above, no need to do it again.
 	}
 #ifdef TOOLS_ENABLED
 	else if (_instance_bindings != nullptr) {
@@ -1044,7 +1064,7 @@ String Object::to_string() {
 			return ret;
 		}
 	}
-	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
+	return _to_string();
 }
 
 void Object::set_script(const Variant &p_script) {
@@ -1379,6 +1399,16 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	return err;
 }
 
+void Object::_reset_gdtype() const {
+	if (_extension) {
+		// Set to extension's type.
+		_gdtype_ptr = _extension->gdtype;
+	} else {
+		// Reset to internal type.
+		_gdtype_ptr = &_get_typev();
+	}
+}
+
 void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	// this version of add_user_signal is meant to be used from scripts or external apis
 	// without access to ADD_SIGNAL in bind_methods
@@ -1520,6 +1550,18 @@ int Object::get_persistent_signal_connection_count() const {
 	}
 
 	return count;
+}
+
+uint32_t Object::get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const {
+	OBJ_SIGNAL_LOCK
+	const SignalData *signal_data = signal_map.getptr(p_name);
+	if (signal_data) {
+		const SignalData::Slot *slot = signal_data->slot_map.getptr(p_callable);
+		if (slot) {
+			return slot->conn.flags;
+		}
+	}
+	return 0;
 }
 
 void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {
@@ -1688,6 +1730,19 @@ bool Object::_uses_signal_mutex() const {
 	return true;
 }
 
+String Object::_get_locale() const {
+	TranslationServer *ts = TranslationServer::get_singleton();
+	const StringName domain_name = get_translation_domain();
+	if (ts->has_domain(domain_name)) {
+		const Ref<TranslationDomain> domain = ts->get_or_add_domain(domain_name);
+		const String &overridden = domain->get_locale_override();
+		if (!overridden.is_empty()) {
+			return overridden;
+		}
+	}
+	return ts->get_locale();
+}
+
 void Object::_set_bind(const StringName &p_set, const Variant &p_value) {
 	set(p_set, p_value);
 }
@@ -1709,7 +1764,7 @@ void Object::initialize_class() {
 	if (initialized) {
 		return;
 	}
-	_add_class_to_classdb(get_class_static(), StringName());
+	_add_class_to_classdb(get_gdtype_static(), nullptr);
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
@@ -1785,8 +1840,8 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
-void Object::_add_class_to_classdb(const StringName &p_class, const StringName &p_inherits) {
-	ClassDB::_add_class(p_class, p_inherits);
+void Object::_add_class_to_classdb(const GDType &p_type, const GDType *p_inherits) {
+	ClassDB::_add_class(p_type, p_inherits);
 }
 
 void Object::_get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
@@ -1824,6 +1879,10 @@ void Object::clear_internal_resource_paths() {
 
 void Object::notify_property_list_changed() {
 	emit_signal(CoreStringName(property_list_changed));
+}
+
+String Object::_to_string() {
+	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
 }
 
 void Object::_bind_methods() {
@@ -2099,9 +2158,6 @@ const GDType &Object::get_gdtype() const {
 }
 
 bool Object::is_class(const String &p_class) const {
-	if (_extension && _extension->is_class(p_class)) {
-		return true;
-	}
 	for (const StringName &name : get_gdtype().get_name_hierarchy()) {
 		if (name == p_class) {
 			return true;
@@ -2111,11 +2167,6 @@ bool Object::is_class(const String &p_class) const {
 }
 
 const StringName &Object::get_class_name() const {
-	if (_extension) {
-		// Can't put inside the unlikely as constructor can run it.
-		return _extension->class_name;
-	}
-
 	return get_gdtype().get_name();
 }
 
@@ -2248,6 +2299,8 @@ void Object::clear_internal_extension() {
 	}
 	_extension = nullptr;
 	_extension_instance = nullptr;
+	// Reset GDType to internal type.
+	_gdtype_ptr = &_get_typev();
 
 	// Clear the instance bindings.
 	_instance_binding_mutex.lock();
@@ -2276,6 +2329,7 @@ void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
 		_extension_instance = p_extension->recreate_instance ? p_extension->recreate_instance(p_extension->class_userdata, (GDExtensionObjectPtr)this) : nullptr;
 		ERR_FAIL_NULL_MSG(_extension_instance, "Unable to recreate GDExtension instance - does this extension support hot reloading?");
 		_extension = p_extension;
+		_gdtype_ptr = p_extension->gdtype;
 	}
 }
 #endif
@@ -2284,6 +2338,8 @@ void Object::_construct_object(bool p_reference) {
 	_block_signals = false;
 	_can_translate = true;
 	_emitting = false;
+	_is_queued_for_deletion = false;
+	_predelete_ok = false;
 
 	// ObjectDB::add_instance relies on AncestralClass::REF_COUNTED
 	// being already set in the case of references.

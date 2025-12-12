@@ -621,6 +621,10 @@ Size2i DisplayServerEmbedded::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
+	print_line("Embedded window can't be resized.");
+}
+
+void DisplayServerEmbedded::_window_set_size(const Size2i p_size, WindowID p_window) {
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 

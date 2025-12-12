@@ -60,7 +60,7 @@ void VersionControlEditorPlugin::_bind_methods() {
 
 void VersionControlEditorPlugin::_create_vcs_metadata_files() {
 	String dir = "res://";
-	EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(metadata_selection->get_selected()), dir);
+	EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(metadata_selection->get_selected_id()), dir);
 }
 
 void VersionControlEditorPlugin::_notification(int p_what) {
@@ -276,7 +276,7 @@ void VersionControlEditorPlugin::_commit() {
 
 	EditorVCSInterface::get_singleton()->commit(msg);
 
-	version_control_dock_button->set_pressed(false);
+	EditorNode::get_bottom_panel()->make_item_visible(version_control_dock, false);
 
 	commit_message->release_focus();
 	commit_button->release_focus();
@@ -488,7 +488,7 @@ void VersionControlEditorPlugin::_move_all(Object *p_tree) {
 void VersionControlEditorPlugin::_load_diff(Object *p_tree) {
 	CHECK_PLUGIN_INITIALIZED();
 
-	version_control_dock_button->set_pressed(true);
+	EditorNode::get_bottom_panel()->make_item_visible(version_control_dock, true, true);
 
 	Tree *tree = Object::cast_to<Tree>(p_tree);
 	if (tree == staged_files) {
@@ -910,7 +910,7 @@ void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 void VersionControlEditorPlugin::register_editor() {
 	EditorDockManager::get_singleton()->add_dock(version_commit_dock);
 
-	version_control_dock_button = EditorNode::get_bottom_panel()->add_item(TTRC("Version Control"), version_control_dock, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTRC("Toggle Version Control Bottom Panel")));
+	EditorNode::get_bottom_panel()->add_item(TTRC("Version Control"), version_control_dock, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTRC("Toggle Version Control Bottom Panel")));
 
 	_set_vcs_ui_state(true);
 }
@@ -958,9 +958,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	metadata_selection = memnew(OptionButton);
 	metadata_selection->set_custom_minimum_size(Size2(100, 20));
-	metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
 	metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
-	metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
+	metadata_selection->select(metadata_selection->get_item_index((int)EditorVCSInterface::VCSMetadata::GIT));
 	metadata_hb->add_child(metadata_selection);
 
 	l = memnew(Label);
@@ -1151,7 +1150,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_commit_dock->set_layout_key("VersionCommit");
 	version_commit_dock->set_icon_name("VcsBranches");
 	version_commit_dock->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_version_control", TTRC("Open Version Control Dock")));
-	version_commit_dock->set_default_slot(EditorDockManager::DOCK_SLOT_RIGHT_UL);
+	version_commit_dock->set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
 
 	VBoxContainer *dock_vb = memnew(VBoxContainer);
 	version_commit_dock->add_child(dock_vb);

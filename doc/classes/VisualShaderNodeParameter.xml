@@ -9,6 +9,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="instance_index" type="int" setter="set_instance_index" getter="get_instance_index" default="0">
+			The index within 0-15 range, which is used to avoid clashes when shader used on multiple materials.
+		</member>
 		<member name="parameter_name" type="String" setter="set_parameter_name" getter="get_parameter_name" default="&quot;&quot;">
 			Name of the parameter, by which it can be accessed through the [ShaderMaterial] properties.
 		</member>
@@ -26,7 +29,10 @@
 		<constant name="QUAL_INSTANCE" value="2" enum="Qualifier">
 			The parameter will be tied to the node with attached [ShaderMaterial] using this shader.
 		</constant>
-		<constant name="QUAL_MAX" value="3" enum="Qualifier">
+		<constant name="QUAL_INSTANCE_INDEX" value="3" enum="Qualifier">
+			The parameter will be tied to the node with attached [ShaderMaterial] using this shader. Enables setting a [member instance_index] property.
+		</constant>
+		<constant name="QUAL_MAX" value="4" enum="Qualifier">
 			Represents the size of the [enum Qualifier] enum.
 		</constant>
 	</constants>

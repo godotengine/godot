@@ -5,7 +5,7 @@
  *   TrueTypeGX/AAT morx table validation
  *   body for type0 (Indic Script Rearrangement) subtable.
  *
- * Copyright (C) 2005-2024 by
+ * Copyright (C) 2005-2025 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *

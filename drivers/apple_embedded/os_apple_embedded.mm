@@ -41,6 +41,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #import "drivers/apple/os_log_logger.h"
 #include "main/main.h"
 
@@ -205,6 +206,9 @@ bool OS_AppleEmbedded::iterate() {
 		return true;
 	}
 
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_AppleEmbedded::iterate");
+
 	if (DisplayServer::get_singleton()) {
 		DisplayServer::get_singleton()->process_events();
 	}
@@ -276,6 +280,11 @@ Error OS_AppleEmbedded::open_dynamic_library(const String &p_path, void *&p_libr
 	}
 
 	if (!FileAccess::exists(path)) {
+		// Load .dylib from within the executable path.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join(p_path.get_file().get_basename() + ".dylib"));
+	}
+
+	if (!FileAccess::exists(path)) {
 		// Load .dylib or framework from a standard iOS location.
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file()));
 	}
@@ -285,8 +294,16 @@ Error OS_AppleEmbedded::open_dynamic_library(const String &p_path, void *&p_libr
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file().get_basename() + ".framework"));
 	}
 
-	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+	if (!FileAccess::exists(path)) {
+		// Load .dylib from a standard iOS location.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file().get_basename() + ".dylib"));
+	}
 
+	if (!FileAccess::exists(path) && (p_path.ends_with(".a") || p_path.ends_with(".xcframework"))) {
+		path = String(); // Try loading static library.
+	} else {
+		ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+	}
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
@@ -393,6 +410,15 @@ String OS_AppleEmbedded::get_resource_dir() const {
 		return remote_fs_dir;
 	}
 #endif
+}
+
+String OS_AppleEmbedded::get_bundle_resource_dir() const {
+	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
+	if (!str) {
+		return OS_Unix::get_bundle_resource_dir();
+	} else {
+		return String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+	}
 }
 
 String OS_AppleEmbedded::get_locale() const {

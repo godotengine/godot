@@ -100,6 +100,7 @@ private:
 				uint32_t current_buffer = 0;
 				uint32_t previous_buffer = 0;
 				bool input_motion_vectors = false;
+				bool point_size_emulated = false;
 				RD::VertexFormatID vertex_format = 0;
 				RID vertex_array;
 			};
@@ -208,8 +209,8 @@ private:
 				weight_update_list(this), array_update_list(this) {}
 	};
 
-	RD::VertexFormatID _mesh_surface_generate_vertex_format(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, uint32_t &r_position_stride);
-	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, MeshInstance::Surface *mis = nullptr, uint32_t p_current_buffer = 0, uint32_t p_previous_buffer = 0);
+	RD::VertexFormatID _mesh_surface_generate_vertex_format(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, bool p_point_size_emulated, uint32_t &r_position_stride);
+	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, MeshInstance::Surface *mis = nullptr, uint32_t p_current_buffer = 0, uint32_t p_previous_buffer = 0);
 	void _mesh_surface_clear(Mesh *p_mesh, int p_surface);
 
 	void _mesh_instance_clear(MeshInstance *mi);
@@ -445,6 +446,11 @@ public:
 		return surface->primitive;
 	}
 
+	_FORCE_INLINE_ uint32_t mesh_surface_get_vertex_count(void *p_surface) {
+		Mesh::Surface *surface = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return surface->vertex_count;
+	}
+
 	_FORCE_INLINE_ bool mesh_surface_has_lod(void *p_surface) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 		return s->lod_count > 0;
@@ -500,7 +506,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint64_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		s->version_lock.lock();
@@ -508,7 +514,7 @@ public:
 		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
 
 		for (uint32_t i = 0; i < s->version_count; i++) {
-			if (s->versions[i].input_mask != p_input_mask || s->versions[i].input_motion_vectors != p_input_motion_vectors) {
+			if (s->versions[i].input_mask != p_input_mask || s->versions[i].input_motion_vectors != p_input_motion_vectors || s->versions[i].point_size_emulated != p_point_size_emulated) {
 				// Find the version that matches the inputs required.
 				continue;
 			}
@@ -524,7 +530,7 @@ public:
 		s->version_count++;
 		s->versions = (Mesh::Surface::Version *)memrealloc(s->versions, sizeof(Mesh::Surface::Version) * s->version_count);
 
-		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask, p_input_motion_vectors);
+		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask, p_input_motion_vectors, p_point_size_emulated);
 
 		r_vertex_format = s->versions[version].vertex_format;
 		r_vertex_array_rd = s->versions[version].vertex_array;
@@ -532,7 +538,7 @@ public:
 		s->version_lock.unlock();
 	}
 
-	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint64_t p_surface_index, uint64_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint64_t p_surface_index, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 		ERR_FAIL_NULL(mi);
 		Mesh *mesh = mi->mesh;
@@ -571,7 +577,7 @@ public:
 		mis->version_count++;
 		mis->versions = (Mesh::Surface::Version *)memrealloc(mis->versions, sizeof(Mesh::Surface::Version) * mis->version_count);
 
-		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, p_input_motion_vectors, mis, current_buffer, previous_buffer);
+		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, p_input_motion_vectors, p_point_size_emulated, mis, current_buffer, previous_buffer);
 
 		r_vertex_format = mis->versions[version].vertex_format;
 		r_vertex_array_rd = mis->versions[version].vertex_array;
@@ -623,10 +629,10 @@ public:
 		return s->particles_render_index;
 	}
 
-	_FORCE_INLINE_ RD::VertexFormatID mesh_surface_get_vertex_format(void *p_surface, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors) {
+	_FORCE_INLINE_ RD::VertexFormatID mesh_surface_get_vertex_format(void *p_surface, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, bool p_point_size_emulated) {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 		uint32_t position_stride = 0;
-		return _mesh_surface_generate_vertex_format(s->format, p_input_mask, p_instanced_surface, p_input_motion_vectors, position_stride);
+		return _mesh_surface_generate_vertex_format(s->format, p_input_mask, p_instanced_surface, p_input_motion_vectors, p_point_size_emulated, position_stride);
 	}
 
 	Dependency *mesh_get_dependency(RID p_mesh) const;

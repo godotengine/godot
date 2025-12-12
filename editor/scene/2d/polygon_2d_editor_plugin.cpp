@@ -32,9 +32,10 @@
 
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "editor/docks/editor_dock.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -69,7 +70,7 @@ void Polygon2DEditor::_set_node(Node *p_polygon) {
 	if (node) {
 		canvas->set_texture_filter(node->get_texture_filter_in_tree());
 
-		_update_bone_list();
+		_update_bone_list(node);
 		_update_available_modes();
 		if (current_mode == MODE_MAX) {
 			_select_mode(MODE_POINTS); // Initialize when opening the first time.
@@ -140,13 +141,9 @@ void Polygon2DEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				dock_button->show();
-				EditorNode::get_bottom_panel()->make_item_visible(polygon_edit);
+				polygon_edit->make_visible();
 			} else {
-				dock_button->hide();
-				if (polygon_edit->is_visible_in_tree()) {
-					EditorNode::get_bottom_panel()->hide_bottom_panel();
-				}
+				polygon_edit->close();
 			}
 		} break;
 	}
@@ -200,12 +197,17 @@ void Polygon2DEditor::_sync_bones() {
 	undo_redo->create_action(TTR("Sync Bones"));
 	undo_redo->add_do_method(node, "_set_bones", new_bones);
 	undo_redo->add_undo_method(node, "_set_bones", prev_bones);
-	undo_redo->add_do_method(this, "_update_bone_list");
-	undo_redo->add_undo_method(this, "_update_bone_list");
+	undo_redo->add_do_method(this, "_update_bone_list", node);
+	undo_redo->add_undo_method(this, "_update_bone_list", node);
 	undo_redo->commit_action();
 }
 
-void Polygon2DEditor::_update_bone_list() {
+void Polygon2DEditor::_update_bone_list(const Polygon2D *p_for_node) {
+	ERR_FAIL_NULL(p_for_node);
+	if (p_for_node != node) {
+		return;
+	}
+
 	NodePath selected;
 	while (bone_scroll_vb->get_child_count()) {
 		CheckBox *cb = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(0));
@@ -297,7 +299,7 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 			bone_paint_strength->show();
 			bone_paint_radius->show();
 			bone_paint_radius_label->show();
-			_update_bone_list();
+			_update_bone_list(node);
 			bone_paint_pos = Vector2(-100000, -100000); // Send brush away when switching.
 		} break;
 		default:
@@ -590,6 +592,9 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					if (closest == -1) {
 						return;
 					}
+					if (closest == hovered_point) {
+						hovered_point = -1;
+					}
 
 					previous_polygon.remove_at(closest);
 					previous_uv.remove_at(closest);
@@ -781,6 +786,40 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseMotion> mm = p_input;
 
 	if (mm.is_valid()) {
+		// Highlight a point near the cursor.
+		if (is_creating) {
+			if (editing_points.size() > 2 && mtx.affine_inverse().xform(mm->get_position()).distance_to(node->get_polygon()[0]) < (8 / draw_zoom)) {
+				if (hovered_point != 0) {
+					hovered_point = 0;
+					canvas->queue_redraw();
+				}
+			} else if (hovered_point == 0) {
+				hovered_point = -1;
+				canvas->queue_redraw();
+			}
+		}
+		if (selected_action == ACTION_REMOVE_INTERNAL || selected_action == ACTION_EDIT_POINT || selected_action == ACTION_ADD_POLYGON) {
+			Vector<Vector2> points;
+			if (current_mode == MODE_POINTS || current_mode == MODE_POLYGONS) {
+				points = node->get_polygon();
+			} else {
+				points = node->get_uv();
+			}
+			int i = points.size() - 1;
+			for (; i >= 0; i--) {
+				if (mtx.affine_inverse().xform(mm->get_position()).distance_to(points[i]) < (8 / draw_zoom)) {
+					if (hovered_point != i) {
+						hovered_point = i;
+						canvas->queue_redraw();
+					}
+					break;
+				}
+			}
+			if (i == -1 && hovered_point >= 0) {
+				hovered_point = -1;
+				canvas->queue_redraw();
+			}
+		}
 		if (is_dragging) {
 			Vector2 uv_drag_to = mm->get_position();
 			uv_drag_to = snap_point(uv_drag_to);
@@ -794,7 +833,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				} break;
 				case ACTION_EDIT_POINT: {
 					Vector<Vector2> uv_new = editing_points;
-					uv_new.set(point_drag_index, uv_new[point_drag_index] + drag);
+					uv_new.set(point_drag_index, mtx.affine_inverse().xform(snap_point(mm->get_position())));
 
 					if (current_mode == MODE_UV) {
 						node->set_uv(uv_new);
@@ -1178,17 +1217,31 @@ void Polygon2DEditor::_canvas_draw() {
 		}
 	}
 
-	for (int i = 0; i < uvs.size(); i++) {
-		if (weight_r) {
+	if (weight_r) {
+		for (int i = 0; i < uvs.size(); i++) {
 			Vector2 draw_pos = mtx.xform(uvs[i]);
 			float weight = weight_r[i];
 			canvas->draw_rect(Rect2(draw_pos - Vector2(2, 2) * EDSCALE, Vector2(5, 5) * EDSCALE), Color(weight, weight, weight, 1.0), Math::round(EDSCALE));
-		} else {
-			if (i < uv_draw_max) {
-				canvas->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5);
+		}
+	} else {
+		Vector2 texture_size_half = handle->get_size() * 0.5;
+		Color mod(1, 1, 1);
+		Color hovered_mod(0.65, 0.65, 0.65);
+		for (int i = 0; i < uv_draw_max; i++) {
+			if (i == hovered_point && selected_action != ACTION_REMOVE_INTERNAL) {
+				canvas->draw_texture(handle, mtx.xform(uvs[i]) - texture_size_half, hovered_mod);
 			} else {
-				// Internal vertex
-				canvas->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5, Color(0.6, 0.8, 1));
+				canvas->draw_texture(handle, mtx.xform(uvs[i]) - texture_size_half, mod);
+			}
+		}
+		// Internal vertices.
+		mod = Color(0.6, 0.8, 1);
+		hovered_mod = Color(0.35, 0.55, 0.75);
+		for (int i = uv_draw_max; i < uvs.size(); i++) {
+			if (i == hovered_point) {
+				canvas->draw_texture(handle, mtx.xform(uvs[i]) - texture_size_half, hovered_mod);
+			} else {
+				canvas->draw_texture(handle, mtx.xform(uvs[i]) - texture_size_half, mod);
 			}
 		}
 	}
@@ -1260,7 +1313,7 @@ void Polygon2DEditor::_canvas_draw() {
 }
 
 void Polygon2DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_bone_list"), &Polygon2DEditor::_update_bone_list);
+	ClassDB::bind_method(D_METHOD("_update_bone_list", "for_node"), &Polygon2DEditor::_update_bone_list);
 	ClassDB::bind_method(D_METHOD("_update_polygon_editing_state"), &Polygon2DEditor::_update_polygon_editing_state);
 }
 
@@ -1281,7 +1334,21 @@ Polygon2DEditor::Polygon2DEditor() {
 	snap_show_grid = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "show_grid", false);
 
 	selected_action = ACTION_EDIT_POINT;
-	polygon_edit = memnew(VBoxContainer);
+
+	polygon_edit = memnew(EditorDock);
+	polygon_edit->set_name(TTRC("Polygon"));
+	polygon_edit->set_icon_name("PolygonDock");
+	polygon_edit->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTRC("Toggle Polygon Dock")));
+	polygon_edit->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	polygon_edit->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	polygon_edit->set_global(false);
+	polygon_edit->set_transient(true);
+	EditorDockManager::get_singleton()->add_dock(polygon_edit);
+	polygon_edit->close();
+
+	VBoxContainer *edit_vbox = memnew(VBoxContainer);
+	polygon_edit->add_child(edit_vbox);
+
 	HBoxContainer *toolbar = memnew(HBoxContainer);
 
 	Ref<ButtonGroup> mode_button_group;
@@ -1300,7 +1367,7 @@ Polygon2DEditor::Polygon2DEditor() {
 
 	toolbar->add_child(memnew(VSeparator));
 
-	polygon_edit->add_child(toolbar);
+	edit_vbox->add_child(toolbar);
 	for (int i = 0; i < ACTION_MAX; i++) {
 		action_buttons[i] = memnew(Button);
 		action_buttons[i]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1313,7 +1380,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_CREATE]->set_tooltip_text(TTR("Create Polygon"));
 	action_buttons[ACTION_CREATE_INTERNAL]->set_tooltip_text(TTR("Create Internal Vertex"));
 	action_buttons[ACTION_REMOVE_INTERNAL]->set_tooltip_text(TTR("Remove Internal Vertex"));
-	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+	Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 	// TRANSLATORS: %s is Control or Command key name.
 	action_buttons[ACTION_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), find_keycode_name(key)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), find_keycode_name(key)));
 	action_buttons[ACTION_MOVE]->set_tooltip_text(TTR("Move Polygon"));
@@ -1358,7 +1425,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	bone_paint_radius->set_accessibility_name(TTRC("Radius:"));
 
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
-	polygon_edit->add_child(uv_main_hsc);
+	edit_vbox->add_child(uv_main_hsc);
 	uv_main_hsc->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	canvas_background = memnew(Panel);
@@ -1499,9 +1566,6 @@ Polygon2DEditor::Polygon2DEditor() {
 
 	error = memnew(AcceptDialog);
 	add_child(error);
-
-	dock_button = EditorNode::get_bottom_panel()->add_item(TTRC("Polygon"), polygon_edit, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTR("Toggle Polygon Bottom Panel")));
-	dock_button->hide();
 }
 
 Polygon2DEditorPlugin::Polygon2DEditorPlugin() :

@@ -32,6 +32,8 @@
 
 #include "core/os/os.h"
 #include "platform/android/display_server_android.h"
+#include "platform/android/java_godot_io_wrapper.h"
+#include "platform/android/os_android.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Helper functions
@@ -93,23 +95,75 @@ CameraFeedAndroid::~CameraFeedAndroid() {
 	}
 }
 
-void CameraFeedAndroid::_set_rotation() {
-	int display_rotation = DisplayServerAndroid::get_singleton()->get_display_rotation();
-	// reverse rotation
-	switch (display_rotation) {
-		case 90:
-			display_rotation = 270;
-			break;
-		case 270:
-			display_rotation = 90;
-			break;
-		default:
-			break;
+void CameraFeedAndroid::refresh_camera_metadata() {
+	ERR_FAIL_NULL_MSG(manager, vformat("Camera %s: Cannot refresh metadata, manager is null.", camera_id));
+
+	if (metadata != nullptr) {
+		ACameraMetadata_free(metadata);
+		metadata = nullptr;
 	}
 
-	int sign = position == CameraFeed::FEED_FRONT ? 1 : -1;
-	float imageRotation = (orientation - display_rotation * sign + 360) % 360;
-	transform.set_rotation(real_t(Math::deg_to_rad(imageRotation)));
+	camera_status_t status = ACameraManager_getCameraCharacteristics(manager, camera_id.utf8().get_data(), &metadata);
+	if (status != ACAMERA_OK || metadata == nullptr) {
+		ERR_FAIL_MSG(vformat("Camera %s: Failed to refresh metadata (status: %d).", camera_id, status));
+	}
+
+	ACameraMetadata_const_entry orientation_entry;
+	status = ACameraMetadata_getConstEntry(metadata, ACAMERA_SENSOR_ORIENTATION, &orientation_entry);
+	if (status == ACAMERA_OK) {
+		orientation = orientation_entry.data.i32[0];
+		print_verbose(vformat("Camera %s: Orientation updated to %d.", camera_id, orientation));
+	} else {
+		ERR_PRINT(vformat("Camera %s: Failed to get sensor orientation after refresh (status: %d).", camera_id, status));
+	}
+
+	formats.clear();
+	_add_formats();
+
+	print_verbose(vformat("Camera %s: Metadata refreshed successfully.", camera_id));
+}
+
+void CameraFeedAndroid::_set_rotation() {
+	if (!metadata) {
+		print_verbose(vformat("Camera %s: Metadata is null in _set_rotation, attempting refresh.", camera_id));
+		refresh_camera_metadata();
+	}
+
+	float image_rotation = 0.0f;
+	std::optional<int> result;
+
+	if (metadata) {
+		CameraRotationParams params;
+		params.sensor_orientation = orientation;
+		params.camera_facing = (position == CameraFeed::FEED_FRONT) ? CameraFacing::FRONT : CameraFacing::BACK;
+		params.display_rotation = get_app_orientation();
+
+		result = calculate_rotation(params);
+	} else {
+		ERR_PRINT(vformat("Camera %s: Cannot update rotation, metadata unavailable after refresh, using fallback.", camera_id));
+	}
+
+	if (result.has_value()) {
+		image_rotation = static_cast<float>(result.value());
+	} else {
+		int display_rotation = DisplayServerAndroid::get_singleton()->get_display_rotation();
+		switch (display_rotation) {
+			case 90:
+				display_rotation = 270;
+				break;
+			case 270:
+				display_rotation = 90;
+				break;
+			default:
+				break;
+		}
+
+		int sign = position == CameraFeed::FEED_FRONT ? 1 : -1;
+		image_rotation = (orientation - display_rotation * sign + 360) % 360;
+	}
+
+	transform = Transform2D();
+	transform = transform.rotated(Math::deg_to_rad(image_rotation));
 }
 
 void CameraFeedAndroid::_add_formats() {
@@ -142,7 +196,9 @@ void CameraFeedAndroid::_add_formats() {
 }
 
 bool CameraFeedAndroid::activate_feed() {
-	ERR_FAIL_COND_V_MSG(selected_format == -1, false, "CameraFeed format needs to be set before activating.");
+	ERR_FAIL_COND_V_MSG(formats.is_empty(), false, "No camera formats available.");
+	ERR_FAIL_INDEX_V_MSG(selected_format, formats.size(), false,
+			vformat("CameraFeed format needs to be set before activating. Selected format index: %d (formats size: %d)", selected_format, formats.size()));
 	if (is_active()) {
 		deactivate_feed();
 	};
@@ -278,11 +334,52 @@ Array CameraFeedAndroid::get_formats() const {
 
 CameraFeed::FeedFormat CameraFeedAndroid::get_format() const {
 	CameraFeed::FeedFormat feed_format = {};
-	return selected_format == -1 ? feed_format : formats[selected_format];
+	ERR_FAIL_INDEX_V_MSG(selected_format, formats.size(), feed_format,
+			vformat("Invalid format index: %d (formats size: %d)", selected_format, formats.size()));
+	return formats[selected_format];
+}
+
+void CameraFeedAndroid::handle_pause() {
+	if (is_active()) {
+		was_active_before_pause = true;
+		print_verbose(vformat("Camera %s: Pausing (was active).", camera_id));
+		deactivate_feed();
+	} else {
+		was_active_before_pause = false;
+	}
+}
+
+void CameraFeedAndroid::handle_resume() {
+	if (was_active_before_pause) {
+		print_verbose(vformat("Camera %s: Resuming.", camera_id));
+		activate_feed();
+		was_active_before_pause = false;
+	}
+}
+
+void CameraFeedAndroid::handle_rotation_change() {
+	if (!is_active()) {
+		return;
+	}
+
+	print_verbose(vformat("Camera %s: Handling rotation change.", camera_id));
+	refresh_camera_metadata();
+	_set_rotation();
 }
 
 void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
+
+	MutexLock lock(feed->callback_mutex);
+
+	if (!feed->is_active()) {
+		AImage *pending_image = nullptr;
+		if (AImageReader_acquireNextImage(p_reader, &pending_image) == AMEDIA_OK) {
+			AImage_delete(pending_image);
+		}
+		return;
+	}
+
 	Vector<uint8_t> data_y = feed->data_y;
 	Vector<uint8_t> data_uv = feed->data_uv;
 	Ref<Image> image_y = feed->image_y;
@@ -363,8 +460,17 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 			return;
 	}
 
-	// Rotation
-	feed->_set_rotation();
+	if (!feed->formats.is_empty()) {
+		if (feed->metadata != nullptr) {
+			feed->_set_rotation();
+		} else {
+			print_verbose(vformat("Camera %s: Metadata invalidated in onImage, attempting refresh.", feed->camera_id));
+			feed->refresh_camera_metadata();
+			if (feed->metadata != nullptr && !feed->formats.is_empty()) {
+				feed->_set_rotation();
+			}
+		}
+	}
 
 	// Release image
 	AImage_delete(image);
@@ -383,15 +489,26 @@ void CameraFeedAndroid::onSessionClosed(void *context, ACameraCaptureSession *se
 }
 
 void CameraFeedAndroid::deactivate_feed() {
+	// First, remove image listener to prevent new callbacks.
+	if (reader != nullptr) {
+		AImageReader_setImageListener(reader, nullptr);
+	}
+
+	// Stop and close capture session.
+	// These calls may wait for pending callbacks to complete.
 	if (session != nullptr) {
 		ACameraCaptureSession_stopRepeating(session);
 		ACameraCaptureSession_close(session);
 		session = nullptr;
 	}
 
-	if (request != nullptr) {
-		ACaptureRequest_free(request);
-		request = nullptr;
+	// Now safe to acquire lock and clean up resources.
+	// No new callbacks will be triggered after this point.
+	MutexLock lock(callback_mutex);
+
+	if (device != nullptr) {
+		ACameraDevice_close(device);
+		device = nullptr;
 	}
 
 	if (reader != nullptr) {
@@ -399,9 +516,9 @@ void CameraFeedAndroid::deactivate_feed() {
 		reader = nullptr;
 	}
 
-	if (device != nullptr) {
-		ACameraDevice_close(device);
-		device = nullptr;
+	if (request != nullptr) {
+		ACaptureRequest_free(request);
+		request = nullptr;
 	}
 }
 
@@ -505,6 +622,75 @@ void CameraAndroid::set_monitoring_feeds(bool p_monitoring_feeds) {
 	}
 }
 
+void CameraAndroid::handle_application_pause() {
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedAndroid> feed = feeds[i];
+		if (feed.is_valid()) {
+			feed->handle_pause();
+		}
+	}
+}
+
+void CameraAndroid::handle_application_resume() {
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedAndroid> feed = feeds[i];
+		if (feed.is_valid()) {
+			feed->handle_resume();
+		}
+	}
+}
+
+void CameraAndroid::handle_display_rotation_change(int) {
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedAndroid> feed = feeds[i];
+		if (feed.is_valid()) {
+			feed->handle_rotation_change();
+		}
+	}
+}
+
 CameraAndroid::~CameraAndroid() {
 	remove_all_feeds();
+}
+
+std::optional<int> CameraFeedAndroid::calculate_rotation(const CameraRotationParams &p_params) {
+	if (p_params.sensor_orientation < 0 || p_params.sensor_orientation > 270 || p_params.sensor_orientation % 90 != 0) {
+		return std::nullopt;
+	}
+
+	int rotation_angle = p_params.sensor_orientation - p_params.display_rotation;
+	return normalize_angle(rotation_angle);
+}
+
+int CameraFeedAndroid::normalize_angle(int p_angle) {
+	while (p_angle < 0) {
+		p_angle += 360;
+	}
+	return p_angle % 360;
+}
+
+int CameraFeedAndroid::get_display_rotation() {
+	return DisplayServerAndroid::get_singleton()->get_display_rotation();
+}
+
+int CameraFeedAndroid::get_app_orientation() {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, 0);
+
+	int orientation = godot_io_java->get_screen_orientation();
+	switch (orientation) {
+		case 0: // SCREEN_LANDSCAPE
+			return 90;
+		case 1: // SCREEN_PORTRAIT
+			return 0;
+		case 2: // SCREEN_REVERSE_LANDSCAPE
+			return 270;
+		case 3: // SCREEN_REVERSE_PORTRAIT
+			return 180;
+		case 4: // SCREEN_SENSOR_LANDSCAPE
+		case 5: // SCREEN_SENSOR_PORTRAIT
+		case 6: // SCREEN_SENSOR
+		default:
+			return get_display_rotation();
+	}
 }

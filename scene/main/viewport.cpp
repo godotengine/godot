@@ -272,17 +272,31 @@ void Viewport::_sub_window_update_order() {
 		return;
 	}
 
-	if (!gui.sub_windows[gui.sub_windows.size() - 1].window->get_flag(Window::FLAG_ALWAYS_ON_TOP)) {
-		int index = gui.sub_windows.size() - 1;
-
-		while (index > 0 && gui.sub_windows[index - 1].window->get_flag(Window::FLAG_ALWAYS_ON_TOP)) {
-			--index;
+	// Reorder 'always on top' windows.
+	int last_index = gui.sub_windows.size() - 1;
+	for (int index = last_index, insert_index = last_index; index >= 0; index--) {
+		SubWindow sw = gui.sub_windows[index];
+		Window *parent_window = sw.window->get_parent_visible_window();
+		bool parent_is_always_on_top = (parent_window != nullptr) && parent_window->get_flag(Window::FLAG_ALWAYS_ON_TOP);
+		if (sw.window->get_flag(Window::FLAG_ALWAYS_ON_TOP) || (parent_is_always_on_top && sw.window->is_exclusive())) {
+			if (index != insert_index) {
+				gui.sub_windows.remove_at(index);
+				gui.sub_windows.insert(insert_index, sw);
+			}
+			insert_index--;
 		}
+	}
 
-		if (index != (gui.sub_windows.size() - 1)) {
-			SubWindow sw = gui.sub_windows[gui.sub_windows.size() - 1];
-			gui.sub_windows.remove_at(gui.sub_windows.size() - 1);
-			gui.sub_windows.insert(index, sw);
+	// Reorder exclusive children.
+	for (int parent_index = 0; parent_index < gui.sub_windows.size(); parent_index++) {
+		Window *exclusive_child = gui.sub_windows[parent_index].window->get_exclusive_child();
+		if (exclusive_child != nullptr && exclusive_child->is_visible()) {
+			int child_index = _sub_window_find(exclusive_child);
+			if (child_index < parent_index) {
+				SubWindow sw = gui.sub_windows[child_index];
+				gui.sub_windows.remove_at(child_index);
+				gui.sub_windows.insert(parent_index, sw);
+			}
 		}
 	}
 
@@ -342,6 +356,8 @@ void Viewport::_sub_window_update(Window *p_window) {
 	const Rect2i r = Rect2i(p_window->get_position(), p_window->get_size());
 
 	if (!p_window->get_flag(Window::FLAG_BORDERLESS)) {
+		TextServer::set_current_drawn_item_oversampling(get_oversampling());
+
 		Ref<StyleBox> panel = gui.subwindow_focused == p_window ? p_window->theme_cache.embedded_border : p_window->theme_cache.embedded_unfocused_border;
 		panel->draw(sw.canvas_item, r);
 
@@ -372,6 +388,8 @@ void Viewport::_sub_window_update(Window *p_window) {
 		bool pressed = gui.subwindow_focused == sw.window && gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE && gui.subwindow_drag_close_inside;
 		Ref<Texture2D> close_icon = pressed ? p_window->theme_cache.close_pressed : p_window->theme_cache.close;
 		close_icon->draw(sw.canvas_item, r.position + Vector2(r.size.width - close_h_ofs, -close_v_ofs));
+
+		TextServer::set_current_drawn_item_oversampling(0.0);
 	}
 
 	const Transform2D xform = sw.window->window_transform * sw.window->stretch_transform;
@@ -534,11 +552,11 @@ void Viewport::_update_viewport_path() {
 }
 
 bool Viewport::_can_hide_focus_state() {
-	return Engine::get_singleton()->is_editor_hint() || !GLOBAL_GET_CACHED(bool, "gui/common/always_show_focus_state");
+	return Engine::get_singleton()->is_editor_hint() || GLOBAL_GET_CACHED(int, "gui/common/show_focus_state_on_pointer_event") < 2;
 }
 
 void Viewport::_on_settings_changed() {
-	if (!gui.hide_focus && _can_hide_focus_state()) {
+	if (!gui.hide_focus || _can_hide_focus_state()) {
 		return;
 	}
 
@@ -774,7 +792,7 @@ void Viewport::_process_picking() {
 	SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
 	bool parent_ignore_mouse = (parent_svc && parent_svc->get_mouse_filter_with_override() == Control::MOUSE_FILTER_IGNORE);
 	bool create_passive_hover_event = true;
-	if (gui.mouse_over || parent_ignore_mouse) {
+	if (gui.mouse_over.is_valid() || parent_ignore_mouse) {
 		// When the mouse is over a Control node, passive hovering would cause input events for Colliders, that are behind Control nodes.
 		// When parent SubViewportContainer ignores mouse, that setting should be respected.
 		create_passive_hover_event = false;
@@ -1118,7 +1136,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 	stretch_transform = stretch_transform_new;
 	font_oversampling = new_font_oversampling;
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (!use_xr) {
 #endif
 
@@ -1128,7 +1146,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 			RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 		}
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	} // if (!use_xr)
 #endif
 
@@ -1888,6 +1906,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 			MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
 			if (!gui.mouse_focus_mask.is_empty() && !gui.mouse_focus_mask.has_flag(button_mask)) {
+				if (!gui.mouse_focus) {
+					return;
+				}
+
 				// Do not steal mouse focus and stuff while a focus mask without the current mouse button exists.
 				gui.mouse_focus_mask.set_flag(button_mask);
 			} else {
@@ -1932,7 +1954,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						if (control->_is_focusable()) {
 							// Grabbing unhovered focus can cause issues when mouse is dragged
 							// with another button held down.
-							if (gui.mouse_over_hierarchy.has(control)) {
+							if (gui.mouse_over_hierarchy.has(control->get_instance_id())) {
 								// Hide the focus when it comes from a click.
 								control->grab_focus(true);
 							}
@@ -2002,7 +2024,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (!gui.drag_attempted && gui.mouse_focus && section_root && !section_root->gui.global_dragging && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			gui.drag_accum += mm->get_relative();
 			float len = gui.drag_accum.length();
-			if (len > 10) {
+			if (len > gui.drag_threshold) {
 				{ // Attempt grab, try parent controls too.
 					CanvasItem *ci = gui.mouse_focus;
 					while (ci) {
@@ -2508,7 +2530,8 @@ void Viewport::_gui_hide_control(Control *p_control) {
 	if (gui.key_focus == p_control) {
 		gui_release_focus();
 	}
-	if (gui.mouse_over == p_control || gui.mouse_over_hierarchy.has(p_control)) {
+	ObjectID over_id = p_control ? p_control->get_instance_id() : ObjectID();
+	if (gui.mouse_over == over_id || gui.mouse_over_hierarchy.has(over_id)) {
 		_drop_mouse_over(p_control->get_parent_control());
 	}
 	if (gui.drag_mouse_over == p_control) {
@@ -2527,7 +2550,8 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.key_focus == p_control) {
 		gui.key_focus = nullptr;
 	}
-	if (gui.mouse_over == p_control || gui.mouse_over_hierarchy.has(p_control)) {
+	ObjectID over_id = p_control ? p_control->get_instance_id() : ObjectID();
+	if (gui.mouse_over == over_id || gui.mouse_over_hierarchy.has(over_id)) {
 		_drop_mouse_over(p_control->get_parent_control());
 	}
 	if (gui.drag_mouse_over == p_control) {
@@ -2543,7 +2567,7 @@ void Viewport::canvas_item_top_level_changed() {
 }
 
 void Viewport::_gui_update_mouse_over() {
-	if (gui.mouse_over == nullptr || gui.mouse_over_hierarchy.is_empty()) {
+	if (gui.mouse_over.is_null() || gui.mouse_over_hierarchy.is_empty()) {
 		return;
 	}
 
@@ -2556,17 +2580,19 @@ void Viewport::_gui_update_mouse_over() {
 	}
 
 	// Rebuild the mouse over hierarchy.
-	LocalVector<Control *> new_mouse_over_hierarchy;
-	LocalVector<Control *> needs_enter;
+	LocalVector<ObjectID> new_mouse_over_hierarchy;
+	LocalVector<ObjectID> needs_enter;
 	LocalVector<int> needs_exit;
 
-	CanvasItem *ancestor = gui.mouse_over;
+	CanvasItem *over = ObjectDB::get_instance<CanvasItem>(gui.mouse_over);
+	CanvasItem *ancestor = over;
 	bool removing = false;
 	bool reached_top = false;
 	while (ancestor) {
 		Control *ancestor_control = Object::cast_to<Control>(ancestor);
 		if (ancestor_control) {
-			int found = gui.mouse_over_hierarchy.find(ancestor_control);
+			ObjectID ancestor_control_id = ancestor_control->get_instance_id();
+			int found = gui.mouse_over_hierarchy.find(ancestor_control_id);
 			if (found >= 0) {
 				// Remove the node if the propagation chain has been broken or it is now MOUSE_FILTER_IGNORE.
 				if (removing || ancestor_control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_IGNORE) {
@@ -2581,10 +2607,10 @@ void Viewport::_gui_update_mouse_over() {
 				reached_top = true;
 			}
 			if (!removing && ancestor_control->get_mouse_filter_with_override() != Control::MOUSE_FILTER_IGNORE) {
-				new_mouse_over_hierarchy.push_back(ancestor_control);
+				new_mouse_over_hierarchy.push_back(ancestor_control_id);
 				// Add the node if it was not found and it is now not MOUSE_FILTER_IGNORE.
 				if (found < 0) {
-					needs_enter.push_back(ancestor_control);
+					needs_enter.push_back(ancestor_control_id);
 				}
 			}
 			if (ancestor_control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
@@ -2614,15 +2640,18 @@ void Viewport::_gui_update_mouse_over() {
 	gui.sending_mouse_enter_exit_notifications = true;
 
 	// Send Mouse Exit Self notification.
-	if (gui.mouse_over && !needs_exit.is_empty() && needs_exit[0] == (int)gui.mouse_over_hierarchy.size() - 1) {
-		gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT_SELF);
-		gui.mouse_over = nullptr;
+	if (over && !needs_exit.is_empty() && needs_exit[0] == (int)gui.mouse_over_hierarchy.size() - 1) {
+		over->notification(Control::NOTIFICATION_MOUSE_EXIT_SELF);
+		gui.mouse_over = ObjectID();
 	}
 
 	// Send Mouse Exit notifications.
 	for (int exit_control_index : needs_exit) {
-		gui.mouse_over_hierarchy[exit_control_index]->notification(Control::NOTIFICATION_MOUSE_EXIT);
-		gui.mouse_over_hierarchy[exit_control_index]->emit_signal(SceneStringName(mouse_exited));
+		Control *ctrl = ObjectDB::get_instance<Control>(gui.mouse_over_hierarchy[exit_control_index]);
+		if (ctrl) {
+			ctrl->notification(Control::NOTIFICATION_MOUSE_EXIT);
+			ctrl->emit_signal(SceneStringName(mouse_exited));
+		}
 	}
 
 	// Update the mouse over hierarchy.
@@ -2633,8 +2662,11 @@ void Viewport::_gui_update_mouse_over() {
 
 	// Send Mouse Enter notifications.
 	for (int i = needs_enter.size() - 1; i >= 0; i--) {
-		needs_enter[i]->notification(Control::NOTIFICATION_MOUSE_ENTER);
-		needs_enter[i]->emit_signal(SceneStringName(mouse_entered));
+		Control *ctrl = ObjectDB::get_instance<Control>(needs_enter[i]);
+		if (ctrl) {
+			ctrl->notification(Control::NOTIFICATION_MOUSE_ENTER);
+			ctrl->emit_signal(SceneStringName(mouse_entered));
+		}
 	}
 
 	gui.sending_mouse_enter_exit_notifications = false;
@@ -3020,7 +3052,8 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 
 					int close_h_ofs = sw.window->theme_cache.close_h_offset;
 					int close_v_ofs = sw.window->theme_cache.close_v_offset;
-					Ref<Texture2D> close_icon = sw.window->theme_cache.close;
+					bool pressed = gui.subwindow_focused == sw.window && gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE && gui.subwindow_drag_close_inside;
+					Ref<Texture2D> close_icon = pressed ? sw.window->theme_cache.close_pressed : sw.window->theme_cache.close;
 
 					Rect2 close_rect;
 					close_rect.position = Vector2(r.position.x + r.size.x - close_h_ofs, r.position.y - close_v_ofs);
@@ -3229,7 +3262,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			}
 
 			if (swrect_border.has_point(p_pos)) {
-				if (gui.mouse_over) {
+				if (gui.mouse_over.is_valid()) {
 					_drop_mouse_over();
 				} else if (!gui.subwindow_over) {
 					_drop_physics_mouseover();
@@ -3263,12 +3296,13 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 
 	// Look for Controls at mouse position.
 	Control *over = gui_find_control(p_pos);
+	ObjectID over_id = over ? over->get_instance_id() : ObjectID();
 	get_section_root_viewport()->gui.target_control = over;
 	bool notify_embedded_viewports = false;
-	if (over != gui.mouse_over || (!over && !gui.mouse_over_hierarchy.is_empty())) {
+	if (over_id != gui.mouse_over || (!over && !gui.mouse_over_hierarchy.is_empty())) {
 		// Find the common ancestor of `gui.mouse_over` and `over`.
 		Control *common_ancestor = nullptr;
-		LocalVector<Control *> over_ancestors;
+		LocalVector<ObjectID> over_ancestors;
 
 		if (over) {
 			// Get all ancestors that the mouse is currently over and need an enter signal.
@@ -3277,12 +3311,12 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 				Control *ancestor_control = Object::cast_to<Control>(ancestor);
 				if (ancestor_control) {
 					if (ancestor_control->get_mouse_filter_with_override() != Control::MOUSE_FILTER_IGNORE) {
-						int found = gui.mouse_over_hierarchy.find(ancestor_control);
+						int found = gui.mouse_over_hierarchy.find(ancestor_control->get_instance_id());
 						if (found >= 0) {
-							common_ancestor = gui.mouse_over_hierarchy[found];
+							common_ancestor = ObjectDB::get_instance<Control>(gui.mouse_over_hierarchy[found]);
 							break;
 						}
-						over_ancestors.push_back(ancestor_control);
+						over_ancestors.push_back(ancestor_control->get_instance_id());
 					}
 					if (ancestor_control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 						// MOUSE_FILTER_STOP breaks the propagation chain.
@@ -3297,7 +3331,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			}
 		}
 
-		if (gui.mouse_over || !gui.mouse_over_hierarchy.is_empty()) {
+		if (gui.mouse_over.is_valid() || !gui.mouse_over_hierarchy.is_empty()) {
 			// Send Mouse Exit Self and Mouse Exit notifications.
 			_drop_mouse_over(common_ancestor);
 		} else {
@@ -3305,21 +3339,25 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 		}
 
 		if (over) {
-			gui.mouse_over = over;
+			gui.mouse_over = over_id;
 			gui.mouse_over_hierarchy.reserve(gui.mouse_over_hierarchy.size() + over_ancestors.size());
 
 			gui.sending_mouse_enter_exit_notifications = true;
 
 			// Send Mouse Enter notifications to parents first.
 			for (int i = over_ancestors.size() - 1; i >= 0; i--) {
-				gui.mouse_over_hierarchy.push_back(over_ancestors[i]);
-				over_ancestors[i]->notification(Control::NOTIFICATION_MOUSE_ENTER);
-				over_ancestors[i]->emit_signal(SceneStringName(mouse_entered));
+				Control *ctrl = ObjectDB::get_instance<Control>(over_ancestors[i]);
+				if (ctrl) {
+					gui.mouse_over_hierarchy.push_back(over_ancestors[i]);
+					ctrl->notification(Control::NOTIFICATION_MOUSE_ENTER);
+					ctrl->emit_signal(SceneStringName(mouse_entered));
+				}
 			}
 
 			// Send Mouse Enter Self notification.
-			if (gui.mouse_over) {
-				gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_ENTER_SELF);
+			CanvasItem *ctrl = ObjectDB::get_instance<CanvasItem>(gui.mouse_over);
+			if (ctrl) {
+				ctrl->notification(Control::NOTIFICATION_MOUSE_ENTER_SELF);
 			}
 
 			gui.sending_mouse_enter_exit_notifications = false;
@@ -3366,7 +3404,7 @@ void Viewport::_mouse_leave_viewport() {
 	if (gui.subwindow_over) {
 		gui.subwindow_over->_mouse_leave_viewport();
 		gui.subwindow_over = nullptr;
-	} else if (gui.mouse_over) {
+	} else if (gui.mouse_over.is_valid()) {
 		_drop_mouse_over();
 	}
 	notification(NOTIFICATION_VP_MOUSE_EXIT);
@@ -3380,7 +3418,7 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 	}
 
 	_gui_cancel_tooltip();
-	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(gui.mouse_over);
+	SubViewportContainer *c = ObjectDB::get_instance<SubViewportContainer>(gui.mouse_over);
 	if (c) {
 		for (int i = 0; i < c->get_child_count(); i++) {
 			SubViewport *v = Object::cast_to<SubViewport>(c->get_child(i));
@@ -3392,31 +3430,33 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 	}
 
 	gui.sending_mouse_enter_exit_notifications = true;
-	if (gui.mouse_over && gui.mouse_over->is_inside_tree()) {
-		gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT_SELF);
+	CanvasItem *over = ObjectDB::get_instance<CanvasItem>(gui.mouse_over);
+	if (over && over->is_inside_tree()) {
+		over->notification(Control::NOTIFICATION_MOUSE_EXIT_SELF);
 	}
 	Viewport *section_root = get_section_root_viewport();
-	if (section_root && section_root->gui.target_control == gui.mouse_over) {
+	if (section_root && section_root->gui.target_control == over) {
 		section_root->gui.target_control = nullptr;
 	}
-	gui.mouse_over = nullptr;
+	gui.mouse_over = ObjectID();
 
 	// Send Mouse Exit notifications to children first. Don't send to p_until_control or above.
-	int notification_until = p_until_control ? gui.mouse_over_hierarchy.find(p_until_control) + 1 : 0;
+	int notification_until = p_until_control ? gui.mouse_over_hierarchy.find(p_until_control->get_instance_id()) + 1 : 0;
 	for (int i = gui.mouse_over_hierarchy.size() - 1; i >= notification_until; i--) {
-		if (gui.mouse_over_hierarchy[i]->is_inside_tree()) {
-			gui.mouse_over_hierarchy[i]->notification(Control::NOTIFICATION_MOUSE_EXIT);
-			gui.mouse_over_hierarchy[i]->emit_signal(SceneStringName(mouse_exited));
+		Control *ctrl = ObjectDB::get_instance<Control>(gui.mouse_over_hierarchy[i]);
+		if (ctrl && ctrl->is_inside_tree()) {
+			ctrl->notification(Control::NOTIFICATION_MOUSE_EXIT);
+			ctrl->emit_signal(SceneStringName(mouse_exited));
 		}
 	}
 	gui.mouse_over_hierarchy.resize(notification_until);
 	gui.sending_mouse_enter_exit_notifications = false;
 }
 
-void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+void Viewport::push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	ERR_FAIL_COND(p_event.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
 
 	if (disable_input || disable_input_override) {
 		return;
@@ -3482,11 +3522,11 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 }
 
 #ifndef DISABLE_DEPRECATED
-void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+void Viewport::push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	WARN_DEPRECATED_MSG(R"*(The "push_unhandled_input()" method is deprecated, use "push_input()" instead.)*");
 	ERR_FAIL_COND(!is_inside_tree());
-	ERR_FAIL_COND(p_event.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
 
 	local_input_handled = false;
 
@@ -3694,7 +3734,7 @@ Control *Viewport::gui_get_focus_owner() const {
 
 Control *Viewport::gui_get_hovered_control() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	return gui.mouse_over;
+	return ObjectDB::get_instance<Control>(gui.mouse_over);
 }
 
 void Viewport::set_msaa_2d(MSAA p_msaa) {
@@ -4122,6 +4162,16 @@ TypedArray<Window> Viewport::get_embedded_subwindows() const {
 	return windows;
 }
 
+void Viewport::set_drag_threshold(int p_threshold) {
+	ERR_MAIN_THREAD_GUARD
+	gui.drag_threshold = p_threshold;
+}
+
+int Viewport::get_drag_threshold() const {
+	ERR_READ_THREAD_GUARD_V(10);
+	return gui.drag_threshold;
+}
+
 void Viewport::subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect) {
 	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
@@ -4351,8 +4401,7 @@ Camera2D *Viewport::get_camera_2d() const {
 
 void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
 	ERR_MAIN_THREAD_GUARD;
-	List<Node *> camera_list;
-	get_tree()->get_nodes_in_group(p_camera_group, &camera_list);
+	Vector<Node *> camera_list = get_tree()->get_nodes_in_group(p_camera_group);
 
 	Camera2D *new_camera = nullptr;
 	for (Node *E : camera_list) {
@@ -4768,6 +4817,7 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 	}
 }
 
+#ifndef XR_DISABLED
 void Viewport::set_use_xr(bool p_use_xr) {
 	ERR_MAIN_THREAD_GUARD;
 	if (use_xr != p_use_xr) {
@@ -4794,6 +4844,7 @@ bool Viewport::is_using_xr() {
 	ERR_READ_THREAD_GUARD_V(false);
 	return use_xr;
 }
+#endif // XR_DISABLED
 
 void Viewport::set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode) {
 	ERR_MAIN_THREAD_GUARD;
@@ -5017,6 +5068,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_embedding_subwindows"), &Viewport::is_embedding_subwindows);
 	ClassDB::bind_method(D_METHOD("get_embedded_subwindows"), &Viewport::get_embedded_subwindows);
 
+	ClassDB::bind_method(D_METHOD("set_drag_threshold", "threshold"), &Viewport::set_drag_threshold);
+	ClassDB::bind_method(D_METHOD("get_drag_threshold"), &Viewport::get_drag_threshold);
+
 	ClassDB::bind_method(D_METHOD("set_canvas_cull_mask", "mask"), &Viewport::set_canvas_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_canvas_cull_mask"), &Viewport::get_canvas_cull_mask);
 
@@ -5060,8 +5114,10 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_3d", "disable"), &Viewport::set_disable_3d);
 	ClassDB::bind_method(D_METHOD("is_3d_disabled"), &Viewport::is_3d_disabled);
 
+#ifndef XR_DISABLED
 	ClassDB::bind_method(D_METHOD("set_use_xr", "use"), &Viewport::set_use_xr);
 	ClassDB::bind_method(D_METHOD("is_using_xr"), &Viewport::is_using_xr);
+#endif // XR_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_scaling_3d_mode", "scaling_3d_mode"), &Viewport::set_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("get_scaling_3d_mode"), &Viewport::get_scaling_3d_mode);
@@ -5088,7 +5144,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
+#ifndef XR_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
+#endif // XR_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
 #endif // _3D_DISABLED
@@ -5138,6 +5196,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embedding_subwindows", "is_embedding_subwindows");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gui_drag_threshold"), "set_drag_threshold", "get_drag_threshold");
 	ADD_GROUP("SDF", "sdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");

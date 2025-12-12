@@ -35,7 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/run/game_view_plugin.h"
 
-static GameViewPlugin *_get_game_view_plugin() {
+_FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
 	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
 	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
 	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
@@ -139,6 +139,24 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_debug_mute_audio(enabled);
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_resetTimeScale(JNIEnv *env, jclass clazz) {
+#ifdef TOOLS_ENABLED
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+		game_view_plugin->get_debugger()->reset_time_scale();
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setTimeScale(JNIEnv *env, jclass clazz, jdouble scale) {
+#ifdef TOOLS_ENABLED
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+		game_view_plugin->get_debugger()->set_time_scale(scale);
 	}
 #endif
 }

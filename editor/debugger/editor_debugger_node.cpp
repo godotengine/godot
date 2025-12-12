@@ -40,9 +40,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/menu_button.h"
@@ -61,13 +61,20 @@ void _for_all(TabContainer *p_node, const Func &p_func) {
 EditorDebuggerNode *EditorDebuggerNode::singleton = nullptr;
 
 EditorDebuggerNode::EditorDebuggerNode() {
+	set_name(TTRC("Debugger"));
+	set_icon_name("Debug");
+	set_layout_key("Debugger");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Dock"), KeyModifierMask::ALT | Key::D));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL);
+	set_global(false);
+	set_transient(true);
+
+	_update_margins();
+
 	if (!singleton) {
 		singleton = this;
 	}
-
-	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
-	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
-	add_theme_constant_override("margin_bottom", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_BOTTOM));
 
 	tabs = memnew(TabContainer);
 	tabs->set_tabs_visible(false);
@@ -330,10 +337,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 			if (tabs->get_tab_count() > 1) {
 				tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
-
-			add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
-			add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
-			add_theme_constant_override("margin_bottom", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_BOTTOM));
+			_update_margins();
 
 			remote_scene_tree->update_icon_max_width();
 		} break;
@@ -437,27 +441,38 @@ void EditorDebuggerNode::_update_errors() {
 			dbg->update_tabs();
 		});
 
-		if (error_count == 0 && warning_count == 0) {
-			debugger_button->set_text(TTR("Debugger"));
-			debugger_button->remove_theme_color_override(SceneStringName(font_color));
-			debugger_button->set_button_icon(Ref<Texture2D>());
-		} else {
-			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
-			if (error_count >= 1 && warning_count >= 1) {
-				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
-				// Use error color to represent the highest level of severity reported.
-				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			} else if (error_count >= 1) {
-				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Error")));
-				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			} else {
-				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Warning")));
-				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-			}
-		}
 		last_error_count = error_count;
 		last_warning_count = warning_count;
+
+		if (error_count == 0 && warning_count == 0) {
+			set_title("");
+			set_dock_icon(Ref<Texture2D>());
+			set_title_color(Color(0, 0, 0, 0));
+			set_force_show_icon(false);
+		} else {
+			set_title(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
+			if (error_count >= 1 && warning_count >= 1) {
+				set_dock_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
+				// Use error color to represent the highest level of severity reported.
+				set_title_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			} else if (error_count >= 1) {
+				set_dock_icon(get_editor_theme_icon(SNAME("Error")));
+				set_title_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			} else {
+				set_dock_icon(get_editor_theme_icon(SNAME("Warning")));
+				set_title_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			}
+			set_force_show_icon(true);
+		}
 	}
+}
+
+void EditorDebuggerNode::_update_margins() {
+	Ref<StyleBox> bottom_panel_margins = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
+	add_theme_constant_override("margin_top", -bottom_panel_margins->get_margin(SIDE_TOP));
+	add_theme_constant_override("margin_left", -bottom_panel_margins->get_margin(SIDE_LEFT));
+	add_theme_constant_override("margin_right", -bottom_panel_margins->get_margin(SIDE_RIGHT));
+	add_theme_constant_override("margin_bottom", -bottom_panel_margins->get_margin(SIDE_BOTTOM));
 }
 
 void EditorDebuggerNode::_debugger_stopped(int p_id) {
@@ -549,7 +564,7 @@ void EditorDebuggerNode::_break_state_changed() {
 	const bool breaked = get_current_debugger()->is_breaked();
 	const bool can_debug = get_current_debugger()->is_debuggable();
 	if (breaked) { // Show debugger.
-		EditorNode::get_bottom_panel()->make_item_visible(this);
+		EditorDockManager::get_singleton()->focus_dock(this);
 	}
 
 	// Update script menu.

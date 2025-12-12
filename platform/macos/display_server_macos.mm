@@ -34,6 +34,7 @@
 #import "godot_application_delegate.h"
 #import "godot_button_view.h"
 #import "godot_content_view.h"
+#import "godot_core_cursor.h"
 #import "godot_menu_delegate.h"
 #import "godot_menu_item.h"
 #import "godot_open_save_delegate.h"
@@ -1059,7 +1060,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				Vector<String> files;
 				String url;
 				url.append_utf8([[[panel URL] path] UTF8String]);
-				files.push_back(url);
+				files.push_back([panel_delegate validateFilename:url]);
 				if (callback.is_valid()) {
 					if (p_options_in_cb) {
 						Variant v_result = true;
@@ -1178,7 +1179,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				for (NSUInteger i = 0; i != [urls count]; ++i) {
 					String url;
 					url.append_utf8([[[urls objectAtIndex:i] path] UTF8String]);
-					files.push_back(url);
+					files.push_back([panel_delegate validateFilename:url]);
 				}
 				if (callback.is_valid()) {
 					if (p_options_in_cb) {
@@ -2647,9 +2648,11 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 					[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.004f]];
 				}
 				// Force update of the window styles.
-				NSRect frameRect = [wd.window_object frame];
-				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
-				[wd.window_object setFrame:frameRect display:NO];
+				if ([wd.window_object isVisible]) {
+					NSRect frameRect = [wd.window_object frame];
+					[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
+					[wd.window_object setFrame:frameRect display:NO];
+				}
 			}
 			_update_window_style(wd, p_window);
 			if (was_visible || [wd.window_object isVisible]) {
@@ -2683,9 +2686,11 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			wd.layered_window = p_enabled;
 			set_window_per_pixel_transparency_enabled(p_enabled, p_window);
 			// Force update of the window styles.
-			NSRect frameRect = [wd.window_object frame];
-			[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
-			[wd.window_object setFrame:frameRect display:NO];
+			if ([wd.window_object isVisible]) {
+				NSRect frameRect = [wd.window_object frame];
+				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
+				[wd.window_object setFrame:frameRect display:NO];
+			}
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
@@ -3020,7 +3025,7 @@ void DisplayServerMacOS::cursor_update_shape() {
 				[_cursor_from_selector(@selector(_windowResizeNorthWestSouthEastCursor)) set];
 				break;
 			case CURSOR_MOVE:
-				[[NSCursor arrowCursor] set];
+				[[[GodotCoreCursor alloc] initWithType:GDCoreCursorWindowMove] set];
 				break;
 			case CURSOR_VSPLIT:
 				[[NSCursor resizeUpDownCursor] set];
@@ -3722,8 +3727,6 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 }
 
 DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
-	KeyMappingMacOS::initialize();
-
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;

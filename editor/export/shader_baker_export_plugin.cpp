@@ -31,6 +31,7 @@
 #include "shader_baker_export_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "scene/3d/label_3d.h"
@@ -55,20 +56,13 @@ bool ShaderBakerExportPlugin::_is_active(const Vector<String> &p_features) const
 	return RendererSceneRenderRD::get_singleton() != nullptr && RendererRD::MaterialStorage::get_singleton() != nullptr && p_features.has("shader_baker");
 }
 
-bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features, const Ref<EditorExportPreset> &p_preset) {
-	Variant driver_variant = GLOBAL_GET("rendering/rendering_device/driver." + p_platform->get_os_name().to_lower());
-	if (!driver_variant.is_string()) {
-		driver_variant = GLOBAL_GET("rendering/rendering_device/driver");
-		if (!driver_variant.is_string()) {
-			return false;
-		}
-	}
-
-	shader_container_driver = driver_variant;
+bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Ref<EditorExportPreset> &p_preset) {
+	shader_container_driver = p_preset->get_project_setting("rendering/rendering_device/driver");
+	ERR_FAIL_COND_V_MSG(shader_container_driver.is_empty(), false, "Invalid `rendering/rendering_device/driver` setting, disabling shader baking.");
 
 	for (Ref<ShaderBakerExportPluginPlatform> platform : platforms) {
 		if (platform->matches_driver(shader_container_driver)) {
-			shader_container_format = platform->create_shader_container_format(p_platform, get_export_preset());
+			shader_container_format = platform->create_shader_container_format(p_platform, p_preset);
 			ERR_FAIL_NULL_V_MSG(shader_container_format, false, "Unable to create shader container format for the export platform.");
 			return true;
 		}
@@ -100,7 +94,7 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 		return false;
 	}
 
-	if (!_initialize_container_format(p_platform, p_features, get_export_preset())) {
+	if (!_initialize_container_format(p_platform, get_export_preset())) {
 		return false;
 	}
 
@@ -125,11 +119,13 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 	customization_configuration_hash = to_hash.as_string().hash64();
 
 	BitField<RenderingShaderLibrary::FeatureBits> renderer_features = {};
+#ifndef XR_DISABLED
 	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 	renderer_features.set_flag(RenderingShaderLibrary::FEATURE_ADVANCED_BIT);
 	if (xr_enabled) {
 		renderer_features.set_flag(RenderingShaderLibrary::FEATURE_MULTIVIEW_BIT);
 	}
+#endif // XR_DISABLED
 
 	int vrs_mode = GLOBAL_GET("rendering/vrs/mode");
 	if (vrs_mode != 0) {
@@ -411,6 +407,7 @@ void ShaderBakerExportPlugin::_customize_shader_version(ShaderRD *p_shader, RID 
 		work_item.cache_path = group_items[group].cache_path;
 		work_item.shader_name = p_shader->get_name();
 		work_item.stage_sources = p_shader->version_build_variant_stage_sources(p_version, i);
+		work_item.dynamic_buffers = p_shader->get_dynamic_buffers();
 		work_item.variant = i;
 
 		WorkerThreadPool::TaskID task_id = WorkerThreadPool::get_singleton()->add_template_task(this, &ShaderBakerExportPlugin::_process_work_item, work_item);
@@ -426,19 +423,23 @@ void ShaderBakerExportPlugin::_customize_shader_version(ShaderRD *p_shader, RID 
 void ShaderBakerExportPlugin::_process_work_item(WorkItem p_work_item) {
 	if (!tasks_cancelled) {
 		// Only process the item if the tasks haven't been cancelled by the user yet.
-		Vector<RD::ShaderStageSPIRVData> spirv_data = ShaderRD::compile_stages(p_work_item.stage_sources);
-		ERR_FAIL_COND_MSG(spirv_data.is_empty(), "Unable to retrieve SPIR-V data for shader");
+		Vector<RD::ShaderStageSPIRVData> spirv_data = ShaderRD::compile_stages(p_work_item.stage_sources, p_work_item.dynamic_buffers);
+		if (unlikely(spirv_data.is_empty())) {
+			ERR_PRINT("Unable to retrieve SPIR-V data for shader.");
+		} else {
+			Ref<RenderingShaderContainer> shader_container = shader_container_format->create_container();
 
-		Ref<RenderingShaderContainer> shader_container = shader_container_format->create_container();
-
-		// Compile shader binary from SPIR-V.
-		bool code_compiled = shader_container->set_code_from_spirv(p_work_item.shader_name, spirv_data);
-		ERR_FAIL_COND_MSG(!code_compiled, vformat("Failed to compile code to native for SPIR-V."));
-
-		PackedByteArray shader_bytes = shader_container->to_bytes();
-		{
-			MutexLock lock(shader_work_results_mutex);
-			shader_work_results[p_work_item.cache_path].variant_data.ptrw()[p_work_item.variant] = shader_bytes;
+			// Compile shader binary from SPIR-V.
+			bool code_compiled = shader_container->set_code_from_spirv(p_work_item.shader_name, spirv_data);
+			if (unlikely(!code_compiled)) {
+				ERR_PRINT("Failed to compile code to native for SPIR-V.");
+			} else {
+				PackedByteArray shader_bytes = shader_container->to_bytes();
+				{
+					MutexLock lock(shader_work_results_mutex);
+					shader_work_results[p_work_item.cache_path].variant_data.ptrw()[p_work_item.variant] = shader_bytes;
+				}
+			}
 		}
 	}
 

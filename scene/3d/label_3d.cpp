@@ -215,11 +215,8 @@ void Label3D::_notification(int p_what) {
 			window->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = atr(text);
-			if (new_text == xl_text) {
-				return; // Nothing new.
-			}
-			xl_text = new_text;
+			// Language update might change the appearance of some characters.
+			xl_text = atr(text);
 			dirty_text = true;
 			_queue_update();
 		} break;
@@ -396,7 +393,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			}
 
 			RID shader_rid;
-			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, alpha_antialiasing_mode, &shader_rid);
+			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, alpha_antialiasing_mode, false, &shader_rid);
 
 			RS::get_singleton()->material_set_shader(surf.material, shader_rid);
 			RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
@@ -483,8 +480,9 @@ void Label3D::_shape() {
 		TS->shaped_text_clear(text_rid);
 		TS->shaped_text_set_direction(text_rid, text_direction);
 
-		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
+		const String &lang = language.is_empty() ? _get_locale() : language;
+		String txt = uppercase ? TS->string_to_upper(xl_text, lang) : xl_text;
+		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), lang);
 
 		TypedArray<Vector3i> stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {

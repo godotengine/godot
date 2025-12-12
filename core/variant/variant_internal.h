@@ -40,6 +40,12 @@
 
 class RefCounted;
 
+template <typename T>
+struct GDExtensionConstPtr;
+
+template <typename T>
+struct GDExtensionPtr;
+
 class VariantInternal {
 	friend class Variant;
 
@@ -539,6 +545,29 @@ public:
 		}
 		ERR_FAIL_V(nullptr);
 	}
+
+	// Used internally in GDExtension and Godot's binding system when converting to Variant
+	// from values that may include RequiredParam<T> or RequiredResult<T>.
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const T &v) {
+		return Variant(v);
+	}
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const GDExtensionConstPtr<T> &v) {
+		return v.operator Variant();
+	}
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const GDExtensionPtr<T> &v) {
+		return v.operator Variant();
+	}
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const RequiredParam<T> &v) {
+		return Variant(v._internal_ptr_dont_use());
+	}
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const RequiredResult<T> &v) {
+		return Variant(v._internal_ptr_dont_use());
+	}
 };
 
 template <typename T, typename = void>
@@ -590,10 +619,46 @@ struct VariantInternalAccessor<IPAddress> {
 	static _FORCE_INLINE_ void set(Variant *v, IPAddress p_value) { *VariantInternal::get_string(v) = String(p_value); }
 };
 
+template <typename T>
+struct VariantInternalAccessor<TypedArray<T>> {
+	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return TypedArray<T>(*VariantInternal::get_array(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = Array(p_array); }
+};
+
+template <typename K, typename V>
+struct VariantInternalAccessor<TypedDictionary<K, V>> {
+	static _FORCE_INLINE_ TypedDictionary<K, V> get(const Variant *v) { return TypedDictionary<K, V>(*VariantInternal::get_dictionary(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedDictionary<K, V> &p_dictionary) { *VariantInternal::get_dictionary(v) = Dictionary(p_dictionary); }
+};
+
 template <>
 struct VariantInternalAccessor<Object *> {
 	static _FORCE_INLINE_ Object *get(const Variant *v) { return const_cast<Object *>(*VariantInternal::get_object(v)); }
 	static _FORCE_INLINE_ void set(Variant *v, const Object *p_value) { VariantInternal::object_assign(v, p_value); }
+};
+
+template <class T>
+struct VariantInternalAccessor<RequiredParam<T>> {
+	static _FORCE_INLINE_ RequiredParam<T> get(const Variant *v) { return RequiredParam<T>(Object::cast_to<T>(const_cast<Object *>(*VariantInternal::get_object(v)))); }
+	static _FORCE_INLINE_ void set(Variant *v, const RequiredParam<T> &p_value) { VariantInternal::object_assign(v, p_value.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<const RequiredParam<T> &> {
+	static _FORCE_INLINE_ RequiredParam<T> get(const Variant *v) { return RequiredParam<T>(Object::cast_to<T>(*VariantInternal::get_object(v))); }
+	static _FORCE_INLINE_ void set(Variant *v, const RequiredParam<T> &p_value) { VariantInternal::object_assign(v, p_value.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<RequiredResult<T>> {
+	static _FORCE_INLINE_ RequiredResult<T> get(const Variant *v) { return RequiredResult<T>(Object::cast_to<T>(const_cast<Object *>(*VariantInternal::get_object(v)))); }
+	static _FORCE_INLINE_ void set(Variant *v, const RequiredResult<T> &p_value) { VariantInternal::object_assign(v, p_value.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<const RequiredResult<T> &> {
+	static _FORCE_INLINE_ RequiredResult<T> get(const Variant *v) { return RequiredResult<T>(Object::cast_to<T>(*VariantInternal::get_object(v))); }
+	static _FORCE_INLINE_ void set(Variant *v, const RequiredResult<T> &p_value) { VariantInternal::object_assign(v, p_value.ptr()); }
 };
 
 template <>

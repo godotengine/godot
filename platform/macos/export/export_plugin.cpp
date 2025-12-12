@@ -35,7 +35,7 @@
 
 #include "core/io/image_loader.h"
 #include "core/io/plist.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -63,7 +63,8 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 		ERR_PRINT("Invalid architecture");
 	}
 
-	if (p_preset->get("shader_baker/enabled")) {
+	if (!p_preset->is_dedicated_server() && p_preset->get("shader_baker/enabled")) {
+		// Don't use the shader baker if exporting as a dedicated server, as no rendering is performed.
 		r_features->push_back("shader_baker");
 	}
 
@@ -436,7 +437,7 @@ static const DataCollectionInfo data_collect_type_info[] = {
 	{ "customer_support", "NSPrivacyCollectedDataTypeCustomerSupport" },
 	{ "other_user_content", "NSPrivacyCollectedDataTypeOtherUserContent" },
 	{ "browsing_history", "NSPrivacyCollectedDataTypeBrowsingHistory" },
-	{ "search_hhistory", "NSPrivacyCollectedDataTypeSearchHistory" },
+	{ "search_history", "NSPrivacyCollectedDataTypeSearchHistory" },
 	{ "user_id", "NSPrivacyCollectedDataTypeUserID" },
 	{ "device_id", "NSPrivacyCollectedDataTypeDeviceID" },
 	{ "purchase_history", "NSPrivacyCollectedDataTypePurchaseHistory" },
@@ -490,7 +491,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/platform_build"), "14C18"));
 	// TODO(sgc): Need to set appropriate version when using Metal
@@ -539,7 +540,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_user_selected", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::ARRAY, "codesign/entitlements/app_sandbox/helper_executables", PROPERTY_HINT_ARRAY_TYPE, itos(Variant::STRING) + "/" + itos(PROPERTY_HINT_GLOBAL_FILE) + ":"), Array()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 #ifdef MACOS_ENABLED
@@ -602,17 +603,17 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 						"open \"{temp_dir}/{exe_name}.app\" --args {cmd_args}";
 
 	String cleanup_script = "#!/usr/bin/env bash\n"
-							"kill $(pgrep -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\")\n"
+							"pkill -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\"\n"
 							"rm -rf \"{temp_dir}\"";
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), cleanup_script));
 }
 
 void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
@@ -1757,7 +1758,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 	}
 
-	Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
 	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
 	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
 	Dictionary location_usage_descriptions = p_preset->get("privacy/location_usage_description_localized");
@@ -1771,15 +1771,21 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	Dictionary removable_volumes_usage_descriptions = p_preset->get("privacy/removable_volumes_usage_description_localized");
 	Dictionary copyrights = p_preset->get("application/copyright_localized");
 
-	Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-	if (translations.size() > 0) {
+	const String project_name = get_project_setting(p_preset, "application/config/name");
+	const Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
+	const Vector<String> locales = domain->get_loaded_locales();
+
+	if (!locales.is_empty()) {
 		{
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + get_project_setting(p_preset, "application/config/name").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + project_name + "\";");
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
 				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
 			}
@@ -1816,23 +1822,27 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
 		}
 
-		HashSet<String> languages;
-		for (const String &E : translations) {
-			Ref<Translation> tr = ResourceLoader::load(E);
-			if (tr.is_valid() && tr->get_locale() != "en") {
-				languages.insert(tr->get_locale());
+		for (const String &lang : locales) {
+			if (lang == "en") {
+				continue;
 			}
-		}
 
-		for (const String &lang : languages) {
 			String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			if (appnames.has(lang)) {
+
+			if (appnames.is_empty()) {
+				domain->set_locale_override(lang);
+				const String &name = domain->translate(project_name, String());
+				if (name != project_name) {
+					f->store_line("CFBundleDisplayName = \"" + name + "\";");
+				}
+			} else if (appnames.has(lang)) {
 				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
 			}
+
 			if (microphone_usage_descriptions.has(lang)) {
 				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
 			}
@@ -1871,6 +1881,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			}
 		}
 	}
+
+	TranslationServer::get_singleton()->remove_domain(domain_name);
 
 	// Now process our template.
 	bool found_binary = false;

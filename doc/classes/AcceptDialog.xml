@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		The default use of [AcceptDialog] is to allow it to only be accepted or closed, with the same result. However, the [signal confirmed] and [signal canceled] signals allow to make the two actions different, and the [method add_button] method allows to add custom buttons and actions.
+		[b]Note:[/b] [AcceptDialog] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -63,7 +64,7 @@
 			Sets autowrapping for the text in the dialog.
 		</member>
 		<member name="dialog_close_on_escape" type="bool" setter="set_close_on_escape" getter="get_close_on_escape" default="true">
-			If [code]true[/code], the dialog will be hidden when the [code]ui_cancel[/code] action is pressed (by default, this action is bound to [constant KEY_ESCAPE]).
+			If [code]true[/code], the dialog will be hidden when the [code]ui_close_dialog[/code] action is pressed (by default, this action is bound to [kbd]Escape[/kbd], or [kbd]Cmd + W[/kbd] on macOS).
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" default="true">
 			If [code]true[/code], the dialog is hidden when the OK button is pressed. You can set it to [code]false[/code] if you want to do e.g. input validation when receiving the [signal confirmed] signal, and handle hiding the dialog in your own logic.

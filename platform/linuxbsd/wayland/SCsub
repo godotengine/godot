@@ -97,6 +97,21 @@ generated_sources = [
     generate_from_xml(
         "xdg_foreign_v2", "#thirdparty/wayland-protocols/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml"
     ),
+    generate_from_xml("linux_dmabuf_v1", "#thirdparty/wayland-protocols/stable/linux-dmabuf/linux-dmabuf-v1.xml"),
+    generate_from_xml(
+        "linux_explicit_synchronization_unstable_v1",
+        "#thirdparty/wayland-protocols/unstable/linux-explicit-synchronization/linux-explicit-synchronization-unstable-v1.xml",
+    ),
+    generate_from_xml("fifo_v1", "#thirdparty/wayland-protocols/staging/fifo/fifo-v1.xml"),
+    generate_from_xml("commit_timing_v1", "#thirdparty/wayland-protocols/staging/commit-timing/commit-timing-v1.xml"),
+    generate_from_xml(
+        "linux_drm_syncobj_v1", "#thirdparty/wayland-protocols/staging/linux-drm-syncobj/linux-drm-syncobj-v1.xml"
+    ),
+    generate_from_xml(
+        "tearing_control_v1", "#thirdparty/wayland-protocols/staging/tearing-control/tearing-control-v1.xml"
+    ),
+    generate_from_xml("wayland-drm", "#thirdparty/wayland-protocols/mesa/wayland-drm.xml"),
+    generate_from_xml("godot_embedding_compositor", "godot-embedding-compositor.xml"),
 ]
 
 source_files = generated_sources + [
@@ -104,6 +119,7 @@ source_files = generated_sources + [
     File("display_server_wayland.cpp"),
     File("key_mapping_xkb.cpp"),
     File("wayland_thread.cpp"),
+    File("wayland_embedder.cpp"),
 ]
 
 if env["use_sowrap"]:

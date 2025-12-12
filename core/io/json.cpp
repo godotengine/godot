@@ -83,7 +83,8 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 				} else if (num == -Math::INF) {
 					r_result += "-1e99999";
 				} else {
-					r_result += "\"NaN\"";
+					WARN_PRINT_ONCE("`NaN` (\"Not a Number\") found in argument passed to JSON.stringify(). `NaN` cannot be represented in JSON, so the value has been replaced with `null`. This warning will not be printed for any later NaN occurrences.");
+					r_result += "null";
 				}
 				return;
 			}
@@ -1067,7 +1068,15 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 			if (s.begins_with("i:")) {
 				return s.substr(2).to_int();
 			} else if (s.begins_with("f:")) {
-				return s.substr(2).to_float();
+				const String sub = s.substr(2);
+				if (sub == "inf") {
+					return Math::INF;
+				} else if (sub == "-inf") {
+					return -Math::INF;
+				} else if (sub == "nan") {
+					return Math::NaN;
+				}
+				return sub.to_float();
 			} else if (s.begins_with("s:")) {
 				return s.substr(2);
 			} else if (s.begins_with("sn:")) {
@@ -1545,7 +1554,9 @@ Ref<Resource> ResourceFormatLoaderJSON::load(const String &p_path, const String 
 	}
 
 	if (!FileAccess::exists(p_path)) {
-		*r_error = ERR_FILE_NOT_FOUND;
+		if (r_error) {
+			*r_error = ERR_FILE_NOT_FOUND;
+		}
 		return Ref<Resource>();
 	}
 
@@ -1584,8 +1595,7 @@ bool ResourceFormatLoaderJSON::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderJSON::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "json") {
+	if (p_path.has_extension("json")) {
 		return "JSON";
 	}
 	return "";

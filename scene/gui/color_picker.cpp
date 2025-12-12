@@ -52,7 +52,6 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
-#include "thirdparty/misc/ok_color_shader.h"
 
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);
@@ -171,9 +170,10 @@ void ColorPicker::_notification(int p_what) {
 			// Adjust for the width of the "script" icon.
 			text_type->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 
-			_update_presets();
-			_update_recent_presets();
 			_update_controls();
+			// HACK: Deferring updating presets to ensure their size is correct when creating ColorPicker at runtime.
+			callable_mp(this, &ColorPicker::_update_presets).call_deferred();
+			callable_mp(this, &ColorPicker::_update_recent_presets).call_deferred();
 		} break;
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
@@ -253,117 +253,6 @@ void ColorPicker::_update_theme_item_cache() {
 	VBoxContainer::_update_theme_item_cache();
 
 	theme_cache.base_scale = get_theme_default_base_scale();
-}
-
-void ColorPicker::init_shaders() {
-	wheel_shader.instantiate();
-	wheel_shader->set_code(R"(
-// ColorPicker wheel shader.
-
-shader_type canvas_item;
-
-uniform float wheel_radius = 0.42;
-
-void fragment() {
-	float x = UV.x - 0.5;
-	float y = UV.y - 0.5;
-	float a = atan(y, x);
-	x += 0.001;
-	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-
-	COLOR = vec4(clamp((abs(fract(((a - TAU) / TAU) + vec3(3.0, 2.0, 1.0) / 3.0) * 6.0 - 3.0) - 1.0), 0.0, 1.0), (b + b2 + b3 + b4) / 4.00);
-}
-)");
-
-	circle_shader.instantiate();
-	circle_shader->set_code(R"(
-// ColorPicker circle shader.
-
-shader_type canvas_item;
-
-uniform float v = 1.0;
-
-void fragment() {
-	float x = UV.x - 0.5;
-	float y = UV.y - 0.5;
-	float a = atan(y, x);
-	x += 0.001;
-	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5);
-	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5);
-	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5);
-	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5);
-
-	COLOR = vec4(mix(vec3(1.0), clamp(abs(fract(vec3((a - TAU) / TAU) + vec3(1.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - vec3(3.0)) - vec3(1.0), 0.0, 1.0), ((float(sqrt(x * x + y * y)) * 2.0)) / 1.0) * vec3(v), (b + b2 + b3 + b4) / 4.00);
-})");
-
-	circle_ok_color_shader.instantiate();
-	circle_ok_color_shader->set_code(OK_COLOR_SHADER + R"(
-// ColorPicker ok color hsl circle shader.
-
-uniform float ok_hsl_l = 1.0;
-
-void fragment() {
-	float x = UV.x - 0.5;
-	float y = UV.y - 0.5;
-	float h = atan(y, x) / (2.0 * M_PI);
-	float s = sqrt(x * x + y * y) * 2.0;
-	vec3 col = okhsl_to_srgb(vec3(h, s, ok_hsl_l));
-	x += 0.001;
-	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5);
-	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5);
-	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5);
-	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5);
-	COLOR = vec4(col, (b + b2 + b3 + b4) / 4.00);
-})");
-
-	rectangle_ok_color_hs_shader.instantiate();
-	rectangle_ok_color_hs_shader->set_code(OK_COLOR_SHADER + R"(
-// ColorPicker ok color hs rectangle shader.
-
-uniform float ok_hsl_l = 0.0;
-
-void fragment() {
-	float h = UV.x;
-	float s = 1.0 - UV.y;
-	vec3 col = okhsl_to_srgb(vec3(h, s, ok_hsl_l));
-	COLOR = vec4(col, 1.0);
-})");
-
-	rectangle_ok_color_hl_shader.instantiate();
-	rectangle_ok_color_hl_shader->set_code(OK_COLOR_SHADER + R"(
-// ColorPicker ok color hl rectangle shader.
-
-uniform float ok_hsl_s = 0.0;
-
-void fragment() {
-	float h = UV.x;
-	float l = 1.0 - UV.y;
-	vec3 col = okhsl_to_srgb(vec3(h, ok_hsl_s, l));
-	COLOR = vec4(col, 1.0);
-})");
-}
-
-void ColorPicker::finish_shaders() {
-	wheel_shader.unref();
-	circle_shader.unref();
-	circle_ok_color_shader.unref();
-	rectangle_ok_color_hs_shader.unref();
-	rectangle_ok_color_hl_shader.unref();
 }
 
 void ColorPicker::set_focus_on_line_edit() {
@@ -861,10 +750,10 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 
 void ColorPicker::_update_presets() {
 	int preset_size = _get_preset_size();
+	btn_add_preset->set_custom_minimum_size(Size2(preset_size, preset_size));
 	// Only update the preset button size if it has changed.
 	if (preset_size != prev_preset_size) {
 		prev_preset_size = preset_size;
-		btn_add_preset->set_custom_minimum_size(Size2(preset_size, preset_size));
 		for (int i = 1; i < preset_container->get_child_count(); i++) {
 			ColorPresetButton *cpb = Object::cast_to<ColorPresetButton>(preset_container->get_child(i));
 			cpb->set_custom_minimum_size(Size2(preset_size, preset_size));
@@ -876,7 +765,10 @@ void ColorPicker::_update_presets() {
 		String cached_name = editor_settings->call(SNAME("get_project_metadata"), "color_picker", "palette_name", String());
 		palette_path = editor_settings->call(SNAME("get_project_metadata"), "color_picker", "palette_path", String());
 		bool palette_edited = editor_settings->call(SNAME("get_project_metadata"), "color_picker", "palette_edited", false);
-		if (!cached_name.is_empty()) {
+		if (cached_name.is_empty()) {
+			palette_path = String();
+			palette_name->hide();
+		} else {
 			palette_name->set_text(cached_name);
 			if (btn_preset->is_pressed() && !presets.is_empty()) {
 				palette_name->show();
@@ -890,14 +782,17 @@ void ColorPicker::_update_presets() {
 	}
 #endif
 
-	// Rebuild swatch color buttons, keeping the add-preset button in the first position.
-	for (int i = 1; i < preset_container->get_child_count(); i++) {
-		preset_container->get_child(i)->queue_free();
-	}
+	if (presets_just_loaded || presets.is_empty() || Engine::get_singleton()->is_editor_hint()) {
+		// Rebuild swatch color buttons, keeping the add-preset button in the first position.
+		for (int i = 1; i < preset_container->get_child_count(); i++) {
+			preset_container->get_child(i)->queue_free();
+		}
 
-	presets = preset_cache;
-	for (const Color &preset : preset_cache) {
-		_add_preset_button(preset_size, preset);
+		presets = preset_cache;
+		for (const Color &preset : presets) {
+			_add_preset_button(preset_size, preset);
+		}
+		presets_just_loaded = false;
 	}
 
 	_notification(NOTIFICATION_VISIBILITY_CHANGED);
@@ -1068,6 +963,7 @@ void ColorPicker::_palette_file_selected(const String &p_path) {
 				preset_cache.push_back(saved_preset);
 				presets.push_back(saved_preset);
 			}
+			presets_just_loaded = true;
 
 #ifdef TOOLS_ENABLED
 			if (editor_settings) {
@@ -1078,7 +974,8 @@ void ColorPicker::_palette_file_selected(const String &p_path) {
 #endif
 		} break;
 		case FileDialog::FileMode::FILE_MODE_SAVE_FILE: {
-			ColorPalette *palette = memnew(ColorPalette);
+			Ref<ColorPalette> palette;
+			palette.instantiate();
 			palette->set_colors(get_presets());
 			Error error = ResourceSaver::save(palette, p_path);
 			ERR_FAIL_COND_MSG(error != Error::OK, vformat("Cannot open color palette file for writing at: %s", p_path));
@@ -1104,7 +1001,9 @@ void ColorPicker::_palette_file_selected(const String &p_path) {
 		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "palette_edited", false);
 	}
 #endif
-	_update_presets();
+	if (file_dialog->get_file_mode() == FileDialog::FileMode::FILE_MODE_OPEN_FILE) {
+		_update_presets();
+	}
 }
 
 void ColorPicker::_show_hide_preset(const bool &p_is_btn_pressed, Button *p_btn_preset, Container *p_preset_container) {
@@ -2174,7 +2073,7 @@ ColorPicker::ColorPicker() {
 	internal_margin->add_child(real_vbox);
 
 	shape_container = memnew(HBoxContainer);
-	shape_container->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	shape_container->set_alignment(ALIGNMENT_CENTER);
 	real_vbox->add_child(shape_container);
 
 	sample_hbc = memnew(HBoxContainer);
@@ -2282,6 +2181,7 @@ ColorPicker::ColorPicker() {
 	intensity_slider->set_step(0.001);
 	intensity_value->set_allow_greater(true);
 	intensity_value->set_custom_arrow_step(1);
+	intensity_value->set_custom_arrow_round(true);
 
 	hex_hbc = memnew(HBoxContainer);
 	hex_hbc->set_alignment(ALIGNMENT_BEGIN);
@@ -2460,6 +2360,14 @@ void ColorPickerButton::_modal_closed() {
 void ColorPickerButton::pressed() {
 	_update_picker();
 
+	// Checking if the popup was open before, so we can keep it closed instead of reopening it.
+	// Popups get closed when it's clicked outside of them.
+	if (popup_was_open) {
+		// Reset popup_was_open value.
+		popup_was_open = popup->is_visible();
+		return;
+	}
+
 	Size2 minsize = popup->get_contents_minimum_size();
 	float viewport_height = get_viewport_rect().size.y;
 
@@ -2483,6 +2391,19 @@ void ColorPickerButton::pressed() {
 	} else if (DisplayServer::get_singleton()->has_hardware_keyboard()) {
 		picker->set_focus_on_line_edit();
 	}
+}
+
+void ColorPickerButton::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseButton> mouse_button = p_event;
+	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo();
+	bool mouse_left_pressed = mouse_button.is_valid() && mouse_button->get_button_index() == MouseButton::LEFT && mouse_button->is_pressed();
+	if (mouse_left_pressed || ui_accept) {
+		popup_was_open = popup && popup->is_visible();
+	}
+
+	BaseButton::gui_input(p_event);
 }
 
 void ColorPickerButton::_notification(int p_what) {

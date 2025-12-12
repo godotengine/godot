@@ -315,7 +315,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+				Sets the language code of the text for the item at the given index to [param language]. This is used for line-breaking and text shaping algorithms. If [param language] is empty, the current locale is used.
 			</description>
 		</method>
 		<method name="set_item_metadata">
@@ -421,11 +421,17 @@
 			Whether all columns will have the same width.
 			If [code]true[/code], the width is equal to the largest column width of all columns.
 		</member>
+		<member name="scroll_hint_mode" type="int" setter="set_scroll_hint_mode" getter="get_scroll_hint_mode" enum="ItemList.ScrollHintMode" default="0">
+			The way which scroll hints (indicators that show that the content can still be scrolled in a certain direction) will be shown.
+		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode" default="0">
 			Allows single or multiple item selection. See the [enum SelectMode] constants.
 		</member>
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="3">
 			The clipping behavior when the text exceeds an item's bounding rectangle.
+		</member>
+		<member name="tile_scroll_hint" type="bool" setter="set_tile_scroll_hint" getter="is_scroll_hint_tiled" default="false">
+			If [code]true[/code], the scroll hint texture will be tiled instead of stretched. See [member scroll_hint_mode].
 		</member>
 		<member name="wraparound_items" type="bool" setter="set_wraparound_items" getter="has_wraparound_items" default="true">
 			If [code]true[/code], the control will automatically move items into a new row to fit its content. See also [HFlowContainer] for this behavior.
@@ -487,6 +493,18 @@
 		<constant name="SELECT_TOGGLE" value="2" enum="SelectMode">
 			Allows selecting multiple items by toggling them on and off.
 		</constant>
+		<constant name="SCROLL_HINT_MODE_DISABLED" value="0" enum="ScrollHintMode">
+			Scroll hints will never be shown.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_BOTH" value="1" enum="ScrollHintMode">
+			Scroll hints will be shown at the top and bottom.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_TOP" value="2" enum="ScrollHintMode">
+			Only the top scroll hint will be shown.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_BOTTOM" value="3" enum="ScrollHintMode">
+			Only the bottom scroll hint will be shown.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.65, 0.65, 0.65, 1)">
@@ -529,6 +547,9 @@
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the item's text.
 		</theme_item>
+		<theme_item name="scroll_hint" data_type="icon" type="Texture2D">
+			The indicator that will be shown when the content can still be scrolled. See [member scroll_hint_mode].
+		</theme_item>
 		<theme_item name="cursor" data_type="style" type="StyleBox">
 			[StyleBox] used for the cursor, when the [ItemList] is being focused.
 		</theme_item>
@@ -536,7 +557,7 @@
 			[StyleBox] used for the cursor, when the [ItemList] is not being focused.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			The focused style for the [ItemList], drawn on top of the background, but below everything else.
+			The focused style for the [ItemList], drawn on top of everything.
 		</theme_item>
 		<theme_item name="hovered" data_type="style" type="StyleBox">
 			[StyleBox] for the hovered, but not selected items.

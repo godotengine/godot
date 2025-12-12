@@ -79,13 +79,13 @@ TEST_CASE("[JSON] Stringify arrays") {
 	non_finite_array.push_back(Math::INF);
 	non_finite_array.push_back(-Math::INF);
 	non_finite_array.push_back(Math::NaN);
-	CHECK(JSON::stringify(non_finite_array) == "[1e99999,-1e99999,\"NaN\"]");
-
 	ERR_PRINT_OFF
+	CHECK(JSON::stringify(non_finite_array) == "[1e99999,-1e99999,null]");
+
 	Array non_finite_round_trip = JSON::parse_string(JSON::stringify(non_finite_array));
 	CHECK(non_finite_round_trip[0] == Variant(Math::INF));
 	CHECK(non_finite_round_trip[1] == Variant(-Math::INF));
-	CHECK(non_finite_round_trip[2].get_type() == Variant::STRING);
+	CHECK(non_finite_round_trip[2].get_type() == Variant::NIL);
 
 	Array self_array;
 	self_array.push_back(self_array);
@@ -128,13 +128,13 @@ TEST_CASE("[JSON] Stringify dictionaries") {
 	non_finite_dictionary["-inf"] = -Math::INF;
 	non_finite_dictionary["inf"] = Math::INF;
 	non_finite_dictionary["nan"] = Math::NaN;
-	CHECK(JSON::stringify(non_finite_dictionary) == "{\"-inf\":-1e99999,\"inf\":1e99999,\"nan\":\"NaN\"}");
-
 	ERR_PRINT_OFF
+	CHECK(JSON::stringify(non_finite_dictionary) == "{\"-inf\":-1e99999,\"inf\":1e99999,\"nan\":null}");
+
 	Dictionary non_finite_round_trip = JSON::parse_string(JSON::stringify(non_finite_dictionary));
 	CHECK(non_finite_round_trip["-inf"] == Variant(-Math::INF));
 	CHECK(non_finite_round_trip["inf"] == Variant(Math::INF));
-	CHECK(non_finite_round_trip["nan"].get_type() == Variant::STRING);
+	CHECK(non_finite_round_trip["nan"].get_type() == Variant::NIL);
 
 	Dictionary self_dictionary;
 	self_dictionary["key"] = self_dictionary;

@@ -364,13 +364,6 @@ void ShaderTextEditor::_load_theme_settings() {
 	// Colorize preprocessor include strings.
 	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 	syntax_highlighter->add_color_region("\"", "\"", string_color, false);
-
-	if (warnings_panel) {
-		// Warnings panel.
-		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
-		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
-	}
-
 	syntax_highlighter->set_uint_suffix_enabled(true);
 }
 
@@ -979,11 +972,10 @@ void TextShaderEditor::edit_shader_include(const Ref<ShaderInclude> &p_shader_in
 	code_editor->set_edited_shader_include(p_shader_inc);
 }
 
-void TextShaderEditor::use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) {
+void TextShaderEditor::use_menu_bar(MenuButton *p_file_menu) {
 	p_file_menu->set_switch_on_hover(true);
 	menu_bar_hbox->add_child(p_file_menu);
 	menu_bar_hbox->move_child(p_file_menu, 0);
-	menu_bar_hbox->add_child(p_make_floating);
 }
 
 void TextShaderEditor::save_external_data(const String &p_str) {
@@ -1028,6 +1020,14 @@ void TextShaderEditor::trim_trailing_whitespace() {
 
 void TextShaderEditor::trim_final_newlines() {
 	code_editor->trim_final_newlines();
+}
+
+void TextShaderEditor::set_toggle_list_control(Control *p_toggle_list_control) {
+	code_editor->set_toggle_list_control(p_toggle_list_control);
+}
+
+void TextShaderEditor::update_toggle_files_button() {
+	code_editor->update_toggle_files_button();
 }
 
 void TextShaderEditor::validate_script() {
@@ -1282,7 +1282,6 @@ TextShaderEditor::TextShaderEditor() {
 	site_search->set_text(TTR("Online Docs"));
 	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
 	menu_bar_hbox->add_child(site_search);
-	menu_bar_hbox->add_child(memnew(VSeparator));
 
 	menu_bar_hbox->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 

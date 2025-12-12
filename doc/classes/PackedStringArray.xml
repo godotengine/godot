@@ -54,7 +54,7 @@
 				Appends a [PackedStringArray] at the end of this array.
 			</description>
 		</method>
-		<method name="bsearch">
+		<method name="bsearch" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="String" />
 			<param index="1" name="before" type="bool" default="true" />
@@ -76,7 +76,7 @@
 				Returns the number of times an element is in the array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 				Creates a copy of the array, and returns it.
@@ -108,8 +108,8 @@
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the [String] at the given [param index] in the array. Returns an empty string and prints an error if the access is out of bounds. Negative indices are not supported; they will always consider the value to be out of bounds and return an empty string.
-				This is similar to using the [code][][/code] operator ([code]array[index][/code]), except that operator supports negative indices and causes a debugger break if out-of-bounds access is performed.
+				Returns the [String] at the given [param index] in the array. If [param index] is out-of-bounds or negative, this method fails and returns an empty string.
+				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">

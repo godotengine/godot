@@ -37,6 +37,7 @@
 #include "core/templates/rb_set.h"
 #include "scene/gui/control.h"
 #include "scene/resources/image_texture.h"
+#include "scene/resources/mesh.h"
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
@@ -5773,7 +5774,7 @@ int TileSetScenesCollectionSource::get_alternative_tile_id(const Vector2i p_atla
 
 bool TileSetScenesCollectionSource::has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const {
 	ERR_FAIL_COND_V(p_atlas_coords != Vector2i(), false);
-	return scenes.has(p_alternative_tile);
+	return scenes.has(TileSetAtlasSource::alternative_no_transform(p_alternative_tile));
 }
 
 int TileSetScenesCollectionSource::create_scene_tile(Ref<PackedScene> p_packed_scene, int p_id_override) {
@@ -5835,8 +5836,9 @@ void TileSetScenesCollectionSource::set_scene_tile_scene(int p_id, Ref<PackedSce
 }
 
 Ref<PackedScene> TileSetScenesCollectionSource::get_scene_tile_scene(int p_id) const {
-	ERR_FAIL_COND_V(!scenes.has(p_id), Ref<PackedScene>());
-	return scenes[p_id].scene;
+	int scene_tile = TileSetAtlasSource::alternative_no_transform(p_id);
+	ERR_FAIL_COND_V(!scenes.has(scene_tile), Ref<PackedScene>());
+	return scenes[scene_tile].scene;
 }
 
 void TileSetScenesCollectionSource::set_scene_tile_display_placeholder(int p_id, bool p_display_placeholder) {
@@ -5848,6 +5850,7 @@ void TileSetScenesCollectionSource::set_scene_tile_display_placeholder(int p_id,
 }
 
 bool TileSetScenesCollectionSource::get_scene_tile_display_placeholder(int p_id) const {
+	p_id = TileSetAtlasSource::alternative_no_transform(p_id);
 	ERR_FAIL_COND_V(!scenes.has(p_id), false);
 	return scenes[p_id].display_placeholder;
 }
@@ -5878,8 +5881,9 @@ bool TileSetScenesCollectionSource::_set(const StringName &p_name, const Variant
 			return true;
 		} else if (components.size() >= 3 && components[2] == "display_placeholder") {
 			if (!has_scene_tile_id(scene_id)) {
-				create_scene_tile(p_value, scene_id);
+				create_scene_tile(Ref<PackedScene>(), scene_id);
 			}
+			set_scene_tile_display_placeholder(scene_id, p_value);
 
 			return true;
 		}
@@ -5896,7 +5900,7 @@ bool TileSetScenesCollectionSource::_get(const StringName &p_name, Variant &r_re
 			r_ret = scenes[components[1].to_int()].scene;
 			return true;
 		} else if (components.size() >= 3 && components[2] == "display_placeholder") {
-			r_ret = scenes[components[1].to_int()].scene;
+			r_ret = scenes[components[1].to_int()].display_placeholder;
 			return true;
 		}
 	}

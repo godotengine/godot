@@ -133,7 +133,7 @@ const Variant &Dictionary::operator[](const Variant &p_key) const {
 	} else {
 		static Variant empty;
 		const Variant *value = _p->variant_map.getptr(key);
-		ERR_FAIL_COND_V_MSG(!value, empty, "Bug: Dictionary::operator[] used when there was no value for the given key, please report.");
+		ERR_FAIL_COND_V_MSG(!value, empty, vformat(R"(Bug: Dictionary::operator[] used when there was no value for the given key "%s". Please report.)", key));
 		return *value;
 	}
 }
@@ -303,6 +303,12 @@ void Dictionary::_ref(const Dictionary &p_from) const {
 		_unref();
 	}
 	_p = p_from._p;
+}
+
+void Dictionary::reserve(int p_new_capacity) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
+	ERR_FAIL_COND_MSG(p_new_capacity < 0, "New capacity must be non-negative.");
+	_p->variant_map.reserve(p_new_capacity);
 }
 
 void Dictionary::clear() {
@@ -613,6 +619,7 @@ Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMod
 		return n;
 	}
 
+	n.reserve(_p->variant_map.size());
 	if (p_deep) {
 		bool is_call_chain_end = recursion_count == 0;
 

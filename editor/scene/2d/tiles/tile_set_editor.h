@@ -31,6 +31,7 @@
 #pragma once
 
 #include "atlas_merging_dialog.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/resources/2d/tile_set.h"
 #include "tile_proxies_manager_dialog.h"
@@ -43,9 +44,10 @@ class HBoxContainer;
 class SplitContainer;
 class EditorFileDialog;
 class EditorInspectorPlugin;
+class TileSetSourceItemList;
 
-class TileSetEditor : public MarginContainer {
-	GDCLASS(TileSetEditor, MarginContainer);
+class TileSetEditor : public EditorDock {
+	GDCLASS(TileSetEditor, EditorDock);
 
 	static TileSetEditor *singleton;
 
@@ -76,7 +78,7 @@ private:
 	MenuButton *sources_add_button = nullptr;
 	MenuButton *source_sort_button = nullptr;
 	MenuButton *sources_advanced_menu_button = nullptr;
-	ItemList *sources_list = nullptr;
+	TileSetSourceItemList *sources_list = nullptr;
 	Ref<Texture2D> missing_texture_texture;
 	void _source_selected(int p_source_index);
 	void _source_delete_pressed();
@@ -95,7 +97,6 @@ private:
 	Label *patterns_help_label = nullptr;
 	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
 	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
-	bool select_last_pattern = false;
 	void _update_patterns_list();
 
 	// Expanded editor.

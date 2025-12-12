@@ -37,6 +37,7 @@
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
 #endif
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -564,7 +565,15 @@ Error OS_LinuxBSD::shell_open(const String &p_uri) {
 		return OK;
 	}
 	ok = execute("kde-open", args, nullptr, &err_code);
-	return !err_code ? ok : FAILED;
+	if (ok == OK && !err_code) {
+		return OK;
+	}
+	// XFCE
+	ok = execute("exo-open", args, nullptr, &err_code);
+	if (ok == OK && !err_code) {
+		return OK;
+	}
+	return FAILED;
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
@@ -982,6 +991,8 @@ void OS_LinuxBSD::run() {
 	//uint64_t frame=0;
 
 	while (true) {
+		GodotProfileFrameMark;
+		GodotProfileZone("OS_LinuxBSD::run");
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 #ifdef SDL_ENABLED
 		if (joypad_sdl) {

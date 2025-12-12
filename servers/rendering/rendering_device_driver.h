@@ -171,19 +171,31 @@ public:
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
 		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
+		// There are no Vulkan-equivalent. Try to use unused/unclaimed bits.
+		BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT = (1 << 31),
 	};
 
 	enum {
 		BUFFER_WHOLE_SIZE = ~0ULL
 	};
 
-	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) = 0;
+	/** Allocates a new GPU buffer. Must be destroyed with buffer_free().
+	 * @param p_size The size in bytes of the buffer.
+	 * @param p_usage Usage flags.
+	 * @param p_allocation_type See MemoryAllocationType.
+	 * @param p_frames_drawn Used for debug checks when BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT is set.
+	 * @return the buffer.
+	 */
+	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) = 0;
 	// Only for a buffer with BUFFER_USAGE_TEXEL_BIT.
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) = 0;
 	virtual void buffer_free(BufferID p_buffer) = 0;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) = 0;
 	virtual uint8_t *buffer_map(BufferID p_buffer) = 0;
 	virtual void buffer_unmap(BufferID p_buffer) = 0;
+	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) = 0;
+	virtual uint64_t buffer_get_dynamic_offsets(Span<BufferID> p_buffers) = 0;
+	virtual void buffer_flush(BufferID p_buffer) {}
 	// Only for a buffer with BUFFER_USAGE_DEVICE_ADDRESS_BIT.
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) = 0;
 
@@ -256,11 +268,8 @@ public:
 	};
 
 	struct TextureCopyableLayout {
-		uint64_t offset = 0;
 		uint64_t size = 0;
 		uint64_t row_pitch = 0;
-		uint64_t depth_pitch = 0;
-		uint64_t layer_pitch = 0;
 	};
 
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) = 0;
@@ -270,9 +279,11 @@ public:
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) = 0;
 	virtual void texture_free(TextureID p_texture) = 0;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) = 0;
+	// Returns a texture layout for buffer <-> texture copies. If you are copying multiple texture subresources to/from the same buffer,
+	// you are responsible for correctly aligning the start offset for every buffer region. See API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT.
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) = 0;
-	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) = 0;
-	virtual void texture_unmap(TextureID p_texture) = 0;
+	// Returns the data of a texture layer for a CPU texture that was created with TEXTURE_USAGE_CPU_READ_BIT.
+	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) = 0;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) = 0;
 	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) = 0;
 
@@ -288,7 +299,7 @@ public:
 	/**** VERTEX ARRAY ****/
 	/**********************/
 
-	virtual VertexFormatID vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) = 0;
+	virtual VertexFormatID vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) = 0;
 	virtual void vertex_format_free(VertexFormatID p_vertex_format) = 0;
 
 	/******************/
@@ -497,12 +508,17 @@ public:
 		// Flag to indicate  that this is an immutable sampler so it is skipped when creating uniform
 		// sets, as it would be set previously when creating the pipeline layout.
 		bool immutable_sampler = false;
+
+		_FORCE_INLINE_ bool is_dynamic() const {
+			return type == UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC || type == UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		}
 	};
 
 	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) = 0;
 	virtual void linear_uniform_set_pools_reset(int p_linear_pool_index) {}
 	virtual void uniform_set_free(UniformSetID p_uniform_set) = 0;
 	virtual bool uniform_sets_have_linear_pools() const { return false; }
+	virtual uint32_t uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) const = 0;
 
 	// ----- COMMANDS -----
 
@@ -528,7 +544,8 @@ public:
 
 	struct BufferTextureCopyRegion {
 		uint64_t buffer_offset = 0;
-		TextureSubresourceLayers texture_subresources;
+		uint64_t row_pitch = 0;
+		TextureSubresource texture_subresource;
 		Vector3i texture_offset;
 		Vector3i texture_region_size;
 	};
@@ -599,6 +616,7 @@ public:
 		LocalVector<AttachmentReference> input_references;
 		LocalVector<AttachmentReference> color_references;
 		AttachmentReference depth_stencil_reference;
+		AttachmentReference depth_resolve_reference;
 		LocalVector<AttachmentReference> resolve_references;
 		LocalVector<uint32_t> preserve_attachments;
 		AttachmentReference fragment_shading_rate_reference;
@@ -644,8 +662,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
-	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
-	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) = 0;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) = 0;
@@ -656,7 +673,7 @@ public:
 	virtual void command_render_draw_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) = 0;
 
 	// Buffer binding.
-	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) = 0;
+	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) = 0;
 	virtual void command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) = 0;
 
 	// Dynamic state.
@@ -687,8 +704,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
-	virtual void command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
-	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) = 0;
+	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
 
 	// Dispatching.
 	virtual void command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
@@ -789,6 +805,7 @@ public:
 		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
 		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
 		API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS,
+		API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS,
 	};
 
 	enum ShaderChangeInvalidation {

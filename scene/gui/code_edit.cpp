@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
+#include "core/string/translation_server.h"
 #include "core/string/ustring.h"
 #include "scene/theme/theme_db.h"
 
@@ -137,14 +138,14 @@ void CodeEdit::_notification(int p_what) {
 				/* Code completion */
 				if (draw_code_completion) {
 					const int code_completion_options_count = code_completion_options.size();
-					const int lines = MIN(code_completion_options_count, theme_cache.code_completion_max_lines);
+					int lines = MIN(code_completion_options_count, theme_cache.code_completion_max_lines);
 					const Size2 icon_area_size(row_height, row_height);
 
 					code_completion_rect.size.width = code_completion_longest_line + theme_cache.code_completion_icon_separation + icon_area_size.width + 2;
 					code_completion_rect.size.height = lines * row_height;
 
 					const Point2 caret_pos = get_caret_draw_pos();
-					const int total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
+					int total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
 					int min_y = caret_pos.y - row_height;
 					int max_y = caret_pos.y + row_height + total_height;
 					if (draw_code_hint) {
@@ -155,9 +156,31 @@ void CodeEdit::_notification(int p_what) {
 						}
 					}
 
-					const bool can_fit_completion_above = (min_y > total_height);
-					const bool can_fit_completion_below = (max_y <= get_size().height);
-					if (!can_fit_completion_below && can_fit_completion_above) {
+					const bool can_fit_completion_above = min_y > total_height;
+					const bool can_fit_completion_below = max_y <= get_size().height;
+
+					bool should_place_above = !can_fit_completion_below && can_fit_completion_above;
+
+					if (!can_fit_completion_below && !can_fit_completion_above) {
+						const int space_above = caret_pos.y - row_height;
+						const int space_below = get_size().height - caret_pos.y;
+						should_place_above = space_above > space_below;
+
+						// Reduce the line count and recalculate heights to better fit the completion popup.
+						int space_avail;
+						if (should_place_above) {
+							space_avail = space_above - theme_cache.code_completion_style->get_minimum_size().y;
+						} else {
+							space_avail = space_below - theme_cache.code_completion_style->get_minimum_size().y;
+						}
+
+						int max_lines_fit = MAX(1, space_avail / row_height);
+						lines = MIN(lines, max_lines_fit);
+						code_completion_rect.size.height = lines * row_height;
+						total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
+					}
+
+					if (should_place_above) {
 						code_completion_rect.position.y = (caret_pos.y - total_height - row_height) + theme_cache.line_spacing;
 						if (draw_code_hint && !code_hint_draw_below) {
 							code_completion_rect.position.y -= code_hint_minsize.y;
@@ -188,13 +211,14 @@ void CodeEdit::_notification(int p_what) {
 					code_completion_line_ofs = CLAMP((code_completion_force_item_center < 0 ? code_completion_current_selected : code_completion_force_item_center) - lines / 2, 0, code_completion_options_count - lines);
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), theme_cache.code_completion_selected_color);
 
+					const String &lang = _get_locale();
 					for (int i = 0; i < lines; i++) {
 						int l = code_completion_line_ofs + i;
 						ERR_CONTINUE(l < 0 || l >= code_completion_options_count);
 
 						Ref<TextLine> tl;
 						tl.instantiate();
-						tl->add_string(code_completion_options[l].display, theme_cache.font, theme_cache.font_size);
+						tl->add_string(code_completion_options[l].display, theme_cache.font, theme_cache.font_size, lang);
 
 						int yofs = (row_height - tl->get_size().y) / 2;
 						Point2 title_pos(code_completion_rect.position.x, code_completion_rect.position.y + i * row_height + yofs);
@@ -503,7 +527,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* Ctrl + Hover symbols */
-	bool mac_keys = OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios");
+	bool mac_keys = OS::prefer_meta_over_ctrl();
 	if ((mac_keys && k->get_keycode() == Key::META) || (!mac_keys && k->get_keycode() == Key::CTRL)) {
 		if (symbol_lookup_on_click_enabled) {
 			if (k->is_pressed() && !is_dragging_cursor()) {
@@ -1510,6 +1534,26 @@ bool CodeEdit::is_line_numbers_zero_padded() const {
 	return line_number_padding == "0";
 }
 
+void CodeEdit::set_line_numbers_min_digits(int p_count) {
+	if (line_numbers_min_digits == p_count) {
+		return;
+	}
+	line_numbers_min_digits = p_count;
+
+	int digits = MAX(line_numbers_min_digits, std::log10(get_line_count()) + 1);
+	if (digits == line_number_digits) {
+		return;
+	}
+	line_number_digits = digits;
+	_clear_line_number_text_cache();
+	_update_line_number_gutter_width();
+	queue_redraw();
+}
+
+int CodeEdit::get_line_numbers_min_digits() const {
+	return line_numbers_min_digits;
+}
+
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
 	if (!Rect2(Vector2(0, 0), get_size()).intersects(p_region)) {
 		return;
@@ -1521,14 +1565,15 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 	if (E) {
 		text_rid = E->value;
 	} else {
+		const String &lang = _get_locale();
 		String fc = String::num_int64(p_line + 1).lpad(line_number_digits, line_number_padding);
 		if (is_localizing_numeral_system()) {
-			fc = TS->format_number(fc);
+			fc = TranslationServer::get_singleton()->format_number(fc, lang);
 		}
 
 		text_rid = TS->create_shaped_text();
 		if (theme_cache.font.is_valid()) {
-			TS->shaped_text_add_string(text_rid, fc, theme_cache.font->get_rids(), theme_cache.font_size, theme_cache.font->get_opentype_features());
+			TS->shaped_text_add_string(text_rid, fc, theme_cache.font->get_rids(), theme_cache.font_size, theme_cache.font->get_opentype_features(), lang);
 		}
 		line_number_text_cache.insert(p_line, text_rid);
 	}
@@ -1869,8 +1914,18 @@ bool CodeEdit::is_line_folded(int p_line) const {
 	return p_line + 1 < get_line_count() && !_is_line_hidden(p_line) && _is_line_hidden(p_line + 1);
 }
 
-TypedArray<int> CodeEdit::get_folded_lines() const {
+TypedArray<int> CodeEdit::get_folded_lines_bind() const {
 	TypedArray<int> folded_lines;
+	for (int i = 0; i < get_line_count(); i++) {
+		if (is_line_folded(i)) {
+			folded_lines.push_back(i);
+		}
+	}
+	return folded_lines;
+}
+
+PackedInt32Array CodeEdit::get_folded_lines() const {
+	PackedInt32Array folded_lines;
 	for (int i = 0; i < get_line_count(); i++) {
 		if (is_line_folded(i)) {
 			folded_lines.push_back(i);
@@ -2788,6 +2843,8 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_draw_line_numbers_enabled"), &CodeEdit::is_draw_line_numbers_enabled);
 	ClassDB::bind_method(D_METHOD("set_line_numbers_zero_padded", "enable"), &CodeEdit::set_line_numbers_zero_padded);
 	ClassDB::bind_method(D_METHOD("is_line_numbers_zero_padded"), &CodeEdit::is_line_numbers_zero_padded);
+	ClassDB::bind_method(D_METHOD("set_line_numbers_min_digits", "count"), &CodeEdit::set_line_numbers_min_digits);
+	ClassDB::bind_method(D_METHOD("get_line_numbers_min_digits"), &CodeEdit::get_line_numbers_min_digits);
 
 	/* Fold Gutter */
 	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter", "enable"), &CodeEdit::set_draw_fold_gutter);
@@ -2807,7 +2864,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("toggle_foldable_lines_at_carets"), &CodeEdit::toggle_foldable_lines_at_carets);
 
 	ClassDB::bind_method(D_METHOD("is_line_folded", "line"), &CodeEdit::is_line_folded);
-	ClassDB::bind_method(D_METHOD("get_folded_lines"), &CodeEdit::get_folded_lines);
+	ClassDB::bind_method(D_METHOD("get_folded_lines"), &CodeEdit::get_folded_lines_bind);
 
 	/* Code region */
 	ClassDB::bind_method(D_METHOD("create_code_region"), &CodeEdit::create_code_region);
@@ -2932,6 +2989,7 @@ void CodeEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_line_numbers"), "set_draw_line_numbers", "is_draw_line_numbers_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_zero_pad_line_numbers"), "set_line_numbers_zero_padded", "is_line_numbers_zero_padded");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gutters_line_numbers_min_digits", PROPERTY_HINT_RANGE, "1,5,1"), "set_line_numbers_min_digits", "get_line_numbers_min_digits");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 
@@ -3637,6 +3695,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 	for (ScriptLanguage::CodeCompletionOption &option : code_completion_option_sources) {
 		option.matches.clear();
+		option.matches_dirty = true;
 		if (single_quote && option.display.is_quoted()) {
 			option.display = option.display.unquote().quote("'");
 		}
@@ -3722,6 +3781,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		// go through all possible matches to get the best one as defined by CodeCompletionOptionCompare
 		if (all_possible_subsequence_matches.size() > 0) {
 			option.matches = all_possible_subsequence_matches[0];
+			option.matches_dirty = true;
 			option.get_option_characteristics(string_to_complete);
 			all_possible_subsequence_matches = all_possible_subsequence_matches.slice(1);
 			if (all_possible_subsequence_matches.size() > 0) {
@@ -3730,6 +3790,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				compared_option.clear_characteristics();
 				for (Vector<Pair<int, int>> &matches : all_possible_subsequence_matches) {
 					compared_option.matches = matches;
+					compared_option.matches_dirty = true;
 					compared_option.get_option_characteristics(string_to_complete);
 					if (compare(compared_option, option)) {
 						option = compared_option;
@@ -3811,7 +3872,7 @@ void CodeEdit::_text_changed() {
 	}
 
 	int lc = get_line_count();
-	int new_line_number_digits = std::log10(lc) + 1;
+	int new_line_number_digits = MAX(line_numbers_min_digits, std::log10(lc) + 1);
 	if (line_number_digits != new_line_number_digits) {
 		_clear_line_number_text_cache();
 	}

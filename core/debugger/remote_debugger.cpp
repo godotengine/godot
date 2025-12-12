@@ -62,11 +62,16 @@ public:
 		last_perf_time = pt;
 
 		Array custom_monitor_names = performance->call("get_custom_monitor_names");
+		Array custom_monitor_types = performance->call("get_custom_monitor_types");
+
+		Array custom_monitor_data;
+		custom_monitor_data.push_back(custom_monitor_names);
+		custom_monitor_data.push_back(custom_monitor_types);
 
 		uint64_t monitor_modification_time = performance->call("get_monitor_modification_time");
 		if (monitor_modification_time > last_monitor_modification_time) {
 			last_monitor_modification_time = monitor_modification_time;
-			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_names);
+			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_data);
 		}
 
 		int max = performance->get("MONITOR_MAX");
@@ -458,6 +463,11 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_debugger->set_lines_left(1);
 				break;
 
+			} else if (command == "out") {
+				script_debugger->set_depth(1);
+				script_debugger->set_lines_left(1);
+				break;
+
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
@@ -668,10 +678,18 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 			reload_all_scripts = false;
 		} else if (!script_paths_to_reload.is_empty()) {
 			Array scripts_to_reload;
-			for (int i = 0; i < script_paths_to_reload.size(); ++i) {
-				String path = script_paths_to_reload[i];
+			for (const Variant &v : script_paths_to_reload) {
+				const String &path = v;
 				Error err = OK;
-				Ref<Script> script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+				Ref<Script> script = ResourceCache::get_ref(path);
+				if (script.is_null()) {
+					if (path.is_resource_file()) {
+						script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+					} else {
+						// Built-in script that isn't in ResourceCache, no need to reload.
+						continue;
+					}
+				}
 				ERR_CONTINUE_MSG(err != OK, vformat("Could not reload script '%s': %s", path, error_names[err]));
 				ERR_CONTINUE_MSG(script.is_null(), vformat("Could not reload script '%s': Not a script!", path, error_names[err]));
 				scripts_to_reload.push_back(script);

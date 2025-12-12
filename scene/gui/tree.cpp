@@ -140,7 +140,7 @@ void TreeItem::_change_tree(Tree *p_tree) {
 		}
 
 		if (tree->drop_mode_over == this) {
-			tree->drop_mode_over = nullptr;
+			tree->_reset_drop_mode_over();
 		}
 
 		if (tree->single_select_defer == this) {
@@ -878,6 +878,17 @@ int TreeItem::get_custom_minimum_height() const {
 	return custom_min_height;
 }
 
+void TreeItem::set_custom_stylebox(int p_column, const Ref<StyleBox> &p_stylebox) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	cells.write[p_column].custom_stylebox = p_stylebox;
+	_changed_notify(p_column);
+}
+
+Ref<StyleBox> TreeItem::get_custom_stylebox(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<StyleBox>());
+	return cells[p_column].custom_stylebox;
+}
+
 TreeItem *TreeItem::create_child(int p_index) {
 	TreeItem *ti = memnew(TreeItem(tree));
 	if (tree) {
@@ -895,7 +906,7 @@ TreeItem *TreeItem::create_child(int p_index) {
 	} else {
 		int idx = 0;
 		if (!children_cache.is_empty()) {
-			idx = MIN(children_cache.size() - 1, p_index);
+			idx = MIN(int(children_cache.size()) - 1, p_index);
 			item_next = children_cache[idx];
 			item_prev = item_next->prev;
 		}
@@ -920,7 +931,7 @@ TreeItem *TreeItem::create_child(int p_index) {
 			if (ti->next) {
 				children_cache.insert(p_index, ti);
 			} else {
-				children_cache.append(ti);
+				children_cache.push_back(ti);
 			}
 		}
 	} else {
@@ -957,7 +968,7 @@ void TreeItem::add_child(TreeItem *p_item) {
 	last_child = p_item;
 
 	if (!children_cache.is_empty()) {
-		children_cache.append(p_item);
+		children_cache.push_back(p_item);
 	}
 
 	validate_cache();
@@ -1111,15 +1122,15 @@ TreeItem *TreeItem::get_child(int p_index) {
 	if (p_index < 0) {
 		p_index += children_cache.size();
 	}
-	ERR_FAIL_INDEX_V(p_index, children_cache.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_index, (int)children_cache.size(), nullptr);
 
-	return children_cache.get(p_index);
+	return children_cache[p_index];
 }
 
 int TreeItem::get_visible_child_count() {
 	_create_children_cache();
 	int visible_count = 0;
-	for (int i = 0; i < children_cache.size(); i++) {
+	for (uint32_t i = 0; i < children_cache.size(); i++) {
 		if (children_cache[i]->is_visible()) {
 			visible_count += 1;
 		}
@@ -1175,7 +1186,7 @@ void TreeItem::validate_cache() const {
 		return;
 	}
 	TreeItem *scan = parent->first_child;
-	int index = 0;
+	uint32_t index = 0;
 	while (scan) {
 		DEV_ASSERT(parent->children_cache[index] == scan);
 		++index;
@@ -1265,7 +1276,7 @@ void TreeItem::move_after(TreeItem *p_item) {
 		// If the cache is empty, it has not been built but there
 		// are items in the tree (note p_item != nullptr,) so we cannot update it.
 		if (!parent->children_cache.is_empty()) {
-			parent->children_cache.append(this);
+			parent->children_cache.push_back(this);
 		}
 	}
 
@@ -1843,6 +1854,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_draw_callback", "column", "callback"), &TreeItem::set_custom_draw_callback);
 	ClassDB::bind_method(D_METHOD("get_custom_draw_callback", "column"), &TreeItem::get_custom_draw_callback);
 
+	ClassDB::bind_method(D_METHOD("set_custom_stylebox", "column", "stylebox"), &TreeItem::set_custom_stylebox);
+	ClassDB::bind_method(D_METHOD("get_custom_stylebox", "column"), &TreeItem::get_custom_stylebox);
+
 	ClassDB::bind_method(D_METHOD("set_collapsed", "enable"), &TreeItem::set_collapsed);
 	ClassDB::bind_method(D_METHOD("is_collapsed"), &TreeItem::is_collapsed);
 
@@ -2131,7 +2145,8 @@ void Tree::update_column(int p_col) {
 	}
 
 	columns.write[p_col].xl_title = atr(columns[p_col].title);
-	columns.write[p_col].text_buf->add_string(columns[p_col].xl_title, theme_cache.tb_font, theme_cache.tb_font_size, columns[p_col].language);
+	const String &lang = columns[p_col].language.is_empty() ? _get_locale() : columns[p_col].language;
+	columns.write[p_col].text_buf->add_string(columns[p_col].xl_title, theme_cache.tb_font, theme_cache.tb_font_size, lang);
 	columns.write[p_col].cached_minimum_width_dirty = true;
 }
 
@@ -2200,7 +2215,8 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) const {
 	} else {
 		font_size = theme_cache.font_size;
 	}
-	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].language);
+	const String &lang = p_item->cells[p_col].language.is_empty() ? _get_locale() : p_item->cells[p_col].language;
+	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, lang);
 
 	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES;
 	switch (p_item->cells.write[p_col].autowrap_mode) {
@@ -2386,11 +2402,11 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			if ((select_mode == SELECT_ROW && selected_item == p_item) || (select_mode == SELECT_MULTI && selected_item == p_item && selected_col == i) || p_item->cells[i].selected || !p_item->has_meta("__focus_rect")) {
+			if ((select_mode == SELECT_ROW && selected_item == p_item) || (select_mode == SELECT_MULTI && selected_item == p_item && selected_col == i) || p_item->cells[i].selected || !p_item->focus_rect.has_area()) {
 				Rect2i r = cell_rect;
 
 				if (select_mode != SELECT_ROW) {
-					p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
+					p_item->focus_rect = Rect2(r.position, r.size);
 					r = convert_rtl_rect(r);
 					if (p_item->cells[i].selected) {
 						if (is_cell_hovered) {
@@ -2408,7 +2424,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						}
 					}
 				} else {
-					p_item->set_meta("__focus_col_" + itos(i), Rect2(r.position, r.size));
+					p_item->cells.write[i].focus_rect = Rect2(r.position, r.size);
 				}
 			}
 
@@ -2432,6 +2448,16 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				} else {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, r, p_item->cells[i].bg_color);
 				}
+			}
+
+			if (p_item->cells[i].custom_stylebox.is_valid()) {
+				Rect2 r = cell_rect;
+				if (i == 0) {
+					r.position.x = p_draw_ofs.x;
+					r.size.x = item_width + ofs;
+				}
+				r = convert_rtl_rect(r);
+				draw_style_box(p_item->cells[i].custom_stylebox, r);
 			}
 
 			if (drop_mode_flags && drop_mode_over) {
@@ -2682,41 +2708,42 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 		}
 
-		// Draw the folding arrow.
-		if (!p_item->disable_folding && !hide_folding && p_item->first_child && p_item->get_visible_child_count() != 0) { // Has visible children, draw the guide box.
+		if (p_pos.y + label_h - theme_cache.offset.y >= 0) {
+			// Draw the folding arrow.
+			if (!p_item->disable_folding && !hide_folding && p_item->first_child && p_item->get_visible_child_count() != 0) { // Has visible children, draw the guide box.
+				Ref<Texture2D> arrow;
 
-			Ref<Texture2D> arrow;
-
-			if (p_item->collapsed) {
-				if (rtl) {
-					arrow = theme_cache.arrow_collapsed_mirrored;
+				if (p_item->collapsed) {
+					if (rtl) {
+						arrow = theme_cache.arrow_collapsed_mirrored;
+					} else {
+						arrow = theme_cache.arrow_collapsed;
+					}
 				} else {
-					arrow = theme_cache.arrow_collapsed;
+					arrow = theme_cache.arrow;
 				}
-			} else {
-				arrow = theme_cache.arrow;
-			}
 
-			Size2 arrow_full_size = arrow->get_size();
+				Size2 arrow_full_size = arrow->get_size();
 
-			Point2 apos = p_pos + Point2i(0, (label_h - arrow_full_size.height) / 2) - theme_cache.offset + p_draw_ofs;
-			apos.x += theme_cache.item_margin - arrow_full_size.width;
+				Point2 apos = p_pos + Point2i(0, (label_h - arrow_full_size.height) / 2) - theme_cache.offset + p_draw_ofs;
+				apos.x += theme_cache.item_margin - arrow_full_size.width;
 
-			Size2 arrow_draw_size = arrow_full_size;
-			int out_width = p_pos.x + theme_cache.item_margin - get_column_width(0);
-			if (out_width > 0) {
-				arrow_draw_size.width -= out_width;
-			}
-
-			if (arrow_draw_size.width > 0) {
-				apos = convert_rtl_position(apos, arrow_draw_size.width);
-				Point2 src_pos = Point2();
-				if (rtl) {
-					src_pos = Point2(arrow_full_size.width - arrow_draw_size.width, 0);
+				Size2 arrow_draw_size = arrow_full_size;
+				int out_width = p_pos.x + theme_cache.item_margin - get_column_width(0);
+				if (out_width > 0) {
+					arrow_draw_size.width -= out_width;
 				}
-				Rect2 arrow_rect = Rect2(apos, arrow_draw_size);
-				Rect2 arrow_src_rect = Rect2(src_pos, arrow_draw_size);
-				arrow->draw_rect_region(ci, arrow_rect, arrow_src_rect);
+
+				if (arrow_draw_size.width > 0) {
+					apos = convert_rtl_position(apos, arrow_draw_size.width);
+					Point2 src_pos = Point2();
+					if (rtl) {
+						src_pos = Point2(arrow_full_size.width - arrow_draw_size.width, 0);
+					}
+					Rect2 arrow_rect = Rect2(apos, arrow_draw_size);
+					Rect2 arrow_src_rect = Rect2(src_pos, arrow_draw_size);
+					arrow->draw_rect_region(ci, arrow_rect, arrow_src_rect);
+				}
 			}
 		}
 	}
@@ -2824,6 +2851,10 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(parent_pos.x + line_pixel_shift, root_pos.y + line_width * 0.5 + line_pixel_shift), Point2(parent_pos.x + line_pixel_shift, prev_ofs + line_width * 0.5), theme_cache.relationship_line_color, line_width);
 							}
 						}
+					}
+				} else {
+					if (_is_branch_selected(c)) {
+						has_sibling_selection = _is_sibling_branch_selected(c);
 					}
 				}
 
@@ -3283,9 +3314,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		click_handled = true;
 		popup_pressing_edited_item = p_item;
 		popup_pressing_edited_item_column = col;
-
-		pressing_item_rect = Rect2(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs) - theme_cache.offset, Size2(col_width, item_h));
-		pressing_for_editor_text = editor_text;
 		pressing_for_editor = true;
 
 		return -1; // Select.
@@ -3359,14 +3387,15 @@ void Tree::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	if (p_event->is_action_pressed("ui_text_newline_blank", true)) {
 		accept_event();
 	} else if (p_event->is_action_pressed("ui_text_newline")) {
+		bool hide_focus = !text_editor->has_focus(true);
 		popup_edit_committed = true; // End edit popup processing.
 		popup_editor->hide();
-		_apply_multiline_edit();
+		_apply_multiline_edit(hide_focus);
 		accept_event();
 	}
 }
 
-void Tree::_apply_multiline_edit() {
+void Tree::_apply_multiline_edit(bool p_hide_focus) {
 	if (!popup_edited_item) {
 		return;
 	}
@@ -3385,6 +3414,7 @@ void Tree::_apply_multiline_edit() {
 		}
 	}
 
+	grab_focus(p_hide_focus);
 	item_edited(popup_edited_item_col, popup_edited_item);
 	queue_redraw();
 }
@@ -3397,6 +3427,8 @@ void Tree::_line_editor_submit(String p_text) {
 	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
 		return; // ESC pressed, app focus lost, or forced close from code.
 	}
+
+	bool hide_focus = !line_editor->has_focus(true);
 
 	popup_edit_committed = true; // End edit popup processing.
 	popup_editor->hide();
@@ -3430,6 +3462,7 @@ void Tree::_line_editor_submit(String p_text) {
 		}
 	}
 
+	grab_focus(hide_focus);
 	item_edited(popup_edited_item_col, popup_edited_item);
 	queue_redraw();
 }
@@ -4132,6 +4165,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					if (rtl) {
 						pressing_pos.x = get_size().width - pressing_pos.x;
 					}
+				} else if (mb->is_double_click() && get_item_at_position(mb->get_position()) != nullptr) {
+					emit_signal(SNAME("item_icon_double_clicked"));
 				}
 
 				if (mb->get_button_index() == MouseButton::RIGHT) {
@@ -4264,6 +4299,9 @@ void Tree::_determine_hovered_item() {
 		if (drop_mode_flags) {
 			if (it != drop_mode_over) {
 				drop_mode_over = it;
+				if (enable_drag_unfolding) {
+					dropping_unfold_timer->start(theme_cache.dragging_unfold_wait_msec * 0.001);
+				}
 				queue_redraw();
 			}
 			if (it && section != drop_mode_section) {
@@ -4304,6 +4342,19 @@ void Tree::_determine_hovered_item() {
 
 	if (whole_needs_redraw || header_hover_needs_redraw || item_hover_needs_redraw) {
 		queue_redraw();
+	}
+}
+
+void Tree::_on_dropping_unfold_timer_timeout() {
+	if (enable_drag_unfolding && drop_mode_over && drop_mode_section == 0) {
+		drop_mode_over->set_collapsed(false);
+	}
+}
+
+void Tree::_reset_drop_mode_over() {
+	drop_mode_over = nullptr;
+	if (!dropping_unfold_timer->is_stopped()) {
+		dropping_unfold_timer->stop();
 	}
 }
 
@@ -4386,6 +4437,8 @@ bool Tree::edit_selected(bool p_force_edit) {
 		}
 		popup_rect.position += get_screen_position();
 
+		bool hide_focus = !has_focus(true);
+
 		line_editor->clear();
 		line_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		line_editor->select_all();
@@ -4402,10 +4455,12 @@ bool Tree::edit_selected(bool p_force_edit) {
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
-		line_editor->grab_focus();
+		line_editor->grab_focus(hide_focus);
 
 		return true;
 	} else if (c.mode == TreeItem::CELL_MODE_STRING && c.edit_multiline) {
+		bool hide_focus = !has_focus(true);
+
 		line_editor->hide();
 
 		text_editor->clear();
@@ -4422,7 +4477,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
-		text_editor->grab_focus();
+		text_editor->grab_focus(hide_focus);
 
 		return true;
 	}
@@ -4433,9 +4488,9 @@ bool Tree::edit_selected(bool p_force_edit) {
 Rect2 Tree::_get_item_focus_rect(const TreeItem *p_item) const {
 	Rect2 rect;
 	if (select_mode == SELECT_ROW) {
-		rect = p_item->get_meta("__focus_col_" + itos(selected_col));
+		rect = p_item->cells[selected_col].focus_rect;
 	} else {
-		rect = p_item->get_meta("__focus_rect");
+		rect = p_item->focus_rect;
 	}
 	return rect;
 }
@@ -4501,6 +4556,7 @@ void Tree::update_scrollbars() {
 		theme_cache.offset.y = v_scroll->get_value();
 	} else {
 		v_scroll->hide();
+		v_scroll->set_value(0);
 		theme_cache.offset.y = 0;
 	}
 
@@ -4511,6 +4567,7 @@ void Tree::update_scrollbars() {
 		theme_cache.offset.x = h_scroll->get_value();
 	} else {
 		h_scroll->hide();
+		h_scroll->set_value(0);
 		theme_cache.offset.x = 0;
 	}
 
@@ -4641,9 +4698,9 @@ void Tree::_accessibility_action_edit_custom(const Variant &p_data, TreeItem *p_
 	float popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
 	Rect2 rect;
 	if (select_mode == SELECT_ROW) {
-		rect = p_item->get_meta("__focus_col_" + itos(p_col));
+		rect = p_item->cells[p_col].focus_rect;
 	} else {
-		rect = p_item->get_meta("__focus_rect");
+		rect = p_item->focus_rect;
 	}
 	rect.position *= popup_scale;
 
@@ -5070,6 +5127,21 @@ void Tree::_notification(int p_what) {
 						columns[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 					}
 					columns[i].text_buf->draw(ci, text_pos, theme_cache.title_button_color);
+				}
+			}
+
+			if (scroll_hint_mode != SCROLL_HINT_MODE_DISABLED) {
+				Size2 size = get_size();
+				float v_scroll_value = v_scroll->get_value();
+				bool v_scroll_below_max = v_scroll_value < (get_internal_min_size().height - (content_rect.get_size().height - _get_title_button_height()) - 1);
+				if (v_scroll_value > 1 || v_scroll_below_max) {
+					int hint_height = theme_cache.scroll_hint->get_height();
+					if ((scroll_hint_mode == SCROLL_HINT_MODE_BOTH || scroll_hint_mode == SCROLL_HINT_MODE_TOP) && v_scroll_value > 1) {
+						draw_texture_rect(theme_cache.scroll_hint, Rect2(Point2(), Size2(size.width, hint_height)), tile_scroll_hint);
+					}
+					if ((scroll_hint_mode == SCROLL_HINT_MODE_BOTH || scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM) && v_scroll_below_max) {
+						draw_texture_rect(theme_cache.scroll_hint, Rect2(Point2(0, size.height - hint_height), Size2(size.width, -hint_height)), tile_scroll_hint);
+					}
 				}
 			}
 
@@ -5941,6 +6013,32 @@ bool Tree::is_v_scroll_enabled() const {
 	return v_scroll_enabled;
 }
 
+void Tree::set_scroll_hint_mode(ScrollHintMode p_mode) {
+	if (scroll_hint_mode == p_mode) {
+		return;
+	}
+
+	scroll_hint_mode = p_mode;
+	queue_redraw();
+}
+
+Tree::ScrollHintMode Tree::get_scroll_hint_mode() const {
+	return scroll_hint_mode;
+}
+
+void Tree::set_tile_scroll_hint(bool p_enable) {
+	if (tile_scroll_hint == p_enable) {
+		return;
+	}
+
+	tile_scroll_hint = p_enable;
+	queue_redraw();
+}
+
+bool Tree::is_scroll_hint_tiled() {
+	return tile_scroll_hint;
+}
+
 TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards) {
 	TreeItem *from = p_at;
 	TreeItem *loop = nullptr; // Safe-guard against infinite loop.
@@ -6463,13 +6561,28 @@ bool Tree::is_recursive_folding_enabled() const {
 	return enable_recursive_folding;
 }
 
+void Tree::set_enable_drag_unfolding(bool p_enable) {
+	if (enable_drag_unfolding == p_enable) {
+		return;
+	}
+
+	enable_drag_unfolding = p_enable;
+	if (!enable_drag_unfolding && !dropping_unfold_timer->is_stopped()) {
+		dropping_unfold_timer->stop();
+	}
+}
+
+bool Tree::is_drag_unfolding_enabled() const {
+	return enable_drag_unfolding;
+}
+
 void Tree::set_drop_mode_flags(int p_flags) {
 	if (drop_mode_flags == p_flags) {
 		return;
 	}
 	drop_mode_flags = p_flags;
 	if (drop_mode_flags == 0) {
-		drop_mode_over = nullptr;
+		_reset_drop_mode_over();
 	}
 
 	queue_redraw();
@@ -6587,11 +6700,20 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_v_scroll_enabled", "h_scroll"), &Tree::set_v_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &Tree::is_v_scroll_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_scroll_hint_mode", "scroll_hint_mode"), &Tree::set_scroll_hint_mode);
+	ClassDB::bind_method(D_METHOD("get_scroll_hint_mode"), &Tree::get_scroll_hint_mode);
+
+	ClassDB::bind_method(D_METHOD("set_tile_scroll_hint", "tile_scroll_hint"), &Tree::set_tile_scroll_hint);
+	ClassDB::bind_method(D_METHOD("is_scroll_hint_tiled"), &Tree::is_scroll_hint_tiled);
+
 	ClassDB::bind_method(D_METHOD("set_hide_folding", "hide"), &Tree::set_hide_folding);
 	ClassDB::bind_method(D_METHOD("is_folding_hidden"), &Tree::is_folding_hidden);
 
 	ClassDB::bind_method(D_METHOD("set_enable_recursive_folding", "enable"), &Tree::set_enable_recursive_folding);
 	ClassDB::bind_method(D_METHOD("is_recursive_folding_enabled"), &Tree::is_recursive_folding_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_enable_drag_unfolding", "enable"), &Tree::set_enable_drag_unfolding);
+	ClassDB::bind_method(D_METHOD("is_drag_unfolding_enabled"), &Tree::is_drag_unfolding_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_drop_mode_flags", "flags"), &Tree::set_drop_mode_flags);
 	ClassDB::bind_method(D_METHOD("get_drop_mode_flags"), &Tree::get_drop_mode_flags);
@@ -6615,12 +6737,16 @@ void Tree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_folding"), "set_hide_folding", "is_folding_hidden");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_recursive_folding"), "set_enable_recursive_folding", "is_recursive_folding_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_drag_unfolding"), "set_enable_drag_unfolding", "is_drag_unfolding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_root"), "set_hide_root", "is_root_hidden");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "drop_mode_flags", PROPERTY_HINT_FLAGS, "On Item,In Between"), "set_drop_mode_flags", "get_drop_mode_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Row,Multi"), "set_select_mode", "get_select_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_tooltip"), "set_auto_tooltip", "is_auto_tooltip_enabled");
+	ADD_GROUP("Scroll", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_enabled"), "set_h_scroll_enabled", "is_h_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_enabled"), "set_v_scroll_enabled", "is_v_scroll_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_tooltip"), "set_auto_tooltip", "is_auto_tooltip_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_hint_mode", PROPERTY_HINT_ENUM, "Disabled,Both,Top,Bottom"), "set_scroll_hint_mode", "get_scroll_hint_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tile_scroll_hint"), "set_tile_scroll_hint", "is_scroll_hint_tiled");
 
 	ADD_SIGNAL(MethodInfo("item_selected"));
 	ADD_SIGNAL(MethodInfo("cell_selected"));
@@ -6645,6 +6771,11 @@ void Tree::_bind_methods() {
 	BIND_ENUM_CONSTANT(DROP_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(DROP_MODE_ON_ITEM);
 	BIND_ENUM_CONSTANT(DROP_MODE_INBETWEEN);
+
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTH);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_TOP);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTTOM);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Tree, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Tree, focus_style, "focus");
@@ -6676,6 +6807,7 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, arrow_collapsed_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, select_arrow);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, updown);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, scroll_hint);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, custom_button);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, custom_button_hover);
@@ -6712,6 +6844,8 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, relationship_line_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, parent_hl_line_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, children_hl_line_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, dragging_unfold_wait_msec);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scroll_border);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scroll_speed);
@@ -6769,6 +6903,11 @@ Tree::Tree() {
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &Tree::_range_click_timeout));
 	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
+
+	dropping_unfold_timer = memnew(Timer);
+	dropping_unfold_timer->set_one_shot(true);
+	dropping_unfold_timer->connect("timeout", callable_mp(this, &Tree::_on_dropping_unfold_timer_timeout));
+	add_child(dropping_unfold_timer);
 
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Tree::_scroll_moved));

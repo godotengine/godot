@@ -10,9 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
+			Ellipsis character used for text clipping.
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="3" />
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" overrides="Control" enum="Control.CursorShape" default="2" />
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
@@ -26,6 +29,9 @@
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
+		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
+			Sets the clipping behavior when the text exceeds the node's bounding rectangle.
 		</member>
 		<member name="underline" type="int" setter="set_underline_mode" getter="get_underline_mode" enum="LinkButton.UnderlineMode" default="0">
 			The underline mode to use for the text.

@@ -123,6 +123,7 @@ GotoLinePopup::GotoLinePopup() {
 	vbc->add_child(l);
 
 	line_input = memnew(LineEdit);
+	line_input->set_emoji_menu_enabled(false);
 	line_input->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	line_input->set_select_all_on_focus(true);
 	line_input->connect(SceneStringName(text_changed), callable_mp(this, &GotoLinePopup::_goto_line).unbind(1));
@@ -1466,23 +1467,23 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	}
 
 	if (state.has("folded_lines")) {
-		Vector<int> folded_lines = state["folded_lines"];
-		for (int i = 0; i < folded_lines.size(); i++) {
-			text_editor->fold_line(folded_lines[i]);
+		const PackedInt32Array folded_lines = state["folded_lines"];
+		for (const int &line : folded_lines) {
+			text_editor->fold_line(line);
 		}
 	}
 
 	if (state.has("breakpoints")) {
-		Array breakpoints = state["breakpoints"];
-		for (int i = 0; i < breakpoints.size(); i++) {
-			text_editor->set_line_as_breakpoint(breakpoints[i], true);
+		const PackedInt32Array breakpoints = state["breakpoints"];
+		for (const int &line : breakpoints) {
+			text_editor->set_line_as_breakpoint(line, true);
 		}
 	}
 
 	if (state.has("bookmarks")) {
-		Array bookmarks = state["bookmarks"];
-		for (int i = 0; i < bookmarks.size(); i++) {
-			text_editor->set_line_as_bookmarked(bookmarks[i], true);
+		const PackedInt32Array bookmarks = state["bookmarks"];
+		for (const int &line : bookmarks) {
+			text_editor->set_line_as_bookmarked(line, true);
 		}
 	}
 
@@ -1671,6 +1672,7 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 void CodeTextEditor::_toggle_files_pressed() {
 	ERR_FAIL_NULL(toggle_files_list);
 	toggle_files_list->set_visible(!toggle_files_list->is_visible());
+	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", toggle_files_list->is_visible());
 	update_toggle_files_button();
 }
 
@@ -1702,7 +1704,7 @@ void CodeTextEditor::_notification(int p_what) {
 			zoom_button->set_tooltip_text(
 					TTR("Zoom factor") + "\n" +
 					// TRANSLATORS: The placeholders are keyboard shortcuts. The first one is in the form of "Ctrl+"/"Cmd+".
-					vformat(TTR("%sMouse wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
+					vformat(TTR("%s+Mouse wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
 
 			[[fallthrough]];
 		}
@@ -1867,8 +1869,8 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 	code_complete_ud = p_ud;
 }
 
-void CodeTextEditor::set_toggle_list_control(Control *p_control) {
-	toggle_files_list = p_control;
+void CodeTextEditor::set_toggle_list_control(Control *p_toggle_list_control) {
+	toggle_files_list = p_toggle_list_control;
 }
 
 void CodeTextEditor::show_toggle_files_button() {

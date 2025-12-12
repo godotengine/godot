@@ -683,8 +683,9 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 		}
 	}
 
+	bool sun_scatter_enabled = environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
 	glBindBufferBase(GL_UNIFORM_BUFFER, SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, sky_globals.directional_light_buffer);
-	if (shader_data->uses_light || (environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001)) {
+	if (shader_data->uses_light || sun_scatter_enabled) {
 		sky_globals.directional_light_count = 0;
 		for (int i = 0; i < (int)p_lights.size(); i++) {
 			GLES3::LightInstance *li = GLES3::LightStorage::get_singleton()->get_light_instance(p_lights[i]);
@@ -926,10 +927,12 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	RS::SkyMode sky_mode = sky->mode;
 
 	if (sky_mode == RS::SKY_MODE_AUTOMATIC) {
+		bool sun_scatter_enabled = environment_get_fog_enabled(p_env) && environment_get_fog_sun_scatter(p_env) > 0.001;
+
 		if ((shader_data->uses_time || shader_data->uses_position) && sky->radiance_size == 256) {
 			update_single_frame = true;
 			sky_mode = RS::SKY_MODE_REALTIME;
-		} else if (shader_data->uses_light || shader_data->ubo_size > 0) {
+		} else if (shader_data->uses_light || sun_scatter_enabled || shader_data->ubo_size > 0) {
 			update_single_frame = false;
 			sky_mode = RS::SKY_MODE_INCREMENTAL;
 		} else {
@@ -1107,10 +1110,14 @@ void RasterizerSceneGLES3::environment_glow_set_use_bicubic_upscale(bool p_enabl
 	glow_bicubic_upscale = p_enable;
 }
 
+void RasterizerSceneGLES3::environment_set_ssr_half_size(bool p_half_size) {
+}
+
 void RasterizerSceneGLES3::environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) {
 }
 
 void RasterizerSceneGLES3::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+	ssao_quality = p_quality;
 }
 
 void RasterizerSceneGLES3::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
@@ -2272,6 +2279,15 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 	}
 
+	bool ssao_enabled = false;
+	if (p_environment.is_valid()) {
+		ssao_enabled = environment_get_ssao_enabled(p_environment);
+		if (ssao_enabled) {
+			// If SSAO is enabled, we apply tonemapping etc. in post, so disable it during rendering
+			apply_color_adjustments_in_post = true;
+		}
+	}
+
 	// Assign render data
 	// Use the format from rendererRD
 	RenderDataGLES3 render_data;
@@ -2367,9 +2383,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 
 		tonemap_ubo.exposure = environment_get_exposure(render_data.environment);
-		tonemap_ubo.white = environment_get_white(render_data.environment);
 		tonemap_ubo.tonemapper = int32_t(environment_get_tone_mapper(render_data.environment));
-
+		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(render_data.environment, false);
+		tonemap_ubo.tonemapper_params[0] = params.tonemapper_params[0];
+		tonemap_ubo.tonemapper_params[1] = params.tonemapper_params[1];
+		tonemap_ubo.tonemapper_params[2] = params.tonemapper_params[2];
+		tonemap_ubo.tonemapper_params[3] = params.tonemapper_params[3];
 		tonemap_ubo.brightness = environment_get_adjustments_brightness(render_data.environment);
 		tonemap_ubo.contrast = environment_get_adjustments_contrast(render_data.environment);
 		tonemap_ubo.saturation = environment_get_adjustments_saturation(render_data.environment);
@@ -2548,6 +2567,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	glViewport(0, 0, rb->internal_size.x, rb->internal_size.y);
+
+	// If SSAO is enabled, we definitely need the depth buffer.
+	if (ssao_enabled) {
+		scene_state.used_depth_texture = true;
+	}
 
 	// Do depth prepass if it's explicitly enabled
 	bool use_depth_prepass = config->use_depth_prepass;
@@ -2814,6 +2838,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 	float glow_hdr_bleed_threshold = 1.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
+	float srgb_white = 1.0;
 	if (p_render_data->environment.is_valid()) {
 		glow_enabled = environment_get_glow_enabled(p_render_data->environment);
 		glow_intensity = environment_get_glow_intensity(p_render_data->environment);
@@ -2821,10 +2846,26 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		glow_hdr_bleed_threshold = environment_get_glow_hdr_bleed_threshold(p_render_data->environment);
 		glow_hdr_bleed_scale = environment_get_glow_hdr_bleed_scale(p_render_data->environment);
 		glow_hdr_luminance_cap = environment_get_glow_hdr_luminance_cap(p_render_data->environment);
+		srgb_white = environment_get_white(p_render_data->environment, false);
 	}
 
 	if (glow_enabled) {
+		// Only glow requires srgb_white to be calculated.
+		srgb_white = 1.055 * Math::pow(srgb_white, 1.0f / 2.4f) - 0.055;
+
 		rb->check_glow_buffers();
+	}
+
+	// Check if we want and can have SSAO.
+	bool ssao_enabled = false;
+	float ssao_strength = 4.0;
+	float ssao_radius = 0.5;
+	if (p_render_data->environment.is_valid()) {
+		ssao_enabled = environment_get_ssao_enabled(p_render_data->environment);
+		// This SSAO is not implemented the same way, but uses the intensity and radius
+		// in a similar way.  The parameters are scaled so the SSAO defaults look ok.
+		ssao_strength = environment_get_ssao_intensity(p_render_data->environment) * 2.0;
+		ssao_radius = environment_get_ssao_radius(p_render_data->environment) * 0.5;
 	}
 
 	uint64_t bcs_spec_constants = 0;
@@ -2874,6 +2915,10 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		if (fbo_int != 0) {
 			// Apply glow/bloom if requested? then populate our glow buffers
 			GLuint color = fbo_int != 0 ? rb->get_internal_color() : texture_storage->render_target_get_color(render_target);
+
+			// We need to pass this in for SSAO.
+			GLuint depth_buffer = fbo_int != 0 ? rb->get_internal_depth() : texture_storage->render_target_get_depth(render_target);
+
 			const GLES3::Glow::GLOWLEVEL *glow_buffers = nullptr;
 			if (glow_enabled) {
 				glow_buffers = rb->get_glow_buffers();
@@ -2890,7 +2935,10 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 			}
 
 			// Copy color buffer
-			post_effects->post_copy(fbo_rt, target_size, color, internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity, 0, false, bcs_spec_constants);
+			post_effects->post_copy(fbo_rt, target_size, color,
+					depth_buffer, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
+					internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
+					srgb_white, 0, false, bcs_spec_constants);
 
 			// Copy depth buffer
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_int);
@@ -2937,6 +2985,9 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 			const GLES3::Glow::GLOWLEVEL *glow_buffers = nullptr;
 			GLuint source_color = fbo_int != 0 ? rb->get_internal_color() : texture_storage->render_target_get_color(render_target);
 
+			// Moved this up so SSAO could use it too.
+			GLuint read_depth = rb->get_internal_depth();
+
 			if (glow_enabled) {
 				glow_buffers = rb->get_glow_buffers();
 
@@ -2958,11 +3009,13 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 
 				glBindFramebuffer(GL_FRAMEBUFFER, fbos[2]);
 				glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, write_color, 0, v);
-				post_effects->post_copy(fbos[2], target_size, source_color, internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity, v, true, bcs_spec_constants);
+				post_effects->post_copy(fbos[2], target_size, source_color,
+						read_depth, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
+						internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
+						srgb_white, v, true, bcs_spec_constants);
 			}
 
 			// Copy depth
-			GLuint read_depth = rb->get_internal_depth();
 			GLuint write_depth = texture_storage->render_target_get_depth(render_target);
 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[0]);

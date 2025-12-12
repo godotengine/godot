@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IterateIK3D" inherits="ChainIK3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [SkeletonModifier3D] to approach the goal by repeating small rotations.
+	</brief_description>
+	<description>
+		Base class of [SkeletonModifier3D] to approach the goal by repeating small rotations.
+		Each bone chain (setting) has one effector, which is processed in order of the setting list. You can set some limitations for each joint.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_joint_limitation" qualifiers="const">
+			<return type="JointLimitation3D" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the joint limitation at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="get_joint_limitation_right_axis" qualifiers="const">
+			<return type="int" enum="SkeletonModifier3D.SecondaryDirection" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the joint limitation right axis at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="get_joint_limitation_right_axis_vector" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the joint limitation right axis vector at [param joint] in the bone chain's joint list.
+				If [method get_joint_limitation_right_axis] is [constant SkeletonModifier3D.SECONDARY_DIRECTION_NONE], this method returns [code]Vector3(0, 0, 0)[/code].
+			</description>
+		</method>
+		<method name="get_joint_limitation_rotation_offset" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the joint limitation rotation offset at [param joint] in the bone chain's joint list.
+				Rotation is done in the local space which is constructed by the bone direction (in general parent to child) as the +Y axis and [method get_joint_limitation_right_axis_vector] as the +X axis.
+				If the +X and +Y axes are not orthogonal, the +X axis is implicitly modified to make it orthogonal.
+				Also, if the length of [method get_joint_limitation_right_axis_vector] is zero, the space is created by rotating the bone rest using the shortest arc that rotates the +Y axis of the bone rest to match the bone direction.
+			</description>
+		</method>
+		<method name="get_joint_rotation_axis" qualifiers="const">
+			<return type="int" enum="SkeletonModifier3D.RotationAxis" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the rotation axis at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="get_joint_rotation_axis_vector" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the rotation axis vector for the specified joint in the bone chain. This vector represents the axis around which the joint can rotate. It is determined based on the rotation axis set for the joint.
+				If [method get_joint_rotation_axis] is [constant SkeletonModifier3D.ROTATION_AXIS_ALL], this method returns [code]Vector3(0, 0, 0)[/code].
+			</description>
+		</method>
+		<method name="get_target_node" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the target node that the end bone is trying to reach.
+			</description>
+		</method>
+		<method name="set_joint_limitation">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="limitation" type="JointLimitation3D" />
+			<description>
+				Sets the joint limitation at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="set_joint_limitation_right_axis">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="direction" type="int" enum="SkeletonModifier3D.SecondaryDirection" />
+			<description>
+				Sets the joint limitation right axis at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="set_joint_limitation_right_axis_vector">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="vector" type="Vector3" />
+			<description>
+				Sets the optional joint limitation right axis vector at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="set_joint_limitation_rotation_offset">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="offset" type="Quaternion" />
+			<description>
+				Sets the joint limitation rotation offset at [param joint] in the bone chain's joint list.
+				Rotation is done in the local space which is constructed by the bone direction (in general parent to child) as the +Y axis and [method get_joint_limitation_right_axis_vector] as the +X axis.
+				If the +X and +Y axes are not orthogonal, the +X axis is implicitly modified to make it orthogonal.
+				Also, if the length of [method get_joint_limitation_right_axis_vector] is zero, the space is created by rotating the bone rest using the shortest arc that rotates the +Y axis of the bone rest to match the bone direction.
+			</description>
+		</method>
+		<method name="set_joint_rotation_axis">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="axis" type="int" enum="SkeletonModifier3D.RotationAxis" />
+			<description>
+				Sets the rotation axis at [param joint] in the bone chain's joint list.
+				The axes are based on the [method Skeleton3D.get_bone_rest]'s space, if [param axis] is [constant SkeletonModifier3D.ROTATION_AXIS_CUSTOM], you can specify any axis.
+				[b]Note:[/b] The rotation axis and the forward vector shouldn't be colinear to avoid unintended rotation since [ChainIK3D] does not factor in twisting forces.
+			</description>
+		</method>
+		<method name="set_joint_rotation_axis_vector">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="axis_vector" type="Vector3" />
+			<description>
+				Sets the rotation axis vector for the specified joint in the bone chain.
+				This vector is normalized by an internal process and represents the axis around which the bone chain can rotate.
+				If the vector length is [code]0[/code], it is considered synonymous with [constant SkeletonModifier3D.ROTATION_AXIS_ALL].
+			</description>
+		</method>
+		<method name="set_target_node">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="target_node" type="NodePath" />
+			<description>
+				Sets the target node that the end bone is trying to reach.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angular_delta_limit" type="float" setter="set_angular_delta_limit" getter="get_angular_delta_limit" default="0.034906585">
+			The maximum amount each bone can rotate in a single iteration.
+			[b]Note:[/b] This limitation is applied during each iteration. For example, if [member max_iterations] is [code]4[/code] and [member angular_delta_limit] is [code]5[/code] degrees, the maximum rotation possible in a single frame is [code]20[/code] degrees.
+		</member>
+		<member name="deterministic" type="bool" setter="set_deterministic" getter="is_deterministic" default="false">
+			If [code]false[/code], the result is calculated from the previous frame's [IterateIK3D] result as the initial state.
+			If [code]true[/code], the previous frame's [IterateIK3D] result is discarded. At this point, the new result is calculated from the bone pose excluding the [IterateIK3D] as the initial state. This means the result will be always equal as long as the target position and the previous bone pose are the same. However, if [member angular_delta_limit] and [member max_iterations] are set too small, the end bone of the chain will never reach the target.
+		</member>
+		<member name="max_iterations" type="int" setter="set_max_iterations" getter="get_max_iterations" default="4">
+			The number of iteration loops used by the IK solver to produce more accurate results.
+		</member>
+		<member name="min_distance" type="float" setter="set_min_distance" getter="get_min_distance" default="0.001">
+			The minimum distance between the end bone and the target. If the distance is below this value, the IK solver stops any further iterations.
+		</member>
+		<member name="setting_count" type="int" setter="set_setting_count" getter="get_setting_count" default="0">
+			The number of settings.
+		</member>
+	</members>
+</class>

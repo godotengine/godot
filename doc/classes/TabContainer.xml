@@ -223,6 +223,9 @@
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
+		<member name="switch_on_drag_hover" type="bool" setter="set_switch_on_drag_hover" getter="get_switch_on_drag_hover" default="true">
+			If [code]true[/code], hovering over a tab while dragging something will switch to that tab. Does not have effect when hovering another tab to rearrange.
+		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
 			The position at which tabs will be placed.
 		</member>
@@ -230,7 +233,7 @@
 			The focus access mode for the internal [TabBar] node.
 		</member>
 		<member name="tabs_position" type="int" setter="set_tabs_position" getter="get_tabs_position" enum="TabContainer.TabPosition" default="0">
-			The position of the tab bar.
+			The horizontal alignment of the tabs.
 		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].

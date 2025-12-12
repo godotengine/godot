@@ -71,13 +71,6 @@ layout(location = 13) in vec4 previous_normal_attrib;
 
 #endif // MOTION_VECTORS
 
-vec3 oct_to_vec3(vec2 e) {
-	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
-	float t = max(-v.z, 0.0);
-	v.xy += t * -sign(v.xy);
-	return normalize(v);
-}
-
 void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binormal, out vec3 normal) {
 	float c = cos(angle);
 	float s = sin(angle);
@@ -178,6 +171,11 @@ uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
 }
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
+
+#if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
+layout(location = 14) out vec2 point_coord_interp;
+#endif
+
 invariant gl_Position;
 
 #GLOBALS
@@ -265,7 +263,7 @@ void vertex_shader(vec3 vertex_input,
 		uint trail_size = (instances.data[instance_index].flags >> INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT) & INSTANCE_FLAGS_PARTICLE_TRAIL_MASK;
 		uint stride = 3 + 1 + 1; //particles always uses this format
 
-		uint offset = trail_size * stride * gl_InstanceIndex;
+		uint offset = trail_size * stride * INSTANCE_INDEX;
 
 #ifdef COLOR_USED
 		vec4 pcolor;
@@ -307,7 +305,7 @@ void vertex_shader(vec3 vertex_input,
 
 #else
 		uint stride = multimesh_stride();
-		uint offset = stride * (gl_InstanceIndex + multimesh_offset);
+		uint offset = stride * (INSTANCE_INDEX + multimesh_offset);
 
 		if (sc_multimesh_format_2d()) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
@@ -437,6 +435,10 @@ void vertex_shader(vec3 vertex_input,
 #endif
 	mat3 modelview_normal = mat3(read_view_matrix) * model_normal_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
+
+#ifdef POINT_SIZE_USED
+	float point_size = 1.0;
+#endif
 
 	{
 #CODE : VERTEX
@@ -695,6 +697,27 @@ void vertex_shader(vec3 vertex_input,
 		gl_Position.z = mix(gl_Position.w, gl_Position.z, z_clip_scale);
 	}
 #endif
+
+#ifdef POINT_SIZE_USED
+	if (sc_emulate_point_size) {
+		vec2 point_coords[6] = vec2[](
+				vec2(0, 1),
+				vec2(0, 0),
+				vec2(1, 1),
+				vec2(0, 0),
+				vec2(1, 0),
+				vec2(1, 1));
+
+		vec2 point_coord = point_coords[gl_VertexIndex % 6];
+		gl_Position.xy += (point_coord * 2.0 - 1.0) * point_size * scene_data.screen_pixel_size * gl_Position.w;
+
+#ifdef POINT_COORD_USED
+		point_coord_interp = point_coord;
+#endif
+	} else {
+		gl_PointSize = point_size;
+	}
+#endif
 }
 
 void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position, vec3 p_compressed_aabb_size,
@@ -740,7 +763,7 @@ void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position
 void main() {
 	uint instance_index = draw_call.instance_index;
 	if (!sc_multimesh()) {
-		instance_index += gl_InstanceIndex;
+		instance_index += INSTANCE_INDEX;
 	}
 
 	instance_index_interp = instance_index;
@@ -967,6 +990,11 @@ ivec2 multiview_uv(ivec2 uv) {
 layout(location = 12) in vec4 diffuse_light_interp;
 layout(location = 13) in vec4 specular_light_interp;
 #endif
+
+#if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
+layout(location = 14) in vec2 point_coord_interp;
+#endif
+
 //defines to keep compatibility with vertex
 
 #ifdef USE_MULTIVIEW
@@ -1067,14 +1095,19 @@ vec4 fog_process(vec3 vertex) {
 		vec3 cube_view = scene_data_block.data.radiance_inverse_xform * vertex;
 		// mip_level always reads from the second mipmap and higher so the fog is always slightly blurred
 		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, 1.0 - (abs(vertex.z) - scene_data_block.data.z_near) / (scene_data_block.data.z_far - scene_data_block.data.z_near));
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-		float lod, blend;
-		blend = modf(mip_level * MAX_ROUGHNESS_LOD, lod);
-		sky_fog_color = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(cube_view, lod)).rgb;
-		sky_fog_color = mix(sky_fog_color, texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(cube_view, lod + 1)).rgb, blend);
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+		float roughness_lod, blend;
+		blend = modf(mip_level * MAX_ROUGHNESS_LOD, roughness_lod);
+		float cube_lod = vec3_to_oct_lod(dFdx(cube_view), dFdy(cube_view), scene_data_block.data.radiance_pixel_size);
+		vec2 cube_uv = vec3_to_oct_with_border(cube_view, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 sky_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cube_uv, roughness_lod), cube_lod).rgb;
+		vec3 sky_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cube_uv, roughness_lod + 1), cube_lod).rgb;
+		sky_fog_color = mix(sky_sample_a, sky_sample_b, blend);
 #else
-		sky_fog_color = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_view, mip_level * MAX_ROUGHNESS_LOD).rgb;
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+		float roughness_lod = mip_level * MAX_ROUGHNESS_LOD;
+		vec2 cube_uv = vec3_to_oct_with_border(cube_view, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		sky_fog_color = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_uv, roughness_lod).rgb;
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 		fog_color = mix(fog_color, sky_fog_color, scene_data_block.data.fog_aerial_perspective);
 	}
 
@@ -1193,7 +1226,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	vec3 energy_compensation = vec3(1.0);
 #ifndef FOG_DISABLED
-	vec4 fog = vec4(0.0);
+	vec4 fog = vec4(0.0, 0.0, 0.0, 1.0);
 #endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance = vec4(0.0);
@@ -1290,6 +1323,19 @@ void fragment_shader(in SceneData scene_data) {
 			scene_data.view_matrix[2],
 			vec4(0.0, 0.0, 0.0, 1.0)));
 	vec2 read_viewport_size = scene_data.viewport_size;
+
+#ifdef POINT_COORD_USED
+#ifdef POINT_SIZE_USED
+	vec2 point_coord;
+	if (sc_emulate_point_size) {
+		point_coord = point_coord_interp;
+	} else {
+		point_coord = gl_PointCoord;
+	}
+#else // !POINT_SIZE_USED
+	vec2 point_coord = vec2(0.5);
+#endif
+#endif
 
 	{
 #CODE : FRAGMENT
@@ -1435,6 +1481,9 @@ void fragment_shader(in SceneData scene_data) {
 
 	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 		fog = fog_process(vertex);
+		// Premultiply by opacity and convert opacity to transmittance to match volumetric fog.
+		fog.rgb *= fog.a;
+		fog.a = 1.0 - fog.a;
 	}
 
 	if (implementation_data.volumetric_fog_enabled) {
@@ -1443,21 +1492,20 @@ void fragment_shader(in SceneData scene_data) {
 #else
 		vec4 volumetric_fog = volumetric_fog_process(screen_uv, -vertex.z);
 #endif
+		vec4 res = vec4(0.0);
 		if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 			//must use the full blending equation here to blend fogs
-			vec4 res;
-			float sa = 1.0 - volumetric_fog.a;
-			res.a = fog.a * sa + volumetric_fog.a;
-			if (res.a == 0.0) {
-				res.rgb = vec3(0.0);
-			} else {
-				res.rgb = (fog.rgb * fog.a * sa + volumetric_fog.rgb * volumetric_fog.a) / res.a;
-			}
-			fog = res;
+			res.a = fog.a * volumetric_fog.a;
+			res.rgb = fog.rgb * volumetric_fog.a + volumetric_fog.rgb;
 		} else {
-			fog = volumetric_fog;
+			res = volumetric_fog;
 		}
+		fog = res;
 	}
+#else
+	// Premultiply by opacity and convert opacity to transmittance to match volumetric fog.
+	fog.rgb *= fog.a;
+	fog.a = 1.0 - fog.a;
 #endif //!CUSTOM_FOG_USED
 
 	uint fog_rg = packHalf2x16(fog.rg);
@@ -1597,6 +1645,12 @@ void fragment_shader(in SceneData scene_data) {
 		float kernelRoughness2 = min(2.0 * variance, scene_data.roughness_limiter_limit); //limit effect
 		float filteredRoughness2 = min(1.0, roughness2 + kernelRoughness2);
 		roughness = sqrt(filteredRoughness2);
+
+		// Reject very small roughness values. Lack of precision can collapse
+		// roughness^4 to 0 in GGX specular equations and cause divisions by zero.
+		if (roughness < 0.00000001) {
+			roughness = 0.0;
+		}
 	}
 #endif
 	//apply energy conservation
@@ -1637,18 +1691,24 @@ void fragment_shader(in SceneData scene_data) {
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 
-		float lod, blend;
+		float roughness_lod, blend;
 
-		blend = modf(sqrt(roughness) * MAX_ROUGHNESS_LOD, lod);
-		indirect_specular_light = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod)).rgb;
-		indirect_specular_light = mix(indirect_specular_light, texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod + 1)).rgb, blend);
+		blend = modf(sqrt(roughness) * MAX_ROUGHNESS_LOD, roughness_lod);
+
+		float ref_lod = vec3_to_oct_lod(dFdx(ref_vec), dFdy(ref_vec), scene_data_block.data.radiance_pixel_size);
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 indirect_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, roughness_lod), ref_lod).rgb;
+		vec3 indirect_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, roughness_lod + 1), ref_lod).rgb;
+		indirect_specular_light = mix(indirect_sample_a, indirect_sample_b, blend);
 
 #else
-		indirect_specular_light = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_vec, sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb;
+		float roughness_lod = sqrt(roughness) * MAX_ROUGHNESS_LOD;
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		indirect_specular_light = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb;
 
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 		indirect_specular_light *= scene_data.IBL_exposure_normalization;
 		indirect_specular_light *= horizon * horizon;
 		indirect_specular_light *= scene_data.ambient_light_color_energy.a;
@@ -1665,11 +1725,15 @@ void fragment_shader(in SceneData scene_data) {
 
 		if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP)) {
 			vec3 ambient_dir = scene_data.radiance_inverse_xform * indirect_normal;
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-			vec3 cubemap_ambient = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ambient_dir, MAX_ROUGHNESS_LOD)).rgb;
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+			float ambient_lod = vec3_to_oct_lod(dFdx(ambient_dir), dFdy(ambient_dir), scene_data_block.data.radiance_pixel_size);
+			vec2 ambient_uv = vec3_to_oct_with_border(ambient_dir, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+			vec3 cubemap_ambient = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ambient_uv, MAX_ROUGHNESS_LOD), ambient_lod).rgb;
 #else
-			vec3 cubemap_ambient = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ambient_dir, MAX_ROUGHNESS_LOD).rgb;
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+			float roughness_lod = MAX_ROUGHNESS_LOD;
+			vec2 ambient_uv = vec3_to_oct_with_border(ambient_dir, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+			vec3 cubemap_ambient = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ambient_uv, roughness_lod).rgb;
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 			cubemap_ambient *= scene_data.IBL_exposure_normalization;
 			ambient_light = mix(ambient_light, cubemap_ambient * scene_data.ambient_light_color_energy.a, scene_data.ambient_color_sky_mix);
 		}
@@ -1694,17 +1758,22 @@ void fragment_shader(in SceneData scene_data) {
 		float horizon = min(1.0 + dot(ref_vec, indirect_normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 		float roughness_lod = mix(0.001, 0.1, sqrt(clearcoat_roughness)) * MAX_ROUGHNESS_LOD;
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 
 		float lod, blend;
 		blend = modf(roughness_lod, lod);
-		vec3 clearcoat_light = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod)).rgb;
-		clearcoat_light = mix(clearcoat_light, texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ref_vec, lod + 1)).rgb, blend);
+
+		float ref_lod = vec3_to_oct_lod(dFdx(ref_vec), dFdy(ref_vec), scene_data_block.data.radiance_pixel_size);
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 clearcoat_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod), ref_lod).rgb;
+		vec3 clearcoat_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod + 1), ref_lod).rgb;
+		vec3 clearcoat_light = mix(clearcoat_sample_a, clearcoat_sample_b, blend);
 
 #else
-		vec3 clearcoat_light = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_vec, roughness_lod).rgb;
+		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 clearcoat_light = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb;
 
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 		indirect_specular_light += clearcoat_light * horizon * horizon * Fc * scene_data.ambient_light_color_energy.a;
 	}
 #endif // LIGHT_CLEARCOAT_USED
@@ -2027,6 +2096,39 @@ void fragment_shader(in SceneData scene_data) {
 			ambient_light = ambient_accum.rgb;
 		}
 #endif
+	}
+
+	//process ssr
+	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
+		bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
+
+		float ssr_mip_level = 0.0;
+		if (resolve_ssr) {
+#ifdef USE_MULTIVIEW
+			ssr_mip_level = textureLod(sampler2DArray(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), vec3(screen_uv, ViewIndex), 0.0).x;
+#else
+			ssr_mip_level = textureLod(sampler2D(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), screen_uv, 0.0).x;
+#endif // USE_MULTIVIEW
+
+			ssr_mip_level *= 14.0;
+		}
+
+#ifdef USE_MULTIVIEW
+		vec4 ssr = textureLod(sampler2DArray(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(screen_uv, ViewIndex), ssr_mip_level);
+#else
+		vec4 ssr = textureLod(sampler2D(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), screen_uv, ssr_mip_level);
+#endif // USE_MULTIVIEW
+
+		if (resolve_ssr) {
+			const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+			ssr.rgb /= 1.0 - dot(ssr.rgb, rec709_luminance_weights);
+		}
+
+		// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
+		ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
+
+		// Alpha is premultiplied.
+		indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
 	}
 
 	//finalize ambient light here
@@ -2849,8 +2951,8 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifndef FOG_DISABLED
-	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
-	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
+	diffuse_buffer.rgb = diffuse_buffer.rgb * fog.a + fog.rgb;
+	specular_buffer.rgb = specular_buffer.rgb * fog.a;
 #endif //!FOG_DISABLED
 
 #else //MODE_SEPARATE_SPECULAR
@@ -2865,9 +2967,12 @@ void fragment_shader(in SceneData scene_data) {
 #endif //USE_NO_SHADING
 
 #ifndef FOG_DISABLED
-	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
-	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	frag_color.rgb = frag_color.rgb * fog.a + fog.rgb;
 #endif //!FOG_DISABLED
+
+#if defined(PREMUL_ALPHA_USED) && !defined(MODE_RENDER_DEPTH)
+	frag_color.rgb *= premul_alpha;
+#endif //PREMUL_ALPHA_USED
 
 #endif //MODE_SEPARATE_SPECULAR
 
@@ -2881,10 +2986,6 @@ void fragment_shader(in SceneData scene_data) {
 
 	motion_vector = prev_position_uv - position_uv;
 #endif
-
-#if defined(PREMUL_ALPHA_USED) && !defined(MODE_RENDER_DEPTH)
-	frag_color.rgb *= premul_alpha;
-#endif //PREMUL_ALPHA_USED
 }
 
 void main() {

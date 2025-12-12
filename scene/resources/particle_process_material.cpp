@@ -481,6 +481,13 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "}\n\n";
 	}
 
+	code += "vec3 normalize_or_else(vec3 _in, const vec3 _else) {\n";
+	code += "	if (_in == vec3(0.0)) {\n";
+	code += "		return _else;\n";
+	code += "	}\n";
+	code += "	return normalize(_in);\n";
+	code += "}\n\n";
+
 	code += "vec4 rotate_hue(vec4 current_color, float hue_rot_angle) {\n";
 	code += "	float hue_rot_c = cos(hue_rot_angle);\n";
 	code += "	float hue_rot_s = sin(hue_rot_angle);\n";
@@ -1096,24 +1103,25 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "	TRANSFORM[2] = vec4(0.0, 0.0, 1.0, 0.0);\n";
 		}
 	} else {
+		//TODO Fix so 0 scaling on all axes doesn't break during normalization
 		// Orient particle Y towards velocity.
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 			code += "	if (length(final_velocity) > 0.0) {\n";
-			code += "		TRANSFORM[1].xyz = normalize(final_velocity);\n";
+			code += "		TRANSFORM[1].xyz = normalize_or_else(final_velocity, vec3(0.0, 1.0, 0.0));\n";
 			code += "	} else {\n";
-			code += "		TRANSFORM[1].xyz = normalize(TRANSFORM[1].xyz);\n";
+			code += "		TRANSFORM[1].xyz = normalize_or_else(TRANSFORM[1].xyz, vec3(0.0, 1.0, 0.0));\n";
 			code += "	}\n";
-			code += "	if (TRANSFORM[1].xyz == normalize(TRANSFORM[0].xyz)) {\n";
-			code += "		TRANSFORM[0].xyz = normalize(cross(normalize(TRANSFORM[1].xyz), normalize(TRANSFORM[2].xyz)));\n";
-			code += "		TRANSFORM[2].xyz = normalize(cross(normalize(TRANSFORM[0].xyz), normalize(TRANSFORM[1].xyz)));\n";
+			code += "	if (TRANSFORM[1].xyz == normalize_or_else(TRANSFORM[0].xyz, vec3(1.0, 0.0, 0.0))) {\n";
+			code += "		TRANSFORM[0].xyz = normalize_or_else(cross(TRANSFORM[1].xyz, TRANSFORM[2].xyz), vec3(1.0, 0.0, 0.0));\n";
+			code += "		TRANSFORM[2].xyz = normalize_or_else(cross(TRANSFORM[0].xyz, TRANSFORM[1].xyz), vec3(0.0, 0.0, 1.0));\n";
 			code += "	} else {\n";
-			code += "		TRANSFORM[2].xyz = normalize(cross(normalize(TRANSFORM[0].xyz), normalize(TRANSFORM[1].xyz)));\n";
-			code += "		TRANSFORM[0].xyz = normalize(cross(normalize(TRANSFORM[1].xyz), normalize(TRANSFORM[2].xyz)));\n";
+			code += "		TRANSFORM[2].xyz = normalize_or_else(cross(TRANSFORM[0].xyz, TRANSFORM[1].xyz), vec3(0.0, 0.0, 1.0));\n";
+			code += "		TRANSFORM[0].xyz = normalize_or_else(cross(TRANSFORM[1].xyz, TRANSFORM[2].xyz), vec3(1.0, 0.0, 0.0));\n";
 			code += "	}\n";
 		} else {
-			code += "	TRANSFORM[0].xyz = normalize(TRANSFORM[0].xyz);\n";
-			code += "	TRANSFORM[1].xyz = normalize(TRANSFORM[1].xyz);\n";
-			code += "	TRANSFORM[2].xyz = normalize(TRANSFORM[2].xyz);\n";
+			code += "	TRANSFORM[0].xyz = normalize_or_else(TRANSFORM[0].xyz, vec3(1.0, 0.0, 0.0));\n";
+			code += "	TRANSFORM[1].xyz = normalize_or_else(TRANSFORM[1].xyz, vec3(0.0, 1.0, 0.0));\n";
+			code += "	TRANSFORM[2].xyz = normalize_or_else(TRANSFORM[2].xyz, vec3(0.0, 0.0, 1.0));\n";
 		}
 		// Turn particle by rotation in Y.
 		if (particle_flags[PARTICLE_FLAG_ROTATE_Y]) {
@@ -1453,37 +1461,34 @@ void ParticleProcessMaterial::set_param_texture(Parameter p_param, const Ref<Tex
 	Variant tex_rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 
 	switch (p_param) {
-		case PARAM_INITIAL_LINEAR_VELOCITY: {
-			//do none for this one
-		} break;
 		case PARAM_ANGULAR_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->angular_velocity_texture, tex_rid);
-			_adjust_curve_range(p_texture, -360, 360);
+			_adjust_curve_range(p_texture, -1, 1);
 		} break;
 		case PARAM_ORBIT_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->orbit_velocity_texture, tex_rid);
-			_adjust_curve_range(p_texture, -2, 2);
+			_adjust_curve_range(p_texture, -1, 1);
 			notify_property_list_changed();
 		} break;
 		case PARAM_LINEAR_ACCEL: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->linear_accel_texture, tex_rid);
-			_adjust_curve_range(p_texture, -200, 200);
+			_adjust_curve_range(p_texture, -1, 1);
 		} break;
 		case PARAM_RADIAL_ACCEL: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->radial_accel_texture, tex_rid);
-			_adjust_curve_range(p_texture, -200, 200);
+			_adjust_curve_range(p_texture, -1, 1);
 		} break;
 		case PARAM_TANGENTIAL_ACCEL: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->tangent_accel_texture, tex_rid);
-			_adjust_curve_range(p_texture, -200, 200);
+			_adjust_curve_range(p_texture, -1, 1);
 		} break;
 		case PARAM_DAMPING: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->damping_texture, tex_rid);
-			_adjust_curve_range(p_texture, 0, 100);
+			_adjust_curve_range(p_texture, 0, 1);
 		} break;
 		case PARAM_ANGLE: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->angle_texture, tex_rid);
-			_adjust_curve_range(p_texture, -360, 360);
+			_adjust_curve_range(p_texture, -1, 1);
 		} break;
 		case PARAM_SCALE: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->scale_texture, tex_rid);
@@ -1495,35 +1500,36 @@ void ParticleProcessMaterial::set_param_texture(Parameter p_param, const Ref<Tex
 		} break;
 		case PARAM_ANIM_SPEED: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_speed_texture, tex_rid);
-			_adjust_curve_range(p_texture, 0, 200);
+			_adjust_curve_range(p_texture, 0, 1);
 		} break;
 		case PARAM_ANIM_OFFSET: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_texture, tex_rid);
+			_adjust_curve_range(p_texture, 0, 1);
 		} break;
 		case PARAM_TURB_INFLUENCE_OVER_LIFE: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_influence_over_life, tex_rid);
 			_adjust_curve_range(p_texture, 0, 1);
 		} break;
-		case PARAM_TURB_VEL_INFLUENCE: {
-			// Can't happen, but silences warning
-		} break;
-		case PARAM_TURB_INIT_DISPLACEMENT: {
-			// Can't happen, but silences warning
-		} break;
 		case PARAM_RADIAL_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->radial_velocity_texture, tex_rid);
+			_adjust_curve_range(p_texture, 0, 1);
 		} break;
 		case PARAM_SCALE_OVER_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->scale_over_velocity_texture, tex_rid);
-			_adjust_curve_range(p_texture, 0, 3);
+			_adjust_curve_range(p_texture, 0, 1);
 			notify_property_list_changed();
 		} break;
 		case PARAM_DIRECTIONAL_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->directional_velocity_texture, tex_rid);
+			_adjust_curve_range(p_texture, 0, 1);
 			notify_property_list_changed();
 		} break;
-		case PARAM_MAX:
-			break; // Can't happen, but silences warning
+		case PARAM_INITIAL_LINEAR_VELOCITY:
+		case PARAM_TURB_VEL_INFLUENCE:
+		case PARAM_TURB_INIT_DISPLACEMENT:
+		case PARAM_MAX: {
+			// No curve available.
+		} break;
 	}
 
 	_queue_shader_change();

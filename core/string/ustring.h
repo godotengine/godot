@@ -211,12 +211,7 @@ public:
 	_FORCE_INLINE_ CharStringT(const T *p_cstr) { copy_from(p_cstr); }
 	_FORCE_INLINE_ void operator=(const T *p_cstr) { copy_from(p_cstr); }
 
-	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const {
-		if (length() != p_other.length()) {
-			return false;
-		}
-		return memcmp(ptr(), p_other.ptr(), length() * sizeof(T)) == 0;
-	}
+	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const { return span() == p_other.span(); }
 	_FORCE_INLINE_ bool operator!=(const CharStringT<T> &p_other) const { return !(*this == p_other); }
 	_FORCE_INLINE_ bool operator<(const CharStringT<T> &p_other) const {
 		if (length() == 0) {
@@ -519,6 +514,8 @@ public:
 	String get_basename() const;
 	String path_join(const String &p_path) const;
 	char32_t unicode_at(int p_idx) const;
+	bool has_extension(const char *p_ext) const { return get_extension().to_lower() == p_ext; }
+	bool has_extension(const String &p_ext) const { return get_extension().to_lower() == p_ext; }
 
 	CharString ascii(bool p_allow_extended = false) const;
 	// Parse an ascii string.

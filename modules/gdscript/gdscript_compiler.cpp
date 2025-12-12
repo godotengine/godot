@@ -31,6 +31,7 @@
 #include "gdscript_compiler.h"
 
 #include "gdscript.h"
+#include "gdscript_analyzer.h"
 #include "gdscript_byte_codegen.h"
 #include "gdscript_cache.h"
 #include "gdscript_utility_functions.h"
@@ -59,7 +60,7 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 		if (scr->native.is_valid()) {
 			nc = scr->native.ptr();
 		}
-		scr = scr->_base;
+		scr = scr->base.ptr();
 	}
 
 	ERR_FAIL_NULL_V(nc, false);
@@ -343,7 +344,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							if (scr->native.is_valid()) {
 								nc = scr->native.ptr();
 							}
-							scr = scr->_base;
+							scr = scr->base.ptr();
 						}
 
 						if (nc && (identifier == CoreStringName(free_) || ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
@@ -371,7 +372,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							if (scr->native.is_valid()) {
 								nc = scr->native.ptr();
 							}
-							scr = scr->_base;
+							scr = scr->base.ptr();
 						}
 
 						// Class C++ integer constant.
@@ -407,7 +408,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								return temp;
 							}
 						}
-						scr = scr->_base;
+						scr = scr->base.ptr();
 					}
 				} break;
 
@@ -699,7 +700,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									} else {
 										class_name = base.type.native_type == StringName() ? base.type.script_type->get_instance_base_type() : base.type.native_type;
 									}
-									if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
+									if (GDScriptAnalyzer::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
 										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
 										if (_can_use_validate_call(method, arguments)) {
 											// Exact arguments, use validated call.
@@ -1051,7 +1052,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 												static_var_data_type = minfo.data_type;
 												break;
 											}
-											scr = scr->_base;
+											scr = scr->base.ptr();
 										}
 									}
 								}
@@ -1320,7 +1321,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								static_var_data_type = minfo.data_type;
 								break;
 							}
-							scr = scr->_base;
+							scr = scr->base.ptr();
 						}
 					}
 				}
@@ -2707,7 +2708,6 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	p_script->native = Ref<GDScriptNativeClass>();
 	p_script->base = Ref<GDScript>();
-	p_script->_base = nullptr;
 	p_script->members.clear();
 
 	// This makes possible to clear script constants and member_functions without heap-use-after-free errors.
@@ -2757,7 +2757,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	p_script->_is_abstract = p_class->is_abstract;
 
 	if (p_script->local_name != StringName()) {
-		if (ClassDB::class_exists(p_script->local_name) && ClassDB::is_class_exposed(p_script->local_name)) {
+		if (GDScriptAnalyzer::class_exists(p_script->local_name)) {
 			_set_error(vformat(R"(The class "%s" shadows a native class)", p_script->local_name), p_class);
 			return ERR_ALREADY_EXISTS;
 		}
@@ -2818,7 +2818,6 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 			}
 
 			p_script->base = base;
-			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
 		} break;
 		default: {

@@ -41,6 +41,7 @@ class Main {
 		CLI_OPTION_AVAILABILITY_EDITOR,
 		CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG,
 		CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE,
+		CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE,
 		CLI_OPTION_AVAILABILITY_HIDDEN,
 	};
 
@@ -92,6 +93,7 @@ public:
 	bool run_test = false;                                         \
 	int return_code = Main::test_entrypoint(argc, argv, run_test); \
 	if (run_test) {                                                \
+		godot_cleanup_profiler();                                  \
 		return return_code;                                        \
 	}
 
@@ -99,5 +101,6 @@ public:
 	bool run_test = false;                                         \
 	int return_code = Main::test_entrypoint(argc, argv, run_test); \
 	if (run_test) {                                                \
+		godot_cleanup_profiler();                                  \
 		return return_code;                                        \
 	}

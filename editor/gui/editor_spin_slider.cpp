@@ -33,6 +33,8 @@
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
+#include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
@@ -41,7 +43,7 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	String value = get_text_value() + suffix;
 	if (!read_only && grabber->is_visible()) {
 		String tooltip = value;
-		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+		Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 		if (!editing_integer) {
 			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), find_keycode_name(key));
 		}
@@ -50,8 +52,12 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	return value;
 }
 
+Size2 EditorSpinSlider::get_minimum_size() const {
+	return Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor)));
+}
+
 String EditorSpinSlider::get_text_value() const {
-	return TS->format_number(editing_integer ? itos(get_value()) : rtos(get_value()));
+	return TranslationServer::get_singleton()->format_number(editing_integer ? itos(get_value()) : String::num(get_value(), Math::range_step_decimals(get_step())), _get_locale());
 }
 
 void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
@@ -275,6 +281,7 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 			case Key::ESCAPE: {
 				value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 				if (value_input_popup) {
+					value_input_focus_visible = value_input->has_focus(true);
 					value_input_popup->hide();
 				}
 			} break;
@@ -514,17 +521,6 @@ LineEdit *EditorSpinSlider::get_line_edit() {
 	return value_input;
 }
 
-Size2 EditorSpinSlider::get_minimum_size() const {
-	Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"));
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
-
-	Size2 ms = sb->get_minimum_size();
-	ms.height += font->get_height(font_size);
-
-	return ms;
-}
-
 void EditorSpinSlider::set_control_state(ControlState p_state) {
 	control_state = p_state;
 	queue_redraw();
@@ -579,19 +575,21 @@ String EditorSpinSlider::get_suffix() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
+	const String &lang = _get_locale();
+
 	Ref<Expression> expr;
 	expr.instantiate();
 
 	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
 	String text = value_input->get_text().replace_char(',', '.');
 	text = text.replace_char(';', ',');
-	text = TS->parse_number(text);
+	text = TranslationServer::get_singleton()->parse_number(text, lang);
 
 	Error err = expr->parse(text);
 	if (err != OK) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = value_input->get_text();
-		text = TS->parse_number(text);
+		text = TranslationServer::get_singleton()->parse_number(text, lang);
 
 		err = expr->parse(text);
 		if (err != OK) {
@@ -610,6 +608,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 	if (value_input_popup) {
+		value_input_focus_visible = value_input->has_focus(true);
 		value_input_popup->hide();
 	}
 }
@@ -644,9 +643,10 @@ void EditorSpinSlider::_value_focus_exited() {
 			value_input_popup->hide();
 		}
 	} else {
-		// Enter or Esc was pressed.
-		grab_focus();
+		// Enter or Esc was pressed. Keep showing the focus if already present.
+		grab_focus(!value_input_focus_visible);
 	}
+	value_input_focus_visible = false;
 
 	emit_signal("value_focus_exited");
 }

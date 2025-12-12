@@ -442,6 +442,10 @@ float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
 }
 
+String EditorInterface::get_editor_language() const {
+	return EditorSettings::get_singleton()->get_language();
+}
+
 bool EditorInterface::is_node_3d_snap_enabled() const {
 	return Node3DEditor::get_singleton()->is_snap_enabled();
 }
@@ -701,6 +705,16 @@ void EditorInterface::reload_scene_from_path(const String &scene_path) {
 	EditorNode::get_singleton()->reload_scene(scene_path);
 }
 
+void EditorInterface::set_object_edited(Object *p_object, bool p_edited) {
+	ERR_FAIL_NULL_MSG(p_object, "Cannot change edited status on a null object.");
+	p_object->set_edited(p_edited);
+}
+
+bool EditorInterface::is_object_edited(Object *p_object) const {
+	ERR_FAIL_NULL_V_MSG(p_object, false, "Cannot check edit status on a null object.");
+	return p_object->is_edited();
+}
+
 Node *EditorInterface::get_edited_scene_root() const {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
@@ -846,6 +860,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_multi_window_enabled"), &EditorInterface::is_multi_window_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
+	ClassDB::bind_method(D_METHOD("get_editor_language"), &EditorInterface::get_editor_language);
 
 	ClassDB::bind_method(D_METHOD("is_node_3d_snap_enabled"), &EditorInterface::is_node_3d_snap_enabled);
 	ClassDB::bind_method(D_METHOD("get_node_3d_translate_snap"), &EditorInterface::get_node_3d_translate_snap);
@@ -889,6 +904,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("edit_script", "script", "line", "column", "grab_focus"), &EditorInterface::edit_script, DEFVAL(-1), DEFVAL(0), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath", "set_inherited"), &EditorInterface::open_scene_from_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
+
+	ClassDB::bind_method(D_METHOD("set_object_edited", "object", "edited"), &EditorInterface::set_object_edited);
+	ClassDB::bind_method(D_METHOD("is_object_edited", "object"), &EditorInterface::is_object_edited);
 
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
 	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);

@@ -1,0 +1,6 @@
+GH-92861
+--------
+Validate extension JSON: Error: Field 'classes/Animation/methods/track_find_key/arguments': size changed value in new API, from 3 to 5.
+
+Added optional arguments to avoid finding keys out of the animation range (GH-86661), and to handle backward seeking.
+Compatibility method registered.

@@ -470,8 +470,12 @@ struct graph_t
     num_roots_for_space_.push (1);
     bool removed_nil = false;
     vertices_.alloc (objects.length);
-    vertices_scratch_.alloc (objects.length);
+    ordering_.resize (objects.length);
+    ordering_scratch_.alloc (objects.length);
+
     unsigned count = objects.length;
+    unsigned order = objects.length;
+    unsigned skip = 0;
     for (unsigned i = 0; i < count; i++)
     {
       // If this graph came from a serialization buffer object 0 is the
@@ -479,6 +483,9 @@ struct graph_t
       if (i == 0 && !objects.arrayZ[i])
       {
         removed_nil = true;
+        order--;
+        ordering_.resize(objects.length - 1);
+        skip++;
         continue;
       }
 
@@ -487,6 +494,12 @@ struct graph_t
         v->obj = *objects.arrayZ[i];
 
       check_success (v->link_positions_valid (count, removed_nil));
+
+      // To start we set the ordering to match the provided objects
+      // list. Note: objects are provided to us in reverse order (ie.
+      // the last object is the root).
+      unsigned obj_idx = i - skip;
+      ordering_[--order] = obj_idx;
 
       if (!removed_nil) continue;
       // Fix indices to account for removed nil object.
@@ -508,10 +521,10 @@ struct graph_t
   }
 
   void print () const {
-    for (int i = vertices_.length - 1; i >= 0; i--)
+    for (unsigned id : ordering_)
     {
-      const auto& v = vertices_[i];
-      printf("%d: %u [", i, (unsigned int)v.table_size());
+      const auto& v = vertices_[id];
+      printf("%u: %u [", id, (unsigned int)v.table_size());
       for (const auto &l : v.obj.real_links) {
         printf("%u, ", l.objidx);
       }
@@ -533,6 +546,7 @@ struct graph_t
   {
     return !successful ||
         vertices_.in_error () ||
+        ordering_.in_error() ||
         num_roots_for_space_.in_error ();
   }
 
@@ -543,10 +557,10 @@ struct graph_t
 
   unsigned root_idx () const
   {
-    // Object graphs are in reverse order, the first object is at the end
-    // of the vector. Since the graph is topologically sorted it's safe to
+    // First element of ordering_ is the root.
+    // Since the graph is topologically sorted it's safe to
     // assume the first object has no incoming edges.
-    return vertices_.length - 1;
+    return ordering_[0];
   }
 
   const hb_serialize_context_t::object_t& object (unsigned i) const
@@ -604,55 +618,51 @@ struct graph_t
 
     hb_priority_queue_t<int64_t> queue;
     queue.alloc (vertices_.length);
-    hb_vector_t<vertex_t> &sorted_graph = vertices_scratch_;
-    if (unlikely (!check_success (sorted_graph.resize (vertices_.length)))) return;
-    hb_vector_t<unsigned> id_map;
-    if (unlikely (!check_success (id_map.resize (vertices_.length)))) return;
+    hb_vector_t<unsigned> &new_ordering = ordering_scratch_;
+    if (unlikely (!check_success (new_ordering.resize (vertices_.length)))) return;
 
     hb_vector_t<unsigned> removed_edges;
     if (unlikely (!check_success (removed_edges.resize (vertices_.length)))) return;
     update_parents ();
 
     queue.insert (root ().modified_distance (0), root_idx ());
-    int new_id = root_idx ();
     unsigned order = 1;
+    unsigned pos = 0;
     while (!queue.in_error () && !queue.is_empty ())
     {
       unsigned next_id = queue.pop_minimum().second;
 
-      sorted_graph[new_id] = std::move (vertices_[next_id]);
-      const vertex_t& next = sorted_graph[new_id];
-
-      if (unlikely (!check_success(new_id >= 0))) {
+      if (unlikely (!check_success(pos < new_ordering.length))) {
         // We are out of ids. Which means we've visited a node more than once.
         // This graph contains a cycle which is not allowed.
         DEBUG_MSG (SUBSET_REPACK, nullptr, "Invalid graph. Contains cycle.");
         return;
       }
-
-      id_map[next_id] = new_id--;
+      new_ordering[pos++] = next_id;
+      const vertex_t& next = vertices_[next_id];
 
       for (const auto& link : next.obj.all_links ()) {
         removed_edges[link.objidx]++;
-        if (!(vertices_[link.objidx].incoming_edges () - removed_edges[link.objidx]))
+        const auto& v = vertices_[link.objidx];
+        if (!(v.incoming_edges () - removed_edges[link.objidx]))
           // Add the order that the links were encountered to the priority.
           // This ensures that ties between priorities objects are broken in a consistent
           // way. More specifically this is set up so that if a set of objects have the same
           // distance they'll be added to the topological order in the order that they are
           // referenced from the parent object.
-          queue.insert (vertices_[link.objidx].modified_distance (order++),
+          queue.insert (v.modified_distance (order++),
                         link.objidx);
       }
     }
 
     check_success (!queue.in_error ());
-    check_success (!sorted_graph.in_error ());
+    check_success (!new_ordering.in_error ());
 
-    check_success (remap_all_obj_indices (id_map, &sorted_graph));
-    vertices_ = std::move (sorted_graph);
+    hb_swap (ordering_, new_ordering);
 
-    if (!check_success (new_id == -1))
+    if (!check_success (pos == vertices_.length)) {
       print_orphaned_nodes ();
+    }
   }
 
   /*
@@ -662,8 +672,8 @@ struct graph_t
    */
   void find_space_roots (hb_set_t& visited, hb_set_t& roots)
   {
-    int root_index = (int) root_idx ();
-    for (int i = root_index; i >= 0; i--)
+    unsigned root_index = root_idx ();
+    for (unsigned i : ordering_)
     {
       if (visited.has (i)) continue;
 
@@ -846,7 +856,6 @@ struct graph_t
     if (subgraph.in_error ())
       return false;
 
-    unsigned original_root_idx = root_idx ();
     hb_map_t index_map;
     bool made_changes = false;
     for (auto entry : subgraph.iter ())
@@ -868,14 +877,6 @@ struct graph_t
 
     if (!made_changes)
       return false;
-
-    if (original_root_idx != root_idx ()
-        && parents.has (original_root_idx))
-    {
-      // If the root idx has changed since parents was determined, update root idx in parents
-      parents.add (root_idx ());
-      parents.del (original_root_idx);
-    }
 
     auto new_subgraph =
         + subgraph.keys ()
@@ -965,9 +966,9 @@ struct graph_t
    */
   template<typename O>
   unsigned move_child (unsigned old_parent_idx,
-                   const O* old_offset,
-                   unsigned new_parent_idx,
-                   const O* new_offset)
+                       const O* old_offset,
+                       unsigned new_parent_idx,
+                       const O* new_offset)
   {
     distance_invalid = true;
     positions_invalid = true;
@@ -990,6 +991,50 @@ struct graph_t
     child.remove_parent (old_parent_idx);
 
     return child_id;
+  }
+
+  /*
+   * Moves all outgoing links in old parent that have
+   * a link position between [old_post_start, old_pos_end)
+   * to the new parent. Links are placed serially in the new
+   * parent starting at new_pos_start.
+   */
+  template<typename O>
+  void move_children (unsigned old_parent_idx,
+                      unsigned old_pos_start,
+                      unsigned old_pos_end,
+                      unsigned new_parent_idx,
+                      unsigned new_pos_start)
+  {
+    distance_invalid = true;
+    positions_invalid = true;
+
+    auto& old_v = vertices_[old_parent_idx];
+    auto& new_v = vertices_[new_parent_idx];
+
+    hb_vector_t<hb_serialize_context_t::object_t::link_t> old_links;
+    for (const auto& l : old_v.obj.real_links)
+    {
+      if (l.position < old_pos_start || l.position >= old_pos_end)
+      {
+        old_links.push(l);
+        continue;
+      }
+
+      unsigned array_pos = l.position - old_pos_start;
+
+      unsigned child_id = l.objidx;
+      auto* new_link = new_v.obj.real_links.push ();
+      new_link->width = O::static_size;
+      new_link->objidx = child_id;
+      new_link->position = new_pos_start + array_pos;
+
+      auto& child = vertices_[child_id];
+      child.add_parent (new_parent_idx, false);
+      child.remove_parent (old_parent_idx);
+    }
+
+    old_v.obj.real_links = std::move (old_links);
   }
 
   /*
@@ -1021,8 +1066,11 @@ struct graph_t
     distance_invalid = true;
 
     auto* clone = vertices_.push ();
+    unsigned clone_idx = vertices_.length - 1;
+    ordering_.push(clone_idx);
+
     auto& child = vertices_[node_idx];
-    if (vertices_.in_error ()) {
+    if (vertices_.in_error () || ordering_.in_error()) {
       return -1;
     }
 
@@ -1032,7 +1080,6 @@ struct graph_t
     clone->space = child.space;
     clone->reset_parents ();
 
-    unsigned clone_idx = vertices_.length - 2;
     for (const auto& l : child.obj.real_links)
     {
       clone->obj.real_links.push (l);
@@ -1046,15 +1093,6 @@ struct graph_t
 
     check_success (!clone->obj.real_links.in_error ());
     check_success (!clone->obj.virtual_links.in_error ());
-
-    // The last object is the root of the graph, so swap back the root to the end.
-    // The root's obj idx does change, however since it's root nothing else refers to it.
-    // all other obj idx's will be unaffected.
-    hb_swap (vertices_[vertices_.length - 2], *clone);
-
-    // Since the root moved, update the parents arrays of all children on the root.
-    for (const auto& l : root ().obj.all_links ())
-      vertices_[l.objidx].remap_parent (root_idx () - 1, root_idx ());
 
     return clone_idx;
   }
@@ -1205,7 +1243,10 @@ struct graph_t
     distance_invalid = true;
 
     auto* clone = vertices_.push ();
-    if (vertices_.in_error ()) {
+    unsigned clone_idx = vertices_.length - 1;
+    ordering_.push(clone_idx);
+
+    if (vertices_.in_error () || ordering_.in_error()) {
       return -1;
     }
 
@@ -1213,17 +1254,6 @@ struct graph_t
     clone->obj.tail = tail;
     clone->distance = 0;
     clone->space = 0;
-
-    unsigned clone_idx = vertices_.length - 2;
-
-    // The last object is the root of the graph, so swap back the root to the end.
-    // The root's obj idx does change, however since it's root nothing else refers to it.
-    // all other obj idx's will be unaffected.
-    hb_swap (vertices_[vertices_.length - 2], *clone);
-
-    // Since the root moved, update the parents arrays of all children on the root.
-    for (const auto& l : root ().obj.all_links ())
-      vertices_[l.objidx].remap_parent (root_idx () - 1, root_idx ());
 
     return clone_idx;
   }
@@ -1386,7 +1416,8 @@ struct graph_t
     size_t total_size = 0;
     unsigned count = vertices_.length;
     for (unsigned i = 0; i < count; i++) {
-      size_t size = vertices_.arrayZ[i].obj.tail - vertices_.arrayZ[i].obj.head;
+      const auto& obj = vertices_.arrayZ[i].obj;
+      size_t size = obj.tail - obj.head;
       total_size += size;
     }
     return total_size;
@@ -1459,7 +1490,7 @@ struct graph_t
     if (!positions_invalid) return;
 
     unsigned current_pos = 0;
-    for (int i = root_idx (); i >= 0; i--)
+    for (unsigned i : ordering_)
     {
       auto& v = vertices_[i];
       v.start = current_pos;
@@ -1491,11 +1522,11 @@ struct graph_t
     unsigned count = vertices_.length;
     for (unsigned i = 0; i < count; i++)
       vertices_.arrayZ[i].distance = hb_int_max (int64_t);
-    vertices_.tail ().distance = 0;
+    vertices_[root_idx ()].distance = 0;
 
     hb_priority_queue_t<int64_t> queue;
     queue.alloc (count);
-    queue.insert (0, vertices_.length - 1);
+    queue.insert (0, root_idx ());
 
     hb_vector_t<bool> visited;
     visited.resize (vertices_.length);
@@ -1505,22 +1536,23 @@ struct graph_t
       unsigned next_idx = queue.pop_minimum ().second;
       if (visited[next_idx]) continue;
       const auto& next = vertices_[next_idx];
-      int64_t next_distance = vertices_[next_idx].distance;
+      int64_t next_distance = next.distance;
       visited[next_idx] = true;
 
       for (const auto& link : next.obj.all_links ())
       {
         if (visited[link.objidx]) continue;
 
-        const auto& child = vertices_.arrayZ[link.objidx].obj;
+        auto& child_v = vertices_.arrayZ[link.objidx];
+        const auto& child = child_v.obj;
         unsigned link_width = link.width ? link.width : 4; // treat virtual offsets as 32 bits wide
         int64_t child_weight = (child.tail - child.head) +
-                               ((int64_t) 1 << (link_width * 8)) * (vertices_.arrayZ[link.objidx].space + 1);
+                               ((int64_t) 1 << (link_width * 8)) * (child_v.space + 1);
         int64_t child_distance = next_distance + child_weight;
 
-        if (child_distance < vertices_.arrayZ[link.objidx].distance)
+        if (child_distance < child_v.distance)
         {
-          vertices_.arrayZ[link.objidx].distance = child_distance;
+          child_v.distance = child_distance;
           queue.insert (child_distance, link.objidx);
         }
       }
@@ -1563,37 +1595,19 @@ struct graph_t
     if (!id_map) return;
     for (unsigned i : subgraph)
     {
-      unsigned num_real = vertices_[i].obj.real_links.length;
+      auto& obj = vertices_[i].obj;
+      unsigned num_real = obj.real_links.length;
       unsigned count = 0;
-      for (auto& link : vertices_[i].obj.all_links_writer ())
+      for (auto& link : obj.all_links_writer ())
       {
         count++;
         const uint32_t *v;
         if (!id_map.has (link.objidx, &v)) continue;
-        if (only_wide && !(link.width == 4 && !link.is_signed)) continue;
+        if (only_wide && (link.is_signed || (link.width != 4 && link.width != 3))) continue;
 
         reassign_link (link, i, *v, count > num_real);
       }
     }
-  }
-
-  /*
-   * Updates all objidx's in all links using the provided mapping.
-   */
-  bool remap_all_obj_indices (const hb_vector_t<unsigned>& id_map,
-                              hb_vector_t<vertex_t>* sorted_graph) const
-  {
-    unsigned count = sorted_graph->length;
-    for (unsigned i = 0; i < count; i++)
-    {
-      if (!(*sorted_graph)[i].remap_parents (id_map))
-        return false;
-      for (auto& link : sorted_graph->arrayZ[i].obj.all_links_writer ())
-      {
-        link.objidx = id_map[link.objidx];
-      }
-    }
-    return true;
   }
 
   /*
@@ -1631,7 +1645,16 @@ struct graph_t
  public:
   // TODO(garretrieger): make private, will need to move most of offset overflow code into graph.
   hb_vector_t<vertex_t> vertices_;
-  hb_vector_t<vertex_t> vertices_scratch_;
+
+  // Specifies the current topological ordering of this graph
+  //
+  // ordering_[pos] = obj index
+  //
+  // specifies that the 'pos'th spot is filled by the object
+  // given by obj index.
+  hb_vector_t<unsigned> ordering_;
+  hb_vector_t<unsigned> ordering_scratch_;
+
  private:
   bool parents_invalid;
   bool distance_invalid;

@@ -192,6 +192,7 @@ EmbeddedProcessMacOS::EmbeddedProcessMacOS() :
 		EmbeddedProcessBase() {
 	layer_host = memnew(LayerHost(this));
 	add_child(layer_host);
+	set_focus_mode(FOCUS_NONE);
 	layer_host->set_focus_mode(FOCUS_ALL);
 	layer_host->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	layer_host->set_custom_minimum_size(Size2(100, 100));
@@ -219,6 +220,9 @@ void LayerHost::_notification(int p_what) {
 			if (script_debugger) {
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_MOUSE_ENTER });
 			}
+			if (get_window()->has_focus()) {
+				grab_focus();
+			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 			// Restore mouse capture, if necessary.
@@ -228,9 +232,11 @@ void LayerHost::_notification(int p_what) {
 				ds->mouse_set_mode(process->get_mouse_mode());
 			}
 			if (!window_focused && script_debugger) {
+				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_IN });
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_IN });
 				window_focused = true;
 			}
+			process->queue_redraw();
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
 			DisplayServer *ds = DisplayServer::get_singleton();
@@ -249,8 +255,10 @@ void LayerHost::_notification(int p_what) {
 			}
 			if (window_focused && script_debugger) {
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_OUT });
+				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_OUT });
 				window_focused = false;
 			}
+			process->queue_redraw();
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 			if (script_debugger && has_focus()) {
@@ -268,26 +276,20 @@ void LayerHost::_notification(int p_what) {
 				}
 			}
 		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_IN:
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
-			if (!window_focused && script_debugger) {
+			if (has_focus() && !window_focused && script_debugger) {
+				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_IN });
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_IN });
 				window_focused = true;
 			}
 		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_OUT:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
-			if (window_focused && script_debugger) {
+			if (has_focus() && window_focused && script_debugger) {
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_OUT });
-				window_focused = false;
-			}
-		} break;
-		case NOTIFICATION_APPLICATION_FOCUS_IN: {
-			if (script_debugger) {
-				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_IN });
-			}
-		} break;
-		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			if (script_debugger) {
 				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_OUT });
+				window_focused = false;
 			}
 		} break;
 	}

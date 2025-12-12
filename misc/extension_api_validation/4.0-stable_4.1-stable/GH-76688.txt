@@ -1,0 +1,8 @@
+GH-76688
+--------
+Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/UndoRedo/methods/create_action/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Hash changed for 'classes/EditorUndoRedoManager/methods/create_action', from E07DA3CD to D543BA91. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/UndoRedo/methods/create_action', from 0AEC1BFC to E87757EB. This means that the function has changed and no compatibility function was provided.
+
+Added a optional parameters with default values. No adjustments should be necessary.

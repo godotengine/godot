@@ -277,6 +277,9 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 	// Finally, if not end the animation, do blending.
 	if (end_reached) {
 		playback.blend.clear();
+		if (end_notify) {
+			finished_anim = playback.assigned;
+		}
 		return;
 	}
 	List<List<Blend>::Element *> to_erase;
@@ -306,6 +309,8 @@ bool AnimationPlayer::_blend_pre_process(double p_delta, int p_track_count, cons
 	end_reached = false;
 	end_notify = false;
 
+	finished_anim = StringName();
+
 	bool started = playback.started; // The animation may be changed during process, so it is safer that the state is changed before process.
 	if (playback.started) {
 		playback.started = false;
@@ -330,6 +335,9 @@ void AnimationPlayer::_blend_post_process() {
 		// If the method track changes current animation, the animation is not finished.
 		if (tmp_from == playback.current.from->animation->get_instance_id()) {
 			if (playback_queue.size()) {
+				if (!finished_anim.is_empty()) {
+					emit_signal(SceneStringName(animation_finished), finished_anim);
+				}
 				String old = playback.assigned;
 				play(playback_queue.front()->get());
 				String new_name = playback.assigned;
@@ -342,7 +350,9 @@ void AnimationPlayer::_blend_post_process() {
 				playing = false;
 				_set_process(false);
 				if (end_notify) {
-					emit_signal(SceneStringName(animation_finished), playback.assigned);
+					if (!finished_anim.is_empty()) {
+						emit_signal(SceneStringName(animation_finished), finished_anim);
+					}
 					emit_signal(SNAME("current_animation_changed"), "");
 					if (movie_quit_on_finish && OS::get_singleton()->has_feature("movie")) {
 						print_line(vformat("Movie Maker mode is enabled. Quitting on animation finish as requested by: %s", get_path()));
@@ -505,10 +515,10 @@ void AnimationPlayer::play_section(const StringName &p_name, double p_start_time
 		c.assigned = name;
 		emit_signal(SNAME("current_animation_changed"), c.assigned);
 	} else {
-		if (p_from_end && Math::is_equal_approx(c.current.pos, start)) {
+		if (p_from_end && Animation::is_less_or_equal_approx(c.current.pos, start)) {
 			// Animation reset but played backwards, set position to the end.
 			seek_internal(end, true, true, true);
-		} else if (!p_from_end && Math::is_equal_approx(c.current.pos, end)) {
+		} else if (!p_from_end && Animation::is_greater_or_equal_approx(c.current.pos, end)) {
 			// Animation resumed but already ended, set position to the beginning.
 			seek_internal(start, true, true, true);
 		} else if (playing) {
