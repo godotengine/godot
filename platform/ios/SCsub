@@ -3,6 +3,7 @@ from misc.utility.scons_hints import *
 
 from platform_ios_builders import generate_bundle
 
+from misc.utility.compatibility import try_use_cxx20_module
 from platform_methods import combine_libs_apple_embedded
 
 Import("env")
@@ -20,7 +21,8 @@ env_ios = env.Clone()
 ios_lib = env_ios.add_library("ios", ios_lib)
 
 # (iOS) Enable module support
-env_ios.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+# env_ios.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+try_use_cxx20_module(env_ios)
 
 combine_command = env_ios.CommandNoCache(
     "#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], env.Run(combine_libs_apple_embedded)
