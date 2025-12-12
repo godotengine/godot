@@ -291,6 +291,7 @@ static const int DEFAULT_TARGET_SDK_VERSION = 35; // Should match the value in '
 
 #ifndef ANDROID_ENABLED
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
+	Thread::set_name("Android device detection");
 	EditorExportPlatformAndroid *ea = static_cast<EditorExportPlatformAndroid *>(ud);
 
 	while (!ea->quit_request.is_set()) {

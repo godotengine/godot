@@ -900,6 +900,7 @@ void FreeDesktopPortalDesktop::process_callbacks() {
 }
 
 void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
+	Thread::set_name("FreeDesktop portal");
 	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)p_ud;
 
 	while (!portal->monitor_thread_abort.is_set()) {
