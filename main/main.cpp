@@ -3588,7 +3588,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		if (!text_driver.is_empty()) {
 			/* Load user selected text server. */
 			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
-				if (TextServerManager::get_singleton()->get_interface(i)->get_name() == text_driver) {
+				if (TextServerManager::get_singleton()->get_interface(i)->get_short_name() == text_driver || TextServerManager::get_singleton()->get_interface(i)->get_name() == text_driver) {
 					text_driver_idx = i;
 					break;
 				}

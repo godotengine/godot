@@ -387,6 +387,10 @@ String TextServerAdvanced::_get_name() const {
 #endif
 }
 
+String TextServerAdvanced::_get_short_name() const {
+	return "advanced";
+}
+
 int64_t TextServerAdvanced::_get_features() const {
 	int64_t interface_features = FEATURE_SIMPLE_LAYOUT | FEATURE_BIDI_LAYOUT | FEATURE_VERTICAL_LAYOUT | FEATURE_SHAPING | FEATURE_KASHIDA_JUSTIFICATION | FEATURE_BREAK_ITERATORS | FEATURE_FONT_BITMAP | FEATURE_FONT_VARIABLE | FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION | FEATURE_USE_SUPPORT_DATA;
 #ifdef MODULE_FREETYPE_ENABLED
