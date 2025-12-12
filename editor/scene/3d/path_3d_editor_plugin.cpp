@@ -620,7 +620,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 						real_t cdist = from.distance_to(to);
 						from = gt.xform(from);
 						to = gt.xform(to);
-						if (cdist > 0) {
+						if (cdist > 0.0f) {
 							const Vector2 segment_a = viewport->point_to_screen(from);
 							const Vector2 segment_b = viewport->point_to_screen(to);
 							Vector2 inters = Geometry2D::get_closest_point_to_segment(mbpos, segment_a, segment_b);
@@ -1085,8 +1085,8 @@ int Path3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo,
 
 	if (Path3DEditorPlugin::singleton->curve_edit->is_pressed()) {
 		for (int idx = 0; idx < curve->get_point_count(); ++idx) {
-			Vector3 pos = path->get_global_transform().xform(curve->get_point_position(idx));
-			if (p_camera->unproject_position(pos).distance_to(p_point) < 20) {
+			const Vector3 pos = path->get_global_transform().xform(curve->get_point_position(idx));
+			if (p_camera->unproject_position(pos).distance_to(p_point) < 20.0f) {
 				return idx;
 			}
 		}
