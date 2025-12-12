@@ -119,7 +119,7 @@ typedef struct SDL_CameraSpec
     int width;                  /**< Frame width */
     int height;                 /**< Frame height */
     int framerate_numerator;     /**< Frame rate numerator ((num / denom) == FPS, (denom / num) == duration in seconds) */
-    int framerate_denominator;   /**< Frame rate demoninator ((num / denom) == FPS, (denom / num) == duration in seconds) */
+    int framerate_denominator;   /**< Frame rate denominator ((num / denom) == FPS, (denom / num) == duration in seconds) */
 } SDL_CameraSpec;
 
 /**

@@ -1,8 +1,8 @@
 diff --git a/thirdparty/sdl/stdlib/SDL_getenv.c b/thirdparty/sdl/stdlib/SDL_getenv.c
-index b4a19224655..e23f8a0ea0d 100644
+index 54fb6a7b46..d805217b19 100644
 --- a/thirdparty/sdl/stdlib/SDL_getenv.c
 +++ b/thirdparty/sdl/stdlib/SDL_getenv.c
-@@ -50,6 +50,9 @@ extern char **environ;
+@@ -55,6 +55,9 @@ extern char **environ;
  static char **environ;
  #endif
  
@@ -12,7 +12,7 @@ index b4a19224655..e23f8a0ea0d 100644
  
  struct SDL_Environment
  {
-@@ -149,6 +152,9 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
+@@ -154,6 +157,9 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
  
  const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
  {
@@ -22,7 +22,7 @@ index b4a19224655..e23f8a0ea0d 100644
      const char *result = NULL;
  
      if (!env) {
-@@ -168,6 +174,7 @@ const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
+@@ -173,6 +179,7 @@ const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
      SDL_UnlockMutex(env->lock);
  
      return result;
@@ -30,7 +30,7 @@ index b4a19224655..e23f8a0ea0d 100644
  }
  
  typedef struct CountEnvStringsData
-@@ -246,6 +253,9 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
+@@ -251,6 +258,9 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
  
  bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, bool overwrite)
  {
@@ -40,7 +40,7 @@ index b4a19224655..e23f8a0ea0d 100644
      bool result = false;
  
      if (!env) {
-@@ -281,10 +291,14 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
+@@ -286,10 +296,14 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
      SDL_UnlockMutex(env->lock);
  
      return result;
@@ -55,7 +55,7 @@ index b4a19224655..e23f8a0ea0d 100644
      bool result = false;
  
      if (!env) {
-@@ -305,6 +319,7 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
+@@ -310,6 +324,7 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
      SDL_UnlockMutex(env->lock);
  
      return result;

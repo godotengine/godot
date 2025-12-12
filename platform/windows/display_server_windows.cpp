@@ -7439,7 +7439,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	window_set_vsync_mode(p_vsync_mode, MAIN_WINDOW_ID);
 
 #ifdef SDL_ENABLED
-	joypad_sdl = memnew(JoypadSDL(windows[MAIN_WINDOW_ID].hWnd));
+	joypad_sdl = memnew(JoypadSDL);
 	if (joypad_sdl->initialize() != OK) {
 		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
 		memdelete(joypad_sdl);

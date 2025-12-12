@@ -34,16 +34,12 @@
 #include "core/os/thread.h"
 
 typedef uint32_t SDL_JoystickID;
-typedef struct HWND__ *HWND;
 typedef struct SDL_Joystick SDL_Joystick;
 typedef struct SDL_Gamepad SDL_Gamepad;
 
 class JoypadSDL {
 public:
 	JoypadSDL();
-#ifdef WINDOWS_ENABLED
-	JoypadSDL(HWND p_helper_window);
-#endif
 	~JoypadSDL();
 
 	static JoypadSDL *get_singleton();

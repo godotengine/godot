@@ -27,6 +27,7 @@
 #include "SDL_iokitjoystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../../haptic/darwin/SDL_syshaptic_c.h" // For haptic hot plugging
+#include "../usb_ids.h"
 
 #define SDL_JOYSTICK_RUNLOOP_MODE CFSTR("SDLJoystick")
 
@@ -211,6 +212,29 @@ static bool GetHIDScaledCalibratedState(recDevice *pDevice, recElement *pElement
         }
     }
     return result;
+}
+
+static bool GetHIDScaledCalibratedState_NACON_Revolution_X_Unlimited(recDevice *pDevice, recElement *pElement, SInt32 min, SInt32 max, SInt32 *pValue)
+{
+    if (pElement->minReport == 0 && pElement->maxReport == 255) {
+        return GetHIDScaledCalibratedState(pDevice, pElement, min, max, pValue);
+    }
+
+    // This device thumbstick axes have an unusual axis range that
+    // doesn't work with GetHIDScaledCalibratedState() above.
+    //
+    // See https://github.com/libsdl-org/SDL/issues/13143 for details
+    if (GetHIDElementState(pDevice, pElement, pValue)) {
+        if (*pValue >= 0) {
+            // Negative axis values range from 32767 (at rest) to 0 (minimum)
+            *pValue = -32767 + *pValue;
+        } else if (*pValue < 0) {
+            // Positive axis values range from -32768 (at rest) to 0 (maximum)
+            *pValue = 32768 + *pValue;
+        }
+        return true;
+    }
+    return false;
 }
 
 static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
@@ -505,6 +529,11 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 
     pDevice->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, (Uint16)vendor, (Uint16)product, (Uint16)version, manufacturer_string, product_string, 0, 0);
     pDevice->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot((Uint16)vendor, (Uint16)product, product_string);
+
+    if (vendor == USB_VENDOR_NACON_ALT &&
+        product == USB_PRODUCT_NACON_REVOLUTION_X_UNLIMITED_BT) {
+        pDevice->nacon_revolution_x_unlimited = true;
+    }
 
     array = IOHIDDeviceCopyMatchingElements(hidDevice, NULL, kIOHIDOptionsTypeNone);
     if (array) {
@@ -957,7 +986,11 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     i = 0;
 
     while (element) {
-        goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
+        if (device->nacon_revolution_x_unlimited) {
+            goodRead = GetHIDScaledCalibratedState_NACON_Revolution_X_Unlimited(device, element, -32768, 32767, &value);
+        } else {
+            goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
+        }
         if (goodRead) {
             SDL_SendJoystickAxis(timestamp, joystick, i, value);
         }
