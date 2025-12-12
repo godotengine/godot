@@ -382,6 +382,7 @@ void NavigationLink2D::_update_debug_mesh() {
 		return;
 	}
 
+	_prepare_debug_canvas_item();
 	if (!Engine::get_singleton()->is_editor_hint() && !NavigationServer2D::get_singleton()->get_debug_enabled()) {
 		return;
 	}
@@ -395,9 +396,10 @@ void NavigationLink2D::_update_debug_mesh() {
 
 	real_t radius = NavigationServer2D::get_singleton()->map_get_link_connection_radius(get_world_2d()->get_navigation_map());
 
-	draw_line(get_start_position(), get_end_position(), color);
-	draw_arc(get_start_position(), radius, 0, Math::TAU, 10, color);
-	draw_arc(get_end_position(), radius, 0, Math::TAU, 10, color);
+	RenderingServer *rs = RenderingServer::get_singleton();
+	rs->canvas_item_add_line(_get_debug_canvas_item(), get_start_position(), get_end_position(), color);
+	_draw_arc_debug(get_start_position(), radius, 0, Math::TAU, 10, color);
+	_draw_arc_debug(get_end_position(), radius, 0, Math::TAU, 10, color);
 
 	const Vector2 link_segment = end_position - start_position;
 	const float arror_len = 5.0;
@@ -406,20 +408,20 @@ void NavigationLink2D::_update_debug_mesh() {
 		Vector2 anchor = start_position + (link_segment * 0.75);
 		Vector2 direction = start_position.direction_to(end_position);
 		Vector2 arrow_dir = -direction.orthogonal();
-		draw_line(anchor, anchor + (arrow_dir - direction) * arror_len, color);
+		rs->canvas_item_add_line(_get_debug_canvas_item(), anchor, anchor + (arrow_dir - direction) * arror_len, color);
 
 		arrow_dir = direction.orthogonal();
-		draw_line(anchor, anchor + (arrow_dir - direction) * arror_len, color);
+		rs->canvas_item_add_line(_get_debug_canvas_item(), anchor, anchor + (arrow_dir - direction) * arror_len, color);
 	}
 
 	if (is_bidirectional()) {
 		Vector2 anchor = start_position + (link_segment * 0.25);
 		Vector2 direction = end_position.direction_to(start_position);
 		Vector2 arrow_dir = -direction.orthogonal();
-		draw_line(anchor, anchor + (arrow_dir - direction) * arror_len, color);
+		rs->canvas_item_add_line(_get_debug_canvas_item(), anchor, anchor + (arrow_dir - direction) * arror_len, color);
 
 		arrow_dir = direction.orthogonal();
-		draw_line(anchor, anchor + (arrow_dir - direction) * arror_len, color);
+		rs->canvas_item_add_line(_get_debug_canvas_item(), anchor, anchor + (arrow_dir - direction) * arror_len, color);
 	}
 }
 #endif // DEBUG_ENABLED

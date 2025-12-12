@@ -108,11 +108,18 @@ void VisibleOnScreenNotifier2D::_notification(int p_what) {
 			RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), true, rect, callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_exit));
 		} break;
 
+#ifdef DEBUG_ENABLED
 		case NOTIFICATION_DRAW: {
-			if (show_rect && Engine::get_singleton()->is_editor_hint()) {
-				draw_rect(rect, Color(1, 0.5, 1, 0.2));
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
+
+			_prepare_debug_canvas_item();
+			if (show_rect) {
+				RS::get_singleton()->canvas_item_add_rect(_get_debug_canvas_item(), rect, Color(1, 0.5, 1, 0.2));
 			}
 		} break;
+#endif // DEBUG_ENABLED
 
 		case NOTIFICATION_EXIT_TREE: {
 			on_screen = false;

@@ -33,6 +33,7 @@
 #include "core/math/random_pcg.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 RID NavigationRegion2D::get_rid() const {
 	return region;
@@ -162,17 +163,8 @@ void NavigationRegion2D::_notification(int p_what) {
 			set_physics_process_internal(true);
 		} break;
 
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-#ifdef DEBUG_ENABLED
-			_set_debug_visible(is_visible_in_tree());
-#endif // DEBUG_ENABLED
-		} break;
-
 		case NOTIFICATION_EXIT_TREE: {
 			_region_exit_navigation_map();
-#ifdef DEBUG_ENABLED
-			_set_debug_visible(false);
-#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -182,11 +174,23 @@ void NavigationRegion2D::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 #ifdef DEBUG_ENABLED
-			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || (NavigationServer2D::get_singleton()->get_debug_enabled() && NavigationServer2D::get_singleton()->get_debug_navigation_enabled())) && navigation_polygon.is_valid()) {
-				_update_debug_mesh();
-				_update_debug_edge_connections_mesh();
-				_update_debug_baking_rect();
+			if (!is_inside_tree() || !(Engine::get_singleton()->is_editor_hint() || (NavigationServer2D::get_singleton()->get_debug_enabled() && NavigationServer2D::get_singleton()->get_debug_navigation_enabled()))) {
+				return;
 			}
+
+			if (navigation_polygon.is_null()) {
+				_prepare_debug_canvas_item();
+				return;
+			}
+
+			if (!debug_mesh_dirty) {
+				return;
+			}
+
+			_prepare_debug_canvas_item();
+			_update_debug_mesh();
+			_update_debug_edge_connections_mesh();
+			_update_debug_baking_rect();
 #endif // DEBUG_ENABLED
 		} break;
 	}
@@ -265,10 +269,6 @@ void NavigationRegion2D::_navigation_polygon_changed() {
 
 #ifdef DEBUG_ENABLED
 	debug_mesh_dirty = true;
-
-	if (navigation_polygon.is_null()) {
-		_set_debug_visible(false);
-	}
 
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		queue_redraw();
@@ -399,9 +399,6 @@ NavigationRegion2D::~NavigationRegion2D() {
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
 	NavigationServer2D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_debug_changed));
-	if (debug_instance_rid.is_valid()) {
-		RS::get_singleton()->free_rid(debug_instance_rid);
-	}
 	if (debug_mesh_rid.is_valid()) {
 		RS::get_singleton()->free_rid(debug_mesh_rid);
 	}
@@ -447,32 +444,13 @@ void NavigationRegion2D::_region_update_transform() {
 
 #ifdef DEBUG_ENABLED
 void NavigationRegion2D::_update_debug_mesh() {
-	if (!is_inside_tree()) {
-		_set_debug_visible(false);
-		return;
-	}
-
 	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
 	RenderingServer *rs = RenderingServer::get_singleton();
 
-	if (!debug_instance_rid.is_valid()) {
-		debug_instance_rid = rs->canvas_item_create();
-	}
 	if (!debug_mesh_rid.is_valid()) {
 		debug_mesh_rid = rs->mesh_create();
 	}
 
-	const Transform2D region_gt = get_global_transform();
-
-	rs->canvas_item_set_parent(debug_instance_rid, get_world_2d()->get_canvas());
-	rs->canvas_item_set_z_index(debug_instance_rid, RS::CANVAS_ITEM_Z_MAX - 2);
-	rs->canvas_item_set_transform(debug_instance_rid, region_gt);
-
-	if (!debug_mesh_dirty) {
-		return;
-	}
-
-	rs->canvas_item_clear(debug_instance_rid);
 	rs->mesh_clear(debug_mesh_rid);
 	debug_mesh_dirty = false;
 
@@ -598,8 +576,7 @@ void NavigationRegion2D::_update_debug_mesh() {
 		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 	}
 
-	rs->canvas_item_add_mesh(debug_instance_rid, debug_mesh_rid, Transform2D());
-	rs->canvas_item_set_visible(debug_instance_rid, is_visible_in_tree());
+	rs->canvas_item_add_mesh(_get_debug_canvas_item(), debug_mesh_rid, Transform2D());
 }
 #endif // DEBUG_ENABLED
 
@@ -613,18 +590,19 @@ void NavigationRegion2D::_update_debug_edge_connections_mesh() {
 		// Draw the region edge connections.
 		Transform2D xform = get_global_transform();
 		real_t radius = ns2d->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
+		RenderingServer *rs = RenderingServer::get_singleton();
 		for (int i = 0; i < ns2d->region_get_connections_count(region); i++) {
 			// Two main points
 			Vector2 a = ns2d->region_get_connection_pathway_start(region, i);
 			a = xform.affine_inverse().xform(a);
 			Vector2 b = ns2d->region_get_connection_pathway_end(region, i);
 			b = xform.affine_inverse().xform(b);
-			draw_line(a, b, debug_edge_connection_color);
+			rs->canvas_item_add_line(_get_debug_canvas_item(), a, b, debug_edge_connection_color);
 
 			// Draw a circle to illustrate the margins.
 			real_t angle = a.angle_to_point(b);
-			draw_arc(a, radius, angle + Math::PI / 2.0, angle - Math::PI / 2.0 + Math::TAU, 10, debug_edge_connection_color);
-			draw_arc(b, radius, angle - Math::PI / 2.0, angle + Math::PI / 2.0, 10, debug_edge_connection_color);
+			_draw_arc_debug(a, radius, angle + Math::PI / 2.0, angle - Math::PI / 2.0 + Math::TAU, 10, debug_edge_connection_color);
+			_draw_arc_debug(b, radius, angle - Math::PI / 2.0, angle + Math::PI / 2.0, 10, debug_edge_connection_color);
 		}
 	}
 }
@@ -637,17 +615,7 @@ void NavigationRegion2D::_update_debug_baking_rect() {
 		Vector2 baking_rect_offset = get_navigation_polygon()->get_baking_rect_offset();
 		Rect2 debug_baking_rect = Rect2(baking_rect.position.x + baking_rect_offset.x, baking_rect.position.y + baking_rect_offset.y, baking_rect.size.x, baking_rect.size.y);
 		Color debug_baking_rect_color = Color(0.8, 0.5, 0.7, 0.1);
-		draw_rect(debug_baking_rect, debug_baking_rect_color);
-	}
-}
-#endif // DEBUG_ENABLED
-
-#ifdef DEBUG_ENABLED
-void NavigationRegion2D::_set_debug_visible(bool p_visible) {
-	RenderingServer *rs = RenderingServer::get_singleton();
-	ERR_FAIL_NULL(rs);
-	if (debug_instance_rid.is_valid()) {
-		RS::get_singleton()->canvas_item_set_visible(debug_instance_rid, p_visible);
+		RenderingServer::get_singleton()->canvas_item_add_rect(_get_debug_canvas_item(), debug_baking_rect, debug_baking_rect_color);
 	}
 }
 #endif // DEBUG_ENABLED

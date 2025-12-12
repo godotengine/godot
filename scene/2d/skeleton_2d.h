@@ -56,7 +56,6 @@ class Bone2D : public Node2D {
 	void calculate_length_and_rotation();
 
 #ifdef TOOLS_ENABLED
-	RID editor_gizmo_rid;
 	bool _editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p_outline_shape, Bone2D *p_other_bone);
 	bool _editor_show_bone_gizmo = true;
 #endif // TOOLS ENABLED
@@ -94,7 +93,6 @@ public:
 #endif // TOOLS_ENABLED
 
 	Bone2D();
-	~Bone2D();
 };
 
 class SkeletonModificationStack2D;
