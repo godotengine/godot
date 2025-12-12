@@ -2260,7 +2260,7 @@ void EditorAnimationMultiTransitionEdit::_get_property_list(List<PropertyInfo> *
 		p_list->push_back(prop_transition_path);
 
 		for (const PropertyInfo &pi : plist) {
-			if (pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene") {
+			if (Object::editor_is_object_or_resource_property(pi.name)) {
 				continue;
 			}
 

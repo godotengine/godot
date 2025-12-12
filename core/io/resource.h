@@ -79,6 +79,7 @@ private:
 	uint64_t import_last_modified_time = 0;
 	String import_path;
 #endif
+	String editor_description;
 
 	enum EmitChangedState {
 		EMIT_CHANGED_UNBLOCKED,
@@ -107,6 +108,7 @@ private:
 protected:
 	virtual void _resource_path_changed();
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	void _block_emit_changed();
 	void _unblock_emit_changed();
@@ -146,6 +148,9 @@ public:
 	String get_path() const;
 	virtual void set_path_cache(const String &p_path); // Set raw path without involving resource cache.
 	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.contains("::") || path_cache.begins_with("local://"); }
+
+	void set_editor_description(const String &p_editor_description);
+	String get_editor_description() const;
 
 	static void seed_scene_unique_id(uint32_t p_seed);
 	static String generate_scene_unique_id();
