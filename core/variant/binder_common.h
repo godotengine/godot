@@ -143,74 +143,82 @@ struct PtrToArg<char32_t> {
 };
 
 template <typename T>
-struct VariantObjectClassChecker {
-	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of_v<Object, TStripped>) {
-			Object *obj = p_variant;
-			return Object::cast_to<TStripped>(p_variant) || !obj;
-		} else {
-			return true;
-		}
-	}
-};
-
-template <typename T>
 class Ref;
-
-template <typename T>
-struct VariantObjectClassChecker<const Ref<T> &> {
-	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		Object *obj = p_variant;
-		const Ref<T> node = p_variant;
-		return node.ptr() || !obj;
-	}
-};
 
 #ifdef DEBUG_ENABLED
 
-template <typename T>
+template <typename T, typename = void>
 struct VariantCasterAndValidate {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
+		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype)) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = p_arg_idx;
 			r_error.expected = argtype;
 		}
 
 		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
+	}
+};
+
+template <typename T>
+struct VariantCasterAndValidate<T *, std::enable_if_t<std::is_base_of_v<Object, T>>> {
+	static _FORCE_INLINE_ T *cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
+		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), Variant::OBJECT)) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = p_arg_idx;
+			r_error.expected = Variant::OBJECT;
+			return nullptr;
+		}
+
+		bool previously_freed = false;
+		Object *ptr;
+		if constexpr (std::is_base_of_v<RefCounted, T>) {
+			// Variant holds RefCounted references, guaranteeing that the object is not destructed.
+			// Therefore, we do not need to use the slower get_validated_object_with_check.
+			ptr = p_args[p_arg_idx]->operator Object *();
+		} else {
+			ptr = p_args[p_arg_idx]->get_validated_object_with_check(previously_freed);
+			if (previously_freed) {
+				r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+				r_error.argument = p_arg_idx;
+				r_error.expected = Variant::OBJECT;
+				return nullptr;
+			}
+		}
+
+		T *ptr_typed = Object::cast_to<T>(ptr);
+		if (ptr && !ptr_typed) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = p_arg_idx;
+			r_error.expected = Variant::OBJECT;
+			return nullptr;
+		}
+
+		return ptr_typed;
+	}
+};
+
+template <typename T>
+struct VariantCasterAndValidate<Ref<T>> {
+	static _FORCE_INLINE_ Ref<T> cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
+		return Ref<T>{ VariantCasterAndValidate<T *>::cast(p_args, p_arg_idx, r_error) };
 	}
 };
 
 template <typename T>
 struct VariantCasterAndValidate<T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
-		}
-
-		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
+		// Note: This always creates a copy (and references the copy) instead of actually returning a reference to the underlying Variant type.
+		return VariantCasterAndValidate<T>::cast(p_args, p_arg_idx, r_error);
 	}
 };
 
 template <typename T>
 struct VariantCasterAndValidate<const T &> {
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
-		}
-
-		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
+		// Note: This always creates a copy (and references the copy) instead of actually returning a reference to the underlying Variant type.
+		return VariantCasterAndValidate<T>::cast(p_args, p_arg_idx, r_error);
 	}
 };
 
