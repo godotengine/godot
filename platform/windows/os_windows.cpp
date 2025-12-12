@@ -116,12 +116,16 @@ static String fix_path(const String &p_path) {
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
 		current_dir_name.resize_uninitialized(str_len + 1);
 		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
+		path = String::utf16((const char16_t *)current_dir_name.get_data()).replace_first(R"(\\?\UNC\)", "\\\\").trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
 	}
 	path = path.simplify_path();
 	path = path.replace_char('/', '\\');
-	if (path.size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
-		path = R"(\\?\)" + path;
+	if (path.size() >= MAX_PATH && !path.begins_with(R"(\\?\)")) {
+		if (path.is_network_share_path()) {
+			path = R"(\\?\UNC\)" + path.trim_prefix("\\\\");
+		} else {
+			path = R"(\\?\)" + path;
+		}
 	}
 	return path;
 }
