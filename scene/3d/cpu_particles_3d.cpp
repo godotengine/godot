@@ -1324,11 +1324,13 @@ void CPUParticles3D::_set_redraw(bool p_redraw) {
 }
 
 void CPUParticles3D::_update_render_thread() {
-	MutexLock lock(update_mutex);
+	if (OS::get_singleton()->is_update_pending(true)) {
+		MutexLock lock(update_mutex);
+		if (can_update.is_set()) {
+			RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 
-	if (can_update.is_set()) {
-		RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
-		can_update.clear(); //wait for next time
+			can_update.clear(); //wait for next time
+		}
 	}
 }
 

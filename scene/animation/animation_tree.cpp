@@ -831,13 +831,13 @@ void AnimationTree::_update_properties() const {
 }
 
 void AnimationTree::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			_setup_animation_player();
-			if (active) {
+	if (active && OS::get_singleton()->is_update_pending()) {
+		switch (p_what) {
+			case NOTIFICATION_ENTER_TREE: {
+				_setup_animation_player();
 				_set_process(true);
-			}
-		} break;
+			} break;
+		}
 	}
 }
 
