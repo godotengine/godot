@@ -31,6 +31,7 @@
 #pragma once
 
 #include "../gltf_state.h"
+#include "gltf_attribute_map.h"
 
 #include "scene/3d/node_3d.h"
 
@@ -43,6 +44,7 @@ protected:
 public:
 	// Import process.
 	virtual Error import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions);
+	virtual Ref<GLTFAttributeMap> import_get_attribute_map(Ref<GLTFState> p_state, GLTFMeshIndex p_index);
 	virtual Vector<String> get_supported_extensions();
 	virtual Error parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, const Dictionary &p_extensions);
 	virtual Error parse_image_data(Ref<GLTFState> p_state, const PackedByteArray &p_image_data, const String &p_mime_type, Ref<Image> r_image);
@@ -69,6 +71,7 @@ public:
 
 	// Import process.
 	GDVIRTUAL2R(Error, _import_preflight, Ref<GLTFState>, Vector<String>);
+	GDVIRTUAL2R(Ref<GLTFAttributeMap>, _import_get_attribute_map, Ref<GLTFState>, GLTFMeshIndex);
 	GDVIRTUAL0R(Vector<String>, _get_supported_extensions);
 	GDVIRTUAL3R(Error, _parse_node_extensions, Ref<GLTFState>, Ref<GLTFNode>, Dictionary);
 	GDVIRTUAL4R(Error, _parse_image_data, Ref<GLTFState>, PackedByteArray, String, Ref<Image>);

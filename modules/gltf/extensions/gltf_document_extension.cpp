@@ -33,6 +33,7 @@
 void GLTFDocumentExtension::_bind_methods() {
 	// Import process.
 	GDVIRTUAL_BIND(_import_preflight, "state", "extensions");
+	GDVIRTUAL_BIND(_import_get_attribute_map, "state", "mesh_index");
 	GDVIRTUAL_BIND(_get_supported_extensions);
 	GDVIRTUAL_BIND(_parse_node_extensions, "state", "gltf_node", "extensions");
 	GDVIRTUAL_BIND(_parse_image_data, "state", "image_data", "mime_type", "ret_image");
@@ -64,6 +65,12 @@ Error GLTFDocumentExtension::import_preflight(Ref<GLTFState> p_state, const Vect
 	Error err = OK;
 	GDVIRTUAL_CALL(_import_preflight, p_state, p_extensions, err);
 	return err;
+}
+
+Ref<GLTFAttributeMap> GLTFDocumentExtension::import_get_attribute_map(Ref<GLTFState> p_state, GLTFMeshIndex p_index) {
+	Ref<GLTFAttributeMap> ret;
+	GDVIRTUAL_CALL(_import_get_attribute_map, p_state, p_index, ret);
+	return ret;
 }
 
 Vector<String> GLTFDocumentExtension::get_supported_extensions() {
