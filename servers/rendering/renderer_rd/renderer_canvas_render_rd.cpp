@@ -2541,6 +2541,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					r_current_batch->shader_variant = SHADER_VARIANT_NINEPATCH;
 					r_current_batch->render_primitive = RD::RENDER_PRIMITIVE_TRIANGLES;
 					r_current_batch->flags = 0;
+					r_current_batch->use_msdf = false;
 				}
 
 				TextureState tex_state(np->texture, texture_filter, texture_repeat, false, use_linear_colors);
@@ -2616,6 +2617,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch->has_blend = false;
 				r_current_batch->command = c;
 				r_current_batch->flags = 0;
+				r_current_batch->use_msdf = false;
 
 				TextureState tex_state(polygon->texture, texture_filter, texture_repeat, false, use_linear_colors);
 				TextureInfo *tex_info = texture_info_map.getptr(tex_state);
@@ -2742,6 +2744,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch->command_type = c->type;
 				r_current_batch->has_blend = false;
 				r_current_batch->flags = 0;
+				r_current_batch->use_msdf = false;
 
 				InstanceData *instance_data = nullptr;
 
