@@ -78,7 +78,18 @@ void BonePropertiesEditor::create_editors() {
 
 	// Rotation property.
 	rotation_property = memnew(EditorPropertyQuaternion());
-	rotation_property->setup(large_range_hint);
+	// Quaternions are almost never used for human-readable values that need stepifying,
+	// so we should be more precise with their step, as much as the float precision allows.
+#ifdef REAL_T_IS_DOUBLE
+	constexpr double QUATERNION_STEP = 1e-14;
+#else
+	constexpr double QUATERNION_STEP = 1e-6;
+#endif
+	EditorPropertyRangeHint quaternion_range_hint;
+	quaternion_range_hint.min = -1.0;
+	quaternion_range_hint.max = 1.0;
+	quaternion_range_hint.step = QUATERNION_STEP;
+	rotation_property->setup(quaternion_range_hint);
 	rotation_property->set_label("Rotation");
 	rotation_property->set_selectable(false);
 	rotation_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
