@@ -150,6 +150,10 @@ struct [[nodiscard]] Vector3i {
 
 	constexpr Vector3i() :
 			x(0), y(0), z(0) {}
+	constexpr Vector3i(const Vector3i &) = default;
+	constexpr Vector3i &operator=(const Vector3i &) = default;
+	constexpr explicit Vector3i(int32_t p_x_y_and_z) :
+			x(p_x_y_and_z), y(p_x_y_and_z), z(p_x_y_and_z) {}
 	constexpr Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
 };
