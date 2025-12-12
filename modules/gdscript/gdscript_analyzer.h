@@ -148,6 +148,7 @@ class GDScriptAnalyzer {
 	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const Ref<GDScriptParserRef> &p_dependant_parser);
 	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, GDScriptParser *p_dependant_parser);
 	Ref<GDScript> get_depended_shallow_script(const String &p_path, Error &r_error);
+	bool awaited_is_of_abstract_function(GDScriptParser::AwaitNode *p_await);
 #ifdef DEBUG_ENABLED
 	void is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope);
 #endif
