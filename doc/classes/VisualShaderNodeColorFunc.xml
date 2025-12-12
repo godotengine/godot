@@ -43,7 +43,6 @@
 		<constant name="FUNC_LINEAR_TO_SRGB" value="4" enum="Function">
 			Converts color from linear encoding to nonlinear sRGB encoding using the following formula:
 			[codeblock]
-			vec3 c = clamp(c, vec3(0.0), vec3(1.0));
 			const vec3 a = vec3(0.055f);
 			return mix((vec3(1.0f) + a) * pow(c.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * c.rgb, lessThan(c.rgb, vec3(0.0031308f)));
 			[/codeblock]

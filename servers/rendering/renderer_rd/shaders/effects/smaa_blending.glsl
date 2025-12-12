@@ -75,8 +75,6 @@ params;
 #define textureLinear(tex, uv) srgb_to_linear(textureLod(tex, uv, 0.0).rgb)
 
 vec3 linear_to_srgb(vec3 color) {
-	// If going to srgb, clamp from 0 to 1.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
@@ -138,6 +136,7 @@ void main() {
 		out_color.rgb = blending_weight.x * textureLinear(color_tex, blending_coord.xy);
 		out_color.rgb += blending_weight.y * textureLinear(color_tex, blending_coord.zw);
 		out_color.rgb = linear_to_srgb(out_color.rgb);
+		out_color.rgb = clamp(out_color.rgb, vec3(0.0), vec3(1.0));
 		out_color.a = texture(color_tex, tex_coord).a;
 	}
 	if (bool(params.use_debanding)) {
