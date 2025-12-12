@@ -2406,88 +2406,100 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), force_angle_list);
 	}
 
-	// Start with RenderingDevice-based backends.
+	{
+		// Start with RenderingDevice-based backends.
+		Vector<String> rendering_method_hints;
 #ifdef RD_ENABLED
-	renderer_hints = "forward_plus,mobile";
-	default_renderer_mobile = "mobile";
+		rendering_method_hints.append("forward_plus");
+		rendering_method_hints.append("mobile");
+		default_renderer_mobile = "mobile";
 #endif
 
-	// And Compatibility next, or first if Vulkan is disabled.
+		// And Compatibility next, or first if Vulkan is disabled.
 #ifdef GLES3_ENABLED
-	if (!renderer_hints.is_empty()) {
-		renderer_hints += ",";
-	}
-	renderer_hints += "gl_compatibility";
-	if (default_renderer_mobile.is_empty()) {
-		default_renderer_mobile = "gl_compatibility";
-	}
-	// Default to Compatibility when using the project manager.
-	if (rendering_driver.is_empty() && rendering_method.is_empty() && project_manager) {
-		rendering_driver = "opengl3";
-		rendering_method = "gl_compatibility";
-		default_renderer_mobile = "gl_compatibility";
-	}
+		rendering_method_hints.append("gl_compatibility");
+		if (default_renderer_mobile.is_empty()) {
+			default_renderer_mobile = "gl_compatibility";
+		}
+		// Default to Compatibility when using the project manager.
+		if (rendering_driver.is_empty() && rendering_method.is_empty() && project_manager) {
+			rendering_driver = "opengl3";
+			rendering_method = "gl_compatibility";
+			default_renderer_mobile = "gl_compatibility";
+		}
 #endif
 
-	if (!rendering_method.is_empty()) {
-		if (rendering_method != "forward_plus" &&
-				rendering_method != "mobile" &&
-				rendering_method != "gl_compatibility" &&
-				rendering_method != "dummy") {
-			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
-					rendering_method.utf8().get_data());
-
-			Vector<String> rendering_method_hints = renderer_hints.split(",");
-			rendering_method_hints.push_back("dummy");
-			for (int i = 0; i < rendering_method_hints.size(); i++) {
-				if (i == rendering_method_hints.size() - 1) {
-					OS::get_singleton()->print(" and ");
-				} else if (i != 0) {
-					OS::get_singleton()->print(", ");
-				}
-				OS::get_singleton()->print("'%s'", rendering_method_hints[i].utf8().get_data());
-			}
-
-			OS::get_singleton()->print(".\n");
-			goto error;
+		if (!rendering_method_hints.is_empty()) {
+			renderer_hints = String(",").join(rendering_method_hints);
+		} else {
+			renderer_hints = "dummy";
 		}
-	}
-	if (renderer_hints.is_empty()) {
-		renderer_hints = "dummy";
-	}
+		rendering_method_hints.append("dummy");
 
-	if (!rendering_driver.is_empty()) {
-		// As the rendering drivers available may depend on the display driver and renderer
-		// selected, we can't do an exhaustive check here, but we can look through all
-		// the options in all the display drivers for a match.
-
-		bool found = false;
+		// Deduplicate driver entries, as a rendering driver may be supported by several display servers.
+		Vector<String> unique_rendering_drivers;
 		for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 			Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
 
 			for (int d = 0; d < r_drivers.size(); d++) {
-				if (rendering_driver == r_drivers[d]) {
-					found = true;
-					break;
+				if (!unique_rendering_drivers.has(r_drivers[d])) {
+					unique_rendering_drivers.append(r_drivers[d]);
 				}
 			}
 		}
 
-		if (!found) {
+#ifdef GLES3_ENABLED
+		Vector<String> gl_rendering_drivers;
+#endif
+#ifdef RD_ENABLED
+		Vector<String> rd_rendering_drivers;
+#endif
+
+		for (int i = 0; i < unique_rendering_drivers.size(); i++) {
+#ifdef GLES3_ENABLED
+			// Use begins_with to directly match all OpenGL variants.
+			if (unique_rendering_drivers[i].begins_with("opengl")) {
+				gl_rendering_drivers.append(unique_rendering_drivers[i]);
+			} else
+#endif
+			{
+#ifdef RD_ENABLED
+				if (unique_rendering_drivers[i] != "dummy") {
+					rd_rendering_drivers.append(unique_rendering_drivers[i]);
+				}
+#endif
+			}
+		}
+
+		bool has_cli_rendering_method = !rendering_method.is_empty();
+		bool has_cli_rendering_driver = !rendering_driver.is_empty();
+
+		default_renderer = rendering_method_hints[0];
+		GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
+		GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
+		GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method.web", PROPERTY_HINT_ENUM, "gl_compatibility"), "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
+
+		// Default to ProjectSettings default if nothing set on the command line.
+		if (!has_cli_rendering_method) {
+			rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+		}
+
+		if (!has_cli_rendering_driver) {
+			if (rendering_method == "dummy") {
+				rendering_driver = "dummy";
+			} else if (rendering_method == "gl_compatibility") {
+				rendering_driver = GLOBAL_GET("rendering/gl_compatibility/driver");
+			} else {
+				rendering_driver = GLOBAL_GET("rendering/rendering_device/driver");
+			}
+		}
+
+		// As the rendering drivers available may depend on the display driver and renderer
+		// selected, we can't do an exhaustive check here, but we can look through all
+		// the options in all the display drivers for a match.
+		if (!unique_rendering_drivers.has(rendering_driver)) {
 			OS::get_singleton()->print("Unknown rendering driver '%s', aborting.\nValid options are ",
 					rendering_driver.utf8().get_data());
-
-			// Deduplicate driver entries, as a rendering driver may be supported by several display servers.
-			Vector<String> unique_rendering_drivers;
-			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
-				Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
-
-				for (int d = 0; d < r_drivers.size(); d++) {
-					if (!unique_rendering_drivers.has(r_drivers[d])) {
-						unique_rendering_drivers.append(r_drivers[d]);
-					}
-				}
-			}
 
 			for (int i = 0; i < unique_rendering_drivers.size(); i++) {
 				if (i == unique_rendering_drivers.size() - 1) {
@@ -2498,41 +2510,49 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("'%s'", unique_rendering_drivers[i].utf8().get_data());
 			}
 
-			OS::get_singleton()->print(".\n");
+			// If the parameter comes from the CLI, do not perform a fallback.
+			if (has_cli_rendering_driver) {
+				OS::get_singleton()->print(".\n");
+				goto error;
+			}
 
-			goto error;
+			rendering_driver = unique_rendering_drivers[0];
+			OS::get_singleton()->print(", has fallen back to '%s'.\n", rendering_driver.utf8().get_data());
 		}
 
-		// Set a default renderer if none selected. Try to choose one that matches the driver.
-		if (rendering_method.is_empty()) {
-			if (rendering_driver == "dummy") {
-				rendering_method = "dummy";
-			} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
-				rendering_method = "gl_compatibility";
-			} else {
-				rendering_method = "forward_plus";
+		if (!rendering_method_hints.has(rendering_method)) {
+			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
+					rendering_method.utf8().get_data());
+
+			for (int i = 0; i < rendering_method_hints.size(); i++) {
+				if (i == rendering_method_hints.size() - 1) {
+					OS::get_singleton()->print(" and ");
+				} else if (i != 0) {
+					OS::get_singleton()->print(", ");
+				}
+				OS::get_singleton()->print("'%s'", rendering_method_hints[i].utf8().get_data());
 			}
+
+			// If the parameter comes from the CLI, do not perform a fallback.
+			if (has_cli_rendering_method) {
+				OS::get_singleton()->print(".\n");
+				goto error;
+			}
+
+			rendering_method = rendering_method_hints[0];
+			OS::get_singleton()->print(", has fallen back to '%s'.\n", rendering_method.utf8().get_data());
 		}
 
 		// Now validate whether the selected driver matches with the renderer.
-		bool valid_combination = false;
 		Vector<String> available_drivers;
+#ifdef RD_ENABLED
 		if (rendering_method == "forward_plus" || rendering_method == "mobile") {
-#ifdef VULKAN_ENABLED
-			available_drivers.push_back("vulkan");
-#endif
-#ifdef D3D12_ENABLED
-			available_drivers.push_back("d3d12");
-#endif
-#ifdef METAL_ENABLED
-			available_drivers.push_back("metal");
-#endif
+			available_drivers = rd_rendering_drivers;
 		}
+#endif
 #ifdef GLES3_ENABLED
 		if (rendering_method == "gl_compatibility") {
-			available_drivers.push_back("opengl3");
-			available_drivers.push_back("opengl3_angle");
-			available_drivers.push_back("opengl3_es");
+			available_drivers = gl_rendering_drivers;
 		}
 #endif
 		if (rendering_method == "dummy") {
@@ -2543,51 +2563,45 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 
-		for (int i = 0; i < available_drivers.size(); i++) {
-			if (rendering_driver == available_drivers[i]) {
-				valid_combination = true;
-				break;
+		if (!available_drivers.has(rendering_driver)) {
+			// If both rendering_driver and rendering_method come from the CLI, do not perform a fallback.
+			if (has_cli_rendering_driver && has_cli_rendering_method) {
+				OS::get_singleton()->print("Invalid renderer/driver combination '%s' and '%s', aborting. %s only supports the following drivers ", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data(), rendering_method.utf8().get_data());
+
+				for (int d = 0; d < available_drivers.size(); d++) {
+					OS::get_singleton()->print("'%s', ", available_drivers[d].utf8().get_data());
+				}
+
+				OS::get_singleton()->print(".\n");
+
+				goto error;
+			}
+
+			if (!has_cli_rendering_method) {
+				if (rendering_driver == "dummy") {
+					rendering_method = "dummy";
+				}
+#ifdef GLES3_ENABLED
+				if (gl_rendering_drivers.has(rendering_driver)) {
+					rendering_method = "gl_compatibility";
+				}
+#endif
+#ifdef RD_ENABLED
+				if (rd_rendering_drivers.has(rendering_driver)) {
+					rendering_method = "forward_plus";
+				}
+#endif
+			} else {
+				rendering_driver = available_drivers[0];
 			}
 		}
 
-		if (!valid_combination) {
-			OS::get_singleton()->print("Invalid renderer/driver combination '%s' and '%s', aborting. %s only supports the following drivers ", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data(), rendering_method.utf8().get_data());
+		// always convert to lower case for consistency in the code
+		rendering_driver = rendering_driver.to_lower();
 
-			for (int d = 0; d < available_drivers.size(); d++) {
-				OS::get_singleton()->print("'%s', ", available_drivers[d].utf8().get_data());
-			}
-
-			OS::get_singleton()->print(".\n");
-
-			goto error;
-		}
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		OS::get_singleton()->set_current_rendering_method(rendering_method);
 	}
-
-	default_renderer = renderer_hints.get_slicec(',', 0);
-	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
-	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
-	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method.web", PROPERTY_HINT_ENUM, "gl_compatibility"), "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
-
-	// Default to ProjectSettings default if nothing set on the command line.
-	if (rendering_method.is_empty()) {
-		rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
-	}
-
-	if (rendering_driver.is_empty()) {
-		if (rendering_method == "dummy") {
-			rendering_driver = "dummy";
-		} else if (rendering_method == "gl_compatibility") {
-			rendering_driver = GLOBAL_GET("rendering/gl_compatibility/driver");
-		} else {
-			rendering_driver = GLOBAL_GET("rendering/rendering_device/driver");
-		}
-	}
-
-	// always convert to lower case for consistency in the code
-	rendering_driver = rendering_driver.to_lower();
-
-	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-	OS::get_singleton()->set_current_rendering_method(rendering_method);
 
 #ifdef TOOLS_ENABLED
 	if (!force_res && project_manager) {
