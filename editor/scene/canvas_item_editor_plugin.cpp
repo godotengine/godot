@@ -330,13 +330,13 @@ void CanvasItemEditor::_snap_other_nodes(
 		const Point2 p_value,
 		const Transform2D p_transform_to_snap,
 		Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
-		const SnapTarget p_snap_target, List<const CanvasItem *> p_exceptions,
+		const SnapTarget p_snap_target, const List<const CanvasItem *> &p_exceptions,
 		const Node *p_current) {
 	const CanvasItem *ci = Object::cast_to<CanvasItem>(p_current);
 
 	// Check if the element is in the exception
 	bool exception = false;
-	for (const CanvasItem *&E : p_exceptions) {
+	for (const CanvasItem *const &E : p_exceptions) {
 		if (E == p_current) {
 			exception = true;
 			break;

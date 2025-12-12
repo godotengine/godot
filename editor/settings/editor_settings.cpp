@@ -203,7 +203,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				continue;
 			}
 
-			List<Ref<InputEvent>> events = action_override.value;
+			const List<Ref<InputEvent>> &events = action_override.value;
 
 			Dictionary action_dict;
 			action_dict["name"] = action_override.key;
@@ -2196,7 +2196,7 @@ const Array EditorSettings::get_builtin_action_overrides(const String &p_name) c
 	if (AO) {
 		Array event_array;
 
-		List<Ref<InputEvent>> events_list = AO->value;
+		const List<Ref<InputEvent>> &events_list = AO->value;
 		for (const Ref<InputEvent> &E : events_list) {
 			event_array.push_back(E);
 		}
