@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "physics_server_3d.h"
+#include "physics_server_3d.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
@@ -235,8 +236,6 @@ void PhysicsRayQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_back_faces"), "set_hit_back_faces", "is_hit_back_faces_enabled");
 }
 
-///////////////////////////////////////////////////////
-
 Ref<PhysicsRayQueryParameters3D> PhysicsRayQueryParameters3D::create(Vector3 p_from, Vector3 p_to, uint32_t p_mask, const TypedArray<RID> &p_exclude) {
 	Ref<PhysicsRayQueryParameters3D> params;
 	params.instantiate();
@@ -246,6 +245,49 @@ Ref<PhysicsRayQueryParameters3D> PhysicsRayQueryParameters3D::create(Vector3 p_f
 	params->set_exclude(p_exclude);
 	return params;
 }
+
+///////////////////////////////////////////////////////
+
+Vector3 PhysicsRayIntersectionResult3D::get_position() const {
+	return result.position;
+}
+
+Vector3 PhysicsRayIntersectionResult3D::get_normal() const {
+	return result.normal;
+}
+
+RID PhysicsRayIntersectionResult3D::get_collider_rid() const {
+	return result.rid;
+}
+
+ObjectID PhysicsRayIntersectionResult3D::get_collider_id() const {
+	return result.collider_id;
+}
+
+Object *PhysicsRayIntersectionResult3D::get_collider() const {
+	// return ObjectDB::get_instance(result.collider_id);
+	return result.collider;
+}
+
+int PhysicsRayIntersectionResult3D::get_collider_shape() const {
+	return result.shape;
+}
+
+int PhysicsRayIntersectionResult3D::get_collider_face_id() const {
+	return result.face_index;
+}
+
+void PhysicsRayIntersectionResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_position"), &PhysicsRayIntersectionResult3D::get_position);
+	ClassDB::bind_method(D_METHOD("get_normal"), &PhysicsRayIntersectionResult3D::get_normal);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &PhysicsRayIntersectionResult3D::get_collider_rid);
+	ClassDB::bind_method(D_METHOD("get_collider_id"), &PhysicsRayIntersectionResult3D::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider"), &PhysicsRayIntersectionResult3D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_shape"), &PhysicsRayIntersectionResult3D::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_collider_face_id"), &PhysicsRayIntersectionResult3D::get_collider_face_id);
+}
+
+///////////////////////////////////////////////////////
 
 void PhysicsPointQueryParameters3D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
@@ -285,6 +327,38 @@ void PhysicsPointQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude", "get_exclude");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
+}
+
+///////////////////////////////////////////////////////
+
+int PhysicsPointIntersectionResult3D::get_collision_count() const {
+	return collision_count;
+}
+
+RID PhysicsPointIntersectionResult3D::get_collider_rid(int p_collider_index) const {
+	return result[p_collider_index].rid;
+}
+
+ObjectID PhysicsPointIntersectionResult3D::get_collider_id(int p_collider_index) const {
+	return result[p_collider_index].collider_id;
+}
+
+Object *PhysicsPointIntersectionResult3D::get_collider(int p_collider_index) const {
+	return result[p_collider_index].collider;
+}
+
+int PhysicsPointIntersectionResult3D::get_collider_shape(int p_collider_index) const {
+	return result[p_collider_index].shape;
+}
+
+void PhysicsPointIntersectionResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_max_collisions"), &PhysicsPointIntersectionResult3D::get_max_collisions);
+	ClassDB::bind_method(D_METHOD("set_max_collisions", "max_collisions"), &PhysicsPointIntersectionResult3D::set_max_collisions);
+	ClassDB::bind_method(D_METHOD("get_collision_count"), &PhysicsPointIntersectionResult3D::get_collision_count);
+	ClassDB::bind_method(D_METHOD("get_collider_id", "collider_index"), &PhysicsPointIntersectionResult3D::get_collider_id, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_rid", "collider_index"), &PhysicsPointIntersectionResult3D::get_collider_rid, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider", "collider_index"), &PhysicsPointIntersectionResult3D::get_collider, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_shape", "collider_index"), &PhysicsPointIntersectionResult3D::get_collider_shape, DEFVAL(0));
 }
 
 ///////////////////////////////////////////////////////
@@ -358,139 +432,176 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
 
-/////////////////////////////////////
+///////////////////////////////////////////////////////
 
-Dictionary PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query) {
-	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, Dictionary());
-
-	RayResult result;
-	bool res = intersect_ray(p_ray_query->get_parameters(), result);
-
-	if (!res) {
-		return Dictionary();
-	}
-
-	Dictionary d;
-	d["position"] = result.position;
-	d["normal"] = result.normal;
-	d["face_index"] = result.face_index;
-	d["collider_id"] = result.collider_id;
-	d["collider"] = result.collider;
-	d["shape"] = result.shape;
-	d["rid"] = result.rid;
-
-	return d;
+int PhysicsShapeIntersectionResult3D::get_collision_count() const {
+	return collision_count;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results) {
-	EXTRACT_PARAM_OR_FAIL_V(p_point_query, rp_point_query, TypedArray<Dictionary>());
-
-	Vector<ShapeResult> ret;
-	ret.resize(p_max_results);
-
-	int rc = intersect_point(p_point_query->get_parameters(), ret.ptrw(), ret.size());
-
-	if (rc == 0) {
-		return TypedArray<Dictionary>();
-	}
-
-	TypedArray<Dictionary> r;
-	r.resize(rc);
-	for (int i = 0; i < rc; i++) {
-		Dictionary d;
-		d["rid"] = ret[i].rid;
-		d["collider_id"] = ret[i].collider_id;
-		d["collider"] = ret[i].collider;
-		d["shape"] = ret[i].shape;
-		r[i] = d;
-	}
-	return r;
+RID PhysicsShapeIntersectionResult3D::get_collider_rid(int p_collider_index) const {
+	return result[p_collider_index].rid;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results) {
-	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Dictionary>());
-
-	Vector<ShapeResult> sr;
-	sr.resize(p_max_results);
-	int rc = intersect_shape(p_shape_query->get_parameters(), sr.ptrw(), sr.size());
-	TypedArray<Dictionary> ret;
-	ret.resize(rc);
-	for (int i = 0; i < rc; i++) {
-		Dictionary d;
-		d["rid"] = sr[i].rid;
-		d["collider_id"] = sr[i].collider_id;
-		d["collider"] = sr[i].collider;
-		d["shape"] = sr[i].shape;
-		ret[i] = d;
-	}
-
-	return ret;
+ObjectID PhysicsShapeIntersectionResult3D::get_collider_id(int p_collider_index) const {
+	return result[p_collider_index].collider_id;
 }
 
-Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query) {
-	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Vector<real_t>());
-
-	real_t closest_safe = 1.0f, closest_unsafe = 1.0f;
-	bool res = cast_motion(p_shape_query->get_parameters(), closest_safe, closest_unsafe);
-	if (!res) {
-		return Vector<real_t>();
-	}
-	Vector<real_t> ret;
-	ret.resize(2);
-	ret.write[0] = closest_safe;
-	ret.write[1] = closest_unsafe;
-	return ret;
+Object *PhysicsShapeIntersectionResult3D::get_collider(int p_collider_index) const {
+	return result[p_collider_index].collider;
 }
 
-TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results) {
-	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Vector3>());
-
-	Vector<Vector3> ret;
-	ret.resize(p_max_results * 2);
-	int rc = 0;
-	bool res = collide_shape(p_shape_query->get_parameters(), ret.ptrw(), p_max_results, rc);
-	if (!res) {
-		return TypedArray<Vector3>();
-	}
-	TypedArray<Vector3> r;
-	r.resize(rc * 2);
-	for (int i = 0; i < rc * 2; i++) {
-		r[i] = ret[i];
-	}
-	return r;
+int PhysicsShapeIntersectionResult3D::get_collider_shape(int p_collider_index) const {
+	return result[p_collider_index].shape;
 }
 
-Dictionary PhysicsDirectSpaceState3D::_get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query) {
-	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Dictionary());
+void PhysicsShapeIntersectionResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_max_collisions"), &PhysicsShapeIntersectionResult3D::get_max_collisions);
+	ClassDB::bind_method(D_METHOD("set_max_collisions", "max_collisions"), &PhysicsShapeIntersectionResult3D::set_max_collisions);
+	ClassDB::bind_method(D_METHOD("get_collision_count"), &PhysicsShapeIntersectionResult3D::get_collision_count);
+	ClassDB::bind_method(D_METHOD("get_collider_id", "collider_index"), &PhysicsShapeIntersectionResult3D::get_collider_id, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_rid", "collider_index"), &PhysicsShapeIntersectionResult3D::get_collider_rid, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider", "collider_index"), &PhysicsShapeIntersectionResult3D::get_collider, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collider_shape", "collider_index"), &PhysicsShapeIntersectionResult3D::get_collider_shape, DEFVAL(0));
+}
 
-	ShapeRestInfo sri;
+///////////////////////////////////////////////////////
 
-	bool res = rest_info(p_shape_query->get_parameters(), &sri);
-	Dictionary r;
-	if (!res) {
-		return r;
-	}
+real_t PhysicsShapeCastResult3D::get_collision_safe_fraction() const {
+	return safe_fraction;
+}
 
-	r["point"] = sri.point;
-	r["normal"] = sri.normal;
-	r["rid"] = sri.rid;
-	r["collider_id"] = sri.collider_id;
-	r["shape"] = sri.shape;
-	r["linear_velocity"] = sri.linear_velocity;
+real_t PhysicsShapeCastResult3D::get_collision_unsafe_fraction() const {
+	return unsafe_fraction;
+}
 
-	return r;
+void PhysicsShapeCastResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_collision_safe_fraction"), &PhysicsShapeCastResult3D::get_collision_safe_fraction);
+	ClassDB::bind_method(D_METHOD("get_collision_unsafe_fraction"), &PhysicsShapeCastResult3D::get_collision_unsafe_fraction);
+}
+
+///////////////////////////////////////////////////////
+
+int PhysicsShapeCollisionResult3D::get_collision_count() const {
+	return collision_count;
+}
+
+Vector3 PhysicsShapeCollisionResult3D::get_collision_point_a(int p_collision_index) const {
+	return result[p_collision_index * 2];
+}
+
+Vector3 PhysicsShapeCollisionResult3D::get_collision_point_b(int p_collision_index) const {
+	return result[p_collision_index * 2 + 1];
+}
+
+void PhysicsShapeCollisionResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_max_collisions"), &PhysicsShapeCollisionResult3D::get_max_collisions);
+	ClassDB::bind_method(D_METHOD("set_max_collisions", "max_collisions"), &PhysicsShapeCollisionResult3D::set_max_collisions);
+	ClassDB::bind_method(D_METHOD("get_collision_count"), &PhysicsShapeCollisionResult3D::get_collision_count);
+	ClassDB::bind_method(D_METHOD("get_collision_point_a", "collision_index"), &PhysicsShapeCollisionResult3D::get_collision_point_a, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_point_b", "collision_index"), &PhysicsShapeCollisionResult3D::get_collision_point_b, DEFVAL(0));
+}
+
+///////////////////////////////////////////////////////
+
+Vector3 PhysicsShapeRestInfoResult3D::get_collision_point() const {
+	return result.point;
+}
+
+Vector3 PhysicsShapeRestInfoResult3D::get_collision_normal() const {
+	return result.normal;
+}
+
+RID PhysicsShapeRestInfoResult3D::get_collider_rid() const {
+	return result.rid;
+}
+
+ObjectID PhysicsShapeRestInfoResult3D::get_collider_id() const {
+	return result.collider_id;
+}
+
+int PhysicsShapeRestInfoResult3D::get_collider_shape() const {
+	return result.shape;
+}
+
+Vector3 PhysicsShapeRestInfoResult3D::get_collider_velocity() const {
+	return result.linear_velocity;
+}
+
+void PhysicsShapeRestInfoResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_collision_point"), &PhysicsShapeRestInfoResult3D::get_collision_point);
+	ClassDB::bind_method(D_METHOD("get_collision_normal"), &PhysicsShapeRestInfoResult3D::get_collision_normal);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &PhysicsShapeRestInfoResult3D::get_collider_rid);
+	ClassDB::bind_method(D_METHOD("get_collider_id"), &PhysicsShapeRestInfoResult3D::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider_shape"), &PhysicsShapeRestInfoResult3D::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &PhysicsShapeRestInfoResult3D::get_collider_velocity);
+}
+
+///////////////////////////////////////////////////////
+
+bool PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult3D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
+
+	return intersect_ray(p_ray_query->get_parameters(), *p_result->get_result_ptr());
+}
+
+bool PhysicsDirectSpaceState3D::_intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, RequiredParam<PhysicsPointIntersectionResult3D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_point_query, rp_point_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
+
+	p_result->collision_count = intersect_point(p_point_query->get_parameters(), p_result->get_result_ptr(), p_result->get_max_collisions());
+
+	return p_result->collision_count > 0;
+}
+
+bool PhysicsDirectSpaceState3D::_intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeIntersectionResult3D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
+
+	p_result->collision_count = intersect_shape(p_shape_query->get_parameters(), p_result->get_result_ptr(), p_result->get_max_collisions());
+
+	return p_result->collision_count > 0;
+}
+
+bool PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeCastResult3D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
+
+	p_result->safe_fraction = 1.0f;
+	p_result->unsafe_fraction = 1.0f;
+
+	// NOTE: Expected behavior: return true on collision, false otherwise.
+	//       Actual behavior: always returns true.
+	cast_motion(p_shape_query->get_parameters(), p_result->safe_fraction, p_result->unsafe_fraction);
+
+	// return cast_motion(p_shape_query->get_parameters(), p_result->safe_fraction, p_result->unsafe_fraction);
+	return (p_result->safe_fraction < 1.0f) || (p_result->unsafe_fraction < 1.0f);
+}
+
+bool PhysicsDirectSpaceState3D::_collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeCollisionResult3D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
+
+	return collide_shape(p_shape_query->get_parameters(), p_result->result.ptrw(), p_result->get_max_collisions(), p_result->collision_count);
+}
+
+bool PhysicsDirectSpaceState3D::_get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeRestInfoResult3D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
+
+	return rest_info(p_shape_query->get_parameters(), p_result->get_result_ptr());
 }
 
 PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 }
 
 void PhysicsDirectSpaceState3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray);
-	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState3D::_cast_motion);
-	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_collide_shape, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState3D::_get_rest_info);
+	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_ray);
+	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_point);
+	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_shape);
+	ClassDB::bind_method(D_METHOD("cast_motion", "parameters", "result"), &PhysicsDirectSpaceState3D::_cast_motion);
+	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "result"), &PhysicsDirectSpaceState3D::_collide_shape);
+	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters", "result"), &PhysicsDirectSpaceState3D::_get_rest_info);
 }
 
 ///////////////////////////////

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsShapeCastResult2D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores the result of a shape motion cast query.
+	</brief_description>
+	<description>
+		This class contains the safe and unsafe fractions computed by [method PhysicsDirectSpaceState2D.cast_motion].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collision_safe_fraction" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the maximum fraction of the motion that can be performed without colliding.
+			</description>
+		</method>
+		<method name="get_collision_unsafe_fraction" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the minimum fraction of the motion at which a collision occurs.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsShapeCollisionResult3D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores the collision points of a shape intersection query.
+	</brief_description>
+	<description>
+		This class contains the contact points computed by [method PhysicsDirectSpaceState3D.collide_shape].
+		Each collision is represented as a pair of points: one on the queried shape and one on the colliding shape.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collision_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of collisions found.
+			</description>
+		</method>
+		<method name="get_collision_point_a" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the collision point on the queried shape for the collision at the given index.
+			</description>
+		</method>
+		<method name="get_collision_point_b" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the collision point on the colliding shape for the collision at the given index.
+			</description>
+		</method>
+		<method name="get_max_collisions" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the maximum number of collisions this object can store.
+			</description>
+		</method>
+		<method name="set_max_collisions">
+			<return type="void" />
+			<param index="0" name="max_collisions" type="int" />
+			<description>
+				Resizes the internal buffer to store up to [code skip-lint]max_collisions[/code] collisions. Existing data is discarded.
+			</description>
+		</method>
+	</methods>
+</class>

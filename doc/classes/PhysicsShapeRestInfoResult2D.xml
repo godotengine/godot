@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsShapeRestInfoResult2D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores the nearest collision information of a shape query.
+	</brief_description>
+	<description>
+		This class contains the collision data computed by [method PhysicsDirectSpaceState2D.get_rest_info].
+		If the shape collides with multiple objects, only the nearest collision is stored.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collider_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique ID of the colliding shape.
+			</description>
+		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the colliding shape.
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the shape index of the colliding shape.
+			</description>
+		</method>
+		<method name="get_collider_velocity" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the linear velocity of the colliding object. If the object is an [Area2D], the result is [code]Vector2(0, 0)[/code].
+			</description>
+		</method>
+		<method name="get_collision_normal" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the collision normal at the intersection point, pointing away from the colliding shape.
+			</description>
+		</method>
+		<method name="get_collision_point" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the collision point on the colliding shape.
+			</description>
+		</method>
+	</methods>
+</class>
