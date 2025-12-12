@@ -3095,7 +3095,8 @@ void TextureStorage::update_decal_atlas() {
 			int *v_offsets = v_offsetsv.ptrw();
 			memset(v_offsets, 0, sizeof(int) * base_size);
 
-			int max_height = 0;
+			// Take border into account for minimum height.
+			int max_height = 2;
 
 			for (int i = 0; i < item_count; i++) {
 				//best fit
