@@ -1729,7 +1729,9 @@ void Node::add_sibling(RequiredParam<Node> rp_sibling, bool p_force_readable_nam
 
 	data.parent->add_child(p_sibling, p_force_readable_name, data.internal_mode);
 	data.parent->_update_children_cache();
-	data.parent->_move_child(p_sibling, get_index() + 1);
+	if (p_sibling->data.parent == data.parent) { // This check is in case p_sibling was removed/reparent in its _ready function
+		data.parent->_move_child(p_sibling, get_index() + 1);
+	}
 }
 
 void Node::remove_child(RequiredParam<Node> rp_child) {
