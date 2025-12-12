@@ -313,6 +313,7 @@ public:
 	void set_position(const Point2i &p_position);
 	Point2i get_position() const;
 	void move_to_center();
+	void move_to_mouse();
 
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
