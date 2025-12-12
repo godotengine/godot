@@ -57,6 +57,7 @@
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
+#include "scene/2d/tile_map_layer.h"
 #include "scene/gui/base_button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
@@ -631,7 +632,7 @@ Rect2 CanvasItemEditor::_get_encompassing_rect(const Node *p_node) {
 	return rect;
 }
 
-void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
+void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, bool p_include_z_render) {
 	if (!p_node) {
 		return;
 	}
@@ -654,12 +655,12 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 		if (ci) {
 			if (!ci->is_set_as_top_level()) {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), xform);
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), xform, p_include_z_render);
 			} else {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, ci->get_transform(), xform);
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, ci->get_transform(), xform, p_include_z_render);
 			}
 		} else {
-			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, Transform2D(), xform);
+			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, Transform2D(), xform, p_include_z_render);
 		}
 	}
 
@@ -676,15 +677,26 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 			res.item = ci;
 			res.z_index = node ? node->get_z_index() : 0;
 			res.has_z = node;
+			if (p_include_z_render) {
+				TileMapLayer *tml = Object::cast_to<TileMapLayer>(node);
+				if (tml) {
+					res.z_render = tml->get_z_render();
+				} else {
+					res.z_render = node ? RenderingServer::get_singleton()->canvas_item_get_z_render(node->get_canvas_item()) : 0;
+				}
+			} else {
+				res.z_render = 0;
+			}
+
 			r_items.push_back(res);
 		}
 	}
 }
 
-void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked) {
+void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked, bool p_include_z_render) {
 	Node *scene = EditorNode::get_singleton()->get_edited_scene();
 
-	_find_canvas_items_at_pos(p_pos, scene, r_items);
+	_find_canvas_items_at_pos(p_pos, scene, r_items, Transform2D(), Transform2D(), p_include_z_render);
 
 	//Remove invalid results
 	for (int i = 0; i < r_items.size(); i++) {
@@ -711,6 +723,9 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 		bool duplicate = false;
 		for (int j = 0; j < i; j++) {
 			if (r_items[j].item == ci) {
+				if (r_items[j].z_render < r_items[i].z_render) {
+					r_items.write[j].z_render = r_items[i].z_render;
+				}
 				duplicate = true;
 				break;
 			}
@@ -2523,9 +2538,17 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 			Vector<_SelectResult> selection = Vector<_SelectResult>();
 			// Retrieve the canvas items.
-			_get_canvas_items_at_pos(click, selection);
+			_get_canvas_items_at_pos(click, selection, false, true);
 			if (!selection.is_empty()) {
 				ci = selection[0].item;
+				uint32_t z_final = selection[0].z_render;
+				for (int i = 1; i < selection.size(); i++) {
+					uint32_t z_current = selection[i].z_render;
+					if (z_current > z_final) {
+						z_final = z_current;
+						ci = selection[i].item;
+					}
+				}
 			}
 
 			// Shift also allows forcing box selection when item was clicked.
