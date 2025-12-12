@@ -231,4 +231,4 @@ return executable_sizes[0] + executable_sizes[1] + executable_sizes[2];
 #endif
 }
 
-/* End of pcre2_jit_misc.c */
+/* End of pcre2_jit_misc_inc.h */

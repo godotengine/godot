@@ -503,6 +503,16 @@ struct sljit_generate_code_buffer {
 	sljit_sw executable_offset;
 };
 
+struct sljit_read_only_buffer {
+	struct sljit_read_only_buffer *next;
+	sljit_uw size;
+	/* Label can be replaced by address after sljit_generate_code. */
+	union {
+		struct sljit_label *label;
+		sljit_uw addr;
+	} u;
+};
+
 struct sljit_compiler {
 	sljit_s32 error;
 	sljit_s32 options;
@@ -704,6 +714,12 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_compiler_verbose(struct sljit_compiler *comp
 /* The exec_allocator_data points to a pre-allocated
    buffer which type is sljit_generate_code_buffer. */
 #define SLJIT_GENERATE_CODE_BUFFER		0x1
+
+/* When SLJIT_INDIRECT_CALL is defined, no function context is
+created for the generated code (see sljit_set_function_context),
+so the returned pointer cannot be directly called from C code.
+The flag is ignored when SLJIT_INDIRECT_CALL is not defined. */
+#define SLJIT_GENERATE_CODE_NO_CONTEXT		0x2
 
 /* Create executable code from the instruction stream. This is the final step
    of the code generation, and no more instructions can be emitted after this call.
@@ -1450,6 +1466,24 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_shift_into(struct sljit_compiler *
 	sljit_s32 src2_reg,
 	sljit_s32 src3, sljit_sw src3w);
 
+/* The following options are used by sljit_emit_op2_shift. */
+
+/* The src2 argument is shifted left by an immedate value. */
+#define SLJIT_SHL_IMM			(1 << 9)
+/* When src2 argument is a register, its value is undefined after the operation. */
+#define SLJIT_SRC2_UNDEFINED		(1 << 10)
+
+/* Emits an addition operation, where the second argument is shifted by a value.
+
+   op must be SLJIT_ADD | SLJIT_SHL_IMM, where the immedate value is stored in shift_arg
+
+   Flags: - (may destroy flags) */
+SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op2_shift(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 dst, sljit_sw dstw,
+	sljit_s32 src1, sljit_sw src1w,
+	sljit_s32 src2, sljit_sw src2w,
+	sljit_sw shift_arg);
+
 /* Starting index of opcodes for sljit_emit_op_src
    and sljit_emit_op_dst. */
 #define SLJIT_OP_SRC_DST_BASE		112
@@ -1629,7 +1663,52 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fcopy(struct sljit_compiler *compi
 
 /* Label and jump instructions. */
 
+/* Emits a label which can be the target of jump / mov_addr instructions. */
+
 SLJIT_API_FUNC_ATTRIBUTE struct sljit_label* sljit_emit_label(struct sljit_compiler *compiler);
+
+/* Alignment values for sljit_emit_aligned_label. */
+
+#define SLJIT_LABEL_ALIGN_1	0
+#define SLJIT_LABEL_ALIGN_2	1
+#define SLJIT_LABEL_ALIGN_4	2
+#define SLJIT_LABEL_ALIGN_8	3
+#define SLJIT_LABEL_ALIGN_16	4
+#define SLJIT_LABEL_ALIGN_W	SLJIT_WORD_SHIFT
+#define SLJIT_LABEL_ALIGN_P	SLJIT_POINTER_SHIFT
+
+/* Emits a label which address is aligned to a power of 2 value. When some
+   extra space needs to be added to align the label, that space is filled
+   with SLJIT_NOP instructions. These labels usually represent the end of a
+   compilation block, and a new function or some read-only data (e.g. a
+   jump table) follows it. In these typical cases the SLJIT_NOPs are never
+   executed.
+
+   Optionally, buffers for storing read-only data or code can be allocated
+   by this operation. The buffers are passed as a chain list, and a separate
+   memory area is allocated for each item in the list. All buffers are aligned
+   to SLJIT_NOP instruction size, and their starting address is returned as
+   as a label. The sljit_get_label_abs_addr function or the SLJIT_MOV_ABS_ADDR
+   operation can be used to get the real address. The label of the first buffer
+   is always the same as the returned label. The buffers are initially
+   initialized with SLJIT_NOP instructions. The alignment of the buffers can
+   be controlled by their starting address and sizes. If the starting address
+   is aligned to N, and size is also divisible by N, the next buffer is aligned
+   to N. I.e. if a buffer is 16 byte aligned, and its size is divisible by 4,
+   the next buffer is 4 byte aligned. Note: if a buffer is N (>=2) byte aligned,
+   it is also N/2 byte aligned.
+
+   align represents the alignment, and its value can
+         be specified by SLJIT_LABEL_* constants
+
+   buffers is a list of read-only buffers stored in a chain list.
+           After calling sljit_generate_code, these buffers can be
+           modified by sljit_read_only_buffer_start_writing() /
+           sljit_read_only_buffer_end_writing() functions
+
+   Note: the constant pool (if present) may be stored before the label. */
+SLJIT_API_FUNC_ATTRIBUTE struct sljit_label* sljit_emit_aligned_label(struct sljit_compiler *compiler,
+	sljit_s32 alignment, struct sljit_read_only_buffer *buffers);
 
 /* The SLJIT_FAST_CALL is a calling method for creating lightweight function
    calls. This type of calls preserve the values of all registers and stack
@@ -1757,16 +1836,16 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_label* sljit_emit_label(struct sljit_compi
 #define SLJIT_CALL_REG_ARG		39
 
 /* The target can be changed during runtime (see: sljit_set_jump_addr). */
-#define SLJIT_REWRITABLE_JUMP		0x1000
+#define SLJIT_REWRITABLE_JUMP		0x10000
 /* When this flag is passed, the execution of the current function ends and
    the called function returns to the caller of the current function. The
    stack usage is reduced before the call, but it is not necessarily reduced
    to zero. In the latter case the compiler needs to allocate space for some
    arguments and the return address must be stored on the stack as well. */
-#define SLJIT_CALL_RETURN		0x2000
+#define SLJIT_CALL_RETURN		0x20000
 
 /* Emit a jump instruction. The destination is not set, only the type of the jump.
-    type must be between SLJIT_EQUAL and SLJIT_FAST_CALL
+    type must be between SLJIT_JUMP and SLJIT_FAST_CALL
     type can be combined (or'ed) with SLJIT_REWRITABLE_JUMP
 
    Flags: does not modify flags. */
@@ -1780,28 +1859,53 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_jump(struct sljit_compile
    Flags: destroy all flags. */
 SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_call(struct sljit_compiler *compiler, sljit_s32 type, sljit_s32 arg_types);
 
-/* Basic arithmetic comparison. In most architectures it is implemented as
-   a compare operation followed by a sljit_emit_jump. However some
-   architectures (i.e: ARM64 or MIPS) may employ special optimizations
-   here. It is suggested to use this comparison form when appropriate.
+/* Integer comparison operation. In most architectures it is implemented
+   as a compare (sljit_emit_op2u with SLJIT_SUB) operation followed by
+   an sljit_emit_jump. However, some architectures (e.g: ARM64 or RISCV)
+   may optimize the generated code further. It is suggested to use this
+   comparison form when appropriate.
     type must be between SLJIT_EQUAL and SLJIT_SIG_LESS_EQUAL
-    type can be combined (or'ed) with SLJIT_REWRITABLE_JUMP
+    type can be combined (or'ed) with SLJIT_32 or SLJIT_REWRITABLE_JUMP
 
    Flags: may destroy flags. */
 SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_cmp(struct sljit_compiler *compiler, sljit_s32 type,
 	sljit_s32 src1, sljit_sw src1w,
 	sljit_s32 src2, sljit_sw src2w);
 
-/* Basic floating point comparison. In most architectures it is implemented as
-   a SLJIT_CMP_F32/64 operation (setting appropriate flags) followed by a
-   sljit_emit_jump. However some architectures (i.e: MIPS) may employ
-   special optimizations here. It is suggested to use this comparison form
-   when appropriate.
+/* Floating point comparison operation. In most architectures it is
+   implemented as a SLJIT_CMP_F32/64 operation (setting appropriate
+   flags) followed by a sljit_emit_jump. However, some architectures
+   (e.g: MIPS) may optimize the generated code further. It is suggested
+   to use this comparison form when appropriate.
     type must be between SLJIT_F_EQUAL and SLJIT_ORDERED_LESS_EQUAL
-    type can be combined (or'ed) with SLJIT_REWRITABLE_JUMP
+    type can be combined (or'ed) with SLJIT_32 or SLJIT_REWRITABLE_JUMP
+
    Flags: destroy flags.
-   Note: when an operand is NaN the behaviour depends on the comparison type. */
+   Note: when any operand is NaN the behaviour depends on the comparison type. */
 SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_fcmp(struct sljit_compiler *compiler, sljit_s32 type,
+	sljit_s32 src1, sljit_sw src1w,
+	sljit_s32 src2, sljit_sw src2w);
+
+/* The following flags are used by sljit_emit_op2cmpz(). */
+#define SLJIT_JUMP_IF_NON_ZERO		0
+#define SLJIT_JUMP_IF_ZERO		SLJIT_SET_Z
+
+/* Perform an integer arithmetic operation, then its result is compared to
+   zero. In most architectures it is implemented as an sljit_emit_op2
+   followed by an sljit_emit_jump. However, some architectures (e.g: RISCV)
+   may optimize the generated code further. It is suggested to use this
+   operation form when appropriate (e.g. for loops with counters).
+
+   op must be an sljit_emit_op2 operation where zero flag can be set,
+   op can be combined with SLJIT_SET_* status flag setters except
+     SLJIT_SET_Z, SLJIT_REWRITABLE_JUMP or SLJIT_JUMP_IF_* option bits.
+
+   Note: SLJIT_JUMP_IF_NON_ZERO is the default operation if neither
+      SLJIT_JUMP_IF_ZERO or SLJIT_JUMP_IF_NON_ZERO is specified.
+   Flags: sets the variable flag depending on op argument, the
+      zero flag is undefined. */
+SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_op2cmpz(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 dst, sljit_sw dstw,
 	sljit_s32 src1, sljit_sw src1w,
 	sljit_s32 src2, sljit_sw src2w);
 
@@ -1831,7 +1935,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_icall(struct sljit_compiler *compi
 /* Perform an operation using the conditional flags as the second argument.
    Type must always be between SLJIT_EQUAL and SLJIT_ORDERED_LESS_EQUAL.
    The value represented by the type is 1, if the condition represented
-   by the type is fulfilled, and 0 otherwise.
+   by type is fulfilled, and 0 otherwise.
 
    When op is SLJIT_MOV or SLJIT_MOV32:
      Set dst to the value represented by the type (0 or 1).
@@ -1844,27 +1948,55 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op_flags(struct sljit_compiler *co
 	sljit_s32 dst, sljit_sw dstw,
 	sljit_s32 type);
 
+/* The following flags are used by sljit_emit_select(). */
+
+/* Compare src1 and src2_reg operands before executing select
+   (i.e. converts the select operation to a min/max operation). */
+#define SLJIT_COMPARE_SELECT	SLJIT_SET_Z
+
 /* Emit a conditional select instruction which moves src1 to dst_reg,
-   if the condition is satisfied, or src2_reg to dst_reg otherwise.
+   if the conditional flag is set, or src2_reg to dst_reg otherwise.
+   The conditional flag should be set before executing the select
+   instruction unless SLJIT_COMPARE_SELECT is specified.
 
    type must be between SLJIT_EQUAL and SLJIT_ORDERED_LESS_EQUAL
+       when SLJIT_COMPARE_SELECT option is NOT specified
+   type must be between SLJIT_LESS and SLJIT_SET_SIG_LESS_EQUAL
+       when SLJIT_COMPARE_SELECT option is specified
    type can be combined (or'ed) with SLJIT_32 to move 32 bit
        register values instead of word sized ones
+   type can be combined (or'ed) with SLJIT_COMPARE_SELECT
+       which compares src1 and src2_reg before executing the select
    dst_reg and src2_reg must be valid registers
    src1 must be valid operand
 
    Note: if src1 is a memory operand, its value
-         might be loaded even if the condition is false.
+         might be loaded even if the condition is false
 
-   Flags: - (does not modify flags) */
+   Note: when SLJIT_COMPARE_SELECT is specified, the status flag
+         bits might not represent the result of a normal compare
+         operation, hence flags are not specified after the operation
+
+   Note: if sljit_has_cpu_feature(SLJIT_HAS_CMOV) returns with a non-zero value:
+         (a) conditional register move (dst_reg==src2_reg, src1 is register)
+             can be performed using a single instruction, except on RISCV,
+             where three instructions are needed
+         (b) conditional clearing (dst_reg==src2_reg, src1==SLJIT_IMM,
+             src1w==0) can be performed using a single instruction,
+             except on x86, where two instructions are needed
+
+   Flags:
+     When SLJIT_COMPARE_SELECT is NOT specified: - (does not modify flags)
+     When SLJIT_COMPARE_SELECT is specified: - (may destroy flags) */
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_select(struct sljit_compiler *compiler, sljit_s32 type,
 	sljit_s32 dst_reg,
 	sljit_s32 src1, sljit_sw src1w,
 	sljit_s32 src2_reg);
 
 /* Emit a conditional floating point select instruction which moves
-   src1 to dst_reg, if the condition is satisfied, or src2_reg to
-   dst_reg otherwise.
+   src1 to dst_reg, if the conditional flag is set, or src2_reg to
+   dst_reg otherwise. The conditional flag should be set before
+   executing the select instruction.
 
    type must be between SLJIT_EQUAL and SLJIT_ORDERED_LESS_EQUAL
    type can be combined (or'ed) with SLJIT_32 to move 32 bit
@@ -2301,26 +2433,66 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_atomic_store(struct sljit_compiler
    Flags: - (may destroy flags) */
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_get_local_base(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw, sljit_sw offset);
 
-/* Store a value that can be changed runtime (see: sljit_get_const_addr / sljit_set_const)
+/* Store a value that can be changed at runtime. The constant
+   can be managed by sljit_get_const_addr and sljit_set_const.
+
+   op must be SLJIT_MOV, SLJIT_MOV32, SLJIT_MOV_S32,
+     SLJIT_MOV_U8, SLJIT_MOV32_U8
+
+   Note: when SLJIT_MOV_U8 is used, and dst is a register,
+         init_value supports a 9 bit signed value between [-256..255]
+
    Flags: - (does not modify flags) */
-SLJIT_API_FUNC_ATTRIBUTE struct sljit_const* sljit_emit_const(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw, sljit_sw init_value);
+SLJIT_API_FUNC_ATTRIBUTE struct sljit_const* sljit_emit_const(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 dst, sljit_sw dstw,
+	sljit_sw init_value);
+
+/* Opcodes for sljit_emit_mov_addr. */
+
+/* The address is suitable for jump/call target. */
+#define SLJIT_MOV_ADDR 0
+/* The address is suitable for reading memory. */
+#define SLJIT_MOV_ABS_ADDR 1
+/* Add absolute address. */
+#define SLJIT_ADD_ABS_ADDR 2
 
 /* Store the value of a label (see: sljit_set_label / sljit_set_target)
    Flags: - (does not modify flags) */
-SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_mov_addr(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw);
+SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_op_addr(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 dst, sljit_sw dstw);
 
-/* Provides the address of label, jump and const instructions after sljit_generate_code
-   is called. The returned value is unspecified before the sljit_generate_code call.
-   Since these structures are freed by sljit_free_compiler, the addresses must be
-   preserved by the user program elsewere. */
+/* Returns the address of a label after sljit_generate_code is called, and
+   before the compiler is freed by sljit_free_compiler. It is recommended
+   to save these addresses elsewhere before sljit_free_compiler is called.
+
+   The address returned by sljit_get_label_addr is suitable for a jump/call
+   target, and the address returned by sljit_get_label_abs_addr is suitable
+   for reading memory. */
+
 static SLJIT_INLINE sljit_uw sljit_get_label_addr(struct sljit_label *label) { return label->u.addr; }
+#if (defined SLJIT_CONFIG_ARM_THUMB2 && SLJIT_CONFIG_ARM_THUMB2)
+static SLJIT_INLINE sljit_uw sljit_get_label_abs_addr(struct sljit_label *label) { return label->u.addr & ~(sljit_uw)1; }
+#else /* !SLJIT_CONFIG_ARM_THUMB2 */
+static SLJIT_INLINE sljit_uw sljit_get_label_abs_addr(struct sljit_label *label) { return label->u.addr; }
+#endif /* SLJIT_CONFIG_ARM_THUMB2 */
+
+/* Returns the address of jump and const instructions after sljit_generate_code
+   is called, and before the compiler is freed by sljit_free_compiler. It is
+   recommended to save these addresses elsewhere before sljit_free_compiler is called. */
+
 static SLJIT_INLINE sljit_uw sljit_get_jump_addr(struct sljit_jump *jump) { return jump->addr; }
 static SLJIT_INLINE sljit_uw sljit_get_const_addr(struct sljit_const *const_) { return const_->addr; }
 
 /* Only the address and executable offset are required to perform dynamic
    code modifications. See sljit_get_executable_offset function. */
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_target, sljit_sw executable_offset);
-SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_constant, sljit_sw executable_offset);
+/* The op opcode must be set to the same value that was passed to sljit_emit_const. */
+SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_s32 op, sljit_sw new_constant, sljit_sw executable_offset);
+
+/* Only a single buffer is writable at a time, so sljit_read_only_buffer_end_writing()
+   must be called before sljit_read_only_buffer_start_writing() is called again. */
+SLJIT_API_FUNC_ATTRIBUTE void* sljit_read_only_buffer_start_writing(sljit_uw addr, sljit_uw size, sljit_sw executable_offset);
+SLJIT_API_FUNC_ATTRIBUTE void sljit_read_only_buffer_end_writing(sljit_uw addr, sljit_uw size, sljit_sw executable_offset);
 
 /* --------------------------------------------------------------------- */
 /*  CPU specific functions                                               */
@@ -2369,12 +2541,15 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op_custom(struct sljit_compiler *c
 
 /* Flags were set by an ADD or ADDC operations. */
 #define SLJIT_CURRENT_FLAGS_ADD			0x01
-/* Flags were set by a SUB, SUBC, or NEG operation. */
+/* Flags were set by a SUB or SUBC operation. */
 #define SLJIT_CURRENT_FLAGS_SUB			0x02
 
 /* Flags were set by sljit_emit_op2u with SLJIT_SUB opcode.
    Must be combined with SLJIT_CURRENT_FLAGS_SUB. */
 #define SLJIT_CURRENT_FLAGS_COMPARE		0x04
+
+/* Flags were set by sljit_emit_op2cmpz operation. */
+#define SLJIT_CURRENT_FLAGS_OP2CMPZ		0x08
 
 /* Define the currently available CPU status flags. It is usually used after
    an sljit_emit_label or sljit_emit_op_custom operations to define which CPU
@@ -2405,10 +2580,14 @@ static SLJIT_INLINE struct sljit_const *sljit_get_next_const(struct sljit_const 
 
 /* A number starting from 0 is assigned to each label, which
 represents its creation index. The first label created by the
-compiler has index 0, the second has index 1, the third has
-index 2, and so on. The returned value is unspecified after
-sljit_generate_code() is called. */
-static SLJIT_INLINE sljit_uw sljit_get_label_index(struct sljit_label *label) { return label->u.index; }
+compiler has index 0, the second one has index 1, the third one
+has index 2, and so on. The returned value is unspecified after
+sljit_generate_code() is called.
+
+It is recommended to use this function to get the creation index
+of a label, since sljit_emit_label() may return with the last label,
+if no code is generated since the last sljit_emit_label() call. */
+SLJIT_API_FUNC_ATTRIBUTE sljit_uw sljit_get_label_index(struct sljit_label *label);
 
 /* The sljit_jump_has_label() and sljit_jump_has_target() functions
 returns non-zero value if a label or target is set for the jump

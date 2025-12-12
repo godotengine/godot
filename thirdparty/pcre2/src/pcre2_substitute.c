@@ -39,11 +39,9 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "pcre2_internal.h"
+
+
 
 #define PTR_STACK_SIZE 20
 
@@ -131,7 +129,6 @@ for (; ptr < ptrend; ptr++)
     ptr += 1;  /* Must point after \ */
     erc = PRIV(check_escape)(&ptr, ptrend, &ch, &errorcode,
       code->overall_options, code->extra_options, code->top_bracket, FALSE, NULL);
-    ptr -= 1;  /* Back to last code unit of escape */
     if (errorcode != 0)
       {
       /* errorcode from check_escape is positive, so must not be returned by
@@ -327,9 +324,11 @@ if (input_len == 0) return 0;
 
 switch (state->to_case)
   {
+  /* LCOV_EXCL_START */
   default:
   PCRE2_DEBUG_UNREACHABLE();
   return 0;
+  /* LCOV_EXCL_STOP */
 
   case PCRE2_SUBSTITUTE_CASE_LOWER: // Can be single_char TRUE or FALSE
   case PCRE2_SUBSTITUTE_CASE_UPPER: // Can only be single_char FALSE
@@ -465,9 +464,11 @@ PCRE2_ASSERT(input_len != 0);
 
 switch (state->to_case)
   {
+  /* LCOV_EXCL_START */
   default:
   PCRE2_DEBUG_UNREACHABLE();
   return 0;
+  /* LCOV_EXCL_STOP */
 
   case PCRE2_SUBSTITUTE_CASE_LOWER: // Can be single_char TRUE or FALSE
   case PCRE2_SUBSTITUTE_CASE_UPPER: // Can only be single_char FALSE
@@ -751,12 +752,14 @@ BOOL use_existing_match;
 BOOL replacement_only;
 BOOL utf = (code->overall_options & PCRE2_UTF) != 0;
 PCRE2_UCHAR temp[6];
+PCRE2_UCHAR null_str[1] = { 0xcd };
+PCRE2_SPTR original_subject = subject;
 PCRE2_SPTR ptr;
 PCRE2_SPTR repend = NULL;
 PCRE2_SIZE extra_needed = 0;
 PCRE2_SIZE buff_offset, buff_length, lengthleft, fraglength;
 PCRE2_SIZE *ovector;
-PCRE2_SIZE ovecsave[3];
+PCRE2_SIZE ovecsave[2] = { 0, 0 };
 pcre2_substitute_callout_block scb;
 PCRE2_SIZE sub_start_extra_needed;
 PCRE2_SIZE (*substitute_case_callout)(PCRE2_SPTR, PCRE2_SIZE, PCRE2_UCHAR *,
@@ -768,7 +771,6 @@ void *substitute_case_callout_data = NULL;
 buff_offset = 0;
 lengthleft = buff_length = *blength;
 *blength = PCRE2_UNSET;
-ovecsave[0] = ovecsave[1] = ovecsave[2] = PCRE2_UNSET;
 
 if (mcontext != NULL)
   {
@@ -788,17 +790,73 @@ zero length is interpreted as an empty string. */
 if (replacement == NULL)
   {
   if (rlength != 0) return PCRE2_ERROR_NULL;
-  replacement = (PCRE2_SPTR)"";
+  replacement = null_str;
   }
 
 if (rlength == PCRE2_ZERO_TERMINATED) rlength = PRIV(strlen)(replacement);
 repend = replacement + rlength;
+
+/* A NULL subject of zero length is treated as an empty string. */
+
+if (subject == NULL)
+  {
+  if (length != 0) return PCRE2_ERROR_NULL;
+  subject = null_str;
+  }
+
+if (length == PCRE2_ZERO_TERMINATED) length = PRIV(strlen)(subject);
 
 /* Check for using a match that has already happened. Note that the subject
 pointer in the match data may be NULL after a no-match. */
 
 use_existing_match = ((options & PCRE2_SUBSTITUTE_MATCHED) != 0);
 replacement_only = ((options & PCRE2_SUBSTITUTE_REPLACEMENT_ONLY) != 0);
+
+if (use_existing_match && match_data == NULL) return PCRE2_ERROR_NULL;
+
+/* If an existing match is being passed in, we should check that it matches
+the passed-in subject pointer, length, and match options. We don't currently
+have a use-case for someone to match on one subject, then try and use that
+match data on a different subject. In a UTF-encoded string, a simple change
+like replacing one character for another won't preserve the code unit offsets,
+so it's hard to see, in the general case, how it would be safe or useful to
+support swapping or mutating the subject string.
+
+Similarly, using different match options between the first (external) and
+subsequent (internal, global) matches is hard to justify. */
+
+if (use_existing_match)
+  {
+  /* Return early, as the rest of the match_data may not have been
+  initialised. This duplicates and must be in sync with the check below that
+  aborts substitution on any result other than success or no-match. */
+  if (match_data->rc < 0 && match_data->rc != PCRE2_ERROR_NOMATCH)
+    return match_data->rc;
+
+  /* Not supported if the passed-in match was from the DFA interpreter. */
+  if (match_data->matchedby == PCRE2_MATCHEDBY_DFA_INTERPRETER)
+    return PCRE2_ERROR_DFA_UFUNC;
+
+  if (code != match_data->code)
+    return PCRE2_ERROR_DIFFSUBSPATTERN;
+
+  /* We want the passed-in subject strings to match. This implies the effective
+  length must match, and either: the pointers are equal (with strict matching
+  of NULL against NULL); or, the special case of PCRE2_COPY_MATCHED_SUBJECT
+  where we cannot compare pointers but we can verify the contents. */
+  if (length != match_data->subject_length ||
+      !(original_subject == match_data->subject ||
+        ((match_data->flags & PCRE2_MD_COPIED_SUBJECT) != 0 &&
+         (length == 0 ||
+          memcmp(subject, match_data->subject, CU2BYTES(length)) == 0))))
+    return PCRE2_ERROR_DIFFSUBSSUBJECT;
+
+  if (start_offset != match_data->start_offset)
+    return PCRE2_ERROR_DIFFSUBSOFFSET;
+
+  if ((options & ~SUBSTITUTE_OPTIONS) != match_data->options)
+    return PCRE2_ERROR_DIFFSUBSOPTIONS;
+  }
 
 /* If starting from an existing match, there must be an externally provided
 match data block. We create an internal match_data block in two cases: (a) an
@@ -816,9 +874,8 @@ have to be changes below. */
 if (match_data == NULL)
   {
   pcre2_general_context gcontext;
-  if (use_existing_match) return PCRE2_ERROR_NULL;
   gcontext.memctl = (mcontext == NULL)?
-    ((const pcre2_real_code *)code)->memctl :
+    ((pcre2_real_code *)code)->memctl :
     ((pcre2_real_match_context *)mcontext)->memctl;
   match_data = internal_match_data =
     pcre2_match_data_create_from_pattern(code, &gcontext);
@@ -830,7 +887,7 @@ else if (use_existing_match)
   int pairs;
   pcre2_general_context gcontext;
   gcontext.memctl = (mcontext == NULL)?
-    ((const pcre2_real_code *)code)->memctl :
+    ((pcre2_real_code *)code)->memctl :
     ((pcre2_real_match_context *)mcontext)->memctl;
   pairs = (code->top_bracket + 1 < match_data->oveccount)?
     code->top_bracket + 1 : match_data->oveccount;
@@ -841,8 +898,14 @@ else if (use_existing_match)
     + 2*pairs*sizeof(PCRE2_SIZE));
   internal_match_data->heapframes = NULL;
   internal_match_data->heapframes_size = 0;
+  /* Ensure that the subject is not freed when internal_match_data is */
+  internal_match_data->flags &= ~PCRE2_MD_COPIED_SUBJECT;
   match_data = internal_match_data;
   }
+
+/* If using an internal match data, there's no need to copy the subject. */
+
+if (internal_match_data != NULL) options &= ~PCRE2_COPY_MATCHED_SUBJECT;
 
 /* Remember ovector details */
 
@@ -855,19 +918,6 @@ scb.version = 0;
 scb.input = subject;
 scb.output = (PCRE2_SPTR)buffer;
 scb.ovector = ovector;
-
-/* A NULL subject of zero length is treated as an empty string. */
-
-if (subject == NULL)
-  {
-  if (length != 0) return PCRE2_ERROR_NULL;
-  subject = (PCRE2_SPTR)"";
-  }
-
-/* Find length of zero-terminated subject */
-
-if (length == PCRE2_ZERO_TERMINATED)
-  length = subject? PRIV(strlen)(subject) : 0;
 
 /* Check UTF replacement string if necessary. */
 
@@ -905,7 +955,7 @@ if (!replacement_only) CHECKMEMCPY(subject, start_offset);
 match is taken from the match_data that was passed in. */
 
 subs = 0;
-do
+for (;;)
   {
   PCRE2_SPTR ptrstack[PTR_STACK_SIZE];
   uint32_t ptrstackptr = 0;
@@ -925,54 +975,12 @@ do
   if (utf) options |= PCRE2_NO_UTF_CHECK;  /* Only need to check once */
 #endif
 
-  /* Any error other than no match returns the error code. No match when not
-  doing the special after-empty-match global rematch, or when at the end of the
-  subject, breaks the global loop. Otherwise, advance the starting point by one
-  character, copying it to the output, and try again. */
+  /* Any error other than no match returns the error code. No match breaks the
+  global loop. */
 
-  if (rc < 0)
-    {
-    PCRE2_SIZE save_start;
+  if (rc == PCRE2_ERROR_NOMATCH) break;
 
-    if (rc != PCRE2_ERROR_NOMATCH) goto EXIT;
-    if (goptions == 0 || start_offset >= length) break;
-
-    /* Advance by one code point. Then, if CRLF is a valid newline sequence and
-    we have advanced into the middle of it, advance one more code point. In
-    other words, do not start in the middle of CRLF, even if CR and LF on their
-    own are valid newlines. */
-
-    save_start = start_offset++;
-    if (subject[start_offset-1] == CHAR_CR &&
-        (code->newline_convention == PCRE2_NEWLINE_CRLF ||
-         code->newline_convention == PCRE2_NEWLINE_ANY ||
-         code->newline_convention == PCRE2_NEWLINE_ANYCRLF) &&
-        start_offset < length &&
-        subject[start_offset] == CHAR_LF)
-      start_offset++;
-
-    /* Otherwise, in UTF mode, advance past any secondary code points. */
-
-    else if ((code->overall_options & PCRE2_UTF) != 0)
-      {
-#if PCRE2_CODE_UNIT_WIDTH == 8
-      while (start_offset < length && (subject[start_offset] & 0xc0) == 0x80)
-        start_offset++;
-#elif PCRE2_CODE_UNIT_WIDTH == 16
-      while (start_offset < length &&
-            (subject[start_offset] & 0xfc00) == 0xdc00)
-        start_offset++;
-#endif
-      }
-
-    /* Copy what we have advanced past (unless not required), reset the special
-    global options, and continue to the next match. */
-
-    fraglength = start_offset - save_start;
-    if (!replacement_only) CHECKMEMCPY(subject + save_start, fraglength);
-    goptions = 0;
-    continue;
-    }
+  if (rc < 0) goto EXIT;
 
   /* Handle a successful match. Matches that use \K to end before they start
   or start before the current point in the subject are not supported. */
@@ -983,25 +991,27 @@ do
     goto EXIT;
     }
 
-  /* Check for the same match as previous. This is legitimate after matching an
-  empty string that starts after the initial match offset. We have tried again
-  at the match point in case the pattern is one like /(?<=\G.)/ which can never
-  match at its starting point, so running the match achieves the bumpalong. If
-  we do get the same (null) match at the original match point, it isn't such a
-  pattern, so we now do the empty string magic. In all other cases, a repeat
-  match should never occur. */
+  /* Assert that our replacement loop is making progress, checked even in
+  release builds. This should be impossible to hit, however, an infinite loop
+  would be fairly catastrophic.
 
-  if (ovecsave[0] == ovector[0] && ovecsave[1] == ovector[1])
+  "Progress" is measured as ovector[1] strictly advancing, or, an empty match
+  after a non-empty match. */
+
+  /* LCOV_EXCL_START */
+  if (subs > 0 &&
+      !(ovector[1] > ovecsave[1] ||
+        (ovector[1] == ovector[0] && ovecsave[1] > ovecsave[0] &&
+         ovector[1] == ovecsave[1])))
     {
-    if (ovector[0] == ovector[1] && ovecsave[2] != start_offset)
-      {
-      goptions = PCRE2_NOTEMPTY_ATSTART | PCRE2_ANCHORED;
-      ovecsave[2] = start_offset;
-      continue;    /* Back to the top of the loop */
-      }
+    PCRE2_DEBUG_UNREACHABLE();
     rc = PCRE2_ERROR_INTERNAL_DUPMATCH;
     goto EXIT;
     }
+  /* LCOV_EXCL_STOP */
+
+  ovecsave[0] = ovector[0];
+  ovecsave[1] = ovector[1];
 
   /* Count substitutions with a paranoid check for integer overflow; surely no
   real call to this function would ever hit this! */
@@ -1132,6 +1142,44 @@ do
         subptr = subject;
         subptrend = subject + length;
         goto SUBPTR_SUBSTITUTE;
+        }
+      else if (next == CHAR_PLUS &&
+               !(ptr+1 < repend && ptr[1] == CHAR_LEFT_CURLY_BRACKET))
+        {
+        /* Perl supports $+ for "highest captured group" (not the same as $^N
+        which is mainly only useful inside Perl's match callbacks). We also
+        don't accept "$+{..." since that's Perl syntax for our ${name}. */
+        ++ptr;
+        if (code->top_bracket == 0)
+          {
+          /* Treat either as "no such group" or "all groups unset" based on the
+          PCRE2_SUBSTITUTE_UNKNOWN_UNSET option. */
+          if ((suboptions & PCRE2_SUBSTITUTE_UNKNOWN_UNSET) == 0)
+            {
+            rc = PCRE2_ERROR_NOSUBSTRING;
+            goto PTREXIT;
+            }
+          group = 0;
+          }
+        else
+          {
+          /* If we have any capture groups, then the ovector needs to be large
+          enough for all of them, or the result won't be accurate. */
+          if (match_data->oveccount < code->top_bracket + 1)
+            {
+            rc = PCRE2_ERROR_UNAVAILABLE;
+            goto PTREXIT;
+            }
+          for (group = code->top_bracket; group > 0; group--)
+            if (ovector[2*group] != PCRE2_UNSET) break;
+          }
+        if (group == 0)
+          {
+          if ((suboptions & PCRE2_SUBSTITUTE_UNSET_EMPTY) != 0) continue;
+          rc = PCRE2_ERROR_UNSET;
+          goto PTREXIT;
+          }
+        goto GROUP_SUBSTITUTE;
         }
 
       if (next == CHAR_LEFT_CURLY_BRACKET)
@@ -1627,19 +1675,25 @@ do
       }
     }
 
-  /* Save the details of this match. See above for how this data is used. If we
-  matched an empty string, do the magic for global matches. Update the start
-  offset to point to the rest of the subject string. If we re-used an existing
-  match for the first match, switch to the internal match data block. */
+  /* Exit the global loop if we are not in global mode, or if pcre2_next_match()
+  indicates we have reached the end of the subject. */
 
-  ovecsave[0] = ovector[0];
-  ovecsave[1] = ovector[1];
-  ovecsave[2] = start_offset;
+  if ((suboptions & PCRE2_SUBSTITUTE_GLOBAL) == 0 ||
+      !pcre2_next_match(match_data, &start_offset, &goptions))
+    {
+    start_offset = ovector[1];
+    break;
+    }
 
-  goptions = (ovector[0] != ovector[1] || ovector[0] > start_offset)? 0 :
-    PCRE2_ANCHORED|PCRE2_NOTEMPTY_ATSTART;
-  start_offset = ovector[1];
-  } while ((suboptions & PCRE2_SUBSTITUTE_GLOBAL) != 0);  /* Repeat "do" loop */
+  /* Verify that pcre2_next_match() has not done a bumpalong (because we have
+  already returned PCRE2_ERROR_BADSUBSPATTERN for \K in lookarounds).
+
+  We would otherwise have to memcpy the fragment spanning from ovector[1] to the
+  new start_offset.*/
+
+  PCRE2_ASSERT(start_offset == ovector[1]);
+
+  }  /* End of global loop */
 
 /* Copy the rest of the subject unless not required, and terminate the output
 with a binary zero. */

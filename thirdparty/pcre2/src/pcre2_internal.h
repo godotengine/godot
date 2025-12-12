@@ -41,6 +41,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef PCRE2_INTERNAL_H_IDEMPOTENT_GUARD
 #define PCRE2_INTERNAL_H_IDEMPOTENT_GUARD
 
+/* We do not assume that the config.h file has an idempotent include guard,
+since it may well be written by clients. The standard Autoheader config.h does
+not have an include guard (although we could customise that). */
+
+#if defined HAVE_CONFIG_H && !defined PCRE2_CONFIG_H_IDEMPOTENT_GUARD
+#define PCRE2_CONFIG_H_IDEMPOTENT_GUARD
+#include "config.h"
+#endif
+
 /* We do not support both EBCDIC and Unicode at the same time. The "configure"
 script prevents both being selected, but not everybody uses "configure". EBCDIC
 is only supported for the 8-bit library, but the check for this has to be later
@@ -59,13 +68,12 @@ be including this file. There is no explicit way of forcing a compile to be
 abandoned, but trying to include a non-existent file seems cleanest. Otherwise
 there will be many irrelevant consequential errors. */
 
-#if (!defined PCRE2_BUILDING_PCRE2TEST && !defined PCRE2_DFTABLES) && \
+#if (!defined PCRE2_PCRE2TEST && !defined PCRE2_DFTABLES) && \
   (!defined PCRE2_CODE_UNIT_WIDTH ||     \
     (PCRE2_CODE_UNIT_WIDTH != 8 &&       \
      PCRE2_CODE_UNIT_WIDTH != 16 &&      \
      PCRE2_CODE_UNIT_WIDTH != 32))
 #error PCRE2_CODE_UNIT_WIDTH must be defined as 8, 16, or 32.
-#include <AbandonCompile>
 #endif
 
 
@@ -120,13 +128,12 @@ MSVC 10/2010. Except for VC6 (which is missing some fundamentals and fails). */
 #endif
 
 /* When compiling a DLL for Windows, the exported symbols have to be declared
-using some MS magic. I found some useful information on this web page:
-http://msdn2.microsoft.com/en-us/library/y4h7bcy6(VS.80).aspx. According to the
-information there, using __declspec(dllexport) without "extern" we have a
-definition; with "extern" we have a declaration. The settings here override the
-setting in pcre2.h (which is included below); it defines only PCRE2_EXP_DECL,
-which is all that is needed for applications (they just import the symbols). We
-use:
+using some MS magic, as documented here:
+https://learn.microsoft.com/en-us/cpp/build/exporting-from-a-dll-using-declspec-dllexport
+
+In pcre2.h (which is included below), we define only PCRE2_EXP_DECL,
+which is all that is needed for applications (they just import the symbols). To
+compile the library, we use:
 
   PCRE2_EXP_DECL    for declarations
   PCRE2_EXP_DEFN    for definitions
@@ -140,24 +147,23 @@ special-purpose environments) might want to stick other stuff in front of
 exported symbols. That's why, in the non-Windows case, we set PCRE2_EXP_DEFN
 only if it is not already set. */
 
+#if defined __cplusplus
+#error This project uses C99. C++ is not supported.
+#endif
+
 #ifndef PCRE2_EXP_DECL
-#  ifdef _WIN32
-#    ifndef PCRE2_STATIC
-#      define PCRE2_EXP_DECL		extern __declspec(dllexport)
-#      define PCRE2_EXP_DEFN		__declspec(dllexport)
-#    else
-#      define PCRE2_EXP_DECL		extern PCRE2_EXPORT
-#      define PCRE2_EXP_DEFN
-#    endif
+#  if defined(_WIN32) && !defined(PCRE2_STATIC)
+#    define PCRE2_EXP_DECL  extern __declspec(dllexport)
 #  else
-#    ifdef __cplusplus
-#      define PCRE2_EXP_DECL		extern "C" PCRE2_EXPORT
-#    else
-#      define PCRE2_EXP_DECL		extern PCRE2_EXPORT
-#    endif
-#    ifndef PCRE2_EXP_DEFN
-#      define PCRE2_EXP_DEFN		PCRE2_EXP_DECL
-#    endif
+#    define PCRE2_EXP_DECL  extern PCRE2_EXPORT
+#  endif
+#endif
+
+#ifndef PCRE2_EXP_DEFN
+#  if defined(_WIN32) && !defined(PCRE2_STATIC)
+#    define PCRE2_EXP_DEFN  extern __declspec(dllexport)
+#  else
+#    define PCRE2_EXP_DEFN  extern PCRE2_EXPORT
 #  endif
 #endif
 
@@ -166,19 +172,6 @@ property values. This must follow the setting of PCRE2_EXP_DECL above. */
 
 #include "pcre2.h"
 #include "pcre2_ucp.h"
-
-/* When PCRE2 is compiled as a C++ library, the subject pointer can be replaced
-with a custom type. This makes it possible, for example, to allow pcre2_match()
-to process subject strings that are discontinuous by using a smart pointer
-class. It must always be possible to inspect all of the subject string in
-pcre2_match() because of the way it backtracks. */
-
-/* WARNING: This is as yet untested for PCRE2. */
-
-#ifdef CUSTOM_SUBJECT_PTR
-#undef PCRE2_SPTR
-#define PCRE2_SPTR CUSTOM_SUBJECT_PTR
-#endif
 
 /* When checking for integer overflow, we need to handle large integers.
 If a 64-bit integer type is available, we can use that.
@@ -200,28 +193,6 @@ code that a non-static object is being referenced. */
 #ifndef PRIV
 #define PRIV(name) _pcre2_##name
 #endif
-
-/* When compiling for use with the Virtual Pascal compiler, these functions
-need to have their names changed. PCRE2 must be compiled with the -DVPCOMPAT
-option on the command line. */
-
-#ifdef VPCOMPAT
-#define strlen(s)        _strlen(s)
-#define strncmp(s1,s2,m) _strncmp(s1,s2,m)
-#define memcmp(s,c,n)    _memcmp(s,c,n)
-#define memcpy(d,s,n)    _memcpy(d,s,n)
-#define memmove(d,s,n)   _memmove(d,s,n)
-#define memset(s,c,n)    _memset(s,c,n)
-#else  /* VPCOMPAT */
-
-/* Otherwise, to cope with SunOS4 and other systems that lack memmove(), define
-a macro that calls an emulating function. */
-
-#ifndef HAVE_MEMMOVE
-#undef  memmove          /* Some systems may have a macro */
-#define memmove(a, b, c) PRIV(memmove)(a, b, c)
-#endif   /* not HAVE_MEMMOVE */
-#endif   /* not VPCOMPAT */
 
 /* This is an unsigned int value that no UTF character can ever have, as
 Unicode doesn't go beyond 0x0010ffff. */
@@ -406,7 +377,7 @@ PCRE (both APIs) for a long time. */
 #define HSPACE_LIST \
   CHAR_HT, CHAR_SPACE, CHAR_NBSP, \
   0x1680, 0x180e, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, \
-  0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x202f, 0x205f, 0x3000, \
+  0x2006, 0x2007, 0x2008, 0x2009, 0x200a, 0x202f, 0x205f, 0x3000, \
   NOTACHAR
 
 #define HSPACE_MULTIBYTE_CASES \
@@ -422,7 +393,7 @@ PCRE (both APIs) for a long time. */
   case 0x2007:  /* FIGURE SPACE */ \
   case 0x2008:  /* PUNCTUATION SPACE */ \
   case 0x2009:  /* THIN SPACE */ \
-  case 0x200A:  /* HAIR SPACE */ \
+  case 0x200a:  /* HAIR SPACE */ \
   case 0x202f:  /* NARROW NO-BREAK SPACE */ \
   case 0x205f:  /* MEDIUM MATHEMATICAL SPACE */ \
   case 0x3000   /* IDEOGRAPHIC SPACE */
@@ -552,6 +523,7 @@ bytes in a code unit in that mode. */
 #define PCRE2_DUPCAPUSED    0x00200000u /* contains (?| */
 #define PCRE2_HASBKC        0x00400000u /* contains \C */
 #define PCRE2_HASACCEPT     0x00800000u /* contains (*ACCEPT) */
+#define PCRE2_HASBSK        0x01000000u /* contains \K */
 
 #define PCRE2_MODE_MASK     (PCRE2_MODE8 | PCRE2_MODE16 | PCRE2_MODE32)
 
@@ -698,6 +670,10 @@ same code point. */
 compatibility. NEL is the Unicode newline character; make sure it is
 a positive value. */
 
+#if '\n' != 0x0a
+#error "ASCII character '\n' is not 0x0a"
+#endif
+
 #define CHAR_LF                     '\n'
 #define CHAR_NL                     CHAR_LF
 #define CHAR_NEL                    ((unsigned char)'\x85')
@@ -713,7 +689,232 @@ a positive value. */
 
 #endif  /* EBCDIC */
 
-/* The remaining definitions work in both environments. */
+/* When we want to use EBCDIC with an ASCII compiler, for testing EBCDIC on
+ASCII platforms, then we can hardcode an EBCDIC codepage (IBM-1047). */
+
+#ifdef EBCDIC_IGNORING_COMPILER
+
+#define CHAR_NUL                    '\000'
+#define CHAR_HT                     '\005'
+#define CHAR_VT                     '\013'
+#define CHAR_FF                     '\014'
+#define CHAR_CR                     '\015'
+#define CHAR_BS                     '\026'
+#define CHAR_BEL                    '\057'
+
+#define CHAR_SPACE                  '\100'
+#define CHAR_EXCLAMATION_MARK       '\132'
+#define CHAR_QUOTATION_MARK         '\177'
+#define CHAR_NUMBER_SIGN            '\173'
+#define CHAR_DOLLAR_SIGN            '\133'
+#define CHAR_PERCENT_SIGN           '\154'
+#define CHAR_AMPERSAND              '\120'
+#define CHAR_APOSTROPHE             '\175'
+#define CHAR_LEFT_PARENTHESIS       '\115'
+#define CHAR_RIGHT_PARENTHESIS      '\135'
+#define CHAR_ASTERISK               '\134'
+#define CHAR_PLUS                   '\116'
+#define CHAR_COMMA                  '\153'
+#define CHAR_MINUS                  '\140'
+#define CHAR_DOT                    '\113'
+#define CHAR_SLASH                  '\141'
+#define CHAR_0                      ((unsigned char)'\xf0')
+#define CHAR_1                      ((unsigned char)'\xf1')
+#define CHAR_2                      ((unsigned char)'\xf2')
+#define CHAR_3                      ((unsigned char)'\xf3')
+#define CHAR_4                      ((unsigned char)'\xf4')
+#define CHAR_5                      ((unsigned char)'\xf5')
+#define CHAR_6                      ((unsigned char)'\xf6')
+#define CHAR_7                      ((unsigned char)'\xf7')
+#define CHAR_8                      ((unsigned char)'\xf8')
+#define CHAR_9                      ((unsigned char)'\xf9')
+#define CHAR_COLON                  '\172'
+#define CHAR_SEMICOLON              '\136'
+#define CHAR_LESS_THAN_SIGN         '\114'
+#define CHAR_EQUALS_SIGN            '\176'
+#define CHAR_GREATER_THAN_SIGN      '\156'
+#define CHAR_QUESTION_MARK          '\157'
+#define CHAR_COMMERCIAL_AT          '\174'
+#define CHAR_A                      ((unsigned char)'\xc1')
+#define CHAR_B                      ((unsigned char)'\xc2')
+#define CHAR_C                      ((unsigned char)'\xc3')
+#define CHAR_D                      ((unsigned char)'\xc4')
+#define CHAR_E                      ((unsigned char)'\xc5')
+#define CHAR_F                      ((unsigned char)'\xc6')
+#define CHAR_G                      ((unsigned char)'\xc7')
+#define CHAR_H                      ((unsigned char)'\xc8')
+#define CHAR_I                      ((unsigned char)'\xc9')
+#define CHAR_J                      ((unsigned char)'\xd1')
+#define CHAR_K                      ((unsigned char)'\xd2')
+#define CHAR_L                      ((unsigned char)'\xd3')
+#define CHAR_M                      ((unsigned char)'\xd4')
+#define CHAR_N                      ((unsigned char)'\xd5')
+#define CHAR_O                      ((unsigned char)'\xd6')
+#define CHAR_P                      ((unsigned char)'\xd7')
+#define CHAR_Q                      ((unsigned char)'\xd8')
+#define CHAR_R                      ((unsigned char)'\xd9')
+#define CHAR_S                      ((unsigned char)'\xe2')
+#define CHAR_T                      ((unsigned char)'\xe3')
+#define CHAR_U                      ((unsigned char)'\xe4')
+#define CHAR_V                      ((unsigned char)'\xe5')
+#define CHAR_W                      ((unsigned char)'\xe6')
+#define CHAR_X                      ((unsigned char)'\xe7')
+#define CHAR_Y                      ((unsigned char)'\xe8')
+#define CHAR_Z                      ((unsigned char)'\xe9')
+#define CHAR_LEFT_SQUARE_BRACKET    ((unsigned char)'\xad')
+#define CHAR_BACKSLASH              ((unsigned char)'\xe0')
+#define CHAR_RIGHT_SQUARE_BRACKET   ((unsigned char)'\xbd')
+#define CHAR_CIRCUMFLEX_ACCENT      '\137'
+#define CHAR_UNDERSCORE             '\155'
+#define CHAR_GRAVE_ACCENT           '\171'
+#define CHAR_a                      ((unsigned char)'\x81')
+#define CHAR_b                      ((unsigned char)'\x82')
+#define CHAR_c                      ((unsigned char)'\x83')
+#define CHAR_d                      ((unsigned char)'\x84')
+#define CHAR_e                      ((unsigned char)'\x85')
+#define CHAR_f                      ((unsigned char)'\x86')
+#define CHAR_g                      ((unsigned char)'\x87')
+#define CHAR_h                      ((unsigned char)'\x88')
+#define CHAR_i                      ((unsigned char)'\x89')
+#define CHAR_j                      ((unsigned char)'\x91')
+#define CHAR_k                      ((unsigned char)'\x92')
+#define CHAR_l                      ((unsigned char)'\x93')
+#define CHAR_m                      ((unsigned char)'\x94')
+#define CHAR_n                      ((unsigned char)'\x95')
+#define CHAR_o                      ((unsigned char)'\x96')
+#define CHAR_p                      ((unsigned char)'\x97')
+#define CHAR_q                      ((unsigned char)'\x98')
+#define CHAR_r                      ((unsigned char)'\x99')
+#define CHAR_s                      ((unsigned char)'\xa2')
+#define CHAR_t                      ((unsigned char)'\xa3')
+#define CHAR_u                      ((unsigned char)'\xa4')
+#define CHAR_v                      ((unsigned char)'\xa5')
+#define CHAR_w                      ((unsigned char)'\xa6')
+#define CHAR_x                      ((unsigned char)'\xa7')
+#define CHAR_y                      ((unsigned char)'\xa8')
+#define CHAR_z                      ((unsigned char)'\xa9')
+#define CHAR_LEFT_CURLY_BRACKET     ((unsigned char)'\xc0')
+#define CHAR_VERTICAL_LINE          '\117'
+#define CHAR_RIGHT_CURLY_BRACKET    ((unsigned char)'\xd0')
+#define CHAR_TILDE                  ((unsigned char)'\xa1')
+
+#define STR_HT                      "\005"
+#define STR_VT                      "\013"
+#define STR_FF                      "\014"
+#define STR_CR                      "\015"
+#define STR_BS                      "\026"
+#define STR_BEL                     "\057"
+
+#define STR_SPACE                   "\100"
+#define STR_EXCLAMATION_MARK        "\132"
+#define STR_QUOTATION_MARK          "\177"
+#define STR_NUMBER_SIGN             "\173"
+#define STR_DOLLAR_SIGN             "\133"
+#define STR_PERCENT_SIGN            "\154"
+#define STR_AMPERSAND               "\120"
+#define STR_APOSTROPHE              "\175"
+#define STR_LEFT_PARENTHESIS        "\115"
+#define STR_RIGHT_PARENTHESIS       "\135"
+#define STR_ASTERISK                "\134"
+#define STR_PLUS                    "\116"
+#define STR_COMMA                   "\153"
+#define STR_MINUS                   "\140"
+#define STR_DOT                     "\113"
+#define STR_SLASH                   "\141"
+#define STR_0                       "\360"
+#define STR_1                       "\361"
+#define STR_2                       "\362"
+#define STR_3                       "\363"
+#define STR_4                       "\364"
+#define STR_5                       "\365"
+#define STR_6                       "\366"
+#define STR_7                       "\367"
+#define STR_8                       "\370"
+#define STR_9                       "\371"
+#define STR_COLON                   "\172"
+#define STR_SEMICOLON               "\136"
+#define STR_LESS_THAN_SIGN          "\114"
+#define STR_EQUALS_SIGN             "\176"
+#define STR_GREATER_THAN_SIGN       "\156"
+#define STR_QUESTION_MARK           "\157"
+#define STR_COMMERCIAL_AT           "\174"
+#define STR_A                       "\301"
+#define STR_B                       "\302"
+#define STR_C                       "\303"
+#define STR_D                       "\304"
+#define STR_E                       "\305"
+#define STR_F                       "\306"
+#define STR_G                       "\307"
+#define STR_H                       "\310"
+#define STR_I                       "\311"
+#define STR_J                       "\321"
+#define STR_K                       "\322"
+#define STR_L                       "\323"
+#define STR_M                       "\324"
+#define STR_N                       "\325"
+#define STR_O                       "\326"
+#define STR_P                       "\327"
+#define STR_Q                       "\330"
+#define STR_R                       "\331"
+#define STR_S                       "\342"
+#define STR_T                       "\343"
+#define STR_U                       "\344"
+#define STR_V                       "\345"
+#define STR_W                       "\346"
+#define STR_X                       "\347"
+#define STR_Y                       "\350"
+#define STR_Z                       "\351"
+#define STR_LEFT_SQUARE_BRACKET     "\255"
+#define STR_BACKSLASH               "\340"
+#define STR_RIGHT_SQUARE_BRACKET    "\275"
+#define STR_CIRCUMFLEX_ACCENT       "\137"
+#define STR_UNDERSCORE              "\155"
+#define STR_GRAVE_ACCENT            "\171"
+#define STR_a                       "\201"
+#define STR_b                       "\202"
+#define STR_c                       "\203"
+#define STR_d                       "\204"
+#define STR_e                       "\205"
+#define STR_f                       "\206"
+#define STR_g                       "\207"
+#define STR_h                       "\210"
+#define STR_i                       "\211"
+#define STR_j                       "\221"
+#define STR_k                       "\222"
+#define STR_l                       "\223"
+#define STR_m                       "\224"
+#define STR_n                       "\225"
+#define STR_o                       "\226"
+#define STR_p                       "\227"
+#define STR_q                       "\230"
+#define STR_r                       "\231"
+#define STR_s                       "\242"
+#define STR_t                       "\243"
+#define STR_u                       "\244"
+#define STR_v                       "\245"
+#define STR_w                       "\246"
+#define STR_x                       "\247"
+#define STR_y                       "\250"
+#define STR_z                       "\251"
+#define STR_LEFT_CURLY_BRACKET      "\300"
+#define STR_VERTICAL_LINE           "\117"
+#define STR_RIGHT_CURLY_BRACKET     "\320"
+#define STR_TILDE                   "\241"
+
+#else  /* EBCDIC_IGNORING_COMPILER */
+
+/* Otherwise, on a real EBCDIC compiler or an ASCII compiler, we can use simple
+string and character literals. */
+
+#ifdef EBCDIC
+#if 'a' != 0x81
+#error "EBCDIC character 'a' is not 0x81"
+#endif
+#else
+#if 'a' != 0x61
+#error "ASCII character 'a' is not 0x61"
+#endif
+#endif
 
 #define CHAR_NUL                    '\0'
 #define CHAR_HT                     '\t'
@@ -922,88 +1123,7 @@ a positive value. */
 #define STR_RIGHT_CURLY_BRACKET     "}"
 #define STR_TILDE                   "~"
 
-#define STRING_ACCEPT0               "ACCEPT\0"
-#define STRING_COMMIT0               "COMMIT\0"
-#define STRING_F0                    "F\0"
-#define STRING_FAIL0                 "FAIL\0"
-#define STRING_MARK0                 "MARK\0"
-#define STRING_PRUNE0                "PRUNE\0"
-#define STRING_SKIP0                 "SKIP\0"
-#define STRING_THEN                  "THEN"
-
-#define STRING_atomic0               "atomic\0"
-#define STRING_pla0                  "pla\0"
-#define STRING_plb0                  "plb\0"
-#define STRING_napla0                "napla\0"
-#define STRING_naplb0                "naplb\0"
-#define STRING_nla0                  "nla\0"
-#define STRING_nlb0                  "nlb\0"
-#define STRING_scs0                  "scs\0"
-#define STRING_sr0                   "sr\0"
-#define STRING_asr0                  "asr\0"
-#define STRING_positive_lookahead0   "positive_lookahead\0"
-#define STRING_positive_lookbehind0  "positive_lookbehind\0"
-#define STRING_non_atomic_positive_lookahead0   "non_atomic_positive_lookahead\0"
-#define STRING_non_atomic_positive_lookbehind0  "non_atomic_positive_lookbehind\0"
-#define STRING_negative_lookahead0   "negative_lookahead\0"
-#define STRING_negative_lookbehind0  "negative_lookbehind\0"
-#define STRING_script_run0           "script_run\0"
-#define STRING_atomic_script_run     "atomic_script_run"
-#define STRING_scan_substring0       "scan_substring\0"
-
-#define STRING_alpha0                "alpha\0"
-#define STRING_lower0                "lower\0"
-#define STRING_upper0                "upper\0"
-#define STRING_alnum0                "alnum\0"
-#define STRING_ascii0                "ascii\0"
-#define STRING_blank0                "blank\0"
-#define STRING_cntrl0                "cntrl\0"
-#define STRING_digit0                "digit\0"
-#define STRING_graph0                "graph\0"
-#define STRING_print0                "print\0"
-#define STRING_punct0                "punct\0"
-#define STRING_space0                "space\0"
-#define STRING_word0                 "word\0"
-#define STRING_xdigit                "xdigit"
-
-#define STRING_DEFINE                "DEFINE"
-#define STRING_VERSION               "VERSION"
-#define STRING_WEIRD_STARTWORD       "[:<:]]"
-#define STRING_WEIRD_ENDWORD         "[:>:]]"
-
-#define STRING_CR_RIGHTPAR                "CR)"
-#define STRING_LF_RIGHTPAR                "LF)"
-#define STRING_CRLF_RIGHTPAR              "CRLF)"
-#define STRING_ANY_RIGHTPAR               "ANY)"
-#define STRING_ANYCRLF_RIGHTPAR           "ANYCRLF)"
-#define STRING_NUL_RIGHTPAR               "NUL)"
-#define STRING_BSR_ANYCRLF_RIGHTPAR       "BSR_ANYCRLF)"
-#define STRING_BSR_UNICODE_RIGHTPAR       "BSR_UNICODE)"
-#define STRING_UTF8_RIGHTPAR              "UTF8)"
-#define STRING_UTF16_RIGHTPAR             "UTF16)"
-#define STRING_UTF32_RIGHTPAR             "UTF32)"
-#define STRING_UTF_RIGHTPAR               "UTF)"
-#define STRING_UCP_RIGHTPAR               "UCP)"
-#define STRING_NO_AUTO_POSSESS_RIGHTPAR   "NO_AUTO_POSSESS)"
-#define STRING_NO_DOTSTAR_ANCHOR_RIGHTPAR "NO_DOTSTAR_ANCHOR)"
-#define STRING_NO_JIT_RIGHTPAR            "NO_JIT)"
-#define STRING_NO_START_OPT_RIGHTPAR      "NO_START_OPT)"
-#define STRING_NOTEMPTY_RIGHTPAR          "NOTEMPTY)"
-#define STRING_NOTEMPTY_ATSTART_RIGHTPAR  "NOTEMPTY_ATSTART)"
-#define STRING_CASELESS_RESTRICT_RIGHTPAR "CASELESS_RESTRICT)"
-#define STRING_TURKISH_CASING_RIGHTPAR    "TURKISH_CASING)"
-#define STRING_LIMIT_HEAP_EQ              "LIMIT_HEAP="
-#define STRING_LIMIT_MATCH_EQ             "LIMIT_MATCH="
-#define STRING_LIMIT_DEPTH_EQ             "LIMIT_DEPTH="
-#define STRING_LIMIT_RECURSION_EQ         "LIMIT_RECURSION="
-#define STRING_MARK                       "MARK"
-
-#define STRING_bc                         "bc"
-#define STRING_bidiclass                  "bidiclass"
-#define STRING_sc                         "sc"
-#define STRING_script                     "script"
-#define STRING_scriptextensions           "scriptextensions"
-#define STRING_scx                        "scx"
+#endif  /* EBCDIC_WITH_ASCII_COMPILER */
 
 #else  /* SUPPORT_UNICODE */
 
@@ -1227,6 +1347,9 @@ only. */
 #define STR_RIGHT_CURLY_BRACKET     "\175"
 #define STR_TILDE                   "\176"
 
+#endif  /* SUPPORT_UNICODE */
+
+
 #define STRING_ACCEPT0               STR_A STR_C STR_C STR_E STR_P STR_T "\0"
 #define STRING_COMMIT0               STR_C STR_O STR_M STR_M STR_I STR_T "\0"
 #define STRING_F0                    STR_F "\0"
@@ -1310,8 +1433,6 @@ only. */
 #define STRING_scriptextensions           STR_s STR_c STR_r STR_i STR_p STR_t STR_e STR_x STR_t STR_e STR_n STR_s STR_i STR_o STR_n STR_s
 #define STRING_scx                        STR_s STR_c STR_x
 
-
-#endif  /* SUPPORT_UNICODE */
 
 /* -------------------- End of character and string names -------------------*/
 
@@ -1791,7 +1912,7 @@ pcre2_dfa_match.c that must be updated. */
 
 /* This macro defines textual names for all the opcodes. These are used only
 for debugging, and some of them are only partial names. The macro is referenced
-only in pcre2_printint.c, which fills out the full names in many cases (and in
+only in pcre2_printint_inc.h, which fills out the full names in many cases (and in
 some cases doesn't actually use these names at all). */
 
 #define OP_NAME_LIST \
@@ -2075,7 +2196,7 @@ tables are needed only when compiling the 8-bit library. */
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
 extern const int              PRIV(utf8_table1)[];
-extern const int              PRIV(utf8_table1_size);
+extern const unsigned         PRIV(utf8_table1_size);
 extern const int              PRIV(utf8_table2)[];
 extern const int              PRIV(utf8_table3)[];
 extern const uint8_t          PRIV(utf8_table4)[];
@@ -2110,6 +2231,8 @@ extern const uint8_t          PRIV(utf8_table4)[];
 #define _pcre2_utt                     PCRE2_SUFFIX(_pcre2_utt_)
 #define _pcre2_utt_names               PCRE2_SUFFIX(_pcre2_utt_names_)
 #define _pcre2_utt_size                PCRE2_SUFFIX(_pcre2_utt_size_)
+#define _pcre2_ebcdic_1047_to_ascii    PCRE2_SUFFIX(_pcre2_ebcdic_1047_to_ascii_)
+#define _pcre2_ascii_to_ebcdic_1047    PCRE2_SUFFIX(_pcre2_ascii_to_ebcdic_1047_)
 
 extern const uint8_t                   PRIV(OP_lengths)[];
 extern const uint32_t                  PRIV(callout_end_delims)[];
@@ -2142,6 +2265,8 @@ extern const char                     *PRIV(unicode_version);
 extern const ucp_type_table            PRIV(utt)[];
 extern const char                      PRIV(utt_names)[];
 extern const size_t                    PRIV(utt_size);
+extern const uint8_t                   PRIV(ebcdic_1047_to_ascii)[];
+extern const uint8_t                   PRIV(ascii_to_ebcdic_1047)[];
 
 /* Mode-dependent macros and hidden and private structures are defined in a
 separate file so that pcre2test can include them at all supported widths. When
@@ -2165,6 +2290,7 @@ is available. */
 
 #define _pcre2_auto_possessify       PCRE2_SUFFIX(_pcre2_auto_possessify_)
 #define _pcre2_check_escape          PCRE2_SUFFIX(_pcre2_check_escape_)
+#define _pcre2_ckd_smul              PCRE2_SUFFIX(_pcre2_ckd_smul_)
 #define _pcre2_extuni                PCRE2_SUFFIX(_pcre2_extuni_)
 #define _pcre2_find_bracket          PCRE2_SUFFIX(_pcre2_find_bracket_)
 #define _pcre2_is_newline            PCRE2_SUFFIX(_pcre2_is_newline_)
@@ -2191,6 +2317,7 @@ extern int          _pcre2_auto_possessify(PCRE2_UCHAR *,
                       const compile_block *);
 extern int          _pcre2_check_escape(PCRE2_SPTR *, PCRE2_SPTR, uint32_t *,
                       int *, uint32_t, uint32_t, uint32_t, BOOL, compile_block *);
+extern BOOL         _pcre2_ckd_smul(PCRE2_SIZE *, int, int);
 extern PCRE2_SPTR   _pcre2_extuni(uint32_t, PCRE2_SPTR, PCRE2_SPTR, PCRE2_SPTR,
                       BOOL, int *);
 extern PCRE2_SPTR   _pcre2_find_bracket(PCRE2_SPTR, BOOL, int);
@@ -2217,16 +2344,7 @@ extern BOOL         _pcre2_xclass(uint32_t, PCRE2_SPTR, const uint8_t *, BOOL);
 extern BOOL         _pcre2_eclass(uint32_t, PCRE2_SPTR, PCRE2_SPTR,
                       const uint8_t *, BOOL);
 
-/* This function is needed only when memmove() is not available. */
-
-#if !defined(VPCOMPAT) && !defined(HAVE_MEMMOVE)
-#define _pcre2_memmove               PCRE2_SUFFIX(_pcre2_memmove)
-extern void *       _pcre2_memmove(void *, const void *, size_t);
-#endif
-
 #endif  /* PCRE2_CODE_UNIT_WIDTH */
-
-extern BOOL         PRIV(ckd_smul)(PCRE2_SIZE *, int, int);
 
 #include "pcre2_util.h"
 

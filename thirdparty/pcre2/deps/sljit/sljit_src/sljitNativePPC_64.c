@@ -709,10 +709,10 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_ta
 	SLJIT_UNUSED_ARG(executable_offset);
 
 	SLJIT_UPDATE_WX_FLAGS(inst, inst + 5, 0);
-	inst[0] = (inst[0] & 0xffff0000u) | ((sljit_ins)(new_target >> 48) & 0xffff);
-	inst[1] = (inst[1] & 0xffff0000u) | ((sljit_ins)(new_target >> 32) & 0xffff);
-	inst[3] = (inst[3] & 0xffff0000u) | ((sljit_ins)(new_target >> 16) & 0xffff);
-	inst[4] = (inst[4] & 0xffff0000u) | ((sljit_ins)new_target & 0xffff);
+	inst[0] = (inst[0] & 0xffff0000u) | IMM(new_target >> 48);
+	inst[1] = (inst[1] & 0xffff0000u) | IMM(new_target >> 32);
+	inst[3] = (inst[3] & 0xffff0000u) | IMM(new_target >> 16);
+	inst[4] = (inst[4] & 0xffff0000u) | IMM(new_target);
 	SLJIT_UPDATE_WX_FLAGS(inst, inst + 5, 1);
 	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 	SLJIT_CACHE_FLUSH(inst, inst + 5);

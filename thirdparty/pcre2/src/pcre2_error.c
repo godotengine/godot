@@ -39,11 +39,9 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "pcre2_internal.h"
+
+
 
 #define STRING(a)  # a
 #define XSTRING(s) STRING(s)
@@ -97,7 +95,7 @@ static const unsigned char compile_error_texts[] =
   "a relative value of zero is not allowed\0"
   "conditional subpattern contains more than two branches\0"
   "atomic assertion expected after (?( or (?(?C)\0"
-  "digit expected after (?+ or (?-\0"
+  "digit expected after (?+\0"
   /* 30 */
   "unknown POSIX class name\0"
   "internal error in pcre2_study(): should not occur\0"
@@ -148,7 +146,7 @@ static const unsigned char compile_error_texts[] =
 #ifndef EBCDIC
   "\\c must be followed by a printable ASCII character\0"
 #else
-  "\\c must be followed by a letter or one of [\\]^_?\0"
+  "\\c must be followed by a letter or one of @[\\]^_?\0"
 #endif
   "\\k is not followed by a braced, angle-bracketed, or quoted name\0"
   /* 70 */
@@ -208,6 +206,11 @@ static const unsigned char compile_error_texts[] =
   /* 115 */
   "terminating ] with no following closing parenthesis in (?[...]\0"
   "unexpected character in (?[...]) extended character class\0"
+  "expected capture group number or name\0"
+  "missing opening parenthesis\0"
+  "syntax error in subpattern number (missing terminator?)\0"
+  /* 120 */
+  "erroroffset passed as NULL\0"
   ;
 
 /* Match-time and UTF error texts are in the same format. */
@@ -291,13 +294,18 @@ static const unsigned char match_error_texts[] =
   "heap limit exceeded\0"
   "invalid syntax\0"
   /* 65 */
-  "internal error - duplicate substitution match\0"
+  "internal error: duplicate substitution match\0"
   "PCRE2_MATCH_INVALID_UTF is not supported for DFA matching\0"
-  "INTERNAL ERROR: invalid substring offset\0"
+  "internal error: invalid substring offset\0"
   "feature is not supported by the JIT compiler\0"
   "error performing replacement case transformation\0"
   /* 70 */
   "replacement too large (longer than PCRE2_SIZE)\0"
+  "substitute pattern differs from prior match call\0"
+  "substitute subject differs from prior match call\0"
+  "substitute start offset differs from prior match call\0"
+  "substitute options differ from prior match call\0"
+  "disallowed use of \\K in lookaround\0"
   ;
 
 
@@ -324,7 +332,7 @@ pcre2_get_error_message(int enumber, PCRE2_UCHAR *buffer, PCRE2_SIZE size)
 {
 const unsigned char *message;
 PCRE2_SIZE i;
-int n;
+int n, rc = 0;
 
 if (size == 0) return PCRE2_ERROR_NOMEMORY;
 
@@ -346,7 +354,7 @@ else                                /* Invalid error number */
 
 for (; n > 0; n--)
   {
-  while (*message++ != CHAR_NUL) {};
+  while (*message++ != CHAR_NUL) {}
   if (*message == CHAR_NUL) return PCRE2_ERROR_BADDATA;
   }
 
@@ -354,14 +362,23 @@ for (i = 0; *message != 0; i++)
   {
   if (i >= size - 1)
     {
-    buffer[i] = 0;     /* Terminate partial message */
-    return PCRE2_ERROR_NOMEMORY;
+    rc = PCRE2_ERROR_NOMEMORY;
+    break;
     }
   buffer[i] = *message++;
   }
 
-buffer[i] = 0;
-return (int)i;
+#if defined EBCDIC && 'a' != 0x81
+/* If compiling for EBCDIC, but the compiler's string literals are not EBCDIC,
+then we are in the "force EBCDIC 1047" mode. I have chosen to add a few lines
+here to translate the error strings on the fly, rather than require the string
+literals above to be written out arduously using the "STR_XYZ" macros. */
+for (PCRE2_SIZE j = 0; j < i; ++j)
+  buffer[j] = PRIV(ascii_to_ebcdic_1047)[buffer[j]];
+#endif
+
+buffer[i] = 0;     /* Terminate message, even if truncated. */
+return rc? rc : (int)i;
 }
 
 /* End of pcre2_error.c */
