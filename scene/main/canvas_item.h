@@ -96,7 +96,7 @@ private:
 	} data;
 
 	int light_mask = 1;
-	uint32_t visibility_layer = 1;
+	uint32_t visibility_layer = 0xFFFFFFFF;
 
 	int z_index = 0;
 	bool z_relative = true;
