@@ -32,10 +32,16 @@
 				Returns the ID of the referenced low-level resource.
 			</description>
 		</method>
+		<method name="is_null" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [RID] has the ID [code]0[/code]. This is the inverse of [method is_valid].
+			</description>
+		</method>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the [RID] is not [code]0[/code].
+				Returns [code]true[/code] if the [RID] is not [code]0[/code]. This is the inverse of [method is_null].
 			</description>
 		</method>
 	</methods>
