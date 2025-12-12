@@ -129,7 +129,7 @@ void EditorExportPlatformWeb::_replace_strings(const HashMap<String, String> &p_
 	}
 }
 
-void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, BitField<EditorExportPlatform::DebugFlags> p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes) {
+void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, BitField<EditorExportPlatform::DebugFlags> p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes, bool p_force_gzip) {
 	// Engine.js config
 	Dictionary config;
 	Array libs;
@@ -152,6 +152,10 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 
 	config["godotPoolSize"] = p_preset->get("threads/godot_pool_size");
 	config["emscriptenPoolSize"] = p_preset->get("threads/emscripten_pool_size");
+
+	if (p_force_gzip) {
+		config["gzip"] = true;
+	}
 
 	String head_include;
 	if (p_preset->get("html/export_icon")) {
@@ -378,6 +382,7 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/focus_canvas_on_start"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/force_gzip"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/enabled"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/ensure_cross_origin_isolation_headers"), true));
@@ -491,6 +496,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	const String custom_release = p_preset->get("custom_template/release");
 	const String custom_html = p_preset->get("html/custom_html_shell");
 	const bool export_icon = p_preset->get("html/export_icon");
+	const bool force_gzip = p_preset->get("html/force_gzip");
 	const bool pwa = p_preset->get("progressive_web_app/enabled");
 
 	const String base_dir = p_path.get_base_dir();
@@ -548,11 +554,35 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	Dictionary file_sizes;
 	Ref<FileAccess> f = FileAccess::open(pck_path, FileAccess::READ);
 	if (f.is_valid()) {
-		file_sizes[pck_path.get_file()] = (uint64_t)f->get_length();
+		file_sizes[pck_path.get_file() + (force_gzip ? ".gzip" : "")] = (uint64_t)f->get_length();
+
+		if (force_gzip) {
+			PackedByteArray data = f->get_buffer(f->get_length());
+			PackedByteArray result;
+			result.resize(data.size());
+			int sz = Compression::compress(result.ptrw(), data.ptr(), data.size(), Compression::MODE_GZIP);
+			result.resize(sz);
+			Ref<FileAccess> to = FileAccess::open(pck_path + ".gzip", FileAccess::WRITE);
+			to->store_buffer(result);
+			f.unref();
+			DirAccess::remove_file_or_error(pck_path);
+		}
 	}
 	f = FileAccess::open(base_path + ".wasm", FileAccess::READ);
 	if (f.is_valid()) {
-		file_sizes[base_name + ".wasm"] = (uint64_t)f->get_length();
+		file_sizes[base_name + ".wasm" + (force_gzip ? ".gzip" : "")] = (uint64_t)f->get_length();
+
+		if (force_gzip) {
+			PackedByteArray data = f->get_buffer(f->get_length());
+			PackedByteArray result;
+			result.resize(data.size());
+			int sz = Compression::compress(result.ptrw(), data.ptr(), data.size(), Compression::MODE_GZIP);
+			result.resize(sz);
+			Ref<FileAccess> to = FileAccess::open(base_path + ".wasm.gzip", FileAccess::WRITE);
+			to->store_buffer(result);
+			f.unref();
+			DirAccess::remove_file_or_error(base_path + ".wasm");
+		}
 	}
 
 	// Read the HTML shell file (custom or from template).
@@ -568,7 +598,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	f.unref(); // close file.
 
 	// Generate HTML file with replaced strings.
-	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
+	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes, force_gzip);
 	Error err = _write_or_error(html.ptr(), html.size(), p_path);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
