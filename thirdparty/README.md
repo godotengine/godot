@@ -463,20 +463,6 @@ Files extracted from upstream source:
   - Except `main.cc`, `harfbuzz*.cc`, `harfrust.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`, `hb-harfrust.cc`, `wasm/*`, `ms-use/*`, `rust/*`
 
 
-## hidapi
-
-- Upstream: https://github.com/libsdl-org/SDL/tree/main/src/hidapi
-- Version: 0.14.0 (8d604353a53853fa56d1bdce0363535605ca868f, 2025)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- See `thirdparty/sdl/update-sdl.sh`
-
-The source code of this library is being bundled with SDL's source code files.
-The files of hidapi are stored in `thirdparty/sdl/hidapi/` folder.
-
-
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
@@ -972,8 +958,9 @@ Files extracted from upstream source:
 ## sdl
 
 - Upstream: https://github.com/libsdl-org/SDL
-- Version: 3.2.14 (8d604353a53853fa56d1bdce0363535605ca868f, 2025)
+- Version: 3.2.28 (7f3ae3d57459e59943a4ecfefc8f6277ec6bf540, 2025)
 - License: Zlib
+- Vendored: hidapi 0.14.0, license BSD-3-Clause
 
 Files extracted from upstream source:
 
@@ -982,15 +969,10 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-remove-unnecessary-subsystems.patch` ([GH-106218](https://github.com/godotengine/godot/pull/106218))
-- `0002-msvc-constants-fpstrict.patch` ([GH-106218](https://github.com/godotengine/godot/pull/106218))
 - `0003-std-include.patch` ([GH-108144](https://github.com/godotengine/godot/pull/108144))
 - `0004-errno-include.patch` ([GH-108354](https://github.com/godotengine/godot/pull/108354))
 - `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
 - `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
-- `0007-macos-joypad-name.patch` ([GH-110500](https://github.com/godotengine/godot/pull/110500))
-
-The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
-Its version and license is described in this file under `hidapi`.
 
 
 ## spirv-cross

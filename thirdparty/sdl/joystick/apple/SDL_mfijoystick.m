@@ -300,15 +300,15 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
      * struct, and ARC doesn't work with structs. */
     device->controller = (__bridge GCController *)CFBridgingRetain(controller);
 
-	if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-		if (controller.productCategory) {
-		    name = controller.productCategory.UTF8String;
-		}
-	} else {
-		if (controller.vendorName) {
-		    name = controller.vendorName.UTF8String;
-		}
-	}
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if (controller.productCategory) {
+            name = controller.productCategory.UTF8String;
+        }
+    } else {
+        if (controller.vendorName) {
+            name = controller.vendorName.UTF8String;
+        }
+    }
 
     if (!name) {
         name = "MFi Gamepad";
