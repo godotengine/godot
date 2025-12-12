@@ -28,12 +28,20 @@ namespace GodotTools
         public static class Settings
         {
             public const string ExternalEditor = "dotnet/editor/external_editor";
+            public const string AutomaticBuild = "dotnet/editor/automatic_build";
             public const string CustomExecPath = "dotnet/editor/custom_exec_path";
             public const string CustomExecPathArgs = "dotnet/editor/custom_exec_path_args";
             public const string VerbosityLevel = "dotnet/build/verbosity_level";
             public const string NoConsoleLogging = "dotnet/build/no_console_logging";
             public const string CreateBinaryLog = "dotnet/build/create_binary_log";
             public const string ProblemsLayout = "dotnet/build/problems_layout";
+        }
+
+        public enum AutomaticBuildType : long
+        {
+            Disabled,
+            OnFocus,
+            Always
         }
 
 #nullable disable
@@ -456,6 +464,29 @@ namespace GodotTools
             }
         }
 
+        public void HotReloadScripts(bool windowFocused)
+        {
+            if (Internal.IsAssembliesReloadingNeeded())
+            {
+                BuildManager.UpdateLastValidBuildDateTime();
+                Internal.ReloadAssemblies(softReload: false);
+            }
+
+            AutomaticBuildType buildType = _editorSettings.GetSetting(Settings.AutomaticBuild).As<AutomaticBuildType>();
+            if (buildType == AutomaticBuildType.Always || (windowFocused && buildType == AutomaticBuildType.OnFocus))
+            {
+                if (!BuildManager.IsBuildInProgress())
+                {
+                    if (!File.Exists(GodotSharpDirs.ProjectCsProjPath) || BuildManager.CSProjectFilesChanged())
+                    {
+                        // Build scripts if CS Proj needs to be created
+                        // or if any CS script files have changed since last build.
+                        BuildProjectPressed();
+                    }
+                }
+            }
+        }
+
         public override void _EnablePlugin()
         {
             base._EnablePlugin();
@@ -548,6 +579,7 @@ namespace GodotTools
 
             // External editor settings
             EditorDef(Settings.ExternalEditor, Variant.From(ExternalEditorId.None));
+            EditorDef(Settings.AutomaticBuild, Variant.From(AutomaticBuildType.Disabled));
             EditorDef(Settings.CustomExecPath, "");
             EditorDef(Settings.CustomExecPathArgs, "");
             EditorDef(Settings.VerbosityLevel, Variant.From(VerbosityLevelId.Normal));
@@ -590,6 +622,18 @@ namespace GodotTools
                 ["name"] = Settings.ExternalEditor,
                 ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = settingsHintStr
+            });
+
+            string autoBuildSettingsHint = $"Disabled:{(int)AutomaticBuildType.Disabled}" +
+                                           $",On Focus:{(int)AutomaticBuildType.OnFocus}" +
+                                           $",Always:{(int)AutomaticBuildType.Always}";
+
+            _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            {
+                ["type"] = (int)Variant.Type.Int,
+                ["name"] = Settings.AutomaticBuild,
+                ["hint"] = (int)PropertyHint.Enum,
+                ["hint_string"] = autoBuildSettingsHint,
             });
 
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
