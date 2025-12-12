@@ -513,6 +513,122 @@ String ResourceLoader::_validate_local_path(const String &p_path) {
 	}
 }
 
+const Variant ResourceLoader::_get_cached_info(const FilterTarget &p_target, const String &p_path, const Ref<Resource> &p_res) {
+	if (p_target == FILTER_TARGET_TYPE_HINT) {
+		return p_res->get_gdtype().get_name();
+	}
+	if (p_target == FILTER_TARGET_PATH) {
+		return p_path;
+	}
+	if (p_target == FILTER_TARGET_FILE_NAME) {
+		return p_path.get_file();
+	}
+	if (p_target == FILTER_TARGET_FILE_EXTENSION) {
+		return p_path.get_extension();
+	}
+	if (p_target == FILTER_TARGET_BASE_DIR) {
+		return p_path.get_base_dir();
+	}
+	if (p_target == FILTER_TARGET_RESOURCE_NAME) {
+		return p_res->get_name();
+	}
+	if (p_target == FILTER_TARGET_RESOURCE_PATH) {
+		return p_res->get_path();
+	}
+	if (p_target == FILTER_TARGET_RESOURCE_CLASS) {
+		return p_res->get_class();
+	}
+	if (p_target == FILTER_TARGET_REFERENCE_COUNT) {
+		return p_res->get_reference_count();
+	}
+	return "";
+}
+
+bool ResourceLoader::_is_info_matching_filter(const Variant &p_attribute_value, const FilterComparator &p_filter, const Variant &p_value) {
+	if (p_filter == FILTER_COMP_EQUALS) {
+		return p_attribute_value == p_value;
+	}
+	if (p_filter == FILTER_COMP_NOT_EQUAL) {
+		return p_attribute_value != p_value;
+	}
+	if (p_filter == FILTER_COMP_CONTAINS) {
+		return p_attribute_value.stringify().contains(p_value);
+	}
+	if (p_filter == FILTER_COMP_BEGINS_WITH) {
+		return p_attribute_value.stringify().begins_with(p_value);
+	}
+	if (p_filter == FILTER_COMP_ENDS_WITH) {
+		return p_attribute_value.stringify().ends_with(p_value);
+	}
+	if (p_filter == FILTER_COMP_GREATER) {
+		return int32_t(p_attribute_value) > int32_t(p_value);
+	}
+	if (p_filter == FILTER_COMP_GREATER_OR_EQUAL) {
+		return int32_t(p_attribute_value) >= int32_t(p_value);
+	}
+	if (p_filter == FILTER_COMP_LESS) {
+		return int32_t(p_attribute_value) < int32_t(p_value);
+	}
+	if (p_filter == FILTER_COMP_LESS_OR_EQUAL) {
+		return int32_t(p_attribute_value) <= int32_t(p_value);
+	}
+	return false;
+}
+
+bool ResourceLoader::_is_key_value_matching_filter(const String &p_path, const Ref<Resource> &p_res, const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value) {
+	const Variant info_value = _get_cached_info(p_target, p_path, p_res);
+	return _is_info_matching_filter(info_value, p_comparator, p_value);
+}
+
+Dictionary ResourceLoader::get_cached_entries() {
+	MutexLock mutex_lock(ResourceCache::lock);
+	Dictionary ret;
+	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
+		ret.set(elem.key, elem.value);
+	}
+	return ret;
+}
+
+Dictionary ResourceLoader::get_cached_paths_infos(const FilterTarget &p_info) {
+	MutexLock mutex_lock(ResourceCache::lock);
+	Dictionary ret;
+	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
+		ret.set(elem.key, _get_cached_info(p_info, elem.key, elem.value));
+	}
+	return ret;
+}
+
+Dictionary ResourceLoader::get_cached_entries_filtered(const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit) {
+	MutexLock mutex_lock(ResourceCache::lock);
+	Dictionary ret;
+	int32_t count = 0;
+	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
+		if (_is_key_value_matching_filter(elem.key, elem.value, p_target, p_comparator, p_value)) {
+			ret.set(elem.key, elem.value);
+			count++;
+			if (count >= p_limit) {
+				break;
+			}
+		}
+	}
+	return ret;
+}
+Dictionary ResourceLoader::get_cached_paths_infos_filtered(const FilterTarget &p_info, const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit) {
+	MutexLock mutex_lock(ResourceCache::lock);
+	Dictionary ret;
+	int32_t count = 0;
+	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
+		if (_is_key_value_matching_filter(elem.key, elem.value, p_target, p_comparator, p_value)) {
+			ret.set(elem.key, _get_cached_info(p_info, elem.key, elem.value));
+			count++;
+			if (count >= p_limit) {
+				break;
+			}
+		}
+	}
+	return ret;
+}
+
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, ResourceFormatLoader::CacheMode p_cache_mode) {
 	Ref<ResourceLoader::LoadToken> token = _load_start(p_path, p_type_hint, p_use_sub_threads ? LOAD_THREAD_DISTRIBUTE : LOAD_THREAD_SPAWN_SINGLE, p_cache_mode, true);
 	return token.is_valid() ? OK : FAILED;
