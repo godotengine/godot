@@ -14,10 +14,14 @@
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>  // for abs()
+#include <string.h>
 
+#include "src/dec/common_dec.h"
+#include "src/dsp/dsp.h"
 #include "src/dsp/quant.h"
-#include "src/enc/vp8i_enc.h"
 #include "src/enc/cost_enc.h"
+#include "src/enc/vp8i_enc.h"
+#include "src/webp/types.h"
 
 #define DO_TRELLIS_I4  1
 #define DO_TRELLIS_I16 1   // not a huge gain, but ok at low bitrate.
@@ -54,11 +58,11 @@
 static void PrintBlockInfo(const VP8EncIterator* const it,
                            const VP8ModeScore* const rd) {
   int i, j;
-  const int is_i16 = (it->mb_->type_ == 1);
-  const uint8_t* const y_in = it->yuv_in_ + Y_OFF_ENC;
-  const uint8_t* const y_out = it->yuv_out_ + Y_OFF_ENC;
-  const uint8_t* const uv_in = it->yuv_in_ + U_OFF_ENC;
-  const uint8_t* const uv_out = it->yuv_out_ + U_OFF_ENC;
+  const int is_i16 = (it->mb->type == 1);
+  const uint8_t* const y_in = it->yuv_in + Y_OFF_ENC;
+  const uint8_t* const y_out = it->yuv_out + Y_OFF_ENC;
+  const uint8_t* const uv_in = it->yuv_in + U_OFF_ENC;
+  const uint8_t* const uv_out = it->yuv_out + U_OFF_ENC;
   printf("SOURCE / OUTPUT / ABS DELTA\n");
   for (j = 0; j < 16; ++j) {
     for (i = 0; i < 16; ++i) printf("%3d ", y_in[i + j * BPS]);
@@ -211,26 +215,26 @@ static int ExpandMatrix(VP8Matrix* const m, int type) {
   for (i = 0; i < 2; ++i) {
     const int is_ac_coeff = (i > 0);
     const int bias = kBiasMatrices[type][is_ac_coeff];
-    m->iq_[i] = (1 << QFIX) / m->q_[i];
-    m->bias_[i] = BIAS(bias);
-    // zthresh_ is the exact value such that QUANTDIV(coeff, iQ, B) is:
+    m->iq[i] = (1 << QFIX) / m->q[i];
+    m->bias[i] = BIAS(bias);
+    // zthresh is the exact value such that QUANTDIV(coeff, iQ, B) is:
     //   * zero if coeff <= zthresh
     //   * non-zero if coeff > zthresh
-    m->zthresh_[i] = ((1 << QFIX) - 1 - m->bias_[i]) / m->iq_[i];
+    m->zthresh[i] = ((1 << QFIX) - 1 - m->bias[i]) / m->iq[i];
   }
   for (i = 2; i < 16; ++i) {
-    m->q_[i] = m->q_[1];
-    m->iq_[i] = m->iq_[1];
-    m->bias_[i] = m->bias_[1];
-    m->zthresh_[i] = m->zthresh_[1];
+    m->q[i] = m->q[1];
+    m->iq[i] = m->iq[1];
+    m->bias[i] = m->bias[1];
+    m->zthresh[i] = m->zthresh[1];
   }
   for (sum = 0, i = 0; i < 16; ++i) {
     if (type == 0) {  // we only use sharpening for AC luma coeffs
-      m->sharpen_[i] = (kFreqSharpening[i] * m->q_[i]) >> SHARPEN_BITS;
+      m->sharpen[i] = (kFreqSharpening[i] * m->q[i]) >> SHARPEN_BITS;
     } else {
-      m->sharpen_[i] = 0;
+      m->sharpen[i] = 0;
     }
-    sum += m->q_[i];
+    sum += m->q[i];
   }
   return (sum + 8) >> 4;
 }
@@ -240,49 +244,49 @@ static void CheckLambdaValue(int* const v) { if (*v < 1) *v = 1; }
 static void SetupMatrices(VP8Encoder* enc) {
   int i;
   const int tlambda_scale =
-    (enc->method_ >= 4) ? enc->config_->sns_strength
+    (enc->method >= 4) ? enc->config->sns_strength
                         : 0;
-  const int num_segments = enc->segment_hdr_.num_segments_;
+  const int num_segments = enc->segment_hdr.num_segments;
   for (i = 0; i < num_segments; ++i) {
-    VP8SegmentInfo* const m = &enc->dqm_[i];
-    const int q = m->quant_;
+    VP8SegmentInfo* const m = &enc->dqm[i];
+    const int q = m->quant;
     int q_i4, q_i16, q_uv;
-    m->y1_.q_[0] = kDcTable[clip(q + enc->dq_y1_dc_, 0, 127)];
-    m->y1_.q_[1] = kAcTable[clip(q,                  0, 127)];
+    m->y1.q[0] = kDcTable[clip(q + enc->dq_y1_dc, 0, 127)];
+    m->y1.q[1] = kAcTable[clip(q,                  0, 127)];
 
-    m->y2_.q_[0] = kDcTable[ clip(q + enc->dq_y2_dc_, 0, 127)] * 2;
-    m->y2_.q_[1] = kAcTable2[clip(q + enc->dq_y2_ac_, 0, 127)];
+    m->y2.q[0] = kDcTable[ clip(q + enc->dq_y2_dc, 0, 127)] * 2;
+    m->y2.q[1] = kAcTable2[clip(q + enc->dq_y2_ac, 0, 127)];
 
-    m->uv_.q_[0] = kDcTable[clip(q + enc->dq_uv_dc_, 0, 117)];
-    m->uv_.q_[1] = kAcTable[clip(q + enc->dq_uv_ac_, 0, 127)];
+    m->uv.q[0] = kDcTable[clip(q + enc->dq_uv_dc, 0, 117)];
+    m->uv.q[1] = kAcTable[clip(q + enc->dq_uv_ac, 0, 127)];
 
-    q_i4  = ExpandMatrix(&m->y1_, 0);
-    q_i16 = ExpandMatrix(&m->y2_, 1);
-    q_uv  = ExpandMatrix(&m->uv_, 2);
+    q_i4  = ExpandMatrix(&m->y1, 0);
+    q_i16 = ExpandMatrix(&m->y2, 1);
+    q_uv  = ExpandMatrix(&m->uv, 2);
 
-    m->lambda_i4_          = (3 * q_i4 * q_i4) >> 7;
-    m->lambda_i16_         = (3 * q_i16 * q_i16);
-    m->lambda_uv_          = (3 * q_uv * q_uv) >> 6;
-    m->lambda_mode_        = (1 * q_i4 * q_i4) >> 7;
-    m->lambda_trellis_i4_  = (7 * q_i4 * q_i4) >> 3;
-    m->lambda_trellis_i16_ = (q_i16 * q_i16) >> 2;
-    m->lambda_trellis_uv_  = (q_uv * q_uv) << 1;
-    m->tlambda_            = (tlambda_scale * q_i4) >> 5;
+    m->lambda_i4          = (3 * q_i4 * q_i4) >> 7;
+    m->lambda_i16         = (3 * q_i16 * q_i16);
+    m->lambda_uv          = (3 * q_uv * q_uv) >> 6;
+    m->lambda_mode        = (1 * q_i4 * q_i4) >> 7;
+    m->lambda_trellis_i4  = (7 * q_i4 * q_i4) >> 3;
+    m->lambda_trellis_i16 = (q_i16 * q_i16) >> 2;
+    m->lambda_trellis_uv  = (q_uv * q_uv) << 1;
+    m->tlambda            = (tlambda_scale * q_i4) >> 5;
 
     // none of these constants should be < 1
-    CheckLambdaValue(&m->lambda_i4_);
-    CheckLambdaValue(&m->lambda_i16_);
-    CheckLambdaValue(&m->lambda_uv_);
-    CheckLambdaValue(&m->lambda_mode_);
-    CheckLambdaValue(&m->lambda_trellis_i4_);
-    CheckLambdaValue(&m->lambda_trellis_i16_);
-    CheckLambdaValue(&m->lambda_trellis_uv_);
-    CheckLambdaValue(&m->tlambda_);
+    CheckLambdaValue(&m->lambda_i4);
+    CheckLambdaValue(&m->lambda_i16);
+    CheckLambdaValue(&m->lambda_uv);
+    CheckLambdaValue(&m->lambda_mode);
+    CheckLambdaValue(&m->lambda_trellis_i4);
+    CheckLambdaValue(&m->lambda_trellis_i16);
+    CheckLambdaValue(&m->lambda_trellis_uv);
+    CheckLambdaValue(&m->tlambda);
 
-    m->min_disto_ = 20 * m->y1_.q_[0];   // quantization-aware min disto
-    m->max_edge_  = 0;
+    m->min_disto = 20 * m->y1.q[0];   // quantization-aware min disto
+    m->max_edge  = 0;
 
-    m->i4_penalty_ = 1000 * q_i4 * q_i4;
+    m->i4_penalty = 1000 * q_i4 * q_i4;
   }
 }
 
@@ -296,21 +300,21 @@ static void SetupMatrices(VP8Encoder* enc) {
 static void SetupFilterStrength(VP8Encoder* const enc) {
   int i;
   // level0 is in [0..500]. Using '-f 50' as filter_strength is mid-filtering.
-  const int level0 = 5 * enc->config_->filter_strength;
+  const int level0 = 5 * enc->config->filter_strength;
   for (i = 0; i < NUM_MB_SEGMENTS; ++i) {
-    VP8SegmentInfo* const m = &enc->dqm_[i];
+    VP8SegmentInfo* const m = &enc->dqm[i];
     // We focus on the quantization of AC coeffs.
-    const int qstep = kAcTable[clip(m->quant_, 0, 127)] >> 2;
+    const int qstep = kAcTable[clip(m->quant, 0, 127)] >> 2;
     const int base_strength =
-        VP8FilterStrengthFromDelta(enc->filter_hdr_.sharpness_, qstep);
+        VP8FilterStrengthFromDelta(enc->filter_hdr.sharpness, qstep);
     // Segments with lower complexity ('beta') will be less filtered.
-    const int f = base_strength * level0 / (256 + m->beta_);
-    m->fstrength_ = (f < FSTRENGTH_CUTOFF) ? 0 : (f > 63) ? 63 : f;
+    const int f = base_strength * level0 / (256 + m->beta);
+    m->fstrength = (f < FSTRENGTH_CUTOFF) ? 0 : (f > 63) ? 63 : f;
   }
   // We record the initial strength (mainly for the case of 1-segment only).
-  enc->filter_hdr_.level_ = enc->dqm_[0].fstrength_;
-  enc->filter_hdr_.simple_ = (enc->config_->filter_type == 0);
-  enc->filter_hdr_.sharpness_ = enc->config_->filter_sharpness;
+  enc->filter_hdr.level = enc->dqm[0].fstrength;
+  enc->filter_hdr.simple = (enc->config->filter_type == 0);
+  enc->filter_hdr.sharpness = enc->config->filter_sharpness;
 }
 
 //------------------------------------------------------------------------------
@@ -356,25 +360,25 @@ static double QualityToJPEGCompression(double c, double alpha) {
 
 static int SegmentsAreEquivalent(const VP8SegmentInfo* const S1,
                                  const VP8SegmentInfo* const S2) {
-  return (S1->quant_ == S2->quant_) && (S1->fstrength_ == S2->fstrength_);
+  return (S1->quant == S2->quant) && (S1->fstrength == S2->fstrength);
 }
 
 static void SimplifySegments(VP8Encoder* const enc) {
   int map[NUM_MB_SEGMENTS] = { 0, 1, 2, 3 };
-  // 'num_segments_' is previously validated and <= NUM_MB_SEGMENTS, but an
+  // 'num_segments' is previously validated and <= NUM_MB_SEGMENTS, but an
   // explicit check is needed to avoid a spurious warning about 'i' exceeding
-  // array bounds of 'dqm_' with some compilers (noticed with gcc-4.9).
-  const int num_segments = (enc->segment_hdr_.num_segments_ < NUM_MB_SEGMENTS)
-                               ? enc->segment_hdr_.num_segments_
+  // array bounds of 'dqm' with some compilers (noticed with gcc-4.9).
+  const int num_segments = (enc->segment_hdr.num_segments < NUM_MB_SEGMENTS)
+                               ? enc->segment_hdr.num_segments
                                : NUM_MB_SEGMENTS;
   int num_final_segments = 1;
   int s1, s2;
   for (s1 = 1; s1 < num_segments; ++s1) {    // find similar segments
-    const VP8SegmentInfo* const S1 = &enc->dqm_[s1];
+    const VP8SegmentInfo* const S1 = &enc->dqm[s1];
     int found = 0;
     // check if we already have similar segment
     for (s2 = 0; s2 < num_final_segments; ++s2) {
-      const VP8SegmentInfo* const S2 = &enc->dqm_[s2];
+      const VP8SegmentInfo* const S2 = &enc->dqm[s2];
       if (SegmentsAreEquivalent(S1, S2)) {
         found = 1;
         break;
@@ -383,18 +387,18 @@ static void SimplifySegments(VP8Encoder* const enc) {
     map[s1] = s2;
     if (!found) {
       if (num_final_segments != s1) {
-        enc->dqm_[num_final_segments] = enc->dqm_[s1];
+        enc->dqm[num_final_segments] = enc->dqm[s1];
       }
       ++num_final_segments;
     }
   }
   if (num_final_segments < num_segments) {  // Remap
-    int i = enc->mb_w_ * enc->mb_h_;
-    while (i-- > 0) enc->mb_info_[i].segment_ = map[enc->mb_info_[i].segment_];
-    enc->segment_hdr_.num_segments_ = num_final_segments;
+    int i = enc->mb_w * enc->mb_h;
+    while (i-- > 0) enc->mb_info[i].segment = map[enc->mb_info[i].segment];
+    enc->segment_hdr.num_segments = num_final_segments;
     // Replicate the trailing segment infos (it's mostly cosmetics)
     for (i = num_final_segments; i < num_segments; ++i) {
-      enc->dqm_[i] = enc->dqm_[num_final_segments - 1];
+      enc->dqm[i] = enc->dqm[num_final_segments - 1];
     }
   }
 }
@@ -402,50 +406,50 @@ static void SimplifySegments(VP8Encoder* const enc) {
 void VP8SetSegmentParams(VP8Encoder* const enc, float quality) {
   int i;
   int dq_uv_ac, dq_uv_dc;
-  const int num_segments = enc->segment_hdr_.num_segments_;
-  const double amp = SNS_TO_DQ * enc->config_->sns_strength / 100. / 128.;
+  const int num_segments = enc->segment_hdr.num_segments;
+  const double amp = SNS_TO_DQ * enc->config->sns_strength / 100. / 128.;
   const double Q = quality / 100.;
-  const double c_base = enc->config_->emulate_jpeg_size ?
-      QualityToJPEGCompression(Q, enc->alpha_ / 255.) :
+  const double c_base = enc->config->emulate_jpeg_size ?
+      QualityToJPEGCompression(Q, enc->alpha / 255.) :
       QualityToCompression(Q);
   for (i = 0; i < num_segments; ++i) {
     // We modulate the base coefficient to accommodate for the quantization
     // susceptibility and allow denser segments to be quantized more.
-    const double expn = 1. - amp * enc->dqm_[i].alpha_;
+    const double expn = 1. - amp * enc->dqm[i].alpha;
     const double c = pow(c_base, expn);
     const int q = (int)(127. * (1. - c));
     assert(expn > 0.);
-    enc->dqm_[i].quant_ = clip(q, 0, 127);
+    enc->dqm[i].quant = clip(q, 0, 127);
   }
 
   // purely indicative in the bitstream (except for the 1-segment case)
-  enc->base_quant_ = enc->dqm_[0].quant_;
+  enc->base_quant = enc->dqm[0].quant;
 
   // fill-in values for the unused segments (required by the syntax)
   for (i = num_segments; i < NUM_MB_SEGMENTS; ++i) {
-    enc->dqm_[i].quant_ = enc->base_quant_;
+    enc->dqm[i].quant = enc->base_quant;
   }
 
-  // uv_alpha_ is normally spread around ~60. The useful range is
+  // uv_alpha is normally spread around ~60. The useful range is
   // typically ~30 (quite bad) to ~100 (ok to decimate UV more).
   // We map it to the safe maximal range of MAX/MIN_DQ_UV for dq_uv.
-  dq_uv_ac = (enc->uv_alpha_ - MID_ALPHA) * (MAX_DQ_UV - MIN_DQ_UV)
-                                          / (MAX_ALPHA - MIN_ALPHA);
+  dq_uv_ac = (enc->uv_alpha - MID_ALPHA) * (MAX_DQ_UV - MIN_DQ_UV)
+                                         / (MAX_ALPHA - MIN_ALPHA);
   // we rescale by the user-defined strength of adaptation
-  dq_uv_ac = dq_uv_ac * enc->config_->sns_strength / 100;
+  dq_uv_ac = dq_uv_ac * enc->config->sns_strength / 100;
   // and make it safe.
   dq_uv_ac = clip(dq_uv_ac, MIN_DQ_UV, MAX_DQ_UV);
   // We also boost the dc-uv-quant a little, based on sns-strength, since
   // U/V channels are quite more reactive to high quants (flat DC-blocks
   // tend to appear, and are unpleasant).
-  dq_uv_dc = -4 * enc->config_->sns_strength / 100;
+  dq_uv_dc = -4 * enc->config->sns_strength / 100;
   dq_uv_dc = clip(dq_uv_dc, -15, 15);   // 4bit-signed max allowed
 
-  enc->dq_y1_dc_ = 0;       // TODO(skal): dq-lum
-  enc->dq_y2_dc_ = 0;
-  enc->dq_y2_ac_ = 0;
-  enc->dq_uv_dc_ = dq_uv_dc;
-  enc->dq_uv_ac_ = dq_uv_ac;
+  enc->dq_y1_dc = 0;       // TODO(skal): dq-lum
+  enc->dq_y2_dc = 0;
+  enc->dq_y2_ac = 0;
+  enc->dq_uv_dc = dq_uv_dc;
+  enc->dq_uv_ac = dq_uv_ac;
 
   SetupFilterStrength(enc);   // initialize segments' filtering, eventually
 
@@ -467,21 +471,21 @@ static const uint16_t VP8I4ModeOffsets[NUM_BMODES] = {
 };
 
 void VP8MakeLuma16Preds(const VP8EncIterator* const it) {
-  const uint8_t* const left = it->x_ ? it->y_left_ : NULL;
-  const uint8_t* const top = it->y_ ? it->y_top_ : NULL;
-  VP8EncPredLuma16(it->yuv_p_, left, top);
+  const uint8_t* const left = it->x ? it->y_left : NULL;
+  const uint8_t* const top = it->y ? it->y_top : NULL;
+  VP8EncPredLuma16(it->yuv_p, left, top);
 }
 
 void VP8MakeChroma8Preds(const VP8EncIterator* const it) {
-  const uint8_t* const left = it->x_ ? it->u_left_ : NULL;
-  const uint8_t* const top = it->y_ ? it->uv_top_ : NULL;
-  VP8EncPredChroma8(it->yuv_p_, left, top);
+  const uint8_t* const left = it->x ? it->u_left : NULL;
+  const uint8_t* const top = it->y ? it->uv_top : NULL;
+  VP8EncPredChroma8(it->yuv_p, left, top);
 }
 
-// Form all the ten Intra4x4 predictions in the yuv_p_ cache
-// for the 4x4 block it->i4_
+// Form all the ten Intra4x4 predictions in the 'yuv_p' cache
+// for the 4x4 block it->i4
 static void MakeIntra4Preds(const VP8EncIterator* const it) {
-  VP8EncPredLuma4(it->yuv_p_, it->i4_top_);
+  VP8EncPredLuma4(it->yuv_p, it->i4_top);
 }
 
 //------------------------------------------------------------------------------
@@ -600,9 +604,9 @@ static int TrellisQuantizeBlock(const VP8Encoder* WEBP_RESTRICT const enc,
                                 int ctx0, int coeff_type,
                                 const VP8Matrix* WEBP_RESTRICT const mtx,
                                 int lambda) {
-  const ProbaArray* const probas = enc->proba_.coeffs_[coeff_type];
+  const ProbaArray* const probas = enc->proba.coeffs[coeff_type];
   CostArrayPtr const costs =
-      (CostArrayPtr)enc->proba_.remapped_costs_[coeff_type];
+      (CostArrayPtr)enc->proba.remapped_costs[coeff_type];
   const int first = (coeff_type == TYPE_I16_AC) ? 1 : 0;
   Node nodes[16][NUM_NODES];
   ScoreState score_states[2][NUM_NODES];
@@ -614,7 +618,7 @@ static int TrellisQuantizeBlock(const VP8Encoder* WEBP_RESTRICT const enc,
 
   {
     score_t cost;
-    const int thresh = mtx->q_[1] * mtx->q_[1] / 4;
+    const int thresh = mtx->q[1] * mtx->q[1] / 4;
     const int last_proba = probas[VP8EncBands[first]][ctx0][0];
 
     // compute the position of the last interesting coefficient
@@ -646,13 +650,13 @@ static int TrellisQuantizeBlock(const VP8Encoder* WEBP_RESTRICT const enc,
   // traverse trellis.
   for (n = first; n <= last; ++n) {
     const int j = kZigzag[n];
-    const uint32_t Q  = mtx->q_[j];
-    const uint32_t iQ = mtx->iq_[j];
+    const uint32_t Q  = mtx->q[j];
+    const uint32_t iQ = mtx->iq[j];
     const uint32_t B = BIAS(0x00);     // neutral bias
     // note: it's important to take sign of the _original_ coeff,
     // so we don't have to consider level < 0 afterward.
     const int sign = (in[j] < 0);
-    const uint32_t coeff0 = (sign ? -in[j] : in[j]) + mtx->sharpen_[j];
+    const uint32_t coeff0 = (sign ? -in[j] : in[j]) + mtx->sharpen[j];
     int level0 = QUANTDIV(coeff0, iQ, B);
     int thresh_level = QUANTDIV(coeff0, iQ, BIAS(0x80));
     if (thresh_level > MAX_LEVEL) thresh_level = MAX_LEVEL;
@@ -760,7 +764,7 @@ static int TrellisQuantizeBlock(const VP8Encoder* WEBP_RESTRICT const enc,
       const int j = kZigzag[n];
       out[n] = node->sign ? -node->level : node->level;
       nz |= node->level;
-      in[j] = out[n] * mtx->q_[j];
+      in[j] = out[n] * mtx->q[j];
       best_node = node->prev;
     }
     return (nz != 0);
@@ -778,10 +782,10 @@ static int ReconstructIntra16(VP8EncIterator* WEBP_RESTRICT const it,
                               VP8ModeScore* WEBP_RESTRICT const rd,
                               uint8_t* WEBP_RESTRICT const yuv_out,
                               int mode) {
-  const VP8Encoder* const enc = it->enc_;
-  const uint8_t* const ref = it->yuv_p_ + VP8I16ModeOffsets[mode];
-  const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC;
-  const VP8SegmentInfo* const dqm = &enc->dqm_[it->mb_->segment_];
+  const VP8Encoder* const enc = it->enc;
+  const uint8_t* const ref = it->yuv_p + VP8I16ModeOffsets[mode];
+  const uint8_t* const src = it->yuv_in + Y_OFF_ENC;
+  const VP8SegmentInfo* const dqm = &enc->dqm[it->mb->segment];
   int nz = 0;
   int n;
   int16_t tmp[16][16], dc_tmp[16];
@@ -790,18 +794,18 @@ static int ReconstructIntra16(VP8EncIterator* WEBP_RESTRICT const it,
     VP8FTransform2(src + VP8Scan[n], ref + VP8Scan[n], tmp[n]);
   }
   VP8FTransformWHT(tmp[0], dc_tmp);
-  nz |= VP8EncQuantizeBlockWHT(dc_tmp, rd->y_dc_levels, &dqm->y2_) << 24;
+  nz |= VP8EncQuantizeBlockWHT(dc_tmp, rd->y_dc_levels, &dqm->y2) << 24;
 
-  if (DO_TRELLIS_I16 && it->do_trellis_) {
+  if (DO_TRELLIS_I16 && it->do_trellis) {
     int x, y;
     VP8IteratorNzToBytes(it);
     for (y = 0, n = 0; y < 4; ++y) {
       for (x = 0; x < 4; ++x, ++n) {
-        const int ctx = it->top_nz_[x] + it->left_nz_[y];
+        const int ctx = it->top_nz[x] + it->left_nz[y];
         const int non_zero = TrellisQuantizeBlock(
-            enc, tmp[n], rd->y_ac_levels[n], ctx, TYPE_I16_AC, &dqm->y1_,
-            dqm->lambda_trellis_i16_);
-        it->top_nz_[x] = it->left_nz_[y] = non_zero;
+            enc, tmp[n], rd->y_ac_levels[n], ctx, TYPE_I16_AC, &dqm->y1,
+            dqm->lambda_trellis_i16);
+        it->top_nz[x] = it->left_nz[y] = non_zero;
         rd->y_ac_levels[n][0] = 0;
         nz |= non_zero << n;
       }
@@ -811,7 +815,7 @@ static int ReconstructIntra16(VP8EncIterator* WEBP_RESTRICT const it,
       // Zero-out the first coeff, so that: a) nz is correct below, and
       // b) finding 'last' non-zero coeffs in SetResidualCoeffs() is simplified.
       tmp[n][0] = tmp[n + 1][0] = 0;
-      nz |= VP8EncQuantize2Blocks(tmp[n], rd->y_ac_levels[n], &dqm->y1_) << n;
+      nz |= VP8EncQuantize2Blocks(tmp[n], rd->y_ac_levels[n], &dqm->y1) << n;
       assert(rd->y_ac_levels[n + 0][0] == 0);
       assert(rd->y_ac_levels[n + 1][0] == 0);
     }
@@ -831,20 +835,20 @@ static int ReconstructIntra4(VP8EncIterator* WEBP_RESTRICT const it,
                              const uint8_t* WEBP_RESTRICT const src,
                              uint8_t* WEBP_RESTRICT const yuv_out,
                              int mode) {
-  const VP8Encoder* const enc = it->enc_;
-  const uint8_t* const ref = it->yuv_p_ + VP8I4ModeOffsets[mode];
-  const VP8SegmentInfo* const dqm = &enc->dqm_[it->mb_->segment_];
+  const VP8Encoder* const enc = it->enc;
+  const uint8_t* const ref = it->yuv_p + VP8I4ModeOffsets[mode];
+  const VP8SegmentInfo* const dqm = &enc->dqm[it->mb->segment];
   int nz = 0;
   int16_t tmp[16];
 
   VP8FTransform(src, ref, tmp);
-  if (DO_TRELLIS_I4 && it->do_trellis_) {
-    const int x = it->i4_ & 3, y = it->i4_ >> 2;
-    const int ctx = it->top_nz_[x] + it->left_nz_[y];
-    nz = TrellisQuantizeBlock(enc, tmp, levels, ctx, TYPE_I4_AC, &dqm->y1_,
-                              dqm->lambda_trellis_i4_);
+  if (DO_TRELLIS_I4 && it->do_trellis) {
+    const int x = it->i4 & 3, y = it->i4 >> 2;
+    const int ctx = it->top_nz[x] + it->left_nz[y];
+    nz = TrellisQuantizeBlock(enc, tmp, levels, ctx, TYPE_I4_AC, &dqm->y1,
+                              dqm->lambda_trellis_i4);
   } else {
-    nz = VP8EncQuantizeBlock(tmp, levels, &dqm->y1_);
+    nz = VP8EncQuantizeBlock(tmp, levels, &dqm->y1);
   }
   VP8ITransform(ref, tmp, yuv_out, 0);
   return nz;
@@ -867,8 +871,8 @@ static int QuantizeSingle(int16_t* WEBP_RESTRICT const v,
   int V = *v;
   const int sign = (V < 0);
   if (sign) V = -V;
-  if (V > (int)mtx->zthresh_[0]) {
-    const int qV = QUANTDIV(V, mtx->iq_[0], mtx->bias_[0]) * mtx->q_[0];
+  if (V > (int)mtx->zthresh[0]) {
+    const int qV = QUANTDIV(V, mtx->iq[0], mtx->bias[0]) * mtx->q[0];
     const int err = (V - qV);
     *v = sign ? -qV : qV;
     return (sign ? -err : err) >> DSCALE;
@@ -890,8 +894,8 @@ static void CorrectDCValues(const VP8EncIterator* WEBP_RESTRICT const it,
   // as top[]/left[] on the next block.
   int ch;
   for (ch = 0; ch <= 1; ++ch) {
-    const int8_t* const top = it->top_derr_[it->x_][ch];
-    const int8_t* const left = it->left_derr_[ch];
+    const int8_t* const top = it->top_derr[it->x][ch];
+    const int8_t* const left = it->left_derr[ch];
     int16_t (* const c)[16] = &tmp[ch * 4];
     int err0, err1, err2, err3;
     c[0][0] += (C1 * top[0] + C2 * left[0]) >> (DSHIFT - DSCALE);
@@ -902,7 +906,7 @@ static void CorrectDCValues(const VP8EncIterator* WEBP_RESTRICT const it,
     err2 = QuantizeSingle(&c[2][0], mtx);
     c[3][0] += (C1 * err1 + C2 * err2) >> (DSHIFT - DSCALE);
     err3 = QuantizeSingle(&c[3][0], mtx);
-    // error 'err' is bounded by mtx->q_[0] which is 132 at max. Hence
+    // error 'err' is bounded by mtx->q[0] which is 132 at max. Hence
     // err >> DSCALE will fit in an int8_t type if DSCALE>=1.
     assert(abs(err1) <= 127 && abs(err2) <= 127 && abs(err3) <= 127);
     rd->derr[ch][0] = (int8_t)err1;
@@ -915,8 +919,8 @@ static void StoreDiffusionErrors(VP8EncIterator* WEBP_RESTRICT const it,
                                  const VP8ModeScore* WEBP_RESTRICT const rd) {
   int ch;
   for (ch = 0; ch <= 1; ++ch) {
-    int8_t* const top = it->top_derr_[it->x_][ch];
-    int8_t* const left = it->left_derr_[ch];
+    int8_t* const top = it->top_derr[it->x][ch];
+    int8_t* const left = it->left_derr[ch];
     left[0] = rd->derr[ch][0];            // restore err1
     left[1] = 3 * rd->derr[ch][2] >> 2;   //     ... 3/4th of err3
     top[0]  = rd->derr[ch][1];            //     ... err2
@@ -934,10 +938,10 @@ static void StoreDiffusionErrors(VP8EncIterator* WEBP_RESTRICT const it,
 static int ReconstructUV(VP8EncIterator* WEBP_RESTRICT const it,
                          VP8ModeScore* WEBP_RESTRICT const rd,
                          uint8_t* WEBP_RESTRICT const yuv_out, int mode) {
-  const VP8Encoder* const enc = it->enc_;
-  const uint8_t* const ref = it->yuv_p_ + VP8UVModeOffsets[mode];
-  const uint8_t* const src = it->yuv_in_ + U_OFF_ENC;
-  const VP8SegmentInfo* const dqm = &enc->dqm_[it->mb_->segment_];
+  const VP8Encoder* const enc = it->enc;
+  const uint8_t* const ref = it->yuv_p + VP8UVModeOffsets[mode];
+  const uint8_t* const src = it->yuv_in + U_OFF_ENC;
+  const VP8SegmentInfo* const dqm = &enc->dqm[it->mb->segment];
   int nz = 0;
   int n;
   int16_t tmp[8][16];
@@ -945,25 +949,25 @@ static int ReconstructUV(VP8EncIterator* WEBP_RESTRICT const it,
   for (n = 0; n < 8; n += 2) {
     VP8FTransform2(src + VP8ScanUV[n], ref + VP8ScanUV[n], tmp[n]);
   }
-  if (it->top_derr_ != NULL) CorrectDCValues(it, &dqm->uv_, tmp, rd);
+  if (it->top_derr != NULL) CorrectDCValues(it, &dqm->uv, tmp, rd);
 
-  if (DO_TRELLIS_UV && it->do_trellis_) {
+  if (DO_TRELLIS_UV && it->do_trellis) {
     int ch, x, y;
     for (ch = 0, n = 0; ch <= 2; ch += 2) {
       for (y = 0; y < 2; ++y) {
         for (x = 0; x < 2; ++x, ++n) {
-          const int ctx = it->top_nz_[4 + ch + x] + it->left_nz_[4 + ch + y];
+          const int ctx = it->top_nz[4 + ch + x] + it->left_nz[4 + ch + y];
           const int non_zero = TrellisQuantizeBlock(
-              enc, tmp[n], rd->uv_levels[n], ctx, TYPE_CHROMA_A, &dqm->uv_,
-              dqm->lambda_trellis_uv_);
-          it->top_nz_[4 + ch + x] = it->left_nz_[4 + ch + y] = non_zero;
+              enc, tmp[n], rd->uv_levels[n], ctx, TYPE_CHROMA_A, &dqm->uv,
+              dqm->lambda_trellis_uv);
+          it->top_nz[4 + ch + x] = it->left_nz[4 + ch + y] = non_zero;
           nz |= non_zero << n;
         }
       }
     }
   } else {
     for (n = 0; n < 8; n += 2) {
-      nz |= VP8EncQuantize2Blocks(tmp[n], rd->uv_levels[n], &dqm->uv_) << n;
+      nz |= VP8EncQuantize2Blocks(tmp[n], rd->uv_levels[n], &dqm->uv) << n;
     }
   }
 
@@ -985,7 +989,7 @@ static void StoreMaxDelta(VP8SegmentInfo* const dqm, const int16_t DCs[16]) {
   const int v2 = abs(DCs[4]);
   int max_v = (v1 > v0) ? v1 : v0;
   max_v = (v2 > max_v) ? v2 : max_v;
-  if (max_v > dqm->max_edge_) dqm->max_edge_ = max_v;
+  if (max_v > dqm->max_edge) dqm->max_edge = max_v;
 }
 
 static void SwapModeScore(VP8ModeScore** a, VP8ModeScore** b) {
@@ -1001,25 +1005,25 @@ static void SwapPtr(uint8_t** a, uint8_t** b) {
 }
 
 static void SwapOut(VP8EncIterator* const it) {
-  SwapPtr(&it->yuv_out_, &it->yuv_out2_);
+  SwapPtr(&it->yuv_out, &it->yuv_out2);
 }
 
 static void PickBestIntra16(VP8EncIterator* WEBP_RESTRICT const it,
                             VP8ModeScore* WEBP_RESTRICT rd) {
   const int kNumBlocks = 16;
-  VP8SegmentInfo* const dqm = &it->enc_->dqm_[it->mb_->segment_];
-  const int lambda = dqm->lambda_i16_;
-  const int tlambda = dqm->tlambda_;
-  const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC;
+  VP8SegmentInfo* const dqm = &it->enc->dqm[it->mb->segment];
+  const int lambda = dqm->lambda_i16;
+  const int tlambda = dqm->tlambda;
+  const uint8_t* const src = it->yuv_in + Y_OFF_ENC;
   VP8ModeScore rd_tmp;
   VP8ModeScore* rd_cur = &rd_tmp;
   VP8ModeScore* rd_best = rd;
   int mode;
-  int is_flat = IsFlatSource16(it->yuv_in_ + Y_OFF_ENC);
+  int is_flat = IsFlatSource16(it->yuv_in + Y_OFF_ENC);
 
   rd->mode_i16 = -1;
   for (mode = 0; mode < NUM_PRED_MODES; ++mode) {
-    uint8_t* const tmp_dst = it->yuv_out2_ + Y_OFF_ENC;  // scratch buffer
+    uint8_t* const tmp_dst = it->yuv_out2 + Y_OFF_ENC;  // scratch buffer
     rd_cur->mode_i16 = mode;
 
     // Reconstruct
@@ -1051,13 +1055,13 @@ static void PickBestIntra16(VP8EncIterator* WEBP_RESTRICT const it,
   if (rd_best != rd) {
     memcpy(rd, rd_best, sizeof(*rd));
   }
-  SetRDScore(dqm->lambda_mode_, rd);   // finalize score for mode decision.
+  SetRDScore(dqm->lambda_mode, rd);   // finalize score for mode decision.
   VP8SetIntra16Mode(it, rd->mode_i16);
 
   // we have a blocky macroblock (only DCs are non-zero) with fairly high
   // distortion, record max delta so we can later adjust the minimal filtering
   // strength needed to smooth these blocks out.
-  if ((rd->nz & 0x100ffff) == 0x1000000 && rd->D > dqm->min_disto_) {
+  if ((rd->nz & 0x100ffff) == 0x1000000 && rd->D > dqm->min_disto) {
     StoreMaxDelta(dqm, rd->y_dc_levels);
   }
 }
@@ -1067,41 +1071,41 @@ static void PickBestIntra16(VP8EncIterator* WEBP_RESTRICT const it,
 // return the cost array corresponding to the surrounding prediction modes.
 static const uint16_t* GetCostModeI4(VP8EncIterator* WEBP_RESTRICT const it,
                                      const uint8_t modes[16]) {
-  const int preds_w = it->enc_->preds_w_;
-  const int x = (it->i4_ & 3), y = it->i4_ >> 2;
-  const int left = (x == 0) ? it->preds_[y * preds_w - 1] : modes[it->i4_ - 1];
-  const int top = (y == 0) ? it->preds_[-preds_w + x] : modes[it->i4_ - 4];
+  const int preds_w = it->enc->preds_w;
+  const int x = (it->i4 & 3), y = it->i4 >> 2;
+  const int left = (x == 0) ? it->preds[y * preds_w - 1] : modes[it->i4 - 1];
+  const int top = (y == 0) ? it->preds[-preds_w + x] : modes[it->i4 - 4];
   return VP8FixedCostsI4[top][left];
 }
 
 static int PickBestIntra4(VP8EncIterator* WEBP_RESTRICT const it,
                           VP8ModeScore* WEBP_RESTRICT const rd) {
-  const VP8Encoder* const enc = it->enc_;
-  const VP8SegmentInfo* const dqm = &enc->dqm_[it->mb_->segment_];
-  const int lambda = dqm->lambda_i4_;
-  const int tlambda = dqm->tlambda_;
-  const uint8_t* const src0 = it->yuv_in_ + Y_OFF_ENC;
-  uint8_t* const best_blocks = it->yuv_out2_ + Y_OFF_ENC;
+  const VP8Encoder* const enc = it->enc;
+  const VP8SegmentInfo* const dqm = &enc->dqm[it->mb->segment];
+  const int lambda = dqm->lambda_i4;
+  const int tlambda = dqm->tlambda;
+  const uint8_t* const src0 = it->yuv_in + Y_OFF_ENC;
+  uint8_t* const best_blocks = it->yuv_out2 + Y_OFF_ENC;
   int total_header_bits = 0;
   VP8ModeScore rd_best;
 
-  if (enc->max_i4_header_bits_ == 0) {
+  if (enc->max_i4_header_bits == 0) {
     return 0;
   }
 
   InitScore(&rd_best);
   rd_best.H = 211;  // '211' is the value of VP8BitCost(0, 145)
-  SetRDScore(dqm->lambda_mode_, &rd_best);
+  SetRDScore(dqm->lambda_mode, &rd_best);
   VP8IteratorStartI4(it);
   do {
     const int kNumBlocks = 1;
     VP8ModeScore rd_i4;
     int mode;
     int best_mode = -1;
-    const uint8_t* const src = src0 + VP8Scan[it->i4_];
+    const uint8_t* const src = src0 + VP8Scan[it->i4];
     const uint16_t* const mode_costs = GetCostModeI4(it, rd->modes_i4);
-    uint8_t* best_block = best_blocks + VP8Scan[it->i4_];
-    uint8_t* tmp_dst = it->yuv_p_ + I4TMP;    // scratch buffer.
+    uint8_t* best_block = best_blocks + VP8Scan[it->i4];
+    uint8_t* tmp_dst = it->yuv_p + I4TMP;    // scratch buffer.
 
     InitScore(&rd_i4);
     MakeIntra4Preds(it);
@@ -1111,7 +1115,7 @@ static int PickBestIntra4(VP8EncIterator* WEBP_RESTRICT const it,
 
       // Reconstruct
       rd_tmp.nz =
-          ReconstructIntra4(it, tmp_levels, src, tmp_dst, mode) << it->i4_;
+          ReconstructIntra4(it, tmp_levels, src, tmp_dst, mode) << it->i4;
 
       // Compute RD-score
       rd_tmp.D = VP8SSE4x4(src, tmp_dst);
@@ -1140,25 +1144,25 @@ static int PickBestIntra4(VP8EncIterator* WEBP_RESTRICT const it,
         CopyScore(&rd_i4, &rd_tmp);
         best_mode = mode;
         SwapPtr(&tmp_dst, &best_block);
-        memcpy(rd_best.y_ac_levels[it->i4_], tmp_levels,
-               sizeof(rd_best.y_ac_levels[it->i4_]));
+        memcpy(rd_best.y_ac_levels[it->i4], tmp_levels,
+               sizeof(rd_best.y_ac_levels[it->i4]));
       }
     }
-    SetRDScore(dqm->lambda_mode_, &rd_i4);
+    SetRDScore(dqm->lambda_mode, &rd_i4);
     AddScore(&rd_best, &rd_i4);
     if (rd_best.score >= rd->score) {
       return 0;
     }
     total_header_bits += (int)rd_i4.H;   // <- equal to mode_costs[best_mode];
-    if (total_header_bits > enc->max_i4_header_bits_) {
+    if (total_header_bits > enc->max_i4_header_bits) {
       return 0;
     }
     // Copy selected samples if not in the right place already.
-    if (best_block != best_blocks + VP8Scan[it->i4_]) {
-      VP8Copy4x4(best_block, best_blocks + VP8Scan[it->i4_]);
+    if (best_block != best_blocks + VP8Scan[it->i4]) {
+      VP8Copy4x4(best_block, best_blocks + VP8Scan[it->i4]);
     }
-    rd->modes_i4[it->i4_] = best_mode;
-    it->top_nz_[it->i4_ & 3] = it->left_nz_[it->i4_ >> 2] = (rd_i4.nz ? 1 : 0);
+    rd->modes_i4[it->i4] = best_mode;
+    it->top_nz[it->i4 & 3] = it->left_nz[it->i4 >> 2] = (rd_i4.nz ? 1 : 0);
   } while (VP8IteratorRotateI4(it, best_blocks));
 
   // finalize state
@@ -1174,11 +1178,11 @@ static int PickBestIntra4(VP8EncIterator* WEBP_RESTRICT const it,
 static void PickBestUV(VP8EncIterator* WEBP_RESTRICT const it,
                        VP8ModeScore* WEBP_RESTRICT const rd) {
   const int kNumBlocks = 8;
-  const VP8SegmentInfo* const dqm = &it->enc_->dqm_[it->mb_->segment_];
-  const int lambda = dqm->lambda_uv_;
-  const uint8_t* const src = it->yuv_in_ + U_OFF_ENC;
-  uint8_t* tmp_dst = it->yuv_out2_ + U_OFF_ENC;  // scratch buffer
-  uint8_t* dst0 = it->yuv_out_ + U_OFF_ENC;
+  const VP8SegmentInfo* const dqm = &it->enc->dqm[it->mb->segment];
+  const int lambda = dqm->lambda_uv;
+  const uint8_t* const src = it->yuv_in + U_OFF_ENC;
+  uint8_t* tmp_dst = it->yuv_out2 + U_OFF_ENC;  // scratch buffer
+  uint8_t* dst0 = it->yuv_out + U_OFF_ENC;
   uint8_t* dst = dst0;
   VP8ModeScore rd_best;
   int mode;
@@ -1205,7 +1209,7 @@ static void PickBestUV(VP8EncIterator* WEBP_RESTRICT const it,
       CopyScore(&rd_best, &rd_uv);
       rd->mode_uv = mode;
       memcpy(rd->uv_levels, rd_uv.uv_levels, sizeof(rd->uv_levels));
-      if (it->top_derr_ != NULL) {
+      if (it->top_derr != NULL) {
         memcpy(rd->derr, rd_uv.derr, sizeof(rd_uv.derr));
       }
       SwapPtr(&dst, &tmp_dst);
@@ -1216,7 +1220,7 @@ static void PickBestUV(VP8EncIterator* WEBP_RESTRICT const it,
   if (dst != dst0) {   // copy 16x8 block if needed
     VP8Copy16x8(dst, dst0);
   }
-  if (it->top_derr_ != NULL) {  // store diffusion errors for next block
+  if (it->top_derr != NULL) {  // store diffusion errors for next block
     StoreDiffusionErrors(it, rd);
   }
 }
@@ -1226,26 +1230,26 @@ static void PickBestUV(VP8EncIterator* WEBP_RESTRICT const it,
 
 static void SimpleQuantize(VP8EncIterator* WEBP_RESTRICT const it,
                            VP8ModeScore* WEBP_RESTRICT const rd) {
-  const VP8Encoder* const enc = it->enc_;
-  const int is_i16 = (it->mb_->type_ == 1);
+  const VP8Encoder* const enc = it->enc;
+  const int is_i16 = (it->mb->type == 1);
   int nz = 0;
 
   if (is_i16) {
-    nz = ReconstructIntra16(it, rd, it->yuv_out_ + Y_OFF_ENC, it->preds_[0]);
+    nz = ReconstructIntra16(it, rd, it->yuv_out + Y_OFF_ENC, it->preds[0]);
   } else {
     VP8IteratorStartI4(it);
     do {
       const int mode =
-          it->preds_[(it->i4_ & 3) + (it->i4_ >> 2) * enc->preds_w_];
-      const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC + VP8Scan[it->i4_];
-      uint8_t* const dst = it->yuv_out_ + Y_OFF_ENC + VP8Scan[it->i4_];
+          it->preds[(it->i4 & 3) + (it->i4 >> 2) * enc->preds_w];
+      const uint8_t* const src = it->yuv_in + Y_OFF_ENC + VP8Scan[it->i4];
+      uint8_t* const dst = it->yuv_out + Y_OFF_ENC + VP8Scan[it->i4];
       MakeIntra4Preds(it);
-      nz |= ReconstructIntra4(it, rd->y_ac_levels[it->i4_],
-                              src, dst, mode) << it->i4_;
-    } while (VP8IteratorRotateI4(it, it->yuv_out_ + Y_OFF_ENC));
+      nz |= ReconstructIntra4(it, rd->y_ac_levels[it->i4],
+                              src, dst, mode) << it->i4;
+    } while (VP8IteratorRotateI4(it, it->yuv_out + Y_OFF_ENC));
   }
 
-  nz |= ReconstructUV(it, rd, it->yuv_out_ + U_OFF_ENC, it->mb_->uv_mode_);
+  nz |= ReconstructUV(it, rd, it->yuv_out + U_OFF_ENC, it->mb->uv_mode);
   rd->nz = nz;
 }
 
@@ -1256,23 +1260,23 @@ static void RefineUsingDistortion(VP8EncIterator* WEBP_RESTRICT const it,
   score_t best_score = MAX_COST;
   int nz = 0;
   int mode;
-  int is_i16 = try_both_modes || (it->mb_->type_ == 1);
+  int is_i16 = try_both_modes || (it->mb->type == 1);
 
-  const VP8SegmentInfo* const dqm = &it->enc_->dqm_[it->mb_->segment_];
+  const VP8SegmentInfo* const dqm = &it->enc->dqm[it->mb->segment];
   // Some empiric constants, of approximate order of magnitude.
   const int lambda_d_i16 = 106;
   const int lambda_d_i4 = 11;
   const int lambda_d_uv = 120;
-  score_t score_i4 = dqm->i4_penalty_;
+  score_t score_i4 = dqm->i4_penalty;
   score_t i4_bit_sum = 0;
-  const score_t bit_limit = try_both_modes ? it->enc_->mb_header_limit_
+  const score_t bit_limit = try_both_modes ? it->enc->mb_header_limit
                                            : MAX_COST;  // no early-out allowed
 
   if (is_i16) {   // First, evaluate Intra16 distortion
     int best_mode = -1;
-    const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC;
+    const uint8_t* const src = it->yuv_in + Y_OFF_ENC;
     for (mode = 0; mode < NUM_PRED_MODES; ++mode) {
-      const uint8_t* const ref = it->yuv_p_ + VP8I16ModeOffsets[mode];
+      const uint8_t* const ref = it->yuv_p + VP8I16ModeOffsets[mode];
       const score_t score = (score_t)VP8SSE16x16(src, ref) * RD_DISTO_MULT
                           + VP8FixedCostsI16[mode] * lambda_d_i16;
       if (mode > 0 && VP8FixedCostsI16[mode] > bit_limit) {
@@ -1284,10 +1288,10 @@ static void RefineUsingDistortion(VP8EncIterator* WEBP_RESTRICT const it,
         best_score = score;
       }
     }
-    if (it->x_ == 0 || it->y_ == 0) {
+    if (it->x == 0 || it->y == 0) {
       // avoid starting a checkerboard resonance from the border. See bug #432.
       if (IsFlatSource16(src)) {
-        best_mode = (it->x_ == 0) ? 0 : 2;
+        best_mode = (it->x == 0) ? 0 : 2;
         try_both_modes = 0;  // stick to i16
       }
     }
@@ -1304,12 +1308,12 @@ static void RefineUsingDistortion(VP8EncIterator* WEBP_RESTRICT const it,
     do {
       int best_i4_mode = -1;
       score_t best_i4_score = MAX_COST;
-      const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC + VP8Scan[it->i4_];
+      const uint8_t* const src = it->yuv_in + Y_OFF_ENC + VP8Scan[it->i4];
       const uint16_t* const mode_costs = GetCostModeI4(it, rd->modes_i4);
 
       MakeIntra4Preds(it);
       for (mode = 0; mode < NUM_BMODES; ++mode) {
-        const uint8_t* const ref = it->yuv_p_ + VP8I4ModeOffsets[mode];
+        const uint8_t* const ref = it->yuv_p + VP8I4ModeOffsets[mode];
         const score_t score = VP8SSE4x4(src, ref) * RD_DISTO_MULT
                             + mode_costs[mode] * lambda_d_i4;
         if (score < best_i4_score) {
@@ -1318,18 +1322,18 @@ static void RefineUsingDistortion(VP8EncIterator* WEBP_RESTRICT const it,
         }
       }
       i4_bit_sum += mode_costs[best_i4_mode];
-      rd->modes_i4[it->i4_] = best_i4_mode;
+      rd->modes_i4[it->i4] = best_i4_mode;
       score_i4 += best_i4_score;
       if (score_i4 >= best_score || i4_bit_sum > bit_limit) {
         // Intra4 won't be better than Intra16. Bail out and pick Intra16.
         is_i16 = 1;
         break;
-      } else {  // reconstruct partial block inside yuv_out2_ buffer
-        uint8_t* const tmp_dst = it->yuv_out2_ + Y_OFF_ENC + VP8Scan[it->i4_];
-        nz |= ReconstructIntra4(it, rd->y_ac_levels[it->i4_],
-                                src, tmp_dst, best_i4_mode) << it->i4_;
+      } else {  // reconstruct partial block inside yuv_out2 buffer
+        uint8_t* const tmp_dst = it->yuv_out2 + Y_OFF_ENC + VP8Scan[it->i4];
+        nz |= ReconstructIntra4(it, rd->y_ac_levels[it->i4],
+                                src, tmp_dst, best_i4_mode) << it->i4;
       }
-    } while (VP8IteratorRotateI4(it, it->yuv_out2_ + Y_OFF_ENC));
+    } while (VP8IteratorRotateI4(it, it->yuv_out2 + Y_OFF_ENC));
   }
 
   // Final reconstruction, depending on which mode is selected.
@@ -1338,16 +1342,16 @@ static void RefineUsingDistortion(VP8EncIterator* WEBP_RESTRICT const it,
     SwapOut(it);
     best_score = score_i4;
   } else {
-    nz = ReconstructIntra16(it, rd, it->yuv_out_ + Y_OFF_ENC, it->preds_[0]);
+    nz = ReconstructIntra16(it, rd, it->yuv_out + Y_OFF_ENC, it->preds[0]);
   }
 
   // ... and UV!
   if (refine_uv_mode) {
     int best_mode = -1;
     score_t best_uv_score = MAX_COST;
-    const uint8_t* const src = it->yuv_in_ + U_OFF_ENC;
+    const uint8_t* const src = it->yuv_in + U_OFF_ENC;
     for (mode = 0; mode < NUM_PRED_MODES; ++mode) {
-      const uint8_t* const ref = it->yuv_p_ + VP8UVModeOffsets[mode];
+      const uint8_t* const ref = it->yuv_p + VP8UVModeOffsets[mode];
       const score_t score = VP8SSE16x8(src, ref) * RD_DISTO_MULT
                           + VP8FixedCostsUV[mode] * lambda_d_uv;
       if (score < best_uv_score) {
@@ -1357,7 +1361,7 @@ static void RefineUsingDistortion(VP8EncIterator* WEBP_RESTRICT const it,
     }
     VP8SetIntraUVMode(it, best_mode);
   }
-  nz |= ReconstructUV(it, rd, it->yuv_out_ + U_OFF_ENC, it->mb_->uv_mode_);
+  nz |= ReconstructUV(it, rd, it->yuv_out + U_OFF_ENC, it->mb->uv_mode);
 
   rd->nz = nz;
   rd->score = best_score;
@@ -1370,7 +1374,7 @@ int VP8Decimate(VP8EncIterator* WEBP_RESTRICT const it,
                 VP8ModeScore* WEBP_RESTRICT const rd,
                 VP8RDLevel rd_opt) {
   int is_skipped;
-  const int method = it->enc_->method_;
+  const int method = it->enc->method;
 
   InitScore(rd);
 
@@ -1380,14 +1384,14 @@ int VP8Decimate(VP8EncIterator* WEBP_RESTRICT const it,
   VP8MakeChroma8Preds(it);
 
   if (rd_opt > RD_OPT_NONE) {
-    it->do_trellis_ = (rd_opt >= RD_OPT_TRELLIS_ALL);
+    it->do_trellis = (rd_opt >= RD_OPT_TRELLIS_ALL);
     PickBestIntra16(it, rd);
     if (method >= 2) {
       PickBestIntra4(it, rd);
     }
     PickBestUV(it, rd);
     if (rd_opt == RD_OPT_TRELLIS) {   // finish off with trellis-optim now
-      it->do_trellis_ = 1;
+      it->do_trellis = 1;
       SimpleQuantize(it, rd);
     }
   } else {

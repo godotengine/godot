@@ -15,8 +15,14 @@
 #include "src/webp/config.h"
 #endif
 
+#include <assert.h>
+#include <stddef.h>
+
+#include "src/webp/types.h"
 #include "src/dsp/cpu.h"
 #include "src/utils/bit_reader_inl_utils.h"
+#include "src/utils/bit_reader_utils.h"
+#include "src/utils/endian_inl_utils.h"
 #include "src/utils/utils.h"
 
 //------------------------------------------------------------------------------
@@ -25,11 +31,11 @@
 void VP8BitReaderSetBuffer(VP8BitReader* const br,
                            const uint8_t* const start,
                            size_t size) {
-  br->buf_     = start;
-  br->buf_end_ = start + size;
-  br->buf_max_ =
-      (size >= sizeof(lbit_t)) ? start + size - sizeof(lbit_t) + 1
-                               : start;
+  assert(start != NULL);
+  br->buf = start;
+  br->buf_end = start + size;
+  br->buf_max =
+      (size >= sizeof(lbit_t)) ? start + size - sizeof(lbit_t) + 1 : start;
 }
 
 void VP8InitBitReader(VP8BitReader* const br,
@@ -37,19 +43,19 @@ void VP8InitBitReader(VP8BitReader* const br,
   assert(br != NULL);
   assert(start != NULL);
   assert(size < (1u << 31));   // limit ensured by format and upstream checks
-  br->range_   = 255 - 1;
-  br->value_   = 0;
-  br->bits_    = -8;   // to load the very first 8bits
-  br->eof_     = 0;
+  br->range   = 255 - 1;
+  br->value   = 0;
+  br->bits    = -8;   // to load the very first 8bits
+  br->eof     = 0;
   VP8BitReaderSetBuffer(br, start, size);
   VP8LoadNewBytes(br);
 }
 
 void VP8RemapBitReader(VP8BitReader* const br, ptrdiff_t offset) {
-  if (br->buf_ != NULL) {
-    br->buf_ += offset;
-    br->buf_end_ += offset;
-    br->buf_max_ += offset;
+  if (br->buf != NULL) {
+    br->buf += offset;
+    br->buf_end += offset;
+    br->buf_max += offset;
   }
 }
 
@@ -86,17 +92,17 @@ const uint8_t kVP8NewRange[128] = {
 };
 
 void VP8LoadFinalBytes(VP8BitReader* const br) {
-  assert(br != NULL && br->buf_ != NULL);
+  assert(br != NULL && br->buf != NULL);
   // Only read 8bits at a time
-  if (br->buf_ < br->buf_end_) {
-    br->bits_ += 8;
-    br->value_ = (bit_t)(*br->buf_++) | (br->value_ << 8);
-  } else if (!br->eof_) {
-    br->value_ <<= 8;
-    br->bits_ += 8;
-    br->eof_ = 1;
+  if (br->buf < br->buf_end) {
+    br->bits += 8;
+    br->value = (bit_t)(*br->buf++) | (br->value << 8);
+  } else if (!br->eof) {
+    br->value <<= 8;
+    br->bits += 8;
+    br->eof = 1;
   } else {
-    br->bits_ = 0;  // This is to avoid undefined behaviour with shifts.
+    br->bits = 0;  // This is to avoid undefined behaviour with shifts.
   }
 }
 
@@ -147,20 +153,20 @@ void VP8LInitBitReader(VP8LBitReader* const br, const uint8_t* const start,
   assert(start != NULL);
   assert(length < 0xfffffff8u);   // can't happen with a RIFF chunk.
 
-  br->len_ = length;
-  br->val_ = 0;
-  br->bit_pos_ = 0;
-  br->eos_ = 0;
+  br->len = length;
+  br->val = 0;
+  br->bit_pos = 0;
+  br->eos = 0;
 
-  if (length > sizeof(br->val_)) {
-    length = sizeof(br->val_);
+  if (length > sizeof(br->val)) {
+    length = sizeof(br->val);
   }
   for (i = 0; i < length; ++i) {
     value |= (vp8l_val_t)start[i] << (8 * i);
   }
-  br->val_ = value;
-  br->pos_ = length;
-  br->buf_ = start;
+  br->val = value;
+  br->pos = length;
+  br->buf = start;
 }
 
 void VP8LBitReaderSetBuffer(VP8LBitReader* const br,
@@ -168,24 +174,24 @@ void VP8LBitReaderSetBuffer(VP8LBitReader* const br,
   assert(br != NULL);
   assert(buf != NULL);
   assert(len < 0xfffffff8u);   // can't happen with a RIFF chunk.
-  br->buf_ = buf;
-  br->len_ = len;
-  // pos_ > len_ should be considered a param error.
-  br->eos_ = (br->pos_ > br->len_) || VP8LIsEndOfStream(br);
+  br->buf = buf;
+  br->len = len;
+  // 'pos' > 'len' should be considered a param error.
+  br->eos = (br->pos > br->len) || VP8LIsEndOfStream(br);
 }
 
 static void VP8LSetEndOfStream(VP8LBitReader* const br) {
-  br->eos_ = 1;
-  br->bit_pos_ = 0;  // To avoid undefined behaviour with shifts.
+  br->eos = 1;
+  br->bit_pos = 0;  // To avoid undefined behaviour with shifts.
 }
 
 // If not at EOS, reload up to VP8L_LBITS byte-by-byte
 static void ShiftBytes(VP8LBitReader* const br) {
-  while (br->bit_pos_ >= 8 && br->pos_ < br->len_) {
-    br->val_ >>= 8;
-    br->val_ |= ((vp8l_val_t)br->buf_[br->pos_]) << (VP8L_LBITS - 8);
-    ++br->pos_;
-    br->bit_pos_ -= 8;
+  while (br->bit_pos >= 8 && br->pos < br->len) {
+    br->val >>= 8;
+    br->val |= ((vp8l_val_t)br->buf[br->pos]) << (VP8L_LBITS - 8);
+    ++br->pos;
+    br->bit_pos -= 8;
   }
   if (VP8LIsEndOfStream(br)) {
     VP8LSetEndOfStream(br);
@@ -193,14 +199,14 @@ static void ShiftBytes(VP8LBitReader* const br) {
 }
 
 void VP8LDoFillBitWindow(VP8LBitReader* const br) {
-  assert(br->bit_pos_ >= VP8L_WBITS);
+  assert(br->bit_pos >= VP8L_WBITS);
 #if defined(VP8L_USE_FAST_LOAD)
-  if (br->pos_ + sizeof(br->val_) < br->len_) {
-    br->val_ >>= VP8L_WBITS;
-    br->bit_pos_ -= VP8L_WBITS;
-    br->val_ |= (vp8l_val_t)HToLE32(WebPMemToUint32(br->buf_ + br->pos_)) <<
-                (VP8L_LBITS - VP8L_WBITS);
-    br->pos_ += VP8L_LOG8_WBITS;
+  if (br->pos + sizeof(br->val) < br->len) {
+    br->val >>= VP8L_WBITS;
+    br->bit_pos -= VP8L_WBITS;
+    br->val |= (vp8l_val_t)HToLE32(WebPMemToUint32(br->buf + br->pos)) <<
+               (VP8L_LBITS - VP8L_WBITS);
+    br->pos += VP8L_LOG8_WBITS;
     return;
   }
 #endif
@@ -210,10 +216,10 @@ void VP8LDoFillBitWindow(VP8LBitReader* const br) {
 uint32_t VP8LReadBits(VP8LBitReader* const br, int n_bits) {
   assert(n_bits >= 0);
   // Flag an error if end_of_stream or n_bits is more than allowed limit.
-  if (!br->eos_ && n_bits <= VP8L_MAX_NUM_BIT_READ) {
+  if (!br->eos && n_bits <= VP8L_MAX_NUM_BIT_READ) {
     const uint32_t val = VP8LPrefetchBits(br) & kBitMask[n_bits];
-    const int new_bits = br->bit_pos_ + n_bits;
-    br->bit_pos_ = new_bits;
+    const int new_bits = br->bit_pos + n_bits;
+    br->bit_pos = new_bits;
     ShiftBytes(br);
     return val;
   } else {
@@ -273,17 +279,17 @@ void BitTrace(const struct VP8BitReader* const br, const char label[]) {
   if (!init_done) {
     memset(kLabels, 0, sizeof(kLabels));
     atexit(PrintBitTraces);
-    buf_start = br->buf_;
+    buf_start = br->buf;
     init_done = 1;
   }
-  pos = (int)(br->buf_ - buf_start) * 8 - br->bits_;
+  pos = (int)(br->buf - buf_start) * 8 - br->bits;
   // if there's a too large jump, we've changed partition -> reset counter
   if (abs(pos - last_pos) > 32) {
-    buf_start = br->buf_;
+    buf_start = br->buf;
     pos = 0;
     last_pos = 0;
   }
-  if (br->range_ >= 0x7f) pos += kVP8Log2Range[br->range_ - 0x7f];
+  if (br->range >= 0x7f) pos += kVP8Log2Range[br->range - 0x7f];
   for (i = 0; i < last_label; ++i) {
     if (!strcmp(label, kLabels[i].label)) break;
   }

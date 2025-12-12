@@ -1,8 +1,8 @@
 diff --git a/thirdparty/libwebp/sharpyuv/sharpyuv_gamma.c b/thirdparty/libwebp/sharpyuv/sharpyuv_gamma.c
-index 09028428ac..6f1a88bf1a 100644
+index f72be4b89e..17c4b1940b 100644
 --- a/thirdparty/libwebp/sharpyuv/sharpyuv_gamma.c
 +++ b/thirdparty/libwebp/sharpyuv/sharpyuv_gamma.c
-@@ -26,7 +26,11 @@ static uint32_t kGammaToLinearTabS[GAMMA_TO_LINEAR_TAB_SIZE + 2];
+@@ -27,7 +27,11 @@ static uint32_t kGammaToLinearTabS[GAMMA_TO_LINEAR_TAB_SIZE + 2];
  #define LINEAR_TO_GAMMA_TAB_SIZE (1 << LINEAR_TO_GAMMA_TAB_BITS)
  static uint32_t kLinearToGammaTabS[LINEAR_TO_GAMMA_TAB_SIZE + 2];
  

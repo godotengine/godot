@@ -13,10 +13,11 @@
 //         Vikas Arora (vikaas.arora@gmail.com)
 
 #include <assert.h>
-#include <string.h>   // for memcpy()
 #include <stdlib.h>
+#include <string.h>   // for memcpy()
 
 #include "src/utils/bit_writer_utils.h"
+#include "src/webp/types.h"
 #include "src/utils/endian_inl_utils.h"
 #include "src/utils/utils.h"
 
@@ -26,54 +27,54 @@
 static int BitWriterResize(VP8BitWriter* const bw, size_t extra_size) {
   uint8_t* new_buf;
   size_t new_size;
-  const uint64_t needed_size_64b = (uint64_t)bw->pos_ + extra_size;
+  const uint64_t needed_size_64b = (uint64_t)bw->pos + extra_size;
   const size_t needed_size = (size_t)needed_size_64b;
   if (needed_size_64b != needed_size) {
-    bw->error_ = 1;
+    bw->error = 1;
     return 0;
   }
-  if (needed_size <= bw->max_pos_) return 1;
+  if (needed_size <= bw->max_pos) return 1;
   // If the following line wraps over 32bit, the test just after will catch it.
-  new_size = 2 * bw->max_pos_;
+  new_size = 2 * bw->max_pos;
   if (new_size < needed_size) new_size = needed_size;
   if (new_size < 1024) new_size = 1024;
   new_buf = (uint8_t*)WebPSafeMalloc(1ULL, new_size);
   if (new_buf == NULL) {
-    bw->error_ = 1;
+    bw->error = 1;
     return 0;
   }
-  if (bw->pos_ > 0) {
-    assert(bw->buf_ != NULL);
-    memcpy(new_buf, bw->buf_, bw->pos_);
+  if (bw->pos > 0) {
+    assert(bw->buf != NULL);
+    memcpy(new_buf, bw->buf, bw->pos);
   }
-  WebPSafeFree(bw->buf_);
-  bw->buf_ = new_buf;
-  bw->max_pos_ = new_size;
+  WebPSafeFree(bw->buf);
+  bw->buf = new_buf;
+  bw->max_pos = new_size;
   return 1;
 }
 
 static void Flush(VP8BitWriter* const bw) {
-  const int s = 8 + bw->nb_bits_;
-  const int32_t bits = bw->value_ >> s;
-  assert(bw->nb_bits_ >= 0);
-  bw->value_ -= bits << s;
-  bw->nb_bits_ -= 8;
+  const int s = 8 + bw->nb_bits;
+  const int32_t bits = bw->value >> s;
+  assert(bw->nb_bits >= 0);
+  bw->value -= bits << s;
+  bw->nb_bits -= 8;
   if ((bits & 0xff) != 0xff) {
-    size_t pos = bw->pos_;
-    if (!BitWriterResize(bw, bw->run_ + 1)) {
+    size_t pos = bw->pos;
+    if (!BitWriterResize(bw, bw->run + 1)) {
       return;
     }
     if (bits & 0x100) {  // overflow -> propagate carry over pending 0xff's
-      if (pos > 0) bw->buf_[pos - 1]++;
+      if (pos > 0) bw->buf[pos - 1]++;
     }
-    if (bw->run_ > 0) {
+    if (bw->run > 0) {
       const int value = (bits & 0x100) ? 0x00 : 0xff;
-      for (; bw->run_ > 0; --bw->run_) bw->buf_[pos++] = value;
+      for (; bw->run > 0; --bw->run) bw->buf[pos++] = value;
     }
-    bw->buf_[pos++] = bits & 0xff;
-    bw->pos_ = pos;
+    bw->buf[pos++] = bits & 0xff;
+    bw->pos = pos;
   } else {
-    bw->run_++;   // delay writing of bytes 0xff, pending eventual carry.
+    bw->run++;   // delay writing of bytes 0xff, pending eventual carry.
   }
 }
 
@@ -106,36 +107,36 @@ static const uint8_t kNewRange[128] = {
 };
 
 int VP8PutBit(VP8BitWriter* const bw, int bit, int prob) {
-  const int split = (bw->range_ * prob) >> 8;
+  const int split = (bw->range * prob) >> 8;
   if (bit) {
-    bw->value_ += split + 1;
-    bw->range_ -= split + 1;
+    bw->value += split + 1;
+    bw->range -= split + 1;
   } else {
-    bw->range_ = split;
+    bw->range = split;
   }
-  if (bw->range_ < 127) {   // emit 'shift' bits out and renormalize
-    const int shift = kNorm[bw->range_];
-    bw->range_ = kNewRange[bw->range_];
-    bw->value_ <<= shift;
-    bw->nb_bits_ += shift;
-    if (bw->nb_bits_ > 0) Flush(bw);
+  if (bw->range < 127) {   // emit 'shift' bits out and renormalize
+    const int shift = kNorm[bw->range];
+    bw->range = kNewRange[bw->range];
+    bw->value <<= shift;
+    bw->nb_bits += shift;
+    if (bw->nb_bits > 0) Flush(bw);
   }
   return bit;
 }
 
 int VP8PutBitUniform(VP8BitWriter* const bw, int bit) {
-  const int split = bw->range_ >> 1;
+  const int split = bw->range >> 1;
   if (bit) {
-    bw->value_ += split + 1;
-    bw->range_ -= split + 1;
+    bw->value += split + 1;
+    bw->range -= split + 1;
   } else {
-    bw->range_ = split;
+    bw->range = split;
   }
-  if (bw->range_ < 127) {
-    bw->range_ = kNewRange[bw->range_];
-    bw->value_ <<= 1;
-    bw->nb_bits_ += 1;
-    if (bw->nb_bits_ > 0) Flush(bw);
+  if (bw->range < 127) {
+    bw->range = kNewRange[bw->range];
+    bw->value <<= 1;
+    bw->nb_bits += 1;
+    if (bw->nb_bits > 0) Flush(bw);
   }
   return bit;
 }
@@ -160,37 +161,37 @@ void VP8PutSignedBits(VP8BitWriter* const bw, int value, int nb_bits) {
 //------------------------------------------------------------------------------
 
 int VP8BitWriterInit(VP8BitWriter* const bw, size_t expected_size) {
-  bw->range_   = 255 - 1;
-  bw->value_   = 0;
-  bw->run_     = 0;
-  bw->nb_bits_ = -8;
-  bw->pos_     = 0;
-  bw->max_pos_ = 0;
-  bw->error_   = 0;
-  bw->buf_     = NULL;
+  bw->range   = 255 - 1;
+  bw->value   = 0;
+  bw->run     = 0;
+  bw->nb_bits = -8;
+  bw->pos     = 0;
+  bw->max_pos = 0;
+  bw->error   = 0;
+  bw->buf     = NULL;
   return (expected_size > 0) ? BitWriterResize(bw, expected_size) : 1;
 }
 
 uint8_t* VP8BitWriterFinish(VP8BitWriter* const bw) {
-  VP8PutBits(bw, 0, 9 - bw->nb_bits_);
-  bw->nb_bits_ = 0;   // pad with zeroes
+  VP8PutBits(bw, 0, 9 - bw->nb_bits);
+  bw->nb_bits = 0;   // pad with zeroes
   Flush(bw);
-  return bw->buf_;
+  return bw->buf;
 }
 
 int VP8BitWriterAppend(VP8BitWriter* const bw,
                        const uint8_t* data, size_t size) {
   assert(data != NULL);
-  if (bw->nb_bits_ != -8) return 0;   // Flush() must have been called
+  if (bw->nb_bits != -8) return 0;   // Flush() must have been called
   if (!BitWriterResize(bw, size)) return 0;
-  memcpy(bw->buf_ + bw->pos_, data, size);
-  bw->pos_ += size;
+  memcpy(bw->buf + bw->pos, data, size);
+  bw->pos += size;
   return 1;
 }
 
 void VP8BitWriterWipeOut(VP8BitWriter* const bw) {
   if (bw != NULL) {
-    WebPSafeFree(bw->buf_);
+    WebPSafeFree(bw->buf);
     memset(bw, 0, sizeof(*bw));
   }
 }
@@ -206,12 +207,12 @@ void VP8BitWriterWipeOut(VP8BitWriter* const bw) {
 static int VP8LBitWriterResize(VP8LBitWriter* const bw, size_t extra_size) {
   uint8_t* allocated_buf;
   size_t allocated_size;
-  const size_t max_bytes = bw->end_ - bw->buf_;
-  const size_t current_size = bw->cur_ - bw->buf_;
+  const size_t max_bytes = bw->end - bw->buf;
+  const size_t current_size = bw->cur - bw->buf;
   const uint64_t size_required_64b = (uint64_t)current_size + extra_size;
   const size_t size_required = (size_t)size_required_64b;
   if (size_required != size_required_64b) {
-    bw->error_ = 1;
+    bw->error = 1;
     return 0;
   }
   if (max_bytes > 0 && size_required <= max_bytes) return 1;
@@ -221,16 +222,16 @@ static int VP8LBitWriterResize(VP8LBitWriter* const bw, size_t extra_size) {
   allocated_size = (((allocated_size >> 10) + 1) << 10);
   allocated_buf = (uint8_t*)WebPSafeMalloc(1ULL, allocated_size);
   if (allocated_buf == NULL) {
-    bw->error_ = 1;
+    bw->error = 1;
     return 0;
   }
   if (current_size > 0) {
-    memcpy(allocated_buf, bw->buf_, current_size);
+    memcpy(allocated_buf, bw->buf, current_size);
   }
-  WebPSafeFree(bw->buf_);
-  bw->buf_ = allocated_buf;
-  bw->cur_ = bw->buf_ + current_size;
-  bw->end_ = bw->buf_ + allocated_size;
+  WebPSafeFree(bw->buf);
+  bw->buf = allocated_buf;
+  bw->cur = bw->buf + current_size;
+  bw->end = bw->buf + allocated_size;
   return 1;
 }
 
@@ -241,31 +242,31 @@ int VP8LBitWriterInit(VP8LBitWriter* const bw, size_t expected_size) {
 
 int VP8LBitWriterClone(const VP8LBitWriter* const src,
                        VP8LBitWriter* const dst) {
-  const size_t current_size = src->cur_ - src->buf_;
-  assert(src->cur_ >= src->buf_ && src->cur_ <= src->end_);
+  const size_t current_size = src->cur - src->buf;
+  assert(src->cur >= src->buf && src->cur <= src->end);
   if (!VP8LBitWriterResize(dst, current_size)) return 0;
-  memcpy(dst->buf_, src->buf_, current_size);
-  dst->bits_ = src->bits_;
-  dst->used_ = src->used_;
-  dst->error_ = src->error_;
-  dst->cur_ = dst->buf_ + current_size;
+  memcpy(dst->buf, src->buf, current_size);
+  dst->bits = src->bits;
+  dst->used = src->used;
+  dst->error = src->error;
+  dst->cur = dst->buf + current_size;
   return 1;
 }
 
 void VP8LBitWriterWipeOut(VP8LBitWriter* const bw) {
   if (bw != NULL) {
-    WebPSafeFree(bw->buf_);
+    WebPSafeFree(bw->buf);
     memset(bw, 0, sizeof(*bw));
   }
 }
 
 void VP8LBitWriterReset(const VP8LBitWriter* const bw_init,
                         VP8LBitWriter* const bw) {
-  bw->bits_ = bw_init->bits_;
-  bw->used_ = bw_init->used_;
-  bw->cur_ = bw->buf_ + (bw_init->cur_ - bw_init->buf_);
-  assert(bw->cur_ <= bw->end_);
-  bw->error_ = bw_init->error_;
+  bw->bits = bw_init->bits;
+  bw->used = bw_init->used;
+  bw->cur = bw->buf + (bw_init->cur - bw_init->buf);
+  assert(bw->cur <= bw->end);
+  bw->error = bw_init->error;
 }
 
 void VP8LBitWriterSwap(VP8LBitWriter* const src, VP8LBitWriter* const dst) {
@@ -276,19 +277,19 @@ void VP8LBitWriterSwap(VP8LBitWriter* const src, VP8LBitWriter* const dst) {
 
 void VP8LPutBitsFlushBits(VP8LBitWriter* const bw) {
   // If needed, make some room by flushing some bits out.
-  if (bw->cur_ + VP8L_WRITER_BYTES > bw->end_) {
-    const uint64_t extra_size = (bw->end_ - bw->buf_) + MIN_EXTRA_SIZE;
+  if (bw->cur + VP8L_WRITER_BYTES > bw->end) {
+    const uint64_t extra_size = (bw->end - bw->buf) + MIN_EXTRA_SIZE;
     if (!CheckSizeOverflow(extra_size) ||
         !VP8LBitWriterResize(bw, (size_t)extra_size)) {
-      bw->cur_ = bw->buf_;
-      bw->error_ = 1;
+      bw->cur = bw->buf;
+      bw->error = 1;
       return;
     }
   }
-  *(vp8l_wtype_t*)bw->cur_ = (vp8l_wtype_t)WSWAP((vp8l_wtype_t)bw->bits_);
-  bw->cur_ += VP8L_WRITER_BYTES;
-  bw->bits_ >>= VP8L_WRITER_BITS;
-  bw->used_ -= VP8L_WRITER_BITS;
+  *(vp8l_wtype_t*)bw->cur = (vp8l_wtype_t)WSWAP((vp8l_wtype_t)bw->bits);
+  bw->cur += VP8L_WRITER_BYTES;
+  bw->bits >>= VP8L_WRITER_BITS;
+  bw->used -= VP8L_WRITER_BITS;
 }
 
 void VP8LPutBitsInternal(VP8LBitWriter* const bw, uint32_t bits, int n_bits) {
@@ -296,8 +297,8 @@ void VP8LPutBitsInternal(VP8LBitWriter* const bw, uint32_t bits, int n_bits) {
   // That's the max we can handle:
   assert(sizeof(vp8l_wtype_t) == 2);
   if (n_bits > 0) {
-    vp8l_atype_t lbits = bw->bits_;
-    int used = bw->used_;
+    vp8l_atype_t lbits = bw->bits;
+    int used = bw->used;
     // Special case of overflow handling for 32bit accumulator (2-steps flush).
 #if VP8L_WRITER_BITS == 16
     if (used + n_bits >= VP8L_WRITER_MAX_BITS) {
@@ -312,36 +313,36 @@ void VP8LPutBitsInternal(VP8LBitWriter* const bw, uint32_t bits, int n_bits) {
 #endif
     // If needed, make some room by flushing some bits out.
     while (used >= VP8L_WRITER_BITS) {
-      if (bw->cur_ + VP8L_WRITER_BYTES > bw->end_) {
-        const uint64_t extra_size = (bw->end_ - bw->buf_) + MIN_EXTRA_SIZE;
+      if (bw->cur + VP8L_WRITER_BYTES > bw->end) {
+        const uint64_t extra_size = (bw->end - bw->buf) + MIN_EXTRA_SIZE;
         if (!CheckSizeOverflow(extra_size) ||
             !VP8LBitWriterResize(bw, (size_t)extra_size)) {
-          bw->cur_ = bw->buf_;
-          bw->error_ = 1;
+          bw->cur = bw->buf;
+          bw->error = 1;
           return;
         }
       }
-      *(vp8l_wtype_t*)bw->cur_ = (vp8l_wtype_t)WSWAP((vp8l_wtype_t)lbits);
-      bw->cur_ += VP8L_WRITER_BYTES;
+      *(vp8l_wtype_t*)bw->cur = (vp8l_wtype_t)WSWAP((vp8l_wtype_t)lbits);
+      bw->cur += VP8L_WRITER_BYTES;
       lbits >>= VP8L_WRITER_BITS;
       used -= VP8L_WRITER_BITS;
     }
-    bw->bits_ = lbits | ((vp8l_atype_t)bits << used);
-    bw->used_ = used + n_bits;
+    bw->bits = lbits | ((vp8l_atype_t)bits << used);
+    bw->used = used + n_bits;
   }
 }
 
 uint8_t* VP8LBitWriterFinish(VP8LBitWriter* const bw) {
   // flush leftover bits
-  if (VP8LBitWriterResize(bw, (bw->used_ + 7) >> 3)) {
-    while (bw->used_ > 0) {
-      *bw->cur_++ = (uint8_t)bw->bits_;
-      bw->bits_ >>= 8;
-      bw->used_ -= 8;
+  if (VP8LBitWriterResize(bw, (bw->used + 7) >> 3)) {
+    while (bw->used > 0) {
+      *bw->cur++ = (uint8_t)bw->bits;
+      bw->bits >>= 8;
+      bw->used -= 8;
     }
-    bw->used_ = 0;
+    bw->used = 0;
   }
-  return bw->buf_;
+  return bw->buf;
 }
 
 //------------------------------------------------------------------------------

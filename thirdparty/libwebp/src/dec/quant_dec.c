@@ -11,7 +11,11 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include "src/dec/common_dec.h"
+#include "src/dec/vp8_dec.h"
 #include "src/dec/vp8i_dec.h"
+#include "src/utils/bit_reader_utils.h"
+#include "src/webp/types.h"
 
 static WEBP_INLINE int clip(int v, int M) {
   return v < 0 ? 0 : v > M ? M : v;
@@ -60,7 +64,7 @@ static const uint16_t kAcTable[128] = {
 // Paragraph 9.6
 
 void VP8ParseQuant(VP8Decoder* const dec) {
-  VP8BitReader* const br = &dec->br_;
+  VP8BitReader* const br = &dec->br;
   const int base_q0 = VP8GetValue(br, 7, "global-header");
   const int dqy1_dc = VP8Get(br, "global-header") ?
        VP8GetSignedValue(br, 4, "global-header") : 0;
@@ -73,43 +77,42 @@ void VP8ParseQuant(VP8Decoder* const dec) {
   const int dquv_ac = VP8Get(br, "global-header") ?
        VP8GetSignedValue(br, 4, "global-header") : 0;
 
-  const VP8SegmentHeader* const hdr = &dec->segment_hdr_;
+  const VP8SegmentHeader* const hdr = &dec->segment_hdr;
   int i;
 
   for (i = 0; i < NUM_MB_SEGMENTS; ++i) {
     int q;
-    if (hdr->use_segment_) {
-      q = hdr->quantizer_[i];
-      if (!hdr->absolute_delta_) {
+    if (hdr->use_segment) {
+      q = hdr->quantizer[i];
+      if (!hdr->absolute_delta) {
         q += base_q0;
       }
     } else {
       if (i > 0) {
-        dec->dqm_[i] = dec->dqm_[0];
+        dec->dqm[i] = dec->dqm[0];
         continue;
       } else {
         q = base_q0;
       }
     }
     {
-      VP8QuantMatrix* const m = &dec->dqm_[i];
-      m->y1_mat_[0] = kDcTable[clip(q + dqy1_dc, 127)];
-      m->y1_mat_[1] = kAcTable[clip(q + 0,       127)];
+      VP8QuantMatrix* const m = &dec->dqm[i];
+      m->y1_mat[0] = kDcTable[clip(q + dqy1_dc, 127)];
+      m->y1_mat[1] = kAcTable[clip(q + 0,       127)];
 
-      m->y2_mat_[0] = kDcTable[clip(q + dqy2_dc, 127)] * 2;
+      m->y2_mat[0] = kDcTable[clip(q + dqy2_dc, 127)] * 2;
       // For all x in [0..284], x*155/100 is bitwise equal to (x*101581) >> 16.
       // The smallest precision for that is '(x*6349) >> 12' but 16 is a good
       // word size.
-      m->y2_mat_[1] = (kAcTable[clip(q + dqy2_ac, 127)] * 101581) >> 16;
-      if (m->y2_mat_[1] < 8) m->y2_mat_[1] = 8;
+      m->y2_mat[1] = (kAcTable[clip(q + dqy2_ac, 127)] * 101581) >> 16;
+      if (m->y2_mat[1] < 8) m->y2_mat[1] = 8;
 
-      m->uv_mat_[0] = kDcTable[clip(q + dquv_dc, 117)];
-      m->uv_mat_[1] = kAcTable[clip(q + dquv_ac, 127)];
+      m->uv_mat[0] = kDcTable[clip(q + dquv_dc, 117)];
+      m->uv_mat[1] = kAcTable[clip(q + dquv_ac, 127)];
 
-      m->uv_quant_ = q + dquv_ac;   // for dithering strength evaluation
+      m->uv_quant = q + dquv_ac;   // for dithering strength evaluation
     }
   }
 }
 
 //------------------------------------------------------------------------------
-
