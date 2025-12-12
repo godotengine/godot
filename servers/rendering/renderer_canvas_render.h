@@ -338,6 +338,8 @@ public:
 		int z_final;
 
 		mutable bool custom_rect;
+		mutable Rect2 custom_rect_value;
+		mutable bool merge_custom_rect;
 		mutable bool rect_dirty;
 		mutable Rect2 rect;
 		RID material;

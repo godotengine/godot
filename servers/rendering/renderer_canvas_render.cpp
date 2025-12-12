@@ -34,14 +34,25 @@
 RendererCanvasRender *RendererCanvasRender::singleton = nullptr;
 
 const Rect2 &RendererCanvasRender::Item::get_rect() const {
-	if (custom_rect || (!rect_dirty && !update_when_visible && skeleton == RID())) {
+	bool should_merge_custom = merge_custom_rect && !clip;
+
+	if (custom_rect && !should_merge_custom) {
+		return custom_rect_value;
+	}
+
+	if (!rect_dirty && !update_when_visible && skeleton == RID()) {
 		return rect;
 	}
 
-	//must update rect
+	// Must update rect.
 
 	if (commands == nullptr) {
-		rect = Rect2();
+		if (custom_rect && should_merge_custom) {
+			rect = custom_rect_value;
+		} else {
+			rect = Rect2();
+		}
+
 		rect_dirty = false;
 		return rect;
 	}
@@ -125,6 +136,10 @@ const Rect2 &RendererCanvasRender::Item::get_rect() const {
 			rect = rect.merge(r);
 		}
 		c = c->next;
+	}
+
+	if (custom_rect && should_merge_custom) {
+		rect = rect.merge(custom_rect_value);
 	}
 
 	rect_dirty = false;
