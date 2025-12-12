@@ -97,6 +97,7 @@ private:
 	DockSlot dock_slots[DockConstants::DOCK_SLOT_MAX];
 	Vector<WindowWrapper *> dock_windows;
 	LocalVector<EditorDock *> all_docks;
+	HashSet<EditorDock *> dirty_docks;
 
 	EditorDock *dock_tab_dragged = nullptr;
 	bool docks_visible = true;
@@ -123,6 +124,8 @@ private:
 	void _move_dock_tab_index(EditorDock *p_dock, int p_tab_index, bool p_set_current);
 	void _move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
 
+	void _queue_update_tab_style(EditorDock *p_dock);
+	void _update_dirty_dock_tabs();
 	void _update_tab_style(EditorDock *p_dock);
 
 public:
