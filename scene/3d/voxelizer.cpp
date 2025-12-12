@@ -32,19 +32,22 @@
 
 #include "core/config/project_settings.h"
 
-static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
+static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector2 *p_uv2, const Vector3 *p_normal, Vector2 &r_uv, Vector2 &r_uv2, Vector3 &r_normal) {
 	if (p_pos.is_equal_approx(p_vtx[0])) {
 		r_uv = p_uv[0];
+		r_uv2 = p_uv2[0];
 		r_normal = p_normal[0];
 		return;
 	}
 	if (p_pos.is_equal_approx(p_vtx[1])) {
 		r_uv = p_uv[1];
+		r_uv2 = p_uv2[1];
 		r_normal = p_normal[1];
 		return;
 	}
 	if (p_pos.is_equal_approx(p_vtx[2])) {
 		r_uv = p_uv[2];
+		r_uv2 = p_uv2[2];
 		r_normal = p_normal[2];
 		return;
 	}
@@ -61,6 +64,7 @@ static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3
 	real_t denom = (d00 * d11 - d01 * d01);
 	if (denom == 0) {
 		r_uv = p_uv[0];
+		r_uv2 = p_uv2[0];
 		r_normal = p_normal[0];
 		return;
 	}
@@ -69,10 +73,11 @@ static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3
 	real_t u = 1.0f - v - w;
 
 	r_uv = p_uv[0] * u + p_uv[1] * v + p_uv[2] * w;
+	r_uv2 = p_uv2[0] * u + p_uv2[1] * v + p_uv2[2] * w;
 	r_normal = (p_normal[0] * u + p_normal[1] * v + p_normal[2] * w).normalized();
 }
 
-void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector3 *p_normal, const Vector2 *p_uv, const MaterialCache &p_material, const AABB &p_aabb) {
+void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector3 *p_normal, const Vector2 *p_uv, const Vector2 *p_uv2, const MaterialCache &p_material, const AABB &p_aabb) {
 	if (p_level == cell_subdiv) {
 		//plot the face by guessing its albedo and emission value
 
@@ -146,24 +151,33 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				intersection = Face3(p_vtx[0], p_vtx[1], p_vtx[2]).get_closest_point_to(intersection);
 
 				Vector2 uv;
+				Vector2 uv2;
 				Vector3 lnormal;
-				get_uv_and_normal(intersection, p_vtx, p_uv, p_normal, uv, lnormal);
+				get_uv_and_normal(intersection, p_vtx, p_uv, p_uv2, p_normal, uv, uv2, lnormal);
 				if (lnormal == Vector3()) { //just in case normal is not provided
 					lnormal = normal;
 				}
 
-				int uv_x = CLAMP(int(Math::fposmod(uv.x, (real_t)1.0) * bake_texture_size), 0, bake_texture_size - 1);
-				int uv_y = CLAMP(int(Math::fposmod(uv.y, (real_t)1.0) * bake_texture_size), 0, bake_texture_size - 1);
-
+				int uv_x = CLAMP(int(Math::fposmod(uv.x * p_material.uv1_scale.x + p_material.uv1_offset.x, (real_t)1.0) * bake_texture_size), 0, bake_texture_size - 1);
+				int uv_y = CLAMP(int(Math::fposmod(uv.y * p_material.uv1_scale.y + p_material.uv1_offset.y, (real_t)1.0) * bake_texture_size), 0, bake_texture_size - 1);
 				int ofs = uv_y * bake_texture_size + uv_x;
+
 				albedo_accum.r += p_material.albedo[ofs].r;
 				albedo_accum.g += p_material.albedo[ofs].g;
 				albedo_accum.b += p_material.albedo[ofs].b;
 				albedo_accum.a += p_material.albedo[ofs].a;
 
-				emission_accum.r += p_material.emission[ofs].r;
-				emission_accum.g += p_material.emission[ofs].g;
-				emission_accum.b += p_material.emission[ofs].b;
+				int uv_emission_x = uv_x;
+				int uv_emission_y = uv_y;
+				if (p_material.emission_on_uv2) {
+					uv_emission_x = CLAMP(int(Math::fposmod(uv2.x * p_material.uv2_scale.x + p_material.uv2_offset.x, (real_t)1.0) * bake_texture_size), 0, bake_texture_size - 1);
+					uv_emission_y = CLAMP(int(Math::fposmod(uv2.y * p_material.uv2_scale.y + p_material.uv2_offset.y, (real_t)1.0) * bake_texture_size), 0, bake_texture_size - 1);
+				}
+				int ofs_emission = uv_emission_y * bake_texture_size + uv_emission_x;
+
+				emission_accum.r += p_material.emission[ofs_emission].r;
+				emission_accum.g += p_material.emission[ofs_emission].g;
+				emission_accum.b += p_material.emission[ofs_emission].b;
 
 				normal_accum += lnormal;
 
@@ -179,13 +193,14 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 
 			Vector3 lnormal;
 			Vector2 uv;
-			get_uv_and_normal(inters, p_vtx, p_uv, p_normal, uv, normal);
+			Vector2 uv2;
+			get_uv_and_normal(inters, p_vtx, p_uv, p_uv2, p_normal, uv, uv2, lnormal);
 			if (lnormal == Vector3()) { //just in case normal is not provided
 				lnormal = normal;
 			}
 
-			int uv_x = CLAMP(Math::fposmod(uv.x, (real_t)1.0) * bake_texture_size, 0, bake_texture_size - 1);
-			int uv_y = CLAMP(Math::fposmod(uv.y, (real_t)1.0) * bake_texture_size, 0, bake_texture_size - 1);
+			int uv_x = CLAMP(Math::fposmod(uv.x * p_material.uv1_scale.x + p_material.uv1_offset.x, (real_t)1.0) * bake_texture_size, 0, bake_texture_size - 1);
+			int uv_y = CLAMP(Math::fposmod(uv.y * p_material.uv1_scale.y + p_material.uv1_offset.y, (real_t)1.0) * bake_texture_size, 0, bake_texture_size - 1);
 
 			int ofs = uv_y * bake_texture_size + uv_x;
 
@@ -283,7 +298,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				bake_cells.write[child_idx].z = nz / half;
 			}
 
-			_plot_face(bake_cells[p_idx].children[i], p_level + 1, nx, ny, nz, p_vtx, p_normal, p_uv, p_material, aabb);
+			_plot_face(bake_cells[p_idx].children[i], p_level + 1, nx, ny, nz, p_vtx, p_normal, p_uv, p_uv2, p_material, aabb);
 		}
 	}
 }
@@ -377,11 +392,20 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 			mc.emission = _get_bake_texture(empty, Color(0, 0, 0), Color(0, 0, 0));
 		}
 
+		mc.uv1_scale = mat->get_uv1_scale();
+		mc.uv1_offset = mat->get_uv1_offset();
+		mc.uv2_scale = mat->get_uv2_scale();
+		mc.uv2_offset = mat->get_uv2_offset();
+		mc.emission_on_uv2 = mat->get_flag(BaseMaterial3D::FLAG_EMISSION_ON_UV2);
 	} else {
 		Ref<Image> empty;
 
 		mc.albedo = _get_bake_texture(empty, Color(0, 0, 0), Color(1, 1, 1));
 		mc.emission = _get_bake_texture(empty, Color(0, 0, 0), Color(0, 0, 0));
+		mc.uv1_scale = Vector3(1, 1, 1);
+		mc.uv1_offset = Vector3(0, 0, 0);
+		mc.uv2_scale = Vector3(1, 1, 1);
+		mc.uv2_offset = Vector3(0, 0, 0);
 	}
 
 	material_cache[p_material] = mc;
@@ -432,12 +456,18 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 		const Vector3 *vr = vertices.ptr();
 		Vector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
 		const Vector2 *uvr = nullptr;
+		Vector<Vector2> uv2 = a[Mesh::ARRAY_TEX_UV2];
+		const Vector2 *uv2r = nullptr;
 		Vector<Vector3> normals = a[Mesh::ARRAY_NORMAL];
 		const Vector3 *nr = nullptr;
 		Vector<int> index = a[Mesh::ARRAY_INDEX];
 
 		if (uv.size()) {
 			uvr = uv.ptr();
+		}
+
+		if (uv2.size()) {
+			uv2r = uv2.ptr();
 		}
 
 		if (normals.size()) {
@@ -451,6 +481,7 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 			for (int j = 0; j < facecount; j++) {
 				Vector3 vtxs[3];
 				Vector2 uvs[3];
+				Vector2 uv2s[3];
 				Vector3 normal[3];
 
 				bake_current++;
@@ -470,6 +501,12 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 					}
 				}
 
+				if (uv2r) {
+					for (int k = 0; k < 3; k++) {
+						uv2s[k] = uv2r[ir[j * 3 + k]];
+					}
+				}
+
 				if (nr) {
 					for (int k = 0; k < 3; k++) {
 						normal[k] = normal_xform.xform(nr[ir[j * 3 + k]]).normalized();
@@ -481,7 +518,7 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 					continue;
 				}
 				//plot
-				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
+				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, uv2s, material, po2_bounds);
 			}
 
 		} else {
@@ -490,6 +527,7 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 			for (int j = 0; j < facecount; j++) {
 				Vector3 vtxs[3];
 				Vector2 uvs[3];
+				Vector2 uv2s[3];
 				Vector3 normal[3];
 
 				bake_current++;
@@ -509,6 +547,12 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 					}
 				}
 
+				if (uv2r) {
+					for (int k = 0; k < 3; k++) {
+						uv2s[k] = uv2r[j * 3 + k];
+					}
+				}
+
 				if (nr) {
 					for (int k = 0; k < 3; k++) {
 						normal[k] = nr[j * 3 + k];
@@ -520,7 +564,7 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 					continue;
 				}
 				//plot face
-				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
+				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, uv2s, material, po2_bounds);
 			}
 		}
 	}
