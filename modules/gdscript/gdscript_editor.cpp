@@ -31,6 +31,7 @@
 #include "gdscript.h"
 
 #include "gdscript_analyzer.h"
+#include "gdscript_inline_info_generator.h"
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer.h"
 #include "gdscript_utility_functions.h"
@@ -4632,6 +4633,19 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	}
 
 	return ERR_CANT_RESOLVE;
+}
+
+Error GDScriptLanguage::generate_inline_info(const String &p_code, const String &p_path, HashMap<int, TypedArray<Dictionary>> *r_inline_info) {
+	GDScriptParser parser;
+	parser.parse(p_code, p_path, true);
+
+	GDScriptAnalyzer analyzer{ &parser };
+	analyzer.analyze();
+
+	GDScriptInlineInfoGenerator generator{ &parser };
+	Error err = generator.generate(r_inline_info);
+
+	return err;
 }
 
 #endif // TOOLS_ENABLED
