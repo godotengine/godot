@@ -3228,7 +3228,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
-		if (err != OK || display_server == nullptr) {
+		if (display_server == nullptr) {
 			String last_name = DisplayServer::get_create_function_name(display_driver_idx);
 
 			// We can't use this display server, try other ones as fallback.
@@ -3242,18 +3242,14 @@ Error Main::setup2(bool p_show_boot_logo) {
 				WARN_PRINT(vformat("Display driver %s failed, falling back to %s.", last_name, name));
 
 				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
-				if (err == OK && display_server != nullptr) {
+				if (display_server != nullptr) {
 					break;
 				}
 			}
 		}
 
-		if (err != OK || display_server == nullptr) {
+		if (display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
-
-			if (display_server) {
-				memdelete(display_server);
-			}
 
 			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
