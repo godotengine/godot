@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectLimiter" inherits="AudioEffect" deprecated="Use [AudioEffectHardLimiter] instead." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a soft-clip limiter audio effect to an Audio bus.
+		Adds a soft-clip limiter audio effect.
 	</brief_description>
 	<description>
 		A limiter is similar to a compressor, but it's less flexible and designed to disallow sound going over a given dB threshold. Adding one in the Master bus is always recommended to reduce the effects of clipping.
