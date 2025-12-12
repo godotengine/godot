@@ -124,6 +124,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_for_color_emojis"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
@@ -163,6 +164,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	bool autohinter = p_options["force_autohinter"];
 	bool modulate_color_glyphs = p_options["modulate_color_glyphs"];
 	bool allow_system_fallback = p_options["allow_system_fallback"];
+	bool use_for_color_emojis = p_options["use_for_color_emojis"];
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
 	bool keep_rounding_remainders = p_options["keep_rounding_remainders"];
@@ -190,6 +192,9 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_hinting((TextServer::Hinting)hinting);
 	font->set_oversampling(oversampling);
 	font->set_fallbacks(fallbacks);
+	if (use_for_color_emojis) {
+		font->set_script_support_override("Zsye", true);
+	}
 
 	if (subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
 		Array rids = font->get_rids();
