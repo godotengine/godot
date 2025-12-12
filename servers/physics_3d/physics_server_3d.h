@@ -449,12 +449,14 @@ public:
 		BODY_PARAM_ANGULAR_DAMP_MODE,
 		BODY_PARAM_LINEAR_DAMP,
 		BODY_PARAM_ANGULAR_DAMP,
+		BODY_PARAM_PROD_INERTIA,
 		BODY_PARAM_MAX,
 	};
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) = 0;
 	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const = 0;
 
+	virtual void body_set_mass_properties(RID p_body, real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia) = 0;
 	virtual void body_reset_mass_properties(RID p_body) = 0;
 
 	//state
