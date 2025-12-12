@@ -34,15 +34,163 @@
 #include "animation_blend_space_2d_editor.h"
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
+#include "core/string/string_buffer.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
+
+RichTextLabel *AnimationTreeNodeEditorPlugin::create_error_label_node() {
+	RichTextLabel *error_label = memnew(RichTextLabel);
+	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label->set_fit_content(true);
+	error_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	error_label->set_meta_underline(true);
+	error_label->connect("meta_clicked", callable_mp(this, &AnimationTreeNodeEditorPlugin::_meta_clicked));
+	return error_label;
+}
+
+void AnimationTreeNodeEditorPlugin::_meta_clicked(Variant p_meta) {
+	if (p_meta.get_type() != Variant::STRING) {
+		return;
+	}
+	const String raw_info_str = p_meta;
+	const String full_path_str = raw_info_str.get_slice("::", 0);
+	ERR_FAIL_COND(!full_path_str.ends_with("/"));
+
+	int input_index = -1;
+	if (raw_info_str.contains("::")) {
+		const String input_index_str = raw_info_str.get_slice("::", 1);
+		ERR_FAIL_COND(!input_index_str.is_valid_int());
+		input_index = input_index_str.to_int();
+	}
+
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	ERR_FAIL_NULL(tree);
+
+	// e.g. "parameters/blend_tree/node_name/" -> "parameters/blend_tree/"
+	String parent_path = full_path_str.rstrip("/").substr(0, full_path_str.rstrip("/").rfind_char('/') + 1);
+
+	Ref<AnimationRootNode> root_node = tree->get_animation_node_by_path(parent_path);
+	ERR_FAIL_COND(root_node.is_null());
+
+	String to_edit_root_path = String(parent_path);
+	to_edit_root_path = to_edit_root_path.replace_first(Animation::PARAMETERS_BASE_PATH, "");
+	to_edit_root_path = to_edit_root_path.trim_suffix("/");
+
+	Vector<String> navigate_to;
+	if (!to_edit_root_path.is_empty()) {
+		// empty string still has 1 element when split.
+		navigate_to = to_edit_root_path.split("/");
+	}
+	if (AnimationTreeEditor::get_singleton()->get_edited_path() != navigate_to) {
+		AnimationTreeEditor::get_singleton()->edit_path(navigate_to);
+	}
+
+	// Special case for AnimationNodeBlendTree.
+	if (Ref<AnimationNodeBlendTree> blend_tree = root_node; blend_tree.is_valid()) {
+		String child_name = full_path_str;
+		child_name = child_name.replace_first(parent_path, "");
+		child_name = child_name.trim_suffix("/");
+		callable_mp(AnimationNodeBlendTreeEditor::get_singleton(), &AnimationNodeBlendTreeEditor::pan_to_node).call_deferred(child_name, input_index);
+	}
+}
+
+void AnimationTreeNodeEditorPlugin::update_error_message(const AnimationTree *p_tree, PanelContainer *p_error_panel, RichTextLabel *p_error_label, const String *p_other_errors) {
+	const String editor_error_message = p_tree->get_editor_error_message();
+	const AHashMap<StringName, AnimationNode::InvalidInstance> &invalid_instances = p_tree->get_invalid_instances();
+
+	if (editor_error_message.is_empty() && invalid_instances.is_empty() && (!p_other_errors || p_other_errors->is_empty())) {
+		last_error_key = String();
+		p_error_panel->hide();
+		return;
+	}
+
+	// Cheaper to do this, than rebuild rich text label every frame.
+	// Though it would be better, to only call this when the tree changes.
+	{
+		StringBuffer k;
+		k += editor_error_message;
+		if (p_other_errors) {
+			k += *p_other_errors;
+		}
+		for (const KeyValue<StringName, AnimationNode::InvalidInstance> &kv : invalid_instances) {
+			k += kv.key;
+			for (const String &reason : kv.value.errors) {
+				k += reason;
+			}
+			for (const AnimationNode::InvalidInstance::InputError &E : kv.value.input_errors) {
+				k += itos(E.index);
+				k += E.error;
+			}
+		}
+
+		String error_key = k.as_string();
+		if (error_key == last_error_key) {
+			return;
+		}
+		last_error_key = error_key;
+	}
+
+	const String point = String::utf8("•  ");
+
+	p_error_label->clear();
+	p_error_label->append_text(editor_error_message);
+	if (p_other_errors) {
+		p_error_label->append_text(*p_other_errors);
+	}
+
+	bool first = true;
+	for (const KeyValue<StringName, AnimationNode::InvalidInstance> &kv : invalid_instances) {
+		if (!first) {
+			p_error_label->add_newline();
+		}
+		first = false;
+
+		Ref<AnimationNode> node = p_tree->get_animation_node_by_path(kv.key);
+		ERR_CONTINUE(node.is_null());
+
+		p_error_label->append_text(vformat(RTR("%s at "), node->get_class()));
+		p_error_label->push_meta(String(kv.key));
+		{
+			p_error_label->append_text(vformat(RTR("'%s'"), kv.key));
+		}
+		p_error_label->pop();
+		p_error_label->append_text(RTR(" has errors.\n"));
+
+		StringBuffer instance_error_builder;
+		for (const String &reason : kv.value.errors) {
+			instance_error_builder += point;
+			instance_error_builder += reason;
+			instance_error_builder += "\n";
+		}
+		p_error_label->append_text(instance_error_builder.as_string());
+
+		// Input errors.
+		String input_error_base = String(kv.key) + "::";
+		for (const AnimationNode::InvalidInstance::InputError &input_error : kv.value.input_errors) {
+			const String input_name = node->get_input_name(input_error.index);
+
+			p_error_label->append_text(point + input_error.error + " ");
+			p_error_label->push_meta(input_error_base + itos(input_error.index));
+			{
+				p_error_label->append_text(vformat(RTR("input %d '%s'."), input_error.index, input_name));
+			}
+			p_error_label->pop();
+			p_error_label->add_newline();
+		}
+	}
+
+	p_error_panel->show();
+}
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	if (p_tree && !p_tree->is_connected("animation_list_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed))) {
@@ -103,6 +251,14 @@ void AnimationTreeEditor::_update_path() {
 	b->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(-1));
 	path_hb->add_child(b);
 	for (int i = 0; i < button_path.size(); i++) {
+		// bread crumbs.
+		TextureRect *texture_rect = memnew(TextureRect);
+		texture_rect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+		texture_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		texture_rect->set_custom_minimum_size(Size2(16, 16) * EDSCALE);
+		texture_rect->set_texture(get_editor_theme_icon(SNAME("GuiTreeArrowRight")));
+		path_hb->add_child(texture_rect);
+
 		b = memnew(Button);
 		b->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		b->set_text(button_path[i]);
@@ -125,7 +281,7 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 
 		for (int i = 0; i < p_path.size(); i++) {
 			Ref<AnimationNode> child = node->get_child_by_name(p_path[i]);
-			ERR_BREAK(child.is_null());
+			ERR_BREAK_MSG(child.is_null(), vformat("Cannot edit path '%s': node '%s' not found as child of '%s'.", String("/").join(p_path), p_path[i], node->get_class()));
 			node = child;
 			button_path.push_back(p_path[i]);
 		}
@@ -235,26 +391,19 @@ bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 	return false;
 }
 
-Vector<String> AnimationTreeEditor::get_animation_list() {
+LocalVector<StringName> AnimationTreeEditor::get_animation_list() {
 	// This can be called off the main thread due to resource preview generation. Quit early in that case.
 	if (!singleton->tree || !Thread::is_main_thread() || !singleton->is_visible()) {
 		// When tree is empty, singleton not in the main thread.
-		return Vector<String>();
+		return LocalVector<StringName>();
 	}
 
 	AnimationTree *tree = singleton->tree;
 	if (!tree) {
-		return Vector<String>();
+		return LocalVector<StringName>();
 	}
 
-	List<StringName> anims;
-	tree->get_animation_list(&anims);
-	Vector<String> ret;
-	for (const StringName &E : anims) {
-		ret.push_back(E);
-	}
-
-	return ret;
+	return tree->get_sorted_animation_list();
 }
 
 AnimationTreeEditor::AnimationTreeEditor() {
