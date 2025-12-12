@@ -150,6 +150,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS), !ischecked);
 			if (!initializing) {
 				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisions", !ischecked);
+				EditorDebuggerNode::get_singleton()->send_config_value("debug_collisions_hint", !ischecked);
 			}
 
 		} break;
