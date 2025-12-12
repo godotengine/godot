@@ -91,6 +91,14 @@
 #define WL_POINTER_LEAVE 1
 #define WL_POINTER_BUTTON 3
 
+#define WL_TOUCH_DOWN 0
+#define WL_TOUCH_UP 1
+#define WL_TOUCH_MOTION 2
+#define WL_TOUCH_FRAME 3
+#define WL_TOUCH_CANCEL 4
+#define WL_TOUCH_SHAPE 5
+#define WL_TOUCH_ORIENTATION 6
+
 #define WL_SHM_FORMAT 0
 
 #define WL_DRM_DEVICE 0
@@ -1435,7 +1443,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 
 		if (p_opcode == WL_SEAT_GET_KEYBOARD) {
 			ERR_FAIL_COND_V(global_id == INVALID_ID, MessageStatus::ERROR);
-			// [Request] wl_seat::get_pointer(n);
+			// [Request] wl_seat::get_keyboard(n);
 			uint32_t new_local_id = body[0];
 
 			WaylandKeyboardData *new_data = memnew(WaylandKeyboardData);
@@ -1445,6 +1453,24 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 			ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 			instance_data->wl_keyboard_id = new_global_id;
+
+			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
+
+			return MessageStatus::HANDLED;
+		}
+
+		if (p_opcode == WL_SEAT_GET_TOUCH) {
+			ERR_FAIL_COND_V(global_id == INVALID_ID, MessageStatus::ERROR);
+			// [Request] wl_seat::get_touch(n);
+			uint32_t new_local_id = body[0];
+
+			WaylandTouchData *new_data = memnew(WaylandTouchData);
+			new_data->wl_seat_id = global_id;
+
+			uint32_t new_global_id = client->new_object(new_local_id, &wl_touch_interface, object->version, new_data);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
+
+			instance_data->wl_touch_id = new_global_id;
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
 
@@ -2272,6 +2298,63 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Pointer (g0x%x seat g0x%x): g0x%x -> g0x%x", p_global_id, data->wl_seat_id, global_seat_data->pointed_surface_id, INVALID_ID));
 				global_seat_data->pointed_surface_id = INVALID_ID;
 			}
+		}
+
+		return MessageStatus::UNHANDLED;
+	}
+
+	if (object->interface == &wl_touch_interface) {
+		WaylandTouchData *data = (WaylandTouchData *)object->data;
+		ERR_FAIL_NULL_V(data, MessageStatus::ERROR);
+
+		uint32_t global_seat_name = registry_globals_names[data->wl_seat_id];
+		RegistryGlobalInfo &global_seat_info = registry_globals[global_seat_name];
+		WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)global_seat_info.data;
+		ERR_FAIL_NULL_V(global_seat_data, MessageStatus::ERROR);
+
+		WaylandSeatInstanceData *seat_data = (WaylandSeatInstanceData *)object->data;
+		ERR_FAIL_NULL_V(seat_data, MessageStatus::ERROR);
+
+		if (p_opcode == WL_TOUCH_DOWN) {
+			// uint32_t serial = body[0];
+			// uint32_t time = body[1];
+			uint32_t surface = body[2];
+			// uint32_t id = body[3];
+			// uint32_t x = body[4];
+			// uint32_t y = body[5];
+
+			++data->touch_point_count;
+
+			if (data->touch_point_count == 1) {
+				if (global_seat_data->focused_surface_id == surface) {
+					return MessageStatus::UNHANDLED;
+				}
+
+				if (!global_surface_is_window(surface)) {
+					return MessageStatus::UNHANDLED;
+				}
+
+				if (global_seat_data->focused_surface_id != INVALID_ID) {
+					seat_name_leave_surface(global_seat_name, global_seat_data->focused_surface_id);
+				}
+
+				global_seat_data->focused_surface_id = surface;
+				seat_name_enter_surface(global_seat_name, surface);
+			}
+
+			return MessageStatus::UNHANDLED;
+		}
+
+		if (p_opcode == WL_TOUCH_UP) {
+			--data->touch_point_count;
+
+			return MessageStatus::UNHANDLED;
+		}
+
+		if (p_opcode == WL_TOUCH_CANCEL) {
+			data->touch_point_count = 0;
+
+			return MessageStatus::UNHANDLED;
 		}
 
 		return MessageStatus::UNHANDLED;
