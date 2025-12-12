@@ -884,6 +884,7 @@ ConnectDialog::ConnectDialog() {
 
 	bind_editor = memnew(EditorInspector);
 	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments:"));
+	bind_editor->set_theme_type_variation("ScrollContainerSecondary");
 	bind_controls.push_back(bind_editor);
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);

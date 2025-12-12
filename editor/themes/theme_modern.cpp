@@ -627,7 +627,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("title_button_color", "Tree", p_config.font_color);
 			p_theme->set_color("drop_position_color", "Tree", p_config.accent_color);
 
-			p_theme->set_constant("v_separation", "Tree", Math::pow(p_config.base_margin * 0.2 * EDSCALE, 3));
+			int tree_v_sep = p_config.enable_touch_optimizations ? p_config.separation_margin : Math::pow(p_config.base_margin * 0.2 * EDSCALE, 3);
+			p_theme->set_constant("v_separation", "Tree", tree_v_sep);
 			p_theme->set_constant("h_separation", "Tree", (p_config.increased_margin + 2) * EDSCALE);
 			p_theme->set_constant("guide_width", "Tree", p_config.border_width);
 			p_theme->set_constant("item_margin", "Tree", MAX(3 * p_config.increased_margin * EDSCALE, 12 * EDSCALE));
@@ -1937,6 +1938,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Sidebars.
 		{
+			p_theme->set_type_variation("ScrollContainerSecondary", "ScrollContainer");
 			p_theme->set_type_variation("TreeSecondary", "Tree");
 			p_theme->set_type_variation("ItemListSecondary", "ItemList");
 
@@ -1947,6 +1949,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 				style_sidebar->set_border_color(p_config.extra_border_color_2);
 			}
 
+			p_theme->set_stylebox(SceneStringName(panel), "ScrollContainerSecondary", style_sidebar);
 			p_theme->set_stylebox(SceneStringName(panel), "TreeSecondary", style_sidebar);
 			p_theme->set_stylebox(SceneStringName(panel), "ItemListSecondary", style_sidebar);
 			// Use it for EditorDebuggerInspector in StackTrace to keep the default 3-column layout,
