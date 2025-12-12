@@ -206,6 +206,7 @@ private:
 	LightmapGIData::ShadowmaskMode shadowmask_mode = LightmapGIData::SHADOWMASK_MODE_NONE;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
+	Vector<NodePath> additional_nodes;
 
 	Ref<LightmapGIData> light_data;
 	Node *last_owner = nullptr;
@@ -342,6 +343,9 @@ public:
 
 	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
 	Ref<CameraAttributes> get_camera_attributes() const;
+
+	void set_additional_nodes(const TypedArray<NodePath> &p_additional_nodes);
+	TypedArray<NodePath> get_additional_nodes() const;
 
 	AABB get_aabb() const override;
 
