@@ -29,7 +29,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" />
 			<description>
-				Override this method to define what happens when the user requests code completion. If [param force] is [code]true[/code], any checks should be bypassed.
+				Override this method to define what happens when the user requests code completion. If [param force] is [code]true[/code], code completion has explicitly been requested by the user.
 			</description>
 		</method>
 		<method name="add_auto_brace_completion_pair">
@@ -53,7 +53,7 @@
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
 				[param location] indicates location of the option relative to the location of the code completion query. See [enum CodeEdit.CodeCompletionLocation] for how to set this value.
-				[b]Note:[/b] This list will replace all current candidates.
+				[b]Note:[/b] A call to [method update_code_completion_options] will replace all current candidates with the queued options, and the queue will be empty afterward.
 			</description>
 		</method>
 		<method name="add_comment_delimiter">
@@ -421,7 +421,8 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" default="false" />
 			<description>
-				Emits [signal code_completion_requested], if [param force] is [code]true[/code] will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path, or signal.
+				If [method _request_code_completion] is overridden, invokes [method _request_code_completion] with [param force]. Otherwise emits [signal code_completion_requested] if either [param force] is [code]true[/code], or the caret is in word or after one of the [member code_completion_prefixes].
+				[b]Note:[/b] [signal code_completion_requested] is not emitted if all current options are any of [constant KIND_SIGNAL], [constant KIND_FILE_PATH], or [constant KIND_NODE_PATH]; regardless of [param force].
 			</description>
 		</method>
 		<method name="set_code_completion_selected_index">
@@ -436,6 +437,8 @@
 			<param index="0" name="code_hint" type="String" />
 			<description>
 				Sets the code hint text. Pass an empty string to clear.
+				If the [param code_hint] includes char [code]0xFFFF[/code] on the first line, the hint is moved horizontally to position the first occurrence of [code]0xFFFF[/code] at the caret.
+				If a line contains at least two [code]0xFFFF[/code] characters, the text between the first and last [code]0xFFFF[/code] on that line gets both highlighted and underlined.
 			</description>
 		</method>
 		<method name="set_code_hint_draw_below">
@@ -536,7 +539,7 @@
 			Sets the brace pairs to be autocompleted. For each entry in the dictionary, the key is the opening brace and the value is the closing brace that matches it. A brace is a [String] made of symbols. See [member auto_brace_completion_enabled] and [member auto_brace_completion_highlight_matching].
 		</member>
 		<member name="code_completion_enabled" type="bool" setter="set_code_completion_enabled" getter="is_code_completion_enabled" default="false">
-			If [code]true[/code], the [member ProjectSettings.input/ui_text_completion_query] action requests code completion. To handle it, see [method _request_code_completion] or [signal code_completion_requested].
+			If [code]true[/code], the [member ProjectSettings.input/ui_text_completion_query] action invokes [method request_code_completion] with [code]true[/code]. To handle it, see [method _request_code_completion] or [signal code_completion_requested].
 		</member>
 		<member name="code_completion_prefixes" type="String[]" setter="set_code_completion_prefixes" getter="get_code_completion_prefixes" default="[]">
 			Sets prefixes that will trigger code completion.
@@ -604,7 +607,7 @@
 		</signal>
 		<signal name="code_completion_requested">
 			<description>
-				Emitted when the user requests code completion. This signal will not be sent if [method _request_code_completion] is overridden or [member code_completion_enabled] is [code]false[/code].
+				Emitted when the user requests code completion. This signal will not be sent if [method _request_code_completion] is overridden.
 			</description>
 		</signal>
 		<signal name="symbol_hovered">
