@@ -80,6 +80,8 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define BINDINGS_CLASS_CONSTRUCTOR "Constructors"
 #define BINDINGS_CLASS_CONSTRUCTOR_EDITOR "EditorConstructors"
 #define BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY "BuiltInMethodConstructors"
+#define BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE "BuiltInMethodConstructorsCache"
+#define BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE_LOOKUP "BuiltInMethodConstructorsCacheLookupByGodotStringName"
 
 #define CS_PARAM_MEMORYOWN "memoryOwn"
 #define CS_PARAM_METHODBIND "method"
@@ -1811,12 +1813,19 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		StringBuilder cs_built_in_ctors_content;
 
 		cs_built_in_ctors_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
-		cs_built_in_ctors_content.append("using System;\n"
+		cs_built_in_ctors_content.append("using Godot.NativeInterop;\n"
+										 "using System;\n"
 										 "using System.Collections.Generic;\n"
 										 "\n");
 		cs_built_in_ctors_content.append("internal static class " BINDINGS_CLASS_CONSTRUCTOR "\n{");
 
 		cs_built_in_ctors_content.append(MEMBER_BEGIN "internal static readonly Dictionary<string, Func<IntPtr, GodotObject>> " BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ";\n");
+		// Cache for string names to avoid repeated conversions for performance.
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "internal static readonly Dictionary<StringName, Func<IntPtr, GodotObject>> " BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE ";\n");
+
+		// We don't have AlternateLookup in .NET 8, so this will have to suffice.
+		// TODO: Use FrozenDictionary?
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "internal static readonly Dictionary<godot_string_name.movable, Func<IntPtr, GodotObject>> " BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE_LOOKUP ";\n");
 
 		cs_built_in_ctors_content.append(MEMBER_BEGIN "public static GodotObject Invoke(string nativeTypeNameStr, IntPtr nativeObjectPtr)\n");
 		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
@@ -1825,9 +1834,26 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append(INDENT2 "return constructor(nativeObjectPtr);\n");
 		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
 
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "public static GodotObject Invoke(in godot_string_name nativeTypeName, IntPtr nativeObjectPtr)\n");
+		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
+		cs_built_in_ctors_content.append(INDENT2 "if (!" BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE_LOOKUP ".TryGetValue((godot_string_name.movable)nativeTypeName, out var constructor))\n");
+		cs_built_in_ctors_content.append(INDENT3 "throw new InvalidOperationException(\"Wrapper class not found for type: \" + StringName.CreateTakingOwnershipOfDisposableValue(NativeFuncs.godotsharp_string_name_new_copy(in nativeTypeName)));\n");
+		cs_built_in_ctors_content.append(INDENT2 "return constructor(nativeObjectPtr);\n");
+		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
+
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "internal static void BuildConstructorCache()\n");
+		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
+		cs_built_in_ctors_content.append(INDENT2 "foreach ((var className, var constructor) in " BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ")\n");
+		cs_built_in_ctors_content.append(INDENT3 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE ".TryAdd(className, constructor);\n");
+		cs_built_in_ctors_content.append(INDENT2 "foreach ((var className, var constructor) in " BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE ")\n");
+		cs_built_in_ctors_content.append(INDENT3 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE_LOOKUP ".TryAdd(className.NativeValue, constructor);\n");
+		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
+
 		cs_built_in_ctors_content.append(MEMBER_BEGIN "static " BINDINGS_CLASS_CONSTRUCTOR "()\n");
 		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
 		cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY " = new();\n");
+		cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE " = new();\n");
+		cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY_CACHE_LOOKUP " = new();\n");
 
 		for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
 			const TypeInterface &itype = E.value;
@@ -1854,6 +1880,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 			}
 		}
 
+		cs_built_in_ctors_content.append(INDENT2 "Constructors.BuildConstructorCache();\n");
 		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
 
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
@@ -2012,6 +2039,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 			}
 		}
 
+		cs_built_in_ctors_content.append(INDENT2 "Constructors.BuildConstructorCache();\n");
 		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
 
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
