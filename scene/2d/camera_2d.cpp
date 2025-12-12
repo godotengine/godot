@@ -269,8 +269,8 @@ Transform2D Camera2D::get_camera_transform() {
 void Camera2D::_ensure_update_interpolation_data() {
 	// The "curr -> previous" update can either occur
 	// on NOTIFICATION_INTERNAL_PHYSICS_PROCESS, OR
-	// on NOTIFICATION_TRANSFORM_CHANGED,
-	// if NOTIFICATION_TRANSFORM_CHANGED takes place earlier than
+	// on NOTIFICATION_GLOBAL_TRANSFORM_CHANGED,
+	// if NOTIFICATION_GLOBAL_TRANSFORM_CHANGED takes place earlier than
 	// NOTIFICATION_INTERNAL_PHYSICS_PROCESS on a tick.
 	// This is to ensure that the data keeps flowing, but the new data
 	// doesn't overwrite before prev has been set.
@@ -322,7 +322,7 @@ void Camera2D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if ((!position_smoothing_enabled && !is_physics_interpolated_and_enabled()) || is_part_of_edited_scene()) {
 				_update_scroll();
 			}
@@ -1003,6 +1003,6 @@ void Camera2D::_bind_methods() {
 }
 
 Camera2D::Camera2D() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	set_hide_clip_children(true);
 }

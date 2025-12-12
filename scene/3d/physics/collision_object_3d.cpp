@@ -88,7 +88,7 @@ void CollisionObject3D::_notification(int p_what) {
 			update_configuration_warnings();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {
 				return;
 			}
@@ -713,7 +713,7 @@ uint32_t CollisionObject3D::shape_find_owner(int p_shape_index) const {
 CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {
 	rid = p_rid;
 	area = p_area;
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	_define_ancestry(AncestralClass::COLLISION_OBJECT_3D);
 
 	if (p_area) {
@@ -750,7 +750,7 @@ PackedStringArray CollisionObject3D::get_configuration_warnings() const {
 CollisionObject3D::CollisionObject3D() {
 	_define_ancestry(AncestralClass::COLLISION_OBJECT_3D);
 
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	//owner=
 
 	//set_transform_notify(true);
