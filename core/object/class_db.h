@@ -139,13 +139,13 @@ public:
 		AHashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
+		List<MethodInfo> virtual_methods;
+		HashMap<StringName, MethodInfo> virtual_methods_map;
 
 #ifdef DEBUG_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
 		HashSet<StringName> methods_in_properties;
-		List<MethodInfo> virtual_methods;
-		HashMap<StringName, MethodInfo> virtual_methods_map;
 		HashMap<StringName, Vector<Error>> method_error_values;
 		HashMap<StringName, List<StringName>> linked_properties;
 #endif // DEBUG_ENABLED
