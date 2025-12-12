@@ -68,6 +68,7 @@ class MeshEditor : public SubViewportContainer {
 	void _on_light_1_switch_pressed();
 	void _on_light_2_switch_pressed();
 	void _update_rotation();
+	void _project_settings_changed();
 
 protected:
 	virtual void _update_theme_item_cache() override;

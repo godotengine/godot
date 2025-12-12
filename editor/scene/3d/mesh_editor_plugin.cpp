@@ -71,6 +71,12 @@ void MeshEditor::_update_rotation() {
 	rotation->set_transform(t);
 }
 
+void MeshEditor::_project_settings_changed() {
+	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
+	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
+	viewport->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+}
+
 void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	mesh = p_mesh;
 	mesh_instance->set_mesh(mesh);
@@ -163,6 +169,9 @@ MeshEditor::MeshEditor() {
 
 	rot_x = 0;
 	rot_y = 0;
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &MeshEditor::_project_settings_changed));
+	_project_settings_changed();
 }
 
 ///////////////////////
