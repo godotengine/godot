@@ -745,14 +745,14 @@ Files extracted from upstream source:
 
 ## minizip
 
-- Upstream: https://www.zlib.net
-- Version: 1.3.1 (zlib contrib, 2024)
+- Upstream: https://github.com/madler/zlib
+- Version: 1.3.1.2 (570720b0c24f9686c33f35a1b3165c1f568b96be, 2025)
 - License: zlib
 
 Files extracted from the upstream source:
 
 - From `contrib/minizip`:
-  `{crypt.h,ioapi.{c,h},unzip.{c,h},zip.{c,h}}`
+  `{crypt.h,ints.h,ioapi.{c,h},skipset.h,unzip.{c,h},zip.{c,h}}`
   `MiniZip64_info.txt`
 
 Patches:
@@ -1255,8 +1255,8 @@ Files extracted from upstream source:
 
 ## zlib
 
-- Upstream: https://www.zlib.net
-- Version: 1.3.1 (2024)
+- Upstream: https://github.com/madler/zlib
+- Version: 1.3.1.2 (570720b0c24f9686c33f35a1b3165c1f568b96be, 2025)
 - License: zlib
 
 Files extracted from upstream source:
