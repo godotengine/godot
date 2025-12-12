@@ -48,6 +48,7 @@
 #include "shapes/jolt_height_map_shape_3d.h"
 #include "shapes/jolt_separation_ray_shape_3d.h"
 #include "shapes/jolt_sphere_shape_3d.h"
+#include "shapes/jolt_tapered_capsule_shape_3d.h"
 #include "shapes/jolt_world_boundary_shape_3d.h"
 #include "spaces/jolt_job_system.h"
 #include "spaces/jolt_physics_direct_space_state_3d.h"
@@ -93,7 +94,14 @@ RID JoltPhysicsServer3D::box_shape_create() {
 }
 
 RID JoltPhysicsServer3D::capsule_shape_create() {
-	JoltShape3D *shape = memnew(JoltCapsuleShape3D);
+	JoltShape3D *shape = memnew(JoltTaperedCapsuleShape3D);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_rid(rid);
+	return rid;
+}
+
+RID JoltPhysicsServer3D::tapered_capsule_shape_create() {
+	JoltShape3D *shape = memnew(JoltTaperedCapsuleShape3D);
 	RID rid = shape_owner.make_rid(shape);
 	shape->set_rid(rid);
 	return rid;
