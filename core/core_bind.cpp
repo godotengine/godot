@@ -1910,6 +1910,14 @@ double Engine::get_physics_jitter_fix() const {
 	return ::Engine::get_singleton()->get_physics_jitter_fix();
 }
 
+double Engine::get_process_step() const {
+	return ::Engine::get_singleton()->get_process_step();
+}
+
+double Engine::get_physics_step() const {
+	return ::Engine::get_singleton()->get_physics_step();
+}
+
 double Engine::get_physics_interpolation_fraction() const {
 	return ::Engine::get_singleton()->get_physics_interpolation_fraction();
 }
@@ -2095,6 +2103,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_physics_steps_per_frame"), &Engine::get_max_physics_steps_per_frame);
 	ClassDB::bind_method(D_METHOD("set_physics_jitter_fix", "physics_jitter_fix"), &Engine::set_physics_jitter_fix);
 	ClassDB::bind_method(D_METHOD("get_physics_jitter_fix"), &Engine::get_physics_jitter_fix);
+	ClassDB::bind_method(D_METHOD("get_process_step"), &Engine::get_process_step);
+	ClassDB::bind_method(D_METHOD("get_physics_step"), &Engine::get_physics_step);
 	ClassDB::bind_method(D_METHOD("get_physics_interpolation_fraction"), &Engine::get_physics_interpolation_fraction);
 	ClassDB::bind_method(D_METHOD("set_max_fps", "max_fps"), &Engine::set_max_fps);
 	ClassDB::bind_method(D_METHOD("get_max_fps"), &Engine::get_max_fps);
