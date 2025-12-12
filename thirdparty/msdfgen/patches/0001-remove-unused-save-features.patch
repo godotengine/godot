@@ -1,0 +1,17 @@
+diff --git a/thirdparty/msdfgen/msdfgen.h b/thirdparty/msdfgen/msdfgen.h
+index bf0ae2badc..d2c9a2fc8f 100644
+--- a/thirdparty/msdfgen/msdfgen.h
++++ b/thirdparty/msdfgen/msdfgen.h
+@@ -34,12 +34,7 @@
+ #include "core/render-sdf.h"
+ #include "core/rasterization.h"
+ #include "core/sdf-error-estimation.h"
+-#include "core/save-bmp.h"
+-#include "core/save-tiff.h"
+-#include "core/save-rgba.h"
+-#include "core/save-fl32.h"
+ #include "core/shape-description.h"
+-#include "core/export-svg.h"
+ 
+ namespace msdfgen {
+ 
