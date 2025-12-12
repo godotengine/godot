@@ -57,6 +57,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/menu_bar.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -1438,6 +1439,26 @@ ProjectManager::ProjectManager() {
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
+		bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
+		if (global_menu) {
+			MenuBar *main_menu_bar = memnew(MenuBar);
+			main_menu_bar->set_start_index(0); // Main menu, add to the start of global menu.
+			main_menu_bar->set_prefer_global_menu(true);
+			left_hbox->add_child(main_menu_bar);
+
+			if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::WINDOW_MENU_ID)) {
+				PopupMenu *window_menu = memnew(PopupMenu);
+				window_menu->set_system_menu(NativeMenu::WINDOW_MENU_ID);
+				window_menu->set_name(TTRC("Window"));
+				main_menu_bar->add_child(window_menu);
+			}
+			if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::HELP_MENU_ID)) {
+				PopupMenu *help_menu = memnew(PopupMenu);
+				help_menu->set_system_menu(NativeMenu::HELP_MENU_ID);
+				help_menu->set_name(TTRC("Help"));
+				main_menu_bar->add_child(help_menu);
+			}
+		}
 		if (can_expand) {
 			// Spacer to center main toggles.
 			left_spacer = memnew(Control);
