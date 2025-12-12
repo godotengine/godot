@@ -6438,6 +6438,60 @@ void EditorNode::_layout_menu_option(int p_id) {
 	}
 }
 
+void EditorNode::_update_plugins_menu() {
+	plugins_menu->clear();
+	plugins_menu->add_shortcut(ED_GET_SHORTCUT("editor/reload_plugins"));
+	plugins_menu->add_separator(TTRC("Installed Plugins"));
+	const String addons_path = "res://addons/";
+	for (const String &folder : DirAccess::get_directories_at(addons_path)) {
+		String path = addons_path + folder + "/plugin.cfg";
+		if (!FileAccess::exists(path)) {
+			continue;
+		}
+		ConfigFile plugin;
+		Error err = plugin.load(path);
+		ERR_FAIL_COND_MSG(err != OK, vformat("Failed to load addon plugin config file: %s", path));
+		String name = plugin.get_value("plugin", "name", folder);
+		plugins_menu->add_check_item(name);
+		plugins_menu->set_item_metadata(-1, folder);
+		plugins_menu->set_item_checked(-1, pending_plugin_reload.has(folder));
+	}
+	plugins_menu->set_item_disabled(0, plugins_menu->get_item_count() <= 2);
+}
+
+void EditorNode::_plugins_menu_option(int p_id) {
+	if (p_id == 0) {
+		for (const KeyValue<String, String> &E : pending_plugin_reload) {
+			String plugin = "res://addons/" + E.key + "/plugin.cfg";
+			bool is_enabled = is_addon_plugin_enabled(E.key);
+			if (is_enabled) {
+				addon_name_to_plugin[plugin]->disable_plugin();
+				set_addon_plugin_enabled(E.key, false);
+			}
+			set_addon_plugin_enabled(E.key, true);
+			addon_name_to_plugin[plugin]->enable_plugin();
+		}
+		return;
+	} else if (p_id >= 2) {
+		String name = plugins_menu->get_item_text(p_id);
+		String folder;
+		for (const KeyValue<String, String> &E : pending_plugin_reload) {
+			if (E.value == name) {
+				folder = E.key;
+				break;
+			}
+		}
+		if (folder.is_empty()) {
+			folder = plugins_menu->get_item_metadata(p_id);
+			pending_plugin_reload[folder] = name;
+			plugins_menu->set_item_checked(p_id, true);
+		} else {
+			pending_plugin_reload.erase(folder);
+			plugins_menu->set_item_checked(p_id, false);
+		}
+	}
+}
+
 void EditorNode::_proceed_closing_scene_tabs() {
 	List<String>::Element *E = tabs_to_close.front();
 	if (!E) {
@@ -8575,6 +8629,13 @@ EditorNode::EditorNode() {
 	editor_layouts = memnew(PopupMenu);
 	settings_menu->add_submenu_node_item(TTRC("Editor Layout"), editor_layouts);
 	editor_layouts->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_layout_menu_option));
+
+	plugins_menu = memnew(PopupMenu);
+	plugins_menu->set_hide_on_checkable_item_selection(false);
+	settings_menu->add_submenu_node_item(TTRC("Plugins..."), plugins_menu);
+	plugins_menu->connect("about_to_popup", callable_mp(this, &EditorNode::_update_plugins_menu));
+	plugins_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_plugins_menu_option));
+	ED_SHORTCUT_AND_COMMAND("editor/reload_plugins", TTRC("Reload Plugins"), KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::R);
 	settings_menu->add_separator();
 
 	ED_SHORTCUT_AND_COMMAND("editor/take_screenshot", TTRC("Take Screenshot"), KeyModifierMask::CTRL | Key::F12);
