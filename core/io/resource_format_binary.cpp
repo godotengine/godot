@@ -2079,7 +2079,12 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 						Ref<Resource> sres = value;
 						if (sres.is_valid()) {
 							resource_set.insert(sres);
-							saved_resources.push_back(sres);
+							if (sres->is_built_in()) {
+								saved_resources.push_back(sres);
+							} else { // It may be imported.
+								int idx = external_resources.size();
+								external_resources[res] = idx;
+							}
 						} else {
 							_find_resources(value);
 						}

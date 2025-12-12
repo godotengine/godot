@@ -371,6 +371,10 @@ public:
 	static Ref<Image> create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
 	void set_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
 
+#ifdef TOOLS_ENABLED
+	bool is_data_equel(const Ref<Image> &p_image) const;
+#endif
+
 	Image() = default; // Create an empty image.
 	Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format); // Create an empty image of a specific size and format.
 	Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data); // Import an image of a specific size and format from a byte vector.
