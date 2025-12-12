@@ -303,9 +303,9 @@ void ProjectDialog::_update_target_auto_dir() {
 	} else if (mode == MODE_IMPORT) {
 		new_auto_dir = project_path->get_text().get_file().get_basename();
 	}
-	int naming_convention = (int)EDITOR_GET("project_manager/directory_naming_convention");
+	int naming_convention = (int)EDITOR_GET("project_manager/folder_naming_convention");
 	switch (naming_convention) {
-		case 0: // No convention
+		case 0: // No Convention
 			break;
 		case 1: // kebab-case
 			new_auto_dir = new_auto_dir.to_kebab_case();
@@ -323,7 +323,7 @@ void ProjectDialog::_update_target_auto_dir() {
 			new_auto_dir = new_auto_dir.capitalize();
 			break;
 		default:
-			ERR_FAIL_MSG("Invalid directory naming convention.");
+			ERR_FAIL_MSG("Invalid folder naming convention.");
 			break;
 	}
 	new_auto_dir = OS::get_singleton()->get_safe_dir_name(new_auto_dir);
