@@ -30,6 +30,9 @@
 
 #pragma once
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_GLTF_ENABLED
 #include "../openxr_uuid.h"
 #include "../util.h"
 #include "core/templates/rid_owner.h"
@@ -166,3 +169,4 @@ private:
 	EXT_PROTO_XRRESULT_FUNC1(xrDestroySpace, (XrSpace), space);
 	EXT_PROTO_XRRESULT_FUNC5(xrPathToString, (XrInstance), instance, (XrPath), path, (uint32_t), bufferCapacityInput, (uint32_t *), bufferCountOutput, (char *), buffer);
 };
+#endif // MODULE_GLTF_ENABLED

@@ -30,6 +30,7 @@
 
 #include "openxr_render_model_extension.h"
 
+#ifdef MODULE_GLTF_ENABLED
 #include "../openxr_api.h"
 #include "../openxr_interface.h"
 
@@ -792,3 +793,4 @@ OpenXRRenderModelData::OpenXRRenderModelData() {
 
 OpenXRRenderModelData::~OpenXRRenderModelData() {
 }
+#endif // MODULE_GLTF_ENABLED
