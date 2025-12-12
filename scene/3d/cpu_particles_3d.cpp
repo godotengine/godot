@@ -908,9 +908,20 @@ void CPUParticles3D::_particles_process(double p_delta) {
 							p.velocity.y = velocity_2d.y;
 						} else {
 							Vector3 normal = emission_normals.get(random_idx);
-							Vector3 v0 = Math::abs(normal.z) < 0.999 ? Vector3(0.0, 0.0, 1.0) : Vector3(0, 1.0, 0.0);
-							Vector3 tangent = v0.cross(normal).normalized();
-							Vector3 bitangent = tangent.cross(normal).normalized();
+							if (normal.length_squared() == 0) {
+								normal = Vector3(0, 0, 1);
+							} else {
+								normal.normalize();
+							}
+
+							Vector3 tangent = Vector3(0, 1, 0).cross(normal);
+							if (tangent.length_squared() < 0.00000001) {
+								tangent = Vector3(0, 0, 1);
+							} else {
+								tangent.normalize();
+							}
+
+							Vector3 bitangent = normal.cross(tangent).normalized();
 							Basis m3;
 							m3.set_column(0, tangent);
 							m3.set_column(1, bitangent);
