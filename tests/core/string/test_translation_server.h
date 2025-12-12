@@ -236,4 +236,14 @@ TEST_CASE("[TranslationServer] Comparing locales") {
 
 	CHECK(res == 10);
 }
+
+TEST_CASE("[TranslationServer] Language, country, and locale names") {
+	TranslationServer *ts = TranslationServer::get_singleton();
+	CHECK(ts->get_language_name("fr") == "French");
+	CHECK(ts->get_country_name("FR") == "France");
+	CHECK(ts->get_locale_name("fr") == "French");
+	CHECK(ts->get_locale_name("fr_FR") == "French (France)");
+	CHECK(ts->get_native_locale_name("fr") == U"français");
+	CHECK(ts->get_native_locale_name("fr_FR") == U"français (France)");
+}
 } // namespace TestTranslationServer
