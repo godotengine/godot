@@ -768,6 +768,14 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	_update_online_doc();
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
+
+	if (seb) {
+		CodeTextEditor *cte = seb->get_code_editor();
+		if (cte) {
+			int current_line = cte->get_text_editor()->get_caret_line();
+			update_members_overview_current(current_line);
+		}
+	}
 }
 
 void ScriptEditor::_add_recent_script(const String &p_path) {
@@ -2154,6 +2162,7 @@ void ScriptEditor::_toggle_members_overview_alpha_sort(bool p_alphabetic_sort) {
 
 void ScriptEditor::_update_members_overview() {
 	members_overview->clear();
+	members_overview_selected_index = -1;
 
 	ScriptEditorBase *se = _get_current_editor();
 	if (!se) {
@@ -2190,6 +2199,44 @@ void ScriptEditor::_update_members_overview() {
 			members_overview->set_item_metadata(-1, line);
 		}
 	}
+
+	CodeTextEditor *cte = se->get_code_editor();
+	if (cte) {
+		int current_line = cte->get_text_editor()->get_caret_line();
+		update_members_overview_current(current_line);
+	}
+}
+
+void ScriptEditor::update_members_overview_current(int p_line) {
+	if (!members_overview->is_visible() || members_overview->get_item_count() == 0 || members_overview_selected_index == -2) {
+		return;
+	}
+
+	int best_match_idx = -1;
+	int best_match_line = -1;
+
+	for (int i = 0; i < members_overview->get_item_count(); i++) {
+		int function_line = members_overview->get_item_metadata(i);
+		if (function_line <= p_line && function_line > best_match_line) {
+			best_match_line = function_line;
+			best_match_idx = i;
+		}
+	}
+
+	if (best_match_idx != members_overview_selected_index) {
+		members_overview->deselect_all();
+
+		if (best_match_idx != -1) {
+			members_overview->select(best_match_idx, false);
+		}
+
+		members_overview_selected_index = best_match_idx;
+	}
+}
+
+void ScriptEditor::mark_members_overview_dirty() {
+	// Using -2 to indicate cache is dirty (metadata is possibly stale).
+	members_overview_selected_index = -2;
 }
 
 void ScriptEditor::_update_help_overview_visibility() {
