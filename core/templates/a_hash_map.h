@@ -121,18 +121,52 @@ private:
 		return (p_meta_idx - original_idx + p_capacity + 1) & p_capacity;
 	}
 
-	bool _lookup_idx(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx) const {
-		if (unlikely(_elements == nullptr)) {
-			return false; // Failed lookups, no _elements.
-		}
-		return _lookup_idx_with_hash(p_key, r_element_idx, r_meta_idx, _hash(p_key));
+	bool _lookup_idx(const TKey &p_key, uint32_t &r_element_idx) const {
+		return _elements != nullptr && _lookup_idx_with_hash(p_key, r_element_idx, _hash(p_key));
 	}
 
-	bool _lookup_idx_with_hash(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx, uint32_t p_hash) const {
-		if (unlikely(_elements == nullptr)) {
-			return false; // Failed lookups, no _elements.
+	bool _lookup_idx_with_meta(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx) const {
+		return _elements != nullptr && _lookup_idx_with_meta_and_hash(p_key, r_element_idx, r_meta_idx, _hash(p_key));
+	}
+
+	/// Note: Assumes that _elements != nullptr
+	bool _lookup_idx_with_hash(const TKey &p_key, uint32_t &r_element_idx, uint32_t p_hash) const {
+		uint32_t meta_idx = p_hash & _capacity_mask;
+		Metadata metadata = _metadata[meta_idx];
+		if (metadata.hash == p_hash && Comparator::compare(_elements[metadata.element_idx].key, p_key)) {
+			r_element_idx = metadata.element_idx;
+			return true;
 		}
 
+		if (metadata.hash == EMPTY_HASH) {
+			return false;
+		}
+
+		// A collision occurred.
+		meta_idx = (meta_idx + 1) & _capacity_mask;
+		uint32_t distance = 1;
+		while (true) {
+			metadata = _metadata[meta_idx];
+			if (metadata.hash == p_hash && Comparator::compare(_elements[metadata.element_idx].key, p_key)) {
+				r_element_idx = metadata.element_idx;
+				return true;
+			}
+
+			if (metadata.hash == EMPTY_HASH) {
+				return false;
+			}
+
+			if (distance > _get_probe_length(meta_idx, metadata.hash, _capacity_mask)) {
+				return false;
+			}
+
+			meta_idx = (meta_idx + 1) & _capacity_mask;
+			distance++;
+		}
+	}
+
+	/// Note: Assumes that _elements != nullptr
+	bool _lookup_idx_with_meta_and_hash(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx, uint32_t p_hash) const {
 		uint32_t meta_idx = p_hash & _capacity_mask;
 		Metadata metadata = _metadata[meta_idx];
 		if (metadata.hash == p_hash && Comparator::compare(_elements[metadata.element_idx].key, p_key)) {
@@ -303,24 +337,21 @@ public:
 
 	TValue &get(const TKey &p_key) {
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup_idx(p_key, element_idx);
 		CRASH_COND_MSG(!exists, "AHashMap key not found.");
 		return _elements[element_idx].value;
 	}
 
 	const TValue &get(const TKey &p_key) const {
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup_idx(p_key, element_idx);
 		CRASH_COND_MSG(!exists, "AHashMap key not found.");
 		return _elements[element_idx].value;
 	}
 
 	const TValue *getptr(const TKey &p_key) const {
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup_idx(p_key, element_idx);
 
 		if (exists) {
 			return &_elements[element_idx].value;
@@ -330,8 +361,7 @@ public:
 
 	TValue *getptr(const TKey &p_key) {
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup_idx(p_key, element_idx);
 
 		if (exists) {
 			return &_elements[element_idx].value;
@@ -341,14 +371,13 @@ public:
 
 	bool has(const TKey &p_key) const {
 		uint32_t _idx = 0;
-		uint32_t meta_idx = 0;
-		return _lookup_idx(p_key, _idx, meta_idx);
+		return _lookup_idx(p_key, _idx);
 	}
 
 	bool erase(const TKey &p_key) {
 		uint32_t meta_idx = 0;
 		uint32_t element_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup_idx_with_meta(p_key, element_idx, meta_idx);
 
 		if (!exists) {
 			return false;
@@ -371,7 +400,7 @@ public:
 			memcpy((void *)&_elements[element_idx], (const void *)&_elements[_size], sizeof(MapKeyValue));
 			uint32_t moved_element_idx = 0;
 			uint32_t moved_meta_idx = 0;
-			_lookup_idx(_elements[_size].key, moved_element_idx, moved_meta_idx);
+			_lookup_idx_with_meta(_elements[_size].key, moved_element_idx, moved_meta_idx);
 			_metadata[moved_meta_idx].element_idx = element_idx;
 		}
 
@@ -386,8 +415,8 @@ public:
 		}
 		uint32_t meta_idx = 0;
 		uint32_t element_idx = 0;
-		ERR_FAIL_COND_V(_lookup_idx(p_new_key, element_idx, meta_idx), false);
-		ERR_FAIL_COND_V(!_lookup_idx(p_old_key, element_idx, meta_idx), false);
+		ERR_FAIL_COND_V(_lookup_idx(p_new_key, element_idx), false);
+		ERR_FAIL_COND_V(!_lookup_idx_with_meta(p_old_key, element_idx, meta_idx), false);
 		MapKeyValue &element = _elements[element_idx];
 		const_cast<TKey &>(element.key) = p_new_key;
 
@@ -543,9 +572,8 @@ public:
 	}
 
 	Iterator find(const TKey &p_key) {
-		uint32_t meta_idx = 0;
 		uint32_t element_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup_idx(p_key, element_idx);
 		if (!exists) {
 			return end();
 		}
@@ -573,8 +601,7 @@ public:
 
 	ConstIterator find(const TKey &p_key) const {
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup_idx(p_key, element_idx);
 		if (!exists) {
 			return end();
 		}
@@ -585,17 +612,15 @@ public:
 
 	const TValue &operator[](const TKey &p_key) const {
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup_idx(p_key, element_idx);
 		CRASH_COND(!exists);
 		return _elements[element_idx].value;
 	}
 
 	TValue &operator[](const TKey &p_key) {
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
 		uint32_t hash = _hash(p_key);
-		bool exists = _lookup_idx_with_hash(p_key, element_idx, meta_idx, hash);
+		bool exists = _elements && _lookup_idx_with_hash(p_key, element_idx, hash);
 
 		if (exists) {
 			return _elements[element_idx].value;
@@ -609,9 +634,8 @@ public:
 
 	Iterator insert(const TKey &p_key, const TValue &p_value) {
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
 		uint32_t hash = _hash(p_key);
-		bool exists = _lookup_idx_with_hash(p_key, element_idx, meta_idx, hash);
+		bool exists = _elements && _lookup_idx_with_hash(p_key, element_idx, hash);
 
 		if (!exists) {
 			element_idx = _insert_element(p_key, p_value, hash);
@@ -639,8 +663,7 @@ public:
 	// Returns the element index. If not found, returns -1.
 	int get_index(const TKey &p_key) {
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup_idx(p_key, element_idx);
 		if (!exists) {
 			return -1;
 		}
