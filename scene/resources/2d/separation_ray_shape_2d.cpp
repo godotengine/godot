@@ -46,7 +46,8 @@ void SeparationRayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
 	const float max_arrow_size = 6;
 	const float line_width = 1.4;
-	bool no_line = target_position.length() < line_width;
+	const float line_width_squared = line_width * line_width;
+	const bool no_line = target_position.length_squared() < line_width_squared;
 	float arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
 
 	if (no_line) {

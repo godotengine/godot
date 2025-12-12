@@ -412,17 +412,18 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 
 void GenericTilePolygonEditor::_grab_polygon_point(Vector2 p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_point_index) {
 	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 	r_polygon_index = -1;
 	r_point_index = -1;
-	float closest_distance = grab_threshold + 1.0;
+	real_t closest_distance_squared = (grab_threshold + 1.0) * (grab_threshold + 1.0);
 	for (unsigned int i = 0; i < polygons.size(); i++) {
 		const Vector<Vector2> &polygon = polygons[i];
 		for (int j = 0; j < polygon.size(); j++) {
-			float distance = p_pos.distance_to(p_polygon_xform.xform(polygon[j]));
-			if (distance < grab_threshold && distance < closest_distance) {
+			const real_t distance_squared = p_pos.distance_squared_to(p_polygon_xform.xform(polygon[j]));
+			if (distance_squared < grab_threshold_squared && distance_squared < closest_distance_squared) {
 				r_polygon_index = i;
 				r_point_index = j;
-				closest_distance = distance;
+				closest_distance_squared = distance_squared;
 			}
 		}
 	}
@@ -514,7 +515,8 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 		undo_redo = memnew(EditorUndoRedoManager);
 	}
 
-	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 
 	hovered_polygon_index = -1;
 	hovered_point_index = -1;
@@ -582,7 +584,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 				}
 				if (tools_button_group->get_pressed_button() == button_create) {
 					// Create points.
-					if (in_creation_polygon.size() >= 3 && mb->get_position().distance_to(xform.xform(in_creation_polygon[0])) < grab_threshold) {
+					if (in_creation_polygon.size() >= 3 && mb->get_position().distance_squared_to(xform.xform(in_creation_polygon[0])) < grab_threshold_squared) {
 						// Closes and create polygon.
 						if (!multiple_polygon_mode) {
 							clear_polygons();

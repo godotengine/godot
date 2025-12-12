@@ -679,7 +679,7 @@ bool NavigationAgent2D::is_target_reachable() {
 }
 
 bool NavigationAgent2D::_is_target_reachable() const {
-	return target_desired_distance >= _get_final_position().distance_to(target_position);
+	return _get_final_position().distance_squared_to(target_position) <= (target_desired_distance * target_desired_distance);
 }
 
 bool NavigationAgent2D::is_navigation_finished() {
@@ -756,7 +756,7 @@ void NavigationAgent2D::_update_navigation() {
 			const Vector2 segment_a = navigation_path[navigation_path_index - 1];
 			const Vector2 segment_b = navigation_path[navigation_path_index];
 			Vector2 p = Geometry2D::get_closest_point_to_segment(origin, segment_a, segment_b);
-			if (origin.distance_to(p) >= path_max_distance) {
+			if (origin.distance_squared_to(p) >= (path_max_distance * path_max_distance)) {
 				// To faraway, reload path
 				reload_path = true;
 			}
@@ -845,11 +845,11 @@ void NavigationAgent2D::_move_to_next_waypoint() {
 
 bool NavigationAgent2D::_is_within_waypoint_distance(const Vector2 &p_origin) const {
 	const Vector<Vector2> &navigation_path = navigation_result->get_path();
-	return p_origin.distance_to(navigation_path[navigation_path_index]) < path_desired_distance;
+	return p_origin.distance_squared_to(navigation_path[navigation_path_index]) < (path_desired_distance * path_desired_distance);
 }
 
 bool NavigationAgent2D::_is_within_target_distance(const Vector2 &p_origin) const {
-	return p_origin.distance_to(target_position) < target_desired_distance;
+	return p_origin.distance_squared_to(target_position) < (target_desired_distance * target_desired_distance);
 }
 
 void NavigationAgent2D::_trigger_waypoint_reached() {
@@ -891,7 +891,7 @@ void NavigationAgent2D::_trigger_waypoint_reached() {
 			if (navlink) {
 				Vector2 link_global_start_position = navlink->get_global_start_position();
 				Vector2 link_global_end_position = navlink->get_global_end_position();
-				if (waypoint.distance_to(link_global_start_position) < waypoint.distance_to(link_global_end_position)) {
+				if (waypoint.distance_squared_to(link_global_start_position) < waypoint.distance_squared_to(link_global_end_position)) {
 					details[SNAME("link_entry_position")] = link_global_start_position;
 					details[SNAME("link_exit_position")] = link_global_end_position;
 				} else {

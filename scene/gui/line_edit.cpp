@@ -519,7 +519,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (selecting_enabled && !text.is_empty()) {
 					const int triple_click_timeout = 600;
 					const int triple_click_tolerance = 5;
-					const bool is_triple_click = !b->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && b->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance;
+					const int triple_click_tolerance_squared = triple_click_tolerance * triple_click_tolerance;
+					const bool is_triple_click = !b->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && b->get_position().distance_squared_to(last_dblclk_pos) < triple_click_tolerance_squared;
 
 					if (is_triple_click) {
 						// Triple-click select all.
