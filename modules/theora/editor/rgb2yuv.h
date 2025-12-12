@@ -36,33 +36,49 @@
 // - https://stackoverflow.com/a/9467305
 // - https://en.wikipedia.org/wiki/YCbCr#Approximate_8-bit_matrices_for_BT.601
 
+#define WRITE_Y                                           \
+	{                                                     \
+		r = rgb[pixel_size * i];                          \
+		g = rgb[pixel_size * i + 1];                      \
+		b = rgb[pixel_size * i + 2];                      \
+		y[i++] = ((66 * r + 129 * g + 25 * b) >> 8) + 16; \
+	}
+
+#define WRITE_YUV                                              \
+	{                                                          \
+		WRITE_Y                                                \
+		u[uvpos] = ((-38 * r + -74 * g + 112 * b) >> 8) + 128; \
+		v[uvpos] = ((112 * r + -94 * g + -18 * b) >> 8) + 128; \
+		uvpos++;                                               \
+	}
+
 static void _rgb2yuv420(uint8_t *y, uint8_t *u, uint8_t *v, uint8_t *rgb, size_t width, size_t height, size_t pixel_size) {
 	size_t uvpos = 0;
 	size_t i = 0;
-	for (size_t line = 0; line < height; line += 2) {
-		for (size_t x = 0; x < width; x += 2) {
-			uint8_t r = rgb[pixel_size * i];
-			uint8_t g = rgb[pixel_size * i + 1];
-			uint8_t b = rgb[pixel_size * i + 2];
-
-			y[i++] = ((66 * r + 129 * g + 25 * b) >> 8) + 16;
-
-			u[uvpos] = ((-38 * r + -74 * g + 112 * b) >> 8) + 128;
-			v[uvpos] = ((112 * r + -94 * g + -18 * b) >> 8) + 128;
-			uvpos++;
-
-			r = rgb[pixel_size * i];
-			g = rgb[pixel_size * i + 1];
-			b = rgb[pixel_size * i + 2];
-
-			y[i++] = ((66 * r + 129 * g + 25 * b) >> 8) + 16;
+	uint8_t r = 0;
+	uint8_t g = 0;
+	uint8_t b = 0;
+	size_t line = 0;
+	size_t x = 0;
+	for (line = 0; line < height - 1; line += 2) {
+		for (x = 0; x < width - 1; x += 2) {
+			WRITE_YUV
+			WRITE_Y
 		}
-		for (size_t x = 0; x < width; x += 1) {
-			uint8_t r = rgb[pixel_size * i];
-			uint8_t g = rgb[pixel_size * i + 1];
-			uint8_t b = rgb[pixel_size * i + 2];
-
-			y[i++] = ((66 * r + 129 * g + 25 * b) >> 8) + 16;
+		if (x == width - 1) {
+			WRITE_YUV
+		}
+		for (x = 0; x < width; x += 1) {
+			WRITE_Y
+		}
+	}
+	if (line == height - 1) {
+		for (x = 0; x < width - 1; x += 2) {
+			WRITE_YUV
+			WRITE_Y
+		}
+		if (x == width - 1) {
+			WRITE_YUV
 		}
 	}
 }

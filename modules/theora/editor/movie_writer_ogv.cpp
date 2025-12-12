@@ -109,7 +109,6 @@ void MovieWriterOGV::get_supported_extensions(List<String> *r_extensions) const 
 }
 
 Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
-	ERR_FAIL_COND_V_MSG((p_movie_size.width & 1) || (p_movie_size.height & 1), ERR_UNAVAILABLE, "Both video dimensions must be even.");
 	base_path = p_base_path.get_basename();
 	if (base_path.is_relative_path()) {
 		base_path = "res://" + base_path;
@@ -155,17 +154,20 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 	// Set up Theora encoder.
 	// Theora has a divisible-by-16 restriction for the encoded frame size
 	// scale the picture size up to the nearest /16 and calculate offsets.
-	int pic_w = p_movie_size.width;
-	int pic_h = p_movie_size.height;
+	pic_w = p_movie_size.width;
+	pic_h = p_movie_size.height;
 	int frame_w = (pic_w + 15) & ~0xF;
 	int frame_h = (pic_h + 15) & ~0xF;
 	// Force the offsets to be even so that chroma samples line up like we expect.
 	int pic_x = (frame_w - pic_w) / 2 & ~1;
 	int pic_y = (frame_h - pic_h) / 2 & ~1;
+	// Chroma size
+	int c_w = (pic_w + 1) / 2;
+	int c_h = (pic_h + 1) / 2;
 
 	y = (uint8_t *)memalloc(pic_w * pic_h);
-	u = (uint8_t *)memalloc(pic_w * pic_h / 4);
-	v = (uint8_t *)memalloc(pic_w * pic_h / 4);
+	u = (uint8_t *)memalloc(c_w * c_h);
+	v = (uint8_t *)memalloc(c_w * c_h);
 
 	// We submit the buffer using the size of the picture region.
 	// libtheora will pad the picture region out to the full frame size for us,
@@ -174,13 +176,13 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 	ycbcr[0].height = pic_h;
 	ycbcr[0].stride = pic_w;
 	ycbcr[0].data = y;
-	ycbcr[1].width = pic_w / 2;
-	ycbcr[1].height = pic_h / 2;
-	ycbcr[1].stride = pic_w / 2;
+	ycbcr[1].width = c_w;
+	ycbcr[1].height = c_h;
+	ycbcr[1].stride = c_w;
 	ycbcr[1].data = u;
-	ycbcr[2].width = pic_w / 2;
-	ycbcr[2].height = pic_h / 2;
-	ycbcr[2].stride = pic_w / 2;
+	ycbcr[2].width = c_w;
+	ycbcr[2].height = c_h;
+	ycbcr[2].stride = c_w;
 	ycbcr[2].data = v;
 
 	th_info_init(&ti);
@@ -314,6 +316,7 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 // of video or audio pages.
 Error MovieWriterOGV::write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) {
 	ERR_FAIL_COND_V(f.is_null() || td == nullptr, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(p_image->get_width() != pic_w || p_image->get_height() != pic_h, ERR_INVALID_PARAMETER, vformat("Video capture size has changed to: %dx%d", p_image->get_width(), p_image->get_height()));
 
 	frame_count++;
 
