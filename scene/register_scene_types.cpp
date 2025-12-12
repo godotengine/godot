@@ -144,6 +144,7 @@
 #include "scene/resources/shader_include.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sky.h"
+#include "scene/resources/streamed_texture.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
@@ -369,7 +370,8 @@
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
-static Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_stream_texture;
+static Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_compressed_texture;
+static Ref<ResourceFormatLoaderStreamedTexture2D> resource_loader_streamed_texture;
 static Ref<ResourceFormatLoaderCompressedTextureLayered> resource_loader_texture_layered;
 static Ref<ResourceFormatLoaderCompressedTexture3D> resource_loader_texture_3d;
 
@@ -389,8 +391,13 @@ void register_scene_types() {
 	Node::init_node_hrcr();
 
 	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
-		resource_loader_stream_texture.instantiate();
-		ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+		resource_loader_compressed_texture.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_compressed_texture);
+	}
+
+	if constexpr (GD_IS_CLASS_ENABLED(StreamedTexture2D)) {
+		resource_loader_streamed_texture.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_streamed_texture);
 	}
 
 	if constexpr (GD_IS_CLASS_ENABLED(TextureLayered)) {
@@ -1044,6 +1051,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(World2D);
 	GDREGISTER_CLASS(Sky);
 	GDREGISTER_CLASS(CompressedTexture2D);
+	GDREGISTER_CLASS(StreamedTexture2D);
 	GDREGISTER_CLASS(PortableCompressedTexture2D);
 	GDREGISTER_CLASS(ImageTexture);
 	GDREGISTER_CLASS(AtlasTexture);
@@ -1434,8 +1442,13 @@ void unregister_scene_types() {
 	}
 
 	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
-		resource_loader_stream_texture.unref();
+		ResourceLoader::remove_resource_format_loader(resource_loader_compressed_texture);
+		resource_loader_compressed_texture.unref();
+	}
+
+	if constexpr (GD_IS_CLASS_ENABLED(StreamedTexture2D)) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_streamed_texture);
+		resource_loader_streamed_texture.unref();
 	}
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_text);

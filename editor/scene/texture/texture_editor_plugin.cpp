@@ -30,6 +30,7 @@
 
 #include "texture_editor_plugin.h"
 
+#include "core/io/image_loader.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
@@ -43,6 +44,7 @@
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/portable_compressed_texture.h"
+#include "scene/resources/streamed_texture.h"
 
 constexpr const char *texture_2d_shader_code = R"(
 shader_type canvas_item;
@@ -135,6 +137,11 @@ static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
 	const Ref<CompressedTexture2D> compressed_texture = p_texture;
 	if (compressed_texture.is_valid()) {
 		return compressed_texture->get_format();
+	}
+
+	const Ref<StreamedTexture2D> streamed_texture = p_texture;
+	if (streamed_texture.is_valid()) {
+		return streamed_texture->get_format();
 	}
 
 	const Ref<PortableCompressedTexture2D> portable_compressed_texture = p_texture;
@@ -311,16 +318,26 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<DPITexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<DPITexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr || Object::cast_to<StreamedTexture2D>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
-	Ref<Texture> texture(Object::cast_to<Texture>(p_object));
-	if (texture.is_null()) {
-		Ref<Image> image(Object::cast_to<Image>(p_object));
+	// Streamed textures won't display properly without being loaded first.
+	// So its easier to just turn them into regular textures for preview.
+	Ref<Texture> texture;
+	Ref<StreamedTexture2D> streamed_texture = Object::cast_to<StreamedTexture2D>(p_object);
+	if (streamed_texture.is_valid()) {
+		Ref<Image> image = streamed_texture->get_image();
+		ERR_FAIL_COND_MSG(image.is_null(), "Failed to get the image from streamed texture.");
 		texture = ImageTexture::create_from_image(image);
+	} else {
+		texture = Object::cast_to<Texture>(p_object);
+		if (texture.is_null()) {
+			Ref<Image> image(Object::cast_to<Image>(p_object));
+			texture = ImageTexture::create_from_image(image);
 
-		ERR_FAIL_COND_MSG(texture.is_null(), "Failed to create the texture from an invalid image.");
+			ERR_FAIL_COND_MSG(texture.is_null(), "Failed to create the texture from an invalid image.");
+		}
 	}
 
 	add_custom_control(memnew(TexturePreview(texture, true)));

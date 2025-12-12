@@ -622,6 +622,7 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 
 	RD::get_singleton()->free_rid(default_vec4_xform_buffer);
 	RD::get_singleton()->free_rid(shadow_sampler);
+	RD::get_singleton()->free_rid(default_material_feedback_buffer);
 
 	material_storage->shader_free(overdraw_material_shader);
 	material_storage->shader_free(default_shader);
@@ -982,6 +983,7 @@ void fragment() {
 
 	{
 		default_vec4_xform_buffer = RD::get_singleton()->storage_buffer_create(256);
+		default_material_feedback_buffer = RD::get_singleton()->storage_buffer_create(256);
 		Vector<RD::Uniform> uniforms;
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;

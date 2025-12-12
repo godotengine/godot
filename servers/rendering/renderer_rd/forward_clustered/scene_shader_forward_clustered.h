@@ -125,6 +125,7 @@ public:
 				uint32_t multimesh_format_2d : 1;
 				uint32_t multimesh_has_color : 1;
 				uint32_t multimesh_has_custom_data : 1;
+				uint32_t material_feedback : 1;
 			};
 		};
 
@@ -355,6 +356,7 @@ public:
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
+	RID default_material_feedback_buffer;
 
 	RID shadow_sampler;
 

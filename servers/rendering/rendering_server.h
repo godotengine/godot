@@ -168,6 +168,8 @@ public:
 	virtual void texture_set_detect_3d_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_normal_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
 
+	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) = 0;
+
 	enum TextureDetectRoughnessChannel {
 		TEXTURE_DETECT_ROUGHNESS_R,
 		TEXTURE_DETECT_ROUGHNESS_G,
