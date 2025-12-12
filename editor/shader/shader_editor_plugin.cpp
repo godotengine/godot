@@ -861,6 +861,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_dock->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Dock"), KeyModifierMask::ALT | Key::S));
 	shader_dock->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
 	shader_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	shader_dock->set_custom_minimum_size(Size2(460, 300) * EDSCALE);
 	EditorDockManager::get_singleton()->add_dock(shader_dock);
 
 	set_process_shortcut_input(true);
@@ -888,7 +889,6 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	files_split->add_child(shader_list);
 
 	shader_tabs = memnew(TabContainer);
-	shader_tabs->set_custom_minimum_size(Size2(460, 300) * EDSCALE);
 	shader_tabs->set_tabs_visible(false);
 	shader_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	shader_tabs->set_v_size_flags(Control::SIZE_EXPAND_FILL);
