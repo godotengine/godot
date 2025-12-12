@@ -527,10 +527,8 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 		} break;
 		case INPUT_JOY_BUTTON: {
 			JoyButton idx = (JoyButton)(int)selected->get_meta("__index");
-			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx);
-
 			// Maintain selected device
-			jb->set_device(_get_current_device());
+			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx, _get_current_device());
 
 			_set_event(jb, jb, false);
 		} break;

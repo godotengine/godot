@@ -1,5 +1,5 @@
 diff --git a/thirdparty/basis_universal/encoder/basisu_enc.cpp b/thirdparty/basis_universal/encoder/basisu_enc.cpp
-index 1cc982b134..ab9a458744 100644
+index 2c314740cd..cee9c77ca0 100644
 --- a/thirdparty/basis_universal/encoder/basisu_enc.cpp
 +++ b/thirdparty/basis_universal/encoder/basisu_enc.cpp
 @@ -29,7 +29,7 @@
@@ -11,7 +11,7 @@ index 1cc982b134..ab9a458744 100644
  
  #ifndef MINIZ_HEADER_FILE_ONLY
  #define MINIZ_HEADER_FILE_ONLY
-@@ -3420,7 +3420,8 @@ namespace basisu
+@@ -3433,7 +3433,8 @@ namespace basisu
  		float* out_rgba = nullptr;
  		const char* err = nullptr;
  		

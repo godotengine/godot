@@ -365,7 +365,7 @@ LightmapGIData::LightmapGIData() {
 
 LightmapGIData::~LightmapGIData() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(lightmap);
+	RS::get_singleton()->free_rid(lightmap);
 }
 
 ///////////////////////////

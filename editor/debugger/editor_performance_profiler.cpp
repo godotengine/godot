@@ -88,6 +88,9 @@ String EditorPerformanceProfiler::_create_label(float p_value, Performance::Moni
 		case Performance::MONITOR_TYPE_TIME: {
 			return TS->format_number(rtos(p_value * 1000).pad_decimals(2)) + " " + TTR("ms");
 		}
+		case Performance::MONITOR_TYPE_PERCENTAGE: {
+			return TS->format_number(rtos(p_value * 100).pad_decimals(2)) + "%";
+		}
 		default: {
 			return TS->format_number(rtos(p_value));
 		}
@@ -317,7 +320,7 @@ void EditorPerformanceProfiler::reset() {
 	monitor_draw->queue_redraw();
 }
 
-void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_names) {
+void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_names, const PackedInt32Array &p_types) {
 	HashMap<StringName, int> names;
 	for (int i = 0; i < p_names.size(); i++) {
 		names.insert("custom:" + p_names[i], Performance::MONITOR_MAX + i);
@@ -340,6 +343,7 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 		}
 	}
 
+	int index = 0;
 	for (const KeyValue<StringName, int> &E : names) {
 		String name = String(E.key).replace_first("custom:", "");
 		String base = "Custom";
@@ -347,7 +351,9 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 			base = name.get_slicec('/', 0);
 			name = name.get_slicec('/', 1);
 		}
-		monitors.insert(E.key, Monitor(name, base, E.value, Performance::MONITOR_TYPE_QUANTITY, nullptr));
+		Performance::MonitorType type = Performance::MonitorType(p_types[index]);
+		monitors.insert(E.key, Monitor(name, base, E.value, type, nullptr));
+		index++;
 	}
 
 	_build_monitor_tree();

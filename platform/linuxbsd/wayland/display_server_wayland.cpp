@@ -39,6 +39,7 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "core/os/main_loop.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef VULKAN_ENABLED
@@ -46,6 +47,7 @@
 #endif
 
 #ifdef GLES3_ENABLED
+#include "core/io/file_access.h"
 #include "detect_prime_egl.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "wayland/egl_manager_wayland.h"
@@ -185,6 +187,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_ICON:
 		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
@@ -678,6 +681,8 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 	if (screen_is_kept_on() == p_enable) {
 		return;
 	}
+
+	wayland_thread.window_set_idle_inhibition(MAIN_WINDOW_ID, p_enable);
 
 #ifdef DBUS_ENABLED
 	if (screensaver) {
@@ -1829,6 +1834,11 @@ void DisplayServerWayland::swap_buffers() {
 		egl_manager->swap_buffers();
 	}
 #endif
+}
+
+void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+	wayland_thread.set_icon(p_icon);
 }
 
 void DisplayServerWayland::set_context(Context p_context) {

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/blur_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/copy_to_fb.glsl.gen.h"
@@ -44,7 +45,7 @@
 #include "servers/rendering/renderer_rd/shaders/effects/specular_merge.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 namespace RendererRD {
 
@@ -138,7 +139,7 @@ private:
 		int32_t section[4];
 		int32_t target[2];
 		uint32_t flags;
-		uint32_t pad;
+		float luminance_multiplier;
 		// Glow.
 		float glow_strength;
 		float glow_bloom;
@@ -161,7 +162,7 @@ private:
 		CopyPushConstant push_constant;
 		CopyShaderRD shader;
 		RID shader_version;
-		RID pipelines[COPY_MODE_MAX];
+		PipelineDeferredRD pipelines[COPY_MODE_MAX];
 
 	} copy;
 
@@ -237,7 +238,7 @@ private:
 		CubemapDownsamplerShaderRD compute_shader;
 		CubemapDownsamplerRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipeline;
+		PipelineDeferredRD compute_pipeline;
 		PipelineCacheRD raster_pipeline;
 	} cubemap_downsampler;
 
@@ -259,7 +260,7 @@ private:
 		CubemapFilterShaderRD compute_shader;
 		CubemapFilterRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipelines[FILTER_MODE_MAX];
+		PipelineDeferredRD compute_pipelines[FILTER_MODE_MAX];
 		PipelineCacheRD raster_pipelines[FILTER_MODE_MAX];
 
 		RID uniform_set;
@@ -283,7 +284,7 @@ private:
 		CubemapRoughnessShaderRD compute_shader;
 		CubemapRoughnessRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipeline;
+		PipelineDeferredRD compute_pipeline;
 		PipelineCacheRD raster_pipeline;
 	} roughness;
 

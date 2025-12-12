@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Godot
 {
@@ -8,7 +9,7 @@ namespace Godot
     /// the name associated with the class. If the attribute is not present,
     /// the C# class name can be used instead.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class), EditorBrowsable(EditorBrowsableState.Never)]
     public class GodotClassNameAttribute : Attribute
     {
         /// <summary>
@@ -16,6 +17,10 @@ namespace Godot
         /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// Specify the name that represents the original engine class.
+        /// </summary>
+        /// <param name="name">Name of the original engine class.</param>
         public GodotClassNameAttribute(string name)
         {
             Name = name;

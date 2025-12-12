@@ -30,7 +30,7 @@
 			No hints are added to the uniform declaration.
 		</constant>
 		<constant name="TYPE_COLOR" value="1" enum="TextureType">
-			Adds [code]source_color[/code] as hint to the uniform declaration for proper sRGB to linear conversion.
+			Adds [code]source_color[/code] as hint to the uniform declaration for proper conversion from nonlinear sRGB encoding to linear encoding.
 		</constant>
 		<constant name="TYPE_NORMAL_MAP" value="2" enum="TextureType">
 			Adds [code]hint_normal[/code] as hint to the uniform declaration, which internally converts the texture for proper usage as normal map.

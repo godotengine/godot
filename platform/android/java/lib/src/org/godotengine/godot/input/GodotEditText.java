@@ -221,7 +221,15 @@ public class GodotEditText extends EditText {
 	public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 		/* Let SurfaceView get focus if back key is input. */
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			// Clear focus from EditText immediately
+			clearFocus();
+
+			// Transfer focus to render view
 			mRenderView.getView().requestFocus();
+
+			// Forward this back key event to the render view's input handler
+			// since we're no longer the focused view
+			return mRenderView.getInputHandler().onKeyDown(keyCode, keyEvent);
 		}
 
 		// When a hardware keyboard is connected, all key events come through so we can route them
@@ -245,6 +253,11 @@ public class GodotEditText extends EditText {
 		// directly to the engine.
 		// This is not the case when using a soft keyboard, requiring extra processing from this class.
 		if (hasHardwareKeyboard()) {
+			return mRenderView.getInputHandler().onKeyUp(keyCode, keyEvent);
+		}
+
+		// If this is a BACK key and we don't have focus anymore, forward to render view
+		if (keyCode == KeyEvent.KEYCODE_BACK && !hasFocus()) {
 			return mRenderView.getInputHandler().onKeyUp(keyCode, keyEvent);
 		}
 
@@ -276,16 +289,20 @@ public class GodotEditText extends EditText {
 			return;
 		}
 
+		int cursorStart = p_cursor_start;
+		int cursorEnd = p_cursor_end;
 		int maxInputLength = (p_max_input_length <= 0) ? Integer.MAX_VALUE : p_max_input_length;
-		if (p_cursor_start == -1) { // cursor position not given
+		if (cursorStart == -1) { // cursor position not given
 			this.mOriginText = p_existing_text;
 			this.mMaxInputLength = maxInputLength;
-		} else if (p_cursor_end == -1) { // not text selection
-			this.mOriginText = p_existing_text.substring(0, p_cursor_start);
-			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_start);
+		} else if (cursorEnd == -1) { // not text selection
+			cursorStart = Math.min(p_existing_text.length(), cursorStart);
+			this.mOriginText = p_existing_text.substring(0, cursorStart);
+			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - cursorStart);
 		} else {
-			this.mOriginText = p_existing_text.substring(0, p_cursor_end);
-			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_end);
+			cursorEnd = Math.min(p_existing_text.length(), cursorEnd);
+			this.mOriginText = p_existing_text.substring(0, cursorEnd);
+			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - cursorEnd);
 		}
 
 		this.mKeyboardType = p_type;
@@ -293,8 +310,8 @@ public class GodotEditText extends EditText {
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;
 		msg.obj = this;
-		msg.arg1 = p_cursor_start;
-		msg.arg2 = p_cursor_end;
+		msg.arg1 = cursorStart;
+		msg.arg2 = cursorEnd;
 		sHandler.sendMessage(msg);
 	}
 

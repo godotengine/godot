@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/editor_data.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/inspector/editor_inspector.h"
@@ -43,8 +44,8 @@
 class EditorFileDialog;
 class EditorObjectSelector;
 
-class InspectorDock : public VBoxContainer {
-	GDCLASS(InspectorDock, VBoxContainer);
+class InspectorDock : public EditorDock {
+	GDCLASS(InspectorDock, EditorDock);
 
 	enum MenuOptions {
 		RESOURCE_LOAD,
@@ -136,7 +137,7 @@ class InspectorDock : public VBoxContainer {
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 private:
-	static InspectorDock *singleton;
+	static inline InspectorDock *singleton = nullptr;
 
 public:
 	static InspectorDock *get_singleton() { return singleton; }

@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/timer.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 
@@ -1017,11 +1018,12 @@ void PopupMenu::_shape_item(int p_idx) const {
 		} else {
 			items.write[p_idx].text_buf->set_direction((TextServer::Direction)items[p_idx].text_direction);
 		}
-		items.write[p_idx].text_buf->add_string(items.write[p_idx].xl_text, font, font_size, items[p_idx].language);
+		const String &lang = items[p_idx].language.is_empty() ? _get_locale() : items[p_idx].language;
+		items.write[p_idx].text_buf->add_string(items.write[p_idx].xl_text, font, font_size, lang);
 
 		items.write[p_idx].accel_text_buf->clear();
 		items.write[p_idx].accel_text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
-		items.write[p_idx].accel_text_buf->add_string(_get_accel_text(items.write[p_idx]), font, font_size);
+		items.write[p_idx].accel_text_buf->add_string(_get_accel_text(items.write[p_idx]), font, font_size, lang);
 		items.write[p_idx].dirty = false;
 	}
 }
@@ -3230,6 +3232,10 @@ void PopupMenu::_pre_popup() {
 	set_content_scale_factor(popup_scale);
 	Size2 minsize = get_contents_minimum_size() * popup_scale;
 	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+	real_t max_h = get_max_size().height;
+	if (max_h > 0) {
+		minsize.height = MIN(minsize.height, max_h);
+	}
 	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
 	reset_size(); // Shrinkwraps to min size.
 }

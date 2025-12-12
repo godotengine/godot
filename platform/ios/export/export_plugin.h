@@ -52,6 +52,8 @@ class EditorExportPlatformIOS : public EditorExportPlatformAppleEmbedded {
 	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) override;
 	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const override;
 
+	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) override;
+
 public:
 	virtual String get_name() const override { return "iOS"; }
 	virtual String get_os_name() const override { return "iOS"; }
@@ -61,6 +63,6 @@ public:
 		r_features->push_back("ios");
 	}
 
-	EditorExportPlatformIOS();
+	virtual void initialize() override;
 	~EditorExportPlatformIOS();
 };

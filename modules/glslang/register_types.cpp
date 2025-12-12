@@ -33,9 +33,13 @@
 #include "core/config/engine.h"
 #include "shader_compile.h"
 
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
+
 #include <glslang/Public/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
+
+GODOT_GCC_WARNING_POP
 
 Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_stage, const String &p_source_code, RenderingDeviceCommons::ShaderLanguageVersion p_language_version, RenderingDeviceCommons::ShaderSpirvVersion p_spirv_version, String *r_error) {
 	Vector<uint8_t> ret;
@@ -54,7 +58,7 @@ Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_sta
 	glslang::EShTargetLanguageVersion TargetVersion = (glslang::EShTargetLanguageVersion)p_spirv_version;
 
 	glslang::TShader shader(stages[p_stage]);
-	CharString cs = p_source_code.ascii();
+	CharString cs = p_source_code.utf8();
 	const char *cs_strings = cs.get_data();
 	std::string preamble = "";
 

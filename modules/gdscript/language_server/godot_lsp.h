@@ -575,8 +575,7 @@ struct SaveOptions {
  */
 struct ColorProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -585,8 +584,7 @@ struct ColorProviderOptions {
  */
 struct FoldingRangeProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -689,9 +687,9 @@ struct TextDocumentItem {
 
 	void load(const Dictionary &p_dict) {
 		uri = p_dict["uri"];
-		languageId = p_dict["languageId"];
-		version = p_dict["version"];
-		text = p_dict["text"];
+		languageId = p_dict.get("languageId", "");
+		version = p_dict.get("version", 0);
+		text = p_dict.get("text", "");
 	}
 
 	Dictionary to_json() const {
@@ -705,20 +703,9 @@ struct TextDocumentItem {
 };
 
 /**
- * An event describing a change to a text document. If range and rangeLength are omitted
- * the new text is considered to be the full content of the document.
+ * An event describing a change to a text document.
  */
 struct TextDocumentContentChangeEvent {
-	/**
-	 * The range of the document that changed.
-	 */
-	Range range;
-
-	/**
-	 * The length of the range that got replaced.
-	 */
-	int rangeLength = 0;
-
 	/**
 	 * The new text of the range/document.
 	 */
@@ -726,8 +713,6 @@ struct TextDocumentContentChangeEvent {
 
 	void load(const Dictionary &p_params) {
 		text = p_params["text"];
-		rangeLength = p_params["rangeLength"];
-		range.load(p_params["range"]);
 	}
 };
 
@@ -1459,7 +1444,7 @@ struct CompletionContext {
 
 	void load(const Dictionary &p_params) {
 		triggerKind = int(p_params["triggerKind"]);
-		triggerCharacter = p_params["triggerCharacter"];
+		triggerCharacter = p_params.get("triggerCharacter", "");
 	}
 };
 

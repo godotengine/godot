@@ -80,6 +80,7 @@ private:
 	HBoxContainer *default_files_container = nullptr;
 	Ref<ButtonGroup> renderer_button_group;
 	bool rendering_device_supported = false;
+	bool rendering_device_checked = false;
 	Label *rd_not_supported = nullptr;
 
 	Label *msg = nullptr;

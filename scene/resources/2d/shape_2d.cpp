@@ -31,7 +31,7 @@
 #include "shape_2d.h"
 
 #include "core/config/project_settings.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 RID Shape2D::get_rid() const {
 	return shape;
@@ -119,5 +119,5 @@ Shape2D::Shape2D(const RID &p_rid) {
 
 Shape2D::~Shape2D() {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
-	PhysicsServer2D::get_singleton()->free(shape);
+	PhysicsServer2D::get_singleton()->free_rid(shape);
 }

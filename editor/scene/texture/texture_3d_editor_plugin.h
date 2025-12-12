@@ -49,8 +49,8 @@ class Texture3DEditor : public Control {
 	Label *info = nullptr;
 	Ref<Texture3D> texture;
 
-	Ref<Shader> shader;
-	Ref<ShaderMaterial> material;
+	static inline Ref<Shader> texture_shader;
+	Ref<ShaderMaterial> texture_material;
 
 	Control *texture_rect = nullptr;
 
@@ -59,8 +59,6 @@ class Texture3DEditor : public Control {
 	bool setting = false;
 
 	void _draw_outline();
-
-	void _make_shaders();
 
 	void _layer_changed(double) {
 		if (!setting) {
@@ -82,6 +80,9 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static void init_shaders();
+	static void finish_shaders();
+
 	void edit(Ref<Texture3D> p_texture);
 
 	Texture3DEditor();

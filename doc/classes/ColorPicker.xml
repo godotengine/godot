@@ -74,7 +74,7 @@
 			If [code]true[/code], shows an alpha channel slider (opacity).
 		</member>
 		<member name="edit_intensity" type="bool" setter="set_edit_intensity" getter="is_editing_intensity" default="true">
-			If [code]true[/code], shows an intensity slider. The intensity is applied as follows: multiply the color by [code]2 ** intensity[/code] in linear RGB space, and then convert it back to sRGB.
+			If [code]true[/code], shows an intensity slider. The intensity is applied as follows: convert the color to linear encoding, multiply it by [code]2 ** intensity[/code], and then convert it back to nonlinear sRGB encoding.
 		</member>
 		<member name="hex_visible" type="bool" setter="set_hex_visible" getter="is_hex_visible" default="true">
 			If [code]true[/code], the hex color code input field is visible.

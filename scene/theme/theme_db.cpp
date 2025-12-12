@@ -39,7 +39,7 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "scene/theme/default_theme.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 // Default engine theme creation and configuration.
 

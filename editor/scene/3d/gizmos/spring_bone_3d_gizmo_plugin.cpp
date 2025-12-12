@@ -162,15 +162,15 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 					continue;
 				}
 				bones[0] = current_bone;
-				surface_tool->set_bones(bones);
-				surface_tool->set_weights(weights);
+				surface_tool->set_bones(Vector<int>(bones));
+				surface_tool->set_weights(Vector<float>(weights));
 				axis = global_pose.xform(axis * p_simulator->get_end_bone_length(i));
 				draw_line(surface_tool, global_pose.origin, axis, bone_color);
 				draw_sphere(surface_tool, global_pose.basis, axis, p_simulator->get_joint_radius(i, j), bone_color);
 			} else {
 				bones[0] = current_bone;
-				surface_tool->set_bones(bones);
-				surface_tool->set_weights(weights);
+				surface_tool->set_bones(Vector<int>(bones));
+				surface_tool->set_weights(Vector<float>(weights));
 				if (j == 0) {
 					// Draw rotation axis vector if not ROTATION_AXIS_ALL.
 					SpringBoneSimulator3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);

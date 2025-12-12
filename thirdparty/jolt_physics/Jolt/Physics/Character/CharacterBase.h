@@ -24,8 +24,8 @@ public:
 
 	/// Constructor
 										CharacterBaseSettings() = default;
-										CharacterBaseSettings(const CharacterBaseSettings &inSettings) = default;
-	CharacterBaseSettings &				operator = (const CharacterBaseSettings &inSettings) = default;
+										CharacterBaseSettings(const CharacterBaseSettings &) = default;
+	CharacterBaseSettings &				operator = (const CharacterBaseSettings &) = default;
 
 	/// Virtual destructor
 	virtual								~CharacterBaseSettings() = default;

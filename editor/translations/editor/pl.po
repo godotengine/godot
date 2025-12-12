@@ -85,20 +85,21 @@
 # Marcin Zieliński <czolgista83@gmail.com>, 2023.
 # Aleksander Łagowiec <mineolek10@users.noreply.hosted.weblate.org>, 2023.
 # Zartio <i.tokajo@gmail.com>, 2024.
-# Piotr Kostrzewski <piotr.kostrzewski2@outlook.com>, 2024.
+# Piotr Kostrzewski <piotr.kostrzewski2@outlook.com>, 2024, 2025.
 # Szymon Hałucha <99204426+SzymonHalucha@users.noreply.github.com>, 2024.
 # Krzysztof Rams <krzysztofeczek@gmail.com>, 2024, 2025.
 # gre-gorn <gre-gorn@users.noreply.hosted.weblate.org>, 2024.
 # Dawid Kobylewski <d.kobylewski@gmail.com>, 2024.
 # Bartosz Nowaczyk <bartus.nowaczyk@gmail.com>, 2025.
 # Cyprian Klimaszewski <cyprian.klimaszewski@gmail.com>, 2025.
+# Marcus Cadaver <pilekc@hotmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-10 01:28+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2025-09-24 14:14+0000\n"
+"Last-Translator: Marcus Cadaver <pilekc@hotmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
 "Language: pl\n"
@@ -110,7 +111,7 @@ msgstr ""
 "X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
-msgstr "Nieustalone"
+msgstr "Niewybrane"
 
 msgid "Physical"
 msgstr "Fizyczny"
@@ -9186,7 +9187,7 @@ msgid "Connection impossible to the game process."
 msgstr "Połączenie z procesem gry niemożliwe."
 
 msgid "Game starting..."
-msgstr "Startowanie gry..."
+msgstr "Uruchamianie gry..."
 
 msgid "Game running not embedded."
 msgstr "Gra działa nieosadzona."

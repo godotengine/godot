@@ -49,41 +49,13 @@ class Label;
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
-	Vector2 rot;
-
-	SubViewportContainer *vc_2d = nullptr;
-	SubViewport *viewport_2d = nullptr;
-	HBoxContainer *layout_2d = nullptr;
-	ColorRect *rect_instance = nullptr;
-
+	// Both 2D and 3D materials.
+	Ref<Material> material;
 	SubViewportContainer *vc = nullptr;
 	SubViewport *viewport = nullptr;
-	Node3D *rotation = nullptr;
-	MeshInstance3D *sphere_instance = nullptr;
-	MeshInstance3D *box_instance = nullptr;
-	MeshInstance3D *quad_instance = nullptr;
-	DirectionalLight3D *light1 = nullptr;
-	DirectionalLight3D *light2 = nullptr;
-	Camera3D *camera = nullptr;
-	Ref<CameraAttributesPractical> camera_attributes;
-
-	Ref<SphereMesh> sphere_mesh;
-	Ref<BoxMesh> box_mesh;
-	Ref<QuadMesh> quad_mesh;
-
 	VBoxContainer *layout_error = nullptr;
 	Label *error_label = nullptr;
 	bool is_unsupported_shader_mode = false;
-
-	HBoxContainer *layout_3d = nullptr;
-
-	Ref<Material> material;
-
-	Button *sphere_switch = nullptr;
-	Button *box_switch = nullptr;
-	Button *quad_switch = nullptr;
-	Button *light_1_switch = nullptr;
-	Button *light_2_switch = nullptr;
 
 	struct ThemeCache {
 		Ref<Texture2D> light_1_icon;
@@ -94,21 +66,50 @@ class MaterialEditor : public Control {
 		Ref<Texture2D> checkerboard;
 	} theme_cache;
 
+	// 2D canvas materials.
+	SubViewportContainer *vc_2d = nullptr;
+	SubViewport *viewport_2d = nullptr;
+	HBoxContainer *layout_2d = nullptr;
+	ColorRect *rect_instance = nullptr;
+
+	// 3D spatial materials.
+	Vector2 rot;
+	Node3D *rotation = nullptr;
+	MeshInstance3D *sphere_instance = nullptr;
+	MeshInstance3D *box_instance = nullptr;
+	MeshInstance3D *quad_instance = nullptr;
+	DirectionalLight3D *light1 = nullptr;
+	DirectionalLight3D *light2 = nullptr;
+	Camera3D *camera = nullptr;
+	Ref<CameraAttributesPractical> camera_attributes;
+	Ref<SphereMesh> sphere_mesh;
+	Ref<BoxMesh> box_mesh;
+	Ref<QuadMesh> quad_mesh;
+	HBoxContainer *layout_3d = nullptr;
+
+	Button *sphere_switch = nullptr;
+	Button *box_switch = nullptr;
+	Button *quad_switch = nullptr;
+	Button *light_1_switch = nullptr;
+	Button *light_2_switch = nullptr;
+
 	void _on_light_1_switch_pressed();
 	void _on_light_2_switch_pressed();
 	void _on_sphere_switch_pressed();
 	void _on_box_switch_pressed();
 	void _on_quad_switch_pressed();
 
-protected:
-	virtual void _update_theme_item_cache() override;
-	void _notification(int p_what);
-	void gui_input(const Ref<InputEvent> &p_event) override;
 	void _set_rotation(real_t p_x_degrees, real_t p_y_degrees);
 	void _store_rotation_metadata();
 	void _update_rotation();
 
+protected:
+	virtual void _update_theme_item_cache() override;
+	void _notification(int p_what);
+	void gui_input(const Ref<InputEvent> &p_event) override;
+
 public:
+	static Ref<ShaderMaterial> make_shader_material(const Ref<Material> &p_from, bool p_copy_params = true);
 	void edit(Ref<Material> p_material, const Ref<Environment> &p_env);
 	MaterialEditor();
 };
@@ -135,24 +136,6 @@ public:
 	MaterialEditorPlugin();
 };
 
-class StandardMaterial3DConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(StandardMaterial3DConversionPlugin, EditorResourceConversionPlugin);
-
-public:
-	virtual String converts_to() const override;
-	virtual bool handles(const Ref<Resource> &p_resource) const override;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
-};
-
-class ORMMaterial3DConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(ORMMaterial3DConversionPlugin, EditorResourceConversionPlugin);
-
-public:
-	virtual String converts_to() const override;
-	virtual bool handles(const Ref<Resource> &p_resource) const override;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
-};
-
 class ParticleProcessMaterialConversionPlugin : public EditorResourceConversionPlugin {
 	GDCLASS(ParticleProcessMaterialConversionPlugin, EditorResourceConversionPlugin);
 
@@ -164,42 +147,6 @@ public:
 
 class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin {
 	GDCLASS(CanvasItemMaterialConversionPlugin, EditorResourceConversionPlugin);
-
-public:
-	virtual String converts_to() const override;
-	virtual bool handles(const Ref<Resource> &p_resource) const override;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
-};
-
-class ProceduralSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(ProceduralSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
-
-public:
-	virtual String converts_to() const override;
-	virtual bool handles(const Ref<Resource> &p_resource) const override;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
-};
-
-class PanoramaSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(PanoramaSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
-
-public:
-	virtual String converts_to() const override;
-	virtual bool handles(const Ref<Resource> &p_resource) const override;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
-};
-
-class PhysicalSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(PhysicalSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
-
-public:
-	virtual String converts_to() const override;
-	virtual bool handles(const Ref<Resource> &p_resource) const override;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
-};
-
-class FogMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(FogMaterialConversionPlugin, EditorResourceConversionPlugin);
 
 public:
 	virtual String converts_to() const override;

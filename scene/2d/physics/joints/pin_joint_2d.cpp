@@ -165,11 +165,11 @@ void PinJoint2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "softness", PROPERTY_HINT_RANGE, "0.00,16,0.01,exp"), "set_softness", "get_softness");
 	ADD_GROUP("Angular Limit", "angular_limit_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "angular_limit_enabled"), "set_angular_limit_enabled", "is_angular_limit_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "angular_limit_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_angular_limit_enabled", "is_angular_limit_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.1,radians_as_degrees"), "set_angular_limit_lower", "get_angular_limit_lower");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.1,radians_as_degrees"), "set_angular_limit_upper", "get_angular_limit_upper");
 	ADD_GROUP("Motor", "motor_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motor_enabled"), "set_motor_enabled", "is_motor_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motor_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_motor_enabled", "is_motor_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motor_target_velocity", PROPERTY_HINT_RANGE, U"-200,200,0.01,or_greater,or_less,radians_as_degrees,suffix:\u00B0/s"), "set_motor_target_velocity", "get_motor_target_velocity");
 }
 

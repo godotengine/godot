@@ -33,6 +33,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
+#include "scene/resources/shader.h"
 
 class AspectRatioContainer;
 class ColorMode;

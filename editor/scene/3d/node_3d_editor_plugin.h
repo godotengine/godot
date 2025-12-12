@@ -37,6 +37,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
 
 class AcceptDialog;
@@ -296,6 +297,7 @@ private:
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
+	bool _is_rotation_arc_visible() const;
 	void _select_clicked(bool p_allow_locked);
 	ObjectID _select_ray(const Point2 &p_pos) const;
 	void _find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results, bool p_include_locked);
@@ -363,6 +365,11 @@ private:
 		TRANSFORM_XZ,
 		TRANSFORM_XY,
 	};
+	enum TransformType {
+		POSITION,
+		ROTATION,
+		SCALE,
+	};
 
 	struct EditData {
 		TransformMode mode;
@@ -390,11 +397,19 @@ private:
 		double numeric_input = 0.0;
 		bool numeric_negate = false;
 		int numeric_next_decimal = 0;
+
+		Vector3 rotation_axis;
+		double accumulated_rotation_angle = 0.0;
+		double display_rotation_angle = 0.0;
+		Vector3 initial_click_vector;
+		Vector3 previous_rotation_vector;
+		bool gizmo_initiated = false;
 	} _edit;
 
 	struct Cursor {
 		Vector3 pos;
 		real_t x_rot, y_rot, distance, fov_scale;
+		real_t unsnapped_x_rot, unsnapped_y_rot;
 		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
@@ -403,6 +418,8 @@ private:
 			// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
 			x_rot = 0.5;
 			y_rot = -0.5;
+			unsnapped_x_rot = x_rot;
+			unsnapped_y_rot = y_rot;
 			distance = 4;
 			fov_scale = 1.0;
 			region_select = false;
@@ -514,6 +531,8 @@ private:
 	void _project_settings_changed();
 
 	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal);
+
+	void _reset_transform(TransformType p_type);
 
 	void begin_transform(TransformMode p_mode, bool instant);
 	void commit_transform();
@@ -807,6 +826,7 @@ private:
 	HashMap<Control *, VSeparator *> context_toolbar_separators;
 
 	void _update_context_toolbar();
+	void _on_editor_settings_changed();
 
 	void _generate_selection_boxes();
 
@@ -973,6 +993,7 @@ public:
 	void update_grid();
 	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = nullptr);
+	void update_gizmo_opacity();
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }

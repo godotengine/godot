@@ -39,6 +39,8 @@ class SceneState : public RefCounted {
 	Vector<StringName> names;
 	Vector<Variant> variants;
 	Vector<NodePath> node_paths;
+	Vector<PackedInt32Array> id_paths;
+	mutable PackedInt32Array ids;
 	Vector<NodePath> editable_instances;
 	mutable HashMap<NodePath, int> node_path_cache;
 	mutable HashMap<int, int> base_scene_node_remap;
@@ -88,8 +90,8 @@ class SceneState : public RefCounted {
 
 	Vector<ConnectionData> connections;
 
-	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
-	Error _parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
+	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, HashSet<int32_t> &ids_saved);
+	Error _parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
 
 	String path;
 
@@ -100,6 +102,8 @@ class SceneState : public RefCounted {
 	Vector<String> _get_node_groups(int p_idx) const;
 
 	int _find_base_scene_node_remap_key(int p_idx) const;
+
+	Node *_recover_node_path_index(Node *p_base, int p_idx) const;
 
 #ifdef TOOLS_ENABLED
 public:
@@ -171,7 +175,11 @@ public:
 	StringName get_node_type(int p_idx) const;
 	StringName get_node_name(int p_idx) const;
 	NodePath get_node_path(int p_idx, bool p_for_parent = false) const;
+	int32_t get_node_unique_id(int p_idx) const;
+	PackedInt32Array get_node_id_path(int p_idx) const;
+	PackedInt32Array get_node_parent_id_path(int p_idx) const;
 	NodePath get_node_owner_path(int p_idx) const;
+	PackedInt32Array get_node_owner_id_path(int p_idx) const;
 	Ref<PackedScene> get_node_instance(int p_idx) const;
 	String get_node_instance_placeholder(int p_idx) const;
 	bool is_node_instance_placeholder(int p_idx) const;
@@ -188,6 +196,10 @@ public:
 	StringName get_connection_signal(int p_idx) const;
 	NodePath get_connection_target(int p_idx) const;
 	StringName get_connection_method(int p_idx) const;
+
+	PackedInt32Array get_connection_source_id_path(int p_idx) const;
+	PackedInt32Array get_connection_target_id_path(int p_idx) const;
+
 	int get_connection_flags(int p_idx) const;
 	int get_connection_unbinds(int p_idx) const;
 	Array get_connection_binds(int p_idx) const;
@@ -202,8 +214,8 @@ public:
 
 	int add_name(const StringName &p_name);
 	int add_value(const Variant &p_value);
-	int add_node_path(const NodePath &p_path);
-	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index);
+	int add_node_path(const NodePath &p_path, const PackedInt32Array &p_uid_path);
+	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index, int32_t p_unique_id);
 	void add_node_property(int p_node, int p_name, int p_value, bool p_deferred_node_path = false);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);

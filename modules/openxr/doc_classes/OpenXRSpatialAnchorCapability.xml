@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialAnchorCapability" inherits="OpenXRExtensionWrapper" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Implementation for handling spatial entity anchor logic.
+	</brief_description>
+	<description>
+		This is an internal class that handles the OpenXR anchor spatial entity extension.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_new_anchor">
+			<return type="OpenXRAnchorTracker" />
+			<param index="0" name="transform" type="Transform3D" />
+			<param index="1" name="spatial_context" type="RID" default="RID()" />
+			<description>
+				Creates a new anchor that will be tracked by the XR runtime. The [param transform] should be a transform in the local space of your [XROrigin3D] node. If [param spatial_context] is not specified the default will be used, this requires [member ProjectSettings.xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection] to be set. The returned tracker will track the location in case our reference space changes.
+			</description>
+		</method>
+		<method name="create_persistence_context">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="scope" type="int" enum="OpenXRSpatialAnchorCapability.PersistenceScope" />
+			<param index="1" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Creates a new persistence context for storing persistent data.
+				[b]Note:[/b] This is an asynchronous method and returns an [OpenXRFutureResult] object with which to track the status, discarding this object will not cancel the creation process. On success [param user_callback] will be called if specified. The result value for this function is the [RID] for our persistence context.
+			</description>
+		</method>
+		<method name="free_persistence_context">
+			<return type="void" />
+			<param index="0" name="persistence_context" type="RID" />
+			<description>
+				Frees a persistence context previously created with [method create_persistence_context].
+			</description>
+		</method>
+		<method name="get_persistence_context_handle" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="persistence_context" type="RID" />
+			<description>
+				Returns the internal handle for this persistence context.
+				[b]Note:[/b] For GDExtension implementations.
+			</description>
+		</method>
+		<method name="is_persistence_scope_supported">
+			<return type="bool" />
+			<param index="0" name="scope" type="int" enum="OpenXRSpatialAnchorCapability.PersistenceScope" />
+			<description>
+				Returns [code]true[/code] if this persistence scope is supported by our spatial anchor capability.
+				[b]Note:[/b] Only valid after an OpenXR instance has been created.
+			</description>
+		</method>
+		<method name="is_spatial_anchor_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if spatial anchors are supported by the hardware. Only returns a valid value after OpenXR has been initialized.
+			</description>
+		</method>
+		<method name="is_spatial_persistence_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if persistent spatial anchors are supported by the hardware. Only returns a valid value after OpenXR has been initialized.
+			</description>
+		</method>
+		<method name="persist_anchor">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="anchor_tracker" type="OpenXRAnchorTracker" />
+			<param index="1" name="persistence_context" type="RID" default="RID()" />
+			<param index="2" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Changes this anchor into a persistent anchor. This means its location will be stored on the device and the anchor will be restored the next time your application starts. If [param persistence_context] is not specified the default will be used, this requires [member ProjectSettings.xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection] to be set.
+				[b]Note:[/b] This is an asynchronous method and returns an [OpenXRFutureResult] object with which to track the status, discarding this object will not cancel the creation process. On success [param user_callback] will be called if specified. The result value for this function is a boolean which will be set to [code]true[/code] on successful completion.
+			</description>
+		</method>
+		<method name="remove_anchor">
+			<return type="void" />
+			<param index="0" name="anchor_tracker" type="OpenXRAnchorTracker" />
+			<description>
+				Remove an anchor previously created with [method create_new_anchor]. If this anchor was persistent you must first call [method unpersist_anchor] and await its callback.
+			</description>
+		</method>
+		<method name="unpersist_anchor">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="anchor_tracker" type="OpenXRAnchorTracker" />
+			<param index="1" name="persistence_context" type="RID" default="RID()" />
+			<param index="2" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Removes the persistent data from this anchor. The runtime will not recreate the anchor when your application restarts. If [param persistence_context] is not specified the default will be used, this requires [member ProjectSettings.xr/openxr/extensions/spatial_entity/enabled] to be set.
+				[b]Note:[/b] This is an asynchronous method and returns an [OpenXRFutureResult] object with which to track the status, discarding this object will not cancel the creation process. On success [param user_callback] will be called if specified. The result value for this function is a boolean which will be set to [code]true[/code] on successful completion.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="PERSISTENCE_SCOPE_SYSTEM_MANAGED" value="1" enum="PersistenceScope">
+			Provides the application with read-only access (i.e. application cannot modify this scope) to spatial entities persisted and managed by the system. The application can use the UUID in the persistence component for this scope to correlate entities across spatial contexts and device reboots.
+		</constant>
+		<constant name="PERSISTENCE_SCOPE_LOCAL_ANCHORS" value="1000781000" enum="PersistenceScope">
+			Persistence operations and data access is limited to spatial anchors, on the same device, for the same user and same app (using [method persist_anchor] and [method unpersist_anchor] functions)
+		</constant>
+	</constants>
+</class>

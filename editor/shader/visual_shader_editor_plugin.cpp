@@ -41,6 +41,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_properties_vector.h"
 #include "editor/scene/curve_editor_plugin.h"
@@ -70,7 +71,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 
@@ -91,7 +92,7 @@ static FloatConstantDef float_constant_defs[] = {
 	{ "Sqrt2", Math::SQRT2, TTRC("Sqrt2 constant (1.414214). Square root of 2.") }
 };
 
-constexpr int MAX_FLOAT_CONST_DEFS = std::size(float_constant_defs);
+constexpr int MAX_FLOAT_CONST_DEFS = std_size(float_constant_defs);
 
 ///////////////////
 
@@ -1667,7 +1668,7 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const String &p_t
 	ao.is_native = !p_type.is_empty();
 
 	bool begin = false;
-	String root = p_category.split("/")[0];
+	String root = p_category.get_slicec('/', 0);
 
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
@@ -2158,12 +2159,12 @@ void VisualShaderEditor::_update_nodes() {
 
 	// Add GDScript classes.
 	{
-		List<StringName> class_list;
-		ScriptServer::get_global_class_list(&class_list);
+		LocalVector<StringName> class_list;
+		ScriptServer::get_global_class_list(class_list);
 
-		for (const StringName &E : class_list) {
-			if (ScriptServer::get_global_class_native_base(E) == "VisualShaderNodeCustom") {
-				String script_path = ScriptServer::get_global_class_path(E);
+		for (const StringName &class_name : class_list) {
+			if (ScriptServer::get_global_class_native_base(class_name) == "VisualShaderNodeCustom") {
+				String script_path = ScriptServer::get_global_class_path(class_name);
 				Ref<Resource> res = ResourceLoader::load(script_path);
 				ERR_CONTINUE(res.is_null());
 				ERR_CONTINUE(!res->is_class("Script"));
@@ -2188,19 +2189,19 @@ void VisualShaderEditor::_update_nodes() {
 
 	// Add GDExtension classes.
 	{
-		List<StringName> class_list;
-		ClassDB::get_class_list(&class_list);
+		LocalVector<StringName> class_list;
+		ClassDB::get_class_list(class_list);
 
-		for (const StringName &E : class_list) {
-			if (ClassDB::get_parent_class(E) == "VisualShaderNodeCustom") {
-				Object *instance = ClassDB::instantiate(E);
+		for (const StringName &class_name : class_list) {
+			if (ClassDB::get_parent_class(class_name) == "VisualShaderNodeCustom") {
+				Object *instance = ClassDB::instantiate(class_name);
 				Ref<VisualShaderNodeCustom> ref = Object::cast_to<VisualShaderNodeCustom>(instance);
 				ERR_CONTINUE(ref.is_null());
 				if (!ref->is_available(visual_shader->get_mode(), get_current_shader_type())) {
 					continue;
 				}
 				Dictionary dict = get_custom_node_data(ref);
-				dict["type"] = E;
+				dict["type"] = class_name;
 				dict["script"] = Ref<Script>();
 
 				String key;
@@ -8446,6 +8447,20 @@ bool VisualShaderConversionPlugin::handles(const Ref<Resource> &p_resource) cons
 Ref<Resource> VisualShaderConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<VisualShader> vshader = p_resource;
 	ERR_FAIL_COND_V(vshader.is_null(), Ref<Resource>());
+	int embed = vshader->has_node_embeds();
+
+	EditorToaster *toast = EditorToaster::get_singleton();
+	if (toast == nullptr) {
+		ERR_FAIL_COND_V_MSG(embed == 2, Ref<Resource>(), "Cannot convert VisualShader to GDShader because VisualShader has embedded subresources.");
+		if (embed == 1) {
+			WARN_PRINT("Visual Shader conversion cannot convert external dependencies. Resource references from Nodes will have to be rebound as ShaderParameters on a Material.");
+		}
+	} else if (embed == 2) {
+		toast->popup_str(TTR("Cannot convert VisualShader to GDShader because VisualShader has embedded subresources."), EditorToaster::SEVERITY_ERROR);
+		return Ref<Resource>();
+	} else if (embed == 1) {
+		toast->popup_str(TTR("Visual Shader conversion cannot convert external dependencies. Resource references from Nodes will have to be rebound as ShaderParameters on a Material."), EditorToaster::SEVERITY_WARNING);
+	}
 
 	Ref<Shader> shader;
 	shader.instantiate();

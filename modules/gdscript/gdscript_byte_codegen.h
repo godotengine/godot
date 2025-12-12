@@ -35,6 +35,8 @@
 #include "gdscript_function.h"
 #include "gdscript_utility_functions.h"
 
+#include "core/templates/rb_map.h"
+
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	struct StackSlot {
 		Variant::Type type = Variant::NIL;
@@ -102,7 +104,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> temp_stack;
 #endif
 
-	HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
+	HashMap<Variant, int> constant_map;
 	RBMap<StringName, int> name_map;
 #ifdef TOOLS_ENABLED
 	Vector<StringName> named_globals;

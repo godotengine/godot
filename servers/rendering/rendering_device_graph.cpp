@@ -35,6 +35,9 @@
 #define PRINT_RESOURCE_TRACKER_TOTAL 0
 #define PRINT_COMMAND_RECORDING 0
 
+// Prints the total number of bytes used for draw lists in a frame.
+#define PRINT_DRAW_LIST_STATS 0
+
 RenderingDeviceGraph::RenderingDeviceGraph() {
 	driver_honors_barriers = false;
 	driver_clears_with_copy_engine = false;
@@ -835,7 +838,15 @@ void RenderingDeviceGraph::_get_draw_list_render_pass_and_framebuffer(const Reco
 	r_framebuffer = it->value.framebuffer;
 }
 
+#if PRINT_DRAW_LIST_STATS
+static uint32_t draw_list_total_size = 0;
+#endif
+
 void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command_buffer, const uint8_t *p_instruction_data, uint32_t p_instruction_data_size) {
+#if PRINT_DRAW_LIST_STATS
+	draw_list_total_size += p_instruction_data_size;
+#endif
+
 	uint32_t instruction_data_cursor = 0;
 	while (instruction_data_cursor < p_instruction_data_size) {
 		DEV_ASSERT((instruction_data_cursor + sizeof(DrawListInstruction)) <= p_instruction_data_size);
@@ -1140,7 +1151,7 @@ void RenderingDeviceGraph::_run_label_command_change(RDD::CommandBufferID p_comm
 			label_name.append_utf8(label_chars);
 			label_color = command_label_colors[p_new_label_index];
 		} else if (p_use_label_for_empty) {
-			label_name = "Command graph";
+			label_name = "Command Graph";
 			label_color = Color(1, 1, 1, 1);
 		} else {
 			return;
@@ -1318,7 +1329,7 @@ void RenderingDeviceGraph::_group_barriers_for_render_commands(RDD::CommandBuffe
 		return;
 	}
 
-	const VectorView<RDD::MemoryBarrier> memory_barriers = !is_memory_barrier_empty ? barrier_group.memory_barrier : VectorView<RDD::MemoryBarrier>();
+	const VectorView<RDD::MemoryAccessBarrier> memory_barriers = !is_memory_barrier_empty ? barrier_group.memory_barrier : VectorView<RDD::MemoryAccessBarrier>();
 	const VectorView<RDD::TextureBarrier> texture_barriers = barrier_group.normalization_barriers.is_empty() ? barrier_group.transition_barriers : barrier_group.normalization_barriers;
 #if USE_BUFFER_BARRIERS
 	const VectorView<RDD::BufferBarrier> buffer_barriers = !are_buffer_barriers_empty ? barrier_group.buffer_barriers : VectorView<RDD::BufferBarrier>();
@@ -1330,7 +1341,7 @@ void RenderingDeviceGraph::_group_barriers_for_render_commands(RDD::CommandBuffe
 
 	bool separate_texture_barriers = !barrier_group.normalization_barriers.is_empty() && !barrier_group.transition_barriers.is_empty();
 	if (separate_texture_barriers) {
-		driver->command_pipeline_barrier(p_command_buffer, barrier_group.src_stages, barrier_group.dst_stages, VectorView<RDD::MemoryBarrier>(), VectorView<RDD::BufferBarrier>(), barrier_group.transition_barriers);
+		driver->command_pipeline_barrier(p_command_buffer, barrier_group.src_stages, barrier_group.dst_stages, VectorView<RDD::MemoryAccessBarrier>(), VectorView<RDD::BufferBarrier>(), barrier_group.transition_barriers);
 	}
 }
 
@@ -2366,6 +2377,10 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			workarounds_state.draw_list_found = false;
 		}
 
+#if PRINT_DRAW_LIST_STATS
+		draw_list_total_size = 0;
+#endif
+
 		if (p_reorder_commands) {
 #if PRINT_RENDER_GRAPH
 			print_line("BEFORE SORT");
@@ -2416,6 +2431,9 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 
 		_run_label_command_change(r_command_buffer, -1, -1, false, false, nullptr, 0, current_label_index, current_label_level);
 
+#if PRINT_DRAW_LIST_STATS
+		print_line(vformat("Draw list %d bytes", draw_list_total_size));
+#endif
 #if PRINT_COMMAND_RECORDING
 		print_line(vformat("Recorded %d commands", command_count));
 #endif

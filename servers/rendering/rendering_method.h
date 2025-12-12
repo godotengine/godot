@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
-#include "servers/rendering_server.h"
 
 #ifdef XR_DISABLED
 // RendererSceneCull::render_camera is empty when 3D is disabled, but
@@ -260,6 +260,7 @@ public:
 	virtual float environment_get_ssr_fade_out(RID p_env) const = 0;
 	virtual float environment_get_ssr_depth_tolerance(RID p_env) const = 0;
 
+	virtual void environment_set_ssr_half_size(bool p_half_size) = 0;
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) = 0;
 
 	// SSAO
@@ -355,6 +356,7 @@ public:
 	virtual void decals_set_filter(RS::DecalFilter p_filter) = 0;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) = 0;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
+	virtual void material_set_use_debanding(bool p_enable) = 0;
 
 	virtual bool free(RID p_rid) = 0;
 

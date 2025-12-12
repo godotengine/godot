@@ -49,6 +49,7 @@ cp -v io/SDL_iostream*.{c,h} $target/io
 mkdir $target/core
 cp -rv core/{linux,unix,windows} $target/core
 rm -f $target/core/windows/version.rc
+rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme}.*
 
 mkdir $target/haptic
 cp -rv haptic/{*.{c,h},darwin,linux,windows} $target/haptic
