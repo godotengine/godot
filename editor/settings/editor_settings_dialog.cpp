@@ -65,6 +65,15 @@ void EditorSettingsDialog::_settings_changed() {
 	timer->start();
 }
 
+void EditorSettingsDialog::_editor_theme_changed() {
+	if (is_visible()) {
+		theme_timer->start();
+	} else {
+		_push_theme_changes();
+		timer->start();
+	}
+}
+
 void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 	String full_name = inspector->get_full_item_path(p_name);
 
@@ -181,6 +190,18 @@ void EditorSettingsDialog::_settings_save() {
 	EditorSettings::get_singleton()->save();
 }
 
+void EditorSettingsDialog::_preview_theme() {
+	set_theme(EditorThemeManager::generate_theme());
+}
+
+void EditorSettingsDialog::_push_theme_changes() {
+	if (get_theme().is_valid()) {
+		EditorNode::get_singleton()->set_updated_theme(get_theme());
+		set_theme(Ref<Theme>());
+	}
+	EditorSettings::get_singleton()->emit_signal(SNAME("settings_changed"));
+}
+
 void EditorSettingsDialog::cancel_pressed() {
 	if (!EditorSettings::get_singleton()) {
 		return;
@@ -201,7 +222,6 @@ void EditorSettingsDialog::popup_edit_settings() {
 	inspector->edit(EditorSettings::get_singleton());
 	inspector->get_inspector()->update_tree();
 
-	_update_shortcuts();
 	set_process_shortcut_input(true);
 
 	// Restore valid window bounds or pop up at default size.
@@ -231,6 +251,10 @@ void EditorSettingsDialog::_notification(int p_what) {
 			if (!is_visible() && !_is_in_project_manager()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
 				set_process_shortcut_input(false);
+
+				if (get_theme().is_valid()) {
+					_push_theme_changes();
+				}
 			}
 		} break;
 
@@ -251,7 +275,9 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_shortcuts();
+			if (shortcuts->is_visible_in_tree()) {
+				_update_shortcuts();
+			}
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -673,6 +699,13 @@ void EditorSettingsDialog::_update_shortcuts() {
 	}
 }
 
+void EditorSettingsDialog::_update_shortcuts_if_dirty() {
+	if (shortcuts_dirty) {
+		_update_shortcuts();
+		shortcuts_dirty = false;
+	}
+}
+
 void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button) {
 	if (p_button != MouseButton::LEFT) {
 		return;
@@ -926,6 +959,11 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	set_title(TTRC("Editor Settings"));
 	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
+	set_hide_on_ok(true);
+	set_ok_button_text(TTRC("Close"));
+
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
+	EditorSettings::get_singleton()->connect("editor_theme_changed", callable_mp(this, &EditorSettingsDialog::_editor_theme_changed));
 
 	tabs = memnew(TabContainer);
 	tabs->set_theme_type_variation("TabContainerOdd");
@@ -1018,6 +1056,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_title(1, TTRC("Binding"));
 	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
+	shortcuts->connect("visibility_changed", callable_mp(this, &EditorSettingsDialog::_update_shortcuts_if_dirty));
 	tab_shortcuts->add_child(shortcuts);
 
 	SET_DRAG_FORWARDING_GCD(shortcuts, EditorSettingsDialog);
@@ -1028,15 +1067,17 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_editor->set_allowed_input_types(INPUT_KEY);
 	add_child(shortcut_editor);
 
-	set_hide_on_ok(true);
-
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
 	timer->connect("timeout", callable_mp(this, &EditorSettingsDialog::_settings_save));
 	timer->set_one_shot(true);
 	add_child(timer);
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
-	set_ok_button_text(TTRC("Close"));
+
+	theme_timer = memnew(Timer);
+	theme_timer->set_wait_time(0.5);
+	theme_timer->set_one_shot(true);
+	theme_timer->connect("timeout", callable_mp(this, &EditorSettingsDialog::_preview_theme));
+	add_child(theme_timer);
 
 	Ref<EditorSettingsInspectorPlugin> plugin;
 	plugin.instantiate();
