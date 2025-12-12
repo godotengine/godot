@@ -2221,6 +2221,8 @@ void main() {
 
 #else // MODE_RENDER_DEPTH
 
+#ifndef COMPOSE_CODE_USED
+
 	// multiply by albedo
 	diffuse_light *= albedo; // ambient must be multiplied by albedo at the end
 
@@ -2297,6 +2299,53 @@ void main() {
 	}
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
+
+#else //COMPOSE_CODE_USED
+	{
+		// output variables, init to 0 when using compose()
+		vec3 diffuse_color = vec3(0.0);
+		vec3 specular_color = vec3(0.0);
+		// fix the names for compose() code
+		vec3 diffuse_light_highp = diffuse_light;
+		vec3 specular_light_highp = direct_specular_light;
+		// reassign surface properties so that effects of decals, etc. are accessible in compose()
+		vec3 albedo_highp = albedo;
+		float metallic_highp = metallic;
+		float specular_highp = specular;
+		float roughness_highp = roughness;
+		float alpha_highp = alpha;
+#ifdef NORMAL_USED
+		vec3 normal_highp = normal;
+#endif
+#ifdef TANGENT_USED
+		vec3 tangent_highp = tangent;
+		vec3 binormal_highp = binormal;
+#endif
+
+#ifdef FOG_DISABLED
+		vec4 fog_highp = vec4(0.0);
+#else
+		vec4 fog_highp = fog;
+#endif
+
+#CODE : COMPOSE
+
+#ifdef MODE_MULTIPLE_RENDER_TARGETS
+		diffuse_buffer = vec4(diffuse_color, sss_strength);
+		specular_buffer = vec4(specular_color, metallic);
+#else
+		frag_color = vec4(diffuse_color + specular_color, alpha_highp);
+
+		if (sc_use_material_debanding()) {
+			// see the ndef COMPOSE_CODE_USED branch for explanation on this
+			const vec2 dither_offset = vec2(0.535, 8.715);
+			vec3 dither = vec3(dot(vec2(171.0, 231.0), gl_FragCoord.xy + dither_offset));
+			dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+			frag_color.rgb += (dither.rgb - 0.5) / 1023.0;
+		}
+#endif
+	}
+#endif //COMPOSE_CODE_USED
 
 #endif //MODE_RENDER_DEPTH
 
