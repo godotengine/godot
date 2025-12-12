@@ -183,6 +183,10 @@ PackedByteArray TextServerFallback::_get_support_data() const {
 	return PackedByteArray(); // No extra data used.
 }
 
+bool TextServerFallback::_is_locale_using_support_data(const String &p_locale) const {
+	return false; // No data support.
+}
+
 bool TextServerFallback::_is_locale_right_to_left(const String &p_locale) const {
 	return false; // No RTL support.
 }
