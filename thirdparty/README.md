@@ -850,14 +850,18 @@ Collection of single-file libraries used in Godot components.
 ## msdfgen
 
 - Upstream: https://github.com/Chlumsky/msdfgen
-- Version: 1.12.1 (6574da1310df433c97ca0fddcab7e463c31e58f8, 2025)
+- Version: 1.13 (1874bcf7d9624ccc85b4bc9a85d78116f690f35b, 2025)
 - License: MIT
 
 Files extracted from the upstream source:
 
 - `msdfgen.h`
-- Files in `core/` folder
+- Files in `core/` folder, minus `export-svg.*` and `save-*.*` files
 - `LICENSE.txt`
+
+Patches:
+
+- `0001-remove-unused-save-features.patch` ([GH-113965](https://github.com/godotengine/godot/issues/113965))
 
 
 ## openxr
