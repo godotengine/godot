@@ -414,7 +414,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	if (!empty_projected_obstructions) {
 		RWLockRead read_lock(p_source_geometry_data->geometry_rwlock);
 		const Vector<NavigationMeshSourceGeometryData2D::ProjectedObstruction> &projected_obstructions = p_source_geometry_data->_projected_obstructions;
-		obstruction_polygon_paths.resize(0);
+		obstruction_polygon_paths.clear();
 		for (const NavigationMeshSourceGeometryData2D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
 			if (!projected_obstruction.carve) {
 				continue;

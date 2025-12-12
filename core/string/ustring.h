@@ -191,7 +191,7 @@ public:
 
 	/// Resizes the string. The given size must include the null terminator.
 	/// New characters are not initialized, and should be set by the caller.
-	_FORCE_INLINE_ Error resize_uninitialized(int64_t p_size) { return _cowdata.template resize<false>(p_size); }
+	_FORCE_INLINE_ Error resize_uninitialized(int64_t p_size) { return (p_size == size()) ? OK : _cowdata.template resize<false>(p_size); }
 
 	_FORCE_INLINE_ T get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
@@ -318,7 +318,7 @@ public:
 
 	/// Resizes the string. The given size must include the null terminator.
 	/// New characters are not initialized, and should be set by the caller.
-	Error resize_uninitialized(int64_t p_size) { return _cowdata.resize<false>(p_size); }
+	_FORCE_INLINE_ Error resize_uninitialized(int64_t p_size) { return (p_size == size()) ? OK : _cowdata.resize<false>(p_size); }
 
 	Error reserve(int64_t p_size) {
 		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
