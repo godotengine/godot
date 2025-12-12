@@ -81,7 +81,10 @@ void AnimationNodeStateMachineTransition::set_advance_expression(const String &p
 		expression.instantiate();
 	}
 
-	expression->parse(advance_expression_stripped);
+	PackedStringArray input_names;
+	input_names.append("delta");
+	input_names.append("current_time");
+	expression->parse(advance_expression_stripped, input_names);
 }
 
 String AnimationNodeStateMachineTransition::get_advance_expression() const {
@@ -825,7 +828,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(Animatio
 		pi.weight = 0;
 		current_nti = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true);
 		// Don't process first node if not necessary, instead process next node.
-		_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
+		_transition_to_next_recursive(tree, p_state_machine, p_delta, p_time, p_test_only);
 	}
 
 	// Check current node existence.
@@ -901,7 +904,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(Animatio
 	}
 
 	// Find next and see when to transition.
-	bool will_end = _transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only) || current == SceneStringName(End);
+	bool will_end = _transition_to_next_recursive(tree, p_state_machine, p_delta, p_time, p_test_only) || current == SceneStringName(End);
 
 	// Predict remaining time.
 	if (will_end || ((p_state_machine->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED) && !p_state_machine->has_transition_from(current))) {
@@ -919,7 +922,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(Animatio
 	return current_nti;
 }
 
-bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, bool p_test_only) {
+bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, double p_current_time, bool p_test_only) {
 	_reset_request_for_fading_from = false;
 
 	AnimationMixer::PlaybackInfo pi;
@@ -928,7 +931,7 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 	Vector<StringName> transition_path;
 	transition_path.push_back(current);
 	while (true) {
-		next = _find_next(p_tree, p_state_machine);
+		next = _find_next(p_tree, p_state_machine, p_delta, p_current_time);
 
 		if (!_can_transition_to_next(p_tree, p_state_machine, next, p_test_only)) {
 			break; // Finish transition.
@@ -1063,7 +1066,7 @@ Ref<AnimationNodeStateMachineTransition> AnimationNodeStateMachinePlayback::_che
 	return p_transition.transition;
 }
 
-AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_find_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine) const {
+AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_find_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, double p_current_time) const {
 	NextInfo next;
 	if (path.size()) {
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
@@ -1092,7 +1095,7 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 			if (ref_transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 				continue;
 			}
-			if (p_state_machine->transitions[i].from == current && (_check_advance_condition(anodesm, ref_transition) || bypass)) {
+			if (p_state_machine->transitions[i].from == current && (_check_advance_condition(anodesm, ref_transition, p_delta, p_current_time) || bypass)) {
 				if (ref_transition->get_priority() <= priority_best) {
 					priority_best = ref_transition->get_priority();
 					auto_advance_to = i;
@@ -1116,7 +1119,7 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 	return next;
 }
 
-bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<AnimationNodeStateMachine> state_machine, const Ref<AnimationNodeStateMachineTransition> transition) const {
+bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<AnimationNodeStateMachine> state_machine, const Ref<AnimationNodeStateMachineTransition> transition, double p_delta, double p_current_time) const {
 	if (transition->get_advance_mode() != AnimationNodeStateMachineTransition::ADVANCE_MODE_AUTO) {
 		return false;
 	}
@@ -1136,7 +1139,13 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 
 		if (expression_base) {
 			Ref<Expression> exp = transition->expression;
-			bool ret = exp->execute(Array(), expression_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
+			Array input_array;
+			input_array.resize(2);
+
+			input_array.set(0, p_delta);
+			input_array.set(1, p_current_time);
+
+			bool ret = exp->execute(input_array, expression_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
 			if (exp->has_execute_failed() || !ret) {
 				return false;
 			}
