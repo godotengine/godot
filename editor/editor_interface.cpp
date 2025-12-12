@@ -56,6 +56,7 @@
 #include "main/main.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/world_environment.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
@@ -108,15 +109,8 @@ EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
 AABB EditorInterface::_calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb) {
 	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
-		Transform3D accum_xform;
-		Node3D *base = mesh_node;
-		while (base) {
-			accum_xform = base->get_transform() * accum_xform;
-			base = Object::cast_to<Node3D>(base->get_parent());
-		}
-
-		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
-		p_scene_aabb.merge_with(aabb);
+		AABB mesh_aabb = mesh_node->get_transform().xform(mesh_node->get_aabb()); // Should not be necessary, as imported transform already be reset, but just in case.
+		p_scene_aabb.merge_with(mesh_aabb);
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -236,75 +230,79 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 		return;
 	}
 	ERR_FAIL_COND_MSG(p_path.is_empty(), "Path is empty, cannot generate preview.");
-	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null, cannot generate preview.");
+	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null.");
 	ERR_FAIL_COND_MSG(p_scene->is_inside_tree(), "The scene must not be inside the tree.");
 	ERR_FAIL_NULL_MSG(EditorNode::get_singleton(), "EditorNode doesn't exist.");
+	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be called from the editor.");
 
 	SubViewport *sub_viewport_node = memnew(SubViewport);
+	EditorNode::get_singleton()->add_child(sub_viewport_node);
 	AABB scene_aabb;
 	scene_aabb = _calculate_aabb_for_scene(p_scene, scene_aabb);
 
-	sub_viewport_node->set_update_mode(SubViewport::UPDATE_ALWAYS);
+	sub_viewport_node->set_update_mode(SubViewport::UPDATE_ONCE);
 	sub_viewport_node->set_size(Vector2i(p_preview_size, p_preview_size));
 	sub_viewport_node->set_transparent_background(false);
+
+	// Doing this so it won't popup in editor viewport
 	Ref<World3D> world;
 	world.instantiate();
 	sub_viewport_node->set_world_3d(world);
 
-	EditorNode::get_singleton()->add_child(sub_viewport_node);
+	// Supersampling x2
+	if (p_preview_size < 2048) { // Universal baseline for textures in Godot 4 is 4K
+		sub_viewport_node->set_scaling_3d_scale(2.0);
+	}
+
+	// MSAA if using forward renderer
+	if (RS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
+		sub_viewport_node->set_msaa_3d(Viewport::MSAA::MSAA_8X);
+	}
+
 	Ref<Environment> env;
 	env.instantiate();
+	Color default_clear_color = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
 	env->set_background(Environment::BG_CLEAR_COLOR);
-
-	Ref<CameraAttributesPractical> camera_attributes;
-	camera_attributes.instantiate();
+	env->set_bg_color(default_clear_color);
 
 	Node3D *root = memnew(Node3D);
-	root->set_name("Root");
 	sub_viewport_node->add_child(root);
+	root->add_child(p_scene);
 
 	Camera3D *camera = memnew(Camera3D);
-	camera->set_environment(env);
-	camera->set_attributes(camera_attributes);
-	camera->set_name("Camera3D");
 	root->add_child(camera);
+	camera->set_environment(env);
 	camera->set_current(true);
 
-	camera->set_position(Vector3(0.0, 0.0, 3.0));
+	DirectionalLight3D *light_1 = memnew(DirectionalLight3D);
+	DirectionalLight3D *light_2 = memnew(DirectionalLight3D);
+	root->add_child(light_1);
+	root->add_child(light_2);
 
-	DirectionalLight3D *light = memnew(DirectionalLight3D);
-	light->set_name("Light");
-	DirectionalLight3D *light2 = memnew(DirectionalLight3D);
-	light2->set_name("Light2");
-	light2->set_color(Color(0.7, 0.7, 0.7, 1.0));
+	// Setup preview camera
+	float bound_sphere_radius = (scene_aabb.get_end() - scene_aabb.get_position()).length() / 2.0;
+	if (bound_sphere_radius <= 0.0) {
+		// The scene has zero volume, so just it give a literal
+		bound_sphere_radius = 1.0;
+	}
 
-	root->add_child(light);
-	root->add_child(light2);
+	const float cam_fov = 30.0;
+	const float cam_distance = bound_sphere_radius / Math::tan(Math::deg_to_rad(cam_fov) / 2.0);
+	const float cam_near = cam_distance * 0.01;
+	const float cam_far = cam_distance * 2.0;
 
-	sub_viewport_node->add_child(p_scene);
+	camera->set_perspective(cam_fov, cam_near, cam_far);
 
-	// Calculate the camera and lighting position based on the size of the scene.
-	Vector3 center = scene_aabb.get_center();
-	float camera_size = scene_aabb.get_longest_axis_size();
+	Transform3D cam_t3d;
+	cam_t3d.set_origin(scene_aabb.get_center() + Vector3(1.0f, 0.25f, 1.0f).normalized() * cam_distance);
+	cam_t3d.set_look_at(cam_t3d.origin, scene_aabb.get_center());
+	camera->set_transform(cam_t3d);
 
-	const float cam_rot_x = -Math::PI / 4;
-	const float cam_rot_y = -Math::PI / 4;
-
-	camera->set_orthogonal(camera_size * 2.0, 0.0001, camera_size * 2.0);
-
-	Transform3D xf;
-	xf.basis = Basis(Vector3(0, 1, 0), cam_rot_y) * Basis(Vector3(1, 0, 0), cam_rot_x);
-	xf.origin = center;
-	xf.translate_local(0, 0, camera_size);
-
-	camera->set_transform(xf);
-
-	Transform3D xform;
-	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math::PI / 6);
-	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math::PI / 6) * xform.basis;
-
-	light->set_transform(xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
-	light2->set_transform(xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
+	// Setup preview lighting
+	light_1->set_color(Color(1.0, 1.0, 1.0, 1.0));
+	light_2->set_color(Color(0.7, 0.7, 0.7, 1.0));
+	light_1->set_transform(Transform3D(Basis().rotated(Vector3(0, 1, 0), -Math::PI / 6), Vector3(0.0, 0.0, 0.0)));
+	light_2->set_transform(Transform3D(Basis().rotated(Vector3(1, 0, 0), -Math::PI / 6), Vector3(0.0, 0.0, 0.0)));
 
 	// Update the renderer to get the screenshot.
 	DisplayServer::get_singleton()->process_events();
@@ -313,45 +311,18 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 
 	// Get the texture.
 	Ref<Texture2D> texture = sub_viewport_node->get_texture();
-	ERR_FAIL_COND_MSG(texture.is_null(), "Failed to get texture from sub_viewport_node.");
 
-	// Remove the initial scene node.
-	sub_viewport_node->remove_child(p_scene);
-
-	// Cleanup the viewport.
-	if (sub_viewport_node) {
-		if (sub_viewport_node->get_parent()) {
-			sub_viewport_node->get_parent()->remove_child(sub_viewport_node);
-		}
+	if (texture.is_null()) {
+		ERR_PRINT(vformat(R"(Failed to create preview for "%s", preview SubViewport texture is invalid.)", p_path));
 		sub_viewport_node->queue_free();
-		sub_viewport_node = nullptr;
+		return;
 	}
 
-	// Now generate the cache image.
+	// Retrieve and save preview image
 	Ref<Image> img = texture->get_image();
 	if (img.is_valid() && img->get_width() > 0 && img->get_height() > 0) {
 		img = img->duplicate();
-
-		int preview_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
-		preview_size *= EDSCALE;
-
-		int vp_size = MIN(img->get_width(), img->get_height());
-		int x = (img->get_width() - vp_size) / 2;
-		int y = (img->get_height() - vp_size) / 2;
-
-		if (vp_size < preview_size) {
-			img->crop_from_point(x, y, vp_size, vp_size);
-		} else {
-			int ratio = vp_size / preview_size;
-			int size = preview_size * MAX(1, ratio / 2);
-
-			x = (img->get_width() - size) / 2;
-			y = (img->get_height() - size) / 2;
-
-			img->crop_from_point(x, y, size, size);
-			img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
-		}
-		img->convert(Image::FORMAT_RGB8);
+		img->convert(Image::FORMAT_RGBA8);
 
 		String temp_path = EditorPaths::get_singleton()->get_cache_dir();
 		String cache_base = ProjectSettings::get_singleton()->globalize_path(p_path).md5_text();
@@ -360,6 +331,9 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 		post_process_preview(img);
 		img->save_png(cache_base + ".png");
 	}
+
+	// Cleanup the viewport.
+	sub_viewport_node->queue_free();
 
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_path);
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed"));
