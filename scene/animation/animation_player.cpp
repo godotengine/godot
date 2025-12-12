@@ -685,6 +685,8 @@ void AnimationPlayer::seek_internal(double p_time, bool p_update, bool p_update_
 
 void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 	seek_internal(p_time, p_update, p_update_only);
+	// Notify the AnimationPlayerEditor that the time changed.
+	emit_signal(SNAME("seeked"), p_time);
 }
 
 void AnimationPlayer::advance(double p_time) {
@@ -1041,6 +1043,7 @@ void AnimationPlayer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo(SNAME("current_animation_changed"), PropertyInfo(Variant::STRING_NAME, "name")));
 	ADD_SIGNAL(MethodInfo(SNAME("animation_changed"), PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
+	ADD_SIGNAL(MethodInfo(SNAME("seeked"), PropertyInfo(Variant::FLOAT, "time")));
 }
 
 AnimationPlayer::AnimationPlayer() {
