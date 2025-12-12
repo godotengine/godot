@@ -75,6 +75,7 @@ public:
 	void reserve(int p_new_capacity);
 	void clear();
 	void sort();
+	Dictionary sorted() const;
 	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
 	Dictionary merged(const Dictionary &p_dictionary, bool p_overwrite = false) const;
 

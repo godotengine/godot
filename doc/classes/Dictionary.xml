@@ -531,6 +531,13 @@
 				This method ensures that the dictionary's entries are ordered consistently when [method keys] or [method values] are called, or when the dictionary needs to be converted to a string through [method @GlobalScope.str] or [method JSON.stringify].
 			</description>
 		</method>
+		<method name="sorted" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns a sorted copy of this dictionary. See also [method sort].
+				[b]Note:[/b] This method creates a copy, which may have a noticeable performance cost. To perform in-place sorting instead, use [method sort].
+			</description>
+		</method>
 		<method name="values" qualifiers="const">
 			<return type="Array" />
 			<description>
