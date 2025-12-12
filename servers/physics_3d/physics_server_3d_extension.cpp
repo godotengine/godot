@@ -363,6 +363,8 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_soft_body_move_point, "body", "point_index", "global_position");
 	GDVIRTUAL_BIND(_soft_body_get_point_global_position, "body", "point_index");
 
+	GDVIRTUAL_BIND(_soft_body_get_point_count, "body");
+
 	GDVIRTUAL_BIND(_soft_body_remove_all_pinned_points, "body");
 	GDVIRTUAL_BIND(_soft_body_pin_point, "body", "point_index", "pin");
 	GDVIRTUAL_BIND(_soft_body_is_point_pinned, "body", "point_index");
