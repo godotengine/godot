@@ -72,7 +72,7 @@ void Timer::_notification(int p_what) {
 				return;
 			}
 			if (ignore_time_scale) {
-				time_left -= Engine::get_singleton()->get_process_step();
+				time_left -= Engine::get_singleton()->get_physics_step();
 			} else {
 				time_left -= get_physics_process_delta_time();
 			}
