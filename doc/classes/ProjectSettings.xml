@@ -2477,7 +2477,7 @@
 			Maximum size (in kiB) for the [WebRTCDataChannel] input buffer.
 		</member>
 		<member name="network/tls/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
-			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
+			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-bundle.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
 		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="" default="true">
