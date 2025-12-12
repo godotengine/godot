@@ -2711,7 +2711,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 					v = source_file_options[file][base];
 				}
 				String value;
-				VariantWriter::write_to_string(v, value);
+				VariantWriter::write_to_string(v, value, true);
 				f->store_line(base + "=" + value);
 			}
 		}
@@ -2968,7 +2968,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 			}
 
 			String value;
-			VariantWriter::write_to_string(genf, value);
+			VariantWriter::write_to_string(genf, value, true);
 			f->store_line("files=" + value);
 			f->store_line("");
 		}
@@ -2992,7 +2992,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		for (const ResourceImporter::ImportOption &E : opts) {
 			String base = E.option.name;
 			String value;
-			VariantWriter::write_to_string(params[base], value);
+			VariantWriter::write_to_string(params[base], value, true);
 			f->store_line(base + "=" + value);
 		}
 	}
