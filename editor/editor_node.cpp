@@ -368,7 +368,7 @@ void EditorNode::_update_title() {
 	}
 	if (unsaved_cache) {
 		// Display the "modified" mark before anything else so that it can always be seen in the OS task bar.
-		title = vformat("(*) %s", title);
+		title = vformat("*%s", title);
 	}
 	DisplayServer::get_singleton()->window_set_title(title + String(" - ") + GODOT_VERSION_NAME);
 	if (project_title) {
