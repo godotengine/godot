@@ -116,6 +116,7 @@
 				[param dash] is the length of each dash in pixels, with the gap between each dash being the same length. If [param aligned] is [code]true[/code], the length of the first and last dashes may be shortened or lengthened to allow the line to begin and end at the precise points defined by [param from] and [param to]. Both ends are always symmetrical when [param aligned] is [code]true[/code]. If [param aligned] is [code]false[/code], all dashes will have the same length, but the line may appear incomplete at the end due to the dash length not dividing evenly into the line length. Only full dashes are drawn when [param aligned] is [code]false[/code].
 				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
 				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
+				[b]Note:[/b] The maximum number of dashes per dashed line is [code]4096[/code]. If this number is exceeded, the extra dashes at the start of the line will appear as a single straight line. To reduce the overall dash count in a line, you can either reduce the length between the points [param from] and [param to], or increase the [param dash] size.
 			</description>
 		</method>
 		<method name="draw_ellipse">
