@@ -445,7 +445,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="file" type="String" />
 			<param index="1" name="attribute_name" type="String" />
-			<param index="2" name="_data" type="String" />
+			<param index="2" name="data" type="String" />
 			<description>
 				Writes file extended attribute with name [param attribute_name] as a UTF-8 encoded string.
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
