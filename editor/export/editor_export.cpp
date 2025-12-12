@@ -324,7 +324,13 @@ void EditorExport::load_config() {
 			Vector<String> files = config->get_value(section, "export_files");
 
 			for (int i = 0; i < files.size(); i++) {
-				if (!FileAccess::exists(files[i])) {
+				if (files[i].ends_with("/")) {
+					if (!DirAccess::exists(files[i])) {
+						preset->remove_export_file(files[i]);
+					} else {
+						preset->add_export_file(files[i]);
+					}
+				} else if (!FileAccess::exists(files[i])) {
 					preset->remove_export_file(files[i]);
 				} else {
 					preset->add_export_file(files[i]);
