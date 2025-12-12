@@ -374,6 +374,21 @@
 		<member name="shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR.
 		</member>
+		<member name="sheen" type="float" setter="set_sheen" getter="get_sheen" default="1.0">
+			Sets the strength of the sheen effect. Setting to [code]0[/code] looks the same as disabling the sheen effect.
+		</member>
+		<member name="sheen_color" type="Color" setter="set_sheen_color" getter="get_sheen_color" default="Color(1, 1, 1, 1)">
+			Sets the color of the sheen effect. It should be adjusted according to the color [member albedo_color] or [member albedo_texture].
+			[b]Note:[/b] Taking the luminance of [member albedo_color] as the [member sheen_color] will produce a fairly natural effect that works for common cloth. A dark [member albedo_color] combined with a bright/saturated [member sheen_color] can be used to create velvet.
+		</member>
+		<member name="sheen_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+		</member>
+		<member name="sheen_roughness" type="float" setter="set_sheen_roughness" getter="get_sheen_roughness" default="0.5">
+			Sets the roughness of the sheen pass. A higher value results in a rougher sheen while a lower value results in a smoother sheen.
+		</member>
+		<member name="sheen_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture that defines the strength of the sheen effect and the roughness of the sheen. Strength is specified in the red channel while roughness is specified in the green channel.
+		</member>
 		<member name="specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" enum="BaseMaterial3D.SpecularMode" default="0">
 			The method for rendering the specular blob.
 			[b]Note:[/b] [member specular_mode] only applies to the specular blob. It does not affect specular reflections from the sky, screen-space reflections, [VoxelGI], SDFGI or [ReflectionProbe]s. To disable reflections from these sources as well, set [member metallic_specular] to [code]0.0[/code] instead.
@@ -512,6 +527,9 @@
 		<constant name="TEXTURE_RIM" value="5" enum="TextureParam">
 			Texture specifying per-pixel rim value.
 		</constant>
+		<constant name="TEXTURE_SHEEN" value="19" enum="TextureParam">
+			Texture specifying per-pixel sheen value.
+		</constant>
 		<constant name="TEXTURE_CLEARCOAT" value="6" enum="TextureParam">
 			Texture specifying per-pixel clearcoat value.
 		</constant>
@@ -548,7 +566,7 @@
 		<constant name="TEXTURE_ORM" value="17" enum="TextureParam">
 			Texture holding ambient occlusion, roughness, and metallic.
 		</constant>
-		<constant name="TEXTURE_MAX" value="19" enum="TextureParam">
+		<constant name="TEXTURE_MAX" value="20" enum="TextureParam">
 			Represents the size of the [enum TextureParam] enum.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST" value="0" enum="TextureFilter">
@@ -647,7 +665,9 @@
 		<constant name="FEATURE_BENT_NORMAL_MAPPING" value="12" enum="Feature">
 			Constant for setting [member bent_normal_enabled].
 		</constant>
-		<constant name="FEATURE_MAX" value="13" enum="Feature">
+		<constant name="FEATURE_SHEEN" value="13" enum="Feature">
+		</constant>
+		<constant name="FEATURE_MAX" value="14" enum="Feature">
 			Represents the size of the [enum Feature] enum.
 		</constant>
 		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
