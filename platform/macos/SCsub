@@ -11,10 +11,7 @@ files = [
     "godot_application_delegate.mm",
     "crash_handler_macos.mm",
     "display_server_macos_base.mm",
-    "display_server_embedded.mm",
     "display_server_macos.mm",
-    "embedded_debugger.mm",
-    "embedded_gl_manager.mm",
     "godot_button_view.mm",
     "godot_content_view.mm",
     "godot_core_cursor.mm",
@@ -35,6 +32,9 @@ files = [
 
 if env.editor_build:
     files += [
+        "display_server_embedded.mm",
+        "embedded_debugger.mm",
+        "embedded_gl_manager.mm",
         "editor/embedded_game_view_plugin.mm",
         "editor/embedded_process_macos.mm",
     ]
