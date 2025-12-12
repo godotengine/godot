@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/templates/a_hash_set.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -795,7 +796,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 	updating = true;
 
-	HashSet<String> paths;
+	AHashSet<String> paths;
 	HashMap<String, RBSet<String>> types;
 	{
 		List<StringName> animation_list;
