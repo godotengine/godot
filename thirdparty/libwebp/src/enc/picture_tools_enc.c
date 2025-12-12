@@ -12,9 +12,14 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include <assert.h>
+#include <stddef.h>
+#include <string.h>
 
-#include "src/enc/vp8i_enc.h"
+#include "src/dsp/dsp.h"
 #include "src/dsp/yuv.h"
+#include "src/enc/vp8i_enc.h"
+#include "src/webp/encode.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // Helper: clean up fully transparent area to help compressibility.
