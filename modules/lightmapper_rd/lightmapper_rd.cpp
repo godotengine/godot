@@ -1058,7 +1058,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	return BAKE_OK;
 }
 
-LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_denoiser_range, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_bake_shadowmask, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization, float p_supersampling_factor) {
+LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_denoiser_range, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_bake_shadowmask, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization, float p_supersampling_factor, const Color &p_environment_min_light) {
 	int denoiser = GLOBAL_GET("rendering/lightmapping/denoising/denoiser");
 	String oidn_path = EDITOR_GET("filesystem/tools/oidn/oidn_denoise_path");
 
@@ -2329,10 +2329,26 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 
 	if (probe_positions.size() > 0) {
-		probe_values.resize(probe_positions.size() * 9);
+		// 9 colors are stored per probe for spherical harmonics.
+		constexpr int PROBE_COLOR_SIZE = 9;
+		probe_values.resize(probe_positions.size() * PROBE_COLOR_SIZE);
 		Vector<uint8_t> probe_data = rd->buffer_get_data(light_probe_buffer);
 		memcpy(probe_values.ptrw(), probe_data.ptr(), probe_data.size());
 		rd->free_rid(light_probe_buffer);
+
+		if (!p_environment_min_light.is_equal_approx(Color(0, 0, 0))) {
+			// Apply minimum lighting for probes to avoid overly dark areas, if requested by the user.
+			for (int i = 0; i < probe_values.size(); i += PROBE_COLOR_SIZE) {
+				for (int j = 0; j < PROBE_COLOR_SIZE; j++) {
+					const Color probe_color = probe_values[i + j];
+					const Color environment_min_light_linear = p_environment_min_light.srgb_to_linear();
+					probe_values.write[i + j] = Color(
+							MAX(environment_min_light_linear.r, probe_color.r),
+							MAX(environment_min_light_linear.g, probe_color.g),
+							MAX(environment_min_light_linear.b, probe_color.b));
+				}
+			}
+		}
 
 #ifdef DEBUG_TEXTURES
 		{
