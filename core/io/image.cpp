@@ -4425,6 +4425,11 @@ Error Image::load_jpg_from_buffer(const Vector<uint8_t> &p_array) {
 	return _load_from_buffer(p_array, _jpg_mem_loader_func);
 }
 
+Error Image::_load_jpg_from_buffer_lenient(const uint8_t *p_data, int p_size) {
+	ERR_FAIL_NULL_V(_jpg_mem_loader_func_ex, ERR_UNAVAILABLE);
+	return _jpg_mem_loader_func_ex(this, p_data, p_size, false);
+}
+
 Error Image::load_exr_from_buffer(const Vector<uint8_t> &p_array) {
 	ERR_FAIL_NULL_V_MSG(
 			_exr_mem_loader_func,
