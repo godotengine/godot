@@ -58,17 +58,17 @@ int VisibleOnScreenNotifier3DGizmoPlugin::get_priority() const {
 String VisibleOnScreenNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	switch (p_id) {
 		case 0:
-			return "Size X";
+			return "+X Face";
 		case 1:
-			return "Size Y";
+			return "-X Face";
 		case 2:
-			return "Size Z";
+			return "+Y Face";
 		case 3:
-			return "Pos X";
+			return "-Y Face";
 		case 4:
-			return "Pos Y";
+			return "+Z Face";
 		case 5:
-			return "Pos Z";
+			return "-Z Face";
 	}
 
 	return "";
@@ -86,49 +86,40 @@ void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p
 
 	Transform3D gi = gt.affine_inverse();
 
-	bool move = p_id >= 3;
-	p_id = p_id % 3;
+	// Determine the face 0=+X, 1=-X, 2=+Y, 3=-Y, 4=+Z, 5=-Z
+	int axis = p_id / 2;
+	bool positive = (p_id % 2 ) == 0;
 
 	AABB aabb = notifier->get_aabb();
-	Vector3 ray_from = p_camera->project_ray_origin(p_point);
-	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
-	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
+	Vector3 ray_from = gi.xform(p_camera->project_ray_origin(p_point));
+	Vector3 ray_to = gi.xform(p_camera->project_ray_origin(p_point) + p_camera->project_ray_normal(p_point) * 4096);
 
-	Vector3 ofs = aabb.get_center();
+	Vector3 handle_pos = aabb.get_center();
+	handle_pos[axis] += (positive ? 1.0f : -1.0f) * (aabb.size[axis] * 0.5f);
 
-	Vector3 axis;
-	axis[p_id] = 1.0;
+	Vector3 axis_vec;
+	axis_vec[axis] = 1.0f;
 
-	if (move) {
-		Vector3 ra, rb;
-		Geometry3D::get_closest_points_between_segments(ofs - axis * 4096, ofs + axis * 4096, sg[0], sg[1], ra, rb);
+	Vector3 ra, rb;
+	Geometry3D::get_closest_points_between_segments(handle_pos - axis_vec * 4096, handle_pos + axis_vec * 4096, ray_from, ray_to, ra, rb);
 
-		float d = ra[p_id];
-		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
-		}
-
-		aabb.position[p_id] = d - 1.0 - aabb.size[p_id] * 0.5;
-		notifier->set_aabb(aabb);
-
-	} else {
-		Vector3 ra, rb;
-		Geometry3D::get_closest_points_between_segments(ofs, ofs + axis * 4096, sg[0], sg[1], ra, rb);
-
-		float d = ra[p_id] - ofs[p_id];
-		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
-		}
-
-		if (d < 0.001) {
-			d = 0.001;
-		}
-		//resize
-		aabb.position[p_id] = (aabb.position[p_id] + aabb.size[p_id] * 0.5) - d;
-		aabb.size[p_id] = d * 2;
-		notifier->set_aabb(aabb);
+	float move_to = ra[axis];
+	if (Node3DEditor::get_singleton()->is_snap_enabled()){
+		move_to = Math::snapped(move_to, Node3DEditor::get_singleton()->get_translate_snap());
 	}
+
+	if (positive) {
+		float new_size = move_to - aabb.position[axis];
+		aabb.size[axis] = MAX(new_size, 0.001f);
+	} else {
+		float new_pos = move_to;
+		float old_end = aabb.position[axis] + aabb.size[axis];
+		aabb.position[axis] = new_pos;
+		aabb.size[axis] = MAX(old_end - new_pos, 0.001f);
+	}
+
+	notifier->set_aabb(aabb);
 }
 
 void VisibleOnScreenNotifier3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
@@ -151,9 +142,11 @@ void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Vector<Vector3> lines;
 	AABB aabb = notifier->get_aabb();
+	Vector3 center = aabb.get_center();
+	Vector3 extents = aabb.get_size() * 0.5;
 
+	Vector<Vector3> lines;
 	for (int i = 0; i < 12; i++) {
 		Vector3 a, b;
 		aabb.get_edge(i, a, b);
@@ -161,24 +154,14 @@ void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		lines.push_back(b);
 	}
 
-	Vector<Vector3> handles;
-
-	for (int i = 0; i < 3; i++) {
-		Vector3 ax;
-		ax[i] = aabb.position[i] + aabb.size[i];
-		ax[(i + 1) % 3] = aabb.position[(i + 1) % 3] + aabb.size[(i + 1) % 3] * 0.5;
-		ax[(i + 2) % 3] = aabb.position[(i + 2) % 3] + aabb.size[(i + 2) % 3] * 0.5;
-		handles.push_back(ax);
-	}
-
-	Vector3 center = aabb.get_center();
-	for (int i = 0; i < 3; i++) {
-		Vector3 ax;
-		ax[i] = 1.0;
-		handles.push_back(center + ax);
-		lines.push_back(center);
-		lines.push_back(center + ax);
-	}
+	Vector<Vector3> handles = {
+		center + Vector3(extents.x, 0, 0),
+		center - Vector3(extents.x, 0, 0),
+		center + Vector3(0, extents.y, 0),
+		center - Vector3(0, extents.y, 0),
+		center + Vector3(0, 0, extents.z),
+		center - Vector3(0, 0, extents.z)
+	};
 
 	Ref<Material> material = get_material("visibility_notifier_material", p_gizmo);
 
