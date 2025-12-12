@@ -2020,6 +2020,8 @@ void ArrayMesh::clear_surfaces() {
 	RS::get_singleton()->mesh_clear(mesh);
 	surfaces.clear();
 	aabb = AABB();
+	notify_property_list_changed();
+	emit_changed();
 }
 
 void ArrayMesh::surface_remove(int p_surface) {
