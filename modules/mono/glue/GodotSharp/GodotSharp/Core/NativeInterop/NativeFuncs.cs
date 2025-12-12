@@ -50,6 +50,8 @@ namespace Godot.NativeInterop
         public static partial delegate* unmanaged<godot_bool, IntPtr> godotsharp_get_class_constructor(
             in godot_string_name p_classname);
 
+        public static partial IntPtr godotsharp_instantiate_class(in godot_string_name p_classname);
+
         public static partial IntPtr godotsharp_engine_get_singleton(in godot_string p_name);
 
 
