@@ -163,6 +163,7 @@ class TextShaderEditor : public ShaderEditor {
 	void _reload_shader_from_disk();
 	void _reload_shader_include_from_disk();
 	void _reload();
+	void _file_system_changed(const Vector<String> &p_resources);
 	void _show_warnings_panel(bool p_show);
 	void _warning_clicked(const Variant &p_line);
 	void _update_warnings(bool p_validate);
