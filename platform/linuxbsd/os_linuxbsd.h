@@ -39,6 +39,10 @@
 #include "drivers/unix/os_unix.h"
 #include "servers/audio/audio_server.h"
 
+#ifdef DBUS_ENABLED
+#include "freedesktop_portal_desktop.h"
+#endif
+
 #ifdef FONTCONFIG_ENABLED
 #ifdef SOWRAP_ENABLED
 #include "fontconfig-so_wrap.h"
@@ -51,6 +55,10 @@ class JoypadSDL;
 
 class OS_LinuxBSD : public OS_Unix {
 	virtual void delete_main_loop() override;
+
+#ifdef DBUS_ENABLED
+	FreeDesktopPortalDesktop *portal_desktop = nullptr;
+#endif
 
 #ifdef FONTCONFIG_ENABLED
 	bool font_config_initialized = false;
@@ -137,6 +145,10 @@ public:
 	virtual Error move_to_trash(const String &p_path) override;
 
 	virtual String get_system_ca_certificates() override;
+
+#ifdef DBUS_ENABLED
+	FreeDesktopPortalDesktop *get_portal_desktop();
+#endif
 
 #ifdef TOOLS_ENABLED
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const override;
