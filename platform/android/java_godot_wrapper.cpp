@@ -95,6 +95,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_build_env_execute = p_env->GetMethodID(godot_class, "nativeBuildEnvExecute", "(Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;Lorg/godotengine/godot/variant/Callable;)I");
 	_build_env_cancel = p_env->GetMethodID(godot_class, "nativeBuildEnvCancel", "(I)V");
 	_build_env_clean_project = p_env->GetMethodID(godot_class, "nativeBuildEnvCleanProject", "(Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;)V");
+	_get_hdr_capabilities = p_env->GetMethodID(godot_class, "getHdrCapabilities", "()[F");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -694,4 +695,24 @@ void GodotJavaWrapper::build_env_clean_project(const String &p_project_path, con
 		env->DeleteLocalRef(j_gradle_build_directory);
 		env->DeleteLocalRef(j_callback);
 	}
+}
+
+AndroidHdrCapabilities GodotJavaWrapper::getHdrCapabilities() {
+	AndroidHdrCapabilities result = {};
+
+	ERR_FAIL_NULL_V(_get_hdr_capabilities, result);
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, result);
+	jfloatArray returnArray = (jfloatArray)env->CallObjectMethod(godot_instance, _get_hdr_capabilities);
+	ERR_FAIL_COND_V(env->GetArrayLength(returnArray) != 5, result);
+	jfloat *arrayBody = env->GetFloatArrayElements(returnArray, JNI_FALSE);
+
+	result.hdr_supported = arrayBody[0] > 0.0f;
+	result.min_luminance = arrayBody[1];
+	result.max_luminance = arrayBody[2];
+	result.max_average_luminance = arrayBody[3];
+	result.hdr_sdr_ratio = arrayBody[4];
+
+	env->ReleaseFloatArrayElements(returnArray, arrayBody, 0);
+	return result;
 }
