@@ -2698,6 +2698,44 @@ void CodeEdit::delete_lines() {
 	end_complex_operation();
 }
 
+void CodeEdit::join_lines(const String &p_line_ending) {
+	ERR_FAIL_COND_MSG(p_line_ending.contains_char('\n'), "Cannot join lines with a newline.");
+
+	begin_complex_operation();
+	begin_multicaret_edit();
+
+	Vector<Point2i> line_ranges = get_line_ranges_from_carets();
+	int line_offset = 0;
+	for (const Point2i &line_range : line_ranges) {
+		for (int32_t line_index = line_range.x; line_index <= line_range.y; line_index++) {
+			int32_t real_line = line_index + line_offset;
+			if (real_line + 1 >= get_line_count()) {
+				break;
+			}
+			unfold_line(real_line);
+			String line = get_line(real_line);
+			int line_length = line.length();
+			int next_line_leading_whitespace_length = get_first_non_whitespace_column(real_line + 1);
+			int next_line_length = get_line(real_line + 1).length();
+			int corrected_line_length = line_length - 1;
+			for (; corrected_line_length >= 0; corrected_line_length--) {
+				if (!is_whitespace(line[corrected_line_length])) {
+					break;
+				}
+			}
+			corrected_line_length++;
+			remove_text(real_line, corrected_line_length, real_line + 1, next_line_leading_whitespace_length);
+			if (next_line_leading_whitespace_length != next_line_length && corrected_line_length != 0) {
+				insert_text(p_line_ending, real_line, corrected_line_length);
+			}
+			line_offset--;
+		}
+	}
+
+	end_multicaret_edit();
+	end_complex_operation();
+}
+
 void CodeEdit::duplicate_selection() {
 	begin_complex_operation();
 	begin_multicaret_edit();
@@ -2970,6 +3008,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_lines_up"), &CodeEdit::move_lines_up);
 	ClassDB::bind_method(D_METHOD("move_lines_down"), &CodeEdit::move_lines_down);
 	ClassDB::bind_method(D_METHOD("delete_lines"), &CodeEdit::delete_lines);
+	ClassDB::bind_method(D_METHOD("join_lines", "line_ending"), &CodeEdit::join_lines, DEFVAL(" "));
 	ClassDB::bind_method(D_METHOD("duplicate_selection"), &CodeEdit::duplicate_selection);
 	ClassDB::bind_method(D_METHOD("duplicate_lines"), &CodeEdit::duplicate_lines);
 

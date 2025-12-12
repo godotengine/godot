@@ -166,6 +166,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
 		EDIT_EMOJI_AND_SYMBOL,
+		EDIT_JOIN_LINES,
 	};
 
 	enum COLOR_MODE {
