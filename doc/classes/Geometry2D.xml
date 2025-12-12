@@ -32,6 +32,15 @@
 				If [param polygon_b] is enclosed by [param polygon_a], returns an outer polygon (boundary) and inner polygon (hole) which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
+		<method name="clip_polygons_complex">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon_a" type="PackedVector2Array[]" />
+			<param index="1" name="polygon_b" type="PackedVector2Array[]" />
+			<description>
+				Clips [param polygon_a] against [param polygon_b] and returns an array of clipped polygons. This operation will work on a polygon with holes. This performs [constant OPERATION_DIFFERENCE] between polygons. Returns an empty array if [param polygon_b] completely overlaps [param polygon_a].
+				If [param polygon_b] is enclosed by [param polygon_a], returns an outer polygon (boundary) and inner polygon (hole) which could be distinguished by calling [method is_polygon_clockwise].
+			</description>
+		</method>
 		<method name="clip_polyline_with_polygon">
 			<return type="PackedVector2Array[]" />
 			<param index="0" name="polyline" type="PackedVector2Array" />
@@ -60,6 +69,15 @@
 			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
 				Mutually excludes common area defined by intersection of [param polygon_a] and [param polygon_b] (see [method intersect_polygons]) and returns an array of excluded polygons. This performs [constant OPERATION_XOR] between polygons. In other words, returns all but common area between polygons.
+				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+			</description>
+		</method>
+		<method name="exclude_polygons_complex">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon_a" type="PackedVector2Array[]" />
+			<param index="1" name="polygon_b" type="PackedVector2Array[]" />
+			<description>
+				Mutually excludes common area defined by intersection of [param polygon_a] and [param polygon_b] (see [method intersect_polygons]) and returns an array of excluded polygons. This operation will work on a polygon with holes. This performs [constant OPERATION_XOR] between polygons. In other words, returns all but common area between polygons.
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -97,6 +115,15 @@
 			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
 				Intersects [param polygon_a] with [param polygon_b] and returns an array of intersected polygons. This performs [constant OPERATION_INTERSECTION] between polygons. In other words, returns common area shared by polygons. Returns an empty array if no intersection occurs.
+				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+			</description>
+		</method>
+		<method name="intersect_polygons_complex">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon_a" type="PackedVector2Array[]" />
+			<param index="1" name="polygon_b" type="PackedVector2Array[]" />
+			<description>
+				Intersects [param polygon_a] with [param polygon_b] and returns an array of intersected polygons. This operation will work on a polygon with holes. This performs [constant OPERATION_INTERSECTION] between polygons. In other words, returns common area shared by polygons. Returns an empty array if no intersection occurs.
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -183,6 +210,15 @@
 			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
 				Merges (combines) [param polygon_a] and [param polygon_b] and returns an array of merged polygons. This performs [constant OPERATION_UNION] between polygons.
+				The operation may result in an outer polygon (boundary) and multiple inner polygons (holes) produced which could be distinguished by calling [method is_polygon_clockwise].
+			</description>
+		</method>
+		<method name="merge_polygons_complex">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon_a" type="PackedVector2Array[]" />
+			<param index="1" name="polygon_b" type="PackedVector2Array[]" />
+			<description>
+				Merges (combines) [param polygon_a] and [param polygon_b] and returns an array of merged polygons. This operation will work on a polygon with holes. This performs [constant OPERATION_UNION] between polygons.
 				The operation may result in an outer polygon (boundary) and multiple inner polygons (holes) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
