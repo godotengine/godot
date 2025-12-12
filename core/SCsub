@@ -47,7 +47,9 @@ if env["brotli"] and env["builtin_brotli"]:
         "dec/bit_reader.c",
         "dec/decode.c",
         "dec/huffman.c",
+        "dec/prefix.c",
         "dec/state.c",
+        "dec/static_init.c",
     ]
     thirdparty_brotli_sources = [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
 
