@@ -33,8 +33,8 @@
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/editor_dock.h"
-#include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
@@ -64,6 +64,10 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		MessageQueue::get_main_singleton()->push_callable(callable_mp(self, &EditorLog::add_message), err_str, message_type);
 	} else {
 		self->add_message(err_str, message_type);
+	}
+
+	if (p_type == ERR_HANDLER_SHADER) {
+		EditorDebuggerNode::get_singleton()->open_file_in_editor(p_file);
 	}
 }
 
@@ -208,14 +212,10 @@ void EditorLog::_meta_clicked(const String &p_meta) {
 	}
 	const PackedStringArray parts = p_meta.rsplit(":", true, 1);
 	String path = parts[0];
-	const int line = parts[1].to_int() - 1;
+	const int line = parts[1].to_int();
 
 	if (path.begins_with("res://")) {
-		if (ResourceLoader::exists(path)) {
-			const Ref<Resource> res = ResourceLoader::load(path);
-			ScriptEditor::get_singleton()->edit(res, line, 0);
-			InspectorDock::get_singleton()->edit_resource(res);
-		}
+		EditorDebuggerNode::get_singleton()->open_file_in_editor(path, line);
 	} else if (path.has_extension("cpp") || path.has_extension("h") || path.has_extension("mm") || path.has_extension("hpp")) {
 		// Godot source file. Try to open it in external editor.
 		if (path.begins_with("./") || path.begins_with(".\\")) {
@@ -224,7 +224,7 @@ void EditorLog::_meta_clicked(const String &p_meta) {
 			path = OS::get_singleton()->get_executable_path().get_base_dir().get_base_dir().path_join(path);
 		}
 
-		if (!ScriptEditorPlugin::open_in_external_editor(path, line, -1, true)) {
+		if (!ScriptEditorPlugin::open_in_external_editor(path, line - 1, -1, true)) {
 			OS::get_singleton()->shell_open(path);
 		}
 	} else {
