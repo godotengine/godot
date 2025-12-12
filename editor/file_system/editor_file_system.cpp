@@ -2374,6 +2374,8 @@ void EditorFileSystem::update_file(const String &p_file) {
 void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 	bool updated = false;
 	bool update_files_icon_cache = false;
+	Vector<String> overwrites;
+	Vector<String> reloads;
 	Vector<EditorFileSystemDirectory::FileInfo *> files_to_update_icon_path;
 	for (const String &file : p_script_paths) {
 		ERR_CONTINUE(file.is_empty());
@@ -2458,7 +2460,12 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			EditorFileSystemDirectory::FileInfo *fi = fs->files[cpos];
 			const String old_script_class_icon_path = fi->class_info.icon_path;
 			const String old_class_name = fi->class_info.name;
-			fi->type = type;
+			if (fi->type != type) {
+				fi->type = type;
+				overwrites.push_back(file);
+			} else if (!_can_import_file(file)) {
+				reloads.push_back(file);
+			}
 			fi->resource_script_class = script_class;
 			fi->uid = uid;
 			fi->class_info = _get_global_script_class(type, file);
@@ -2525,6 +2532,15 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		}
 		if (!is_scanning()) {
 			_process_update_pending();
+			if (!reloads.is_empty()) {
+				emit_signal(SNAME("resources_reload"), reloads);
+			}
+		}
+		for (const String &path : overwrites) {
+			Ref<Resource> res = ResourceCache::get_ref(path);
+			if (res.is_valid()) {
+				res->set_path("");
+			}
 		}
 		if (!filesystem_changed_queued) {
 			filesystem_changed_queued = true;
