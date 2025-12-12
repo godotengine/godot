@@ -824,6 +824,9 @@ void BaseMaterial3D::_update_shader() {
 		case CULL_MAX:
 			break; // Internal value, skip.
 	}
+	if (flags[FLAG_KEEP_BACKFACE_NORMALS]) {
+		code += ", keep_backface_normals";
+	}
 	switch (diffuse_mode) {
 		case DIFFUSE_BURLEY:
 			code += ", diffuse_burley";
@@ -2445,6 +2448,7 @@ void BaseMaterial3D::set_cull_mode(CullMode p_mode) {
 
 	cull_mode = p_mode;
 	_queue_shader_change();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::CullMode BaseMaterial3D::get_cull_mode() const {
@@ -2616,6 +2620,10 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		if (p_property.name == "fov_override" && !flags[FLAG_USE_FOV_OVERRIDE]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (p_property.name == "keep_backface_normals" && cull_mode == CULL_BACK) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
@@ -3584,6 +3592,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Premultiplied Alpha"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "keep_backface_normals"), "set_flag", "get_flag", FLAG_KEEP_BACKFACE_NORMALS);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_test", PROPERTY_HINT_ENUM, "Default,Inverted"), "set_depth_test", "get_depth_test");
@@ -3877,6 +3886,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_SPECULAR_OCCLUSION);
 	BIND_ENUM_CONSTANT(FLAG_USE_Z_CLIP_SCALE);
 	BIND_ENUM_CONSTANT(FLAG_USE_FOV_OVERRIDE);
+	BIND_ENUM_CONSTANT(FLAG_KEEP_BACKFACE_NORMALS);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
