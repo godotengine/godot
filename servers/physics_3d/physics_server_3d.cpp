@@ -573,7 +573,7 @@ bool PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryPara
 	// NOTE: Expected behavior: return true on collision, false otherwise.
 	//       Actual behavior: always returns true.
 	cast_motion(p_shape_query->get_parameters(), p_result->safe_fraction, p_result->unsafe_fraction);
-	
+
 	// return cast_motion(p_shape_query->get_parameters(), p_result->safe_fraction, p_result->unsafe_fraction);
 	return (p_result->safe_fraction < 1.0f) || (p_result->unsafe_fraction < 1.0f);
 }

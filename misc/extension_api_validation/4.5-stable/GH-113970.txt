@@ -1,0 +1,16 @@
+GH-113970
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_ray/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_point/arguments': size changed value in new API, from 2 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/intersect_shape/arguments': size changed value in new API, from 2 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/cast_motion/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/collide_shape/arguments': size changed value in new API, from 2 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods/get_rest_info/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_ray/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_point/arguments': size changed value in new API, from 2 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/intersect_shape/arguments': size changed value in new API, from 2 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/cast_motion/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/collide_shape/arguments': size changed value in new API, from 2 to 2.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/get_rest_info/arguments': size changed value in new API, from 1 to 2.
+
+Optional argument added. Compatibility methods registered.

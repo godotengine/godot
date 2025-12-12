@@ -32,13 +32,13 @@
 
 #include "core/variant/typed_array.h"
 
-Dictionary PhysicsDirectSpaceState2D::_intersect_ray_bind_compat_691337(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query) {
-    EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, Dictionary());
+Dictionary PhysicsDirectSpaceState2D::_intersect_ray_bind_compat_113970(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query) {
+	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, Dictionary());
 
-    Ref<PhysicsRayIntersectionResult2D> p_result;
+	Ref<PhysicsRayIntersectionResult2D> p_result;
 	p_result.instantiate();
 
-    Dictionary r;
+	Dictionary r;
 
 	if (_intersect_ray(p_ray_query, p_result)) {
 		r["position"] = p_result->get_position();
@@ -52,7 +52,7 @@ Dictionary PhysicsDirectSpaceState2D::_intersect_ray_bind_compat_691337(Required
 	return r;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_point_bind_compat_691337(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results) {
+TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_point_bind_compat_113970(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results) {
 	EXTRACT_PARAM_OR_FAIL_V(p_point_query, rp_point_query, TypedArray<Dictionary>());
 
 	Ref<PhysicsPointIntersectionResult2D> p_result = memnew(PhysicsPointIntersectionResult2D(p_max_results));
@@ -74,13 +74,13 @@ TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_point_bind_compat_6
 	return r;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_shape_bind_compat_691337(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results) {
+TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results) {
 	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Dictionary>());
-	
+
 	Ref<PhysicsShapeIntersectionResult2D> p_result = memnew(PhysicsShapeIntersectionResult2D(p_max_results));
 
 	p_result->collision_count = _intersect_shape(p_shape_query, p_result);
-	
+
 	TypedArray<Dictionary> r;
 	r.resize(p_result->collision_count);
 
@@ -96,9 +96,9 @@ TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_shape_bind_compat_6
 	return r;
 }
 
-Vector<real_t> PhysicsDirectSpaceState2D::_cast_motion_bind_compat_691337(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query) {
+Vector<real_t> PhysicsDirectSpaceState2D::_cast_motion_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query) {
 	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Vector<real_t>());
-	
+
 	Ref<PhysicsShapeCastResult2D> p_result;
 	p_result.instantiate();
 
@@ -113,9 +113,9 @@ Vector<real_t> PhysicsDirectSpaceState2D::_cast_motion_bind_compat_691337(Requir
 	return r;
 }
 
-TypedArray<Vector2> PhysicsDirectSpaceState2D::_collide_shape_bind_compat_691337(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results) {
+TypedArray<Vector2> PhysicsDirectSpaceState2D::_collide_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results) {
 	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Vector2>());
-	
+
 	Ref<PhysicsShapeCollisionResult2D> p_result = memnew(PhysicsShapeCollisionResult2D(p_max_results));
 
 	if (!_collide_shape(p_shape_query, p_result)) {
@@ -126,19 +126,19 @@ TypedArray<Vector2> PhysicsDirectSpaceState2D::_collide_shape_bind_compat_691337
 	r.resize(p_result->get_collision_count() * 2);
 
 	for (int i = 0; i < p_result->get_collision_count(); i++) {
-		r[i*2+0] = p_result->get_collision_point_a(i);
-		r[i*2+1] = p_result->get_collision_point_b(i);
+		r[i * 2 + 0] = p_result->get_collision_point_a(i);
+		r[i * 2 + 1] = p_result->get_collision_point_b(i);
 	}
-	
+
 	return r;
 }
 
-Dictionary PhysicsDirectSpaceState2D::_get_rest_info_bind_compat_691337(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query) {
+Dictionary PhysicsDirectSpaceState2D::_get_rest_info_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query) {
 	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Dictionary());
 
 	Ref<PhysicsShapeRestInfoResult2D> p_result;
 	p_result.instantiate();
-	
+
 	Dictionary r;
 
 	if (_get_rest_info(p_shape_query, p_result)) {
@@ -154,12 +154,12 @@ Dictionary PhysicsDirectSpaceState2D::_get_rest_info_bind_compat_691337(Required
 }
 
 void PhysicsDirectSpaceState2D::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState2D::_intersect_ray_bind_compat_691337);
-	ClassDB::bind_compatibility_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_point_bind_compat_691337, DEFVAL(32));
-	ClassDB::bind_compatibility_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_shape_bind_compat_691337, DEFVAL(32));
-	ClassDB::bind_compatibility_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState2D::_cast_motion_bind_compat_691337);
-	ClassDB::bind_compatibility_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_collide_shape_bind_compat_691337, DEFVAL(32));
-	ClassDB::bind_compatibility_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState2D::_get_rest_info_bind_compat_691337);
+	ClassDB::bind_compatibility_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState2D::_intersect_ray_bind_compat_113970);
+	ClassDB::bind_compatibility_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_point_bind_compat_113970, DEFVAL(32));
+	ClassDB::bind_compatibility_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_shape_bind_compat_113970, DEFVAL(32));
+	ClassDB::bind_compatibility_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState2D::_cast_motion_bind_compat_113970);
+	ClassDB::bind_compatibility_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_collide_shape_bind_compat_113970, DEFVAL(32));
+	ClassDB::bind_compatibility_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState2D::_get_rest_info_bind_compat_113970);
 }
 
 #endif

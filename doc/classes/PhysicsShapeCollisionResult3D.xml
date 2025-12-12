@@ -40,7 +40,7 @@
 			<return type="void" />
 			<param index="0" name="max_collisions" type="int" />
 			<description>
-				Resizes the internal buffer to store up to [code]max_collisions[/code] collisions. Existing data is discarded.
+				Resizes the internal buffer to store up to [code skip-lint]max_collisions[/code] collisions. Existing data is discarded.
 			</description>
 		</method>
 	</methods>

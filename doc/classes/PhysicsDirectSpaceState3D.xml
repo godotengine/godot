@@ -18,7 +18,7 @@
 			<param index="1" name="result" type="PhysicsShapeCastResult3D" />
 			<description>
 				Checks how far a [Shape3D] can move along a given motion without colliding. The shape and motion parameters are supplied through [PhysicsShapeQueryParameters3D].
-				If the query is successful, this method returns [code]true[/code] and writes the motion results into the [PhysicsShapeCastResult3D] object passed in [code]result[/code]. If no collision occurs, it returns [code]false[/code].
+				If the query is successful, this method returns [code]true[/code] and writes the motion results into the [PhysicsShapeCastResult3D] object passed in [code skip-lint]result[/code]. If no collision occurs, it returns [code]false[/code].
 				[b]Note:[/b] Any [Shape3D]s that the shape is already colliding with e.g. inside of, will be ignored. Use [method collide_shape] to determine the [Shape3D]s that the shape is already colliding with.
 			</description>
 		</method>
@@ -28,7 +28,7 @@
 			<param index="1" name="result" type="PhysicsShapeCollisionResult3D" />
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space.
-				If intersections are found, this method returns [code]true[/code] and writes the collision points into the [PhysicsShapeCollisionResult3D] object passed in [code]result[/code]. If no intersections are found, it returns [code]false[/code].
+				If intersections are found, this method returns [code]true[/code] and writes the collision points into the [PhysicsShapeCollisionResult3D] object passed in [code skip-lint]result[/code]. If no intersections are found, it returns [code]false[/code].
 				Like with [method intersect_shape], the number of returned results can be limited using [method PhysicsShapeCollisionResult2D.set_max_collisions], to reduce the processing time.
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
 			</description>
@@ -39,7 +39,7 @@
 			<param index="1" name="result" type="PhysicsShapeRestInfoResult3D" />
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space.
-				If the shape collides with one or more shapes, this method returns [code]true[/code] and writes the nearest collision information into the [PhysicsShapeRestInfoResult3D] object passed in [code]result[/code]. If no collisions occur, it returns [code]false[/code].
+				If the shape collides with one or more shapes, this method returns [code]true[/code] and writes the nearest collision information into the [PhysicsShapeRestInfoResult3D] object passed in [code skip-lint]result[/code]. If no collisions occur, it returns [code]false[/code].
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
 			</description>
 		</method>
@@ -49,7 +49,7 @@
 			<param index="1" name="result" type="PhysicsPointIntersectionResult3D" />
 			<description>
 				Checks whether a point is inside any solid shape. The point position and query settings are defined through [PhysicsPointQueryParameters3D].
-				If one or more shapes overlap the point, this method returns [code]true[/code] and writes the intersection data into the [PhysicsPointIntersectionResult3D] object passed in [code]result[/code]. If no intersections are found, it returns [code]false[/code].
+				If one or more shapes overlap the point, this method returns [code]true[/code] and writes the intersection data into the [PhysicsPointIntersectionResult3D] object passed in [code skip-lint]result[/code]. If no intersections are found, it returns [code]false[/code].
 				The number of intersections can be limited using [method PhysicsPointIntersectionResult3D.set_max_collisions], to reduce the processing time.
 			</description>
 		</method>
@@ -59,7 +59,7 @@
 			<param index="1" name="result" type="PhysicsRayIntersectionResult3D" />
 			<description>
 				Intersects a ray in a given space. The ray origin, direction, and all other parameters are defined through [PhysicsRayQueryParameters3D].
-				If the ray hits a shape, this method returns [code]true[/code] and writes the intersection information into the [PhysicsRayIntersectionResult3D] object passed in [code]result[/code]. If nothing is hit, it returns [code]false[/code].
+				If the ray hits a shape, this method returns [code]true[/code] and writes the intersection information into the [PhysicsRayIntersectionResult3D] object passed in [code skip-lint]result[/code]. If nothing is hit, it returns [code]false[/code].
 			</description>
 		</method>
 		<method name="intersect_shape">
@@ -68,7 +68,7 @@
 			<param index="1" name="result" type="PhysicsShapeIntersectionResult3D" />
 			<description>
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space.
-				If one or more shapes are found, this method returns [code]true[/code] and writes the intersection data into the [PhysicsShapeIntersectionResult3D] object passed in [code]result[/code]. If no shapes are overlapping, it returns [code]false[/code].
+				If one or more shapes are found, this method returns [code]true[/code] and writes the intersection data into the [PhysicsShapeIntersectionResult3D] object passed in [code skip-lint]result[/code]. If no shapes are overlapping, it returns [code]false[/code].
 				The number of intersections can be limited using [method PhysicsShapeIntersectionResult3D.set_max_collisions], to reduce the processing time.
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
 			</description>

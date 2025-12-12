@@ -141,12 +141,12 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
-	Dictionary _intersect_ray_bind_compat_691337(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query);
-	TypedArray<Dictionary> _intersect_point_bind_compat_691337(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results = 32);
-	TypedArray<Dictionary> _intersect_shape_bind_compat_691337(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
-	Vector<real_t> _cast_motion_bind_compat_691337(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
-	TypedArray<Vector2> _collide_shape_bind_compat_691337(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
-	Dictionary _get_rest_info_bind_compat_691337(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
+	Dictionary _intersect_ray_bind_compat_113970(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query);
+	TypedArray<Dictionary> _intersect_point_bind_compat_113970(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results = 32);
+	TypedArray<Dictionary> _intersect_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
+	Vector<real_t> _cast_motion_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
+	TypedArray<Vector2> _collide_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results = 32);
+	Dictionary _get_rest_info_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -739,7 +739,7 @@ protected:
 public:
 	PhysicsPointIntersectionResult2D(int p_max_collisions = 32) {
 		result.resize(p_max_collisions);
-		collision_count = 0;	
+		collision_count = 0;
 	}
 
 	PhysicsDirectSpaceState2D::ShapeResult *get_result_ptr() { return result.ptrw(); }
@@ -810,7 +810,7 @@ protected:
 public:
 	PhysicsShapeIntersectionResult2D(int p_max_collisions = 32) {
 		result.resize(p_max_collisions);
-		collision_count = 0;	
+		collision_count = 0;
 	}
 
 	PhysicsDirectSpaceState2D::ShapeResult *get_result_ptr() { return result.ptrw(); }
@@ -838,7 +838,6 @@ protected:
 	static void _bind_methods();
 
 public:
-
 	real_t get_collision_safe_fraction() const;
 	real_t get_collision_unsafe_fraction() const;
 };
@@ -857,7 +856,7 @@ protected:
 public:
 	PhysicsShapeCollisionResult2D(int p_max_collisions = 32) {
 		result.resize(2 * p_max_collisions);
-		collision_count = 0;	
+		collision_count = 0;
 	}
 
 	int get_max_collisions() const { return result.size() / 2; }
