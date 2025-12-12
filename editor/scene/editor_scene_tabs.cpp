@@ -299,6 +299,12 @@ void EditorSceneTabs::_update_tab_titles() {
 
 	Ref<Texture2D> script_icon = get_editor_theme_icon(SNAME("Script"));
 	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
+		if (EditorNode::get_editor_data().is_scene_dummy(i)) {
+			scene_tabs->set_tab_icon(i, get_editor_theme_icon("TempNode"));
+			scene_tabs->set_tab_title(i, EditorNode::get_editor_data().get_scene_title(i));
+			continue;
+		}
+
 		Node *type_node = EditorNode::get_editor_data().get_edited_scene_root(i);
 		Ref<Texture2D> icon;
 		if (type_node) {
