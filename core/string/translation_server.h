@@ -92,6 +92,7 @@ class TranslationServer : public Object {
 	static inline HashMap<String, String> variant_map;
 	static inline HashMap<String, String> plural_rules_map;
 	static inline HashMap<String, int> num_system_map;
+	static inline HashMap<String, HashSet<String>> language_script_map;
 
 	void init_locale_info();
 
@@ -131,6 +132,8 @@ public:
 
 	String get_locale_name(const String &p_locale) const;
 	String get_plural_rules(const String &p_locale) const;
+
+	bool is_script_suppored_by_locale(const String &p_locale, const String &p_script) const;
 
 	PackedStringArray get_loaded_locales() const;
 
