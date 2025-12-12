@@ -77,7 +77,7 @@ void Tweener::_bind_methods() {
 
 void Tween::_start_tweeners() {
 	if (tweeners.is_empty()) {
-		dead = true;
+		finished = true;
 		ERR_FAIL_MSG("Tween without commands, aborting.");
 	}
 
@@ -90,7 +90,7 @@ void Tween::_stop_internal(bool p_reset) {
 	running = false;
 	if (p_reset) {
 		started = false;
-		dead = false;
+		finished = false;
 		total_time = 0;
 	}
 }
@@ -193,14 +193,14 @@ void Tween::pause() {
 
 void Tween::play() {
 	ERR_FAIL_COND_MSG(!valid, "Tween invalid. Either finished or created outside scene tree.");
-	ERR_FAIL_COND_MSG(dead, "Can't play finished Tween, use stop() first to reset its state.");
+	ERR_FAIL_COND_MSG(finished, "Can't play finished Tween, use stop() first to reset its state.");
 	running = true;
 }
 
 void Tween::kill() {
 	running = false; // For the sake of is_running().
 	valid = false;
-	dead = true;
+	finished = true;
 
 	// Kill all subtweens of this tween.
 	for (Ref<Tween> &st : subtweens) {
@@ -214,6 +214,10 @@ bool Tween::is_running() {
 
 bool Tween::is_valid() {
 	return valid;
+}
+
+bool Tween::is_finished() {
+	return finished;
 }
 
 void Tween::clear() {
@@ -319,7 +323,7 @@ bool Tween::custom_step(double p_delta) {
 }
 
 bool Tween::step(double p_delta) {
-	if (dead) {
+	if (finished) {
 		return false;
 	}
 
@@ -389,7 +393,7 @@ bool Tween::step(double p_delta) {
 				loops_done++;
 				if (loops_done == loops) {
 					running = false;
-					dead = true;
+					finished = true;
 					emit_signal(SceneStringName(finished));
 					break;
 				} else {
@@ -484,6 +488,7 @@ void Tween::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_running"), &Tween::is_running);
 	ClassDB::bind_method(D_METHOD("is_valid"), &Tween::is_valid);
+	ClassDB::bind_method(D_METHOD("is_finished"), &Tween::is_finished);
 	ClassDB::bind_method(D_METHOD("bind_node", "node"), &Tween::bind_node);
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Tween::set_process_mode);
 	ClassDB::bind_method(D_METHOD("set_pause_mode", "mode"), &Tween::set_pause_mode);
