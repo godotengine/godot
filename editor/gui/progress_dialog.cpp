@@ -268,7 +268,6 @@ void ProgressDialog::add_host_window(Window *p_window) {
 }
 
 void ProgressDialog::remove_host_window(Window *p_window) {
-	ERR_FAIL_NULL(p_window);
 	host_windows.erase(p_window);
 }
 
