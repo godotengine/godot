@@ -4852,6 +4852,94 @@ VisualShaderNodeMix::VisualShaderNodeMix() {
 	set_input_port_default_value(2, 0.5); // weight
 }
 
+////////////// Extract
+
+String VisualShaderNodeExtract::get_caption() const {
+	return "Extract";
+}
+
+int VisualShaderNodeExtract::get_input_port_count() const {
+	return 2;
+}
+
+VisualShaderNode::PortType VisualShaderNodeExtract::get_input_port_type(int p_port) const {
+	if (p_port == 0) {
+		switch (op_type) {
+			case VisualShaderNodeVectorBase::OP_TYPE_VECTOR_2D:
+				return PORT_TYPE_VECTOR_2D;
+			case VisualShaderNodeVectorBase::OP_TYPE_VECTOR_3D:
+				return PORT_TYPE_VECTOR_3D;
+			case VisualShaderNodeVectorBase::OP_TYPE_VECTOR_4D:
+				return PORT_TYPE_VECTOR_4D;
+			default:
+				break;
+		}
+	}
+
+	return PORT_TYPE_SCALAR_INT;
+}
+
+String VisualShaderNodeExtract::get_input_port_name(int p_port) const {
+	if (p_port == 0) {
+		return "in";
+	} else if (p_port == 1) {
+		return "index";
+	}
+
+	return "";
+}
+
+int VisualShaderNodeExtract::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNode::PortType VisualShaderNodeExtract::get_output_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeExtract::get_output_port_name(int p_port) const {
+	return "out";
+}
+
+void VisualShaderNodeExtract::set_op_type(OpType p_op_type) {
+	op_type = p_op_type;
+	switch (p_op_type) {
+		case VisualShaderNodeVectorBase::OP_TYPE_VECTOR_2D: {
+			Vector2 p1 = get_input_port_default_value(0);
+			int p2 = get_input_port_default_value(1);
+
+			set_input_port_default_value(0, p1);
+			set_input_port_default_value(1, p2);
+		} break;
+		case VisualShaderNodeVectorBase::OP_TYPE_VECTOR_3D: {
+			Vector3 p1 = get_input_port_default_value(0);
+			int p2 = get_input_port_default_value(1);
+
+			set_input_port_default_value(0, p1);
+			set_input_port_default_value(1, p2);
+		} break;
+		case VisualShaderNodeVectorBase::OP_TYPE_VECTOR_4D: {
+			Vector4 p1 = get_input_port_default_value(0);
+			int p2 = get_input_port_default_value(1);
+
+			set_input_port_default_value(0, p1);
+			set_input_port_default_value(1, p2);
+		} break;
+		default:
+			break;
+	}
+	emit_changed();
+}
+
+String VisualShaderNodeExtract::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return vformat("\t%s = %s[%s];", p_output_vars[0], p_input_vars[0], p_input_vars[1]);
+}
+
+VisualShaderNodeExtract::VisualShaderNodeExtract() {
+	set_input_port_default_value(0, Vector3());
+	set_input_port_default_value(1, 0);
+}
+
 ////////////// Vector Compose
 
 String VisualShaderNodeVectorCompose::get_caption() const {
