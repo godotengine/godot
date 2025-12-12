@@ -361,6 +361,7 @@ public:
 		DIRTY_FLAGS_LAYER_TEXTURE_REPEAT,
 		DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE,
 		DIRTY_FLAGS_LAYER_COLLISION_ENABLED,
+		DIRTY_FLAGS_LAYER_PHYSICS_SPACE,
 		DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES,
 		DIRTY_FLAGS_LAYER_PHYSICS_QUADRANT_SIZE,
 		DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE,
@@ -397,6 +398,7 @@ private:
 	int rendering_quadrant_size = 16;
 
 	bool collision_enabled = true;
+	RID physics_space_override;
 	bool use_kinematic_bodies = false;
 	int physics_quadrant_size = 16;
 	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
@@ -624,6 +626,8 @@ public:
 
 	void set_collision_enabled(bool p_enabled);
 	bool is_collision_enabled() const;
+	void set_physics_space(RID p_space);
+	RID get_physics_space() const;
 	void set_use_kinematic_bodies(bool p_use_kinematic_bodies);
 	bool is_using_kinematic_bodies() const;
 	void set_collision_visibility_mode(DebugVisibilityMode p_show_collision);
