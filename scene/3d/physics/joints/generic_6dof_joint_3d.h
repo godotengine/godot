@@ -102,6 +102,9 @@ public:
 	void set_flag_z(Flag p_flag, bool p_enabled);
 	bool get_flag_z(Flag p_flag) const;
 
+	float get_applied_force() const;
+	float get_applied_torque() const;
+
 	Generic6DOFJoint3D();
 };
 

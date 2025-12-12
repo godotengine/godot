@@ -10,6 +10,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_applied_force" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
+		<method name="get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the applied torque to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
 		<method name="get_flag_x" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
