@@ -62,6 +62,9 @@ int TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::get
 }
 
 bool TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_set(const StringName &p_name, const Variant &p_value) {
+	if (!tile_set_scenes_collection_source) {
+		return false;
+	}
 	String name = p_name;
 	if (name == "name") {
 		// Use the resource_name property to store the source's name.
