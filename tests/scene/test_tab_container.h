@@ -60,8 +60,8 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		CHECK(tab_container->get_tab_count() == 1);
 		CHECK(tab_container->get_current_tab() == 0);
 		CHECK(tab_container->get_previous_tab() == -1);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
-		SIGNAL_CHECK("tab_changed", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 0 } });
 
 		// Add second tab child.
 		tab_container->add_child(tab1);
@@ -126,7 +126,7 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		CHECK(tab_container->get_current_tab() == -1);
 		CHECK(tab_container->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
-		SIGNAL_CHECK("tab_changed", { { -1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ -1 } });
 
 		// Remove current tab when there are other tabs.
 		tab_container->add_child(tab0);
@@ -145,7 +145,7 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 1);
 		SIGNAL_CHECK_FALSE("tab_selected");
-		SIGNAL_CHECK("tab_changed", { { 1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 1 } });
 	}
 
 	SUBCASE("[TabContainer] move tabs by moving children") {
@@ -185,8 +185,8 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		tab_container->add_child(tab2);
 		CHECK(tab_container->get_current_tab() == 0);
 		CHECK(tab_container->get_previous_tab() == -1);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
-		SIGNAL_CHECK("tab_changed", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 0 } });
 		MessageQueue::get_singleton()->flush();
 		CHECK(tab0->is_visible());
 		CHECK_FALSE(tab1->is_visible());
@@ -196,8 +196,8 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		tab_container->set_current_tab(1);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", { { 1 } });
-		SIGNAL_CHECK("tab_changed", { { 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 1 } });
 		MessageQueue::get_singleton()->flush();
 		CHECK_FALSE(tab0->is_visible());
 		CHECK(tab1->is_visible());
@@ -207,7 +207,7 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		tab_container->set_current_tab(1);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 1);
-		SIGNAL_CHECK("tab_selected", { { 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		MessageQueue::get_singleton()->flush();
 		CHECK_FALSE(tab0->is_visible());
@@ -253,8 +253,8 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		tab1->show();
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", { { 1 } });
-		SIGNAL_CHECK("tab_changed", { { 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 1 } });
 		MessageQueue::get_singleton()->flush();
 		CHECK_FALSE(tab0->is_visible());
 		CHECK(tab1->is_visible());
@@ -264,8 +264,8 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		tab1->hide();
 		CHECK(tab_container->get_current_tab() == 2);
 		CHECK(tab_container->get_previous_tab() == 1);
-		SIGNAL_CHECK("tab_selected", { { 2 } });
-		SIGNAL_CHECK("tab_changed", { { 2 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 2 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 2 } });
 		MessageQueue::get_singleton()->flush();
 		CHECK_FALSE(tab0->is_visible());
 		CHECK_FALSE(tab1->is_visible());
@@ -275,8 +275,8 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		tab2->hide();
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 2);
-		SIGNAL_CHECK("tab_selected", { { 1 } });
-		SIGNAL_CHECK("tab_changed", { { 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 1 } });
 		MessageQueue::get_singleton()->flush();
 		CHECK_FALSE(tab0->is_visible());
 		CHECK(tab1->is_visible());
@@ -305,8 +305,8 @@ TEST_CASE("[SceneTree][TabContainer] tab operations") {
 		tab0->hide();
 		CHECK(tab_container->get_current_tab() == -1);
 		CHECK(tab_container->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", { { -1 } });
-		SIGNAL_CHECK("tab_changed", { { -1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ -1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ -1 } });
 		MessageQueue::get_singleton()->flush();
 		CHECK_FALSE(tab0->is_visible());
 	}
@@ -390,8 +390,8 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 		CHECK(tab_container->get_tab_count() == 3);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", { { 1 } });
-		SIGNAL_CHECK("tab_changed", { { 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 1 } });
 		CHECK_FALSE(tab0->is_visible());
 		CHECK(tab1->is_visible());
 		CHECK_FALSE(tab2->is_visible());
@@ -469,8 +469,8 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 		CHECK(tab_container->get_tab_count() == 2);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", { { 1 } });
-		SIGNAL_CHECK("tab_changed", { { 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 1 } });
 		CHECK_FALSE(tab0->is_visible());
 		CHECK(tab1->is_visible());
 	}
@@ -505,8 +505,8 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 		CHECK(tab_container->get_tab_count() == 3);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", { { 1 } });
-		SIGNAL_CHECK("tab_changed", { { 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 1 } });
 		CHECK_FALSE(tab0->is_visible());
 		CHECK(tab1->is_visible());
 		CHECK_FALSE(tab2->is_visible());
@@ -695,17 +695,17 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", { { 1 } });
-		SIGNAL_CHECK("tab_changed", { { 1 } });
-		SIGNAL_CHECK("tab_clicked", { { 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 1 } });
+		SIGNAL_CHECK("tab_clicked", { Array{ 1 } });
 
 		// Click on the same tab.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == 1);
-		SIGNAL_CHECK("tab_selected", { { 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
-		SIGNAL_CHECK("tab_clicked", { { 1 } });
+		SIGNAL_CHECK("tab_clicked", { Array{ 1 } });
 
 		// Click outside of tabs.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(0, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
@@ -721,7 +721,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		CHECK_FALSE(tab_container->get_drag_to_rearrange_enabled());
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButtonMask::LEFT, Key::NONE);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK_FALSE(tab_container->get_viewport()->gui_is_dragging());
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -740,7 +740,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButtonMask::LEFT, Key::NONE);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -755,7 +755,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		// Move the first tab after the second.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[1].position, MouseButtonMask::LEFT, Key::NONE);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2(side_margin, 0) + tab_rects[1].position + Point2(tab_rects[1].size.x / 2 + 1, 0), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -763,8 +763,8 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		CHECK(tab_container->get_tab_idx_from_control(tab1) == 0);
 		CHECK(tab_container->get_tab_idx_from_control(tab0) == 1);
 		CHECK(tab_container->get_tab_idx_from_control(tab2) == 2);
-		SIGNAL_CHECK("active_tab_rearranged", { { 1 } });
-		SIGNAL_CHECK("tab_selected", { { 1 } });
+		SIGNAL_CHECK("active_tab_rearranged", { Array{ 1 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 1 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 
 		tab_rects = { tab_bar->get_tab_rect(0), tab_bar->get_tab_rect(1), tab_bar->get_tab_rect(2) };
@@ -772,16 +772,16 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		// Move the last tab to be the first.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[2].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButtonMask::LEFT, Key::NONE);
-		SIGNAL_CHECK("tab_selected", { { 2 } });
-		SIGNAL_CHECK("tab_changed", { { 2 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 2 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 2 } });
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 		CHECK_FALSE(tab_container->get_viewport()->gui_is_dragging());
 		CHECK(tab_container->get_tab_idx_from_control(tab2) == 0);
 		CHECK(tab_container->get_tab_idx_from_control(tab1) == 1);
 		CHECK(tab_container->get_tab_idx_from_control(tab0) == 2);
-		SIGNAL_CHECK("active_tab_rearranged", { { 0 } });
-		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("active_tab_rearranged", { Array{ 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 	}
 
@@ -810,7 +810,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[0].position + Point2(20, 0), MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(target_tab_after_first, MouseButtonMask::LEFT, Key::NONE);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_tab_after_first, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -827,7 +827,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[0].position + Point2(20, 0), MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(target_tab_after_first, MouseButtonMask::LEFT, Key::NONE);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_tab_after_first, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -844,7 +844,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[0].position + Point2(20, 0), MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(target_tab_after_first, MouseButtonMask::LEFT, Key::NONE);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_tab_after_first, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -860,7 +860,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[0].position + Point2(20, 0), MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(target_tab_after_first, MouseButtonMask::LEFT, Key::NONE);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_tab_after_first, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -877,7 +877,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		CHECK(target_tab_container->get_current_tab() == 1);
 		SIGNAL_CHECK_FALSE("active_tab_rearranged");
 		SIGNAL_CHECK_FALSE("tab_selected"); // Does not send since tab was removed.
-		SIGNAL_CHECK("tab_changed", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 0 } });
 
 		Point2 target_tab = Point2(side_margin, 0) + target_tab_container->get_position();
 
@@ -886,7 +886,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(side_margin, 0) + tab_rects[0].position, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(side_margin, 0) + tab_rects[0].position + Point2(20, 0), MouseButtonMask::LEFT, Key::NONE);
 		SEND_GUI_MOUSE_MOTION_EVENT(target_tab, MouseButtonMask::LEFT, Key::NONE);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_selected", { Array{ 0 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 		CHECK(tab_container->get_viewport()->gui_is_dragging());
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_tab, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -901,7 +901,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		CHECK(target_tab_container->get_current_tab() == 0);
 		SIGNAL_CHECK_FALSE("active_tab_rearranged");
 		SIGNAL_CHECK_FALSE("tab_selected"); // Does not send since tab was removed.
-		SIGNAL_CHECK("tab_changed", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { Array{ 0 } });
 
 		memdelete(target_tab_container);
 	}
