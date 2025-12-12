@@ -32,13 +32,32 @@
 
 #include "net_socket_winsock.h"
 
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
+#include <afunix.h>
 #include <mswsock.h>
+
 // Workaround missing flag in MinGW
 #if defined(__MINGW32__) && !defined(SIO_UDP_NETRESET)
 #define SIO_UDP_NETRESET _WSAIOW(IOC_VENDOR, 15)
+#endif
+
+#ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
+#define MAXIMUM_REPARSE_DATA_BUFFER_SIZE (16 * 1024)
+#endif
+
+#ifndef IO_REPARSE_TAG_AF_UNIX
+#define IO_REPARSE_TAG_AF_UNIX 0x80000023
+#endif
+
+#ifndef REPARSE_MOUNTPOINT_DATA_BUFFER
+typedef struct {
+	DWORD ReparseTag;
+	DWORD ReparseDataLength;
+	WORD Reserved;
+	WORD ReparseTargetLength;
+	WORD ReparseTargetMaximumLength;
+	WORD Reserved1;
+	WCHAR ReparseTarget[1];
+} REPARSE_MOUNTPOINT_DATA_BUFFER, *PREPARSE_MOUNTPOINT_DATA_BUFFER;
 #endif
 
 size_t NetSocketWinSock::_set_addr_storage(struct sockaddr_storage *p_addr, const IPAddress &p_ip, uint16_t p_port, IP::Type p_ip_type) {
@@ -74,6 +93,38 @@ size_t NetSocketWinSock::_set_addr_storage(struct sockaddr_storage *p_addr, cons
 
 		return sizeof(sockaddr_in);
 	}
+}
+
+String NetSocketWinSock::_fix_path(const CharString &p_path) const {
+	String r_path = String::utf8(p_path.get_data());
+
+	if (r_path.is_relative_path()) {
+		Char16String current_dir_name;
+		size_t str_len = GetCurrentDirectoryW(0, nullptr);
+		current_dir_name.resize_uninitialized(str_len + 1);
+		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+		r_path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(r_path);
+	}
+	r_path = r_path.simplify_path();
+	r_path = r_path.replace_char('/', '\\');
+	if (!r_path.is_network_share_path() && !r_path.begins_with(R"(\\?\)")) {
+		r_path = R"(\\?\)" + r_path;
+	}
+	return r_path;
+}
+
+socklen_t NetSocketWinSock::_unix_set_sockaddr(struct sockaddr_un *p_addr, const CharString &p_path) {
+	memset(p_addr, 0, sizeof(struct sockaddr_un));
+	p_addr->sun_family = AF_UNIX;
+
+	// Path must not exceed maximum path length for Unix domain socket
+	size_t path_len = p_path.length();
+	ERR_FAIL_COND_V(path_len >= sizeof(p_addr->sun_path) - 1, 0);
+
+	// Regular file system socket
+	memcpy(p_addr->sun_path, p_path.get_data(), path_len);
+	p_addr->sun_path[path_len] = '\0';
+	return sizeof(struct sockaddr_un);
 }
 
 void NetSocketWinSock::_set_ip_port(struct sockaddr_storage *p_addr, IPAddress *r_ip, uint16_t *r_port) {
@@ -157,8 +208,14 @@ bool NetSocketWinSock::_can_use_ip(const IPAddress &p_ip, const bool p_for_bind)
 	return !(_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type);
 }
 
+bool NetSocketWinSock::_can_use_path(const CharString &p_path) const {
+	// Path must not exceed maximum path length for Unix domain socket
+	return !p_path.is_empty() && (size_t)p_path.length() < sizeof(((sockaddr_un *)0)->sun_path);
+}
+
 _FORCE_INLINE_ Error NetSocketWinSock::_change_multicast_group(IPAddress p_ip, String p_if_name, bool p_add) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != Family::INET, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!_can_use_ip(p_ip, false), ERR_INVALID_PARAMETER);
 
 	// Need to force level and af_family to IP(v4) when using dual stacking and provided multicast group is IPv4.
@@ -217,8 +274,7 @@ void NetSocketWinSock::_set_socket(SOCKET p_sock, IP::Type p_ip_type, bool p_is_
 	_is_stream = p_is_stream;
 }
 
-Error NetSocketWinSock::open(Family p_family, Type p_sock_type, IP::Type &ip_type) {
-	ERR_FAIL_COND_V(p_family != Family::INET, ERR_UNAVAILABLE);
+Error NetSocketWinSock::_inet_open(Type p_sock_type, IP::Type &ip_type) {
 	ERR_FAIL_COND_V(is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(ip_type > IP::TYPE_ANY || ip_type < IP::TYPE_NONE, ERR_INVALID_PARAMETER);
 
@@ -237,6 +293,7 @@ Error NetSocketWinSock::open(Family p_family, Type p_sock_type, IP::Type &ip_typ
 
 	ERR_FAIL_COND_V(_sock == INVALID_SOCKET, FAILED);
 	_ip_type = ip_type;
+	_family = Family::INET;
 
 	if (family == AF_INET6) {
 		// Select IPv4 over IPv6 mapping.
@@ -266,23 +323,54 @@ Error NetSocketWinSock::open(Family p_family, Type p_sock_type, IP::Type &ip_typ
 	return OK;
 }
 
+Error NetSocketWinSock::_unix_open() {
+	_sock = socket(AF_UNIX, SOCK_STREAM, 0);
+	ERR_FAIL_COND_V(_sock == INVALID_SOCKET, FAILED);
+
+	_family = Family::UNIX;
+
+	return OK;
+}
+
+Error NetSocketWinSock::open(NetSocket::Family p_family, NetSocket::Type p_sock_type, IP::Type &r_ip_type) {
+	ERR_FAIL_COND_V(is_open(), ERR_ALREADY_IN_USE);
+
+	switch (p_family) {
+		case Family::INET:
+			return _inet_open(p_sock_type, r_ip_type);
+		case Family::UNIX:
+			return _unix_open();
+		case Family::NONE:
+		default:
+			return ERR_INVALID_PARAMETER;
+	}
+}
+
 void NetSocketWinSock::close() {
 	if (_sock != INVALID_SOCKET) {
 		closesocket(_sock);
+
+		if (_family == Family::UNIX) {
+			if (_unlink_on_close) {
+				String filename = _fix_path(_unix_path);
+				DeleteFileW((LPCWSTR)(filename.utf16().get_data()));
+				_unlink_on_close = false;
+				_unix_path = CharString();
+			}
+		}
 	}
 
 	_sock = INVALID_SOCKET;
+	_family = Family::NONE;
 	_ip_type = IP::TYPE_NONE;
 	_is_stream = false;
 }
 
-Error NetSocketWinSock::bind(Address p_addr) {
-	ERR_FAIL_COND_V(!p_addr.is_inet(), ERR_UNAVAILABLE);
-	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V(!_can_use_ip(p_addr.ip(), true), ERR_INVALID_PARAMETER);
+Error NetSocketWinSock::_inet_bind(IPAddress p_addr, uint16_t p_port) {
+	ERR_FAIL_COND_V(!_can_use_ip(p_addr, true), ERR_INVALID_PARAMETER);
 
 	sockaddr_storage addr;
-	size_t addr_size = _set_addr_storage(&addr, p_addr.ip(), p_addr.port(), _ip_type);
+	size_t addr_size = _set_addr_storage(&addr, p_addr, p_port, _ip_type);
 
 	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
 		NetError err = _get_socket_error();
@@ -292,6 +380,77 @@ Error NetSocketWinSock::bind(Address p_addr) {
 	}
 
 	return OK;
+}
+
+Error NetSocketWinSock::_unix_bind(const CharString &p_path) {
+	ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
+
+	struct sockaddr_un addr;
+	socklen_t addr_size = _unix_set_sockaddr(&addr, p_path);
+	ERR_FAIL_COND_V(addr_size == 0, ERR_INVALID_PARAMETER);
+
+	// If the socket file exists, attempt to remove it.
+	String filename = _fix_path(p_path);
+	DWORD file_attr = GetFileAttributesW((LPCWSTR)(filename.utf16().get_data()));
+	if ((file_attr != INVALID_FILE_ATTRIBUTES) && !(file_attr & FILE_ATTRIBUTE_DIRECTORY)) {
+		// Check if it's a socket.
+		bool is_socket = false;
+		if (file_attr & FILE_ATTRIBUTE_REPARSE_POINT) {
+			HANDLE hDevice = CreateFileW((LPCWSTR)(filename.utf16().get_data()), 0, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+			if (hDevice != INVALID_HANDLE_VALUE) {
+				BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+				REPARSE_MOUNTPOINT_DATA_BUFFER &reparse_buffer = (REPARSE_MOUNTPOINT_DATA_BUFFER &)buf;
+				DWORD dwRet = 0;
+				if (::DeviceIoControl(hDevice, FSCTL_GET_REPARSE_POINT, nullptr, 0, &reparse_buffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet, nullptr)) {
+					is_socket = (reparse_buffer.ReparseTag == IO_REPARSE_TAG_AF_UNIX);
+				}
+				::CloseHandle(hDevice);
+			}
+		}
+		if (is_socket) {
+			// It is a socket, try to remove it.
+			if (!DeleteFileW((LPCWSTR)(filename.utf16().get_data()))) {
+				// Failed to remove existing socket file.
+				return FAILED;
+			}
+		} else {
+			// It's not a socket, don't remove it.
+			return ERR_ALREADY_EXISTS;
+		}
+	}
+
+	_unlink_on_close = true;
+
+	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
+		NetError err = _get_socket_error();
+		print_verbose("Failed to bind socket. Error: " + itos(err) + ".");
+		close();
+		switch (err) {
+			case ERR_NET_UNAUTHORIZED:
+				return ERR_UNAUTHORIZED;
+			default:
+				return ERR_UNAVAILABLE;
+		}
+	}
+
+	return OK;
+}
+
+Error NetSocketWinSock::bind(NetSocket::Address p_addr) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != p_addr.get_family(), ERR_INVALID_PARAMETER);
+	switch (p_addr.get_family()) {
+		case Family::INET: {
+			return _inet_bind(p_addr.ip(), p_addr.port());
+		} break;
+		case Family::UNIX: {
+			_unix_path = p_addr.get_path();
+			return _unix_bind(_unix_path);
+		} break;
+		case Family::NONE:
+		default:
+			return ERR_INVALID_PARAMETER;
+	}
 }
 
 Error NetSocketWinSock::listen(int p_max_pending) {
@@ -307,13 +466,11 @@ Error NetSocketWinSock::listen(int p_max_pending) {
 	return OK;
 }
 
-Error NetSocketWinSock::connect_to_host(Address p_addr) {
-	ERR_FAIL_COND_V(!p_addr.is_inet(), ERR_UNAVAILABLE);
-	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V(!_can_use_ip(p_addr.ip(), false), ERR_INVALID_PARAMETER);
+Error NetSocketWinSock::_inet_connect_to_host(IPAddress p_host, uint16_t p_port) {
+	ERR_FAIL_COND_V(!_can_use_ip(p_host, false), ERR_INVALID_PARAMETER);
 
 	struct sockaddr_storage addr;
-	size_t addr_size = _set_addr_storage(&addr, p_addr.ip(), p_addr.port(), _ip_type);
+	size_t addr_size = _set_addr_storage(&addr, p_host, p_port, _ip_type);
 
 	if (::WSAConnect(_sock, (struct sockaddr *)&addr, addr_size, nullptr, nullptr, nullptr, nullptr) != 0) {
 		NetError err = _get_socket_error();
@@ -334,6 +491,51 @@ Error NetSocketWinSock::connect_to_host(Address p_addr) {
 	}
 
 	return OK;
+}
+
+Error NetSocketWinSock::_unix_connect_to_host(const CharString &p_path) {
+	ERR_FAIL_COND_V(!_can_use_path(p_path), ERR_INVALID_PARAMETER);
+
+	struct sockaddr_un addr;
+	socklen_t addr_size = _unix_set_sockaddr(&addr, p_path);
+	ERR_FAIL_COND_V(addr_size == 0, ERR_INVALID_PARAMETER);
+
+	if (::connect(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
+		NetError err = _get_socket_error();
+		switch (err) {
+			case ERR_NET_IS_CONNECTED:
+				return OK;
+			case ERR_NET_ADDRESS_INVALID_OR_UNAVAILABLE:
+				return ERR_INVALID_PARAMETER;
+			// Still waiting to connect, try again in a while.
+			case ERR_NET_WOULD_BLOCK:
+			case ERR_NET_IN_PROGRESS:
+				return ERR_BUSY;
+			case ERR_NET_UNAUTHORIZED:
+				return ERR_UNAUTHORIZED;
+			default:
+				print_verbose("Connection to host failed.");
+				close();
+				return FAILED;
+		}
+	}
+
+	return OK;
+}
+
+Error NetSocketWinSock::connect_to_host(NetSocket::Address p_addr) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != p_addr.get_family(), ERR_INVALID_PARAMETER);
+
+	switch (p_addr.get_family()) {
+		case Family::INET:
+			return _inet_connect_to_host(p_addr.ip(), p_addr.port());
+		case Family::UNIX:
+			return _unix_connect_to_host(p_addr.get_path());
+		case Family::NONE:
+		default:
+			return ERR_INVALID_PARAMETER;
+	}
 }
 
 Error NetSocketWinSock::poll(PollType p_type, int p_timeout) const {
@@ -420,6 +622,7 @@ Error NetSocketWinSock::recv(uint8_t *p_buffer, int p_len, int &r_read) {
 
 Error NetSocketWinSock::recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAddress &r_ip, uint16_t &r_port, bool p_peek) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != Family::INET, ERR_UNAVAILABLE);
 
 	struct sockaddr_storage from;
 	socklen_t len = sizeof(struct sockaddr_storage);
@@ -479,6 +682,7 @@ Error NetSocketWinSock::send(const uint8_t *p_buffer, int p_len, int &r_sent) {
 
 Error NetSocketWinSock::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != Family::INET, ERR_UNAVAILABLE);
 
 	struct sockaddr_storage addr;
 	size_t addr_size = _set_addr_storage(&addr, p_ip, p_port, _ip_type);
@@ -570,9 +774,7 @@ int NetSocketWinSock::get_available_bytes() const {
 	return len;
 }
 
-Error NetSocketWinSock::get_socket_address(Address *r_addr) const {
-	ERR_FAIL_COND_V(!is_open(), FAILED);
-
+Error NetSocketWinSock::_inet_get_socket_address(IPAddress *r_ip, uint16_t *r_port) const {
 	struct sockaddr_storage saddr;
 	socklen_t len = sizeof(saddr);
 	if (getsockname(_sock, (struct sockaddr *)&saddr, &len) != 0) {
@@ -580,37 +782,94 @@ Error NetSocketWinSock::get_socket_address(Address *r_addr) const {
 		print_verbose("Error when reading local socket address.");
 		return FAILED;
 	}
-	IPAddress ip;
-	uint16_t port = 0;
-	_set_ip_port(&saddr, &ip, &port);
-	if (r_addr) {
-		*r_addr = Address(ip, port);
-	}
+	_set_ip_port(&saddr, r_ip, r_port);
 	return OK;
 }
 
-Ref<NetSocket> NetSocketWinSock::accept(Address &r_addr) {
-	Ref<NetSocket> out;
-	ERR_FAIL_COND_V(!is_open(), out);
+Error NetSocketWinSock::get_socket_address(NetSocket::Address *r_addr) const {
+	ERR_FAIL_COND_V(!is_open(), FAILED);
+	switch (_family) {
+		case Family::INET: {
+			IPAddress ip;
+			uint16_t port = 0;
+			Error res = _inet_get_socket_address(&ip, &port);
+			ERR_FAIL_COND_V(res != OK, res);
+			if (r_addr) {
+				Address addr(ip, port);
+				*r_addr = addr;
+			}
+		} break;
+		case Family::UNIX: {
+			if (r_addr) {
+				*r_addr = Address(_unix_path);
+			}
+		} break;
+		case Family::NONE:
+		default:
+			return FAILED;
+	}
 
+	return OK;
+}
+
+Ref<NetSocket> NetSocketWinSock::_inet_accept(IPAddress &r_ip, uint16_t &r_port) {
 	struct sockaddr_storage their_addr;
 	socklen_t size = sizeof(their_addr);
 	SOCKET fd = ::accept(_sock, (struct sockaddr *)&their_addr, &size);
 	if (fd == INVALID_SOCKET) {
 		_get_socket_error();
 		print_verbose("Error when accepting socket connection.");
-		return out;
+		return Ref<NetSocket>();
 	}
 
-	IPAddress ip;
-	uint16_t port = 0;
-	_set_ip_port(&their_addr, &ip, &port);
-	r_addr = Address(ip, port);
+	_set_ip_port(&their_addr, &r_ip, &r_port);
 
 	NetSocketWinSock *ns = memnew(NetSocketWinSock);
 	ns->_set_socket(fd, _ip_type, _is_stream);
 	ns->set_blocking_enabled(false);
 	return Ref<NetSocket>(ns);
+}
+
+Ref<NetSocket> NetSocketWinSock::_unix_accept() {
+	struct sockaddr_un addr;
+	socklen_t addr_len = sizeof(addr);
+
+	SOCKET fd = ::accept(_sock, (struct sockaddr *)&addr, &addr_len);
+	if (fd == INVALID_SOCKET) {
+		_get_socket_error();
+		print_verbose("Error when accepting socket connection.");
+		return Ref<NetSocket>();
+	}
+
+	NetSocketWinSock *ret = memnew(NetSocketWinSock);
+	ret->_sock = fd;
+	ret->_family = _family;
+	ret->_unix_path = _unix_path;
+	ret->set_blocking_enabled(false);
+	return Ref<NetSocket>(ret);
+}
+
+Ref<NetSocket> NetSocketWinSock::accept(NetSocket::Address &r_addr) {
+	Ref<NetSocket> out;
+	ERR_FAIL_COND_V(!is_open(), out);
+
+	switch (_family) {
+		case Family::INET: {
+			IPAddress ip;
+			uint16_t port;
+			out = _inet_accept(ip, port);
+			if (out.is_valid()) {
+				r_addr = Address(ip, port);
+			}
+		} break;
+		case Family::UNIX: {
+			out = _unix_accept();
+		} break;
+		case Family::NONE:
+		default:
+			break;
+	}
+	return out;
 }
 
 Error NetSocketWinSock::join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
