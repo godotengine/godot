@@ -35,5 +35,12 @@
 				Switch to a clip (by name).
 			</description>
 		</method>
+		<method name="switch_to_held">
+			<return type="int" />
+			<description>
+				Switch to held clip.
+				Returns the held clip index if successful, or -1 if nothing was held.
+			</description>
+		</method>
 	</methods>
 </class>
