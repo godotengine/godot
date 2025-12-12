@@ -1255,9 +1255,6 @@ void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(data.is_empty(), "Cannot resize image before creating it, use set_data() first.");
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot resize in compressed image formats.");
-
-	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
-
 	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
 	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, vformat("Image width cannot be greater than %d pixels.", MAX_WIDTH));
@@ -1268,9 +1265,19 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		return;
 	}
 
+	// Convert the image to 'standard' RGB(A) formats that may be resized.
+	Format original_format = format;
+	if (original_format == FORMAT_RGB565 || original_format == FORMAT_RGBA4444) {
+		convert(FORMAT_RGBA8);
+	} else if (original_format == FORMAT_RGBE9995) {
+		convert(FORMAT_RGBH);
+	}
+
 	Image dst(p_width, p_height, false, format);
 
 	// Setup mipmap-aware scaling
+	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
+
 	Image dst2;
 	int mip1 = 0;
 	int mip2 = 0;
@@ -1614,6 +1621,11 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	}
 
 	_copy_internals_from(dst);
+
+	// Reconvert the image to its original format.
+	if (original_format != format) {
+		convert(original_format);
+	}
 }
 
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
