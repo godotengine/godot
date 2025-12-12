@@ -143,6 +143,7 @@
 #include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
+#include "tests/scene/test_property_utils.h"
 #include "tests/scene/test_sprite_2d.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_style_box_texture.h"
