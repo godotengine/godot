@@ -539,6 +539,7 @@ void GridMapEditor::_delete_selection_with_undo() {
 	}
 	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
 	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
+	undo_redo->add_undo_method(this, "_clear_clipboard_data");
 	undo_redo->commit_action();
 }
 
@@ -1395,6 +1396,7 @@ void GridMapEditor::_floor_mouse_exited() {
 void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
+	ClassDB::bind_method("_clear_clipboard_data", &GridMapEditor::_clear_clipboard_data);
 }
 
 GridMapEditor::GridMapEditor() {
