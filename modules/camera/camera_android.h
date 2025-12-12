@@ -61,6 +61,9 @@ private:
 	Ref<Image> image_uv;
 	Vector<uint8_t> data_y;
 	Vector<uint8_t> data_uv;
+	// Scratch buffers to avoid reallocations when compacting stride-aligned planes.
+	Vector<uint8_t> scratch_y;
+	Vector<uint8_t> scratch_uv;
 
 	ACameraManager *manager = nullptr;
 	ACameraMetadata *metadata = nullptr;
@@ -78,6 +81,7 @@ private:
 	static int normalize_angle(int p_angle);
 	static int get_display_rotation();
 	static int get_app_orientation();
+	static void compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride);
 
 	static void onError(void *context, ACameraDevice *p_device, int error);
 	static void onDisconnected(void *context, ACameraDevice *p_device);
