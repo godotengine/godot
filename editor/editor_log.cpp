@@ -144,6 +144,13 @@ void EditorLog::_notification(int p_what) {
 			_load_state();
 		} break;
 
+		case NOTIFICATION_EXIT_TREE: {
+			if (!save_state_timer->is_stopped()) {
+				_save_state();
+				save_state_timer->stop();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 			_rebuild_log();
@@ -164,40 +171,22 @@ void EditorLog::_start_state_save_timer() {
 }
 
 void EditorLog::_save_state() {
-	Ref<ConfigFile> config;
-	config.instantiate();
-	// Load and amend existing config if it exists.
-	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-
-	const String section = "editor_log";
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		config->set_value(section, "log_filter_" + itos(E.key), E.value->is_active());
+		EditorSettings::get_singleton()->set_setting("_editor_log_filter_" + itos(E.key), E.value->is_active());
 	}
-
-	config->set_value(section, "collapse", collapse);
-	config->set_value(section, "show_search", search_box->is_visible());
-
-	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	EditorSettings::get_singleton()->set_setting("_editor_log_collapse", collapse);
+	EditorSettings::get_singleton()->set_setting("_editor_log_show_search", search_box->is_visible());
+	EditorSettings::save();
 }
 
 void EditorLog::_load_state() {
 	is_loading_state = true;
 
-	Ref<ConfigFile> config;
-	config.instantiate();
-	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-
-	// Run the below code even if config->load returns an error, since we want the defaults to be set even if the file does not exist yet.
-	const String section = "editor_log";
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		E.value->set_active(config->get_value(section, "log_filter_" + itos(E.key), true));
+		E.value->set_active(EDITOR_DEF("_editor_log_filter_" + itos(E.key), true));
 	}
-
-	collapse = config->get_value(section, "collapse", false);
-	collapse_button->set_pressed(collapse);
-	bool show_search = config->get_value(section, "show_search", true);
-	search_box->set_visible(show_search);
-	show_search_button->set_pressed(show_search);
+	collapse_button->set_pressed(EDITOR_DEF("_editor_log_collapse", false));
+	search_box->set_visible(EDITOR_DEF("_editor_log_show_search", true));
 
 	is_loading_state = false;
 }
