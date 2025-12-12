@@ -1015,6 +1015,9 @@ void QuickOpenResultContainer::_notification(int p_what) {
 			file_details_path->add_theme_color_override(SceneStringName(font_color), text_color);
 			no_results_label->add_theme_color_override(SceneStringName(font_color), text_color);
 
+			file_context_menu->set_item_icon(FILE_SHOW_IN_FILESYSTEM, get_editor_theme_icon(SNAME("ShowInFileSystem")));
+			file_context_menu->set_item_icon(FILE_SHOW_IN_FILE_MANAGER, get_editor_theme_icon(SNAME("Filesystem")));
+
 			panel_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 
 			if (content_display_mode == QuickOpenDisplayMode::LIST) {
