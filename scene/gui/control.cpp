@@ -421,7 +421,11 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				if (data.theme_constant_override.has(E.item_name)) {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
-				p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_constants") + String("/") + E.item_name, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+				if (E.hint == PROPERTY_HINT_NONE) {
+					p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_constants") + String("/") + E.item_name, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+				} else {
+					p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_constants") + String("/") + E.item_name, E.hint, E.hint_string, usage));
+				}
 			} break;
 
 			case Theme::DATA_TYPE_FONT: {
