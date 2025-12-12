@@ -542,6 +542,23 @@
 				Sets layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 			</description>
 		</method>
+		<method name="set_taskbar_progress_state">
+			<return type="void" />
+			<param index="0" name="state" type="int" enum="DisplayServer.ProgressState" />
+			<description>
+				Sets the type and state of the progress bar on the taskbar/dock icon of the [Window]. See [enum DisplayServer.ProgressState] for possible values and how each mode behaves.
+				[b]Note:[/b] This method is implemented only on Windows and macOS.
+			</description>
+		</method>
+		<method name="set_taskbar_progress_value">
+			<return type="void" />
+			<param index="0" name="value" type="float" />
+			<description>
+				Creates a progress bar on taskbar/dock icon of the [Window] if it does not exist, sets the progress of the icon.
+				[param value] acts as a percentage relative, ranges from [code]0.0[/code] (lowest) to [code]1.0[/code] (highest).
+				[b]Note:[/b] This method is implemented only on Windows and macOS.
+			</description>
+		</method>
 		<method name="set_unparent_when_invisible">
 			<return type="void" />
 			<param index="0" name="unparent" type="bool" />
