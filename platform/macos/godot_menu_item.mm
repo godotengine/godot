@@ -38,6 +38,7 @@
 	self->callback = Callable();
 	self->key_callback = Callable();
 	self->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_NONE;
+	self->enabled = true;
 	self->checked = false;
 	self->max_states = 0;
 	self->state = 0;
