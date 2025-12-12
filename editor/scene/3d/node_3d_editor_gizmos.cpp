@@ -36,7 +36,12 @@
 #include "editor/editor_string_names.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
+#include "modules/csg/csg_shape.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -751,6 +756,60 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	}
 
 	if (!collision_meshes.is_empty()) {
+		TriangleMesh::CullMode cull_mode = TriangleMesh::CULL_BACK;
+
+		GeometryInstance3D *geom = Object::cast_to<GeometryInstance3D>(spatial_node);
+		if (geom) {
+			Ref<Material> mat;
+			BaseMaterial3D::CullMode material_cull_mode = BaseMaterial3D::CULL_BACK;
+
+			MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(spatial_node);
+			if (mesh_inst) {
+				mat = mesh_inst->get_active_material(0);
+			} else {
+				// Override takes precedence.
+				mat = geom->get_material_override();
+				if (!mat.is_valid()) {
+					SpriteBase3D *sprite = Object::cast_to<SpriteBase3D>(spatial_node);
+					if (sprite) {
+						if (sprite->get_draw_flag(SpriteBase3D::FLAG_DOUBLE_SIDED)) {
+							material_cull_mode = BaseMaterial3D::CULL_DISABLED;
+						}
+					} else {
+						// Each CSG shape type has its own get_material() method.
+						CSGPrimitive3D *csg_prim = Object::cast_to<CSGPrimitive3D>(spatial_node);
+						if (csg_prim) {
+#define CHECK_CSG_TYPE(TypeName)                             \
+	if (!mat.is_valid()) {                                   \
+		TypeName *csg = Object::cast_to<TypeName>(csg_prim); \
+		if (csg) {                                           \
+			mat = csg->get_material();                       \
+		}                                                    \
+	}
+
+							CHECK_CSG_TYPE(CSGBox3D)
+							CHECK_CSG_TYPE(CSGSphere3D)
+							CHECK_CSG_TYPE(CSGCylinder3D)
+							CHECK_CSG_TYPE(CSGTorus3D)
+							CHECK_CSG_TYPE(CSGPolygon3D)
+							CHECK_CSG_TYPE(CSGMesh3D)
+
+#undef CHECK_CSG_TYPE
+						}
+					}
+				}
+			}
+
+			if (mat.is_valid()) {
+				Ref<BaseMaterial3D> base_mat = mat;
+				if (base_mat.is_valid()) {
+					material_cull_mode = base_mat->get_cull_mode();
+				}
+			}
+
+			cull_mode = static_cast<TriangleMesh::CullMode>(material_cull_mode);
+		}
+
 		Transform3D gt = spatial_node->get_global_transform();
 
 		if (billboard_handle) {
@@ -764,7 +823,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 
 		for (Ref<TriangleMesh> collision_mesh : collision_meshes) {
 			if (collision_mesh.is_valid()) {
-				if (collision_mesh->intersect_ray(ray_from, ray_dir, rpos, rnorm)) {
+				if (collision_mesh->intersect_ray(ray_from, ray_dir, rpos, rnorm, nullptr, nullptr, cull_mode)) {
 					r_pos = gt.xform(rpos);
 					r_normal = gt.basis.xform(rnorm).normalized();
 					return true;
