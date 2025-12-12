@@ -285,20 +285,6 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		const PropertyInfo &pinfo = KV.value.prop.first;
 		Variant var = KV.value.values[remote_objects->remote_object_ids[0]];
 
-		if (pinfo.type == Variant::OBJECT && var.is_string()) {
-			String path = var;
-			if (path.contains("::")) {
-				// Built-in resource.
-				String base_path = path.get_slice("::", 0);
-				Ref<Resource> dependency = ResourceLoader::load(base_path);
-				if (dependency.is_valid()) {
-					remote_dependencies.insert(dependency);
-				}
-			}
-			var = ResourceLoader::load(path);
-			KV.value.values[remote_objects->remote_object_ids[0]] = var;
-		}
-
 		// Always add the property, since props may have been added or removed.
 		remote_objects->prop_list.push_back(pinfo);
 
