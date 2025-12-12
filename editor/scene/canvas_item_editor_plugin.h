@@ -228,6 +228,7 @@ private:
 	Point2 previous_update_view_offset;
 
 	bool selected_from_canvas = false;
+	bool had_visible_selection = false;
 
 	// Defaults are defined in clear().
 	Point2 grid_offset;
