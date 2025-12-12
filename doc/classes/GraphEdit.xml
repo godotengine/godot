@@ -307,14 +307,14 @@
 			<return type="void" />
 			<param index="0" name="type" type="int" />
 			<description>
-				Disallows to disconnect nodes when dragging from the left port of the [GraphNode]'s slot if it has the specified type. Use this to disable disconnection previously allowed with [method add_valid_left_disconnect_type].
+				Disallows to disconnect nodes when dragging from the left port of the [GraphNode]'s slot if it has the specified type. Use this to disable a disconnection previously allowed with [method add_valid_left_disconnect_type].
 			</description>
 		</method>
 		<method name="remove_valid_right_disconnect_type">
 			<return type="void" />
 			<param index="0" name="type" type="int" />
 			<description>
-				Disallows to disconnect nodes when dragging from the right port of the [GraphNode]'s slot if it has the specified type. Use this to disable disconnection previously allowed with [method add_valid_right_disconnect_type].
+				Disallows to disconnect nodes when dragging from the right port of the [GraphNode]'s slot if it has the specified type. Use this to disable a disconnection previously allowed with [method add_valid_right_disconnect_type].
 			</description>
 		</method>
 		<method name="set_connection_activity">
@@ -411,7 +411,7 @@
 			If [code]true[/code], enables snapping.
 		</member>
 		<member name="type_names" type="Dictionary" setter="set_type_names" getter="get_type_names" default="{}">
-			[Dictionary] of human readable port type names.
+			[Dictionary] of human-readable port type names.
 		</member>
 		<member name="zoom" type="float" setter="set_zoom" getter="get_zoom" default="1.0">
 			The current zoom value.
@@ -591,7 +591,7 @@
 			The outline color of the selection rectangle.
 		</theme_item>
 		<theme_item name="connection_hover_thickness" data_type="constant" type="int" default="0">
-			Widen the line of the connection when the mouse is hovering over it by a percentage factor. A value of [code]0[/code] disables the highlight. A value of [code]100[/code] doubles the line width.
+			Widens the line of a connection when the mouse is hovering over it by a percentage factor. A value of [code]0[/code] disables the highlight. A value of [code]100[/code] doubles the line width.
 		</theme_item>
 		<theme_item name="port_hotzone_inner_extent" data_type="constant" type="int" default="22">
 			The horizontal range within which a port can be grabbed (inner side).

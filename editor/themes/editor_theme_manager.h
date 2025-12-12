@@ -77,7 +77,7 @@ public:
 		int class_icon_size = 16;
 		bool enable_touch_optimizations = false;
 		float gizmo_handle_scale = 1.0;
-		int color_picker_button_height = 28;
+		int inspector_property_height = 28;
 		float subresource_hue_tint = 0.0;
 		float dragging_hover_wait_msec = 0;
 
@@ -126,6 +126,12 @@ public:
 		Color font_readonly_color;
 		Color font_placeholder_color;
 		Color font_outline_color;
+
+		Color font_dark_background_color;
+		Color font_dark_background_focus_color;
+		Color font_dark_background_hover_color;
+		Color font_dark_background_pressed_color;
+		Color font_dark_background_hover_pressed_color;
 
 		Color icon_normal_color;
 		Color icon_secondary_color;
@@ -180,6 +186,8 @@ public:
 		Ref<StyleBoxFlat> panel_container_style;
 		Ref<StyleBoxFlat> content_panel_style;
 		Ref<StyleBoxFlat> tree_panel_style;
+		Ref<StyleBoxFlat> tab_container_style;
+		Ref<StyleBoxFlat> foreground_panel;
 
 		Vector2 widget_margin;
 
@@ -196,7 +204,7 @@ public:
 
 private:
 	static Ref<EditorTheme> _create_base_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
-	static ThemeConfiguration _create_theme_config(const Ref<EditorTheme> &p_theme);
+	static ThemeConfiguration _create_theme_config();
 
 	static void _populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 	static void _populate_visual_shader_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);

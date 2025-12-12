@@ -68,17 +68,17 @@ void SpriteBase3D::_propagate_color_changed() {
 void SpriteBase3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (!pending_update) {
-				_im_update();
-			}
+			_im_update();
+		} break;
 
+		case NOTIFICATION_PARENTED: {
 			parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
 			if (parent_sprite) {
 				pI = parent_sprite->children.push_back(this);
 			}
 		} break;
 
-		case NOTIFICATION_EXIT_TREE: {
+		case NOTIFICATION_UNPARENTED: {
 			if (parent_sprite) {
 				parent_sprite->children.erase(pI);
 				pI = nullptr;
@@ -155,6 +155,8 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		SWAP(uvs[0], uvs[3]);
 		SWAP(uvs[1], uvs[2]);
 	}
+
+	bool texture_repeat = (MIN(uvs[0].x, uvs[2].x) < 0.0) || (MIN(uvs[0].y, uvs[2].y) < 0.0) || (MAX(uvs[0].x, uvs[2].x) > 1.0) || (MAX(uvs[0].y, uvs[2].y) > 1.0);
 
 	Vector3 normal;
 	int ax = get_axis();
@@ -290,7 +292,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	}
 
 	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, &shader_rid);
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, texture_repeat, &shader_rid);
 
 	if (last_shader != shader_rid) {
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
@@ -417,15 +419,21 @@ Vector3::Axis SpriteBase3D::get_axis() const {
 }
 
 void SpriteBase3D::_im_update() {
+	if (!redraw_needed) {
+		return;
+	}
 	_draw();
+	redraw_needed = false;
 
 	pending_update = false;
-
-	//texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 }
 
 void SpriteBase3D::_queue_redraw() {
 	// The 3D equivalent of CanvasItem.queue_redraw().
+	redraw_needed = true;
+	if (!is_inside_tree()) {
+		return;
+	}
 	if (pending_update) {
 		return;
 	}

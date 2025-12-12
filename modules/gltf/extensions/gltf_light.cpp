@@ -186,7 +186,7 @@ Light3D *GLTFLight::to_node() const {
 	return light;
 }
 
-Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary p_dictionary) {
+Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary &p_dictionary) {
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFLight>(), "Failed to parse glTF light, missing required field 'type'.");
 	Ref<GLTFLight> light;
 	light.instantiate();

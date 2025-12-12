@@ -852,6 +852,13 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 }
 
 Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
+	// Do not run headless instance as app bundle, since it will never send `applicationDidFinishLaunching` and register as failed start after timeout.
+	for (size_t i = 0; i < std::size(OS_MacOS::headless_args); i++) {
+		if (p_arguments.find(String(OS_MacOS::headless_args[i]))) {
+			return OS_Unix::create_process(get_executable_path(), p_arguments, r_child_id, false);
+		}
+	}
+
 	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
@@ -1069,7 +1076,7 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 // MARK: - OS_MacOS_NSApp
 
 void OS_MacOS_NSApp::run() {
-	[NSApp run];
+	[NSApp run]; // Note: this call will never return. Use `OS_MacOS_NSApp::cleanup()` for cleanup.
 }
 
 static bool sig_received = false;
@@ -1081,8 +1088,6 @@ static void handle_interrupt(int sig) {
 }
 
 void OS_MacOS_NSApp::start_main() {
-	godot_init_profiler();
-
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);
@@ -1147,6 +1152,7 @@ void OS_MacOS_NSApp::start_main() {
 }
 
 void OS_MacOS_NSApp::terminate() {
+	// Note: This method only sends app termination request. Use `OS_MacOS_NSApp::cleanup()` for cleanup.
 	if (pre_wait_observer) {
 		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
 		CFRelease(pre_wait_observer);
@@ -1166,6 +1172,7 @@ void OS_MacOS_NSApp::cleanup() {
 			Main::cleanup();
 		}
 	}
+	godot_cleanup_profiler();
 }
 
 OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv) :

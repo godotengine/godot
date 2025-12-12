@@ -37,7 +37,7 @@
 			<return type="String" />
 			<param index="0" name="path_or_uid" type="String" />
 			<description>
-				Returns a path, converting [param path_or_uid] if necessary. Prints an error if provided an invalid UID.
+				Returns a path, converting [param path_or_uid] if necessary. Fails and returns an empty string if an invalid UID is provided.
 			</description>
 		</method>
 		<method name="get_id_path" qualifiers="const">

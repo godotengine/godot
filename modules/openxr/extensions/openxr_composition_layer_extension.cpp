@@ -56,7 +56,7 @@ OpenXRCompositionLayerExtension::~OpenXRCompositionLayerExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_COMPOSITION_LAYER_CYLINDER_EXTENSION_NAME] = &cylinder_ext_available;
@@ -72,7 +72,9 @@ HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extension
 void OpenXRCompositionLayerExtension::on_instance_created(const XrInstance p_instance) {
 #ifdef ANDROID_ENABLED
 	EXT_INIT_XR_FUNC(xrDestroySwapchain);
-	EXT_INIT_XR_FUNC(xrCreateSwapchainAndroidSurfaceKHR);
+	if (android_surface_ext_available) {
+		EXT_INIT_XR_FUNC(xrCreateSwapchainAndroidSurfaceKHR);
+	}
 #endif
 }
 

@@ -53,7 +53,7 @@ OpenXRValveAnalogThresholdExtension::~OpenXRValveAnalogThresholdExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRValveAnalogThresholdExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRValveAnalogThresholdExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	// Note, we're dependent on the binding modifier extension, this may be requested by multiple extension wrappers.

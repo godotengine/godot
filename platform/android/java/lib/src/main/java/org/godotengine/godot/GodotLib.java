@@ -105,7 +105,7 @@ public class GodotLib {
 	/**
 	 * TTS callback.
 	 */
-	public static native void ttsCallback(int event, int id, int pos);
+	public static native void ttsCallback(int event, long id, int pos);
 
 	/**
 	 * Forward touch events.
@@ -297,8 +297,9 @@ public class GodotLib {
 
 	/**
 	 * Invoked when the screen orientation changes.
+	 * @param orientation the new screen orientation
 	 */
-	static native void onScreenRotationChange();
+	static native void onScreenRotationChange(int orientation);
 
 	/**
 	 * @return true if input must be dispatched from the render thread. If false, input is
@@ -314,4 +315,6 @@ public class GodotLib {
 	static native boolean isEditorHint();
 
 	static native boolean isProjectManagerHint();
+
+	static native boolean hasFeature(String feature);
 }

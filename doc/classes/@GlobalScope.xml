@@ -1428,7 +1428,7 @@
 				var json = JSON.new()
 				json.parse('["a", "b", "c"]')
 				var result = json.get_data()
-				if result is Array:
+				if typeof(result) == TYPE_ARRAY:
 					print(result[0]) # Prints "a"
 				else:
 					print("Unexpected result!")
@@ -2837,6 +2837,8 @@
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 			Hints that a [String] property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
+			The hint string can be set to [code]"monospace"[/code] to force the input field to use a monospaced font.
+			If the hint string [code]"no_wrap"[/code] is set, the input field will not wrap lines at boundaries, instead resorting to making the area scrollable.
 		</constant>
 		<constant name="PROPERTY_HINT_EXPRESSION" value="19" enum="PropertyHint">
 			Hints that a [String] property is an [Expression].

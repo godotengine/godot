@@ -301,7 +301,7 @@ TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
 	return tts->get_voices();
 }
 
-void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	if (unlikely(!tts)) {
 		initialize_tts();
 	}
@@ -1625,7 +1625,7 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 #ifdef RD_ENABLED
 	if (rendering_context != nullptr) {
-		_create_rendering_context_window(window_id);
+		_create_rendering_context_window(window_id, rendering_driver);
 	}
 #endif
 #ifdef GLES3_ENABLED
@@ -4773,9 +4773,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			// if the same nIDEvent is passed, the timer is replaced and the same timer_id is returned.
 			// The problem with the timer is that the window cannot be resized or the buttons cannot be used correctly
 			// if the window is not activated first. This happens because the code in the activation process runs
-			// after the mouse click is handled. To address this, the timer is now used only when the window is created.
+			// after the mouse click is handled. To address this, the timer is now used only during the window creation,
+			// and only as part of the activation process. We don't want 'Input::release_pressed_events()'
+			// to be called immediately in '_process_activate_event' when the window is not yet activated,
+			// as it would reset the currently pressed keys when hiding a window, which is incorrect behavior.
 			windows[window_id].activate_state = GET_WM_ACTIVATE_STATE(wParam, lParam);
-			if (windows[window_id].first_activation_done) {
+			if (windows[window_id].first_activation_done && (windows[window_id].activate_state == WA_ACTIVE || windows[window_id].activate_state == WA_CLICKACTIVE)) {
 				_process_activate_event(window_id);
 			} else {
 				windows[window_id].activate_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_WINDOW_ACTIVATION, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
@@ -5814,17 +5817,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					rect_changed = true;
 				}
 #if defined(RD_ENABLED)
-				if (window.create_completed && rendering_context && window.context_created) {
+				if (window.create_completed && rendering_context && window.rendering_context_window_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
-					rendering_context->window_set_size(window_id, window.width, window.height);
+					rendering_context->window_set_size(window_id, window.width + off_x, window.height);
 				}
 #endif
 #if defined(GLES3_ENABLED)
-				if (window.create_completed && gl_manager_native) {
-					gl_manager_native->window_resize(window_id, window.width, window.height);
+				if (window.create_completed && gl_manager_native && window.gl_native_window_created) {
+					gl_manager_native->window_resize(window_id, window.width + off_x, window.height);
 				}
-				if (window.create_completed && gl_manager_angle) {
-					gl_manager_angle->window_resize(window_id, window.width, window.height);
+				if (window.create_completed && gl_manager_angle && window.gl_angle_window_created) {
+					gl_manager_angle->window_resize(window_id, window.width + off_x, window.height);
 				}
 #endif
 			}
@@ -6603,7 +6606,7 @@ void DisplayServerWindows::_destroy_window(WindowID p_window_id) {
 }
 
 #ifdef RD_ENABLED
-Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id) {
+Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id, const String &p_rendering_driver) {
 	DEV_ASSERT(rendering_context != nullptr);
 
 	WindowData &wd = windows[p_window_id];
@@ -6617,22 +6620,23 @@ Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_i
 #endif
 	} wpd;
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (p_rendering_driver == "vulkan") {
 		wpd.vulkan.window = wd.hWnd;
 		wpd.vulkan.instance = hInstance;
 	}
 #endif
 #ifdef D3D12_ENABLED
-	if (rendering_driver == "d3d12") {
+	if (p_rendering_driver == "d3d12") {
 		wpd.d3d12.window = wd.hWnd;
 	}
 #endif
 
 	Error err = rendering_context->window_create(p_window_id, &wpd);
-	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", rendering_driver));
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", p_rendering_driver));
 
-	rendering_context->window_set_size(p_window_id, wd.width, wd.height);
-	wd.context_created = true;
+	int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+	rendering_context->window_set_size(p_window_id, wd.width + off_x, wd.height);
+	wd.rendering_context_window_created = true;
 
 	return OK;
 }
@@ -6641,10 +6645,10 @@ void DisplayServerWindows::_destroy_rendering_context_window(WindowID p_window_i
 	DEV_ASSERT(rendering_context != nullptr);
 
 	WindowData &wd = windows[p_window_id];
-	DEV_ASSERT(wd.context_created);
+	DEV_ASSERT(wd.rendering_context_window_created);
 
 	rendering_context->window_destroy(p_window_id);
-	wd.context_created = false;
+	wd.rendering_context_window_created = false;
 }
 #endif
 
@@ -6652,12 +6656,20 @@ void DisplayServerWindows::_destroy_rendering_context_window(WindowID p_window_i
 Error DisplayServerWindows::_create_gl_window(WindowID p_window_id) {
 	if (gl_manager_native) {
 		WindowData &wd = windows[p_window_id];
-		return gl_manager_native->window_create(p_window_id, wd.hWnd, hInstance, wd.width, wd.height);
+
+		Error err = gl_manager_native->window_create(p_window_id, wd.hWnd, hInstance, wd.width, wd.height);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to create native OpenGL window.");
+
+		wd.gl_native_window_created = true;
 	}
 
 	if (gl_manager_angle) {
 		WindowData &wd = windows[p_window_id];
-		return gl_manager_angle->window_create(p_window_id, nullptr, wd.hWnd, wd.width, wd.height);
+
+		Error err = gl_manager_angle->window_create(p_window_id, nullptr, wd.hWnd, wd.width, wd.height);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to create ANGLE OpenGL window.");
+
+		wd.gl_angle_window_created = true;
 	}
 
 	return OK;
@@ -7213,7 +7225,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 					main_window_created = true;
 				}
 
-				if (_create_rendering_context_window(MAIN_WINDOW_ID) == OK) {
+				if (_create_rendering_context_window(MAIN_WINDOW_ID, tested_rendering_driver) == OK) {
 					rendering_device = memnew(RenderingDevice);
 					if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) == OK) {
 #ifdef VULKAN_ENABLED
@@ -7408,7 +7420,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			gl_manager_native = nullptr;
 			windows.erase(MAIN_WINDOW_ID);
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Failed to create an OpenGL window.");
+			return;
 		}
 		RasterizerGLES3::make_current(true);
 	}
@@ -7418,7 +7430,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			gl_manager_angle = nullptr;
 			windows.erase(MAIN_WINDOW_ID);
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Failed to create an OpenGL window.");
+			return;
 		}
 		RasterizerGLES3::make_current(false);
 	}

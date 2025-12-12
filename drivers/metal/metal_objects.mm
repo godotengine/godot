@@ -519,7 +519,7 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		RDD::BufferTextureCopyRegion region = p_regions[i];
 
-		uint32_t mip_level = region.texture_subresources.mipmap;
+		uint32_t mip_level = region.texture_subresource.mipmap;
 		MTLOrigin txt_origin = MTLOriginMake(region.texture_offset.x, region.texture_offset.y, region.texture_offset.z);
 		MTLSize src_extent = mipmapLevelSizeFromTexture(texture, mip_level);
 		MTLSize txt_size = clampMTLSize(MTLSizeMake(region.texture_region_size.x, region.texture_region_size.y, region.texture_region_size.z),
@@ -535,18 +535,15 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 		MTLBlitOption blit_options = options;
 
 		if (pf.isDepthFormat(mtlPixFmt) && pf.isStencilFormat(mtlPixFmt)) {
-			bool want_depth = flags::all(region.texture_subresources.aspect, RDD::TEXTURE_ASPECT_DEPTH_BIT);
-			bool want_stencil = flags::all(region.texture_subresources.aspect, RDD::TEXTURE_ASPECT_STENCIL_BIT);
-
-			// The stencil component is always 1 byte per pixel.
 			// Don't reduce depths of 32-bit depth/stencil formats.
-			if (want_depth && !want_stencil) {
+			if (region.texture_subresource.aspect == RDD::TEXTURE_ASPECT_DEPTH) {
 				if (pf.getBytesPerTexel(mtlPixFmt) != 4) {
 					bytesPerRow -= buffImgWd;
 					bytesPerImg -= buffImgWd * buffImgHt;
 				}
 				blit_options |= MTLBlitOptionDepthFromDepthStencil;
-			} else if (want_stencil && !want_depth) {
+			} else if (region.texture_subresource.aspect == RDD::TEXTURE_ASPECT_STENCIL) {
+				// The stencil component is always 1 byte per pixel.
 				bytesPerRow = buffImgWd;
 				bytesPerImg = buffImgWd * buffImgHt;
 				blit_options |= MTLBlitOptionStencilFromDepthStencil;
@@ -558,31 +555,27 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 		}
 
 		if (p_source == CopySource::Buffer) {
-			for (uint32_t lyrIdx = 0; lyrIdx < region.texture_subresources.layer_count; lyrIdx++) {
-				[enc copyFromBuffer:buffer->metal_buffer
-							   sourceOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
-						  sourceBytesPerRow:bytesPerRow
-						sourceBytesPerImage:bytesPerImg
-								 sourceSize:txt_size
-								  toTexture:texture
-						   destinationSlice:region.texture_subresources.base_layer + lyrIdx
-						   destinationLevel:mip_level
-						  destinationOrigin:txt_origin
-									options:blit_options];
-			}
+			[enc copyFromBuffer:buffer->metal_buffer
+						   sourceOffset:region.buffer_offset
+					  sourceBytesPerRow:bytesPerRow
+					sourceBytesPerImage:bytesPerImg
+							 sourceSize:txt_size
+							  toTexture:texture
+					   destinationSlice:region.texture_subresource.layer
+					   destinationLevel:mip_level
+					  destinationOrigin:txt_origin
+								options:blit_options];
 		} else {
-			for (uint32_t lyrIdx = 0; lyrIdx < region.texture_subresources.layer_count; lyrIdx++) {
-				[enc copyFromTexture:texture
-									 sourceSlice:region.texture_subresources.base_layer + lyrIdx
-									 sourceLevel:mip_level
-									sourceOrigin:txt_origin
-									  sourceSize:txt_size
-										toBuffer:buffer->metal_buffer
-							   destinationOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
-						  destinationBytesPerRow:bytesPerRow
-						destinationBytesPerImage:bytesPerImg
-										 options:blit_options];
-			}
+			[enc copyFromTexture:texture
+								 sourceSlice:region.texture_subresource.layer
+								 sourceLevel:mip_level
+								sourceOrigin:txt_origin
+								  sourceSize:txt_size
+									toBuffer:buffer->metal_buffer
+						   destinationOffset:region.buffer_offset
+					  destinationBytesPerRow:bytesPerRow
+					destinationBytesPerImage:bytesPerImg
+									 options:blit_options];
 		}
 	}
 }
@@ -783,10 +776,12 @@ void MDCommandBuffer::_render_set_dirty_state() {
 
 	if (render.dirty.has_flag(RenderState::DIRTY_VERTEX)) {
 		uint32_t p_binding_count = render.vertex_buffers.size();
-		uint32_t first = device_driver->get_metal_buffer_index_for_vertex_attribute_binding(p_binding_count - 1);
-		[render.encoder setVertexBuffers:render.vertex_buffers.ptr()
-								 offsets:render.vertex_offsets.ptr()
-							   withRange:NSMakeRange(first, p_binding_count)];
+		if (p_binding_count > 0) {
+			uint32_t first = device_driver->get_metal_buffer_index_for_vertex_attribute_binding(p_binding_count - 1);
+			[render.encoder setVertexBuffers:render.vertex_buffers.ptr()
+									 offsets:render.vertex_offsets.ptr()
+								   withRange:NSMakeRange(first, p_binding_count)];
+		}
 	}
 
 	render.resource_tracker.encode(render.encoder);
@@ -1252,24 +1247,47 @@ void MDCommandBuffer::render_draw(uint32_t p_vertex_count,
 			 baseInstance:p_first_instance];
 }
 
-void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets) {
+void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Render);
 
 	render.vertex_buffers.resize(p_binding_count);
 	render.vertex_offsets.resize(p_binding_count);
 
+	// Are the existing buffer bindings the same?
+	bool same = true;
+
 	// Reverse the buffers, as their bindings are assigned in descending order.
 	for (uint32_t i = 0; i < p_binding_count; i += 1) {
 		const RenderingDeviceDriverMetal::BufferInfo *buf_info = (const RenderingDeviceDriverMetal::BufferInfo *)p_buffers[p_binding_count - i - 1].id;
-		render.vertex_buffers[i] = buf_info->metal_buffer;
-		render.vertex_offsets[i] = p_offsets[p_binding_count - i - 1];
+
+		NSUInteger dynamic_offset = 0;
+		if (buf_info->is_dynamic()) {
+			const MetalBufferDynamicInfo *dyn_buf = (const MetalBufferDynamicInfo *)buf_info;
+			uint64_t frame_idx = p_dynamic_offsets & 0x3;
+			p_dynamic_offsets >>= 2;
+			dynamic_offset = frame_idx * dyn_buf->size_bytes;
+		}
+		if (render.vertex_buffers[i] != buf_info->metal_buffer) {
+			render.vertex_buffers[i] = buf_info->metal_buffer;
+			same = false;
+		}
+
+		render.vertex_offsets[i] = dynamic_offset + p_offsets[p_binding_count - i - 1];
 	}
 
 	if (render.encoder) {
 		uint32_t first = device_driver->get_metal_buffer_index_for_vertex_attribute_binding(p_binding_count - 1);
-		[render.encoder setVertexBuffers:render.vertex_buffers.ptr()
-								 offsets:render.vertex_offsets.ptr()
-							   withRange:NSMakeRange(first, p_binding_count)];
+		if (same) {
+			NSUInteger *offset_ptr = render.vertex_offsets.ptr();
+			for (uint32_t i = first; i < first + p_binding_count; i++) {
+				[render.encoder setVertexBufferOffset:*offset_ptr atIndex:i];
+				offset_ptr++;
+			}
+		} else {
+			[render.encoder setVertexBuffers:render.vertex_buffers.ptr()
+									 offsets:render.vertex_offsets.ptr()
+								   withRange:NSMakeRange(first, p_binding_count)];
+		}
 		render.dirty.clear_flag(RenderState::DIRTY_VERTEX);
 	} else {
 		render.dirty.set_flag(RenderState::DIRTY_VERTEX);
@@ -1394,7 +1412,9 @@ void MDCommandBuffer::RenderState::reset() {
 	viewports.clear();
 	scissors.clear();
 	blend_constants.reset();
+	bzero(vertex_buffers.ptr(), sizeof(id<MTLBuffer> __unsafe_unretained) * vertex_buffers.size());
 	vertex_buffers.clear();
+	bzero(vertex_offsets.ptr(), sizeof(NSUInteger) * vertex_offsets.size());
 	vertex_offsets.clear();
 	resource_tracker.reset();
 }

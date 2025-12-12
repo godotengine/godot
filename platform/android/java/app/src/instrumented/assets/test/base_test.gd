@@ -42,3 +42,10 @@ func assert_equal(actual, expected):
 	else:
 		__assert_fail()
 		print ("    |-> Expected '%s' but got '%s'" % [expected, actual])
+
+func assert_true(value):
+	if value:
+		__assert_pass()
+	else:
+		__assert_fail()
+		print ("    |-> Expected '%s' to be truthy" % value)

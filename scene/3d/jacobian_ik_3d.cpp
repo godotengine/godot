@@ -54,7 +54,7 @@ void JacobianIK3D::_solve_iteration(double p_delta, Skeleton3D *p_skeleton, Iter
 			continue;
 		}
 
-		Quaternion to_rot = Quaternion(axis.normalized(), axis.length() / MAX(CMP_EPSILON, head_to_effector.length()));
+		Quaternion to_rot = Quaternion(axis.normalized(), MIN(axis.length() / MAX(CMP_EPSILON, head_to_effector.length_squared()), angular_delta_limit)); // Clip by angular_delta_limit for stability.
 
 		for (int j = TAIL; j < chain_size; j++) {
 			Vector3 to_tail = p_setting->chain[j] - current_head;

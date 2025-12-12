@@ -69,7 +69,7 @@ public:
 	OpenXRSpatialEntityExtension();
 	virtual ~OpenXRSpatialEntityExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;

@@ -51,6 +51,7 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <type_traits>
 #include <utility>
 
 // IWYU pragma: end_exports
@@ -465,3 +466,8 @@ constexpr bool is_fully_defined_v = is_fully_defined<T>::value;
 #else
 #define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type)
 #endif
+
+#define _GD_VARNAME_CONCAT_B_(m_ignore, m_name) m_name
+#define _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_B_(hello there, m_a##m_b##m_c)
+#define _GD_VARNAME_CONCAT_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c)
+#define GD_UNIQUE_NAME(m_name) _GD_VARNAME_CONCAT_(m_name, _, __COUNTER__)

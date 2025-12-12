@@ -393,7 +393,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			} break;
 			case ARG_TYPE_CLASS: {
 				if (p_args[i]->get_type() == Variant::DICTIONARY) {
-					argv[i].l = _variant_to_jvalue(env, Variant::DICTIONARY, p_args[i]).l;
+					argv[i].l = _variant_to_jobject(env, Variant::DICTIONARY, p_args[i]);
 				} else {
 					Ref<JavaObject> jo = *p_args[i];
 					if (jo.is_valid()) {

@@ -175,24 +175,18 @@ public:
 		sorter.sort(data, len);
 	}
 
-	Size bsearch(const T &p_value, bool p_before) {
+	Size bsearch(const T &p_value, bool p_before) const {
 		return bsearch_custom<Comparator<T>>(p_value, p_before);
 	}
 
 	template <typename Comparator, typename Value, typename... Args>
-	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) {
+	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) const {
 		return span().bisect(p_value, p_before, Comparator{ args... });
 	}
 
 	Vector<T> duplicate() const {
 		return *this;
 	}
-
-#ifndef DISABLE_DEPRECATED
-	Vector<T> _duplicate_bind_compat_112290() {
-		return *this;
-	}
-#endif // DISABLE_DEPRECATED
 
 	void ordered_insert(const T &p_val) {
 		Size i;
@@ -248,31 +242,8 @@ public:
 		return result;
 	}
 
-	bool operator==(const Vector<T> &p_arr) const {
-		Size s = size();
-		if (s != p_arr.size()) {
-			return false;
-		}
-		for (Size i = 0; i < s; i++) {
-			if (operator[](i) != p_arr[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	bool operator!=(const Vector<T> &p_arr) const {
-		Size s = size();
-		if (s != p_arr.size()) {
-			return true;
-		}
-		for (Size i = 0; i < s; i++) {
-			if (operator[](i) != p_arr[i]) {
-				return true;
-			}
-		}
-		return false;
-	}
+	bool operator==(const Vector<T> &p_arr) const { return span() == p_arr.span(); }
+	bool operator!=(const Vector<T> &p_arr) const { return span() != p_arr.span(); }
 
 	struct Iterator {
 		_FORCE_INLINE_ T &operator*() const {
@@ -343,8 +314,6 @@ public:
 			_cowdata(p_init) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) = default;
 	_FORCE_INLINE_ Vector(Vector &&p_from) = default;
-
-	_FORCE_INLINE_ ~Vector() {}
 };
 
 template <typename T>

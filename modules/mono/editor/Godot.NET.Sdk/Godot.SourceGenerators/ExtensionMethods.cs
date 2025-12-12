@@ -212,11 +212,17 @@ namespace Godot.SourceGenerators
 
         private static void FullQualifiedSyntax(SyntaxNode node, SemanticModel sm, StringBuilder sb, bool isFirstNode)
         {
-            if (node is NameSyntax ns && (isFirstNode || node.Parent is not MemberAccessExpressionSyntax))
+            if (node is NameSyntax ns)
             {
-                SymbolInfo nameInfo = sm.GetSymbolInfo(ns);
-                sb.Append(nameInfo.Symbol?.ToDisplayString(FullyQualifiedFormatIncludeGlobal) ?? ns.ToString());
-                return;
+                bool isMemberAccess = !isFirstNode && node.Parent is MemberAccessExpressionSyntax;
+                bool isInitializer = isFirstNode && node.Parent is AssignmentExpressionSyntax { Parent: InitializerExpressionSyntax };
+
+                if (!isMemberAccess && !isInitializer)
+                {
+                    SymbolInfo nameInfo = sm.GetSymbolInfo(ns);
+                    sb.Append(nameInfo.Symbol?.ToDisplayString(FullyQualifiedFormatIncludeGlobal) ?? ns.ToString());
+                    return;
+                }
             }
 
             bool innerIsFirstNode = true;

@@ -601,6 +601,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 											path_string = path_string + String(":") + anim->track_get_path(i).get_concatenated_subnames();
 										}
 										anim->track_set_path(i, path_string);
+										anim->track_set_imported(i, true);
 									}
 								}
 							}

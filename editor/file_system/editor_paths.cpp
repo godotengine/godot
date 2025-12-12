@@ -83,6 +83,7 @@ String EditorPaths::get_debug_keystore_path() const {
 #endif
 }
 
+// This returns paths like "res://.godot/editor".
 String EditorPaths::get_project_settings_dir() const {
 	return get_project_data_dir().path_join("editor");
 }

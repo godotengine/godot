@@ -91,6 +91,17 @@ android {
         ]
 
         ndk { debugSymbolLevel 'NONE' }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // The following argument makes the Android Test Orchestrator run its
+        // "pm clear" command after each test invocation. This command ensures
+        // that the app's state is completely cleared between tests.
+        testInstrumentationRunnerArguments clearPackageData: 'true'
+    }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
     base {
@@ -192,8 +203,42 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.2.1"
     implementation "org.bouncycastle:bcprov-jdk15to18:1.78"
 
+    implementation "org.khronos.openxr:openxr_loader_for_android:$versions.openxrLoaderVersion"
+
+    // Android XR dependencies
+    androidImplementation "org.godotengine:godot-openxr-vendors-androidxr:$versions.openxrVendorsVersion"
     // Meta dependencies
     horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:$versions.openxrVendorsVersion"
     // Pico dependencies
     picoosImplementation "org.godotengine:godot-openxr-vendors-pico:$versions.openxrVendorsVersion"
+
+    // Android instrumented test dependencies
+    androidTestImplementation "androidx.test.ext:junit:$versions.junitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$versions.espressoCoreVersion"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:$versions.kotlinTestVersion"
+    androidTestImplementation "androidx.test:runner:$versions.testRunnerVersion"
+    androidTestUtil "androidx.test:orchestrator:$versions.testOrchestratorVersion"
+}
+
+/*
+ * Older versions of our vendor plugin include a loader that we no longer need.
+ * This code ensures those are removed.
+ */
+tasks.withType( com.android.build.gradle.internal.tasks.MergeNativeLibsTask) {
+    doFirst {
+        externalLibNativeLibs.each { jniDir ->
+            if (jniDir.getCanonicalPath().contains("godot-openxr-") || jniDir.getCanonicalPath().contains("godotopenxr")) {
+                // Delete the 'libopenxr_loader.so' files from the vendors plugin so we only use the version from the
+                // openxr loader dependency.
+                File armFile = new File(jniDir, "arm64-v8a/libopenxr_loader.so")
+                if (armFile.exists()) {
+                    armFile.delete()
+                }
+                File x86File = new File(jniDir, "x86_64/libopenxr_loader.so")
+                if (x86File.exists()) {
+                    x86File.delete()
+                }
+            }
+        }
+    }
 }

@@ -244,7 +244,7 @@ Vector3 GodotPhysicsDirectBodyState3D::get_contact_collider_velocity_at_position
 	return body->contacts[p_contact_idx].collider_velocity_at_pos;
 }
 
-PhysicsDirectSpaceState3D *GodotPhysicsDirectBodyState3D::get_space_state() {
+RequiredResult<PhysicsDirectSpaceState3D> GodotPhysicsDirectBodyState3D::get_space_state() {
 	return body->get_space()->get_direct_state();
 }
 

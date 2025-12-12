@@ -412,7 +412,7 @@ void SSEffects::copy_internal_texture_to_last_frame(Ref<RenderSceneBuffersRD> p_
 			Size2i dest_size = RD::get_singleton()->texture_size(dest);
 
 			if (m == 0 && source_size == dest_size) {
-				p_copy_effects.copy_to_rect(source, dest, Rect2i(Vector2i(), source_size));
+				p_copy_effects.copy_to_rect(source, dest, Rect2i(Vector2i(), source_size), false, false, false, false, false, true);
 			} else {
 				p_copy_effects.make_mipmap(source, dest, dest_size);
 			}

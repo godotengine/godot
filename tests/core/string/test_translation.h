@@ -228,37 +228,37 @@ TEST_CASE("[TranslationCSV] CSV import") {
 	CHECK(result == OK);
 	CHECK(gen_files.size() == 4);
 
-	TranslationServer *ts = TranslationServer::get_singleton();
-
+	Ref<TranslationDomain> td = TranslationServer::get_singleton()->get_or_add_domain("godot.test");
 	for (const String &file : gen_files) {
 		Ref<Translation> translation = ResourceLoader::load(file);
 		CHECK(translation.is_valid());
-		ts->add_translation(translation);
+		td->add_translation(translation);
 	}
 
-	ts->set_locale("en");
+	td->set_locale_override("en");
 
-	// `tr` can be called on any Object, we reuse TranslationServer for convenience.
-	CHECK(ts->tr("GOOD_MORNING") == "Good Morning");
-	CHECK(ts->tr("GOOD_EVENING") == "Good Evening");
+	CHECK(td->translate("GOOD_MORNING", StringName()) == "Good Morning");
+	CHECK(td->translate("GOOD_EVENING", StringName()) == "Good Evening");
 
-	ts->set_locale("de");
+	td->set_locale_override("de");
 
-	CHECK(ts->tr("GOOD_MORNING") == "Guten Morgen");
-	CHECK(ts->tr("GOOD_EVENING") == "Good Evening"); // Left blank in CSV, should source from 'en'.
+	CHECK(td->translate("GOOD_MORNING", StringName()) == "Guten Morgen");
+	CHECK(td->translate("GOOD_EVENING", StringName()) == "Good Evening"); // Left blank in CSV, should source from 'en'.
 
-	ts->set_locale("ja");
+	td->set_locale_override("ja");
 
-	CHECK(ts->tr("GOOD_MORNING") == String::utf8("おはよう"));
-	CHECK(ts->tr("GOOD_EVENING") == String::utf8("こんばんは"));
+	CHECK(td->translate("GOOD_MORNING", StringName()) == String::utf8("おはよう"));
+	CHECK(td->translate("GOOD_EVENING", StringName()) == String::utf8("こんばんは"));
 
 	/* FIXME: This passes, but triggers a chain reaction that makes test_viewport
 	 * and test_text_edit explode in a billion glittery Unicode particles.
-	ts->set_locale("fa");
+	td->set_locale_override("fa");
 
-	CHECK(ts->tr("GOOD_MORNING") == String::utf8("صبح بخیر"));
-	CHECK(ts->tr("GOOD_EVENING") == String::utf8("عصر بخیر"));
+	CHECK(td->translate("GOOD_MORNING", String()) == String::utf8("صبح بخیر"));
+	CHECK(td->translate("GOOD_EVENING", String()) == String::utf8("عصر بخیر"));
 	*/
+
+	TranslationServer::get_singleton()->remove_domain("godot.test");
 }
 #endif // TOOLS_ENABLED
 

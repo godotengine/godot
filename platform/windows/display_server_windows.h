@@ -312,7 +312,9 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool exclusive = false;
-		bool context_created = false;
+		bool rendering_context_window_created = false;
+		bool gl_native_window_created = false;
+		bool gl_angle_window_created = false;
 		bool mpass = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;
@@ -391,7 +393,7 @@ class DisplayServerWindows : public DisplayServer {
 	void _destroy_window(WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
 
 #ifdef RD_ENABLED
-	Error _create_rendering_context_window(WindowID p_window_id);
+	Error _create_rendering_context_window(WindowID p_window_id, const String &p_rendering_driver);
 	void _destroy_rendering_context_window(WindowID p_window_id);
 #endif
 
@@ -544,7 +546,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;

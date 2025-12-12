@@ -48,7 +48,7 @@ public:
 	OpenXRDPadBindingExtension();
 	virtual ~OpenXRDPadBindingExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available();
 

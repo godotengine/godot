@@ -37,12 +37,6 @@ class HBoxContainer;
 class GraphFrame : public GraphElement {
 	GDCLASS(GraphFrame, GraphElement);
 
-	struct _MinSizeCache {
-		int min_size = 0;
-		bool will_stretch = false;
-		int final_size = 0;
-	};
-
 	struct ThemeCache {
 		Ref<StyleBox> panel;
 		Ref<StyleBox> panel_selected;

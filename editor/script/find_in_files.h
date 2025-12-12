@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/templates/hash_map.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/margin_container.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
@@ -195,6 +195,7 @@ protected:
 private:
 	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
 	void _on_result_found(const String &fpath, int line_number, int begin, int end, String text);
+	void _on_theme_changed();
 	void _on_finished();
 	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
@@ -252,8 +253,8 @@ class TabContainer;
 // `Find in Files` search or a `Replace in Files` search, while a
 // FindInFilesContainer can contain several FindInFilesPanels so that multiple search
 // results can remain at the same time.
-class FindInFilesContainer : public MarginContainer {
-	GDCLASS(FindInFilesContainer, MarginContainer);
+class FindInFilesContainer : public EditorDock {
+	GDCLASS(FindInFilesContainer, EditorDock);
 
 	enum {
 		PANEL_CLOSE,
@@ -262,10 +263,12 @@ class FindInFilesContainer : public MarginContainer {
 		PANEL_CLOSE_ALL,
 	};
 
+	void _on_theme_changed();
 	void _on_tab_close_pressed(int p_tab);
 	void _update_bar_visibility();
 	void _bar_menu_option(int p_option);
 	void _bar_input(const Ref<InputEvent> &p_input);
+	void _on_dock_closed();
 
 	TabContainer *_tabs = nullptr;
 	bool _update_bar = true;

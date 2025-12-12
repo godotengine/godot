@@ -5674,6 +5674,30 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 	return false;
 }
 
+// Helper functions for Rotation.
+double Animation::interpolate_via_rest(double p_from, double p_to, double p_weight, double p_rest) {
+	double rot_a = Math::fposmod(p_from, Math::TAU);
+	double rot_b = Math::fposmod(p_to, Math::TAU);
+	double rot_rest = Math::fposmod(p_rest, Math::TAU);
+	if (rot_rest < Math::PI) {
+		rot_a = rot_a > rot_rest + Math::PI ? rot_a - Math::TAU : rot_a;
+		rot_b = rot_b > rot_rest + Math::PI ? rot_b - Math::TAU : rot_b;
+	} else {
+		rot_a = rot_a < rot_rest - Math::PI ? rot_a + Math::TAU : rot_a;
+		rot_b = rot_b < rot_rest - Math::PI ? rot_b + Math::TAU : rot_b;
+	}
+	return Math::fposmod(rot_a + (rot_b - rot_rest) * p_weight, Math::TAU);
+}
+
+Quaternion Animation::interpolate_via_rest(const Quaternion &p_from, const Quaternion &p_to, real_t p_weight, const Quaternion &p_rest) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(!p_from.is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_rest.is_normalized(), Quaternion(), "The rest quaternion must be normalized.");
+#endif
+	return (p_from * Quaternion().slerp(p_rest.inverse() * p_to, p_weight)).normalized();
+}
+
 // Helper math functions for Variant.
 bool Animation::is_variant_interpolatable(const Variant p_value) {
 	Variant::Type type = p_value.get_type();

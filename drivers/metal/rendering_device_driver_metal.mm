@@ -186,6 +186,23 @@ uint8_t *RenderingDeviceDriverMetal::buffer_persistent_map_advance(BufferID p_bu
 	return (uint8_t *)buf_info->metal_buffer.contents + buf_info->next_frame_index(_frame_count) * buf_info->size_bytes;
 }
 
+uint64_t RenderingDeviceDriverMetal::buffer_get_dynamic_offsets(Span<BufferID> p_buffers) {
+	uint64_t mask = 0u;
+	uint64_t shift = 0u;
+
+	for (const BufferID &buf : p_buffers) {
+		const BufferInfo *buf_info = (const BufferInfo *)buf.id;
+		if (!buf_info->is_dynamic()) {
+			continue;
+		}
+		mask |= buf_info->frame_index() << shift;
+		// We can encode the frame index in 2 bits since frame_count won't be > 4.
+		shift += 2UL;
+	}
+
+	return mask;
+}
+
 void RenderingDeviceDriverMetal::buffer_flush(BufferID p_buffer) {
 	// Nothing to do.
 }
@@ -546,33 +563,21 @@ uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_tex
 
 void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
 	id<MTLTexture> __unsafe_unretained obj = rid::get(p_texture);
-	*r_layout = {};
 
 	PixelFormats &pf = *pixel_formats;
 	DataFormat format = pf.getDataFormat(obj.pixelFormat);
 
-	MTLSize sz = MTLSizeMake(obj.width, obj.height, obj.depth);
-
-	if (p_subresource.mipmap > 0) {
-		r_layout->offset = get_image_format_required_size(format, sz.width, sz.height, sz.depth, p_subresource.mipmap);
-	}
-
-	sz = mipmapLevelSizeFromSize(sz, p_subresource.mipmap);
+	uint32_t w = MAX(1u, obj.width >> p_subresource.mipmap);
+	uint32_t h = MAX(1u, obj.height >> p_subresource.mipmap);
+	uint32_t d = MAX(1u, obj.depth >> p_subresource.mipmap);
 
 	uint32_t bw = 0, bh = 0;
 	get_compressed_image_format_block_dimensions(format, bw, bh);
-	uint32_t sbw = 0, sbh = 0;
-	r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
-	r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);
-	r_layout->depth_pitch = r_layout->size / sz.depth;
 
-	uint32_t array_length = obj.arrayLength;
-	if (obj.textureType == MTLTextureTypeCube) {
-		array_length = 6;
-	} else if (obj.textureType == MTLTextureTypeCubeArray) {
-		array_length *= 6;
-	}
-	r_layout->layer_pitch = r_layout->size / array_length;
+	uint32_t sbw = 0, sbh = 0;
+	*r_layout = {};
+	r_layout->size = get_image_format_required_size(format, w, h, d, 1, &sbw, &sbh);
+	r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
 }
 
 Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture, uint32_t p_layer) {
@@ -635,20 +640,6 @@ Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture
 	DEV_ASSERT(dest_ptr - image_data.ptr() == image_data.size());
 
 	return image_data;
-}
-
-uint8_t *RenderingDeviceDriverMetal::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
-	id<MTLTexture> obj = rid::get(p_texture);
-	ERR_FAIL_COND_V_MSG(obj.storageMode != MTLStorageModeShared, nullptr, "Texture must be created with TEXTURE_USAGE_CPU_READ_BIT set.");
-	ERR_FAIL_COND_V_MSG(obj.buffer, nullptr, "Texture mapping is not supported for non-linear textures in Metal.");
-	ERR_FAIL_COND_V_MSG(p_subresource.layer > 0, nullptr, "A linear texture should have a single layer.");
-	ERR_FAIL_COND_V_MSG(p_subresource.mipmap > 0, nullptr, "A linear texture should have a single mipmap.");
-
-	return (uint8_t *)obj.buffer.contents;
-}
-
-void RenderingDeviceDriverMetal::texture_unmap(TextureID p_texture) {
-	// Nothing to do.
 }
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverMetal::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
@@ -809,27 +800,33 @@ bool RenderingDeviceDriverMetal::sampler_is_format_supported_for_filter(DataForm
 
 #pragma mark - Vertex Array
 
-RDD::VertexFormatID RenderingDeviceDriverMetal::vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) {
+RDD::VertexFormatID RenderingDeviceDriverMetal::vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) {
 	MTLVertexDescriptor *desc = MTLVertexDescriptor.vertexDescriptor;
 
-	for (uint32_t i = 0; i < p_vertex_attribs.size(); i++) {
-		VertexAttribute const &vf = p_vertex_attribs[i];
+	for (const VertexAttributeBindingsMap::KV &kv : p_vertex_bindings) {
+		uint32_t idx = get_metal_buffer_index_for_vertex_attribute_binding(kv.key);
+		MTLVertexBufferLayoutDescriptor *ld = desc.layouts[idx];
+		if (kv.value.stride != 0) {
+			ld.stepFunction = kv.value.frequency == VERTEX_FREQUENCY_VERTEX ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
+			ld.stepRate = 1;
+			ld.stride = kv.value.stride;
+		} else {
+			ld.stepFunction = MTLVertexStepFunctionConstant;
+			ld.stepRate = 0;
+			ld.stride = 0;
+		}
+		DEV_ASSERT(ld.stride == desc.layouts[idx].stride);
+	}
 
-		ERR_FAIL_COND_V_MSG(get_format_vertex_size(vf.format) == 0, VertexFormatID(),
-				"Data format for attachment (" + itos(i) + "), '" + FORMAT_NAMES[vf.format] + "', is not valid for a vertex array.");
-
+	for (const VertexAttribute &vf : p_vertex_attribs) {
 		desc.attributes[vf.location].format = pixel_formats->getMTLVertexFormat(vf.format);
 		desc.attributes[vf.location].offset = vf.offset;
-		uint32_t idx = get_metal_buffer_index_for_vertex_attribute_binding(i);
+		uint32_t idx = get_metal_buffer_index_for_vertex_attribute_binding(vf.binding);
 		desc.attributes[vf.location].bufferIndex = idx;
 		if (vf.stride == 0) {
-			desc.layouts[idx].stepFunction = MTLVertexStepFunctionConstant;
-			desc.layouts[idx].stepRate = 0;
-			desc.layouts[idx].stride = pixel_formats->getBytesPerBlock(vf.format);
-		} else {
-			desc.layouts[idx].stepFunction = vf.frequency == VERTEX_FREQUENCY_VERTEX ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
-			desc.layouts[idx].stepRate = 1;
-			desc.layouts[idx].stride = vf.stride;
+			// Constant attribute, so we must determine the stride to satisfy Metal API.
+			uint32_t stride = desc.layouts[idx].stride;
+			desc.layouts[idx].stride = std::max(stride, vf.offset + pixel_formats->getBytesPerBlock(vf.format));
 		}
 	}
 
@@ -1768,9 +1765,9 @@ void RenderingDeviceDriverMetal::command_render_draw_indirect_count(CommandBuffe
 	cb->render_draw_indirect_count(p_indirect_buffer, p_offset, p_count_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
 }
 
-void RenderingDeviceDriverMetal::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) {
+void RenderingDeviceDriverMetal::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->render_bind_vertex_buffers(p_binding_count, p_buffers, p_offsets);
+	cb->render_bind_vertex_buffers(p_binding_count, p_buffers, p_offsets, p_dynamic_offsets);
 }
 
 void RenderingDeviceDriverMetal::command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) {
@@ -2566,6 +2563,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
 			return device_properties->features.supports_native_image_atomics;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
+			return true;
+		case SUPPORTS_POINT_SIZE:
 			return true;
 		default:
 			return false;

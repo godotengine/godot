@@ -60,6 +60,8 @@ struct LauncherIcon {
 	int dimensions = 0;
 };
 
+class AndroidEditorGradleRunner;
+
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform);
 
@@ -95,18 +97,21 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	uint64_t last_gradle_build_time = 0;
 	String last_gradle_build_dir;
 
+#ifndef ANDROID_ENABLED
 	bool use_scrcpy = false;
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
-#ifndef ANDROID_ENABLED
+
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
 	SafeFlag has_runnable_preset;
 
 	static void _check_for_changes_poll_thread(void *ud);
 	void _update_preset_status();
-#endif
+#else // ANDROID_ENABLED
+	AndroidEditorGradleRunner *android_editor_gradle_runner = nullptr;
+#endif // ANDROID_ENABLED
 
 	String get_project_name(const Ref<EditorExportPreset> &p_preset, const String &p_name) const;
 
@@ -151,13 +156,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED);
 
-	static Error save_apk_so(void *p_userdata, const SharedObject &p_so);
+	static Error save_apk_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
-	static Error save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
+	static Error save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 
-	static Error ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
+	static Error ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 
-	static Error copy_gradle_so(void *p_userdata, const SharedObject &p_so);
+	static Error copy_gradle_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
 	bool _has_read_write_storage_permission(const Vector<String> &p_permissions);
 
@@ -219,6 +224,7 @@ public:
 
 	virtual bool should_update_export_options() override;
 
+#ifndef ANDROID_ENABLED
 	virtual bool poll_export() override;
 
 	virtual int get_options_count() const override;
@@ -236,6 +242,7 @@ public:
 	virtual String get_device_architecture(int p_index) const override;
 
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
+#endif // ANDROID_ENABLED
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 

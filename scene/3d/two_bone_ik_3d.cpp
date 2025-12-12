@@ -352,7 +352,7 @@ void TwoBoneIK3D::set_extend_end_bone(int p_index, bool p_enabled) {
 	}
 	notify_property_list_changed();
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
 }
 
@@ -364,14 +364,17 @@ bool TwoBoneIK3D::is_end_bone_extended(int p_index) const {
 void TwoBoneIK3D::set_end_bone_direction(int p_index, BoneDirection p_bone_direction) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	tb_settings[p_index]->end_bone_direction = p_bone_direction;
-	tb_settings[p_index]->simulation_dirty = true;
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		_validate_pole_direction(sk, p_index);
 	}
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
+	if (mutable_bone_axes) {
+		return; // Chain dir will be recaluclated in _update_bone_axis().
+	}
+	tb_settings[p_index]->simulation_dirty = true;
 }
 
 SkeletonModifier3D::BoneDirection TwoBoneIK3D::get_end_bone_direction(int p_index) const {
@@ -381,11 +384,15 @@ SkeletonModifier3D::BoneDirection TwoBoneIK3D::get_end_bone_direction(int p_inde
 
 void TwoBoneIK3D::set_end_bone_length(int p_index, float p_length) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
+	float old = tb_settings[p_index]->end_bone_length;
 	tb_settings[p_index]->end_bone_length = p_length;
-	tb_settings[p_index]->simulation_dirty = true;
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
+	if (mutable_bone_axes && Math::is_zero_approx(old) == Math::is_zero_approx(p_length)) {
+		return; // If chain size is not changed, length will be recaluclated in _update_bone_axis().
+	}
+	tb_settings[p_index]->simulation_dirty = true;
 }
 
 float TwoBoneIK3D::get_end_bone_length(int p_index) const {
@@ -425,7 +432,7 @@ void TwoBoneIK3D::set_pole_direction(int p_index, SecondaryDirection p_direction
 	}
 	notify_property_list_changed();
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
 }
 
@@ -446,7 +453,7 @@ void TwoBoneIK3D::set_pole_direction_vector(int p_index, const Vector3 &p_vector
 		_validate_pole_direction(sk, p_index);
 	}
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
 }
 
@@ -539,7 +546,7 @@ void TwoBoneIK3D::_validate_pole_direction(Skeleton3D *p_skeleton, int p_index) 
 
 	// End bone.
 	int valid_end_bone = setting->get_end_bone();
-	Vector3 axis = get_bone_axis(valid_end_bone, setting->end_bone_direction);
+	Vector3 axis = IKModifier3D::get_bone_axis(p_skeleton, valid_end_bone, setting->end_bone_direction, mutable_bone_axes);
 	Vector3 global_rest_origin;
 	if (setting->extend_end_bone && setting->end_bone_length > 0 && !axis.is_zero_approx()) {
 		global_rest_origin = p_skeleton->get_bone_global_rest(valid_end_bone).xform(axis * setting->end_bone_length);
@@ -571,6 +578,22 @@ void TwoBoneIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 	TwoBoneIK3DSetting *setting = tb_settings[p_index];
 	cached_space = p_skeleton->get_global_transform_interpolated();
 	if (!setting->simulation_dirty) {
+		if (mutable_bone_axes) {
+			_update_bone_axis(p_skeleton, p_index);
+		}
+		return;
+	}
+	_clear_joints(p_index);
+	if (setting->root_bone.bone == -1 || setting->middle_bone.bone == -1 || !setting->is_end_valid()) {
+		return;
+	}
+	_update_bone_axis(p_skeleton, p_index);
+	setting->simulation_dirty = false;
+}
+
+void TwoBoneIK3D::_clear_joints(int p_index) {
+	TwoBoneIK3DSetting *setting = tb_settings[p_index];
+	if (!setting) {
 		return;
 	}
 	setting->root_pos = Vector3();
@@ -584,46 +607,61 @@ void TwoBoneIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 		memdelete(setting->mid_joint_solver_info);
 		setting->mid_joint_solver_info = nullptr;
 	}
-	if (setting->root_bone.bone == -1 || setting->middle_bone.bone == -1 || !setting->is_end_valid()) {
+}
+
+void TwoBoneIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
+	TwoBoneIK3DSetting *setting = tb_settings[p_index];
+	if (!setting) {
 		return;
 	}
+	if (!setting->mid_joint_solver_info) {
+		setting->mid_joint_solver_info = memnew(IKModifier3DSolverInfo);
+	}
+	if (!setting->root_joint_solver_info) {
+		setting->root_joint_solver_info = memnew(IKModifier3DSolverInfo);
+	}
+#ifdef TOOLS_ENABLED
+	Vector3 old_mv = setting->mid_joint_solver_info->forward_vector;
+	float old_ml = setting->mid_joint_solver_info->length;
+	Vector3 old_rv = setting->root_joint_solver_info->forward_vector;
+	float old_rl = setting->root_joint_solver_info->length;
+#endif // TOOLS_ENABLED
 
 	// End bone.
 	int valid_end_bone = setting->get_end_bone();
-	Vector3 axis = get_bone_axis(valid_end_bone, setting->end_bone_direction);
+	Vector3 axis = IKModifier3D::get_bone_axis(p_skeleton, valid_end_bone, setting->end_bone_direction, mutable_bone_axes);
 	Vector3 global_rest_origin;
 	if (setting->extend_end_bone && setting->end_bone_length > 0 && !axis.is_zero_approx()) {
 		setting->end_pos = p_skeleton->get_bone_global_pose(valid_end_bone).xform(axis * setting->end_bone_length);
-		global_rest_origin = p_skeleton->get_bone_global_rest(valid_end_bone).xform(axis * setting->end_bone_length);
+		global_rest_origin = _get_bone_global_rest(p_skeleton, valid_end_bone, setting->root_bone.bone).xform(axis * setting->end_bone_length);
 	} else {
 		// Shouldn't be using virtual end.
 		setting->end_pos = p_skeleton->get_bone_global_pose(valid_end_bone).origin;
-		global_rest_origin = p_skeleton->get_bone_global_rest(valid_end_bone).origin;
+		global_rest_origin = _get_bone_global_rest(p_skeleton, valid_end_bone, setting->root_bone.bone).origin;
 	}
 
 	// Middle bone.
-	axis = global_rest_origin - p_skeleton->get_bone_global_rest(setting->middle_bone.bone).origin;
-	global_rest_origin = p_skeleton->get_bone_global_rest(setting->middle_bone.bone).origin;
+	Vector3 orig = _get_bone_global_rest(p_skeleton, setting->middle_bone.bone, setting->root_bone.bone).origin;
+	axis = global_rest_origin - orig;
+	global_rest_origin = orig;
 	if (!axis.is_zero_approx()) {
 		setting->mid_pos = p_skeleton->get_bone_global_pose(setting->middle_bone.bone).origin;
-		setting->mid_joint_solver_info = memnew(IKModifier3DSolverInfo);
 		setting->mid_joint_solver_info->forward_vector = p_skeleton->get_bone_global_rest(setting->middle_bone.bone).basis.get_rotation_quaternion().xform_inv(axis).normalized();
 		setting->mid_joint_solver_info->length = axis.length();
 	} else {
+		_clear_joints(p_index);
 		return;
 	}
 
 	// Root bone.
-	axis = global_rest_origin - p_skeleton->get_bone_global_rest(setting->root_bone.bone).origin;
-	global_rest_origin = p_skeleton->get_bone_global_rest(setting->root_bone.bone).origin;
+	orig = _get_bone_global_rest(p_skeleton, setting->root_bone.bone, setting->root_bone.bone).origin;
+	axis = global_rest_origin - orig;
 	if (!axis.is_zero_approx()) {
 		setting->root_pos = p_skeleton->get_bone_global_pose(setting->root_bone.bone).origin;
-		setting->root_joint_solver_info = memnew(IKModifier3DSolverInfo);
 		setting->root_joint_solver_info->forward_vector = p_skeleton->get_bone_global_rest(setting->root_bone.bone).basis.get_rotation_quaternion().xform_inv(axis).normalized();
 		setting->root_joint_solver_info->length = axis.length();
-	} else if (setting->mid_joint_solver_info) {
-		memdelete(setting->mid_joint_solver_info);
-		setting->mid_joint_solver_info = nullptr;
+	} else {
+		_clear_joints(p_index);
 		return;
 	}
 
@@ -631,15 +669,18 @@ void TwoBoneIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 
 	double total_length = setting->root_joint_solver_info->length + setting->mid_joint_solver_info->length;
 	setting->cached_length_sq = total_length * total_length;
-
-	setting->simulation_dirty = false;
+#ifdef TOOLS_ENABLED
+	if (!Math::is_equal_approx(old_ml, setting->mid_joint_solver_info->length) || !Math::is_equal_approx(old_rl, setting->root_joint_solver_info->length) || !old_mv.is_equal_approx(setting->mid_joint_solver_info->forward_vector) || !old_rv.is_equal_approx(setting->root_joint_solver_info->forward_vector)) {
+		_make_gizmo_dirty();
+	}
+#endif // TOOLS_ENABLED
 }
 
 void TwoBoneIK3D::_update_joints(int p_index) {
 	tb_settings[p_index]->simulation_dirty = true;
 
 #ifdef TOOLS_ENABLED
-	update_gizmos(); // To clear invalid setting.
+	_make_gizmo_dirty(); // To clear invalid setting.
 #endif // TOOLS_ENABLED
 
 	Skeleton3D *sk = get_skeleton();
@@ -679,9 +720,30 @@ void TwoBoneIK3D::_update_joints(int p_index) {
 		_validate_pole_directions(sk);
 	}
 
+	if (mutable_bone_axes) {
+		_update_bone_axis(sk, p_index);
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	} else {
+		_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
+	}
+}
+
+Transform3D TwoBoneIK3D::_get_bone_global_rest(Skeleton3D *p_skeleton, int p_bone, int p_root) const {
+	if (!mutable_bone_axes) {
+		return p_skeleton->get_bone_global_rest(p_bone);
+	}
+	Transform3D tr = p_skeleton->get_bone_global_rest(p_root);
+	tr.origin = tr.origin - p_skeleton->get_bone_rest(p_root).origin + p_skeleton->get_bone_pose(p_root).origin;
+	LocalVector<int> path;
+	for (int bone = p_bone; bone != p_root && bone != -1; bone = p_skeleton->get_bone_parent(bone)) {
+		path.push_back(bone);
+	}
+	path.reverse();
+	for (int bone : path) {
+		tr = tr * Transform3D(p_skeleton->get_bone_rest(bone).basis, p_skeleton->get_bone_pose(bone).origin);
+	}
+	return tr;
 }
 
 void TwoBoneIK3D::_make_simulation_dirty(int p_index) {
@@ -772,6 +834,49 @@ void TwoBoneIK3D::_process_joints(double p_delta, Skeleton3D *p_skeleton, TwoBon
 	// Mid joint pose is relative to the root joint pose for the case root-mid or mid-end have more than 1 joints.
 	p_skeleton->set_bone_pose_rotation(p_setting->middle_bone.bone, get_local_pose_rotation(p_skeleton, p_setting->middle_bone.bone, p_setting->mid_joint_solver_info->current_gpose));
 }
+
+#ifdef TOOLS_ENABLED
+Vector3 TwoBoneIK3D::get_root_bone_vector(int p_index) const {
+	Skeleton3D *skeleton = get_skeleton();
+	if (!skeleton) {
+		return Vector3();
+	}
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), Vector3());
+	TwoBoneIK3DSetting *setting = tb_settings[p_index];
+	if (!setting) {
+		return Vector3();
+	}
+	if (!setting->root_joint_solver_info) {
+		return _get_bone_global_rest(skeleton, setting->middle_bone.bone, setting->root_bone.bone).origin - _get_bone_global_rest(skeleton, setting->root_bone.bone, setting->root_bone.bone).origin;
+	}
+	return setting->root_joint_solver_info->forward_vector * setting->root_joint_solver_info->length;
+}
+
+Vector3 TwoBoneIK3D::get_middle_bone_vector(int p_index) const {
+	Skeleton3D *skeleton = get_skeleton();
+	if (!skeleton) {
+		return Vector3();
+	}
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), Vector3());
+	TwoBoneIK3DSetting *setting = tb_settings[p_index];
+	if (!setting) {
+		return Vector3();
+	}
+	if (!setting->mid_joint_solver_info) {
+		int valid_end_bone = setting->get_end_bone();
+		Vector3 axis = IKModifier3D::get_bone_axis(skeleton, valid_end_bone, setting->end_bone_direction, mutable_bone_axes);
+		Vector3 global_rest_origin;
+		if (setting->extend_end_bone && setting->end_bone_length > 0 && !axis.is_zero_approx()) {
+			global_rest_origin = _get_bone_global_rest(skeleton, valid_end_bone, setting->root_bone.bone).xform(axis * setting->end_bone_length);
+		} else {
+			// Shouldn't be using virtual end.
+			global_rest_origin = _get_bone_global_rest(skeleton, valid_end_bone, setting->root_bone.bone).origin;
+		}
+		return global_rest_origin - _get_bone_global_rest(skeleton, setting->middle_bone.bone, setting->root_bone.bone).origin;
+	}
+	return setting->mid_joint_solver_info->forward_vector * setting->mid_joint_solver_info->length;
+}
+#endif // TOOLS_ENABLED
 
 TwoBoneIK3D::~TwoBoneIK3D() {
 	clear_settings();

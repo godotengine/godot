@@ -33,6 +33,24 @@
 #include "core/error/error_macros.h"
 #include "core/typedefs.h"
 
+template <typename LHS, typename RHS>
+bool are_spans_equal(const LHS *p_lhs, const RHS *p_rhs, size_t p_size) {
+	if constexpr (std::is_same_v<LHS, RHS> && std::is_fundamental_v<LHS>) {
+		// Optimize trivial type comparison.
+		// is_trivially_equality_comparable would help, but it doesn't exist.
+		return memcmp(p_lhs, p_rhs, p_size * sizeof(LHS)) == 0;
+	} else {
+		// Normal case: Need to iterate the array manually.
+		for (size_t j = 0; j < p_size; j++) {
+			if (p_lhs[j] != p_rhs[j]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+}
+
 // Equivalent of std::span.
 // Represents a view into a contiguous memory space.
 // DISCLAIMER: This data type does not own the underlying buffer. DO NOT STORE IT.
@@ -98,11 +116,14 @@ public:
 
 	// Algorithms.
 	constexpr int64_t find(const T &p_val, uint64_t p_from = 0) const;
-	constexpr int64_t find_sequence(const Span<T> &p_span, uint64_t p_from = 0) const;
+	template <typename T1 = T>
+	constexpr int64_t find_sequence(const Span<T1> &p_span, uint64_t p_from = 0) const;
 	constexpr int64_t rfind(const T &p_val, uint64_t p_from) const;
 	_FORCE_INLINE_ constexpr int64_t rfind(const T &p_val) const { return rfind(p_val, size() - 1); }
-	constexpr int64_t rfind_sequence(const Span<T> &p_span, uint64_t p_from) const;
-	_FORCE_INLINE_ constexpr int64_t rfind_sequence(const Span<T> &p_span) const { return rfind_sequence(p_span, size() - p_span.size()); }
+	template <typename T1 = T>
+	constexpr int64_t rfind_sequence(const Span<T1> &p_span, uint64_t p_from) const;
+	template <typename T1 = T>
+	_FORCE_INLINE_ constexpr int64_t rfind_sequence(const Span<T1> &p_span) const { return rfind_sequence(p_span, size() - p_span.size()); }
 	constexpr uint64_t count(const T &p_val) const;
 	/// Find the index of the given value using binary search.
 	/// Note: Assumes that elements in the span are sorted. Otherwise, use find() instead.
@@ -124,16 +145,10 @@ constexpr int64_t Span<T>::find(const T &p_val, uint64_t p_from) const {
 }
 
 template <typename T>
-constexpr int64_t Span<T>::find_sequence(const Span<T> &p_span, uint64_t p_from) const {
+template <typename T1>
+constexpr int64_t Span<T>::find_sequence(const Span<T1> &p_span, uint64_t p_from) const {
 	for (uint64_t i = p_from; i <= size() - p_span.size(); i++) {
-		bool found = true;
-		for (uint64_t j = 0; j < p_span.size(); j++) {
-			if (ptr()[i + j] != p_span.ptr()[j]) {
-				found = false;
-				break;
-			}
-		}
-		if (found) {
+		if (are_spans_equal(ptr() + i, p_span.ptr(), p_span.size())) {
 			return i;
 		}
 	}
@@ -143,6 +158,7 @@ constexpr int64_t Span<T>::find_sequence(const Span<T> &p_span, uint64_t p_from)
 
 template <typename T>
 constexpr int64_t Span<T>::rfind(const T &p_val, uint64_t p_from) const {
+	DEV_ASSERT(p_from < size());
 	for (int64_t i = p_from; i >= 0; i--) {
 		if (ptr()[i] == p_val) {
 			return i;
@@ -152,16 +168,11 @@ constexpr int64_t Span<T>::rfind(const T &p_val, uint64_t p_from) const {
 }
 
 template <typename T>
-constexpr int64_t Span<T>::rfind_sequence(const Span<T> &p_span, uint64_t p_from) const {
+template <typename T1>
+constexpr int64_t Span<T>::rfind_sequence(const Span<T1> &p_span, uint64_t p_from) const {
+	DEV_ASSERT(p_from + p_span.size() <= size());
 	for (int64_t i = p_from; i >= 0; i--) {
-		bool found = true;
-		for (uint64_t j = 0; j < p_span.size(); j++) {
-			if (ptr()[i + j] != p_span.ptr()[j]) {
-				found = false;
-				break;
-			}
-		}
-		if (found) {
+		if (are_spans_equal(ptr() + i, p_span.ptr(), p_span.size())) {
 			return i;
 		}
 	}
@@ -217,6 +228,16 @@ constexpr T Span<T>::max() const {
 		}
 	}
 	return max_val;
+}
+
+template <typename LHS, typename RHS>
+bool operator==(const Span<LHS> &p_lhs, const Span<RHS> &p_rhs) {
+	return p_lhs.size() == p_rhs.size() && are_spans_equal(p_lhs.ptr(), p_rhs.ptr(), p_lhs.size());
+}
+
+template <typename LHS, typename RHS>
+_FORCE_INLINE_ bool operator!=(const Span<LHS> &p_lhs, const Span<RHS> &p_rhs) {
+	return !(p_lhs == p_rhs);
 }
 
 // Zero-constructing Span initializes _ptr and _len to 0 (and thus empty).

@@ -110,7 +110,15 @@ public:
 	String get_locale() const;
 	void set_fallback_locale(const String &p_locale);
 	String get_fallback_locale() const;
+
+#ifndef DISABLE_DEPRECATED
 	Ref<Translation> get_translation_object(const String &p_locale);
+#endif
+
+	bool has_translation(const Ref<Translation> &p_translation) const;
+	TypedArray<Translation> get_translations() const;
+	TypedArray<Translation> find_translations(const String &p_locale, bool p_exact) const;
+	bool has_translation_for_locale(const String &p_locale, bool p_exact) const;
 
 	Vector<String> get_all_languages() const;
 	String get_language_name(const String &p_language) const;

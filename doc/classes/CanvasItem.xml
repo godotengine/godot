@@ -520,7 +520,7 @@
 			<return type="Transform2D" />
 			<description>
 				Returns the transform of this [CanvasItem] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
-				Equals to [method get_global_transform] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
+				Equivalent to [method get_global_transform_with_canvas] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
@@ -633,7 +633,7 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever global transform changes.
+				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever its global transform changes.
 				[b]Note:[/b] Many canvas items such as [Camera2D] or [Light2D] automatically enable this in order to function correctly.
 			</description>
 		</method>

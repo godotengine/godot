@@ -194,7 +194,7 @@ RID RendererSceneRenderImplementation::RenderForwardMobile::RenderBufferDataForw
 	return RID();
 }
 
-RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type) {
+RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth) {
 	ERR_FAIL_NULL_V(render_buffers, RID());
 
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
@@ -225,17 +225,22 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 
 	Vector<RID> textures;
 	int color_buffer_id = 0;
-	textures.push_back(use_msaa ? render_buffers->get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer
-	textures.push_back(use_msaa ? render_buffers->get_depth_msaa() : render_buffers->get_depth_texture()); // 1 - depth buffer
+	int depth_buffer_id = 1;
+	textures.push_back(use_msaa ? render_buffers->get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer.
+	textures.push_back(use_msaa ? render_buffers->get_depth_msaa() : render_buffers->get_depth_texture()); // 1 - depth buffer.
 	if (vrs_texture.is_valid()) {
-		textures.push_back(vrs_texture); // 2 - vrs texture
+		textures.push_back(vrs_texture); // 2 - vrs texture.
 	}
 	if (use_msaa) {
 		color_buffer_id = textures.size();
-		textures.push_back(render_buffers->get_internal_texture()); // color buffer for resolve
+		textures.push_back(render_buffers->get_internal_texture()); // Color buffer for resolve.
+	}
+	if (use_msaa && p_resolve_depth) {
+		depth_buffer_id = textures.size();
+		textures.push_back(render_buffers->get_depth_texture()); // Depth buffer for resolve.
 	}
 
-	// Now define our subpasses
+	// Now define our subpasses.
 	Vector<RD::FramebufferPass> passes;
 
 	switch (p_config_type) {
@@ -245,8 +250,13 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			pass.depth_attachment = 1;
 
 			if (use_msaa) {
-				// Add resolve
+				// Add color resolve.
 				pass.resolve_attachments.push_back(color_buffer_id);
+
+				if (p_resolve_depth) {
+					// Add depth resolve.
+					pass.depth_resolve_attachment = depth_buffer_id;
+				}
 			}
 			passes.push_back(pass);
 
@@ -257,7 +267,7 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			Size2i target_size = render_buffers->get_target_size();
 			Size2i internal_size = render_buffers->get_internal_size();
 
-			// can't do our blit pass if resolutions don't match, this should already have been checked.
+			// Can't do our blit pass if resolutions don't match, this should already have been checked.
 			ERR_FAIL_COND_V(target_size != internal_size, RID());
 
 			RD::FramebufferPass pass;
@@ -265,13 +275,18 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			pass.depth_attachment = 1;
 
 			if (use_msaa) {
-				// add resolve
+				// Add color resolve.
 				pass.resolve_attachments.push_back(color_buffer_id);
+
+				if (p_resolve_depth) {
+					// Add depth resolve.
+					pass.depth_resolve_attachment = depth_buffer_id;
+				}
 			}
 
 			passes.push_back(pass);
 
-			// - add blit to 2D pass
+			// Add blit to 2D pass.
 			RID render_target = render_buffers->get_render_target();
 			ERR_FAIL_COND_V(render_target.is_null(), RID());
 			RID target_buffer;
@@ -284,12 +299,12 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			ERR_FAIL_COND_V(target_buffer.is_null(), RID());
 
 			int target_buffer_id = textures.size();
-			textures.push_back(target_buffer); // target buffer
+			textures.push_back(target_buffer); // Target buffer.
 
 			RD::FramebufferPass blit_pass;
-			blit_pass.input_attachments.push_back(color_buffer_id); // Read from our (resolved) color buffer
-			blit_pass.color_attachments.push_back(target_buffer_id); // Write into our target buffer
-			// this doesn't need VRS
+			blit_pass.input_attachments.push_back(color_buffer_id); // Read from our (resolved) color buffer.
+			blit_pass.color_attachments.push_back(target_buffer_id); // Write into our target buffer.
+			// This doesn't need VRS or depth.
 			passes.push_back(blit_pass);
 
 			return FramebufferCacheRD::get_singleton()->get_cache_multipass(textures, passes, view_count);
@@ -467,7 +482,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		if (scene_state.instance_buffer[p_render_list].get_size(0u) == 0u) {
 			// Any buffer will do since it's not used, so just create one.
 			// We can't use scene_shader.default_vec4_xform_buffer because it's not dynamic.
-			scene_state.instance_buffer[p_render_list].set_size(0u, INSTANCE_DATA_BUFFER_MIN_SIZE * sizeof(SceneState::InstanceData), true);
+			scene_state.instance_buffer[p_render_list].set_storage_size(0u, INSTANCE_DATA_BUFFER_MIN_SIZE * sizeof(SceneState::InstanceData));
 			scene_state.instance_buffer[p_render_list].prepare_for_upload();
 		}
 		RID instance_buffer = scene_state.instance_buffer[p_render_list]._get(0u);
@@ -480,7 +495,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		if (p_radiance_texture.is_valid()) {
 			radiance_texture = p_radiance_texture;
 		} else {
-			radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+			radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_octmap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 		}
 		RD::Uniform u;
 		u.binding = 2;
@@ -497,7 +512,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		if (ref_texture.is_valid()) {
 			u.append_id(ref_texture);
 		} else {
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK));
 		}
 		uniforms.push_back(u);
 	}
@@ -807,9 +822,13 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
+	bool has_depth_texture_override = false;
+	bool supports_depth_resolve = RenderingDevice::get_singleton()->has_feature(RD::SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE);
+
 	RID render_target = rb->get_render_target();
 	if (render_target.is_valid()) {
-		p_render_data->scene_data->calculate_motion_vectors = RendererRD::TextureStorage::get_singleton()->render_target_get_override_velocity(render_target).is_valid();
+		p_render_data->scene_data->calculate_motion_vectors = texture_storage->render_target_get_override_velocity(render_target).is_valid();
+		has_depth_texture_override = texture_storage->render_target_get_override_depth(render_target).is_valid();
 	} else {
 		p_render_data->scene_data->calculate_motion_vectors = false;
 	}
@@ -834,6 +853,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	RS::ViewportMSAA msaa = rb->get_msaa_3d();
 	bool use_msaa = msaa != RS::VIEWPORT_MSAA_DISABLED;
+	bool resolve_depth_buffer = (use_msaa && has_depth_texture_override); // We'll check more conditions later.
 
 	bool ce_has_post_opaque = _has_compositor_effect(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE, p_render_data);
 	bool ce_has_pre_transparent = _has_compositor_effect(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
@@ -937,6 +957,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		if (use_msaa && p_render_data->environment.is_valid() && RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes)) {
 			// Need to resolve depth texture for DOF when using MSAA.
 			scene_state.used_depth_texture = true;
+			resolve_depth_buffer = true;
 		}
 
 		if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
@@ -945,13 +966,17 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			using_subpass_post_process = false;
 		}
 
+		if (use_msaa && (global_surface_data.depth_texture_used || scene_state.used_depth_texture)) {
+			resolve_depth_buffer = true;
+		}
+
 		if (using_subpass_post_process) {
 			// We can do all in one go.
-			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_AND_POST_PASS);
+			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_AND_POST_PASS, resolve_depth_buffer && supports_depth_resolve);
 			global_pipeline_data_required.use_subpass_post_pass = true;
 		} else {
 			// We separate things out.
-			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_PASS);
+			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_PASS, resolve_depth_buffer && supports_depth_resolve);
 			global_pipeline_data_required.use_separate_post_pass = true;
 		}
 		samplers = rb->get_samplers();
@@ -1201,7 +1226,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				RID texture = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(rb->get_render_target());
 				bool convert_to_linear = !hdr_render_target;
 
-				copy_effects->copy_to_drawlist(draw_list, fb_format, texture, convert_to_linear);
+				copy_effects->copy_to_drawlist(draw_list, fb_format, texture, convert_to_linear, 2.0f);
 			}
 		}
 
@@ -1242,8 +1267,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				RD::get_singleton()->draw_command_end_label(); // Render Transparent Subpass
 			}
 
-			// note if we are using MSAA we should get an automatic resolve through our subpass configuration.
-
 			// blit to tonemap
 			if (rb_data.is_valid() && using_subpass_post_process) {
 				_post_process_subpass(p_render_data->render_buffers->get_internal_texture(), framebuffer, p_render_data);
@@ -1252,6 +1275,13 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
 
 			RD::get_singleton()->draw_list_end();
+
+			// note, if MSAA is used we should get an automatic resolve of the color buffer here.
+
+			if (use_msaa && has_depth_texture_override && !supports_depth_resolve) {
+				// We don't have a fallback for this, See PR #111322
+				WARN_PRINT_ONCE("MSAA Depth buffer resolve is not supported on this platform.");
+			}
 		} else {
 			// We're done with our subpasses so end our container pass
 			// note, if MSAA is used we should get an automatic resolve of the color buffer here.
@@ -1274,12 +1304,17 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				}
 			}
 
+			if (use_msaa && has_depth_texture_override && !supports_depth_resolve) {
+				// We don't have a fallback for this, See PR #111322
+				WARN_PRINT_ONCE("MSAA Depth buffer resolve is not supported on this platform.");
+			}
+
 			if (scene_state.used_depth_texture || global_surface_data.depth_texture_used) {
 				_render_buffers_ensure_depth_texture(p_render_data);
 
 				if (scene_state.used_depth_texture) {
 					// Copy depth texture to backbuffer so we can read from it.
-					_render_buffers_copy_depth_texture(p_render_data, use_msaa);
+					_render_buffers_copy_depth_texture(p_render_data, use_msaa && !supports_depth_resolve); // Note, once fallback for has_depth_texture_override works, we also don't need to do our resolve here.
 				}
 			}
 
@@ -1910,7 +1945,7 @@ void RenderForwardMobile::SceneState::grow_instance_buffer(RenderListType p_rend
 		if (instance_buffer[p_render_list].get_size(0u) < p_req_element_count * sizeof(SceneState::InstanceData)) {
 			instance_buffer[p_render_list].uninit();
 			uint32_t new_size = nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), p_req_element_count));
-			instance_buffer[p_render_list].set_size(0u, new_size * sizeof(SceneState::InstanceData), true);
+			instance_buffer[p_render_list].set_storage_size(0u, new_size * sizeof(SceneState::InstanceData));
 			curr_gpu_ptr[p_render_list] = nullptr;
 		}
 
@@ -2204,7 +2239,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 
 	// May do this earlier in RenderSceneRenderRD::render_scene
 	if (scene_state.uniform_buffers.get_size(0u) == 0u) {
-		scene_state.uniform_buffers.set_size(0u, p_render_data->scene_data->get_uniform_buffer_size_bytes(), false);
+		scene_state.uniform_buffers.set_uniform_size(0u, p_render_data->scene_data->get_uniform_buffer_size_bytes());
 	}
 
 	float luminance_multiplier = p_render_data->render_buffers.is_valid() ? p_render_data->render_buffers->get_luminance_multiplier() : 1.0;
@@ -2394,6 +2429,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		pipeline_key.render_pass = p_params->subpass;
 		pipeline_key.ubershader = 0;
 
+		bool emulate_point_size = shader->uses_point_size && scene_shader.emulate_point_size;
+
 		const RD::PolygonCullMode cull_mode = shader->get_cull_mode_from_cull_variant(cull_variant);
 		RD::VertexFormatID vertex_format = -1;
 		RID pipeline_rd;
@@ -2405,9 +2442,9 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			// Skeleton and blend shape.
 			uint64_t input_mask = shader->get_vertex_input_mask(pipeline_key.version, pipeline_key.ubershader);
 			if (surf->owner->mesh_instance.is_valid()) {
-				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, input_mask, p_pass_mode == PASS_MODE_MOTION_VECTORS, vertex_array_rd, vertex_format);
+				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, input_mask, p_pass_mode == PASS_MODE_MOTION_VECTORS, emulate_point_size, vertex_array_rd, vertex_format);
 			} else {
-				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, input_mask, p_pass_mode == PASS_MODE_MOTION_VECTORS, vertex_array_rd, vertex_format);
+				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, input_mask, p_pass_mode == PASS_MODE_MOTION_VECTORS, emulate_point_size, vertex_array_rd, vertex_format);
 			}
 
 			pipeline_key.vertex_format_id = vertex_format;
@@ -2442,7 +2479,11 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		}
 
 		if (pipeline_valid) {
-			index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);
+			if (!emulate_point_size) {
+				index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);
+			} else {
+				index_array_rd = RID();
+			}
 
 			if (prev_vertex_array_rd != vertex_array_rd) {
 				RD::get_singleton()->draw_list_bind_vertex_array(draw_list, vertex_array_rd);
@@ -2500,7 +2541,14 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 				instance_count /= surf->owner->trail_steps;
 			}
 
-			if (bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_INDIRECT)) {
+			bool indirect = bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_INDIRECT);
+
+			if (emulate_point_size) {
+				if (indirect) {
+					WARN_PRINT("Indirect draws are not supported when emulating point size.");
+				}
+				RD::get_singleton()->draw_list_draw(draw_list, false, mesh_storage->mesh_surface_get_vertex_count(mesh_surface), instance_count * 6);
+			} else if (indirect) {
 				RD::get_singleton()->draw_list_draw_indirect(draw_list, index_array_rd.is_valid(), mesh_storage->_multimesh_get_command_buffer_rd_rid(surf->owner->data->base), surf->surface_index * sizeof(uint32_t) * mesh_storage->INDIRECT_MULTIMESH_COMMAND_STRIDE, 1, 0);
 			} else {
 				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
@@ -3089,13 +3137,13 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	return RD::get_singleton()->framebuffer_format_create_multipass(attachments, passes, p_view_count, vrs_attachment);
 }
 
-static RD::FramebufferFormatID _get_reflection_probe_color_framebuffer_format_for_pipeline() {
+static RD::FramebufferFormatID _get_reflection_probe_color_framebuffer_format_for_pipeline(bool p_storage) {
 	RD::AttachmentFormat attachment;
 	thread_local Vector<RD::AttachmentFormat> attachments;
 	attachments.clear();
 
 	attachment.format = RendererRD::LightStorage::get_reflection_probe_color_format();
-	attachment.usage_flags = RendererRD::LightStorage::get_reflection_probe_color_usage_bits();
+	attachment.usage_flags = RendererRD::LightStorage::get_reflection_probe_color_usage_bits(p_storage);
 	attachments.push_back(attachment);
 
 	attachment.format = RendererRD::LightStorage::get_reflection_probe_depth_format();
@@ -3132,7 +3180,8 @@ static RD::FramebufferFormatID _get_shadow_atlas_framebuffer_format_for_pipeline
 void RenderForwardMobile::_mesh_compile_pipeline_for_surface(SceneShaderForwardMobile::ShaderData *p_shader, void *p_mesh_surface, bool p_instanced_surface, RS::PipelineSource p_source, SceneShaderForwardMobile::ShaderData::PipelineKey &r_pipeline_key, Vector<ShaderPipelinePair> *r_pipeline_pairs) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 	uint64_t input_mask = p_shader->get_vertex_input_mask(r_pipeline_key.version, true);
-	r_pipeline_key.vertex_format_id = mesh_storage->mesh_surface_get_vertex_format(p_mesh_surface, input_mask, p_instanced_surface, false);
+	bool emulate_point_size = p_shader->uses_point_size && scene_shader.emulate_point_size;
+	r_pipeline_key.vertex_format_id = mesh_storage->mesh_surface_get_vertex_format(p_mesh_surface, input_mask, p_instanced_surface, false, emulate_point_size);
 	r_pipeline_key.ubershader = true;
 	p_shader->pipeline_hash_map.compile_pipeline(r_pipeline_key, r_pipeline_key.hash(), p_source, r_pipeline_key.ubershader);
 
@@ -3143,6 +3192,7 @@ void RenderForwardMobile::_mesh_compile_pipeline_for_surface(SceneShaderForwardM
 
 void RenderForwardMobile::_mesh_compile_pipelines_for_surface(const SurfacePipelineData &p_surface, const GlobalPipelineData &p_global, RS::PipelineSource p_source, Vector<ShaderPipelinePair> *r_pipeline_pairs) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	bool octmap_use_storage = !copy_effects->get_raster_effects().has_flag(RendererRD::CopyEffects::RASTER_EFFECT_OCTMAP);
 
 	// Set the attributes common to all pipelines.
 	SceneShaderForwardMobile::ShaderData::PipelineKey pipeline_key;
@@ -3192,7 +3242,7 @@ void RenderForwardMobile::_mesh_compile_pipelines_for_surface(const SurfacePipel
 
 	if (p_global.use_reflection_probes) {
 		pipeline_key.version = SceneShaderForwardMobile::SHADER_VERSION_COLOR_PASS;
-		pipeline_key.framebuffer_format_id = _get_reflection_probe_color_framebuffer_format_for_pipeline();
+		pipeline_key.framebuffer_format_id = _get_reflection_probe_color_framebuffer_format_for_pipeline(octmap_use_storage);
 		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
 	}
 
@@ -3355,8 +3405,8 @@ RenderForwardMobile::RenderForwardMobile() {
 	String defines;
 
 	defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
-	if (is_using_radiance_cubemap_array()) {
-		defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
+	if (is_using_radiance_octmap_array()) {
+		defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY \n";
 	}
 	// defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
 	defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";

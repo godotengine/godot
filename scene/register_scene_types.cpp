@@ -220,6 +220,7 @@
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/bone_constraint_3d.h"
+#include "scene/3d/bone_twist_disperser_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/ccd_ik_3d.h"
 #include "scene/3d/chain_ik_3d.h"
@@ -239,6 +240,7 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
+#include "scene/3d/limit_angular_velocity_modifier_3d.h"
 #include "scene/3d/look_at_modifier_3d.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -266,6 +268,8 @@
 #include "scene/animation/root_motion_view.h"
 #include "scene/resources/3d/fog_material.h"
 #include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/joint_limitation_3d.h"
+#include "scene/resources/3d/joint_limitation_cone_3d.h"
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
@@ -354,8 +358,6 @@
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/height_map_shape_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
-#include "scene/resources/3d/joint_limitation_3d.h"
-#include "scene/resources/3d/joint_limitation_cone_3d.h"
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
@@ -682,6 +684,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FABRIK3D);
 	GDREGISTER_CLASS(CCDIK3D);
 	GDREGISTER_CLASS(JacobianIK3D);
+	GDREGISTER_CLASS(LimitAngularVelocityModifier3D);
+	GDREGISTER_CLASS(BoneTwistDisperser3D);
 
 #ifndef XR_DISABLED
 	GDREGISTER_CLASS(XRCamera3D);

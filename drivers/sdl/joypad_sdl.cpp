@@ -186,7 +186,8 @@ void JoypadSDL::process_events() {
 				sdl_instance_id_to_joypad_id.insert(sdl_event.jdevice.which, joy_id);
 
 				Dictionary joypad_info;
-				joypad_info["mapping_handled"] = true; // Skip Godot's mapping system because SDL already handles the joypad's mapping.
+				// Skip Godot's mapping system if SDL already handles the joypad's mapping.
+				joypad_info["mapping_handled"] = SDL_IsGamepad(sdl_event.jdevice.which);
 				joypad_info["raw_name"] = String(SDL_GetJoystickName(joy));
 				joypad_info["vendor_id"] = itos(SDL_GetJoystickVendor(joy));
 				joypad_info["product_id"] = itos(SDL_GetJoystickProduct(joy));
@@ -299,6 +300,19 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 		SDL_Joystick *joy = SDL_GetJoystickFromID(sdl_instance_idx);
 		SDL_CloseJoystick(joy);
 	}
+}
+
+bool JoypadSDL::Joypad::has_joy_light() const {
+	SDL_PropertiesID properties_id = SDL_GetJoystickProperties(get_sdl_joystick());
+	if (properties_id == 0) {
+		return false;
+	}
+	return SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, false) || SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN, false);
+}
+
+bool JoypadSDL::Joypad::set_joy_light(const Color &p_color) {
+	Color linear = p_color.srgb_to_linear();
+	return SDL_SetJoystickLED(get_sdl_joystick(), linear.get_r8(), linear.get_g8(), linear.get_b8());
 }
 
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {

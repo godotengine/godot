@@ -30,6 +30,10 @@
 
 package org.godotengine.godot.plugin
 
+import android.content.Intent
+import android.util.Log
+import androidx.core.net.toUri
+
 import org.godotengine.godot.Godot
 import org.godotengine.godot.variant.Callable
 
@@ -39,6 +43,8 @@ import org.godotengine.godot.variant.Callable
  * @see <a href="https://docs.godotengine.org/en/latest/tutorials/platform/android/javaclasswrapper_and_androidruntimeplugin.html">Integrating with Android APIs</a>
  */
 class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
+	private val TAG = AndroidRuntimePlugin::class.java.simpleName
+
 	override fun getPluginName() = "AndroidRuntime"
 
 	/**
@@ -67,5 +73,25 @@ class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
 	@UsedByGodot
 	fun createCallableFromGodotCallable(godotCallable: Callable): java.util.concurrent.Callable<Any> {
 		return java.util.concurrent.Callable { godotCallable.call() }
+	}
+
+	/**
+	 * Helper method to take/release persistable URI permission.
+	 */
+	@UsedByGodot
+	fun updatePersistableUriPermission(uriString: String, persist: Boolean): Boolean {
+		try {
+			val uri = uriString.toUri()
+			val contentResolver = context.contentResolver
+			if (persist) {
+				contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+			} else {
+				contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+			}
+		} catch (e: RuntimeException) {
+			Log.d(TAG, "Error updating persistable permission: ", e)
+			return false
+		}
+		return true
 	}
 }

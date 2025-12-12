@@ -153,14 +153,13 @@ private:
 	VBoxContainer *scanning_vb = nullptr;
 	ProgressBar *scanning_progress = nullptr;
 	SplitContainer *split_box = nullptr;
+	MarginContainer *tree_mc = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
 
 	int split_box_offset_h = 0;
 	int split_box_offset_v = 0;
 
 	HashSet<String> favorites;
-
-	Button *button_dock_placement = nullptr;
 
 	Button *button_toggle_display_mode = nullptr;
 	Button *button_file_list_display_mode = nullptr;
@@ -179,7 +178,6 @@ private:
 	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
-	TextureRect *search_icon = nullptr;
 	HBoxContainer *path_hb = nullptr;
 
 	FileListDisplayMode file_list_display_mode;
@@ -245,6 +243,7 @@ private:
 
 	String current_path = "res://";
 	String select_after_scan;
+	String main_scene_path;
 
 	bool updating_tree = false;
 	int tree_update_id;
@@ -377,8 +376,6 @@ private:
 	void _feature_profile_changed();
 	void _project_settings_changed();
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
-
-	void _change_bottom_dock_placement();
 
 private:
 	inline static FileSystemDock *singleton = nullptr;

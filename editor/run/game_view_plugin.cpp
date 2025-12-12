@@ -44,6 +44,7 @@
 #include "editor/gui/window_wrapper.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/embedded_process.h"
+#include "editor/run/run_instances_dialog.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -357,7 +358,9 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 
 		_show_update_window_wrapper();
 
-		embedded_process->grab_focus();
+		if (embedded_process->get_focus_mode_with_override() != FOCUS_NONE) {
+			embedded_process->grab_focus();
+		}
 	}
 
 	_update_arguments_for_instance(p_idx, r_arguments);
@@ -444,7 +447,10 @@ void GameView::_play_pressed() {
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
 			// Reset the normal size of the bottom panel when fully expanded.
 			EditorNode::get_singleton()->get_bottom_panel()->set_expanded(false);
-			embedded_process->grab_focus();
+
+			if (embedded_process->get_focus_mode_with_override() != FOCUS_NONE) {
+				embedded_process->grab_focus();
+			}
 		}
 		embedded_process->embed_process(current_process_id);
 		_update_ui();
@@ -501,6 +507,10 @@ void GameView::_embedded_process_focused() {
 }
 
 void GameView::_editor_or_project_settings_changed() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	// Update the window size and aspect ratio.
 	_update_embed_window_size();
 
@@ -668,8 +678,16 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 		return EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE;
 	}
 	String display_driver = GLOBAL_GET("display/display_server/driver");
-	if (display_driver == "headless" || display_driver == "wayland") {
+	if (display_driver == "headless") {
 		return EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER;
+	}
+
+	if (RunInstancesDialog::get_singleton()) {
+		List<String> instance_args;
+		RunInstancesDialog::get_singleton()->get_argument_list_for_instance(0, instance_args);
+		if (instance_args.find("--headless")) {
+			return EMBED_NOT_AVAILABLE_HEADLESS;
+		}
 	}
 
 	EditorRun::WindowPlacement placement = EditorRun::get_window_placement();
@@ -714,11 +732,7 @@ void GameView::_update_ui() {
 			}
 			break;
 		case EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED:
-			if (DisplayServer::get_singleton()->get_name() == "Wayland") {
-				state_label->set_text(TTRC("Game embedding not available on Wayland.\nWayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD > Prefer Wayland)."));
-			} else {
-				state_label->set_text(TTRC("Game embedding not available on your OS."));
-			}
+			state_label->set_text(TTRC("Game embedding not available on your OS."));
 			break;
 		case EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER:
 			state_label->set_text(vformat(TTR("Game embedding not available for the Display Server: '%s'.\nDisplay Server can be modified in the Project Settings (Display > Display Server > Driver)."), GLOBAL_GET("display/display_server/driver")));
@@ -734,6 +748,9 @@ void GameView::_update_ui() {
 			break;
 		case EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE:
 			state_label->set_text(TTRC("Game embedding not available in single window mode."));
+			break;
+		case EMBED_NOT_AVAILABLE_HEADLESS:
+			state_label->set_text(TTRC("Game embedding not available when the game starts in headless mode."));
 			break;
 	}
 
@@ -842,7 +859,7 @@ void GameView::_camera_override_menu_id_pressed(int p_id) {
 void GameView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Alt+RMB: Show list of all nodes at position clicked."));
+			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(vformat(TTR("%s+Alt+RMB: Show list of all nodes at position clicked."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)));
 			_update_ui();
 		} break;
 
@@ -991,6 +1008,21 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	// macOS requires the embedded display driver.
 	remove_args.insert("--display-driver");
 #endif
+
+#ifdef WAYLAND_ENABLED
+	// Wayland requires its display driver.
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		remove_args.insert("--display-driver");
+	}
+#endif
+
+#ifdef X11_ENABLED
+	// X11 requires its display driver.
+	if (DisplayServer::get_singleton()->get_name() == "X11") {
+		remove_args.insert("--display-driver");
+	}
+#endif
+
 	while (E) {
 		List<String>::Element *N = E->next();
 
@@ -1018,6 +1050,20 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 #if MACOS_ENABLED
 	N = r_arguments.insert_after(N, "--embedded");
+#endif
+
+#ifdef WAYLAND_ENABLED
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		N = r_arguments.insert_after(N, "--display-driver");
+		N = r_arguments.insert_after(N, "wayland");
+	}
+#endif
+
+#ifdef X11_ENABLED
+	if (DisplayServer::get_singleton()->get_name() == "X11") {
+		N = r_arguments.insert_after(N, "--display-driver");
+		N = r_arguments.insert_after(N, "x11");
+	}
 #endif
 
 	// Be sure to have the correct window size in the embedded_process control.
@@ -1219,9 +1265,12 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	selection_hb->add_child(hide_selection);
 	hide_selection->set_toggle_mode(true);
 	hide_selection->set_theme_type_variation(SceneStringName(FlatButton));
-	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
 	hide_selection->set_tooltip_text(TTRC("Toggle Selection Visibility"));
 	hide_selection->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "hide_selection", false));
+	if (hide_selection->is_pressed()) {
+		debugger->set_selection_visible(false);
+	}
+	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
 
 	selection_hb->add_child(memnew(VSeparator));
 

@@ -43,6 +43,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_version_button.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
@@ -98,7 +99,7 @@ void ProjectManager::_notification(int p_what) {
 			DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/keep_screen_on"));
 			const int default_sorting = (int)EDITOR_GET("project_manager/sorting_order");
 			filter_option->select(default_sorting);
-			project_list->set_order_option(default_sorting);
+			project_list->set_order_option(default_sorting, false);
 
 			_select_main_view(MAIN_VIEW_PROJECTS);
 			_update_list_placeholder();
@@ -265,7 +266,6 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			rename_btn->set_button_icon(get_editor_theme_icon("Rename"));
 			duplicate_btn->set_button_icon(get_editor_theme_icon("Duplicate"));
 			manage_tags_btn->set_button_icon(get_editor_theme_icon("Script"));
-			show_in_fm_btn->set_button_icon(get_editor_theme_icon("Load"));
 			erase_btn->set_button_icon(get_editor_theme_icon("Remove"));
 			erase_missing_btn->set_button_icon(get_editor_theme_icon("Clear"));
 			create_tag_btn->set_button_icon(get_editor_theme_icon("Add"));
@@ -283,7 +283,6 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			rename_btn->add_theme_constant_override("h_separation", h_separation);
 			duplicate_btn->add_theme_constant_override("h_separation", h_separation);
 			manage_tags_btn->add_theme_constant_override("h_separation", h_separation);
-			show_in_fm_btn->add_theme_constant_override("h_separation", h_separation);
 			erase_btn->add_theme_constant_override("h_separation", h_separation);
 			erase_missing_btn->add_theme_constant_override("h_separation", h_separation);
 
@@ -393,6 +392,55 @@ void ProjectManager::_open_asset_library_confirmed() {
 
 	asset_library->disable_community_support();
 	_select_main_view(MAIN_VIEW_ASSETLIB);
+}
+
+void ProjectManager::_project_list_menu_option(int p_option) {
+	switch (p_option) {
+		case ProjectList::MENU_EDIT:
+			_open_selected_projects();
+			break;
+
+		case ProjectList::MENU_EDIT_VERBOSE:
+			open_in_verbose_mode = true;
+			_open_selected_projects_check_warnings();
+			break;
+
+		case ProjectList::MENU_EDIT_RECOVERY:
+			_open_recovery_mode_ask(true);
+			break;
+
+		case ProjectList::MENU_RUN:
+			_run_project_confirm();
+			break;
+
+		case ProjectList::MENU_SHOW_IN_FILE_MANAGER:
+			_show_project_in_file_manager();
+			break;
+
+		case ProjectList::MENU_COPY_PATH: {
+			const Vector<ProjectList::Item> &selected_list = project_list->get_selected_projects();
+			if (selected_list.is_empty()) {
+				return;
+			}
+			DisplayServer::get_singleton()->clipboard_set(selected_list[0].path);
+		} break;
+
+		case ProjectList::MENU_RENAME:
+			_rename_project();
+			break;
+
+		case ProjectList::MENU_MANAGE_TAGS:
+			_manage_project_tags();
+			break;
+
+		case ProjectList::MENU_DUPLICATE:
+			_duplicate_project();
+			break;
+
+		case ProjectList::MENU_REMOVE:
+			_erase_project();
+			break;
+	}
 }
 
 void ProjectManager::_show_error(const String &p_message, const Size2 &p_min_size) {
@@ -807,7 +855,6 @@ void ProjectManager::_update_project_buttons() {
 	rename_btn->set_disabled(empty_selection || is_missing_project_selected);
 	duplicate_btn->set_disabled(empty_selection || is_missing_project_selected);
 	manage_tags_btn->set_disabled(empty_selection || is_missing_project_selected || selected_projects.size() > 1);
-	show_in_fm_btn->set_disabled(empty_selection || is_missing_project_selected);
 	run_btn->set_disabled(empty_selection || is_missing_project_selected);
 
 	erase_missing_btn->set_disabled(!project_list->is_any_project_missing());
@@ -887,9 +934,7 @@ void ProjectManager::_on_project_created(const String &dir, bool edit) {
 	search_box->clear();
 
 	int i = project_list->refresh_project(dir);
-	project_list->select_project(i);
 	project_list->ensure_project_visible(i);
-	_update_project_buttons();
 	_update_list_placeholder();
 
 	if (edit) {
@@ -920,7 +965,7 @@ void ProjectManager::_on_project_duplicated(const String &p_original_path, const
 
 void ProjectManager::_on_order_option_changed(int p_idx) {
 	if (is_inside_tree()) {
-		project_list->set_order_option(p_idx);
+		project_list->set_order_option(p_idx, true);
 	}
 }
 
@@ -1024,13 +1069,8 @@ void ProjectManager::_apply_project_tags() {
 
 void ProjectManager::_set_new_tag_name(const String p_name) {
 	create_tag_dialog->get_ok_button()->set_disabled(true);
-	if (p_name.is_empty()) {
+	if (p_name.strip_edges().is_empty()) {
 		tag_error->set_text(TTRC("Tag name can't be empty."));
-		return;
-	}
-
-	if (p_name.contains_char(' ')) {
-		tag_error->set_text(TTRC("Tag name can't contain spaces."));
 		return;
 	}
 
@@ -1041,9 +1081,10 @@ void ProjectManager::_set_new_tag_name(const String p_name) {
 
 	bool was_underscore = false;
 	for (const char32_t &c : p_name.span()) {
-		if (c == '_') {
+		// Treat spaces as underscores, as we convert spaces to underscores automatically in the tag input field.
+		if (c == '_' || c == ' ') {
 			if (was_underscore) {
-				tag_error->set_text(TTRC("Tag name can't contain consecutive underscores."));
+				tag_error->set_text(TTRC("Tag name can't contain consecutive underscores or spaces."));
 				return;
 			}
 			was_underscore = true;
@@ -1059,11 +1100,6 @@ void ProjectManager::_set_new_tag_name(const String p_name) {
 		}
 	}
 
-	if (p_name.to_lower() != p_name) {
-		tag_error->set_text(TTRC("Tag name must be lowercase."));
-		return;
-	}
-
 	tag_error->set_text("");
 	create_tag_dialog->get_ok_button()->set_disabled(false);
 }
@@ -1073,8 +1109,12 @@ void ProjectManager::_create_new_tag() {
 		return;
 	}
 	create_tag_dialog->hide(); // When using text_submitted, need to hide manually.
-	add_new_tag(new_tag_name->get_text());
-	_add_project_tag(new_tag_name->get_text());
+
+	// Enforce a valid tag name (no spaces, lowercase only) automatically.
+	// The project manager displays underscores as spaces, and capitalization is performed automatically.
+	const String new_tag = new_tag_name->get_text().strip_edges().to_lower().replace_char(' ', '_');
+	add_new_tag(new_tag);
+	_add_project_tag(new_tag);
 }
 
 void ProjectManager::add_new_tag(const String &p_tag) {
@@ -1192,42 +1232,13 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 			} break;
 			case Key::HOME: {
 				if (project_list->get_project_count() > 0) {
-					project_list->select_project(0);
-					_update_project_buttons();
+					project_list->ensure_project_visible(0);
 				}
 
 			} break;
 			case Key::END: {
 				if (project_list->get_project_count() > 0) {
-					project_list->select_project(project_list->get_project_count() - 1);
-					_update_project_buttons();
-				}
-
-			} break;
-			case Key::UP: {
-				if (k->is_shift_pressed()) {
-					break;
-				}
-
-				int index = project_list->get_single_selected_index();
-				if (index > 0) {
-					project_list->select_project(index - 1);
-					project_list->ensure_project_visible(index - 1);
-					_update_project_buttons();
-				}
-
-				break;
-			}
-			case Key::DOWN: {
-				if (k->is_shift_pressed()) {
-					break;
-				}
-
-				int index = project_list->get_single_selected_index();
-				if (index + 1 < project_list->get_project_count()) {
-					project_list->select_project(index + 1);
-					project_list->ensure_project_visible(index + 1);
-					_update_project_buttons();
+					project_list->ensure_project_visible(project_list->get_project_count() - 1);
 				}
 
 			} break;
@@ -1236,6 +1247,16 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 					search_box->grab_focus();
 				} else {
 					keycode_handled = false;
+				}
+			} break;
+			case Key::A: {
+				if (k->is_command_or_control_pressed()) {
+					if (k->is_shift_pressed()) {
+						project_list->deselect_all_visible_projects();
+					} else {
+						project_list->select_all_visible_projects();
+					}
+					_update_project_buttons();
 				}
 			} break;
 			default: {
@@ -1346,11 +1367,11 @@ ProjectManager::ProjectManager() {
 				EditorScale::set_scale(EDITOR_GET("interface/editor/custom_display_scale"));
 				break;
 		}
-		EditorFileDialog::get_icon_func = &ProjectManager::_file_dialog_get_icon;
-		EditorFileDialog::get_thumbnail_func = &ProjectManager::_file_dialog_get_thumbnail;
+		FileDialog::set_get_icon_callback(callable_mp_static(ProjectManager::_file_dialog_get_icon));
+		FileDialog::set_get_thumbnail_callback(callable_mp_static(ProjectManager::_file_dialog_get_thumbnail));
 
-		EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-		EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+		FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+		FileDialog::set_default_display_mode((FileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 		int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
 		if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
@@ -1545,6 +1566,7 @@ ProjectManager::ProjectManager() {
 			project_list->connect(ProjectList::SIGNAL_LIST_CHANGED, callable_mp(this, &ProjectManager::_update_list_placeholder));
 			project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
 			project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_check_recovery_mode));
+			project_list->connect(ProjectList::SIGNAL_MENU_OPTION_SELECTED, callable_mp(this, &ProjectManager::_project_list_menu_option));
 
 			// Empty project list placeholder.
 			{
@@ -1652,11 +1674,6 @@ ProjectManager::ProjectManager() {
 			manage_tags_btn->set_shortcut(ED_SHORTCUT("project_manager/project_tags", TTRC("Manage Tags"), KeyModifierMask::CMD_OR_CTRL | Key::T));
 			project_list_sidebar->add_child(manage_tags_btn);
 
-			show_in_fm_btn = memnew(Button);
-			show_in_fm_btn->set_text(TTRC("Show in File Manager"));
-			show_in_fm_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_project_in_file_manager));
-			project_list_sidebar->add_child(show_in_fm_btn);
-
 			erase_btn = memnew(Button);
 			erase_btn->set_text(TTRC("Remove"));
 			erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTRC("Remove Project"), Key::KEY_DELETE));
@@ -1719,7 +1736,6 @@ ProjectManager::ProjectManager() {
 		quick_settings_dialog->connect("restart_required", callable_mp(this, &ProjectManager::_restart_confirmed));
 
 		scan_dir = memnew(EditorFileDialog);
-		scan_dir->set_previews_enabled(false);
 		scan_dir->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 		scan_dir->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		scan_dir->set_title(TTRC("Select a Folder to Scan")); // Must be after mode or it's overridden.
@@ -1869,6 +1885,7 @@ ProjectManager::ProjectManager() {
 		new_tag_name = memnew(LineEdit);
 		tag_vb->add_child(new_tag_name);
 		new_tag_name->set_accessibility_name(TTRC("New Tag Name"));
+		new_tag_name->set_placeholder(TTRC("example_tag (will display as Example Tag)"));
 		new_tag_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_set_new_tag_name));
 		new_tag_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectManager::_create_new_tag).unbind(1));
 		create_tag_dialog->connect("about_to_popup", callable_mp(new_tag_name, &LineEdit::clear));
@@ -1928,6 +1945,7 @@ ProjectManager::ProjectManager() {
 
 ProjectManager::~ProjectManager() {
 	singleton = nullptr;
+	EditorInspector::cleanup_plugins();
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}

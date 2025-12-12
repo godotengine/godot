@@ -1436,8 +1436,9 @@ int AnimationTimelineEdit::get_buttons_width() const {
 	const Ref<Texture2D> down_icon = get_theme_icon(SNAME("select_arrow"), SNAME("Tree"));
 
 	const int h_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationTrackEdit"));
+	const int outer_margin = get_theme_constant(SNAME("outer_margin"), SNAME("AnimationTrackEdit"));
 
-	int total_w = interp_mode->get_width() + interp_type->get_width() + loop_type->get_width() + remove_icon->get_width();
+	int total_w = interp_mode->get_width() + interp_type->get_width() + loop_type->get_width() + remove_icon->get_width() + outer_margin;
 	total_w += (down_icon->get_width() + h_separation) * 4;
 
 	return total_w;
@@ -1472,6 +1473,8 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyBezier")), TTR("Bezier Curve Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAudio")), TTR("Audio Playback Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAnimation")), TTR("Animation Playback Track..."));
+
+			timeline_resize_rect.size = get_editor_theme_icon(SNAME("TimelineHandle"))->get_size();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1480,7 +1483,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			}
 			[[fallthrough]];
 		}
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
@@ -1502,8 +1505,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			int key_range = get_size().width - get_buttons_width() - get_name_limit();
-
 			if (animation.is_null()) {
 				return;
 			}
@@ -1527,7 +1528,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			const int text_primary_margin = get_theme_constant(SNAME("text_primary_margin"), SNAME("AnimationTimelineEdit"));
 			const int text_secondary_margin = get_theme_constant(SNAME("text_secondary_margin"), SNAME("AnimationTimelineEdit"));
 
-			int zoomw = key_range;
+			int zoomw = get_size().width - get_buttons_width() - get_name_limit();
 			float scale = get_zoom_scale();
 			int h = get_size().height;
 
@@ -1595,20 +1596,19 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			int end_px = (l - get_value()) * scale;
 			int begin_px = -get_value() * scale;
 
-			{
-				draw_style_box(stylebox_time_unavailable, Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)));
+			draw_style_box(stylebox_time_unavailable, Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)));
 
-				if (begin_px < zoomw && end_px > 0) {
-					if (begin_px < 0) {
-						begin_px = 0;
-					}
-					if (end_px > zoomw) {
-						end_px = zoomw;
-					}
-
-					draw_style_box(stylebox_time_available, Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px, h)));
+			if (begin_px < zoomw && end_px > 0) {
+				if (begin_px < 0) {
+					begin_px = 0;
 				}
+				if (end_px > zoomw) {
+					end_px = zoomw;
+				}
+
+				draw_style_box(stylebox_time_available, Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px, h)));
 			}
+
 #define SC_ADJ 100
 			int dec = 1;
 			int step = 1;
@@ -1708,7 +1708,22 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			}
 
 			draw_line(Vector2(0, get_size().height), get_size(), h_line_color, Math::round(EDSCALE));
+
+			int px = get_name_limit() + end_px - timeline_resize_rect.size.width * 0.5;
+			timeline_resize_rect.position.x = px;
+			if (px >= get_name_limit() && px < zoomw + get_buttons_width()) {
+				draw_texture(get_editor_theme_icon(SNAME("TimelineHandle")), Point2(timeline_resize_rect.position.x, 0));
+			}
+
 			update_values();
+		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			if (resizing_timeline) {
+				_commit_timeline_resize();
+			} else if (dragging_hsize || dragging_timeline) {
+				_stop_dragging();
+			}
 		} break;
 	}
 }
@@ -1817,6 +1832,10 @@ void AnimationTimelineEdit::set_track_edit(AnimationTrackEdit *p_track_edit) {
 	track_edit = p_track_edit;
 }
 
+void AnimationTimelineEdit::set_editor(AnimationTrackEditor *p_editor) {
+	editor = p_editor;
+}
+
 void AnimationTimelineEdit::set_play_position(float p_pos) {
 	play_position_pos = p_pos;
 	play_position->queue_redraw();
@@ -1902,41 +1921,55 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	const Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-		if (track_edit) {
-			track_edit->get_editor()->goto_prev_step(true);
+	if (mb.is_valid()) {
+		if (mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
+			if (track_edit) {
+				track_edit->get_editor()->goto_prev_step(true);
+			}
+			accept_event();
 		}
-		accept_event();
-	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-		if (track_edit) {
-			track_edit->get_editor()->goto_next_step(true);
+		if (mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+			if (track_edit) {
+				track_edit->get_editor()->goto_next_step(true);
+			}
+			accept_event();
 		}
-		accept_event();
-	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && hsize_rect.has_point(mb->get_position())) {
-		dragging_hsize = true;
-		dragging_hsize_from = mb->get_position().x;
-		dragging_hsize_at = name_limit;
-	}
+		if (!resizing_timeline && !dragging_hsize && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+			if (timeline_resize_rect.has_point(mb->get_position())) {
+				resizing_timeline = true;
+				timeline_resize_from = timeline_resize_rect.position.x + timeline_resize_rect.size.width / 2 - mb->get_position().x;
+				timeline_resize_at = animation->get_length();
+			} else if (hsize_rect.has_point(mb->get_position())) {
+				dragging_hsize = true;
+				dragging_hsize_from = mb->get_position().x;
+				dragging_hsize_at = name_limit;
+			}
+		}
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && dragging_hsize) {
-		dragging_hsize = false;
-	}
-	if (mb.is_valid() && mb->get_position().x > get_name_limit() && mb->get_position().x < (get_size().width - get_buttons_width())) {
-		if (!panner->is_panning() && mb->get_button_index() == MouseButton::LEFT) {
+		if (!resizing_timeline && !panner->is_panning() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT &&
+				mb->get_position().x > get_name_limit() && mb->get_position().x < (get_size().width - get_buttons_width())) {
 			int x = mb->get_position().x - get_name_limit();
 
 			float ofs = x / get_zoom_scale() + get_value();
 			emit_signal(SNAME("timeline_changed"), ofs, mb->is_alt_pressed());
 			dragging_timeline = true;
 		}
-	}
 
-	if (dragging_timeline && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
-		dragging_timeline = false;
+		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+			if (resizing_timeline) {
+				_commit_timeline_resize();
+			} else if (dragging_hsize || dragging_timeline) {
+				_stop_dragging();
+			}
+		}
+
+		if (resizing_timeline && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+			resizing_timeline = false;
+			// Undo changes.
+			animation->set_length(timeline_resize_at);
+		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -1952,8 +1985,11 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 			emit_signal(SNAME("name_limit_changed"));
 			play_position->queue_redraw();
-		}
-		if (dragging_timeline) {
+		} else if (resizing_timeline) {
+			int x = mm->get_position().x + timeline_resize_from - get_name_limit();
+			float ofs = x / get_zoom_scale() + get_value();
+			animation->set_length(editor->snap_time(ofs));
+		} else if (dragging_timeline) {
 			int x = mm->get_position().x - get_name_limit();
 			float ofs = x / get_zoom_scale() + get_value();
 			emit_signal(SNAME("timeline_changed"), ofs, mm->is_alt_pressed());
@@ -1961,9 +1997,25 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void AnimationTimelineEdit::_commit_timeline_resize() {
+	if (animation->get_length() != timeline_resize_at) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Change Animation Length"));
+		undo_redo->add_do_method(animation.ptr(), "set_length", animation->get_length());
+		undo_redo->add_undo_method(animation.ptr(), "set_length", timeline_resize_at);
+		undo_redo->commit_action(false);
+	}
+	resizing_timeline = false;
+}
+
+void AnimationTimelineEdit::_stop_dragging() {
+	dragging_hsize = false;
+	dragging_timeline = false;
+}
+
 Control::CursorShape AnimationTimelineEdit::get_cursor_shape(const Point2 &p_pos) const {
-	if (dragging_hsize || hsize_rect.has_point(p_pos)) {
-		// Indicate that the track name column's width can be adjusted
+	if (dragging_hsize || resizing_timeline || hsize_rect.has_point(p_pos) || timeline_resize_rect.has_point(p_pos)) {
+		// Indicate that the track name column's width and the timeline length can be adjusted.
 		return Control::CURSOR_HSIZE;
 	} else {
 		return get_default_cursor_shape();
@@ -2103,7 +2155,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (animation.is_null()) {
+			if (animation.is_null() || animation->get_track_count() == 0) {
 				return;
 			}
 			ERR_FAIL_INDEX(track, animation->get_track_count());
@@ -2131,6 +2183,19 @@ void AnimationTrackEdit::_notification(int p_what) {
 			if (has_focus()) {
 				// Offside so the horizontal sides aren't cutoff.
 				draw_style_box(stylebox_focus, Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
+			}
+
+			int limit_end = get_size().width - timeline->get_buttons_width();
+
+			// Unavailable timeline.
+
+			{
+				int px = (animation->get_length() - timeline->get_value()) * timeline->get_zoom_scale() + timeline->get_name_limit();
+				px = MAX(px, timeline->get_name_limit());
+				Rect2 rect = Rect2(px, 0, limit_end - px, get_size().height);
+				if (rect.size.width > 0) {
+					draw_rect(rect, Color(0, 0, 0, 0.2));
+				}
 			}
 
 			const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
@@ -2210,7 +2275,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			{
 				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width();
 
 				PackedStringArray section = editor->get_selected_section();
 				if (section.size() == 2) {
@@ -2255,20 +2319,21 @@ void AnimationTrackEdit::_notification(int p_what) {
 					if (time >= 0) {
 						float offset = time - timeline->get_value();
 						offset = offset * scale + limit;
-						Color marker_color = animation->get_marker_color(marker);
-						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
+						if (offset >= timeline->get_name_limit() && offset < limit_end) {
+							Color marker_color = animation->get_marker_color(marker);
+							marker_color.a = 0.2;
+							draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
+						}
 					}
 				}
 			}
 
 			// Keyframes.
 
-			draw_bg(limit, get_size().width - timeline->get_buttons_width() - outer_margin);
+			draw_bg(limit, limit_end);
 
 			{
 				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width() - outer_margin;
 
 				for (int i = 0; i < animation->track_get_key_count(track); i++) {
 					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
@@ -2303,7 +2368,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				}
 			}
 
-			draw_fg(limit, get_size().width - timeline->get_buttons_width() - outer_margin);
+			draw_fg(limit, limit_end);
 
 			// Buttons.
 
@@ -2329,7 +2394,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					get_editor_theme_icon(SNAME("UseBlendDisable")),
 				};
 
-				int ofs = get_size().width - timeline->get_buttons_width() - outer_margin;
+				int ofs = limit_end;
 
 				const Ref<Texture2D> down_icon = get_theme_icon(SNAME("select_arrow"), SNAME("Tree"));
 
@@ -2932,21 +2997,28 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					text += TTR("In-Handle:") + " " + String(ih) + "\n";
 					Vector2 oh = animation->bezier_track_get_key_out_handle(track, key_idx);
 					text += TTR("Out-Handle:") + " " + String(oh) + "\n";
+
+					String handle_mode;
 					int hm = animation->bezier_track_get_key_handle_mode(track, key_idx);
 					switch (hm) {
 						case Animation::HANDLE_MODE_FREE: {
-							text += TTR("Handle mode: Free\n");
+							handle_mode = TTR("Free", "Bezier Handle Mode");
 						} break;
 						case Animation::HANDLE_MODE_LINEAR: {
-							text += TTR("Handle mode: Linear\n");
+							handle_mode = TTR("Linear", "Bezier Handle Mode");
 						} break;
 						case Animation::HANDLE_MODE_BALANCED: {
-							text += TTR("Handle mode: Balanced\n");
+							handle_mode = TTR("Balanced", "Bezier Handle Mode");
 						} break;
 						case Animation::HANDLE_MODE_MIRRORED: {
-							text += TTR("Handle mode: Mirrored\n");
+							handle_mode = TTR("Mirrored", "Bezier Handle Mode");
+						} break;
+						default: {
+							// Unknown modes may occur when editing a file from a newer version of Godot.
+							handle_mode = itos(hm);
 						} break;
 					}
+					text += vformat(TTR("Handle mode: %s\n"), handle_mode);
 				} break;
 				case Animation::TYPE_AUDIO: {
 					String stream_name = "null";
@@ -3198,18 +3270,18 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTR("Paste Key(s)"), MENU_KEY_PASTE);
 				}
 				if (selected || editor->is_selection_active()) {
-					AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-					if ((!player->has_animation(SceneStringName(RESET)) || animation != player->get_animation(SceneStringName(RESET))) && editor->can_add_reset_key()) {
-						menu->add_icon_item(get_editor_theme_icon(SNAME("Reload")), TTR("Add RESET Value(s)"), MENU_KEY_ADD_RESET);
+					AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+					if (ape) {
+						AnimationPlayer *ap = ape->get_player();
+						if (ap && editor->can_add_reset_key() && animation != ap->get_animation(SceneStringName(RESET))) {
+							menu->add_separator();
+							menu->add_icon_item(get_editor_theme_icon(SNAME("MoveUp")), TTR("Send Key(s) to RESET"), MENU_KEY_ADD_RESET);
+						}
 					}
-
 					menu->add_separator();
 					menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Key(s)"), MENU_KEY_DELETE);
 				}
 				menu->reset_size();
-
-				moving_selection_attempt = false;
-				moving_selection = false;
 
 				menu->set_position(get_screen_position() + get_local_mouse_position());
 				menu->popup();
@@ -3611,11 +3683,9 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		} break;
 		case MENU_KEY_ADD_RESET: {
 			emit_signal(SNAME("create_reset_request"));
-
 		} break;
 		case MENU_KEY_DELETE: {
 			emit_signal(SNAME("delete_request"));
-
 		} break;
 		case MENU_KEY_LOOKUP: {
 			_lookup_key(lookup_key_idx);
@@ -3748,13 +3818,13 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 
 			const Ref<StyleBox> &stylebox_header = get_theme_stylebox(SNAME("header"), SNAME("AnimationTrackEditGroup"));
-			const int outer_margin = get_theme_constant(SNAME("outer_margin"), SNAME("AnimationTrackEdit"));
-
 			float v_margin_offset = stylebox_header->get_content_margin(SIDE_TOP) - stylebox_header->get_content_margin(SIDE_BOTTOM);
 
 			const Color h_line_color = get_theme_color(SNAME("h_line_color"), SNAME("AnimationTrackEditGroup"));
 			const Color v_line_color = get_theme_color(SNAME("v_line_color"), SNAME("AnimationTrackEditGroup"));
 			const int h_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationTrackEditGroup"));
+
+			const Ref<StyleBox> &stylebox_hover = get_theme_stylebox(SceneStringName(hover), SNAME("AnimationTrackEditGroup"));
 
 			if (root) {
 				Node *n = root->get_node_or_null(node);
@@ -3765,13 +3835,31 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 
 			draw_style_box(stylebox_header, Rect2(Point2(), get_size()));
 
+			if (hovered) {
+				// Draw hover feedback for AnimationTrackEditGroup.
+				// Add a limit to just show hover over portion with text.
+				int limit = timeline->get_name_limit();
+				draw_style_box(stylebox_hover, Rect2(Point2(1 * EDSCALE, 0), Size2(limit - 1 * EDSCALE, get_size().height)));
+			}
+
 			int limit = timeline->get_name_limit();
+			int limit_end = get_size().width - timeline->get_buttons_width();
+
+			// Unavailable timeline.
+
+			{
+				int px = (editor->get_current_animation()->get_length() - timeline->get_value()) * timeline->get_zoom_scale() + timeline->get_name_limit();
+				px = MAX(px, timeline->get_name_limit());
+				Rect2 rect = Rect2(px, 0, limit_end - px, get_size().height);
+				if (rect.size.width > 0) {
+					draw_rect(rect, Color(0, 0, 0, 0.2));
+				}
+			}
 
 			// Section preview.
 
 			{
 				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width();
 
 				PackedStringArray section = editor->get_selected_section();
 				if (section.size() == 2) {
@@ -3780,8 +3868,8 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 					double start_time = editor->get_current_animation()->get_marker_time(start_marker);
 					double end_time = editor->get_current_animation()->get_marker_time(end_marker);
 
-					// When AnimationPlayer is playing, don't move the preview rect, so it still indicates the playback section.
 					AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+					// When AnimationPlayer is playing, don't move the preview rect, so it still indicates the playback section.
 					if (editor->is_marker_moving_selection() && !(player && player->is_playing())) {
 						start_time += editor->get_marker_moving_selection_offset();
 						end_time += editor->get_marker_moving_selection_offset();
@@ -3816,16 +3904,18 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 					if (time >= 0) {
 						float offset = time - timeline->get_value();
 						offset = offset * scale + limit;
-						Color marker_color = editor->get_current_animation()->get_marker_color(marker);
-						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
+						if (offset >= timeline->get_name_limit() && offset < limit_end) {
+							Color marker_color = editor->get_current_animation()->get_marker_color(marker);
+							marker_color.a = 0.2;
+							draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
+						}
 					}
 				}
 			}
 
 			draw_line(Point2(), Point2(get_size().width, 0), h_line_color, Math::round(EDSCALE));
 			draw_line(Point2(timeline->get_name_limit(), 0), Point2(timeline->get_name_limit(), get_size().height), v_line_color, Math::round(EDSCALE));
-			draw_line(Point2(get_size().width - timeline->get_buttons_width() - outer_margin, 0), Point2(get_size().width - timeline->get_buttons_width() - outer_margin, get_size().height), v_line_color, Math::round(EDSCALE));
+			draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), v_line_color, Math::round(EDSCALE));
 
 			int ofs = stylebox_header->get_margin(SIDE_LEFT);
 			draw_texture_rect(icon, Rect2(Point2(ofs, (get_size().height - icon_size.y) / 2 + v_margin_offset).round(), icon_size));
@@ -3833,10 +3923,17 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			draw_string(font, Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size) + v_margin_offset).round(), node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, font_size, color);
 
 			int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
-
-			if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
+			if (px >= timeline->get_name_limit() && px < limit_end) {
 				const Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 				draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
+			}
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (hovered) {
+				hovered = false;
+				// When the mouse cursor exits the AnimationTrackEditGroup, we're no longer hovering the group.
+				queue_redraw();
 			}
 		} break;
 	}
@@ -3857,6 +3954,18 @@ void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
 			if (n) {
 				editor_selection->add_node(n);
 			}
+		}
+	}
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		Point2 pos = mm->get_position();
+		Rect2 node_name_rect = Rect2(0, 0, timeline->get_name_limit(), get_size().height);
+
+		bool was_hovered = hovered;
+		hovered = node_name_rect.has_point(pos);
+
+		if (was_hovered != hovered) {
+			queue_redraw();
 		}
 	}
 }
@@ -3940,7 +4049,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 	marker_edit->set_animation(p_anim, read_only);
 	marker_edit->set_play_position(timeline->get_play_position());
 
-	_cancel_bezier_edit();
+	_check_bezier_exist();
 	_update_tracks();
 
 	if (animation.is_valid()) {
@@ -3969,7 +4078,14 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 			}
 		}
 
-		_check_bezier_exist();
+		if (bezier_edit->is_visible()) {
+			for (int i = 0; i < animation->get_track_count(); ++i) {
+				if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
+					_bezier_edit(i);
+					break;
+				}
+			}
+		}
 	} else {
 		hscroll->hide();
 		edit->set_disabled(true);
@@ -3990,10 +4106,12 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 
 void AnimationTrackEditor::_check_bezier_exist() {
 	bool is_exist = false;
-	for (int i = 0; i < animation->get_track_count(); i++) {
-		if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
-			is_exist = true;
-			break;
+	if (animation.is_valid()) {
+		for (int i = 0; i < animation->get_track_count(); i++) {
+			if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
+				is_exist = true;
+				break;
+			}
 		}
 	}
 	if (is_exist) {
@@ -4234,6 +4352,10 @@ static bool track_type_is_resettable(Animation::TrackType p_type) {
 	}
 }
 
+bool AnimationTrackEditor::is_read_only() const {
+	return read_only;
+}
+
 void AnimationTrackEditor::make_insert_queue() {
 	insert_data.clear();
 	insert_queue = true;
@@ -4242,7 +4364,7 @@ void AnimationTrackEditor::make_insert_queue() {
 void AnimationTrackEditor::commit_insert_queue() {
 	bool reset_allowed = true;
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-	if (player->has_animation(SceneStringName(RESET)) && player->get_animation(SceneStringName(RESET)) == animation) {
+	if (is_global_library_read_only() || (player->has_animation(SceneStringName(RESET)) && player->get_animation(SceneStringName(RESET)) == animation)) {
 		// Avoid messing with the reset animation itself.
 		reset_allowed = false;
 	} else {
@@ -4324,6 +4446,8 @@ void AnimationTrackEditor::commit_insert_queue() {
 }
 
 void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
+	ERR_FAIL_COND_EDMSG(read_only, "Animation is read-only."); // Should have been prevented by dialog, but for safety.
+
 	if (!insert_queue) {
 		insert_data.clear();
 	}
@@ -4370,6 +4494,11 @@ void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_bezi
 }
 
 void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value) {
+	if (read_only) {
+		popup_read_only_dialog();
+		return;
+	}
+
 	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND_MSG(
 			(p_type != Animation::TYPE_POSITION_3D && p_type != Animation::TYPE_ROTATION_3D && p_type != Animation::TYPE_SCALE_3D),
@@ -4435,6 +4564,11 @@ bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const 
 }
 
 void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant &p_value) {
+	if (read_only) {
+		popup_read_only_dialog();
+		return;
+	}
+
 	String path = String(p_path);
 
 	// Animation property is a special case, always creates an animation track.
@@ -4469,6 +4603,11 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 }
 
 void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_property, bool p_only_if_exists, bool p_advance) {
+	if (read_only) {
+		popup_read_only_dialog();
+		return;
+	}
+
 	ERR_FAIL_NULL(root);
 
 	// Let's build a node path.
@@ -4583,6 +4722,11 @@ float AnimationTrackEditor::get_marker_moving_selection_offset() const {
 }
 
 void AnimationTrackEditor::insert_value_key(const String &p_property, bool p_advance) {
+	if (read_only) {
+		popup_read_only_dialog();
+		return;
+	}
+
 	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
 
 	ERR_FAIL_NULL(root);
@@ -4610,6 +4754,29 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, bool p_adv
 		insert_node_value_key(node, p_property, false, p_advance);
 		commit_insert_queue();
 	}
+}
+
+bool AnimationTrackEditor::is_global_library_read_only() const {
+	Ref<AnimationLibrary> al;
+	AnimationMixer *mixer = AnimationPlayerEditor::get_singleton()->fetch_mixer_for_library();
+	if (mixer) {
+		if (!mixer->has_animation_library("")) {
+			return false;
+		} else {
+			al = mixer->get_animation_library("");
+		}
+	}
+	if (al.is_valid()) {
+		String base = al->get_path();
+		int srpos = base.find("::");
+		if (srpos != -1) {
+			base = base.substr(0, srpos);
+		}
+		if (FileAccess::exists(base + ".import")) {
+			return true;
+		}
+	}
+	return false;
 }
 
 Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
@@ -4958,6 +5125,9 @@ bool AnimationTrackEditor::is_bezier_editor_active() const {
 }
 
 bool AnimationTrackEditor::can_add_reset_key() const {
+	if (is_global_library_read_only()) {
+		return false;
+	}
 	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
 		const Animation::TrackType track_type = animation->track_get_type(E.key.track);
 		if (track_type != Animation::TYPE_ANIMATION && track_type != Animation::TYPE_AUDIO && track_type != Animation::TYPE_METHOD) {
@@ -5291,6 +5461,11 @@ void AnimationTrackEditor::_update_step_spinbox() {
 	_update_snap_unit();
 }
 
+void AnimationTrackEditor::_store_snap_states() {
+	EditorSettings::get_singleton()->set_project_metadata("animation_track_editor", "snap_timeline", snap_timeline->is_pressed());
+	EditorSettings::get_singleton()->set_project_metadata("animation_track_editor", "snap_keys", snap_keys->is_pressed());
+}
+
 void AnimationTrackEditor::_update_fps_compat_mode(bool p_enabled) {
 	_update_snap_unit();
 }
@@ -5354,12 +5529,11 @@ void AnimationTrackEditor::_notification(int p_what) {
 			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
 				break;
 			}
-			[[fallthrough]];
-		}
-		case NOTIFICATION_ENTER_TREE: {
+
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			add_animation_player->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			zoom_icon->set_texture(get_editor_theme_icon(SNAME("Zoom")));
@@ -5376,6 +5550,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			dummy_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			inactive_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_ADD_RESET_KEY), get_editor_theme_icon(SNAME("MoveUp")));
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_editor_theme_icon(SNAME("Reload")));
 			auto_fit->set_button_icon(get_editor_theme_icon(SNAME("AnimationAutoFit")));
 			auto_fit_bezier->set_button_icon(get_editor_theme_icon(SNAME("AnimationAutoFitBezier")));
@@ -5387,6 +5562,11 @@ void AnimationTrackEditor::_notification(int p_what) {
 			track_vbox->add_theme_constant_override("separation", track_separation);
 
 			function_name_toggler->add_theme_color_override("icon_pressed_color", get_theme_color("icon_disabled_color", EditorStringName(Editor)));
+
+			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_FREE), get_editor_theme_icon(SNAME("BezierHandlesFree")));
+			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_LINEAR), get_editor_theme_icon(SNAME("BezierHandlesLinear")));
+			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_BALANCED), get_editor_theme_icon(SNAME("BezierHandlesBalanced")));
+			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_MIRRORED), get_editor_theme_icon(SNAME("BezierHandlesMirror")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -5396,10 +5576,21 @@ void AnimationTrackEditor::_notification(int p_what) {
 
 			EditorNode::get_singleton()->connect("scene_changed", callable_mp(this, &AnimationTrackEditor::_scene_changed));
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &AnimationTrackEditor::_selection_changed));
+
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_keying();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			bezier_key_mode->set_item_text(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_FREE), TTR("Free", "Bezier Handle Mode"));
+			bezier_key_mode->set_item_text(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_LINEAR), TTR("Linear", "Bezier Handle Mode"));
+			bezier_key_mode->set_item_text(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_BALANCED), TTR("Balanced", "Bezier Handle Mode"));
+			bezier_key_mode->set_item_text(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_MIRRORED), TTR("Mirrored", "Bezier Handle Mode"));
+			bezier_key_mode->set_tooltip_text(TTR("Bezier Default Mode") + "\n" + TTR("Set the default handle mode of new bezier keys."));
 		} break;
 	}
 }
@@ -5721,6 +5912,11 @@ int AnimationTrackEditor::_get_track_selected() {
 }
 
 void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
+	if (read_only) {
+		popup_read_only_dialog();
+		return;
+	}
+
 	ERR_FAIL_INDEX(p_track, animation->get_track_count());
 
 	if (snap_keys->is_pressed() && step->get_value() != 0) {
@@ -6649,6 +6845,7 @@ bool AnimationTrackEditor::_is_track_compatible(int p_target_track_idx, Variant:
 
 void AnimationTrackEditor::_edit_menu_about_to_popup() {
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+	edit->get_popup()->set_item_disabled(edit->get_popup()->get_item_index(EDIT_ADD_RESET_KEY), !can_add_reset_key() || animation == player->get_animation(SceneStringName(RESET)));
 	edit->get_popup()->set_item_disabled(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), !player->can_apply_reset());
 
 	bool has_length = false;
@@ -7293,6 +7490,13 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			goto_prev_step(false);
 		} break;
 
+		case EDIT_GOTO_NEXT_KEYFRAME: {
+			AnimationPlayerEditor::get_singleton()->go_to_nearest_keyframe(false);
+		} break;
+		case EDIT_GOTO_PREV_KEYFRAME: {
+			AnimationPlayerEditor::get_singleton()->go_to_nearest_keyframe(true);
+		} break;
+
 		case EDIT_APPLY_RESET: {
 			AnimationPlayerEditor::get_singleton()->get_player()->apply_reset(true);
 		} break;
@@ -7675,6 +7879,16 @@ float AnimationTrackEditor::get_snap_unit() {
 	return snap_unit;
 }
 
+void AnimationTrackEditor::_update_timeline_rtl_spacer() {
+	if (scroll->get_v_scroll_bar()->is_visible() && is_layout_rtl()) {
+		int spacer_width = scroll->get_v_scroll_bar()->get_minimum_size().width;
+		timeline_rtl_spacer->set_custom_minimum_size(Size2(spacer_width, 0));
+		timeline_rtl_spacer->show();
+	} else {
+		timeline_rtl_spacer->hide();
+	}
+}
+
 void AnimationTrackEditor::_add_animation_player() {
 	EditorData &editor_data = EditorNode::get_editor_data();
 	Node *scene = editor_data.get_edited_scene_root();
@@ -7807,11 +8021,19 @@ void AnimationTrackEditor::_pick_track_select_recursive(TreeItem *p_item, const 
 	}
 }
 
+void AnimationTrackEditor::popup_read_only_dialog() {
+	read_only_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+}
+
 AnimationTrackEditor::AnimationTrackEditor() {
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderAnimation");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	main_panel = memnew(PanelContainer);
 	main_panel->set_focus_mode(FOCUS_ALL); // Allow panel to have focus so that shortcuts work as expected.
-	add_child(main_panel);
-	main_panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->add_child(main_panel);
 	HBoxContainer *timeline_scroll = memnew(HBoxContainer);
 	main_panel->add_child(timeline_scroll);
 	timeline_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -7844,14 +8066,25 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_animation_player->set_h_size_flags(SIZE_SHRINK_CENTER);
 	add_animation_player->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_add_animation_player));
 
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	hbox->add_theme_constant_override(SNAME("separation"), 0);
+	timeline_vbox->add_child(hbox);
+
 	timeline = memnew(AnimationTimelineEdit);
-	timeline_vbox->add_child(timeline);
+	timeline->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbox->add_child(timeline);
+	timeline->set_editor(this);
 	timeline->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
 	timeline->connect("name_limit_changed", callable_mp(this, &AnimationTrackEditor::_name_limit_changed));
 	timeline->connect("track_added", callable_mp(this, &AnimationTrackEditor::_add_track));
 	timeline->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_timeline_value_changed));
 	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
 	timeline->connect("filter_changed", callable_mp(this, &AnimationTrackEditor::_update_tracks));
+
+	// If the animation editor is changed to take right-to-left into account, this won't be needed anymore.
+	timeline_rtl_spacer = memnew(Control);
+	timeline_rtl_spacer->hide();
+	hbox->add_child(timeline_rtl_spacer);
 
 	panner.instantiate();
 	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN);
@@ -7881,16 +8114,17 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	marker_edit->connect(SceneStringName(draw), callable_mp((CanvasItem *)bezier_edit, &CanvasItem::queue_redraw));
 
 	scroll = memnew(ScrollContainer);
+	scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	box_selection_container->add_child(scroll);
 	scroll->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
-	VScrollBar *sb = scroll->get_v_scroll_bar();
-	scroll->remove_child(sb);
-	timeline_scroll->add_child(sb); // Move here so timeline and tracks are always aligned.
 	scroll->set_focus_mode(FOCUS_CLICK);
 	scroll->connect(SceneStringName(gui_input), callable_mp(this, &AnimationTrackEditor::_scroll_input));
 	scroll->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
+	// Must be updated from here, so it guarantees that the scrollbar theme has already changed.
+	scroll->connect(SceneStringName(theme_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_rtl_spacer), CONNECT_DEFERRED);
+	scroll->get_v_scroll_bar()->connect(SceneStringName(visibility_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_rtl_spacer));
 	scroll->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_v_scroll_changed));
 	scroll->get_h_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_h_scroll_changed));
 
@@ -7937,17 +8171,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	spacer->set_h_size_flags(SIZE_EXPAND_FILL);
 	bottom_hf->add_child(spacer);
 
-	Label *bezier_key_default_label = memnew(Label);
-	bezier_key_default_label->set_text(TTR("Bezier Default Mode:"));
-	bottom_hf->add_child(bezier_key_default_label);
-
 	bezier_key_mode = memnew(OptionButton);
-	bezier_key_mode->add_item(TTR("Free"));
-	bezier_key_mode->add_item(TTR("Linear"));
-	bezier_key_mode->add_item(TTR("Balanced"));
-	bezier_key_mode->add_item(TTR("Mirrored"));
-	bezier_key_mode->set_tooltip_text(TTR("Set the default behavior of new bezier keys."));
-	bezier_key_mode->select(2);
+	bezier_key_mode->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	bezier_key_mode->add_item(String(), Animation::HANDLE_MODE_FREE);
+	bezier_key_mode->add_item(String(), Animation::HANDLE_MODE_LINEAR);
+	bezier_key_mode->add_item(String(), Animation::HANDLE_MODE_BALANCED);
+	bezier_key_mode->add_item(String(), Animation::HANDLE_MODE_MIRRORED);
+	bezier_key_mode->select(Animation::HANDLE_MODE_BALANCED);
+	bezier_key_mode->set_accessibility_name(TTRC("Bezier Default Mode"));
 
 	bottom_hf->add_child(bezier_key_mode);
 	bottom_hf->add_child(memnew(VSeparator));
@@ -8007,19 +8238,21 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	snap_timeline = memnew(Button);
 	snap_timeline->set_flat(true);
-	bottom_hf->add_child(snap_timeline);
 	snap_timeline->set_disabled(true);
 	snap_timeline->set_toggle_mode(true);
-	snap_timeline->set_pressed(false);
 	snap_timeline->set_tooltip_text(TTR("Apply snapping to timeline cursor."));
+	snap_timeline->set_pressed(EditorSettings::get_singleton()->get_project_metadata("animation_track_editor", "snap_timeline", false));
+	bottom_hf->add_child(snap_timeline);
+	snap_timeline->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_store_snap_states).unbind(1));
 
 	snap_keys = memnew(Button);
 	snap_keys->set_flat(true);
-	bottom_hf->add_child(snap_keys);
 	snap_keys->set_disabled(true);
 	snap_keys->set_toggle_mode(true);
-	snap_keys->set_pressed(true);
 	snap_keys->set_tooltip_text(TTR("Apply snapping to selected key(s)."));
+	snap_keys->set_pressed(EditorSettings::get_singleton()->get_project_metadata("animation_track_editor", "snap_keys", true));
+	bottom_hf->add_child(snap_keys);
+	snap_keys->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_store_snap_states).unbind(1));
 
 	fps_compat = memnew(Button);
 	fps_compat->set_flat(true);
@@ -8112,7 +8345,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/cut_selected_keys", TTRC("Cut Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::X), EDIT_CUT_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/copy_selected_keys", TTRC("Copy Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::C), EDIT_COPY_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/paste_keys", TTRC("Paste Keys"), KeyModifierMask::CMD_OR_CTRL | Key::V), EDIT_PASTE_KEYS);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/add_reset_value", TTRC("Add RESET Value(s)")));
+
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_first_selected_key_to_cursor", TTRC("Move First Selected Key to Cursor"), Key::BRACKETLEFT), EDIT_MOVE_FIRST_SELECTED_KEY_TO_CURSOR);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_last_selected_key_to_cursor", TTRC("Move Last Selected Key to Cursor"), Key::BRACKETRIGHT), EDIT_MOVE_LAST_SELECTED_KEY_TO_CURSOR);
@@ -8123,7 +8356,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTRC("Go to Next Step"), KeyModifierMask::CMD_OR_CTRL | Key::RIGHT), EDIT_GOTO_NEXT_STEP);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_prev_step", TTRC("Go to Previous Step"), KeyModifierMask::CMD_OR_CTRL | Key::LEFT), EDIT_GOTO_PREV_STEP);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTRC("Apply Reset")), EDIT_APPLY_RESET);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/go_to_next_keyframe", TTRC("Go to Next Keyframe"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::D), EDIT_GOTO_NEXT_KEYFRAME);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/go_to_previous_keyframe", TTRC("Go to Previous Keyframe"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::A), EDIT_GOTO_PREV_KEYFRAME);
+	edit->get_popup()->add_separator();
+
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/add_reset_value", TTRC("Add tracks to RESET")), EDIT_ADD_RESET_KEY);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTRC("Apply RESET")), EDIT_APPLY_RESET);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_item(TTR("Bake Animation..."), EDIT_BAKE_ANIMATION);
 	edit->get_popup()->add_item(TTR("Optimize Animation (no undo)..."), EDIT_OPTIMIZE_ANIMATION);
@@ -8362,6 +8600,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_select->set_hide_root(true);
 	track_copy_vbox->add_child(track_copy_select);
 	track_copy_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_COPY_TRACKS_CONFIRM));
+
+	read_only_dialog = memnew(AcceptDialog);
+	read_only_dialog->set_title(TTRC("Key Insertion Error"));
+	read_only_dialog->set_text(TTRC("Imported Animation cannot be edited!"));
+	add_child(read_only_dialog);
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {
@@ -8707,6 +8950,8 @@ void AnimationMarkerEdit::_notification(int p_what) {
 			}
 
 			int limit = timeline->get_name_limit();
+			int limit_end = get_size().width - timeline->get_buttons_width();
+			float scale = timeline->get_zoom_scale();
 
 			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
@@ -8714,9 +8959,6 @@ void AnimationMarkerEdit::_notification(int p_what) {
 			// SECTION PREVIEW //
 
 			{
-				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width();
-
 				PackedStringArray section = get_selected_section();
 				if (section.size() == 2) {
 					StringName start_marker = section[0];
@@ -8752,9 +8994,6 @@ void AnimationMarkerEdit::_notification(int p_what) {
 			draw_bg(limit, get_size().width - timeline->get_buttons_width());
 
 			{
-				float scale = timeline->get_zoom_scale();
-				int limit_end = get_size().width - timeline->get_buttons_width();
-
 				PackedStringArray names = animation->get_marker_names();
 				for (int i = 0; i < names.size(); i++) {
 					StringName name = names[i];
@@ -8782,7 +9021,7 @@ void AnimationMarkerEdit::_notification(int p_what) {
 				}
 			}
 
-			draw_fg(limit, get_size().width - timeline->get_buttons_width());
+			draw_fg(limit, limit_end);
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER:
@@ -8836,6 +9075,37 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	// Check if moving markers or resizing the timeline first, so they can be canceled instead.
+	if (!moving_selection && !timeline->resizing_timeline && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		Point2 pos = mb->get_position();
+		if (pos.x >= timeline->get_name_limit() && pos.x <= get_size().width - timeline->get_buttons_width()) {
+			// Can do something with menu too! show insert key.
+			float offset = (pos.x - timeline->get_name_limit()) / timeline->get_zoom_scale();
+			if (!read_only) {
+				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
+
+				menu->clear();
+				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Marker..."), MENU_KEY_INSERT);
+
+				if (selected || selection.size() > 0) {
+					menu->add_icon_item(get_editor_theme_icon(SNAME("Edit")), TTR("Rename Marker"), MENU_KEY_RENAME);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Marker(s)"), MENU_KEY_DELETE);
+				}
+
+				menu->add_icon_item(get_editor_theme_icon(should_show_all_marker_names ? SNAME("GuiChecked") : SNAME("GuiUnchecked")), TTR("Show All Marker Names"), MENU_KEY_TOGGLE_MARKER_NAMES);
+				menu->reset_size();
+
+				menu->set_position(get_screen_position() + get_local_mouse_position());
+				menu->popup();
+
+				insert_at_pos = offset + timeline->get_value();
+				accept_event();
+
+				timeline->_stop_dragging();
+			}
+		}
+	}
+
 	if (mb.is_valid() && moving_selection_attempt) {
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			moving_selection_attempt = false;
@@ -8872,37 +9142,6 @@ void AnimationMarkerEdit::gui_input(const Ref<InputEvent> &p_event) {
 			moving_selection_attempt = false;
 			moving_selection = false;
 			_move_selection_cancel();
-		}
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
-		Point2 pos = mb->get_position();
-		if (pos.x >= timeline->get_name_limit() && pos.x <= get_size().width - timeline->get_buttons_width()) {
-			// Can do something with menu too! show insert key.
-			float offset = (pos.x - timeline->get_name_limit()) / timeline->get_zoom_scale();
-			if (!read_only) {
-				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
-
-				menu->clear();
-				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Marker..."), MENU_KEY_INSERT);
-
-				if (selected || selection.size() > 0) {
-					menu->add_icon_item(get_editor_theme_icon(SNAME("Edit")), TTR("Rename Marker"), MENU_KEY_RENAME);
-					menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Marker(s)"), MENU_KEY_DELETE);
-				}
-
-				menu->add_icon_item(get_editor_theme_icon(should_show_all_marker_names ? SNAME("GuiChecked") : SNAME("GuiUnchecked")), TTR("Show All Marker Names"), MENU_KEY_TOGGLE_MARKER_NAMES);
-				menu->reset_size();
-
-				moving_selection_attempt = false;
-				moving_selection = false;
-
-				menu->set_position(get_screen_position() + get_local_mouse_position());
-				menu->popup();
-
-				insert_at_pos = offset + timeline->get_value();
-				accept_event();
-			}
 		}
 	}
 

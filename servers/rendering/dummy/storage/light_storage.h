@@ -165,6 +165,7 @@ public:
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override { return false; }
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override { return false; }
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override { return false; }
+	virtual bool reflection_probe_instance_end_render(RID p_instance, RID p_reflection_atlas) override { return false; }
 	virtual Ref<RenderSceneBuffers> reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) override { return Ref<RenderSceneBuffers>(); }
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override { return true; }
 

@@ -446,7 +446,7 @@ PackedStringArray DisplayServer::tts_get_voices_for_language(const String &p_lan
 	return ret;
 }
 
-void DisplayServer::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServer::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	WARN_PRINT("TTS is not supported by this display server.");
 }
 
@@ -459,7 +459,7 @@ void DisplayServer::tts_set_utterance_callback(TTSUtteranceEvent p_event, const 
 	utterance_callback[p_event] = p_callable;
 }
 
-void DisplayServer::tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos) {
+void DisplayServer::tts_post_utterance_event(TTSUtteranceEvent p_event, int64_t p_id, int p_pos) {
 	ERR_FAIL_INDEX(p_event, DisplayServer::TTS_UTTERANCE_MAX);
 	switch (p_event) {
 		case DisplayServer::TTS_UTTERANCE_STARTED:
@@ -648,9 +648,9 @@ RID DisplayServer::accessibility_create_sub_element(const RID &p_parent_rid, Dis
 	}
 }
 
-RID DisplayServer::accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos) {
+RID DisplayServer::accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos, bool p_is_last_line) {
 	if (accessibility_driver) {
-		return accessibility_driver->accessibility_create_sub_text_edit_elements(p_parent_rid, p_shaped_text, p_min_height, p_insert_pos);
+		return accessibility_driver->accessibility_create_sub_text_edit_elements(p_parent_rid, p_shaped_text, p_min_height, p_insert_pos, p_is_last_line);
 	} else {
 		return RID();
 	}
@@ -1485,7 +1485,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("accessibility_create_element", "window_id", "role"), &DisplayServer::accessibility_create_element);
 	ClassDB::bind_method(D_METHOD("accessibility_create_sub_element", "parent_rid", "role", "insert_pos"), &DisplayServer::accessibility_create_sub_element, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("accessibility_create_sub_text_edit_elements", "parent_rid", "shaped_text", "min_height", "insert_pos"), &DisplayServer::accessibility_create_sub_text_edit_elements, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("accessibility_create_sub_text_edit_elements", "parent_rid", "shaped_text", "min_height", "insert_pos", "is_last_line"), &DisplayServer::accessibility_create_sub_text_edit_elements, DEFVAL(-1), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("accessibility_has_element", "id"), &DisplayServer::accessibility_has_element);
 	ClassDB::bind_method(D_METHOD("accessibility_free_element", "id"), &DisplayServer::accessibility_free_element);
 	ClassDB::bind_method(D_METHOD("accessibility_element_set_meta", "id", "meta"), &DisplayServer::accessibility_element_set_meta);

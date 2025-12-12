@@ -2,6 +2,7 @@
 #define MAX_VIEWS 2
 
 #include "../decal_data_inc.glsl"
+#include "../oct_inc.glsl"
 #include "../scene_data_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
@@ -215,6 +216,20 @@ half sc_luminance_multiplier() {
 	return half(sc_packed_2());
 }
 
+layout(constant_id = 3) const bool sc_emulate_point_size = false;
+
+#ifdef POINT_SIZE_USED
+
+#define VERTEX_INDEX (sc_emulate_point_size ? gl_InstanceIndex : gl_VertexIndex)
+#define INSTANCE_INDEX (sc_emulate_point_size ? (gl_VertexIndex / 6) : gl_InstanceIndex)
+
+#else
+
+#define VERTEX_INDEX gl_VertexIndex
+#define INSTANCE_INDEX gl_InstanceIndex
+
+#endif
+
 // Like the luminance multiplier, but it is only for sky and reflection probes
 // since they are always LDR.
 #define REFLECTION_MULTIPLIER half(2.0)
@@ -337,17 +352,17 @@ layout(set = 1, binding = 1, std430) buffer restrict readonly InstanceDataBuffer
 }
 instances;
 
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 
-layout(set = 1, binding = 2) uniform textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 2) uniform texture2DArray radiance_octmap;
 
 #else
 
-layout(set = 1, binding = 2) uniform textureCube radiance_cubemap;
+layout(set = 1, binding = 2) uniform texture2D radiance_octmap;
 
 #endif
 
-layout(set = 1, binding = 3) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 3) uniform texture2DArray reflection_atlas;
 
 layout(set = 1, binding = 4) uniform texture2D shadow_atlas;
 

@@ -561,14 +561,14 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+				Returns [code]true[/code] if the font supports the given language (as a [url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
 		<method name="_font_is_modulate_color_glyphs" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns [code]true[/code], if color modulation is applied when drawing colored glyphs.
+				Returns [code]true[/code] if color modulation is applied when drawing the font's colored glyphs.
 			</description>
 		</method>
 		<method name="_font_is_multichannel_signed_distance_field" qualifiers="virtual const">
@@ -583,7 +583,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="script" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given script (ISO 15924 code).
+				Returns [code]true[/code] if the font supports the given script (as a [url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
 			</description>
 		</method>
 		<method name="_font_remove_glyph" qualifiers="virtual required">
@@ -1161,7 +1161,7 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Converts readable feature, variation, script, or language name to OpenType tag.
+				Converts the given readable name of a feature, variation, script, or language to an OpenType tag.
 			</description>
 		</method>
 		<method name="_parse_number" qualifiers="virtual const" deprecated="Use [method TranslationServer.parse_number] instead.">
@@ -1886,7 +1886,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns the string converted to lowercase.
+				Returns the string converted to [code]lowercase[/code].
 			</description>
 		</method>
 		<method name="_string_to_title" qualifiers="virtual const">
@@ -1894,7 +1894,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns the string converted to title case.
+				Returns the string converted to [code]Title Case[/code].
 			</description>
 		</method>
 		<method name="_string_to_upper" qualifiers="virtual const">
@@ -1902,7 +1902,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns the string converted to uppercase.
+				Returns the string converted to [code]UPPERCASE[/code].
 			</description>
 		</method>
 		<method name="_strip_diacritics" qualifiers="virtual const">
@@ -1916,7 +1916,7 @@
 			<return type="String" />
 			<param index="0" name="tag" type="int" />
 			<description>
-				Converts OpenType tag to readable feature, variation, script, or language name.
+				Converts the given OpenType tag to the readable name of a feature, variation, script, or language.
 			</description>
 		</method>
 		<method name="_unreference_oversampling_level" qualifiers="virtual">

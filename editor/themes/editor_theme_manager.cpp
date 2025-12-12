@@ -78,7 +78,7 @@ uint32_t EditorThemeManager::ThemeConfiguration::hash() {
 	hash = hash_murmur3_one_32(class_icon_size, hash);
 	hash = hash_murmur3_one_32((int)enable_touch_optimizations, hash);
 	hash = hash_murmur3_one_float(gizmo_handle_scale, hash);
-	hash = hash_murmur3_one_32(color_picker_button_height, hash);
+	hash = hash_murmur3_one_32(inspector_property_height, hash);
 	hash = hash_murmur3_one_float(subresource_hue_tint, hash);
 
 	hash = hash_murmur3_one_float(default_contrast, hash);
@@ -168,7 +168,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Create Base Theme");
 
 	Ref<EditorTheme> theme = memnew(EditorTheme);
-	ThemeConfiguration config = _create_theme_config(theme);
+	ThemeConfiguration config = _create_theme_config();
 	theme->set_generated_hash(config.hash());
 	theme->set_generated_fonts_hash(config.hash_fonts());
 	theme->set_generated_icons_hash(config.hash_icons());
@@ -235,7 +235,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 	return theme;
 }
 
-EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(const Ref<EditorTheme> &p_theme) {
+EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config() {
 	ThemeConfiguration config;
 
 	// Basic properties.
@@ -264,7 +264,6 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	config.class_icon_size = 16 * EDSCALE;
 	config.enable_touch_optimizations = EDITOR_GET("interface/touchscreen/enable_touch_optimizations");
 	config.gizmo_handle_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
-	config.color_picker_button_height = 28 * EDSCALE;
 	config.subresource_hue_tint = EDITOR_GET("docks/property_editor/subresource_hue_tint");
 	config.dragging_hover_wait_msec = (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000;
 
@@ -506,6 +505,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/comment_color"] = p_config.dark_icon_and_font ? dim_color : Color(0.08, 0.08, 0.08, 0.5);
 			colors["text_editor/theme/highlighting/doc_comment_color"] = p_config.dark_icon_and_font ? Color(0.6, 0.7, 0.8, 0.8) : Color(0.15, 0.15, 0.4, 0.7);
 			colors["text_editor/theme/highlighting/string_color"] = p_config.dark_icon_and_font ? Color(1, 0.93, 0.63) : Color(0.6, 0.42, 0);
+			colors["text_editor/theme/highlighting/string_placeholder_color"] = p_config.dark_icon_and_font ? Color(1, 0.75, 0.4) : Color(0.93, 0.6, 0.33);
 
 			// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
 			colors["text_editor/theme/highlighting/background_color"] = p_config.dark_icon_and_font ? p_config.dark_color_2 : p_config.dark_color_3;
@@ -598,8 +598,6 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	p_theme->set_stylebox(CoreStringName(normal), "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("focus", "CodeEdit", memnew(StyleBoxEmpty));
-
-	p_theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0)); // Unset any color, we use a stylebox.
 
 	/* clang-format off */
 	p_theme->set_color("completion_background_color",     "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_background_color"));

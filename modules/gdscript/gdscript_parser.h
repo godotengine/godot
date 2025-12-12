@@ -1349,6 +1349,19 @@ private:
 	List<ParserError> errors;
 
 #ifdef DEBUG_ENABLED
+public:
+	struct WarningDirectoryRule {
+		enum Decision {
+			DECISION_EXCLUDE,
+			DECISION_INCLUDE,
+			DECISION_MAX,
+		};
+
+		String directory_path; // With a trailing slash.
+		Decision decision = DECISION_EXCLUDE;
+	};
+
+private:
 	struct PendingWarning {
 		const Node *source = nullptr;
 		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
@@ -1356,13 +1369,17 @@ private:
 		Vector<String> symbols;
 	};
 
-	bool is_ignoring_warnings = false;
+	static bool is_project_ignoring_warnings;
+	static GDScriptWarning::WarnLevel warning_levels[GDScriptWarning::WARNING_MAX];
+	static LocalVector<WarningDirectoryRule> warning_directory_rules;
+
 	List<GDScriptWarning> warnings;
 	List<PendingWarning> pending_warnings;
+	bool is_script_ignoring_warnings = false;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
-#endif
+#endif // DEBUG_ENABLED
 
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
@@ -1473,6 +1490,7 @@ private:
 	}
 
 	void clear();
+
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
 #ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
@@ -1481,7 +1499,9 @@ private:
 		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
 	}
 	void apply_pending_warnings();
-#endif
+	void evaluate_warning_directory_rules_for_script_path();
+#endif // DEBUG_ENABLED
+
 	// Setting p_force to false will prevent the completion context from being update if a context was already set before.
 	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
 	// See parse_precedence for an example.
@@ -1615,11 +1635,13 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
+
 #ifdef DEBUG_ENABLED
+	static void update_project_settings();
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;

@@ -62,6 +62,9 @@ private:
 		bool supports_force_feedback = false;
 		uint64_t ff_effect_timestamp = 0;
 
+		virtual bool has_joy_light() const override;
+		virtual bool set_joy_light(const Color &p_color) override;
+
 		SDL_Joystick *get_sdl_joystick() const;
 		SDL_Gamepad *get_sdl_gamepad() const;
 	};

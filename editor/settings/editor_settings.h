@@ -127,6 +127,9 @@ private:
 	void _remove_deprecated_settings();
 #endif
 
+	// Bind helpers.
+	Vector<String> _get_shortcut_list();
+
 protected:
 	static void _bind_methods();
 
@@ -174,11 +177,13 @@ public:
 	Variant get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const;
 	void save_project_metadata();
 
-	void set_favorites(const Vector<String> &p_favorites);
+	void set_favorites(const Vector<String> &p_favorites, bool p_update_file_dialog = true);
+	void set_favorites_bind(const Vector<String> &p_favorites);
 	Vector<String> get_favorites() const;
 	void set_favorite_properties(const HashMap<String, PackedStringArray> &p_favorite_properties);
 	HashMap<String, PackedStringArray> get_favorite_properties() const;
-	void set_recent_dirs(const Vector<String> &p_recent_dirs);
+	void set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog = true);
+	void set_recent_dirs_bind(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites_and_recent_dirs();
 
@@ -191,10 +196,12 @@ public:
 	static float get_auto_display_scale();
 	String get_language() const;
 
-	void _add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut);
-	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
-	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
-	Ref<Shortcut> get_shortcut(const String &p_name) const;
+	void _add_shortcut_default(const String &p_path, const Ref<Shortcut> &p_shortcut);
+	void add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut);
+	void remove_shortcut(const String &p_path);
+	bool is_shortcut(const String &p_path, const Ref<InputEvent> &p_event) const;
+	bool has_shortcut(const String &p_path) const;
+	Ref<Shortcut> get_shortcut(const String &p_path) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
 
 	void set_builtin_action_override(const String &p_name, const TypedArray<InputEvent> &p_events);

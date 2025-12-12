@@ -46,6 +46,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/property_utils.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 
@@ -107,19 +108,36 @@ void EditorResourcePicker::_update_resource() {
 
 			String tooltip;
 
+			String resource_name = "resource";
+			if (edited_resource.is_valid()) {
+				resource_name = edited_resource->get_class();
+
+				if (edited_resource->has_meta(SceneStringName(_custom_type_script))) {
+					const Ref<Script> custom_script = PropertyUtils::get_custom_type_script(edited_resource.ptr());
+					if (custom_script.is_valid()) {
+						const String global_name = custom_script->get_global_name();
+						if (!global_name.is_empty()) {
+							resource_name = global_name;
+						}
+					}
+				}
+			}
+
 			if (num_of_copies > 1) {
-				tooltip = vformat(TTR("This Resource is used in (%d) places."), num_of_copies);
+				tooltip = vformat(TTRN("This %s is used in %d place.", "This %s is used in %d places.", num_of_copies), resource_name, num_of_copies);
 			} else if (!is_internal) {
-				tooltip = TTR("This Resource is external to scene.");
+				tooltip = vformat(TTR("This %s is external to scene."), resource_name);
 			}
 
 			if (!editable) {
-				tooltip += "\n" + TTR("The Resource cannot be edited in the inspector and can't be made unique directly.") + "\n";
+				tooltip += "\n" + vformat(TTR("The %s cannot be edited in the inspector and can't be made unique directly."), resource_name) + "\n";
 			} else {
-				tooltip += unique_enable ? TTR(" Left-click to make it unique.") + "\n" : "\n";
+				if (unique_enable) {
+					tooltip += "\n" + TTR("Left-click to make it unique.") + "\n";
+				}
 
 				if (unique_recursive_enabled) {
-					tooltip += TTR("It is possible to make its subresources unique. Right-click to make them unique.") + "\n";
+					tooltip += TTR("It is possible to make its subresources unique.") + "\n" + TTR("Right-click to make them unique.");
 				}
 
 				if (!unique_enable && EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
@@ -277,7 +295,7 @@ void EditorResourcePicker::_update_menu_items() {
 		set_create_options(edit_menu);
 
 		// Add an option to load a resource from a file using the QuickOpen dialog.
-		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
+		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("LoadQuick")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
 		edit_menu->set_item_tooltip(-1, TTR("Opens a quick menu to select from a list of allowed Resource files."));
 
 		// Add an option to load a resource from a file using the regular file dialog.
@@ -306,12 +324,20 @@ void EditorResourcePicker::_update_menu_items() {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 			edit_menu->set_item_disabled(-1, !unique_enabled);
 
+			String modifier = "Ctrl";
+			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+				modifier = "Cmd";
+			}
+			const String drag_and_drop_text = vformat(TTRC("Hold %s while drag-and-dropping from the FileSystem dock or another resource picker to automatically make a dropped resource unique."), modifier);
+
 			if (!unique_enabled) {
 				if (EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource) && EditorNode::get_singleton()->get_resource_count(edited_resource) == 1) {
-					edit_menu->set_item_tooltip(-1, TTRC("This Resource is already unique."));
+					edit_menu->set_item_tooltip(-1, String(TTRC("This Resource is already unique.")) + "\n" + drag_and_drop_text);
 				} else if (_has_parent_resource().is_valid()) {
-					edit_menu->set_item_tooltip(-1, TTRC("In order to duplicate it, make its parent Resource unique."));
+					edit_menu->set_item_tooltip(-1, String(TTRC("In order to duplicate it, make its parent Resource unique.")) + "\n" + drag_and_drop_text);
 				}
+			} else {
+				edit_menu->set_item_tooltip(-1, drag_and_drop_text);
 			}
 
 			if (_has_sub_resources(edited_resource)) {
@@ -704,8 +730,12 @@ String EditorResourcePicker::_get_owner_path() const {
 
 	Node *node = Object::cast_to<Node>(obj);
 	if (node) {
+		Node *p_edited_scene_root = EditorNode::get_singleton()->get_editor_data().get_edited_scene_root();
 		if (node->get_scene_file_path().is_empty()) {
 			node = node->get_owner();
+		} else if (p_edited_scene_root != nullptr && p_edited_scene_root->get_scene_file_path() != node->get_scene_file_path()) {
+			// PackedScene should use root scene path.
+			return p_edited_scene_root->get_scene_file_path();
 		}
 		if (node) {
 			return node->get_scene_file_path();
@@ -985,7 +1015,14 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 		}
 
 		edited_resource = dropped_resource;
-		_resource_changed();
+
+		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			// `_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE)` already calls `_resource_changed()`,
+			// so we don't need to manually call it in this case.
+			_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+		} else {
+			_resource_changed();
+		}
 	}
 }
 
@@ -1028,7 +1065,7 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
-			quick_load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+			quick_load_button->set_button_icon(get_editor_theme_icon(SNAME("LoadQuick")));
 			edit_button->set_button_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -1354,6 +1391,9 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 }
 
 bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
+	if (force_allow_unique) {
+		return true;
+	}
 	Ref<Resource> parent_resource = _has_parent_resource();
 	EditorNode *en = EditorNode::get_singleton();
 	bool internal_to_scene = en->is_resource_internal_to_scene(edited_resource);
@@ -1412,6 +1452,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	make_unique_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	make_unique_button->set_button_mask(MouseButtonMask::LEFT | MouseButtonMask::RIGHT);
 	make_unique_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
+	make_unique_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(make_unique_button);
 	make_unique_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_on_unique_button_pressed));
 
@@ -1421,6 +1462,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_accessibility_name(TTRC("Assign Resource"));
 	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
+	assign_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	assign_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
 	add_child(assign_button);
@@ -1440,13 +1482,13 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	}
 
 	quick_load_button = memnew(Button);
-	quick_load_button->set_theme_type_variation(SceneStringName(FlatButton));
+	quick_load_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 	quick_load_button->set_tooltip_text(TTRC("Quick Load"));
 	add_child(quick_load_button);
 	quick_load_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk).bind(OBJ_MENU_QUICKLOAD));
 
 	edit_button = memnew(Button);
-	edit_button->set_theme_type_variation(SceneStringName(FlatButton));
+	edit_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 	edit_button->set_toggle_mode(true);
 	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
 	edit_button->set_accessibility_name(TTRC("Edit"));

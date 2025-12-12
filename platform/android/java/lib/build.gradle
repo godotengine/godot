@@ -13,6 +13,7 @@ apply from: "../scripts/publish-module.gradle"
 
 dependencies {
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+    implementation 'androidx.documentfile:documentfile:1.1.0'
 
     testImplementation "junit:junit:4.13.2"
 }
@@ -77,14 +78,14 @@ android {
     }
 
     sourceSets {
-        debug.jniLibs.srcDirs += ['libs/debug']
-        dev.jniLibs.srcDirs += ['libs/dev']
-        release.jniLibs.srcDirs += ['libs/release']
+        debug.jniLibs.srcDirs = ['libs/debug']
+        dev.jniLibs.srcDirs = ['libs/dev']
+        release.jniLibs.srcDirs = ['libs/release']
 
         // Editor jni library
-        editorRelease.jniLibs.srcDirs += ['libs/tools/release']
-        editorDebug.jniLibs.srcDirs += ['libs/tools/debug']
-        editorDev.jniLibs.srcDirs += ['libs/tools/dev']
+        editorRelease.jniLibs.srcDirs = ['libs/tools/release']
+        editorDebug.jniLibs.srcDirs = ['libs/tools/debug']
+        editorDev.jniLibs.srcDirs = ['libs/tools/dev']
     }
 
     libraryVariants.all { variant ->

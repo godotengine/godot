@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/extension/gdextension_interface.h"
+#include "core/extension/gdextension_interface.gen.h"
 #include "core/object/gdtype.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
@@ -39,6 +39,7 @@
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/safe_refcount.h"
+#include "core/variant/required_ptr.h"
 #include "core/variant/variant.h"
 
 template <typename T>
@@ -348,16 +349,6 @@ struct ObjectGDExtension {
 	GDExtensionClassReference unreference;
 	GDExtensionClassGetRID get_rid;
 
-	_FORCE_INLINE_ bool is_class(const String &p_class) const {
-		const ObjectGDExtension *e = this;
-		while (e) {
-			if (p_class == e->class_name.operator String()) {
-				return true;
-			}
-			e = e->parent;
-		}
-		return false;
-	}
 	void *class_userdata = nullptr;
 
 #ifndef DISABLE_DEPRECATED
@@ -379,6 +370,14 @@ struct ObjectGDExtension {
 	void (*track_instance)(void *p_userdata, void *p_instance) = nullptr;
 	void (*untrack_instance)(void *p_userdata, void *p_instance) = nullptr;
 #endif
+
+	/// A type for this Object extension.
+	/// This is not exposed through the GDExtension API (yet) so it is inferred from above parameters.
+	const GDType *gdtype;
+	void create_gdtype();
+	void destroy_gdtype();
+
+	~ObjectGDExtension();
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
@@ -524,7 +523,7 @@ public:                                                                         
 			return;                                                                                                                         \
 		}                                                                                                                                   \
 		m_inherits::initialize_class();                                                                                                     \
-		_add_class_to_classdb(get_class_static(), super_type::get_class_static());                                                          \
+		_add_class_to_classdb(get_gdtype_static(), &super_type::get_gdtype_static());                                                       \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                              \
 			_bind_methods();                                                                                                                \
 		}                                                                                                                                   \
@@ -672,6 +671,7 @@ private:
 	HashMap<StringName, Variant> metadata;
 	HashMap<StringName, Variant *> metadata_properties;
 	mutable const GDType *_gdtype_ptr = nullptr;
+	void _reset_gdtype() const;
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
@@ -792,7 +792,7 @@ protected:
 	friend class ::ClassDB;
 	friend class PlaceholderExtensionInstance;
 
-	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits);
+	static void _add_class_to_classdb(const GDType &p_class, const GDType *p_inherits);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
@@ -829,16 +829,27 @@ public:
 	void detach_from_objectdb();
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 
-	template <typename T>
-	static T *cast_to(Object *p_object) {
+	template <typename T, typename O>
+	static T *cast_to(O *p_object) {
 		// This is like dynamic_cast, but faster.
 		// The reason is that we can assume no virtual and multiple inheritance.
-		return p_object && p_object->derives_from<T>() ? static_cast<T *>(p_object) : nullptr;
+		return p_object && p_object->template derives_from<T, O>() ? static_cast<T *>(p_object) : nullptr;
+	}
+
+	template <typename T, typename O>
+	static const T *cast_to(const O *p_object) {
+		return p_object && p_object->template derives_from<T, O>() ? static_cast<const T *>(p_object) : nullptr;
+	}
+
+	// cast_to versions for types that implicitly convert to Object.
+	template <typename T>
+	static T *cast_to(Object *p_object) {
+		return p_object && p_object->template derives_from<T, Object>() ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		return p_object && p_object->derives_from<T>() ? static_cast<const T *>(p_object) : nullptr;
+		return p_object && p_object->template derives_from<T, Object>() ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {
@@ -871,7 +882,7 @@ public:
 	bool is_class(const String &p_class) const;
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
-	template <typename T>
+	template <typename T, typename O>
 	bool derives_from() const;
 
 	const StringName &get_class_name() const;
@@ -1040,27 +1051,23 @@ public:
 bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
 
-template <typename T>
+template <typename T, typename O>
 bool Object::derives_from() const {
-	static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object.");
-	static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS.");
-
-	// If there is an explicitly set ancestral class on the type, we can use that.
-	if constexpr (T::static_ancestral_class != T::super_type::static_ancestral_class) {
-		return _has_ancestry(T::static_ancestral_class);
+	if constexpr (std::is_base_of_v<T, O>) {
+		// We derive statically from T (or are the same class), so casting to it is trivial.
+		return true;
 	} else {
-		return is_class_ptr(T::get_class_ptr_static());
+		static_assert(std::is_base_of_v<Object, O>, "derives_from can only be used with Object subclasses.");
+		static_assert(std::is_base_of_v<O, T>, "Cannot cast argument to T because T does not derive from the argument's known class.");
+		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS.");
+
+		// If there is an explicitly set ancestral class on the type, we can use that.
+		if constexpr (T::static_ancestral_class != T::super_type::static_ancestral_class) {
+			return _has_ancestry(T::static_ancestral_class);
+		} else {
+			return is_class_ptr(T::get_class_ptr_static());
+		}
 	}
-}
-
-template <>
-inline bool Object::derives_from<Object>() const {
-	return true;
-}
-
-template <>
-inline bool Object::derives_from<const Object>() const {
-	return true;
 }
 
 class ObjectDB {
