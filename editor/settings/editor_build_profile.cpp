@@ -1270,6 +1270,12 @@ void EditorBuildProfileManager::_export_profile(const String &p_path) {
 	}
 }
 
+Error EditorBuildProfileManager::generate_build_profile_from_project(const String &p_path) {
+	edited.instantiate();
+	_detect_from_project();
+	return edited->save_to_file(p_path);
+}
+
 Ref<EditorBuildProfile> EditorBuildProfileManager::get_current_profile() {
 	return edited;
 }

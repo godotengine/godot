@@ -708,6 +708,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--gdscript-docs <path>", "Rather than dumping the engine API, generate API reference from the inline documentation in the GDScript files found in <path> (used with --doctool).\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
 	print_help_option("--build-solutions", "Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--generate-build-profile <path>", "Generate an engine compilation profile by detecting the configuration from the project and save it to a given file. The path should be absolute.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-gdextension-interface", "Generate a GDExtension header file \"gdextension_interface.h\" in the current folder. This file is the base file required to implement a GDExtension.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-gdextension-interface-json", "Generate a JSON dump of the GDExtension interface named \"gdextension_interface.json\" in the current folder.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-extension-api", "Generate a JSON dump of the Godot API for GDExtension bindings named \"extension_api.json\" in the current folder.\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -1626,14 +1627,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			quit_after = 1;
 		} else if (arg == "--export-release" || arg == "--export-debug" ||
 				arg == "--export-pack" || arg == "--export-patch") { // Export project
-			// Actually handling is done in start().
+			// Actual handling is done in start().
 			editor = true;
 			cmdline_tool = true;
 			wait_for_import = true;
 			main_args.push_back(arg);
 		} else if (arg == "--patches") {
 			if (N) {
-				// Actually handling is done in start().
+				// Actual handling is done in start().
 				main_args.push_back(arg);
 				main_args.push_back(N->get());
 
@@ -1642,12 +1643,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing comma-separated list of patches after --patches, aborting.\n");
 				goto error;
 			}
+		} else if (arg == "--generate-build-profile") {
+			// Actual handling is done in start().
+			editor = true;
+			cmdline_tool = true;
+			wait_for_import = true;
+			main_args.push_back(arg);
 #ifndef DISABLE_DEPRECATED
 		} else if (arg == "--export") { // For users used to 3.x syntax.
 			OS::get_singleton()->print("The Godot 3 --export option was changed to more explicit --export-release / --export-debug / --export-pack options.\nSee the --help output for details.\n");
 			goto error;
 		} else if (arg == "--convert-3to4") {
-			// Actually handling is done in start().
+			// Actual handling is done in start().
 			cmdline_tool = true;
 			main_args.push_back(arg);
 
@@ -1662,7 +1669,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				}
 			}
 		} else if (arg == "--validate-conversion-3to4") {
-			// Actually handling is done in start().
+			// Actual handling is done in start().
 			cmdline_tool = true;
 			main_args.push_back(arg);
 
@@ -1678,7 +1685,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 #endif // DISABLE_DEPRECATED
 		} else if (arg == "--doctool") {
-			// Actually handling is done in start().
+			// Actual handling is done in start().
 			cmdline_tool = true;
 
 			// `--doctool` implies `--headless` to avoid spawning an unnecessary window
@@ -3899,6 +3906,7 @@ int Main::start() {
 	bool export_pack_only = false;
 	bool install_android_build_template = false;
 	bool export_patch = false;
+	String build_profile_path;
 #ifdef MODULE_GDSCRIPT_ENABLED
 	String gdscript_docs_path;
 #endif
@@ -4000,11 +4008,11 @@ int Main::start() {
 #endif
 			} else if (E->get() == "--export-release") {
 				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
-				editor = true; //needs editor
+				editor = true;
 				_export_preset = E->next()->get();
 			} else if (E->get() == "--export-debug") {
 				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
-				editor = true; //needs editor
+				editor = true;
 				_export_preset = E->next()->get();
 				export_debug = true;
 			} else if (E->get() == "--export-pack") {
@@ -4020,6 +4028,10 @@ int Main::start() {
 				export_patch = true;
 			} else if (E->get() == "--patches") {
 				patches = E->next()->get().split(",", false);
+			} else if (E->get() == "--generate-build-profile") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when generating a build configuration, aborting.");
+				editor = true;
+				build_profile_path = E->next()->get();
 #endif
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
@@ -4478,6 +4490,11 @@ int Main::start() {
 
 			if (!_export_preset.is_empty()) {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template, export_patch, patches);
+				game_path = ""; // Do not load anything.
+			}
+
+			if (!build_profile_path.is_empty()) {
+				editor_node->generate_build_profile(build_profile_path);
 				game_path = ""; // Do not load anything.
 			}
 
