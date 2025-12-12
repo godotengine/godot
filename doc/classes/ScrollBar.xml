@@ -16,6 +16,26 @@
 		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="0.0" />
 	</members>
 	<signals>
+		<signal name="decrement_pressed">
+			<description>
+				Emitted when the decrement button is pressed.
+			</description>
+		</signal>
+		<signal name="decrement_released">
+			<description>
+				Emitted when the decrement button is released.
+			</description>
+		</signal>
+		<signal name="increment_pressed">
+			<description>
+				Emitted when the increment button is pressed.
+			</description>
+		</signal>
+		<signal name="increment_released">
+			<description>
+				Emitted when the increment button is released.
+			</description>
+		</signal>
 		<signal name="scrolling">
 			<description>
 				Emitted when the scrollbar is being scrolled.
