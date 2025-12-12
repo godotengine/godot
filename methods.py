@@ -1028,6 +1028,15 @@ def generate_vs_project(env, original_args, project_name="godot"):
         results += r
         return results
 
+    def glob_current_and_custom(pattern, dirs):
+        paths = ["."]
+        if env["custom_modules"]:
+            paths = paths + env["custom_modules"].split(",")
+        results = []
+        for p in paths:
+            results = results + glob_recursive_2(pattern, dirs, p)
+        return results
+
     def get_bool(args, option, default):
         from SCons.Variables.BoolVariable import _text2bool
 
@@ -1158,19 +1167,19 @@ def generate_vs_project(env, original_args, project_name="godot"):
     headers = []
     headers_dirs = []
     for ext in extensions["headers"]:
-        for file in glob_recursive_2("*" + ext, headers_dirs):
+        for file in glob_current_and_custom("*" + ext, headers_dirs):
             headers.append(str(file).replace("/", "\\"))
 
     sources = []
     sources_dirs = []
     for ext in extensions["sources"]:
-        for file in glob_recursive_2("*" + ext, sources_dirs):
+        for file in glob_current_and_custom("*" + ext, sources_dirs):
             sources.append(str(file).replace("/", "\\"))
 
     others = []
     others_dirs = []
     for ext in extensions["others"]:
-        for file in glob_recursive_2("*" + ext, others_dirs):
+        for file in glob_current_and_custom("*" + ext, others_dirs):
             others.append(str(file).replace("/", "\\"))
 
     skip_filters = False
@@ -1252,7 +1261,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     set_sources = set(sources_active)
     set_others = set(others_active)
     for file in headers:
-        base_path = os.path.dirname(file).replace("\\", "_")
+        base_path = os.path.dirname(file).replace("\\", "_").replace(":", "")
         all_items.append(f'<ClInclude Include="{file}">')
         all_items.append(
             f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
@@ -1262,7 +1271,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             activeItems.append(file)
 
     for file in sources:
-        base_path = os.path.dirname(file).replace("\\", "_")
+        base_path = os.path.dirname(file).replace("\\", "_").replace(":", "")
         all_items.append(f'<ClCompile Include="{file}">')
         all_items.append(
             f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
@@ -1272,7 +1281,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             activeItems.append(file)
 
     for file in others:
-        base_path = os.path.dirname(file).replace("\\", "_")
+        base_path = os.path.dirname(file).replace("\\", "_").replace(":", "")
         all_items.append(f'<None Include="{file}">')
         all_items.append(
             f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
@@ -1291,7 +1300,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         condition = "'$(GodotConfiguration)|$(GodotPlatform)'=='" + vsconf + "'"
         itemlist = {}
         for item in activeItems:
-            key = os.path.dirname(item).replace("\\", "_")
+            key = os.path.dirname(item).replace("\\", "_").replace(":", "")
             if key not in itemlist:
                 itemlist[key] = [item]
             else:
