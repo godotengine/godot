@@ -9,10 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="collide_separation_ray" type="bool" setter="set_collide_separation_ray_enabled" getter="is_collide_separation_ray_enabled" default="false">
-			If set to [code]true[/code], shapes of type [constant PhysicsServer2D.SHAPE_SEPARATION_RAY] are used to detect collisions and can stop the motion. Can be useful when snapping to the ground.
-			If set to [code]false[/code], shapes of type [constant PhysicsServer2D.SHAPE_SEPARATION_RAY] are only used for separation when overlapping with other bodies. That's the main use for separation ray shapes.
-		</member>
 		<member name="exclude_bodies" type="RID[]" setter="set_exclude_bodies" getter="get_exclude_bodies" default="[]">
 			Optional array of body [RID] to exclude from collision. Use [method CollisionObject2D.get_rid] to get the [RID] associated with a [CollisionObject2D]-derived node.
 		</member>
@@ -31,6 +27,10 @@
 		<member name="recovery_as_collision" type="bool" setter="set_recovery_as_collision_enabled" getter="is_recovery_as_collision_enabled" default="false">
 			If set to [code]true[/code], any depenetration from the recovery phase is reported as a collision; this is used e.g. by [CharacterBody2D] for improving floor detection during floor snapping.
 			If set to [code]false[/code], only collisions resulting from the motion are reported, which is generally the desired behavior.
+		</member>
+		<member name="separation_rays_stop_motion" type="bool" setter="set_separation_rays_stop_motion_enabled" getter="is_separation_rays_stop_motion_enabled" default="false">
+			If set to [code]true[/code], shapes of type [constant PhysicsServer2D.SHAPE_SEPARATION_RAY] are used to detect collisions and can stop the motion. Can be useful when snapping to the ground.
+			If set to [code]false[/code], shapes of type [constant PhysicsServer2D.SHAPE_SEPARATION_RAY] are only used for separation when overlapping with other bodies. That's the main use for separation ray shapes.
 		</member>
 	</members>
 </class>

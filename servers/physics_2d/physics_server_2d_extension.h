@@ -402,7 +402,7 @@ public:
 		bool ret = false;
 		exclude_bodies = &p_parameters.exclude_bodies;
 		exclude_objects = &p_parameters.exclude_objects;
-		GDVIRTUAL_CALL(_body_test_motion, p_body, p_parameters.from, p_parameters.motion, p_parameters.margin, p_parameters.collide_separation_ray, p_parameters.recovery_as_collision, r_result, ret);
+		GDVIRTUAL_CALL(_body_test_motion, p_body, p_parameters.from, p_parameters.motion, p_parameters.margin, p_parameters.separation_rays_stop_motion, p_parameters.recovery_as_collision, r_result, ret);
 		exclude_bodies = nullptr;
 		exclude_objects = nullptr;
 		return ret;
