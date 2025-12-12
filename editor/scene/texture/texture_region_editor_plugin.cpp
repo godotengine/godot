@@ -658,8 +658,8 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 
 	Ref<InputEventPanGesture> pan_gesture = p_input;
 	if (pan_gesture.is_valid()) {
-		hscroll->set_value(hscroll->get_value() + hscroll->get_page() * pan_gesture->get_delta().x / 8);
-		vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y / 8);
+		hscroll->set_value(hscroll->get_value() + pan_gesture->get_delta().x * 5);
+		vscroll->set_value(vscroll->get_value() + pan_gesture->get_delta().y * 5);
 	}
 }
 
