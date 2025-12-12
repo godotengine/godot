@@ -128,6 +128,12 @@ void EditorBottomPanel::_repaint() {
 	}
 }
 
+Size2 EditorBottomPanel::get_minimum_size() const {
+	Size2 min_size = TabContainer::get_minimum_size();
+	min_size.x += bottom_hbox->get_combined_minimum_size().x;
+	return min_size;
+}
+
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
 	Dictionary offsets;
 	for (const KeyValue<String, int> &E : dock_offsets) {
