@@ -767,6 +767,15 @@ public:
 		bool resolved_interface = false;
 		bool resolved_body = false;
 
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+		enum DefaultConstructorStatus : uint8_t {
+			CONSTRUCTOR_TBD,
+			HAS_SAFE_CONSTRUCTOR,
+			CONSTRUCTOR_REQUIRES_PARAMETERS,
+		};
+		DefaultConstructorStatus constructor_default_status = CONSTRUCTOR_TBD;
+#endif
+
 		StringName get_global_name() const {
 			return (outer == nullptr && identifier != nullptr) ? identifier->name : StringName();
 		}
