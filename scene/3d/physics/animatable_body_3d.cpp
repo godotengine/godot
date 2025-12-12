@@ -61,10 +61,10 @@ void AnimatableBody3D::_update_kinematic_motion() {
 
 	if (sync_to_physics) {
 		set_only_update_transform_changes(true);
-		set_notify_local_transform(true);
+		set_notify_transform(true);
 	} else {
 		set_only_update_transform_changes(false);
-		set_notify_local_transform(false);
+		set_notify_transform(false);
 	}
 }
 
@@ -77,9 +77,9 @@ void AnimatableBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	}
 
 	last_valid_transform = p_state->get_transform();
-	set_notify_local_transform(false);
+	set_notify_transform(false);
 	set_global_transform(last_valid_transform);
-	set_notify_local_transform(true);
+	set_notify_transform(true);
 	_on_transform_changed();
 }
 
@@ -97,19 +97,19 @@ void AnimatableBody3D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			set_only_update_transform_changes(false);
-			set_notify_local_transform(false);
+			set_notify_transform(false);
 		} break;
 
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			// Used by sync to physics, send the new transform to the physics...
 			Transform3D new_transform = get_global_transform();
 
 			PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_TRANSFORM, new_transform);
 
 			// ... but then revert changes.
-			set_notify_local_transform(false);
+			set_notify_transform(false);
 			set_global_transform(last_valid_transform);
-			set_notify_local_transform(true);
+			set_notify_transform(true);
 			_on_transform_changed();
 		} break;
 	}
