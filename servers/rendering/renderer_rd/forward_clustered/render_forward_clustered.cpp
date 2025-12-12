@@ -3352,35 +3352,56 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		uniforms.push_back(u);
 	}
 	{
-		Vector<RID> textures;
-		textures.resize(scene_state.max_lightmaps * 2);
+		LocalVector<RID> textures;
+		textures.resize(scene_state.max_lightmaps * 3);
 
 		RID default_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
-		for (uint32_t i = 0; i < scene_state.max_lightmaps * 2; i++) {
-			uint32_t current_lightmap_index = i < scene_state.max_lightmaps ? i : i - scene_state.max_lightmaps;
 
-			if (p_render_data && current_lightmap_index < p_render_data->lightmaps->size()) {
-				RID base = light_storage->lightmap_instance_get_lightmap((*p_render_data->lightmaps)[current_lightmap_index]);
-				RID texture;
+		// Lightmaps.
+		for (uint32_t i = 0; i < scene_state.max_lightmaps; i++) {
+			const int light_tex_idx = i;
+			const int shadow_tex_idx = scene_state.max_lightmaps + i;
+			const int dir_tex_idx = scene_state.max_lightmaps * 2 + i;
 
-				if (i < scene_state.max_lightmaps) {
-					// Lightmap
-					texture = light_storage->lightmap_get_texture(base);
+			// When a lightmap instance exists, fill buffer with light/shadow/directional textures (assuming they exist).
+			if (p_render_data && i < p_render_data->lightmaps->size()) {
+				RID base = light_storage->lightmap_instance_get_lightmap((*p_render_data->lightmaps)[i]);
+
+				// Lightmaps.
+				RID light_texture = light_storage->lightmap_get_texture(base);
+				if (light_texture.is_valid()) {
+					RID rd_texture = texture_storage->texture_get_rd_texture(light_texture);
+					textures[light_tex_idx] = rd_texture;
 				} else {
-					// Shadowmask
-					texture = light_storage->shadowmask_get_texture(base);
+					textures[light_tex_idx] = default_tex;
 				}
 
-				if (texture.is_valid()) {
-					RID rd_texture = texture_storage->texture_get_rd_texture(texture);
-					textures.write[i] = rd_texture;
-					continue;
+				// Shadowmasks.
+				RID shadow_texture = light_storage->lightmap_get_shadow_texture(base);
+				if (shadow_texture.is_valid()) {
+					RID rd_texture = texture_storage->texture_get_rd_texture(shadow_texture);
+					textures[shadow_tex_idx] = rd_texture;
+				} else {
+					textures[shadow_tex_idx] = default_tex;
 				}
+
+				// Directional.
+				RID dir_texture = light_storage->lightmap_get_directional_texture(base);
+				if (dir_texture.is_valid()) {
+					RID rd_texture = texture_storage->texture_get_rd_texture(dir_texture);
+					textures[dir_tex_idx] = rd_texture;
+				} else {
+					textures[dir_tex_idx] = default_tex;
+				}
+			} else {
+				// Lightmap doesn't exist, fill with empty textures.
+				textures[light_tex_idx] = default_tex;
+				textures[shadow_tex_idx] = default_tex;
+				textures[dir_tex_idx] = default_tex;
 			}
-
-			textures.write[i] = default_tex;
 		}
-		RD::Uniform u(RD::UNIFORM_TYPE_TEXTURE, 7, textures);
+
+		RD::Uniform u(RD::UNIFORM_TYPE_TEXTURE, 7, Vector<RID>(textures));
 		uniforms.push_back(u);
 	}
 	{
