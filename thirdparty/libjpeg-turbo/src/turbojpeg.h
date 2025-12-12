@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2015, 2017, 2020-2024 D. R. Commander.
+ * Copyright (C)2009-2015, 2017, 2020-2025 D. R. Commander.
  *                                         All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -737,7 +737,8 @@ enum TJPARAM {
    * - DCT/IDCT algorithm selection
    * - Progressive JPEG
    * - Arithmetic entropy coding
-   * - Compression from/decompression to planar YUV images
+   * - Compression from/decompression to planar YUV images (this parameter is
+   * ignored by #tj3CompressFromYUV8() and #tj3CompressFromYUVPlanes8())
    * - Decompression scaling
    * - Lossless transformation
    *
@@ -1496,17 +1497,16 @@ DLLEXPORT int tj3SetICCProfile(tjhandle handle, unsigned char *iccBuf,
  * #tj3SetICCProfile().)  This should ensure that the buffer never has to be
  * re-allocated.  (Setting #TJPARAM_NOREALLOC guarantees that it won't be.)
  * .
- * If you choose option 1 or 3, then `*jpegSize` should be set to the size of
- * your pre-allocated buffer.  In any case, unless you have set
- * #TJPARAM_NOREALLOC, you should always check `*jpegBuf` upon return from this
- * function, as it may have changed.
+ * Unless you have set #TJPARAM_NOREALLOC, you should always check `*jpegBuf`
+ * upon return from this function, as it may have changed.
  *
  * @param jpegSize pointer to a size_t variable that holds the size of the JPEG
  * buffer.  If `*jpegBuf` points to a pre-allocated buffer, then `*jpegSize`
- * should be set to the size of the buffer.  Upon return, `*jpegSize` will
- * contain the size of the JPEG image (in bytes.)  If `*jpegBuf` points to a
- * JPEG buffer that is being reused from a previous call to one of the JPEG
- * compression functions, then `*jpegSize` is ignored.
+ * should be set to the size of the buffer.  Otherwise, `*jpegSize` is
+ * ignored.  If `*jpegBuf` points to a JPEG buffer that is being reused from a
+ * previous call to one of the JPEG compression functions, then `*jpegSize` is
+ * also ignored.  Upon return, `*jpegSize` will contain the size of the JPEG
+ * image (in bytes.)
  *
  * @return 0 if successful, or -1 if an error occurred (see #tj3GetErrorStr()
  * and #tj3GetErrorCode().)
@@ -1557,17 +1557,16 @@ DLLEXPORT int tj3Compress8(tjhandle handle, const unsigned char *srcBuf,
  * #tj3SetICCProfile().)  This should ensure that the buffer never has to be
  * re-allocated.  (Setting #TJPARAM_NOREALLOC guarantees that it won't be.)
  * .
- * If you choose option 1 or 3, then `*jpegSize` should be set to the size of
- * your pre-allocated buffer.  In any case, unless you have set
- * #TJPARAM_NOREALLOC, you should always check `*jpegBuf` upon return from this
- * function, as it may have changed.
+ * Unless you have set #TJPARAM_NOREALLOC, you should always check `*jpegBuf`
+ * upon return from this function, as it may have changed.
  *
  * @param jpegSize pointer to a size_t variable that holds the size of the JPEG
  * buffer.  If `*jpegBuf` points to a pre-allocated buffer, then `*jpegSize`
- * should be set to the size of the buffer.  Upon return, `*jpegSize` will
- * contain the size of the JPEG image (in bytes.)  If `*jpegBuf` points to a
- * JPEG buffer that is being reused from a previous call to one of the JPEG
- * compression functions, then `*jpegSize` is ignored.
+ * should be set to the size of the buffer.  Otherwise, `*jpegSize` is
+ * ignored.  If `*jpegBuf` points to a JPEG buffer that is being reused from a
+ * previous call to one of the JPEG compression functions, then `*jpegSize` is
+ * also ignored.  Upon return, `*jpegSize` will contain the size of the JPEG
+ * image (in bytes.)
  *
  * @return 0 if successful, or -1 if an error occurred (see #tj3GetErrorStr()
  * and #tj3GetErrorCode().)
@@ -1619,17 +1618,16 @@ DLLEXPORT int tj3Compress12(tjhandle handle, const short *srcBuf, int width,
  * #tj3SetICCProfile().)  This should ensure that the buffer never has to be
  * re-allocated.  (Setting #TJPARAM_NOREALLOC guarantees that it won't be.)
  * .
- * If you choose option 1 or 3, then `*jpegSize` should be set to the size of
- * your pre-allocated buffer.  In any case, unless you have set
- * #TJPARAM_NOREALLOC, you should always check `*jpegBuf` upon return from this
- * function, as it may have changed.
+ * Unless you have set #TJPARAM_NOREALLOC, you should always check `*jpegBuf`
+ * upon return from this function, as it may have changed.
  *
  * @param jpegSize pointer to a size_t variable that holds the size of the JPEG
  * buffer.  If `*jpegBuf` points to a pre-allocated buffer, then `*jpegSize`
- * should be set to the size of the buffer.  Upon return, `*jpegSize` will
- * contain the size of the JPEG image (in bytes.)  If `*jpegBuf` points to a
- * JPEG buffer that is being reused from a previous call to one of the JPEG
- * compression functions, then `*jpegSize` is ignored.
+ * should be set to the size of the buffer.  Otherwise, `*jpegSize` is
+ * ignored.  If `*jpegBuf` points to a JPEG buffer that is being reused from a
+ * previous call to one of the JPEG compression functions, then `*jpegSize` is
+ * also ignored.  Upon return, `*jpegSize` will contain the size of the JPEG
+ * image (in bytes.)
  *
  * @return 0 if successful, or -1 if an error occurred (see #tj3GetErrorStr()
  * and #tj3GetErrorCode().)
@@ -1641,7 +1639,8 @@ DLLEXPORT int tj3Compress16(tjhandle handle, const unsigned short *srcBuf,
 
 /**
  * Compress a set of 8-bit-per-sample Y, U (Cb), and V (Cr) image planes into
- * an 8-bit-per-sample JPEG image.
+ * an 8-bit-per-sample lossy @ref TJCS_YCbCr "YCbCr" or
+ * @ref TJCS_GRAY "grayscale" JPEG image.
  *
  * @param handle handle to a TurboJPEG instance that has been initialized for
  * compression
@@ -1684,17 +1683,16 @@ DLLEXPORT int tj3Compress16(tjhandle handle, const unsigned short *srcBuf,
  * #tj3SetICCProfile().)  This should ensure that the buffer never has to be
  * re-allocated.  (Setting #TJPARAM_NOREALLOC guarantees that it won't be.)
  * .
- * If you choose option 1 or 3, then `*jpegSize` should be set to the size of
- * your pre-allocated buffer.  In any case, unless you have set
- * #TJPARAM_NOREALLOC, you should always check `*jpegBuf` upon return from this
- * function, as it may have changed.
+ * Unless you have set #TJPARAM_NOREALLOC, you should always check `*jpegBuf`
+ * upon return from this function, as it may have changed.
  *
  * @param jpegSize pointer to a size_t variable that holds the size of the JPEG
  * buffer.  If `*jpegBuf` points to a pre-allocated buffer, then `*jpegSize`
- * should be set to the size of the buffer.  Upon return, `*jpegSize` will
- * contain the size of the JPEG image (in bytes.)  If `*jpegBuf` points to a
- * JPEG buffer that is being reused from a previous call to one of the JPEG
- * compression functions, then `*jpegSize` is ignored.
+ * should be set to the size of the buffer.  Otherwise, `*jpegSize` is
+ * ignored.  If `*jpegBuf` points to a JPEG buffer that is being reused from a
+ * previous call to one of the JPEG compression functions, then `*jpegSize` is
+ * also ignored.  Upon return, `*jpegSize` will contain the size of the JPEG
+ * image (in bytes.)
  *
  * @return 0 if successful, or -1 if an error occurred (see #tj3GetErrorStr()
  * and #tj3GetErrorCode().)
@@ -1708,7 +1706,8 @@ DLLEXPORT int tj3CompressFromYUVPlanes8(tjhandle handle,
 
 /**
  * Compress an 8-bit-per-sample unified planar YUV image into an
- * 8-bit-per-sample JPEG image.
+ * 8-bit-per-sample lossy @ref TJCS_YCbCr "YCbCr" or @ref TJCS_GRAY "grayscale"
+ * JPEG image.
  *
  * @param handle handle to a TurboJPEG instance that has been initialized for
  * compression
@@ -1746,17 +1745,16 @@ DLLEXPORT int tj3CompressFromYUVPlanes8(tjhandle handle,
  * #tj3SetICCProfile().)  This should ensure that the buffer never has to be
  * re-allocated.  (Setting #TJPARAM_NOREALLOC guarantees that it won't be.)
  * .
- * If you choose option 1 or 3, then `*jpegSize` should be set to the size of
- * your pre-allocated buffer.  In any case, unless you have set
- * #TJPARAM_NOREALLOC, you should always check `*jpegBuf` upon return from this
- * function, as it may have changed.
+ * Unless you have set #TJPARAM_NOREALLOC, you should always check `*jpegBuf`
+ * upon return from this function, as it may have changed.
  *
  * @param jpegSize pointer to a size_t variable that holds the size of the JPEG
  * buffer.  If `*jpegBuf` points to a pre-allocated buffer, then `*jpegSize`
- * should be set to the size of the buffer.  Upon return, `*jpegSize` will
- * contain the size of the JPEG image (in bytes.)  If `*jpegBuf` points to a
- * JPEG buffer that is being reused from a previous call to one of the JPEG
- * compression functions, then `*jpegSize` is ignored.
+ * should be set to the size of the buffer.  Otherwise, `*jpegSize` is
+ * ignored.  If `*jpegBuf` points to a JPEG buffer that is being reused from a
+ * previous call to one of the JPEG compression functions, then `*jpegSize` is
+ * also ignored.  Upon return, `*jpegSize` will contain the size of the JPEG
+ * image (in bytes.)
  *
  * @return 0 if successful, or -1 if an error occurred (see #tj3GetErrorStr()
  * and #tj3GetErrorCode().)
@@ -1770,8 +1768,9 @@ DLLEXPORT int tj3CompressFromYUV8(tjhandle handle,
 /**
  * Encode an 8-bit-per-sample packed-pixel RGB or grayscale image into separate
  * 8-bit-per-sample Y, U (Cb), and V (Cr) image planes.  This function performs
- * color conversion (which is accelerated in the libjpeg-turbo implementation)
- * but does not execute any of the other steps in the JPEG compression process.
+ * color conversion and downsampling (which are accelerated in the
+ * libjpeg-turbo implementation) but does not execute any of the other steps in
+ * the JPEG compression process.
  *
  * @param handle handle to a TurboJPEG instance that has been initialized for
  * compression
@@ -1825,8 +1824,9 @@ DLLEXPORT int tj3EncodeYUVPlanes8(tjhandle handle, const unsigned char *srcBuf,
 /**
  * Encode an 8-bit-per-sample packed-pixel RGB or grayscale image into an
  * 8-bit-per-sample unified planar YUV image.  This function performs color
- * conversion (which is accelerated in the libjpeg-turbo implementation) but
- * does not execute any of the other steps in the JPEG compression process.
+ * conversion and downsampling (which are accelerated in the libjpeg-turbo
+ * implementation) but does not execute any of the other steps in the JPEG
+ * compression process.
  *
  * @param handle handle to a TurboJPEG instance that has been initialized for
  * compression
@@ -2065,11 +2065,12 @@ DLLEXPORT int tj3Decompress16(tjhandle handle, const unsigned char *jpegBuf,
 
 
 /**
- * Decompress an 8-bit-per-sample JPEG image into separate 8-bit-per-sample Y,
- * U (Cb), and V (Cr) image planes.  This function performs JPEG decompression
- * but leaves out the color conversion step, so a planar YUV image is generated
- * instead of a packed-pixel image.  The @ref TJPARAM "parameters" that
- * describe the JPEG image will be set when this function returns.
+ * Decompress an 8-bit-per-sample lossy JPEG image into separate
+ * 8-bit-per-sample Y, U (Cb), and V (Cr) image planes.  This function performs
+ * JPEG decompression but leaves out the color conversion step, so a planar YUV
+ * image is generated instead of a packed-pixel image.  The
+ * @ref TJPARAM "parameters" that describe the JPEG image will be set when this
+ * function returns.
  *
  * @param handle handle to a TurboJPEG instance that has been initialized for
  * decompression
@@ -2108,11 +2109,11 @@ DLLEXPORT int tj3DecompressToYUVPlanes8(tjhandle handle,
 
 
 /**
- * Decompress an 8-bit-per-sample JPEG image into an 8-bit-per-sample unified
- * planar YUV image.  This function performs JPEG decompression but leaves out
- * the color conversion step, so a planar YUV image is generated instead of a
- * packed-pixel image.  The @ref TJPARAM "parameters" that describe the JPEG
- * image will be set when this function returns.
+ * Decompress an 8-bit-per-sample lossy JPEG image into an 8-bit-per-sample
+ * unified planar YUV image.  This function performs JPEG decompression but
+ * leaves out the color conversion step, so a planar YUV image is generated
+ * instead of a packed-pixel image.  The @ref TJPARAM "parameters" that
+ * describe the JPEG image will be set when this function returns.
  *
  * @param handle handle to a TurboJPEG instance that has been initialized for
  * decompression
@@ -2310,22 +2311,21 @@ DLLEXPORT size_t tj3TransformBufSize(tjhandle handle,
  * -# pre-allocate the buffer to a "worst case" size determined by calling
  * #tj3TransformBufSize().  Under normal circumstances, this should ensure that
  * the buffer never has to be re-allocated.  (Setting #TJPARAM_NOREALLOC
- * guarantees that it won't be.)  Note, however, that there are some rare cases
- * (such as transforming images with a large amount of embedded Exif data) in
- * which the transformed JPEG image will be larger than the worst-case size,
- * and #TJPARAM_NOREALLOC cannot be used in those cases unless the embedded
- * data is discarded using #TJXOPT_COPYNONE or #TJPARAM_SAVEMARKERS.
+ * guarantees that it won't be.  However, if the source image has a large
+ * amount of embedded Exif data, then the transformed JPEG image may be larger
+ * than the worst-case size.  #TJPARAM_NOREALLOC cannot be used in that case
+ * unless the embedded data is discarded using #TJXOPT_COPYNONE or
+ * #TJPARAM_SAVEMARKERS.)
  * .
- * If you choose option 1 or 3, then `dstSizes[i]` should be set to the size of
- * your pre-allocated buffer.  In any case, unless you have set
- * #TJPARAM_NOREALLOC, you should always check `dstBufs[i]` upon return from
- * this function, as it may have changed.
+ * Unless you have set #TJPARAM_NOREALLOC, you should always check `dstBufs[i]`
+ * upon return from this function, as it may have changed.
  *
  * @param dstSizes pointer to an array of n size_t variables that will receive
  * the actual sizes (in bytes) of each transformed JPEG image.  If `dstBufs[i]`
  * points to a pre-allocated buffer, then `dstSizes[i]` should be set to the
- * size of the buffer.  Upon return, `dstSizes[i]` will contain the size of the
- * transformed JPEG image (in bytes.)
+ * size of the buffer.  Otherwise, `dstSizes[i]` is ignored.  Upon return,
+ * `dstSizes[i]` will contain the size of the transformed JPEG image (in
+ * bytes.)
  *
  * @param transforms pointer to an array of n #tjtransform structures, each of
  * which specifies the transform parameters and/or cropping region for the
