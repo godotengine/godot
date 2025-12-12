@@ -51,6 +51,7 @@ public:
 	bool has_valid_event() const;
 
 	String get_as_text() const;
+	String get_as_text_alt() const;
 
 	static Ref<Shortcut> make_from_action(const StringName &p_action);
 
