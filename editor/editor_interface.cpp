@@ -395,6 +395,14 @@ bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
 	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
 }
 
+Dictionary EditorInterface::get_documentation(const StringName &p_class_name) const {
+	DocData::ClassDoc *class_doc = EditorHelp::get_doc(p_class_name);
+	if (!class_doc) {
+		return Dictionary();
+	}
+	return DocData::ClassDoc::to_dict(*class_doc);
+}
+
 // Editor GUI.
 
 Ref<Theme> EditorInterface::get_editor_theme() const {
@@ -844,6 +852,8 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_documentation", "class_name"), &EditorInterface::get_documentation);
 
 	// Editor GUI.
 
