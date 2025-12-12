@@ -548,6 +548,46 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 ///////////////////////////////////////////////////////////////////////////
 // ShaderData
 
+static GLenum TranslateRDBlendOperation(RD::BlendOperation p_op) {
+	static constexpr GLenum table[] = {	// Needs to have same order as RD::BlendOperation
+		GL_FUNC_ADD,
+		GL_FUNC_SUBTRACT,
+		GL_FUNC_REVERSE_SUBTRACT,
+		GL_MIN,
+		GL_MAX
+	};
+	static constexpr unsigned int count = sizeof(table) / sizeof(GLenum);
+	ERR_FAIL_INDEX_V(p_op, count, GL_FUNC_ADD);
+	return table[p_op];
+}
+
+static GLenum TranslateRDBlendFactor(RD::BlendFactor p_factor) {
+	static constexpr GLenum table[] = {	// Needs to have same order as RD::BlendFactor
+		GL_ZERO,
+		GL_ONE,
+		GL_SRC_COLOR,
+		GL_ONE_MINUS_SRC_COLOR,
+		GL_DST_COLOR,
+		GL_ONE_MINUS_DST_COLOR,
+		GL_SRC_ALPHA,
+		GL_ONE_MINUS_SRC_ALPHA,
+		GL_DST_ALPHA,
+		GL_ONE_MINUS_DST_ALPHA,
+		GL_CONSTANT_COLOR,
+		GL_ONE_MINUS_CONSTANT_COLOR,
+		GL_CONSTANT_ALPHA,
+		GL_ONE_MINUS_CONSTANT_ALPHA,
+		GL_SRC_ALPHA_SATURATE,
+		GL_SRC1_COLOR,
+		GL_ONE_MINUS_SRC1_COLOR,
+		GL_SRC1_ALPHA,
+		GL_ONE_MINUS_SRC1_ALPHA,
+	};
+	static constexpr unsigned int count = sizeof(table) / sizeof(GLenum);
+	ERR_FAIL_INDEX_V(p_factor, count, GL_ZERO);
+	return table[p_factor];
+}
+
 void ShaderData::set_path_hint(const String &p_hint) {
 	path = p_hint;
 }
@@ -579,6 +619,31 @@ Variant ShaderData::get_default_parameter(const StringName &p_parameter) const {
 		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
 	}
 	return Variant();
+}
+
+void ShaderData::set_color_pass_blend_state(const Ref<RDPipelineColorBlendState> &p_value) {
+	if (p_value.is_valid()) {
+		RD::PipelineColorBlendState blend_state = p_value->get_base();
+		if (blend_state.attachments.size() >= 1u) {
+			RD::PipelineColorBlendState::Attachment attachment = blend_state.attachments[0];
+			if (attachment.color_blend_op != attachment.alpha_blend_op) {
+				WARN_PRINT("Color blend attachment has different color operation than alpha operation. This is not supported by the GLES3 renderer -- the alpha blend operation has been ignored.");
+			}
+			if (!attachment.write_a || !attachment.write_b || !attachment.write_g || !attachment.write_r) {
+				WARN_PRINT("Color blend attachment does not write all color components. This is not supported by the GLES3 renderer.");
+			}
+			color_blend_op = TranslateRDBlendOperation(attachment.color_blend_op);
+			dst_alpha_blend_factor = TranslateRDBlendFactor(attachment.dst_alpha_blend_factor);
+			dst_color_blend_factor = TranslateRDBlendFactor(attachment.dst_color_blend_factor);
+			src_alpha_blend_factor = TranslateRDBlendFactor(attachment.src_alpha_blend_factor);
+			src_color_blend_factor = TranslateRDBlendFactor(attachment.src_color_blend_factor);
+			uses_color_pass_blend_attachment = attachment.enable_blend;
+		} else {
+			uses_color_pass_blend_attachment = false;
+		}
+	} else {
+		uses_color_pass_blend_attachment = false;
+	}
 }
 
 void ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
@@ -2277,6 +2342,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 					shader->data->set_default_texture_parameter(E.key, E2.value, E2.key);
 				}
 			}
+
+			shader->data->set_color_pass_blend_state(shader->color_pass_blend_state);
 		}
 	}
 
@@ -2360,6 +2427,21 @@ Variant MaterialStorage::shader_get_parameter_default(RID p_shader, const String
 		return shader->data->get_default_parameter(p_param);
 	}
 	return Variant();
+}
+
+void MaterialStorage::shader_set_color_pass_blend_state(RID p_shader, const Ref<RDPipelineColorBlendState> &p_value) {
+	GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL(shader);
+	shader->color_pass_blend_state = p_value;
+	if (shader->data) {
+		shader->data->set_color_pass_blend_state(p_value);
+	}
+}
+
+Ref<RDPipelineColorBlendState> MaterialStorage::shader_get_color_pass_blend_state(RID p_shader) const {
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL_V(shader, nullptr);
+	return shader->color_pass_blend_state;
 }
 
 RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_shader) const {

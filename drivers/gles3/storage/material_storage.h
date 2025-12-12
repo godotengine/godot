@@ -52,10 +52,17 @@ struct ShaderData {
 	String path;
 	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 	HashMap<StringName, HashMap<int, RID>> default_texture_params;
+	GLenum color_blend_op;
+	GLenum dst_alpha_blend_factor;
+	GLenum dst_color_blend_factor;
+	GLenum src_alpha_blend_factor;
+	GLenum src_color_blend_factor;
+	bool uses_color_pass_blend_attachment = false;
 
 	virtual void set_path_hint(const String &p_hint);
 	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
 	virtual Variant get_default_parameter(const StringName &p_parameter) const;
+	virtual void set_color_pass_blend_state(const Ref<RDPipelineColorBlendState> &p_value);
 	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
 	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 	virtual bool is_parameter_texture(const StringName &p_param) const;
@@ -78,6 +85,7 @@ struct Shader {
 	String path_hint;
 	RS::ShaderMode mode;
 	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
+	Ref<RDPipelineColorBlendState> color_pass_blend_state;
 	HashSet<Material *> owners;
 };
 
@@ -609,6 +617,9 @@ public:
 	virtual void shader_set_default_texture_parameter(RID p_shader, const StringName &p_name, RID p_texture, int p_index) override;
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const override;
 	virtual Variant shader_get_parameter_default(RID p_shader, const StringName &p_name) const override;
+
+	virtual void shader_set_color_pass_blend_state(RID p_shader, const Ref<RDPipelineColorBlendState> &p_value) override;
+	virtual Ref<RDPipelineColorBlendState> shader_get_color_pass_blend_state(RID p_shader) const override;
 
 	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
 	virtual void shader_embedded_set_lock() override {}

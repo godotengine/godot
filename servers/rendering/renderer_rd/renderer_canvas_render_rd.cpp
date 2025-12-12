@@ -1499,24 +1499,28 @@ void RendererCanvasRenderRD::CanvasShaderData::_create_pipeline(PipelineKey p_pi
 			"LCD:", p_pipeline_key.lcd_blend);
 #endif
 
-	RendererRD::MaterialStorage::ShaderData::BlendMode blend_mode_rd = RendererRD::MaterialStorage::ShaderData::BlendMode(blend_mode);
 	RD::PipelineColorBlendState blend_state;
-	RD::PipelineColorBlendState::Attachment attachment;
 	uint32_t dynamic_state_flags = 0;
-	if (p_pipeline_key.lcd_blend) {
-		attachment.enable_blend = true;
-		attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-		attachment.color_blend_op = RD::BLEND_OP_ADD;
-		attachment.src_color_blend_factor = RD::BLEND_FACTOR_CONSTANT_COLOR;
-		attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
-		attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-		attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		dynamic_state_flags = RD::DYNAMIC_STATE_BLEND_CONSTANTS;
+	if (uses_color_pass_blend_state) {
+		blend_state = color_pass_blend_state;
 	} else {
-		attachment = RendererRD::MaterialStorage::ShaderData::blend_mode_to_blend_attachment(blend_mode_rd);
-	}
+		RendererRD::MaterialStorage::ShaderData::BlendMode blend_mode_rd = RendererRD::MaterialStorage::ShaderData::BlendMode(blend_mode);
+		RD::PipelineColorBlendState::Attachment attachment;
+		if (p_pipeline_key.lcd_blend) {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_CONSTANT_COLOR;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			dynamic_state_flags = RD::DYNAMIC_STATE_BLEND_CONSTANTS;
+		} else {
+			attachment = RendererRD::MaterialStorage::ShaderData::blend_mode_to_blend_attachment(blend_mode_rd);
+		}
 
-	blend_state.attachments.push_back(attachment);
+		blend_state.attachments.push_back(attachment);
+	}
 
 	RD::PipelineMultisampleState multisample_state;
 	multisample_state.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_pipeline_key.framebuffer_format_id, 0);
