@@ -179,8 +179,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE)])
 
     if env["use_coverage"]:
-        env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
-        env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
+        env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs", "-fprofile-update=prefer-atomic"])
+        env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs", "-fprofile-update=prefer-atomic"])
 
     ## Dependencies
 
