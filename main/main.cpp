@@ -2673,7 +2673,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
+	OS::get_singleton()->_hidpi_awareness = OS::HidpiAwareness(int(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/dpi/hidpi_awareness", PROPERTY_HINT_ENUM, "No,System wide,Per monitor"), int(OS::HidpiAwareness::SYSTEM_WIDE_AWARENESS))));
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
 
 	load_shell_env = GLOBAL_DEF("application/run/load_shell_environment", false);
@@ -2681,7 +2681,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed.
-		OS::get_singleton()->_allow_hidpi = true;
+		OS::get_singleton()->_hidpi_awareness = OS::HidpiAwareness::SYSTEM_WIDE_AWARENESS;
 		load_shell_env = true;
 	}
 #endif
