@@ -1,0 +1,4 @@
+godot/.godot
+*.so
+*.os
+src/deps/gdextension_interface.h
