@@ -275,6 +275,30 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the slice of the <em>NodePath</em>, from <c>begin</c> (inclusive) to <c>end</c> (exclusive), as a
+        /// new <em>NodePath</em>.<br/>
+        /// The absolute value of <c>begin</c> and <c>end</c> will be clamped to the sum of
+        /// <see cref="NodePath.GetNameCount">GetNameCount</see> and
+        /// <see cref="NodePath.GetSubNameCount">GetSubNameCount</see>, so the default value for <c>end</c> makes it
+        /// slice to the end of the <em>NodePath</em> by default (i.e. <c>path.Slice(1)</c> is a shorthand for
+        /// <c>path.Slice(1, path.GetNameCount() + path.GetSubNameCount())</c>).<br/>
+        /// If either <c>begin</c> or <c>end</c> are negative, they will be relative to the end of the <em>NodePath</em>
+        /// (i.e. <c>path.Slice(0, -2)</c> is shorthand for
+        /// <c>path.Slice(0, path.GetNameCount() + path.GetSubNameCount() - 2)</c>).
+        /// </summary>
+        /// <param name="begin">The index of the name or subname at which to start the slice.</param>
+        /// <param name="end">The index (exclusive) of the name or subname at which to end the slice.</param>
+        /// <returns>A slice of the <em>NodePath</em> bounded by <c>begin</c> and <c>end</c>.</returns>
+        public NodePath Slice(int begin, int end = Int32.MaxValue)
+        {
+            var self = (godot_node_path)NativeValue;
+            NativeFuncs.godotsharp_node_path_slice(self, begin, end, out godot_node_path slicedNodePath);
+
+            using (slicedNodePath)
+                return new NodePath(slicedNodePath);
+        }
+
+        /// <summary>
         /// Returns <see langword="true"/> if the node path is absolute (as opposed to relative),
         /// which means that it starts with a slash character (<c>/</c>). Absolute node paths can
         /// be used to access the root node (<c>"/root"</c>) or autoloads (e.g. <c>"/global"</c>
