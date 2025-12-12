@@ -491,6 +491,14 @@ void ParticlesStorage::particles_set_transform_align(RID p_particles, RS::Partic
 	particles->transform_align = p_transform_align;
 }
 
+void ParticlesStorage::particles_set_transform_align_flags(RID p_particles, uint32_t p_flags) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->align_flags = p_flags;
+}
+
+
 void ParticlesStorage::particles_set_transform_align_custom_src(RID p_particles, RS::ParticlesAlignCustomSrc p_transform_align_custom_src) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
@@ -1311,7 +1319,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	copy_push_constant.align_mode = particles->transform_align;
 	copy_push_constant.transform_align_src = particles->transform_align_src;
 	copy_push_constant.subtype = uint32_t(particles->rotation_axis);
-	copy_push_constant.align_flags_velocity = uint32_t(particles->align_to_velocity);
+	copy_push_constant.align_flags = particles->align_flags;
 
 	if (do_sort) {
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -1659,6 +1667,7 @@ void ParticlesStorage::update_particles() {
 			copy_push_constant.align_up[2] = 0;
 			copy_push_constant.transform_align_src = particles->transform_align_src;
 			copy_push_constant.subtype = uint32_t(particles->rotation_axis);
+			copy_push_constant.align_flags = particles->align_flags;
 
 			if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
 				copy_push_constant.trail_size = particles->trail_bind_poses.size();

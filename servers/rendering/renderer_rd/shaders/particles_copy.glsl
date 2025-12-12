@@ -67,10 +67,10 @@ layout(push_constant, std430) uniform Params {
 
 	float inv_emission_transform[12];
 
-	uint custom_src;
-	uint subtype;
-	uint subtype_flags;
+	uint align_custom_src;
+	uint align_axis;
 	uint align_flags;
+	uint pad1;
 }
 params;
 
@@ -179,7 +179,7 @@ void main() {
 			} break; //nothing
 			case ALIGN_BILLBOARD: {
 				float angle = 0.;
-				switch (params.custom_src) {
+				switch (params.align_custom_src) {
 					case CUSTOM_SRC_X: {
 						angle = particles.data[particle].custom.x;
 					} break;
@@ -212,7 +212,7 @@ void main() {
 			} break;
 			case ALIGN_ROTATE_AXIS: {
 				vec3 axis = vec3(1.0, 0.0, 0.0);
-				switch (params.subtype) {
+				switch (params.align_axis) {
 					case ALIGN_AXIS_X: {
 						axis = vec3(1.0, 0.0, 0.0);
 					} break;
@@ -224,7 +224,7 @@ void main() {
 					} break;
 				}
 				float angle = 0.;
-				switch (params.custom_src) {
+				switch (params.align_custom_src) {
 					case CUSTOM_SRC_X: {
 						angle = particles.data[particle].custom.x;
 					} break;
@@ -298,8 +298,8 @@ void main() {
 				vec3 v = particles.data[particle].velocity;
 				v = normalize(v);
 
-				if(params.align_flags & ALIGN_FLAGS_ALIGN_TO_VELOCITY){
-					switch (params.subtype) {
+				if(bool(params.align_flags & uint(1))){
+					switch (params.align_axis) {
 						case ALIGN_AXIS_X: {
 							vec3 len = vec3(
 								length(txform[0].xyz),
@@ -323,6 +323,7 @@ void main() {
 							);
 
 							txform[0].xyz = normalize(cross(v, params.sort_direction));
+							txform[1].xyz = v;
 							txform[2].xyz = cross(txform[0].xyz, txform[1].xyz);
 
 							txform[0].xyz *= len.x;
@@ -331,7 +332,7 @@ void main() {
 						} break;
 					}
 				} else {
-					switch (params.subtype) {
+					switch (params.align_axis) {
 						case ALIGN_AXIS_X: {
 							vec3 len = vec3(
 								length(txform[0].xyz),
@@ -340,7 +341,7 @@ void main() {
 							);
 
 							//txform[0].xyz = v;
-							txform[1].xyz = normalize(cross(params.sort_direction, txform[0]));
+							txform[1].xyz = normalize(cross(params.sort_direction, txform[0].xyz));
 							txform[2].xyz = cross(txform[0].xyz, txform[1].xyz);
 
 							txform[0].xyz *= len.x;
