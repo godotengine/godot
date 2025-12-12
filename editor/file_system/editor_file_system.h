@@ -149,6 +149,9 @@ class EditorFileSystem : public Node {
 
 	_THREAD_SAFE_CLASS_
 
+	// The name is the version, to keep compatibility with different versions of Godot.
+	static inline const String CACHE_FILE_NAME = "filesystem_cache10";
+
 	struct ItemAction {
 		enum Action {
 			ACTION_NONE,
@@ -181,7 +184,7 @@ class EditorFileSystem : public Node {
 	static void _thread_func(void *_userdata);
 
 	EditorFileSystemDirectory *new_filesystem = nullptr;
-	static ScannedDirectory *first_scan_root_dir;
+	static inline ScannedDirectory *first_scan_root_dir = nullptr;
 
 	bool filesystem_changed_queued = false;
 	bool scanning = false;
@@ -191,7 +194,7 @@ class EditorFileSystem : public Node {
 	float scan_total;
 	String filesystem_settings_version_for_import;
 	bool revalidate_import_files = false;
-	static int nb_files_total;
+	static inline int nb_files_total = 0;
 
 	void _notify_filesystem_changed();
 	void _scan_filesystem();
@@ -208,7 +211,7 @@ class EditorFileSystem : public Node {
 
 	EditorFileSystemDirectory *filesystem = nullptr;
 
-	static EditorFileSystem *singleton;
+	static inline EditorFileSystem *singleton = nullptr;
 
 	using ScriptClassInfo = EditorFileSystemDirectory::FileInfo::ScriptClassInfo;
 
@@ -337,9 +340,8 @@ class EditorFileSystem : public Node {
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
-	void _find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, HashSet<String> &groups_to_reimport);
-
-	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
+	void _find_group_files(EditorFileSystemDirectory *p_directory, HashMap<String, Vector<String>> &p_group_files, HashSet<String> &p_groups_to_reimport);
+	void _move_group_files(EditorFileSystemDirectory *p_directory, const String &p_group_file, const String &p_new_location);
 
 	HashSet<String> group_file_cache;
 	HashMap<String, String> file_icon_cache;
@@ -362,8 +364,9 @@ class EditorFileSystem : public Node {
 
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
+	void _scan_extensions_dir(EditorFileSystemDirectory *p_directory, HashSet<String> &r_extensions);
 	bool _scan_extensions();
-	bool _scan_import_support(const Vector<String> &reimports);
+	bool _scan_import_support(const Vector<String> &p_reimports);
 
 	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 
