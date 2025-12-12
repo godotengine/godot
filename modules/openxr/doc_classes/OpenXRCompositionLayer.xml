@@ -106,6 +106,10 @@
 			See [method get_android_surface] for information about how to get the surface so that your application can draw to it.
 			[b]Note:[/b] This will only work in Android builds.
 		</member>
+		<member name="eye_visibility" type="int" setter="set_eye_visibility" getter="get_eye_visibility" enum="OpenXRCompositionLayer.EyeVisibility" default="0">
+			The eye(s) the composition layer is visible to.
+			[b]Note:[/b] Not all composition layer types or runtimes support restricting visibility to a single eye.
+		</member>
 	</members>
 	<constants>
 		<constant name="FILTER_NEAREST" value="0" enum="Filter">
@@ -160,6 +164,15 @@
 		</constant>
 		<constant name="SWIZZLE_ONE" value="5" enum="Swizzle">
 			Maps a color channel to the value of one.
+		</constant>
+		<constant name="EYE_VISIBILITY_BOTH" value="0" enum="EyeVisibility">
+			The layer is visible to both the left and right eyes.
+		</constant>
+		<constant name="EYE_VISIBILITY_LEFT" value="1" enum="EyeVisibility">
+			The layer is visible only to the left eye.
+		</constant>
+		<constant name="EYE_VISIBILITY_RIGHT" value="2" enum="EyeVisibility">
+			The layer is visible only to the right eye.
 		</constant>
 	</constants>
 </class>
