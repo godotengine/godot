@@ -41,7 +41,6 @@ class EditorLocaleDialog;
 class EditorResourcePicker;
 class EditorSpinSlider;
 class EditorVariantTypePopupMenu;
-class MenuButton;
 class SceneTreeDialog;
 class TextEdit;
 class TextureButton;
@@ -688,7 +687,8 @@ class EditorPropertyNodePath : public EditorProperty {
 	};
 
 	Button *assign = nullptr;
-	MenuButton *menu = nullptr;
+	Button *menu_button = nullptr;
+	PopupMenu *menu = nullptr;
 	LineEdit *edit = nullptr;
 
 	SceneTreeDialog *scene_tree = nullptr;
@@ -701,11 +701,12 @@ class EditorPropertyNodePath : public EditorProperty {
 	void _node_assign();
 	void _assign_draw();
 	Node *get_base_node();
-	void _update_menu();
+	void _popup_menu(Vector2i p_pos);
 	void _menu_option(int p_idx);
 	void _accept_text();
 	void _text_submitted(const String &p_text);
 	const NodePath _get_node_path() const;
+	void _button_input(const Ref<InputEvent> &p_event);
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
