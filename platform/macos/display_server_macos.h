@@ -64,14 +64,18 @@
 @class GodotContentView;
 @class GodotWindowDelegate;
 @class GodotButtonView;
+#ifdef TOOLS_ENABLED
 @class GodotEmbeddedView;
 @class CALayerHost;
+#endif
 
 #undef BitMap
 #undef CursorShape
 #undef FontVariation
 
+#ifdef TOOLS_ENABLED
 class EmbeddedProcessMacOS;
+#endif
 
 class DisplayServerMacOS : public DisplayServerMacOSBase {
 	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);
@@ -239,12 +243,14 @@ private:
 
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
 
+#ifdef TOOLS_ENABLED
 	struct EmbeddedProcessData {
-		EmbeddedProcessMacOS *process;
+		EmbeddedProcessMacOS *process = nullptr;
 		WindowData *wd = nullptr;
 		CALayer *layer_host = nil;
 	};
 	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
+#endif
 	void _window_update_display_id(WindowData *p_wd);
 
 public:
@@ -440,9 +446,9 @@ public:
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 #ifdef TOOLS_ENABLED
 	Error embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process);
-#endif
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
 	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
+#endif
 
 	void _process_events(bool p_pump);
 	virtual void process_events() override;
