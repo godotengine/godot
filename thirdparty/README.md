@@ -1183,11 +1183,13 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.45 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2025)
+- Version: 1.46 (6141e1154303dadd5c3e480bc4a16e26f1dcb2af, 2025)
 - License: MIT
 
 Files extracted from upstream source:
 
+- `stable/tablet/README`
+- `stable/tablet/tablet-unstable-v2.xml`
 - `stable/viewporter/README`
 - `stable/viewporter/viewporter.xml`
 - `stable/xdg-shell/README`
@@ -1207,8 +1209,6 @@ Files extracted from upstream source:
 - `unstable/primary-selection/primary-selection-unstable-v1.xml`
 - `unstable/relative-pointer/README`
 - `unstable/relative-pointer/relative-pointer-unstable-v1.xml`
-- `unstable/tablet/README`
-- `unstable/tablet/tablet-unstable-v2.xml`
 - `unstable/text-input/README`
 - `unstable/text-input/text-input-unstable-v3.xml`
 - `unstable/xdg-decoration/README`
