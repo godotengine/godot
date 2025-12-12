@@ -377,7 +377,7 @@ void Node::_propagate_enter_tree() {
 	data.blocked--;
 
 #ifdef DEBUG_ENABLED
-	SceneDebugger::add_to_cache(data.scene_file_path, this);
+	SceneDebugger::add_to_cache(get_scene_file_path(), this);
 #endif
 	// enter groups
 }
@@ -405,9 +405,9 @@ void Node::_propagate_exit_tree() {
 	//block while removing children
 
 #ifdef DEBUG_ENABLED
-	if (!data.scene_file_path.is_empty()) {
+	if (data.scene_file_uid != ResourceUID::INVALID_ID) {
 		// Only remove if file path is set (optimization).
-		SceneDebugger::remove_from_cache(data.scene_file_path, this);
+		SceneDebugger::remove_from_cache(get_scene_file_path(), this);
 	}
 #endif
 	data.blocked++;
@@ -2651,12 +2651,19 @@ RequiredResult<Tween> Node::create_tween() {
 
 void Node::set_scene_file_path(const String &p_scene_file_path) {
 	ERR_THREAD_GUARD
-	data.scene_file_path = p_scene_file_path;
+	data.scene_file_uid = ResourceLoader::get_resource_uid(p_scene_file_path);
 	_emit_editor_state_changed();
 }
 
 String Node::get_scene_file_path() const {
-	return data.scene_file_path;
+	if (data.scene_file_uid == ResourceUID::INVALID_ID) {
+		return String();
+	}
+	return ResourceUID::get_singleton()->get_id_path(data.scene_file_uid);
+}
+
+ResourceUID::ID Node::get_scene_file_uid() const {
+	return data.scene_file_uid;
 }
 
 void Node::set_editor_description(const String &p_editor_description) {
