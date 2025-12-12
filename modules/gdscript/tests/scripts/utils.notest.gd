@@ -240,6 +240,8 @@ static func get_property_hint_name(hint: PropertyHint) -> String:
 			return "PROPERTY_HINT_TOOL_BUTTON"
 		PROPERTY_HINT_INPUT_NAME:
 			return "PROPERTY_HINT_INPUT_NAME"
+		PROPERTY_HINT_SUFFIX:
+			return "PROPERTY_HINT_SUFFIX"
 
 	printerr("Argument `hint` is invalid. Use `PROPERTY_HINT_*` constants.")
 	return "<invalid hint>"
