@@ -687,7 +687,7 @@ public:
 		_init_from(p_other);
 	}
 
-	AHashMap(uint32_t p_initial_capacity) {
+	explicit AHashMap(uint32_t p_initial_capacity) {
 		// Capacity can't be 0 and must be 2^n - 1.
 		_capacity_mask = MAX(4u, p_initial_capacity);
 		_capacity_mask = next_power_of_2(_capacity_mask) - 1;
