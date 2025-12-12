@@ -96,6 +96,10 @@ void GPUParticles3D::set_one_shot(bool p_one_shot) {
 	if (is_emitting()) {
 		if (!one_shot) {
 			RenderingServer::get_singleton()->particles_restart(particles);
+			signal_canceled = true;
+		} else if (!active) {
+			active = true;
+			signal_canceled = false;
 		}
 	}
 }
