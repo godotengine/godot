@@ -54,6 +54,20 @@ EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_root_dir = null
 //the name is the version, to keep compatibility with different versions of Godot
 #define CACHE_FILE_NAME "filesystem_cache10"
 
+void EditorFileSystemDirectory::FileInfo::copy_from_cache(const FileInfo *p_cache) {
+	type = p_cache->type;
+	resource_script_class = p_cache->resource_script_class;
+	uid = p_cache->uid;
+	// modified_time skipped.
+	// import_modified_time skipped.
+	import_md5 = p_cache->import_md5;
+	import_dest_paths = p_cache->import_dest_paths;
+	import_valid = p_cache->import_valid;
+	import_group_file = p_cache->import_group_file;
+	deps = p_cache->deps;
+	class_info = p_cache->class_info;
+}
+
 int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
 	for (int i = 0; i < files.size(); i++) {
 		if (files[i]->file == p_file) {
@@ -446,12 +460,12 @@ void EditorFileSystem::_scan_filesystem() {
 					file = name;
 					name = cpath.path_join(name);
 
-					FileCache fc;
+					FileInfo fc;
 					fc.type = split[1].get_slicec('/', 0);
 					fc.resource_script_class = split[1].get_slicec('/', 1);
 					fc.uid = split[2].to_int();
-					fc.modification_time = split[3].to_int();
-					fc.import_modification_time = split[4].to_int();
+					fc.modified_time = split[3].to_int();
+					fc.import_modified_time = split[4].to_int();
 					fc.import_valid = split[5].to_int() != 0;
 					fc.import_group_file = split[6].strip_edges();
 					{
@@ -1226,7 +1240,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 			r_processed_files->insert(path);
 		}
 
-		FileCache *fc = file_cache.getptr(path);
+		FileInfo *fc = file_cache.getptr(path);
 		uint64_t mt = FileAccess::get_modified_time(path);
 
 		if (_can_import_file(scan_file)) {
@@ -1234,17 +1248,9 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 			uint64_t import_mt = FileAccess::get_modified_time(path + ".import");
 
 			if (fc) {
-				fi->type = fc->type;
-				fi->resource_script_class = fc->resource_script_class;
-				fi->uid = fc->uid;
-				fi->deps = fc->deps;
+				fi->copy_from_cache(fc);
 				fi->modified_time = mt;
 				fi->import_modified_time = import_mt;
-				fi->import_md5 = fc->import_md5;
-				fi->import_dest_paths = fc->import_dest_paths;
-				fi->import_valid = fc->import_valid;
-				fi->import_group_file = fc->import_group_file;
-				fi->class_info = fc->class_info;
 
 				// Ensures backward compatibility when the project is loaded for the first time with the added import_md5
 				// and import_dest_paths properties in the file cache.
@@ -1257,7 +1263,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				// all the destination files still exist without reading the .import file.
 				// If something is different, we will queue a test for reimportation that will check
 				// the md5 of all files and import settings and, if necessary, execute a reimportation.
-				if (_is_test_for_reimport_needed(path, fc->modification_time, mt, fc->import_modification_time, import_mt, fi->import_dest_paths) ||
+				if (_is_test_for_reimport_needed(path, fc->modified_time, mt, fc->import_modified_time, import_mt, fi->import_dest_paths) ||
 						(revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path))) {
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
@@ -1296,18 +1302,14 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				scan_actions.push_back(ia);
 			}
 		} else {
-			if (fc && fc->modification_time == mt) {
+			if (fc && fc->modified_time == mt) {
 				//not imported, so just update type if changed
-				fi->type = fc->type;
-				fi->resource_script_class = fc->resource_script_class;
-				fi->uid = fc->uid;
+				fi->copy_from_cache(fc);
 				fi->modified_time = mt;
-				fi->deps = fc->deps;
 				fi->import_modified_time = 0;
 				fi->import_md5 = "";
 				fi->import_dest_paths = Vector<String>();
 				fi->import_valid = true;
-				fi->class_info = fc->class_info;
 
 				if (first_scan && ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
 					bool update_script = false;
@@ -1388,7 +1390,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 }
 
 void EditorFileSystem::_process_removed_files(const HashSet<String> &p_processed_files) {
-	for (const KeyValue<String, EditorFileSystem::FileCache> &kv : file_cache) {
+	for (const KeyValue<String, FileInfo> &kv : file_cache) {
 		if (!p_processed_files.has(kv.key)) {
 			if (ClassDB::is_parent_class(kv.value.type, SNAME("Script")) || ClassDB::is_parent_class(kv.value.type, SNAME("PackedScene"))) {
 				// A script has been removed from disk since the last startup. The documentation needs to be updated.
