@@ -203,8 +203,10 @@ class EditorFileSystem : public Node {
 	static void _load_first_scan_root_dir();
 
 	HashSet<String> late_update_files;
+	HashSet<String> deferred_script_deps;
 
 	void _save_late_updated_files();
+	void _update_deferred_script_dependencies();
 
 	EditorFileSystemDirectory *filesystem = nullptr;
 
