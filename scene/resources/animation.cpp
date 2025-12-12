@@ -2564,11 +2564,13 @@ T Animation::_interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, Int
 		if (is_start_edge) {
 			idx = p_backward ? maxi : 0;
 		}
-		next = CLAMP(idx + (p_backward ? -1 : 1), 0, maxi);
+		int len2 = MIN(len, p_keys.size() - 1);
+		next = CLAMP(idx + (p_backward ? -1 : 1), 0, len2);
 		if (use_cubic) {
-			pre = CLAMP(idx + (p_backward ? 1 : -1), 0, maxi);
-			post = CLAMP(idx + (p_backward ? -2 : 2), 0, maxi);
+			pre = CLAMP(idx + (p_backward ? 1 : -1), 0, len2);
+			post = CLAMP(idx + (p_backward ? -2 : 2), 0, len2);
 		}
+		is_end_edge = p_backward ? idx == 0 : idx >= len2; // TODO: The process needs to be commonized early on without overriding, but all other branches need to be refactored to prevent to collapse loop_wrap key acquisition.
 	} else if (loop_mode == LOOP_LINEAR) {
 		if (is_start_edge) {
 			idx = p_backward ? 0 : maxi;
