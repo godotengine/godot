@@ -2382,6 +2382,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 			continue;
 		}
 		int caret_line = get_caret_line(i);
+		p_replace = (has_selection(i)) ? true : p_replace;
 
 		const String &insert_text = code_completion_options[code_completion_current_selected].insert_text;
 		const String &display_text = code_completion_options[code_completion_current_selected].display;
