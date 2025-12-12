@@ -145,6 +145,8 @@
 #include "tests/scene/test_path_follow_2d.h"
 #include "tests/scene/test_sprite_2d.h"
 #include "tests/scene/test_sprite_frames.h"
+#include "tests/scene/test_style_box_empty.h"
+#include "tests/scene/test_style_box_line.h"
 #include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_texture_progress_bar.h"
 #include "tests/scene/test_theme.h"
