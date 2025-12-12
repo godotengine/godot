@@ -2760,6 +2760,57 @@ void CodeEdit::duplicate_lines() {
 	end_complex_operation();
 }
 
+void CodeEdit::shape_code() {
+	if (!is_editable() || !is_auto_indent_enabled()) {
+		return;
+	}
+
+	int indent_level = 0;
+	const int line_count = get_line_count();
+
+	begin_complex_operation();
+
+	for (int i = 0; i < line_count; i++) {
+		String line = get_line(i);
+		String trimmed_line = line.strip_edges();
+		TypedArray<String> auto_indent_prefixes_list = get_auto_indent_prefixes();
+
+		if (trimmed_line.is_empty()) {
+			if (line.is_empty()) {
+				indent_level = 0;
+				continue;
+			} else {
+				continue;
+			}
+		}
+
+		for (int j = 0; j < auto_brace_completion_pairs.size(); j++) {
+			if (trimmed_line.begins_with(auto_brace_completion_pairs[j].close_key) && auto_indent_prefixes_list.has(auto_brace_completion_pairs[j].open_key)) {
+				indent_level = MAX(indent_level - 1, 0);
+				break;
+			}
+		}
+
+		String correct_indentation = "";
+		if (is_indent_using_spaces()) {
+			correct_indentation = String(" ").repeat(indent_level * get_indent_size());
+		} else {
+			correct_indentation = String("\t").repeat(indent_level);
+		}
+		line = correct_indentation + trimmed_line;
+		set_line(i, line);
+
+		for (int j = 0; j < auto_indent_prefixes_list.size(); j++) {
+			if (trimmed_line.ends_with(auto_indent_prefixes_list[j])) {
+				indent_level++;
+				break;
+			}
+		}
+	}
+
+	end_complex_operation();
+}
+
 /* Visual */
 Color CodeEdit::_get_brace_mismatch_color() const {
 	return theme_cache.brace_mismatch_color;
@@ -2972,6 +3023,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delete_lines"), &CodeEdit::delete_lines);
 	ClassDB::bind_method(D_METHOD("duplicate_selection"), &CodeEdit::duplicate_selection);
 	ClassDB::bind_method(D_METHOD("duplicate_lines"), &CodeEdit::duplicate_lines);
+	ClassDB::bind_method(D_METHOD("shape_code"), &CodeEdit::shape_code);
 
 	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
