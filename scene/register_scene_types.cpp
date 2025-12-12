@@ -112,6 +112,7 @@
 #include "scene/resources/audio_stream_polyphonic.h"
 #include "scene/resources/audio_stream_wav.h"
 #include "scene/resources/bit_map.h"
+#include "scene/resources/blit_material.h"
 #include "scene/resources/bone_map.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/camera_texture.h"
@@ -120,6 +121,7 @@
 #include "scene/resources/compositor.h"
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/curve_texture.h"
+#include "scene/resources/drawable_texture_2d.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/external_texture.h"
 #include "scene/resources/font.h"
@@ -886,8 +888,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ShaderMaterial);
 	GDREGISTER_CLASS(CanvasTexture);
 	GDREGISTER_CLASS(CanvasItemMaterial);
+
 	SceneTree::add_idle_callback(CanvasItemMaterial::flush_changes);
 	CanvasItemMaterial::init_shaders();
+	GDREGISTER_CLASS(BlitMaterial);
 
 	/* REGISTER 2D */
 
@@ -1054,6 +1058,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GradientTexture2D);
 	GDREGISTER_CLASS(CameraTexture);
 	GDREGISTER_CLASS(ExternalTexture);
+	GDREGISTER_CLASS(DrawableTexture2D);
 	GDREGISTER_VIRTUAL_CLASS(TextureLayered);
 	GDREGISTER_ABSTRACT_CLASS(ImageTextureLayered);
 	GDREGISTER_VIRTUAL_CLASS(Texture3D);
@@ -1471,7 +1476,7 @@ void unregister_scene_types() {
 
 	ParticleProcessMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
-	ColorPickerShape::finish_shaders();
+	BlitMaterial::cleanup_shader();
 	GraphEdit::finish_shaders();
 	SceneStringNames::free();
 

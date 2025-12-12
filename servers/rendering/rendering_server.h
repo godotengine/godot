@@ -133,11 +133,21 @@ public:
 		CUBEMAP_LAYER_BACK
 	};
 
+	/* Starting to implement */
+	/* https://github.com/godotengine/godot-proposals/issues/7379 */
+	enum TextureDrawableFormat {
+		TEXTURE_DRAWABLE_FORMAT_RGBA8,
+		TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB, // Use this if you want to read the result from both 2D (non-hdr) and 3D.
+		TEXTURE_DRAWABLE_FORMAT_RGBAH,
+		TEXTURE_DRAWABLE_FORMAT_RGBAF,
+	};
+
 	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, TextureLayeredType p_layered_type) = 0;
 	virtual RID texture_3d_create(Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0; //all slices, then all the mipmaps, must be coherent
 	virtual RID texture_external_create(int p_width, int p_height, uint64_t p_external_buffer = 0) = 0;
 	virtual RID texture_proxy_create(RID p_base) = 0;
+	virtual RID texture_drawable_create(int p_width, int p_height, TextureDrawableFormat p_format, const Color &p_color = Color(1, 1, 1, 1), bool p_with_mipmaps = false) = 0;
 
 	virtual RID texture_create_from_native_handle(TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, TextureLayeredType p_layered_type = TEXTURE_LAYERED_2D_ARRAY) = 0;
 
@@ -145,6 +155,8 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer = 0) = 0;
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to) = 0;
+
+	virtual void texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap = 0) = 0;
 
 	// These two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create() = 0;
@@ -160,6 +172,9 @@ public:
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
+
+	virtual void texture_drawable_generate_mipmaps(RID p_texture) = 0; // Update mipmaps if modified
+	virtual RID texture_drawable_get_default_material() const = 0; // To use with simplified functions in DrawableTexture2D
 
 	virtual Image::Format texture_get_format(RID p_texture) const = 0;
 
@@ -218,6 +233,7 @@ public:
 		SHADER_PARTICLES,
 		SHADER_SKY,
 		SHADER_FOG,
+		SHADER_TEXTURE_BLIT,
 		SHADER_MAX
 	};
 
@@ -1944,6 +1960,7 @@ private:
 VARIANT_ENUM_CAST(RenderingServer::TextureType);
 VARIANT_ENUM_CAST(RenderingServer::TextureLayeredType);
 VARIANT_ENUM_CAST(RenderingServer::CubeMapLayer);
+VARIANT_ENUM_CAST(RenderingServer::TextureDrawableFormat);
 VARIANT_ENUM_CAST(RenderingServer::PipelineSource);
 VARIANT_ENUM_CAST(RenderingServer::ShaderMode);
 VARIANT_ENUM_CAST(RenderingServer::ArrayType);
