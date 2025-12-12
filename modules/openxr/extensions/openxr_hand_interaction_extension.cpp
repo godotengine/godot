@@ -60,7 +60,7 @@ HashMap<String, bool *> OpenXRHandInteractionExtension::get_requested_extensions
 		request_extensions[XR_META_HAND_TRACKING_MICROGESTURES_EXTENSION_NAME] = &available;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRHandInteractionExtension::is_available() {

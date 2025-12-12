@@ -134,7 +134,7 @@ HashMap<String, bool *> OpenXRFutureExtension::get_requested_extensions(XrVersio
 
 	request_extensions[XR_EXT_FUTURE_EXTENSION_NAME] = &future_ext;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRFutureExtension::on_instance_created(const XrInstance p_instance) {

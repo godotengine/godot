@@ -590,7 +590,7 @@ HashMap<String, bool *> OpenXRSpatialPlaneTrackingCapability::get_requested_exte
 		request_extensions[XR_EXT_SPATIAL_PLANE_TRACKING_EXTENSION_NAME] = &spatial_plane_tracking_ext;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRSpatialPlaneTrackingCapability::on_session_created(const XrSession p_session) {

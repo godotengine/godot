@@ -419,7 +419,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
 						// If it's an autoload singleton, we postpone to load it at runtime.
 						// This is so one autoload doesn't try to load another before it's compiled.
-						HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+						const HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = HashMap<StringName, ProjectSettings::AutoloadInfo>(ProjectSettings::get_singleton()->get_autoload_list());
 						if (autoloads.has(identifier) && autoloads[identifier].is_singleton) {
 							GDScriptCodeGenerator::Address global = codegen.add_temporary(_gdtype_from_datatype(in->get_datatype(), codegen.script));
 							int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];

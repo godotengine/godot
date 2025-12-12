@@ -44,7 +44,7 @@ HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions(XrVersio
 
 	request_extensions[XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME] = nullptr; // must be available
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRVulkanExtension::on_instance_created(const XrInstance p_instance) {

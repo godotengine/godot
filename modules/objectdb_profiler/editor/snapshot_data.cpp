@@ -198,15 +198,15 @@ HashSet<ObjectID> SnapshotDataObject::_unique_references(const HashMap<String, O
 		obj_set.insert(pair.value);
 	}
 
-	return obj_set;
+	return HashSet<ObjectID>(obj_set);
 }
 
 HashSet<ObjectID> SnapshotDataObject::get_unique_outbound_refernces() {
-	return _unique_references(outbound_references);
+	return HashSet<ObjectID>(_unique_references(outbound_references));
 }
 
 HashSet<ObjectID> SnapshotDataObject::get_unique_inbound_references() {
-	return _unique_references(inbound_references);
+	return HashSet<ObjectID>(_unique_references(inbound_references));
 }
 
 void GameStateSnapshot::_get_outbound_references(Variant &p_var, HashMap<String, ObjectID> &r_ret_val, const String &p_current_path) {
@@ -271,11 +271,11 @@ void GameStateSnapshot::_get_rc_cycles(
 
 		SnapshotDataObject *next = objects[next_child.value];
 		if (next != nullptr && next->is_class(RefCounted::get_class_static()) && !next->is_class(WeakRef::get_class_static()) && !p_traversed_objs.has(next)) {
-			HashSet<SnapshotDataObject *> traversed_copy = p_traversed_objs;
+			HashSet<SnapshotDataObject *> traversed_copy = HashSet<SnapshotDataObject *>(p_traversed_objs);
 			if (p_obj != p_source_obj) {
 				traversed_copy.insert(p_obj);
 			}
-			_get_rc_cycles(next, p_source_obj, traversed_copy, r_ret_val, child_path);
+			_get_rc_cycles(next, p_source_obj, HashSet<SnapshotDataObject *>(traversed_copy), r_ret_val, child_path);
 		}
 	}
 }
@@ -309,7 +309,7 @@ void GameStateSnapshot::recompute_references() {
 		HashSet<SnapshotDataObject *> traversed_objs;
 		LocalVector<String> cycles;
 
-		_get_rc_cycles(obj.value, obj.value, traversed_objs, cycles, "");
+		_get_rc_cycles(obj.value, obj.value, HashSet<SnapshotDataObject *>(traversed_objs), cycles, "");
 		Array cycles_array;
 		for (const String &cycle : cycles) {
 			cycles_array.push_back(cycle);

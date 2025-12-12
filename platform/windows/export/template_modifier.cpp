@@ -615,7 +615,7 @@ HashMap<String, String> TemplateModifier::_get_strings(const Ref<EditorExportPre
 		strings["LegalTrademarks"] = trademarks;
 	}
 
-	return strings;
+	return HashMap<String, String>(strings);
 }
 
 Error TemplateModifier::_modify_template(const Ref<EditorExportPreset> &p_preset, const String &p_template_path, const String &p_icon_path) const {

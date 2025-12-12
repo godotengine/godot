@@ -59,7 +59,7 @@ HashMap<String, bool *> OpenXRDPadBindingExtension::get_requested_extensions(XrV
 	request_extensions[XR_KHR_BINDING_MODIFICATION_EXTENSION_NAME] = &binding_modifier_ext;
 	request_extensions[XR_EXT_DPAD_BINDING_EXTENSION_NAME] = &dpad_binding_ext;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRDPadBindingExtension::is_available() {

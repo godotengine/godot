@@ -1123,7 +1123,7 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	}
 
 	// Autoload singletons
-	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	const HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = HashMap<StringName, ProjectSettings::AutoloadInfo>(ProjectSettings::get_singleton()->get_autoload_list());
 
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
@@ -1879,7 +1879,7 @@ static HashMap<String, Dictionary> make_structure_samples() {
 		res["Time::get_time_zone_from_system"] = d;
 	}
 
-	return res;
+	return HashMap<String, Dictionary>(res);
 }
 
 static const HashMap<String, Dictionary> structure_examples = make_structure_samples();

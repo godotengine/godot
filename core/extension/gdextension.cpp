@@ -950,7 +950,7 @@ void GDExtension::prepare_reload() {
 				state.push_back(Pair<String, Variant>(P.name, value));
 			}
 			E.value.instance_state[obj_id] = {
-				state, // List<Pair<String, Variant>> properties;
+				List<Pair<String, Variant>>(state), // List<Pair<String, Variant>> properties;
 				obj->is_extension_placeholder(), // bool is_placeholder;
 			};
 		}

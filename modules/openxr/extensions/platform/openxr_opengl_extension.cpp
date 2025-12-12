@@ -68,7 +68,7 @@ HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions(XrVersio
 	request_extensions[XR_MNDX_EGL_ENABLE_EXTENSION_NAME] = &egl_extension_enabled;
 #endif
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXROpenGLExtension::on_instance_created(const XrInstance p_instance) {

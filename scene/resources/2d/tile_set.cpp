@@ -1393,13 +1393,13 @@ RBSet<TileSet::TerrainsPattern> TileSet::get_terrains_pattern_set(int p_terrain_
 	for (KeyValue<TileSet::TerrainsPattern, RBSet<TileMapCell>> kv : per_terrain_pattern_tiles[p_terrain_set]) {
 		output.insert(kv.key);
 	}
-	return output;
+	return RBSet<TileSet::TerrainsPattern>(output);
 }
 
 RBSet<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern) {
 	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), RBSet<TileMapCell>());
 	_update_terrains_cache();
-	return per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+	return RBSet<TileMapCell>(per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern]);
 }
 
 TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, TileSet::TerrainsPattern p_terrain_tile_pattern) {
@@ -1408,7 +1408,7 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 
 	// Count the sum of probabilities.
 	double sum = 0.0;
-	RBSet<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+	const RBSet<TileMapCell> set = RBSet<TileMapCell>(per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern]);
 	for (const TileMapCell &E : set) {
 		if (E.source_id >= 0) {
 			Ref<TileSetSource> source = sources[E.source_id];

@@ -6700,7 +6700,7 @@ HashMap<StringName, String> VisualShaderNodeTextureParameter::get_editable_prope
 	names.insert("texture_filter", RTR("Filter"));
 	names.insert("texture_repeat", RTR("Repeat"));
 	names.insert("texture_source", RTR("Source"));
-	return names;
+	return HashMap<StringName, String>(names);
 }
 
 void VisualShaderNodeTextureParameter::_bind_methods() {
