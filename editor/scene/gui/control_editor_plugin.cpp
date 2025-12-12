@@ -775,13 +775,21 @@ void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	if (anchors_only->is_pressed()) {
+		undo_redo->create_action(TTR("Change Anchors, Grow Direction"));
+	} else {
+		undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	}
 
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
 		if (control) {
 			undo_redo->add_do_property(control, "layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS);
 			undo_redo->add_do_property(control, "anchors_preset", preset);
+			if (anchors_only->is_pressed()) {
+				undo_redo->add_do_property(control, "position", control->get_position());
+				undo_redo->add_do_property(control, "size", control->get_size());
+			}
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
 		}
 	}
@@ -1101,6 +1109,12 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	anchors_picker->set_h_size_flags(SIZE_SHRINK_CENTER);
 	anchors_button->get_popup_hbox()->add_child(anchors_picker);
 	anchors_picker->connect("anchors_preset_selected", callable_mp(this, &ControlEditorToolbar::_anchors_preset_selected));
+
+	anchors_only = memnew(CheckBox);
+	anchors_only->set_text(TTRC("Anchors only"));
+	anchors_only->set_tooltip_text(TTRC("If enabled, picking a preset will only adjust the anchors, without moving the Control."));
+	anchors_only->set_h_size_flags(SIZE_SHRINK_CENTER);
+	anchors_button->get_popup_hbox()->add_child(anchors_only);
 
 	anchors_button->get_popup_hbox()->add_child(memnew(HSeparator));
 
