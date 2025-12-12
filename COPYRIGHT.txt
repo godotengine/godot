@@ -224,7 +224,7 @@ Comment: Brotli
 Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
 License: Expat
 
-Files: thirdparty/certs/ca-certificates.crt
+Files: thirdparty/certs/ca-bundle.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0

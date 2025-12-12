@@ -109,13 +109,12 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (bcc414c5b5282f9321651bf71dc1e254ae87e3f8, 2025),
-  generated from mozilla-release changeset 60d4997d339bb7ac6d033819ac50dcad4b9be09d
+- Version: git (cc4096bef208d35e2884571046c75a726185c358, 2025)
 - License: MPL 2.0
 
 Files extracted from upstream source:
 
-- `ca-bundle.crt` renamed to `ca-certificates.crt`
+- `ca-bundle.crt`
 
 
 ## clipper2
