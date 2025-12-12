@@ -1215,6 +1215,21 @@
 		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
+		<member name="filesystem/inline_text_resource_uids/c_sharp_script" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], inline text resource UIDs will be used for [code].cs[/code] files.
+		</member>
+		<member name="filesystem/inline_text_resource_uids/compatibility/no_inline_text_resource_uids_in_addons" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables the use of inline text resource UIDs in addons. This is useful for compatibility with old addons that concerning about file's md5.
+		</member>
+		<member name="filesystem/inline_text_resource_uids/gdscript" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], inline text resource UIDs will be used for [code].gd[/code] files.
+		</member>
+		<member name="filesystem/inline_text_resource_uids/shader" type="bool" setter="" getter="" default="true">
+			if [code]true[/code], inline text resource UIDs will be used for [code].shader[/code] files.
+		</member>
+		<member name="filesystem/inline_text_resource_uids/shader_include" type="bool" setter="" getter="" default="true">
+			if [code]true[/code], inline text resource UIDs will be used for [code].shaderinc[/code] files.
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>

@@ -919,6 +919,11 @@ bool EditorFileSystem::_update_scan_actions() {
 						ia.new_file->uid = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						f->store_line(ResourceUID::get_singleton()->id_to_text(ia.new_file->uid));
 					}
+				} else {
+					ResourceUID::ID new_uid = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
+					if (ResourceSaver::set_uid(new_file_path, new_uid) == OK) {
+						ResourceUID::get_singleton()->add_id(new_uid, new_file_path);
+					}
 				}
 
 				if (ClassDB::is_parent_class(ia.new_file->type, SNAME("Script"))) {
@@ -1363,6 +1368,18 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 						WARN_PRINT(vformat("Missing .uid file for path \"%s\". The file was re-created from cache.", path));
 					}
 					f->store_line(ResourceUID::get_singleton()->id_to_text(fi->uid));
+				}
+			} else {
+				if (fi->uid == ResourceUID::INVALID_ID) {
+					ResourceUID::ID new_uid = ResourceUID::get_singleton()->create_id_for_path(path);
+					if (ResourceSaver::set_uid(path, new_uid) == OK) {
+						fi->uid = new_uid;
+						ResourceUID::get_singleton()->add_id(new_uid, path);
+					}
+				} else {
+					if (ResourceLoader::get_resource_uid(path) != fi->uid) {
+						ResourceSaver::set_uid(path, fi->uid);
+					}
 				}
 			}
 		}
@@ -2468,10 +2485,28 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
 			if (uid != ResourceUID::INVALID_ID) {
-				if (ResourceUID::get_singleton()->has_id(uid)) {
-					ResourceUID::get_singleton()->set_id(uid, file);
+				const String exist_file = ResourceUID::get_singleton()->get_id_path(uid);
+				if (!exist_file.is_empty() && exist_file != file) {
+					// Duplicate UID, regenerate.
+					uid = ResourceUID::get_singleton()->create_id_for_path(file);
+					if (ResourceLoader::should_create_uid_file(file)) {
+						Ref<FileAccess> f = FileAccess::open(file + ".uid", FileAccess::WRITE);
+						if (f.is_valid()) {
+							const ResourceUID::ID id = ResourceUID::get_singleton()->create_id_for_path(file);
+							ResourceUID::get_singleton()->add_id(id, file);
+							f->store_line(ResourceUID::get_singleton()->id_to_text(id));
+							fi->uid = id;
+						}
+					} else if (ResourceSaver::set_uid(file, uid) == OK) {
+						fi->uid = uid;
+						ResourceUID::get_singleton()->add_id(uid, file);
+					}
 				} else {
-					ResourceUID::get_singleton()->add_id(uid, file);
+					if (ResourceUID::get_singleton()->has_id(uid)) {
+						ResourceUID::get_singleton()->set_id(uid, file);
+					} else {
+						ResourceUID::get_singleton()->add_id(uid, file);
+					}
 				}
 
 				ResourceUID::get_singleton()->update_cache();
@@ -2483,6 +2518,15 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 						ResourceUID::get_singleton()->add_id(id, file);
 						f->store_line(ResourceUID::get_singleton()->id_to_text(id));
 						fi->uid = id;
+						ResourceUID::get_singleton()->update_cache();
+					}
+				} else {
+					ResourceUID::ID new_uid = ResourceUID::get_singleton()->create_id_for_path(file);
+					if (ResourceSaver::set_uid(file, new_uid) == OK) {
+						fi->uid = new_uid;
+						ResourceUID::get_singleton()->add_id(new_uid, file);
+
+						ResourceUID::get_singleton()->update_cache();
 					}
 				}
 			}
