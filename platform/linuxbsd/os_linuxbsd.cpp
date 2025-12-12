@@ -1296,6 +1296,10 @@ OS_LinuxBSD::OS_LinuxBSD() {
 	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif
 
+#ifdef PIPEWIRE_ENABLED
+	AudioDriverManager::add_driver(&driver_pipewire);
+#endif
+
 #ifdef ALSA_ENABLED
 	AudioDriverManager::add_driver(&driver_alsa);
 #endif
