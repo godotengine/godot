@@ -90,6 +90,7 @@ public:
 	void open();
 	void make_visible();
 	void close();
+	void try_hide();
 
 	void set_title(const String &p_title);
 	String get_title() const { return title; }
