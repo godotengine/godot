@@ -530,4 +530,16 @@
 			If [code]true[/code], the Movie Maker mode is enabled in the editor. See [MovieWriter] for more information.
 		</member>
 	</members>
+	<signals>
+		<signal name="scene_started">
+			<description>
+				Emitted when a scene has started playing.
+			</description>
+		</signal>
+		<signal name="scene_stopped">
+			<description>
+				Emitted when a scene has stopped playing.
+			</description>
+		</signal>
+	</signals>
 </class>
