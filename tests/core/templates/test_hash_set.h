@@ -140,7 +140,7 @@ TEST_CASE("[HashSet] Insert, iterate and remove many strings") {
 		CHECK(set.has(elems_still_valid[i]));
 	}
 
-	elems_still_valid.clear();
+	elems_still_valid.reset();
 	set.reset();
 
 	CHECK(Memory::get_mem_usage() == pre_mem);

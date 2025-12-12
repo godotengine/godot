@@ -311,7 +311,10 @@ public:
 
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
-	_FORCE_INLINE_ void clear() { resize_uninitialized(0); }
+	// Removes all characters from the string, but keeps the current capacity.
+	_FORCE_INLINE_ void clear() { _cowdata.clear(); }
+	// Removes all characters from the array, and resets the capacity to 0.
+	_FORCE_INLINE_ void reset() { _cowdata.reset(); }
 
 	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
