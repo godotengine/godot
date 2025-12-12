@@ -187,7 +187,7 @@ Ref<Image> ViewportTexture::get_image() const {
 
 void ViewportTexture::_err_print_viewport_not_set() const {
 	if (!vp_pending && !vp_changed) {
-		ERR_PRINT("Viewport Texture must be set to use it.");
+		ERR_PRINT("ViewportTexture must have its Viewport Path property set to a valid SubViewport node to use it.");
 	}
 }
 
@@ -196,9 +196,15 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 	vp_pending = false;
 
 	Node *vpn = p_loc_scene->get_node_or_null(path);
-	ERR_FAIL_NULL_MSG(vpn, "Path to node is invalid: '" + String(path) + "'.");
+	String local_path;
+	if (get_local_scene()) {
+		local_path = String(get_local_scene()->get_path());
+	} else {
+		local_path = "(no local scene)";
+	}
+	ERR_FAIL_NULL_MSG(vpn, vformat("%s: Path to node is invalid: %s.", local_path, path));
 	vp = Object::cast_to<Viewport>(vpn);
-	ERR_FAIL_NULL_MSG(vp, "Path to node does not point to a viewport: '" + String(path) + "'.");
+	ERR_FAIL_NULL_MSG(vp, vformat("%s: Path to node does not point to a viewport: %s.", local_path, path));
 
 	vp->viewport_textures.insert(this);
 
