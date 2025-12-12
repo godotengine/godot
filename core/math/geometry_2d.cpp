@@ -160,6 +160,7 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	int widest = wrects[0].s.width;
 
 	Vector<_AtlasWorkRectResult> results;
+	results.reserve(13);
 
 	for (int i = 0; i <= 12; i++) {
 		int w = 1 << i;
