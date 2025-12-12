@@ -530,11 +530,14 @@ void EditorProperty::_notification(int p_what) {
 						draw_style_box(theme_cache.hover, check_rect);
 					}
 				}
+
+				Point2 icon_ofs = (Point2(padding, size.height - checkbox->get_height()) / 2).round();
 				if (rtl) {
-					draw_texture(checkbox, rtl_pos + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
+					draw_texture(checkbox, rtl_pos + icon_ofs, color2);
 				} else {
-					draw_texture(checkbox, check_rect.position + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
+					draw_texture(checkbox, check_rect.position + icon_ofs, color2);
 				}
+
 				int check_ofs = checkbox->get_width() + padding + theme_cache.horizontal_separation;
 				ofs += check_ofs;
 				text_limit -= check_ofs;
@@ -564,11 +567,14 @@ void EditorProperty::_notification(int p_what) {
 						draw_style_box(theme_cache.hover, revert_rect);
 					}
 				}
+
+				Point2 icon_ofs = (Point2(padding, size.height - reload_icon->get_height()) / 2).round();
 				if (rtl) {
-					draw_texture(reload_icon, rtl_pos + Point2(padding, size.height - reload_icon->get_height()) / 2, color2);
+					draw_texture(reload_icon, rtl_pos + icon_ofs, color2);
 				} else {
-					draw_texture(reload_icon, revert_rect.position + Point2(padding, size.height - reload_icon->get_height()) / 2, color2);
+					draw_texture(reload_icon, revert_rect.position + icon_ofs, color2);
 				}
+
 				text_limit -= half_padding;
 			} else {
 				revert_rect = Rect2();
@@ -628,10 +634,11 @@ void EditorProperty::_notification(int p_what) {
 					}
 				}
 
+				Point2 icon_ofs = (Point2(padding, size.height - key->get_height()) / 2).round();
 				if (rtl) {
-					draw_texture(key, rtl_pos + Point2(padding, size.height - key->get_height()) / 2, color2);
+					draw_texture(key, rtl_pos + icon_ofs, color2);
 				} else {
-					draw_texture(key, keying_rect.position + Point2(padding, size.height - key->get_height()) / 2, color2);
+					draw_texture(key, keying_rect.position + icon_ofs, color2);
 				}
 
 			} else {
@@ -662,15 +669,17 @@ void EditorProperty::_notification(int p_what) {
 					}
 				}
 
+				Point2 icon_ofs = (Point2(padding, size.height - close->get_height()) / 2).round();
 				if (rtl) {
-					draw_texture(close, rtl_pos + Point2(padding, size.height - close->get_height()) / 2, color2);
+					draw_texture(close, rtl_pos + icon_ofs, color2);
 				} else {
-					draw_texture(close, delete_rect.position + Point2(padding, size.height - close->get_height()) / 2, color2);
+					draw_texture(close, delete_rect.position + icon_ofs, color2);
 				}
 			} else {
 				delete_rect = Rect2();
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			EditorInspector *inspector = get_parent_inspector();
 			if (inspector) {
@@ -683,11 +692,13 @@ void EditorProperty::_notification(int p_what) {
 				_update_property_bg();
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (has_borders) {
 				get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 			}
 		} break;
+
 		case NOTIFICATION_MOUSE_EXIT_SELF:
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (keying_hover || revert_hover || check_hover || delete_hover) {
