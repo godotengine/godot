@@ -131,13 +131,12 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 		if (p_viewport->size.width == 0 || p_viewport->size.height == 0) {
 			p_viewport->render_buffers.unref();
 		} else {
-			const float EPSILON = 0.0001;
 			float scaling_3d_scale = p_viewport->scaling_3d_scale;
 			RS::ViewportScaling3DMode scaling_3d_mode = p_viewport->scaling_3d_mode;
 			bool upscaler_available = p_viewport->fsr_enabled;
 			RS::ViewportScaling3DType scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 
-			if ((!upscaler_available || (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_SPATIAL)) && scaling_3d_scale >= (1.0 - EPSILON) && scaling_3d_scale <= (1.0 + EPSILON)) {
+			if ((!upscaler_available || (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_SPATIAL)) && scaling_3d_scale >= (1.0 - CMP_EPSILON) && scaling_3d_scale <= (1.0 + CMP_EPSILON)) {
 				// No 3D scaling for spatial modes? Ignore scaling mode, this just introduces overhead.
 				// - Mobile can't perform optimal path
 				// - FSR does an extra pass (or 2 extra passes if 2D-MSAA is enabled)
@@ -188,7 +187,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			bool scaling_3d_is_not_bilinear = scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			bool use_taa = p_viewport->use_taa;
 
-			if (scaling_3d_is_not_bilinear && (scaling_3d_scale >= (1.0 + EPSILON))) {
+			if (scaling_3d_is_not_bilinear && (scaling_3d_scale >= (1.0 + CMP_EPSILON))) {
 				// FSR and MetalFX is not designed for downsampling.
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
@@ -209,6 +208,20 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				// Turn it off and prefer using the temporal upscaler.
 				WARN_PRINT_ONCE("FSR 2 or MetalFX Temporal is not compatible with TAA. Disabling TAA internally.");
 				use_taa = false;
+			}
+
+			if (use_taa && p_viewport->transparent_bg) {
+				// Transparent background can't be used with TAA.
+				// Turn it off so the transparent background can be used.
+				WARN_PRINT_ONCE("Transparent background is not supported with TAA. Disabling TAA internally.");
+				use_taa = false;
+			}
+
+			if (scaling_3d_is_not_bilinear && p_viewport->transparent_bg) {
+				// Transparent background is not supported with FSR or MetalFX.
+				// Fall back to bilinear scaling.
+				WARN_PRINT_ONCE("Transparent background is not supported with FSR or MetalFX. Falling back to bilinear 3D resolution scaling.");
+				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			}
 
 			int target_width;
