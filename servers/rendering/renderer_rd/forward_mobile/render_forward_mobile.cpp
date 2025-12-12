@@ -223,17 +223,39 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 		vrs_texture = render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
 	}
 
+	RID color_buffer = render_buffers->get_internal_texture();
+	RID target_buffer;
+	if (p_config_type != FB_CONFIG_RENDER_PASS) {
+		// Other configuration types need a reference to the render target's buffer.
+		RID render_target = render_buffers->get_render_target();
+		ERR_FAIL_COND_V(render_target.is_null(), RID());
+
+		if (view_count > 1 || texture_storage->render_target_get_msaa(render_target) == RS::VIEWPORT_MSAA_DISABLED) {
+			target_buffer = texture_storage->render_target_get_rd_texture(render_target);
+		} else {
+			target_buffer = texture_storage->render_target_get_rd_texture_msaa(render_target);
+			texture_storage->render_target_set_msaa_needs_resolve(render_target, true); // Make sure this gets resolved.
+		}
+
+		ERR_FAIL_COND_V(target_buffer.is_null(), RID());
+	}
+
+	if (p_config_type == FB_CONFIG_RENDER_AND_TONEMAP_BEFORE_BLENDING) {
+		// Draw directly to the target buffer when skipping the tonemapping subpass.
+		color_buffer = target_buffer;
+	}
+
 	Vector<RID> textures;
 	int color_buffer_id = 0;
 	int depth_buffer_id = 1;
-	textures.push_back(use_msaa ? render_buffers->get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer.
+	textures.push_back(use_msaa ? render_buffers->get_color_msaa() : color_buffer); // 0 - color buffer.
 	textures.push_back(use_msaa ? render_buffers->get_depth_msaa() : render_buffers->get_depth_texture()); // 1 - depth buffer.
 	if (vrs_texture.is_valid()) {
 		textures.push_back(vrs_texture); // 2 - vrs texture.
 	}
 	if (use_msaa) {
 		color_buffer_id = textures.size();
-		textures.push_back(render_buffers->get_internal_texture()); // Color buffer for resolve.
+		textures.push_back(color_buffer); // Color buffer for resolve.
 	}
 	if (use_msaa && p_resolve_depth) {
 		depth_buffer_id = textures.size();
@@ -244,7 +266,8 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	Vector<RD::FramebufferPass> passes;
 
 	switch (p_config_type) {
-		case FB_CONFIG_RENDER_PASS: {
+		case FB_CONFIG_RENDER_PASS:
+		case FB_CONFIG_RENDER_AND_TONEMAP_BEFORE_BLENDING: {
 			RD::FramebufferPass pass;
 			pass.color_attachments.push_back(0);
 			pass.depth_attachment = 1;
@@ -287,17 +310,6 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			passes.push_back(pass);
 
 			// Add blit to 2D pass.
-			RID render_target = render_buffers->get_render_target();
-			ERR_FAIL_COND_V(render_target.is_null(), RID());
-			RID target_buffer;
-			if (view_count > 1 || texture_storage->render_target_get_msaa(render_target) == RS::VIEWPORT_MSAA_DISABLED) {
-				target_buffer = texture_storage->render_target_get_rd_texture(render_target);
-			} else {
-				target_buffer = texture_storage->render_target_get_rd_texture_msaa(render_target);
-				texture_storage->render_target_set_msaa_needs_resolve(render_target, true); // Make sure this gets resolved.
-			}
-			ERR_FAIL_COND_V(target_buffer.is_null(), RID());
-
 			int target_buffer_id = textures.size();
 			textures.push_back(target_buffer); // Target buffer.
 
@@ -691,6 +703,14 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		uniforms.push_back(u);
 	}
 
+	RID tonemapper_lut_texture;
+	bool tonemapper_lut_texture_1d = false;
+	if (p_render_data != nullptr && p_render_data->environment.is_valid() && environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
+		bool using_hdr = RendererRD::TextureStorage::get_singleton()->render_target_is_using_hdr(rb->get_render_target());
+		tonemapper_lut_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment), using_hdr);
+		tonemapper_lut_texture_1d = environment_get_use_1d_color_correction(p_render_data->environment);
+	}
+
 	p_samplers.append_uniforms(uniforms, 13);
 
 	return UniformSetCacheRD::get_singleton()->get_cache_vec(scene_shader.default_shader_rd, RENDER_PASS_UNIFORM_SET, uniforms);
@@ -878,6 +898,14 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		WARN_PRINT_ONCE("Depth buffer resolve for rendering effect callback is not supported in the mobile renderer");
 	}
 
+	bool tonemap_before_blending = texture_storage->render_target_get_tonemap_before_blending(render_target) && !is_reflection_probe;
+	RenderBufferDataForwardMobile::FramebufferConfigType framebuffer_no_subpass_config_type = RenderBufferDataForwardMobile::FB_CONFIG_RENDER_PASS;
+	if (tonemap_before_blending) {
+		// If tonemapping is resolved during the forward pass, skip the subpass.
+		using_subpass_post_process = false;
+		framebuffer_no_subpass_config_type = RenderBufferDataForwardMobile::FB_CONFIG_RENDER_AND_TONEMAP_BEFORE_BLENDING;
+	}
+
 	// We don't need to check resolve color flag, it will be resolved for transparent passes regardless.
 
 	bool using_shadows = true;
@@ -976,7 +1004,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			global_pipeline_data_required.use_subpass_post_pass = true;
 		} else {
 			// We separate things out.
-			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_PASS, resolve_depth_buffer && supports_depth_resolve);
+			framebuffer = rb_data->get_color_fbs(framebuffer_no_subpass_config_type, resolve_depth_buffer && supports_depth_resolve);
 			global_pipeline_data_required.use_separate_post_pass = true;
 		}
 		samplers = rb->get_samplers();
@@ -1002,7 +1030,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	if (global_surface_data.screen_texture_used || global_surface_data.depth_texture_used) {
 		if (rb_data.is_valid()) {
 			// Just called to create the framebuffer since we know we will need it later.
-			rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_PASS);
+			rb_data->get_color_fbs(framebuffer_no_subpass_config_type);
 		}
 		global_pipeline_data_required.use_separate_post_pass = true;
 	}
@@ -1024,9 +1052,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	RID radiance_texture;
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
-	// We invert luminance_multiplier for sky so that we can combine it with exposure value.
-	float inverse_luminance_multiplier = 1.0 / rb->get_luminance_multiplier();
-	float sky_luminance_multiplier = 1.0 / 2.0; // Hardcoded since sky always uses LDR in the mobile renderer
+	float inverse_luminance_multiplier = tonemap_before_blending ? 1.0f : 1.0 / rb->get_luminance_multiplier();
+	float sky_luminance_multiplier = 1.0 / 2.0; // Hardcoded since sky always uses LDR in the mobile renderer.
 	float sky_brightness_multiplier = 1.0;
 
 	Color clear_color = p_default_bg_color;
@@ -1128,7 +1155,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		base_specialization.directional_lights = SceneShaderForwardMobile::shader_count_for(p_render_data->directional_light_count);
 		base_specialization.directional_light_blend_splits = light_storage->get_directional_light_blend_splits(p_render_data->directional_light_count);
 
-		if (!is_environment(p_render_data->environment) || !environment_get_fog_enabled(p_render_data->environment)) {
+		bool environment_valid = is_environment(p_render_data->environment);
+		if (!environment_valid || !environment_get_fog_enabled(p_render_data->environment)) {
 			base_specialization.disable_fog = true;
 			base_specialization.use_fog_aerial_perspective = false;
 			base_specialization.use_fog_sun_scatter = false;
@@ -1146,6 +1174,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		base_specialization.scene_use_reflection_cubemap = use_reflection_cubemap;
 		base_specialization.scene_roughness_limiter_enabled = p_render_data->render_buffers.is_valid() && screen_space_roughness_limiter_is_active();
 		base_specialization.luminance_multiplier = p_render_data->render_buffers.is_valid() ? p_render_data->render_buffers->get_luminance_multiplier() : 1.0;
+
+		base_specialization.tonemapper_apply_before_blending = tonemap_before_blending;
+		base_specialization.tonemapper_mode = environment_valid ? environment_get_tone_mapper(p_render_data->environment) : RS::ENV_TONE_MAPPER_LINEAR;
+		base_specialization.tonemapper_convert_to_srgb = !hdr_render_target;
 	}
 
 	{
@@ -1245,7 +1277,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			// Note, sky.setup should have been called up above and setup stuff we need.
 
-			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, sky_luminance_multiplier, sky_brightness_multiplier);
+			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, sky_luminance_multiplier, sky_brightness_multiplier, tonemap_before_blending);
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky
 		}
@@ -1340,7 +1372,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 	}
 
-	if (rb_data.is_valid() && !using_subpass_post_process) {
+	if (rb_data.is_valid() && !using_subpass_post_process && !tonemap_before_blending) {
 		RD::get_singleton()->draw_command_begin_label("Post Process Pass");
 
 		if (ce_has_post_transparent) {
@@ -2243,10 +2275,20 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 	}
 
 	float luminance_multiplier = p_render_data->render_buffers.is_valid() ? p_render_data->render_buffers->get_luminance_multiplier() : 1.0;
+	RendererEnvironmentStorage::TonemapParameters tp = {};
+	float tonemapper_exposure = 1.0f;
+	float tonemapper_bcs[3] = { 1.0f, 1.0f, 1.0f };
+	if (p_render_data->environment.is_valid()) {
+		tp = environment_get_tonemap_parameters(p_render_data->environment, false);
+		tonemapper_exposure = environment_get_exposure(p_render_data->environment);
+		tonemapper_bcs[0] = environment_get_adjustments_brightness(p_render_data->environment);
+		tonemapper_bcs[1] = environment_get_adjustments_contrast(p_render_data->environment);
+		tonemapper_bcs[2] = environment_get_adjustments_saturation(p_render_data->environment);
+	}
 
 	// Start a new setup.
 	scene_state.uniform_buffers.prepare_for_upload();
-	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers.get_for_upload(0u), get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_default_bg_color, luminance_multiplier, p_opaque_render_buffers, false);
+	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers.get_for_upload(0u), get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_default_bg_color, luminance_multiplier, tp.tonemapper_params, tonemapper_bcs, tonemapper_exposure, p_opaque_render_buffers, false);
 }
 
 /// RENDERING ///

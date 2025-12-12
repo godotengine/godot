@@ -370,6 +370,7 @@ private:
 
 		bool is_transparent = false;
 		bool use_hdr = false;
+		bool tonemap_before_blending = false;
 		bool use_debanding = false;
 
 		bool sdf_enabled = false;
@@ -764,6 +765,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override;
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) override;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
+	virtual void render_target_set_tonemap_before_blending(RID p_render_target, bool p_tonemap_before_blending) override;
+	virtual bool render_target_get_tonemap_before_blending(RID p_render_target) const override;
 	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override;
 	virtual bool render_target_is_using_debanding(RID p_render_target) const override;
 

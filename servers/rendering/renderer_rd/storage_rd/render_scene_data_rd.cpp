@@ -69,7 +69,7 @@ RID RenderSceneDataRD::create_uniform_buffer() {
 	return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
 }
 
-void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier) {
+void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, float p_tonemapper_params[4], float p_tonemapper_bcs[3], float p_tonemapper_exposure, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier) {
 	RendererSceneRenderRD *render_scene_render = RendererSceneRenderRD::get_singleton();
 
 	UBODATA ubo_data;
@@ -126,6 +126,16 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	RendererRD::MaterialStorage::store_soft_shadow_kernel(render_scene_render->soft_shadow_kernel_get(), ubo.soft_shadow_kernel);
 	ubo.camera_visible_layers = camera_visible_layers;
 	ubo.pass_alpha_multiplier = p_opaque_render_buffers && p_apply_alpha_multiplier ? 0.0f : 1.0f;
+
+	ubo.tonemapper_params[0] = p_tonemapper_params[0];
+	ubo.tonemapper_params[1] = p_tonemapper_params[1];
+	ubo.tonemapper_params[2] = p_tonemapper_params[2];
+	ubo.tonemapper_params[3] = p_tonemapper_params[3];
+
+	ubo.tonemapper_bcs[0] = p_tonemapper_bcs[0];
+	ubo.tonemapper_bcs[1] = p_tonemapper_bcs[1];
+	ubo.tonemapper_bcs[2] = p_tonemapper_bcs[2];
+	ubo.tonemapper_exposure = p_tonemapper_exposure;
 
 	ubo.viewport_size[0] = p_screen_size.x;
 	ubo.viewport_size[1] = p_screen_size.y;

@@ -30,6 +30,7 @@ void main() {
 #VERSION_DEFINES
 
 #include "../oct_inc.glsl"
+#include "../tonemapper_inc.glsl"
 
 #ifdef USE_MULTIVIEW
 #extension GL_EXT_multiview : enable
@@ -39,6 +40,14 @@ void main() {
 #define M_PI 3.14159265359
 
 layout(location = 0) in vec2 uv_interp;
+
+layout(constant_id = 0) const bool sc_tonemapper_apply_before_blending = false;
+layout(constant_id = 1) const bool sc_tonemapper_linear = false;
+layout(constant_id = 2) const bool sc_tonemapper_reinhard = false;
+layout(constant_id = 3) const bool sc_tonemapper_filmic = false;
+layout(constant_id = 4) const bool sc_tonemapper_aces = false;
+layout(constant_id = 5) const bool sc_tonemapper_agx = false;
+layout(constant_id = 6) const bool sc_tonemapper_convert_to_srgb = false;
 
 layout(push_constant, std430) uniform Params {
 	mat3 orientation;
@@ -78,8 +87,10 @@ layout(set = 0, binding = 2, std140) uniform SkySceneData {
 
 	float z_far; // 4 - 52
 	uint directional_light_count; // 4 - 56
-	uint pad1; // 4 - 60
-	uint pad2; // 4 - 64
+	float tonemapper_exposure; // 4 - 60
+	uint pad1; // 4 - 64
+
+	vec4 tonemapper_params;
 }
 sky_scene_data;
 
@@ -296,9 +307,27 @@ void main() {
 
 #endif // DISABLE_FOG
 
-	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
-	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
-	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
+#if !AT_CUBEMAP_PASS
+	if (sc_tonemapper_apply_before_blending) {
+		// Tonemapping before blending is not a technically correct approach, but it can save some
+		// frametime on targets that don't need accurate blending by skipping a full screen render pass.
+		frag_color.rgb *= sky_scene_data.tonemapper_exposure;
+
+		// Tonemap to lower dynamic range.
+		uint tonemapper_mode = tonemapper_mode_from_booleans(sc_tonemapper_linear, sc_tonemapper_reinhard, sc_tonemapper_filmic, sc_tonemapper_aces, sc_tonemapper_agx);
+		frag_color.rgb = apply_tonemapping(frag_color.rgb, tonemapper_mode, sky_scene_data.tonemapper_params);
+
+		if (sc_tonemapper_convert_to_srgb) {
+			// Regular linear -> SRGB conversion.
+			frag_color.rgb = linear_to_srgb(frag_color.rgb);
+		}
+	} else
+#endif
+	{
+		// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
+		// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
+		frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
+	}
 
 	// Blending is disabled for Sky, so alpha doesn't blend.
 	// Alpha is used for subsurface scattering so make sure it doesn't get applied to Sky.

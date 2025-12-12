@@ -3939,6 +3939,24 @@ bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
 	return rt->use_hdr;
 }
 
+void TextureStorage::render_target_set_tonemap_before_blending(RID p_render_target, bool p_tonemap_before_blending) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	if (p_tonemap_before_blending == rt->tonemap_before_blending) {
+		return;
+	}
+
+	rt->tonemap_before_blending = p_tonemap_before_blending;
+}
+
+bool TextureStorage::render_target_get_tonemap_before_blending(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->tonemap_before_blending;
+}
+
 void TextureStorage::render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);

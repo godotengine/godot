@@ -82,6 +82,7 @@ private:
 	public:
 		enum FramebufferConfigType {
 			FB_CONFIG_RENDER_PASS, // Single pass framebuffer for normal rendering.
+			FB_CONFIG_RENDER_AND_TONEMAP_BEFORE_BLENDING, // Single pass framebuffer with limited rendering and inaccurate blending.
 			FB_CONFIG_RENDER_AND_POST_PASS, // Two subpasses, one for normal rendering, one for post processing.
 			FB_CONFIG_MAX
 		};
@@ -198,6 +199,7 @@ private:
 		struct PushConstantUbershader {
 			SceneShaderForwardMobile::ShaderSpecialization specialization;
 			SceneShaderForwardMobile::UbershaderConstants constants;
+			uint32_t padding[3];
 		};
 
 		struct PushConstant {

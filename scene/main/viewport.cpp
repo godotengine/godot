@@ -1285,6 +1285,17 @@ bool Viewport::is_using_hdr_2d() const {
 	return use_hdr_2d;
 }
 
+void Viewport::set_tonemap_before_blending(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
+	tonemap_before_blending = p_enable;
+	RS::get_singleton()->viewport_set_tonemap_before_blending(viewport, p_enable);
+}
+
+bool Viewport::has_tonemap_before_blending() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return tonemap_before_blending;
+}
+
 void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	ERR_MAIN_THREAD_GUARD;
 	if (world_2d == p_world_2d) {
@@ -4965,6 +4976,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_transparent_background"), &Viewport::has_transparent_background);
 	ClassDB::bind_method(D_METHOD("set_use_hdr_2d", "enable"), &Viewport::set_use_hdr_2d);
 	ClassDB::bind_method(D_METHOD("is_using_hdr_2d"), &Viewport::is_using_hdr_2d);
+	ClassDB::bind_method(D_METHOD("set_tonemap_before_blending", "enable"), &Viewport::set_tonemap_before_blending);
+	ClassDB::bind_method(D_METHOD("has_tonemap_before_blending"), &Viewport::has_tonemap_before_blending);
 
 	ClassDB::bind_method(D_METHOD("set_msaa_2d", "msaa"), &Viewport::set_msaa_2d);
 	ClassDB::bind_method(D_METHOD("get_msaa_2d"), &Viewport::get_msaa_2d);
@@ -5165,6 +5178,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Lighting,Overdraw,Wireframe,Normal Buffer,VoxelGI Albedo,VoxelGI Lighting,VoxelGI Emission,Shadow Atlas,Directional Shadow Map,Scene Luminance,SSAO,SSIL,Directional Shadow Splits,Decal Atlas,SDFGI Cascades,SDFGI Probes,VoxelGI/SDFGI Buffer,Disable Mesh LOD,OmniLight3D Cluster,SpotLight3D Cluster,Decal Cluster,ReflectionProbe Cluster,Occlusion Culling Buffer,Motion Vectors,Internal Buffer"), "set_debug_draw", "get_debug_draw");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr_2d"), "set_use_hdr_2d", "is_using_hdr_2d");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tonemap_before_blending"), "set_tonemap_before_blending", "has_tonemap_before_blending");
 
 #ifndef _3D_DISABLED
 	ADD_GROUP("Scaling 3D", "");

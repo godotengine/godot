@@ -1029,6 +1029,8 @@ layout(location = 0) out vec4 frag_color;
 
 #ifndef MODE_RENDER_DEPTH
 
+#include "../tonemapper_inc.glsl"
+
 /*
 	Only supporting normal fog here.
 */
@@ -2265,9 +2267,12 @@ void main() {
 	out_color.rgb = mix(out_color.rgb, fog.rgb, fog.a);
 #endif // !FOG_DISABLED
 
-	// On mobile we use a UNORM buffer with 10bpp which results in a range from 0.0 - 1.0 resulting in HDR breaking
-	// We divide by sc_luminance_multiplier to support a range from 0.0 - 2.0 both increasing precision on bright and darker images
-	out_color.rgb = out_color.rgb / sc_luminance_multiplier();
+	if (!sc_tonemapper_apply_before_blending()) {
+		// On mobile we use a UNORM buffer with 10bpp which results in a range from 0.0 - 1.0 resulting in HDR breaking
+		// We divide by sc_luminance_multiplier to support a range from 0.0 - 2.0 both increasing precision on bright and darker images
+		out_color.rgb = out_color.rgb / sc_luminance_multiplier();
+	}
+
 #ifdef PREMUL_ALPHA_USED
 	out_color.rgb *= premul_alpha;
 #endif
@@ -2294,6 +2299,20 @@ void main() {
 		// Assume that this shader always writes to a 10-bit buffer, so divide by 1023 to align
 		// to 10-bit quantization.
 		frag_color.rgb += (dither.rgb - 0.5) / 1023.0;
+	}
+
+	if (sc_tonemapper_apply_before_blending()) {
+		// Tonemapping before blending is not a technically correct approach, but it can save some
+		// frametime on targets that don't need accurate blending by skipping a full screen render pass.
+		frag_color.rgb *= scene_data.tonemapper_exposure;
+
+		// Tonemap to lower dynamic range.
+		frag_color.rgb = apply_tonemapping(frag_color.rgb, sc_tonemapper_mode(), scene_data.tonemapper_params);
+
+		if (sc_tonemapper_convert_to_srgb()) {
+			// Regular linear -> SRGB conversion.
+			frag_color.rgb = linear_to_srgb(frag_color.rgb);
+		}
 	}
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS

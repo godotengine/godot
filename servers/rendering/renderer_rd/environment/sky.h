@@ -95,6 +95,17 @@ private:
 		SKY_VERSION_MAX
 	};
 
+	enum SkySpecializationFlag {
+		SKY_SPECIALIZATION_FLAG_NONE = 0,
+		SKY_SPECIALIZATION_FLAG_TONEMAPPER_APPLY_BEFORE_BLENDING = (1 << 0),
+		SKY_SPECIALIZATION_FLAG_TONEMAPPER_LINEAR = (1 << 1),
+		SKY_SPECIALIZATION_FLAG_TONEMAPPER_REINHARD = (1 << 2),
+		SKY_SPECIALIZATION_FLAG_TONEMAPPER_FILMIC = (1 << 3),
+		SKY_SPECIALIZATION_FLAG_TONEMAPPER_ACES = (1 << 4),
+		SKY_SPECIALIZATION_FLAG_TONEMAPPER_AGX = (1 << 5),
+		SKY_SPECIALIZATION_FLAG_TONEMAPPER_CONVERT_TO_SRGB = (1 << 6),
+	};
+
 	struct SkyPushConstant {
 		float orientation[12]; // 48 - 48
 		float projection[4]; // 16 - 64
@@ -134,7 +145,7 @@ private:
 		virtual ~SkyShaderData();
 	};
 
-	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier, float p_brightness_modifier, float p_border_size = 0.0);
+	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier, float p_brightness_modifier, float p_border_size, SkySpecializationFlag p_specialization_flags);
 
 public:
 	struct SkySceneState {
@@ -158,8 +169,10 @@ public:
 
 			float z_far; // 4 - 340
 			uint32_t directional_light_count; // 4 - 344
-			uint32_t pad1; // 4 - 348
+			float tonemapper_exposure; // 4 - 348
 			uint32_t pad2; // 4 - 352
+
+			float tonemapper_params[4]; // 16 - 368
 		};
 
 		UBO ubo;
@@ -276,7 +289,7 @@ public:
 
 		void free();
 
-		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, Ref<RenderSceneBuffersRD> p_render_buffers);
+		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment_for_tonemapping);
 		bool set_radiance_size(int p_radiance_size);
 		int get_radiance_size() const;
 		bool set_mode(RS::SkyMode p_mode);
@@ -305,7 +318,7 @@ public:
 	void setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_size);
 	void update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, const Vector3 &p_global_pos, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
 	void update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
-	void draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, RID p_fb, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
+	void draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, RID p_fb, double p_time, float p_luminance_multiplier, float p_brightness_multiplier, bool p_tonemap_while_drawing);
 
 	void invalidate_sky(Sky *p_sky);
 	void update_dirty_skys();

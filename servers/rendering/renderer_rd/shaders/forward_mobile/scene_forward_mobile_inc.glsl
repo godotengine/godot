@@ -21,8 +21,12 @@ layout(push_constant, std430) uniform DrawCall {
 #ifdef UBERSHADER
 	uint sc_packed_0;
 	uint sc_packed_1;
-	float sc_packed_2;
+	uint sc_packed_2;
+	float sc_packed_3;
 	uint uc_packed_0;
+	uint padding_0;
+	uint padding_1;
+	uint padding_2;
 #endif
 }
 draw_call;
@@ -44,8 +48,12 @@ uint sc_packed_1() {
 	return draw_call.sc_packed_1;
 }
 
-float sc_packed_2() {
+uint sc_packed_2() {
 	return draw_call.sc_packed_2;
+}
+
+float sc_packed_3() {
+	return draw_call.sc_packed_3;
 }
 
 uint uc_cull_mode() {
@@ -57,7 +65,8 @@ uint uc_cull_mode() {
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
 layout(constant_id = 1) const uint pso_sc_packed_1 = 0;
-layout(constant_id = 2) const float pso_sc_packed_2 = 2.0;
+layout(constant_id = 2) const uint pso_sc_packed_2 = 0;
+layout(constant_id = 3) const float pso_sc_packed_3 = 2.0;
 
 uint sc_packed_0() {
 	return pso_sc_packed_0;
@@ -67,8 +76,12 @@ uint sc_packed_1() {
 	return pso_sc_packed_1;
 }
 
-float sc_packed_2() {
+uint sc_packed_2() {
 	return pso_sc_packed_2;
+}
+
+float sc_packed_3() {
+	return pso_sc_packed_3;
 }
 
 #endif
@@ -212,11 +225,23 @@ bool sc_directional_light_blend_split(uint i) {
 	return ((sc_packed_1() >> (21 + i)) & 1U) != 0;
 }
 
-half sc_luminance_multiplier() {
-	return half(sc_packed_2());
+bool sc_tonemapper_apply_before_blending() {
+	return ((sc_packed_2() >> 0) & 1U) != 0;
 }
 
-layout(constant_id = 3) const bool sc_emulate_point_size = false;
+uint sc_tonemapper_mode() {
+	return (sc_packed_2() >> 1) & 7U;
+}
+
+bool sc_tonemapper_convert_to_srgb() {
+	return ((sc_packed_2() >> 4) & 1U) != 0;
+}
+
+half sc_luminance_multiplier() {
+	return half(sc_packed_3());
+}
+
+layout(constant_id = 4) const bool sc_emulate_point_size = false;
 
 #ifdef POINT_SIZE_USED
 
