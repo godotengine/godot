@@ -24,6 +24,15 @@
 				Sets this node's properties to match a given [GPUParticles3D] node with an assigned [ParticleProcessMaterial].
 			</description>
 		</method>
+		<method name="generate_emission_points">
+			<return type="void" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="emission_amount" type="int" />
+			<param index="2" name="emission_source" type="int" />
+			<description>
+				Generates emission points on the mesh, taking a number of emission points and the emission sources. See [enum EmissionSources].
+			</description>
+		</method>
 		<method name="get_param_curve" qualifiers="const">
 			<return type="Curve" />
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
@@ -431,6 +440,15 @@
 		</constant>
 		<constant name="EMISSION_SHAPE_MAX" value="7" enum="EmissionShape">
 			Represents the size of the [enum EmissionShape] enum.
+		</constant>
+		<constant name="SURFACE_POINTS" value="0" enum="EmissionSources">
+			When using [method generate_emission_points], sets the particles spawn points to the surface of the mesh.
+		</constant>
+		<constant name="SURFACE_POINTS_AND_NORMAL" value="1" enum="EmissionSources">
+			When using [method generate_emission_points], sets the particles spawn points and normals to the surface of the mesh.
+		</constant>
+		<constant name="VOLUME" value="2" enum="EmissionSources">
+			When using [method generate_emission_points], sets the particles spawn points to a position inside the mesh.
 		</constant>
 	</constants>
 </class>
