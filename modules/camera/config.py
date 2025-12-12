@@ -3,7 +3,7 @@ def can_build(env, platform):
 
     if sys.platform.startswith("freebsd") or sys.platform.startswith("openbsd"):
         return False
-    return platform == "macos" or platform == "windows" or platform == "linuxbsd" or platform == "android"
+    return platform in ["macos", "windows", "linuxbsd", "android", "web"]
 
 
 def configure(env):
