@@ -32,9 +32,9 @@
 
 #include "core/extension/gdextension_interface.gen.h"
 #include "core/object/gdtype.h"
-#include "core/object/message_queue.h"
 #include "core/object/object_id.h"
 #include "core/os/spin_lock.h"
+#include "core/os/thread_safe.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
@@ -992,9 +992,15 @@ public:
 	DEBUG_VIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
 	DEBUG_VIRTUAL bool has_connections(const StringName &p_signal) const;
 
+	void call_deferredp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
 	template <typename... VarArgs>
 	void call_deferred(const StringName &p_name, VarArgs... p_args) {
-		MessageQueue::get_singleton()->push_call(this, p_name, p_args...);
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		return call_deferredp(p_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
 	void set_deferred(const StringName &p_property, const Variant &p_value);

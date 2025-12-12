@@ -130,15 +130,6 @@ public:
 	}
 
 	Error push_callp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
-	template <typename... VarArgs>
-	Error push_call(Object *p_object, const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-		return push_callp(p_object, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
-	}
 
 	Error push_notification(Object *p_object, int p_notification);
 	Error push_set(Object *p_object, const StringName &p_prop, const Variant &p_value);
