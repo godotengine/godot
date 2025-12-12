@@ -1369,6 +1369,10 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					RID atlas = light_storage->reflection_probe_instance_get_atlas(probe_instance);
 					RID probe = light_storage->reflection_probe_instance_get_probe(probe_instance);
 					uint32_t reflection_mask = light_storage->reflection_probe_get_reflection_mask(probe);
+					if (Engine::get_singleton()->is_editor_hint()) {
+						// Add bit 26 to allow rendering preview gizmos.
+						reflection_mask |= (1 << 26);
+					}
 					if (atlas.is_valid() && (inst->layer_mask & reflection_mask)) {
 						Transform3D local_matrix = p_render_data->inv_cam_transform * light_storage->reflection_probe_instance_get_transform(probe_instance);
 						inst->reflection_probes_local_transform_cache.push_back(local_matrix.affine_inverse());
