@@ -1096,6 +1096,107 @@
 				Set the width of the gutter at the given index.
 			</description>
 		</method>
+		<method name="set_inline_object_handlers">
+			<return type="void" />
+			<param index="0" name="parser" type="Callable" />
+			<param index="1" name="drawer" type="Callable" />
+			<param index="2" name="click_handler" type="Callable" />
+			<description>
+				Set the inline object handlers to the given parser, drawer, and click handler. The parser takes the current string as an argument and returns a list of dictionaries like this one:
+				[codeblock]
+				{
+					"column": 5, # the index to draw the object at
+					"width_ratio": 2.0, # the width of the object, proportional to the font height
+				}
+				[/codeblock]
+				The drawer gets called for every object the parser returns. It gets the parser result as the first argument and the rectangle it can draw stuff in as the second. The click handler gets called every time an inline object is clicked, and it gets the same arguments as the drawer.
+				Example: draw some inline hints next to variable declarations.
+				[codeblock]
+				[gdscript]
+				extends CodeEdit
+
+				var re = RegEx.create_from_string("var\\s+(\\w+)\\s*:?\\s*=")
+
+				func _init() -&gt; void:
+					set_inline_object_handlers(_parser, _drawer, _click_handler)
+
+				func _parser(t: String) -&gt; Array[Dictionary]:
+					var r: Array[Dictionary] = []
+					var font := get_theme_font("font")
+					var font_height := font.get_height(get_theme_font_size("font_size"))
+					for m in re.search_all(t):
+						var hint_text := ": the type of %s" % m.get_string(1)
+						var requested_width := font.get_string_size(hint_text).x
+						r.append({
+							"column": m.get_end(1),
+							"variable_name": m.get_string(1),
+							"width_ratio": (requested_width + 6) / font_height,
+							"text": hint_text
+						})
+					return r
+
+				func _drawer(info: Dictionary, col_rect: Rect2) -&gt; void:
+					var font := get_theme_font("font")
+					var font_size := get_theme_font_size("font_size")
+					var string_size = Vector2(font.get_string_size(info.text).x, font.get_ascent(font_size))
+					draw_rect(Rect2(col_rect.position + Vector2(0, 0), string_size).grow_individual(0, 3, 0, font.get_descent(font_size) + 3), Color.BLACK)
+					draw_string(font, col_rect.position + string_size.y * Vector2.DOWN + Vector2(0, 0), info.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.5))
+
+
+				func _click_handler(info: Dictionary, _col_rect: Rect2) -&gt; void:
+					print("Hint of variable %s was clicked" % info.variable_name)
+				[/gdscript]
+				[csharp]
+				using Godot;
+				using Godot.Collections;
+
+				public partial class MyCodeEdit : CodeEdit
+				{
+					readonly RegEx re = RegEx.CreateFromString("var\\s+(\\w+)\\s*:?\\s*=");
+
+					public override void _Ready()
+					{
+						SetInlineObjectHandlers(new Callable(this, "_Parser"), new Callable(this, "_Drawer"), new Callable());
+					}
+
+					private Array&lt;Dictionary&lt;string, Variant&gt;&gt; _Parser(string text)
+					{
+						Array&lt;Dictionary&lt;string, Variant&gt;&gt; r = [];
+						Font font = GetThemeFont("font");
+						float fontHeight = font.GetHeight(GetThemeFontSize("font_size"));
+						foreach (var match in re.SearchAll(text))
+						{
+							string hintText = $": the type of {match.GetString(1)}";
+							float requestedWidth = font.GetStringSize(hintText, HorizontalAlignment.Left, -1, GetThemeFontSize("font_size")).X;
+							r.Add(new Dictionary()
+							{
+								["column"] = match.GetEnd(1),
+								["variable_name"] = match.GetString(1),
+								["width_ratio"] = (requestedWidth + 6) / fontHeight,
+								["text"] = hintText,
+							});
+						}
+						return r;
+					}
+
+					private void _Drawer(Dictionary&lt;string, Variant&gt; info, Rect2 rect)
+					{
+						Font font = GetThemeFont("font");
+						int font_size = GetThemeFontSize("font_size");
+						Vector2 string_size = new Vector2(font.GetStringSize(info["text"].AsString()).X, font.GetAscent(font_size));
+						DrawRect(new Rect2(rect.Position + new Vector2(0, 0), string_size).GrowIndividual(0, 3, 0, font.GetDescent(font_size) + 3), Colors.Black);
+						DrawString(font, rect.Position + string_size.Y * Vector2.Down, info["text"].AsString(), HorizontalAlignment.Left, -1, font_size, new Color(1, 1, 1, 0.5f));
+					}
+
+					private void _ClickHandler(Dictionary&lt;string, Variant&gt; info, Rect2 rect)
+					{
+						GD.Print($"Hint of variable {info["variable_name"]} was clicked");
+					}
+				}
+				[/csharp]
+				[/codeblock]
+			</description>
+		</method>
 		<method name="set_line">
 			<return type="void" />
 			<param index="0" name="line" type="int" />
