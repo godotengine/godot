@@ -372,7 +372,7 @@ License: BSD-3-clause
 
 Files: thirdparty/libjpeg-turbo/*
 Comment: libjpeg-turbo
-Copyright: 2009-2024, D. R. Commander
+Copyright: 2009-2025, D. R. Commander
  2015, Viktor Szathmáry.
  1991-2020, Thomas G. Lane, Guido Vollbeding
 License: BSD-3-clause and IJG

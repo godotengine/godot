@@ -538,7 +538,7 @@ Patches:
 ## libjpeg-turbo
 
 - Upstream: https://github.com/libjpeg-turbo/libjpeg-turbo
-- Version: 3.1.0 (20ade4dea9589515a69793e447a6c6220b464535, 2024)
+- Version: 3.1.3 (af9c1c268520a29adf98cad5138dafe612b3d318, 2025)
 - License: BSD-3-Clause and IJG
 
 Files extracted from upstream source:
