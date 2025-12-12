@@ -925,10 +925,6 @@
 			List of custom OpenType features to use, if supported by the currently configured code font. Not all fonts include support for custom OpenType features. The string should follow the OpenType specification.
 			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has custom OpenType features in its font file, but there is no documented list yet.
 		</member>
-		<member name="interface/editor/code_font_custom_variations" type="String" setter="" getter="">
-			List of alternative characters to use, if supported by the currently configured code font. Not all fonts include support for custom variations. The string should follow the OpenType specification.
-			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has alternate characters in its font file, but there is no documented list yet.
-		</member>
 		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
 			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
 		</member>
