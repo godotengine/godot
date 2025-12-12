@@ -51,6 +51,7 @@ class QuickSettingsDialog : public AcceptDialog {
 	Vector<String> editor_network_modes;
 	Vector<String> editor_check_for_updates;
 	Vector<String> editor_directory_naming_conventions;
+	Vector<String> editor_dropped_node_naming_convention;
 
 	void _fetch_setting_values();
 	void _update_current_values();
@@ -70,6 +71,7 @@ class QuickSettingsDialog : public AcceptDialog {
 	OptionButton *network_mode_option_button = nullptr;
 	OptionButton *check_for_update_button = nullptr;
 	OptionButton *directory_naming_convention_button = nullptr;
+	OptionButton *dropped_node_naming_convention_button = nullptr;
 
 	Label *custom_theme_label = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
@@ -82,6 +84,7 @@ class QuickSettingsDialog : public AcceptDialog {
 	void _network_mode_selected(int p_id);
 	void _check_for_update_selected(int p_id);
 	void _directory_naming_convention_selected(int p_id);
+	void _dropped_node_naming_convention(int p_id);
 	void _set_setting_value(const String &p_setting, const Variant &p_value, bool p_restart_required = false);
 	void _show_full_settings();
 
