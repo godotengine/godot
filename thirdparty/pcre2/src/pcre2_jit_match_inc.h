@@ -99,9 +99,8 @@ pcre2_jit_match(const pcre2_code *code, PCRE2_SPTR subject, PCRE2_SIZE length,
 (void)length;
 (void)start_offset;
 (void)options;
-(void)match_data;
 (void)mcontext;
-return PCRE2_ERROR_JIT_BADOPTION;
+return match_data->rc = PCRE2_ERROR_JIT_BADOPTION;
 
 #else  /* SUPPORT_JIT */
 
@@ -124,7 +123,7 @@ else if ((options & PCRE2_PARTIAL_SOFT) != 0)
   index = 1;
 
 if (functions == NULL || functions->executable_funcs[index] == NULL)
-  return PCRE2_ERROR_JIT_BADOPTION;
+  return match_data->rc = PCRE2_ERROR_JIT_BADOPTION;
 
 /* Sanity checks should be handled by pcre2_match. */
 arguments.str = subject + start_offset;
@@ -176,14 +175,17 @@ else
 if (rc > (int)oveccount)
   rc = 0;
 match_data->code = re;
-match_data->subject = (rc >= 0 || rc == PCRE2_ERROR_PARTIAL)? subject : NULL;
+match_data->subject =
+  (rc >= 0 || rc == PCRE2_ERROR_NOMATCH || rc == PCRE2_ERROR_PARTIAL)? subject : NULL;
 match_data->subject_length = length;
+match_data->start_offset = start_offset;
 match_data->rc = rc;
 match_data->startchar = arguments.startchar_ptr - subject;
 match_data->leftchar = 0;
 match_data->rightchar = 0;
 match_data->mark = arguments.mark_ptr;
 match_data->matchedby = PCRE2_MATCHEDBY_JIT;
+match_data->options = options;
 
 #if defined(__has_feature)
 #if __has_feature(memory_sanitizer)
@@ -197,4 +199,4 @@ return match_data->rc;
 #endif  /* SUPPORT_JIT */
 }
 
-/* End of pcre2_jit_match.c */
+/* End of pcre2_jit_match_inc.h */

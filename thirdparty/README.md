@@ -890,19 +890,20 @@ Exclude:
 Additional:
 - Update `openxrLoaderVersion` in `platform/android/java/app/config.gradle`
 
+
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.45 (2dce7761b1831fd3f82a9c2bd5476259d945da4d, 2025)
+- Version: 10.47 (f454e231fe5006dd7ff8f4693fd2b8eb94333429, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
 - Files listed in the file `NON-AUTOTOOLS-BUILD` steps 1-4
-- All `.h` files in `src/` apart from `pcre2posix.h`
-- `src/pcre2_jit_match.c`
-- `src/pcre2_jit_misc.c`
-- `src/pcre2_ucptables.c`
+- All `.h` files in `src/` apart from `pcre2posix.h`, `pcre2_printint_inc.h`, `pcre2test_inc.h`
+- `src/pcre2_compile_cgroup.c`
+- `src/pcre2_match_next.c`
+- `src/pcre2_{jit_char,jit_match,jit_misc,jit_simd,ucptables}_inc.h`
 - `deps/sljit/sljit_src`
 - `AUTHORS.md` and `LICENCE.md`
 
