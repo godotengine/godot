@@ -505,7 +505,11 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 String ResourceLoader::_validate_local_path(const String &p_path) {
 	ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(p_path);
 	if (uid != ResourceUID::INVALID_ID) {
-		return ResourceUID::get_singleton()->get_id_path(uid);
+		if (ResourceUID::get_singleton()->has_id(uid)) {
+			return ResourceUID::get_singleton()->get_id_path(uid);
+		} else {
+			return String();
+		}
 	} else if (p_path.is_relative_path()) {
 		return ("res://" + p_path).simplify_path();
 	} else {
