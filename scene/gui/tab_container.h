@@ -167,6 +167,9 @@ public:
 	void set_tab_alignment(TabBar::AlignmentMode p_alignment);
 	TabBar::AlignmentMode get_tab_alignment() const;
 
+	void set_tab_sizing(TabBar::SizingMode p_sizing);
+	TabBar::SizingMode get_tab_sizing() const;
+
 	void set_tabs_position(TabPosition p_tab_position);
 	TabPosition get_tabs_position() const;
 
