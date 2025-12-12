@@ -379,6 +379,7 @@ private:
 		Window *subwindow_over = nullptr; // mouse_over and subwindow_over are mutually exclusive. At all times at least one of them is nullptr.
 		Window *windowmanager_window_over = nullptr; // Only used in root Viewport.
 		Control *drag_mouse_over = nullptr;
+		Ref<PackedScene> custom_tooltip;
 		Control *tooltip_control = nullptr;
 		Window *tooltip_popup = nullptr;
 		Label *tooltip_label = nullptr;
@@ -523,6 +524,7 @@ public:
 
 	void cancel_tooltip();
 	void show_tooltip(Control *p_control);
+	void set_custom_tooltip(Ref<PackedScene> p_custom_tooltip_scene);
 
 	void update_canvas_items();
 
