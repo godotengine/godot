@@ -38,9 +38,11 @@
 
 class CheckBox;
 class CheckButton;
+class ConfirmationDialog;
 class EditorSelection;
 class GridContainer;
 class Label;
+class LineEdit;
 class OptionButton;
 class PanelContainer;
 class PopupPanel;
@@ -127,13 +129,21 @@ public:
 class EditorInspectorPluginControl : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginControl, EditorInspectorPlugin);
 
+	LineEdit *create_new_variation_line_edit = nullptr;
+	ConfirmationDialog *create_new_variation_dialog = nullptr;
 	bool inside_control_category = false;
+
+	Ref<Theme> theme;
+	Control *current_control = nullptr;
+	void _on_create_variation_confirmed();
+	void _on_convert_theme_overrides_to_variation(Control *p_control);
 
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_category(Object *p_object, const String &p_category) override;
 	virtual void parse_group(Object *p_object, const String &p_group) override;
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
+	EditorInspectorPluginControl();
 };
 
 // Toolbar controls.
