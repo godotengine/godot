@@ -3725,6 +3725,67 @@ void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation)
 	}
 }
 
+Image::Format Image::find_optimized_format(Format p_format, UsedChannels p_channels) {
+	switch (p_channels) {
+		case USED_CHANNELS_L:
+			if (p_format >= FORMAT_L8 && p_format <= FORMAT_RGB565) {
+				return FORMAT_L8;
+			} else if (p_format >= FORMAT_RF && p_format <= FORMAT_RGBAF) {
+				return FORMAT_RGBF;
+			} else if (p_format >= FORMAT_RH && p_format <= FORMAT_RGBAH) {
+				return FORMAT_RGBH;
+			}
+			break;
+		case USED_CHANNELS_LA:
+			if (p_format >= FORMAT_L8 && p_format <= FORMAT_RGB565) {
+				return FORMAT_LA8;
+			} else if (p_format >= FORMAT_RF && p_format <= FORMAT_RGBAF) {
+				return FORMAT_RGBAF;
+			} else if (p_format >= FORMAT_RH && p_format <= FORMAT_RGBAH) {
+				return FORMAT_RGBAH;
+			}
+			break;
+		case USED_CHANNELS_R:
+			if (p_format >= FORMAT_L8 && p_format <= FORMAT_RGB565) {
+				return FORMAT_R8;
+			} else if (p_format >= FORMAT_RF && p_format <= FORMAT_RGBAF) {
+				return FORMAT_RF;
+			} else if (p_format >= FORMAT_RH && p_format <= FORMAT_RGBE9995) {
+				return FORMAT_RH;
+			}
+			break;
+		case USED_CHANNELS_RG:
+			if (p_format >= FORMAT_L8 && p_format <= FORMAT_RGB565) {
+				return FORMAT_RG8;
+			} else if (p_format >= FORMAT_RF && p_format <= FORMAT_RGBAF) {
+				return FORMAT_RGF;
+			} else if (p_format >= FORMAT_RH && p_format <= FORMAT_RGBE9995) {
+				return FORMAT_RGH;
+			}
+			break;
+		case USED_CHANNELS_RGB:
+			if ((p_format >= FORMAT_L8 && p_format <= FORMAT_RGBA8) || p_format == FORMAT_RGB565) {
+				return FORMAT_RGB8;
+			} else if (p_format >= FORMAT_RF && p_format <= FORMAT_RGBAF) {
+				return FORMAT_RGBF;
+			} else if (p_format >= FORMAT_RH && p_format <= FORMAT_RGBAH) {
+				return FORMAT_RGBH;
+			}
+			break;
+		case USED_CHANNELS_RGBA:
+			if (p_format >= FORMAT_L8 && p_format <= FORMAT_RGBA8) {
+				return FORMAT_RGBA8;
+			} else if (p_format >= FORMAT_RF && p_format <= FORMAT_RGBAF) {
+				return FORMAT_RGBAF;
+			} else if (p_format >= FORMAT_RH && p_format <= FORMAT_RGBAH) {
+				return FORMAT_RGBAH;
+			}
+			break;
+	}
+
+	return p_format;
+}
+
 Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 	ERR_FAIL_COND_V(data.is_empty(), USED_CHANNELS_RGBA);
 	ERR_FAIL_COND_V(is_compressed(), USED_CHANNELS_RGBA);
@@ -3804,27 +3865,12 @@ Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 	return used_channels;
 }
 
+void Image::optimize_from_channels(UsedChannels p_channels) {
+	convert(find_optimized_format(format, p_channels));
+}
+
 void Image::optimize_channels() {
-	switch (detect_used_channels()) {
-		case USED_CHANNELS_L:
-			convert(FORMAT_L8);
-			break;
-		case USED_CHANNELS_LA:
-			convert(FORMAT_LA8);
-			break;
-		case USED_CHANNELS_R:
-			convert(FORMAT_R8);
-			break;
-		case USED_CHANNELS_RG:
-			convert(FORMAT_RG8);
-			break;
-		case USED_CHANNELS_RGB:
-			convert(FORMAT_RGB8);
-			break;
-		case USED_CHANNELS_RGBA:
-			convert(FORMAT_RGBA8);
-			break;
-	}
+	optimize_from_channels(detect_used_channels());
 }
 
 void Image::_bind_methods() {
