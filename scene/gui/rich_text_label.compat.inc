@@ -51,11 +51,11 @@ void RichTextLabel::_push_meta_bind_compat_89024(const Variant &p_meta) {
 }
 
 void RichTextLabel::_add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region) {
-	add_image(p_image, p_width, p_height, p_color, p_alignment, p_region, Variant(), false, String(), false, false, String());
+	add_image(p_image, p_width, p_height, p_color, p_alignment, p_region, Variant(), false, String(), IMAGE_UNIT_PIXEL, IMAGE_UNIT_PIXEL, String());
 }
 
 void RichTextLabel::_add_image_bind_compat_76829(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, const Variant &p_key, bool p_pad, const String &p_tooltip, bool p_size_in_percent) {
-	add_image(p_image, p_width, p_height, p_color, p_alignment, p_region, p_key, p_pad, p_tooltip, p_size_in_percent, p_size_in_percent, String());
+	add_image(p_image, p_width, p_height, p_color, p_alignment, p_region, p_key, p_pad, p_tooltip, p_size_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL, p_size_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL, String());
 }
 
 void RichTextLabel::_push_table_bind_compat_76829(int p_columns, InlineAlignment p_alignment, int p_align_to_row) {
@@ -75,11 +75,19 @@ void RichTextLabel::_push_strikethrough_bind_compat_106300() {
 }
 
 void RichTextLabel::_add_image_bind_compat_107347(const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, const Variant &p_key, bool p_pad, const String &p_tooltip, bool p_size_in_percent, const String &p_alt_text) {
-	add_image(p_image, p_width, p_height, p_color, p_alignment, p_region, p_key, p_pad, p_tooltip, p_size_in_percent, p_size_in_percent, p_alt_text);
+	add_image(p_image, p_width, p_height, p_color, p_alignment, p_region, p_key, p_pad, p_tooltip, p_size_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL, p_size_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL, p_alt_text);
 }
 
 void RichTextLabel::_update_image_bind_compat_107347(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, bool p_pad, const String &p_tooltip, bool p_size_in_percent) {
-	update_image(p_key, p_mask, p_image, p_width, p_height, p_color, p_alignment, p_region, p_pad, p_tooltip, p_size_in_percent, p_size_in_percent);
+	update_image(p_key, p_mask, p_image, p_width, p_height, p_color, p_alignment, p_region, p_pad, p_tooltip, p_size_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL, p_size_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL);
+}
+
+void RichTextLabel::_add_image_bind_compat_112617(const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, const Variant &p_key, bool p_pad, const String &p_tooltip, bool p_width_in_percent, bool p_height_in_percent, const String &p_alt_text) {
+	add_image(p_image, p_width, p_height, p_color, p_alignment, p_region, p_key, p_pad, p_tooltip, p_width_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL, p_height_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL, p_alt_text);
+}
+
+void RichTextLabel::_update_image_bind_compat_112617(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, bool p_pad, const String &p_tooltip, bool p_width_in_percent, bool p_height_in_percent) {
+	update_image(p_key, p_mask, p_image, p_width, p_height, p_color, p_alignment, p_region, p_pad, p_tooltip, p_width_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL, p_height_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL);
 }
 
 void RichTextLabel::_bind_compatibility_methods() {
@@ -96,6 +104,9 @@ void RichTextLabel::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("push_strikethrough"), &RichTextLabel::_push_strikethrough_bind_compat_106300);
 	ClassDB::bind_compatibility_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "size_in_percent", "alt_text"), &RichTextLabel::_add_image_bind_compat_107347, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_compatibility_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "size_in_percent"), &RichTextLabel::_update_image_bind_compat_107347, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(false));
+
+	ClassDB::bind_compatibility_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "width_in_percent", "height_in_percent", "alt_text"), &RichTextLabel::_add_image_bind_compat_112617, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(false), DEFVAL(String()));
+	ClassDB::bind_compatibility_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "width_in_percent", "height_in_percent"), &RichTextLabel::_update_image_bind_compat_112617, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(false));
 }
 
 #endif // DISABLE_DEPRECATED

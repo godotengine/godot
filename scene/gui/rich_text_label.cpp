@@ -498,8 +498,9 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 			case ITEM_IMAGE: {
 				ItemImage *img = static_cast<ItemImage *>(it);
 				Size2 img_size = img->size;
-				if (img->width_in_percent || img->height_in_percent) {
-					img_size = _get_image_size(img->image, img->width_in_percent ? (p_width * img->rq_size.width / 100.f) : img->rq_size.width, img->height_in_percent ? (p_width * img->rq_size.height / 100.f) : img->rq_size.height, img->region);
+				if (img->width_unit == IMAGE_UNIT_PERCENT || img->height_unit == IMAGE_UNIT_PERCENT || img->width_unit == IMAGE_UNIT_EM || img->height_unit == IMAGE_UNIT_EM) {
+					Size2 new_size = _get_item_image_final_size(img, p_width, p_base_font_size);
+					img_size = _get_image_size(img->image, new_size.width, new_size.height, img->region);
 					l.text_buf->resize_object(it->rid, img_size, img->inline_align);
 					if (l.text_buf_disp.is_valid() && l.text_buf_disp->has_object(it->rid)) {
 						l.text_buf_disp->resize_object(it->rid, img_size, img->inline_align);
@@ -679,8 +680,9 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 			case ITEM_IMAGE: {
 				ItemImage *img = static_cast<ItemImage *>(it);
 				Size2 img_size = img->size;
-				if (img->width_in_percent || img->height_in_percent) {
-					img_size = _get_image_size(img->image, img->width_in_percent ? (p_width * img->rq_size.width / 100.f) : img->rq_size.width, img->height_in_percent ? (p_width * img->rq_size.height / 100.f) : img->rq_size.height, img->region);
+				if (img->width_unit == IMAGE_UNIT_PERCENT || img->height_unit == IMAGE_UNIT_PERCENT || img->width_unit == IMAGE_UNIT_EM || img->height_unit == IMAGE_UNIT_EM) {
+					Size2 new_size = _get_item_image_final_size(img, p_width, p_base_font_size);
+					img_size = _get_image_size(img->image, new_size.width, new_size.height, img->region);
 				}
 				l.text_buf->add_object(it->rid, img_size, img->inline_align, 1);
 				txt += String::chr(0xfffc);
@@ -761,6 +763,24 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 
 	l.offset.y = p_h;
 	return _calculate_line_vertical_offset(l);
+}
+
+Size2 RichTextLabel::_get_item_image_final_size(ItemImage *p_img, float p_orig_width, float p_base_font_size) {
+	Size2 new_size(p_img->rq_size);
+	ItemFontSize *font_size_it = _find_font_size(p_img);
+
+	if (p_img->width_unit == IMAGE_UNIT_PERCENT) {
+		new_size.width = p_orig_width * p_img->rq_size.width / 100.f;
+	} else if (p_img->width_unit == IMAGE_UNIT_EM) {
+		new_size.width = (font_size_it ? font_size_it->font_size : p_base_font_size) * p_img->rq_size.width;
+	}
+
+	if (p_img->height_unit == IMAGE_UNIT_PERCENT) {
+		new_size.height = p_orig_width * p_img->rq_size.height / 100.f;
+	} else if (p_img->height_unit == IMAGE_UNIT_EM) {
+		new_size.height = (font_size_it ? font_size_it->font_size : p_base_font_size) * p_img->rq_size.height;
+	}
+	return new_size;
 }
 
 void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
@@ -4113,7 +4133,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	queue_redraw();
 }
 
-Size2 RichTextLabel::_get_image_size(const Ref<Texture2D> &p_image, int p_width, int p_height, const Rect2 &p_region) {
+Size2 RichTextLabel::_get_image_size(const Ref<Texture2D> &p_image, float p_width, float p_height, const Rect2 &p_region) {
 	Size2 ret;
 	if (p_width > 0) {
 		// custom width
@@ -4178,8 +4198,8 @@ void RichTextLabel::add_hr(int p_width, int p_height, const Color &p_color, Hori
 	item->inline_align = INLINE_ALIGNMENT_CENTER;
 	item->rq_size = Size2(p_width, p_height);
 	item->size = _get_image_size(theme_cache.horizontal_rule, p_width, p_height, Rect2());
-	item->width_in_percent = p_width_in_percent;
-	item->height_in_percent = p_height_in_percent;
+	item->width_unit = p_width_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL;
+	item->height_unit = p_height_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL;
 
 	item->image->connect_changed(callable_mp(this, &RichTextLabel::_texture_changed).bind(item->rid), CONNECT_REFERENCE_COUNTED);
 
@@ -4195,7 +4215,7 @@ void RichTextLabel::add_hr(int p_width, int p_height, const Color &p_color, Hori
 	}
 }
 
-void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, const Variant &p_key, bool p_pad, const String &p_tooltip, bool p_width_in_percent, bool p_height_in_percent, const String &p_alt_text) {
+void RichTextLabel::add_image(const Ref<Texture2D> &p_image, float p_width, float p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, const Variant &p_key, bool p_pad, const String &p_tooltip, ImageUnit p_width_unit, ImageUnit p_height_unit, const String &p_alt_text) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -4226,8 +4246,8 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_
 	item->rq_size = Size2(p_width, p_height);
 	item->region = p_region;
 	item->size = _get_image_size(p_image, p_width, p_height, p_region);
-	item->width_in_percent = p_width_in_percent;
-	item->height_in_percent = p_height_in_percent;
+	item->width_unit = p_width_unit;
+	item->height_unit = p_height_unit;
 	item->pad = p_pad;
 	item->key = p_key;
 	item->tooltip = p_tooltip;
@@ -4239,7 +4259,7 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_
 	update_configuration_warnings();
 }
 
-void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, bool p_pad, const String &p_tooltip, bool p_width_in_percent, bool p_height_in_percent) {
+void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, float p_width, float p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, bool p_pad, const String &p_tooltip, ImageUnit p_width_unit, ImageUnit p_height_unit) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -4299,11 +4319,11 @@ void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask>
 						item->inline_align = p_alignment;
 					}
 				}
-				if (p_mask & UPDATE_WIDTH_IN_PERCENT) {
-					if (item->width_in_percent != p_width_in_percent || item->height_in_percent != p_height_in_percent) {
+				if (p_mask & UPDATE_WIDTH_UNIT) {
+					if (item->width_unit != p_width_unit || item->height_unit != p_height_unit) {
 						reshape = true;
-						item->width_in_percent = p_width_in_percent;
-						item->height_in_percent = p_height_in_percent;
+						item->width_unit = p_width_unit;
+						item->height_unit = p_height_unit;
 					}
 				}
 				if (p_mask & UPDATE_SIZE) {
@@ -6050,19 +6070,19 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					alt_text = alt_text_option->value;
 				}
 
-				int width = 0;
-				int height = 0;
+				float width = 0;
+				float height = 0;
 				bool pad = false;
 				String tooltip;
-				bool width_in_percent = false;
-				bool height_in_percent = false;
+				ImageUnit width_unit = IMAGE_UNIT_PIXEL;
+				ImageUnit height_unit = IMAGE_UNIT_PIXEL;
 				if (!bbcode_value.is_empty()) {
 					int sep = bbcode_value.find_char('x');
 					if (sep == -1) {
-						width = bbcode_value.to_int();
+						width = bbcode_value.to_float();
 					} else {
-						width = bbcode_value.substr(0, sep).to_int();
-						height = bbcode_value.substr(sep + 1).to_int();
+						width = bbcode_value.substr(0, sep).to_float();
+						height = bbcode_value.substr(sep + 1).to_float();
 					}
 				} else {
 					OptionMap::Iterator align_option = bbcode_options.find("align");
@@ -6099,17 +6119,25 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 					OptionMap::Iterator width_option = bbcode_options.find("width");
 					if (width_option) {
-						width = width_option->value.to_int();
+						width = width_option->value.to_float();
 						if (width_option->value.ends_with("%")) {
-							width_in_percent = true;
+							width = width_option->value.trim_suffix("%").to_float();
+							width_unit = IMAGE_UNIT_PERCENT;
+						} else if (width_option->value.ends_with("em")) {
+							width = width_option->value.trim_suffix("em").to_float();
+							width_unit = IMAGE_UNIT_EM;
 						}
 					}
 
 					OptionMap::Iterator height_option = bbcode_options.find("height");
 					if (height_option) {
-						height = height_option->value.to_int();
+						height = height_option->value.to_float();
 						if (height_option->value.ends_with("%")) {
-							height_in_percent = true;
+							height = height_option->value.trim_suffix("%").to_float();
+							height_unit = IMAGE_UNIT_PERCENT;
+						} else if (height_option->value.ends_with("em")) {
+							height = height_option->value.trim_suffix("em").to_float();
+							height_unit = IMAGE_UNIT_EM;
 						}
 					}
 
@@ -6124,7 +6152,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 				}
 
-				add_image(texture, width, height, color, (InlineAlignment)alignment, region, Variant(), pad, tooltip, width_in_percent, height_in_percent, alt_text);
+				add_image(texture, width, height, color, (InlineAlignment)alignment, region, Variant(), pad, tooltip, width_unit, height_unit, alt_text);
 			}
 
 			pos = end;
@@ -7558,8 +7586,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
 	ClassDB::bind_method(D_METHOD("add_hr", "width", "height", "color", "alignment", "width_in_percent", "height_in_percent"), &RichTextLabel::add_hr, DEFVAL(90), DEFVAL(2), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(HORIZONTAL_ALIGNMENT_CENTER), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "width_in_percent", "height_in_percent", "alt_text"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(false), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "width_in_percent", "height_in_percent"), &RichTextLabel::update_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "width_unit", "height_unit", "alt_text"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(IMAGE_UNIT_PIXEL), DEFVAL(IMAGE_UNIT_PIXEL), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "width_unit", "height_unit"), &RichTextLabel::update_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(IMAGE_UNIT_PIXEL), DEFVAL(IMAGE_UNIT_PIXEL));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_paragraph", "paragraph", "no_invalidate"), &RichTextLabel::remove_paragraph, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("invalidate_paragraph", "paragraph"), &RichTextLabel::invalidate_paragraph);
@@ -7806,7 +7834,11 @@ void RichTextLabel::_bind_methods() {
 	BIND_BITFIELD_FLAG(UPDATE_REGION);
 	BIND_BITFIELD_FLAG(UPDATE_PAD);
 	BIND_BITFIELD_FLAG(UPDATE_TOOLTIP);
-	BIND_BITFIELD_FLAG(UPDATE_WIDTH_IN_PERCENT);
+	BIND_BITFIELD_FLAG(UPDATE_WIDTH_UNIT);
+
+	BIND_ENUM_CONSTANT(IMAGE_UNIT_PIXEL);
+	BIND_ENUM_CONSTANT(IMAGE_UNIT_PERCENT);
+	BIND_ENUM_CONSTANT(IMAGE_UNIT_EM);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, normal_style, "normal");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, focus_style, "focus");
