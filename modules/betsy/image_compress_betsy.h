@@ -138,4 +138,6 @@ public:
 		command_queue.push_and_ret(this, &BetsyCompressor::_compress, &err, p_format, r_img);
 		return err;
 	}
+
+	static BetsyCompressor *get_singleton();
 };
