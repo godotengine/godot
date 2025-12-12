@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FPSLODLevel" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource responsible for animation detail levels in [AnimationMixer] when using [b]FPSLOD[/b].
+	</brief_description>
+	<description>
+		A resource responsible for animation detail levels in [AnimationMixer] when using [b]FPSLOD[/b].
+		This resource is used to specify at which remote a particular [FPSLODLevel] should be enabled and how many animation frames should be skipped.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="distance" type="float" setter="set_distance" getter="get_distance" default="0.0">
+			The distance at which this level is activated.
+		</member>
+		<member name="skip_frames" type="int" setter="set_skip_frames" getter="get_skip_frames" default="0">
+			The number of frames to skip when activating this level.
+			[b]Skip frames[/b] should be interpreted as [code]N + 1[/code] frames.
+			For example, if set to 2, the animation will be updated every third frame (20 frames per second if the game is running at 60 frames per second).
+		</member>
+	</members>
+</class>
