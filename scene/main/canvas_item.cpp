@@ -1073,11 +1073,11 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	 * notification anyway).
 	 */
 
-	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
+	p_node->_set_global_invalid(true);
+
+	if (p_node->xform_change.in_list()) {
 		return; //nothing to do
 	}
-
-	p_node->_set_global_invalid(true);
 
 	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
 		if (!p_node->block_transform_notify) {
