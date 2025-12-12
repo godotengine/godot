@@ -1122,7 +1122,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute", "file", "attribute_name"), &FileAccess::get_extended_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute_string", "file", "attribute_name"), &FileAccess::get_extended_attribute_string);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute", "file", "attribute_name", "data"), &FileAccess::set_extended_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute_string", "file", "attribute_name", "_data"), &FileAccess::set_extended_attribute_string);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute_string", "file", "attribute_name", "data"), &FileAccess::set_extended_attribute_string);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_extended_attribute", "file", "attribute_name"), &FileAccess::remove_extended_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attributes_list", "file"), &FileAccess::get_extended_attributes_list);
 
