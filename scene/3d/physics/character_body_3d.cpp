@@ -435,7 +435,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 				}
 			} else if (first_slide) {
 				Vector3 motion_slide_norm = result.remainder.slide(wall_normal).normalized();
-				motion = motion_slide_norm * (motion.length() - result.travel.length());
+				motion = motion_slide_norm * (motion.dot(motion_slide_norm) - result.travel.length());
 			} else {
 				motion = result.remainder.slide(wall_normal);
 			}
@@ -450,6 +450,12 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 		}
 
 		first_slide = false;
+	}
+
+	if (is_on_wall_only()) {
+		if (wall_normal.dot(velocity) < 0) {
+			velocity = velocity.slide(wall_normal);
+		}
 	}
 }
 
