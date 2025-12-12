@@ -2351,8 +2351,7 @@ NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_
 		common_parent = common_parent->data.parent;
 	}
 
-	ERR_FAIL_NULL_V(common_parent, NodePath()); //nodes not in the same tree
-
+	ERR_FAIL_NULL_V(common_parent, NodePath(p_node->get_name())); //nodes not in the same tree
 	visited.clear();
 
 	Vector<StringName> path;
