@@ -847,6 +847,9 @@ Error ResourceLoaderText::load() {
 				break;
 			}
 		}
+		if (resource.is_valid()) {
+			resource->notification(Resource::NOTIFICATION_RESOURCE_DESERIALIZED);
+		}
 
 		resource_current++;
 
