@@ -38,17 +38,27 @@ void SpringArm3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				set_physics_process_internal(true);
+			} else {
+				set_physics_process(editor_preview);
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				set_physics_process_internal(false);
+			} else {
+				set_physics_process(false);
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			process_spring();
+		} break;
+
+		case NOTIFICATION_PHYSICS_PROCESS: {
+			if (Engine::get_singleton()->is_editor_hint() && editor_preview) {
+				process_spring();
+			}
 		} break;
 	}
 }
@@ -72,10 +82,14 @@ void SpringArm3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &SpringArm3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &SpringArm3D::get_margin);
 
+	ClassDB::bind_method(D_METHOD("set_editor_preview", "enabled"), &SpringArm3D::set_editor_preview);
+	ClassDB::bind_method(D_METHOD("is_editor_previewing"), &SpringArm3D::is_editor_previewing);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spring_length", PROPERTY_HINT_NONE, "suffix:m"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_NONE, "suffix:m"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_preview", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), "set_editor_preview", "is_editor_previewing");
 }
 
 real_t SpringArm3D::get_length() const {
@@ -108,6 +122,22 @@ uint32_t SpringArm3D::get_mask() {
 
 real_t SpringArm3D::get_margin() {
 	return margin;
+}
+
+void SpringArm3D::set_editor_preview(bool p_editor_preview) {
+	if (editor_preview == p_editor_preview) {
+		return;
+	}
+
+	editor_preview = p_editor_preview;
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		set_physics_process(p_editor_preview);
+	}
+}
+
+bool SpringArm3D::is_editor_previewing() const {
+	return editor_preview;
 }
 
 void SpringArm3D::set_margin(real_t p_margin) {
