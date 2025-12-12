@@ -1148,6 +1148,7 @@ public:
 	String keyboard_get_layout_name(int p_index) const;
 
 	Key keyboard_get_key_from_physical(Key p_key) const;
+	Key keyboard_get_label_from_physical(Key p_key) const;
 
 	void keyboard_echo_keys();
 
