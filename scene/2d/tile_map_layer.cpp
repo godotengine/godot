@@ -788,7 +788,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 		Transform2D gl_transform = get_global_transform();
 
 		// List all quadrants to update, recreating them if needed.
-		if (dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _physics_was_cleaned_up) {
+		if (dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _physics_was_cleaned_up || dirty.flags[DIRTY_FLAGS_LAYER_PHYSICS_SPACE]) {
 			// Update all cells.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 				CellData &cell_data = kv.value;
