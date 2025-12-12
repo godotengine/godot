@@ -860,14 +860,14 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 
 				RSG::texture_storage->render_target_set_render_region(vp->render_target, xr_interface->get_render_region());
 
-				// render...
+				// Render
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
-				// and draw viewport
+				// Draw viewport
 				_draw_viewport(vp);
 
-				// commit our eyes
 				Vector<BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
+				// Blit eyes
 				if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
 					if (RSG::rasterizer->is_opengl()) {
 						if (blits.size() > 0) {

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  register_types.mm                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,13 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifdef VISIONOS_ENABLED
 
-#import "godot_renderer.h"
-#import <UIKit/UIKit.h>
+#include "register_types.h"
 
-@interface GDTViewRenderer : GDTRenderer
+#include "visionos_xr_interface.h"
 
-- (void)renderOnView:(UIView *)view;
+Ref<VisionOSXRInterface> visionos_xr;
 
-@end
+void initialize_visionos_xr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	GDREGISTER_CLASS(VisionOSXRInterface);
+
+	if (XRServer::get_singleton()) {
+		visionos_xr.instantiate();
+		XRServer::get_singleton()->add_interface(visionos_xr);
+	}
+}
+
+void uninitialize_visionos_xr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	if (visionos_xr.is_valid()) {
+		// uninitialize our interface if it is initialized
+		if (visionos_xr->is_initialized()) {
+			visionos_xr->uninitialize();
+		}
+
+		// unregister our interface from the XR server
+		if (XRServer::get_singleton()) {
+			XRServer::get_singleton()->remove_interface(visionos_xr);
+		}
+
+		// and release
+		visionos_xr.unref();
+	}
+}
+
+#endif // VISIONOS_ENABLED

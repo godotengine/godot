@@ -558,6 +558,10 @@ void RenderingDeviceDriverMetal::texture_free(TextureID p_texture) {
 
 uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_texture) {
 	id<MTLTexture> __unsafe_unretained obj = rid::get(p_texture);
+	// For when texture contains a MTLRasterizationRateMap as returned by VisionOSXRInterface
+	if (![obj respondsToSelector:@selector(allocatedSize)]) {
+		return 0;
+	}
 	return obj.allocatedSize;
 }
 
@@ -1078,26 +1082,36 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 
 	Vector<MTL::Texture> textures;
 	textures.resize(p_attachments.size());
+	id<MTLRasterizationRateMap> rasterization_rate_map = nil;
 
 	for (uint32_t i = 0; i < p_attachments.size(); i += 1) {
 		MDAttachment const &a = pass->attachments[i];
-		id<MTLTexture> tex = rid::get(p_attachments[i]);
-		if (tex == nil) {
+		id native_attachment = rid::get(p_attachments[i]);
+		id<MTLTexture> native_texture = nil;
+		bool attachment_is_rasterization_rate_map = false;
+		if ([native_attachment conformsToProtocol:@protocol(MTLRasterizationRateMap)]) {
+			rasterization_rate_map = native_attachment;
+			attachment_is_rasterization_rate_map = true;
+		} else if ([native_attachment conformsToProtocol:@protocol(MTLTexture)]) {
+			native_texture = native_attachment;
+		}
+		if (native_texture == nil && !attachment_is_rasterization_rate_map) {
 #if DEV_ENABLED
 			WARN_PRINT("Invalid texture for attachment " + itos(i));
 #endif
 		}
 		if (a.samples > 1) {
-			if (tex.sampleCount != a.samples) {
+			if (native_texture.sampleCount != a.samples) {
 #if DEV_ENABLED
-				WARN_PRINT("Mismatched sample count for attachment " + itos(i) + "; expected " + itos(a.samples) + ", got " + itos(tex.sampleCount));
+				WARN_PRINT("Mismatched sample count for attachment " + itos(i) + "; expected " + itos(a.samples) + ", got " + itos(native_texture.sampleCount));
 #endif
 			}
 		}
-		textures.write[i] = tex;
+		textures.write[i] = native_texture;
 	}
 
 	MDFrameBuffer *fb = new MDFrameBuffer(textures, Size2i(p_width, p_height));
+	fb->rasterization_rate_map = rasterization_rate_map;
 	return FramebufferID(fb);
 }
 
@@ -2598,6 +2612,16 @@ const RDD::Capabilities &RenderingDeviceDriverMetal::get_capabilities() const {
 bool RenderingDeviceDriverMetal::is_composite_alpha_supported(CommandQueueID p_queue) const {
 	// The CAMetalLayer.opaque property is configured according to this global setting.
 	return OS::get_singleton()->is_layered_allowed();
+}
+
+bool RenderingDeviceDriverMetal::is_rasterization_rate_map_supported() const {
+	// This feature supports foveated rendering when using the visionOS XR module, but it can also be used on other Apple platforms.
+	bool is_rasterization_rate_map_supported = [device supportsRasterizationRateMapWithLayerCount:1];
+#if defined(VISIONOS_ENABLED)
+	// We need to support 2 layers on visionOS. Using more than 2 layers shouldn't be needed.
+	is_rasterization_rate_map_supported &= [device supportsRasterizationRateMapWithLayerCount:2];
+#endif
+	return is_rasterization_rate_map_supported;
 }
 
 size_t RenderingDeviceDriverMetal::get_texel_buffer_alignment_for_format(RDD::DataFormat p_format) const {

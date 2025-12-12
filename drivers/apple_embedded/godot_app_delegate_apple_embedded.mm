@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_app_delegate.mm                                                 */
+/*  godot_app_delegate_apple_embedded.mm                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "godot_app_delegate.h"
+#import "godot_app_delegate_apple_embedded.h"
 
-#import "app_delegate_service.h"
+#import "godot_app_delegate_service_apple_embedded.h"
+
 #include "core/typedefs.h"
 
-@implementation GDTApplicationDelegate
+@implementation GDTAppDelegate
 
 static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 
@@ -43,7 +44,7 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 
 + (void)load {
 	services = [NSMutableArray new];
-	[services addObject:[GDTAppDelegateService new]];
+	// Add the specific GDTAppDelegateService subclass in each inheriting platform
 }
 
 + (void)addService:(GDTAppDelegateServiceProtocol *)service {
