@@ -637,6 +637,7 @@ public:
 	virtual void reflection_probe_initialize(RID p_rid) override;
 	virtual void reflection_probe_free(RID p_rid) override;
 
+	virtual void reflection_probe_queue_update(RID p_probe) override;
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) override;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) override;
 	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) override;
