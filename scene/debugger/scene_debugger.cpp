@@ -1900,11 +1900,13 @@ void RuntimeNodeSelect::_physics_frame() {
 						if (Object::cast_to<CanvasItem>(final_node)) {
 							CanvasItem *ci_tmp = Object::cast_to<CanvasItem>(final_node);
 							order = ci_tmp->get_effective_z_index() + ci_tmp->get_canvas_layer();
+#ifndef _3D_DISABLED
 						} else if (Object::cast_to<Node3D>(final_node)) {
 							Node3D *node3d_tmp = Object::cast_to<Node3D>(final_node);
 							Camera3D *camera = root->get_camera_3d();
 							Vector3 pos = camera->project_ray_origin(selection_position);
 							order = -pos.distance_to(node3d_tmp->get_global_transform().origin);
+#endif // _3D_DISABLED
 						}
 					}
 					node = node->get_parent();
