@@ -2761,7 +2761,10 @@ Ref<Script> CSharpScript::get_base_script() const {
 }
 
 StringName CSharpScript::get_global_name() const {
-	return type_info.is_global_class ? StringName(type_info.class_name) : StringName();
+	if (type_info.is_global_class) {
+		return StringName(type_info.class_name);
+	}
+	return StringName();
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {

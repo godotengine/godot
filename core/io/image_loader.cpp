@@ -206,5 +206,8 @@ bool ResourceFormatLoaderImage::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderImage::get_resource_type(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "image" ? "Image" : String();
+	if (p_path.get_extension().to_lower() == "image") {
+		return "Image";
+	}
+	return String();
 }
