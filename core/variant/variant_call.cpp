@@ -2062,10 +2062,13 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(left, sarray("length"), varray());
 	bind_string_method(right, sarray("length"), varray());
 
+	bind_string_method(strip, sarray("chars"), varray(""));
+#ifndef DISABLE_DEPRECATED
 	bind_string_method(strip_edges, sarray("left", "right"), varray(true, true));
+#endif // DISABLE_DEPRECATED
 	bind_string_method(strip_escapes, sarray(), varray());
-	bind_string_method(lstrip, sarray("chars"), varray());
-	bind_string_method(rstrip, sarray("chars"), varray());
+	bind_string_method(lstrip, sarray("chars"), varray(""));
+	bind_string_method(rstrip, sarray("chars"), varray(""));
 	bind_string_method(get_extension, sarray(), varray());
 	bind_string_method(get_basename, sarray(), varray());
 	bind_string_method(path_join, sarray("path"), varray());
