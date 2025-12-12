@@ -176,7 +176,9 @@
 #include "tests/scene/test_convert_transform_modifier_3d.h"
 #include "tests/scene/test_copy_transform_modifier_3d.h"
 #include "tests/scene/test_decal.h"
+#ifdef MODULE_GLTF_ENABLED
 #include "tests/scene/test_gltf_document.h"
+#endif
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
