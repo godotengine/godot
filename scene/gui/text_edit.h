@@ -110,6 +110,10 @@ public:
 		MENU_INSERT_WJ,
 		MENU_INSERT_SHY,
 		MENU_EMOJI_AND_SYMBOL,
+		MENU_SUBMENU_VARIATION,
+		MENU_VARIATION_CLEAR,
+		MENU_VARIATION_COLOR,
+		MENU_VARIATION_TEXT,
 		MENU_MAX
 
 	};
@@ -356,6 +360,7 @@ private:
 	// Context menu.
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
+	PopupMenu *menu_var = nullptr;
 	PopupMenu *menu_ctl = nullptr;
 
 	Callable inline_object_drawer;
@@ -755,6 +760,7 @@ protected:
 	virtual void _cut_internal(int p_caret);
 	virtual void _copy_internal(int p_caret);
 	virtual void _paste_internal(int p_caret);
+	virtual void _replace_text_internal(int p_caret, const String &p_text);
 	virtual void _paste_primary_clipboard_internal(int p_caret);
 
 	void _accessibility_action_set_selection(const Variant &p_data);
