@@ -654,7 +654,9 @@ private:
 	uint32_t _ancestry : 15;
 
 	bool _block_signals : 1;
+#ifndef DISABLE_DEPRECATED
 	bool _can_translate : 1;
+#endif // DISABLE_DEPRECATED
 	bool _emitting : 1;
 	bool _predelete_ok : 1;
 
@@ -1011,8 +1013,10 @@ public:
 
 	bool is_queued_for_deletion() const;
 
+#ifndef DISABLE_DEPRECATED
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }
+#endif // DISABLE_DEPRECATED
 
 	virtual StringName get_translation_domain() const;
 	virtual void set_translation_domain(const StringName &p_domain);

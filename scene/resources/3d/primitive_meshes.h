@@ -590,6 +590,7 @@ private:
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_CENTER;
 	bool uppercase = false;
+	bool auto_translate = true;
 	String language;
 	TextServer::Direction text_direction = TextServer::DIRECTION_AUTO;
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
@@ -658,6 +659,9 @@ public:
 
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
+
+	void set_auto_translate(bool p_enable);
+	bool is_auto_translating() const;
 
 	void set_width(real_t p_width);
 	real_t get_width() const;
