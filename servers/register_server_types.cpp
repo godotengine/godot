@@ -219,7 +219,6 @@ void register_server_types() {
 #endif
 	}
 
-	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 	GDREGISTER_CLASS(ShaderIncludeDB);
 	GDREGISTER_CLASS(RDTextureFormat);
 	GDREGISTER_CLASS(RDTextureView);
