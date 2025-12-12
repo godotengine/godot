@@ -663,7 +663,7 @@ License: Expat
 
 Files: thirdparty/zlib/*
 Comment: zlib
-Copyright: 1995-2024, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2025, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: thirdparty/zstd/*
