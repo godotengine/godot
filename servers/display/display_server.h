@@ -493,6 +493,11 @@ public:
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
+	virtual float window_get_scale(WindowID p_window = MAIN_WINDOW_ID) const {
+		int screen = window_get_current_screen(p_window);
+		return screen_get_scale(screen);
+	}
+
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
