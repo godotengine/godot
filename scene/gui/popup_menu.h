@@ -51,6 +51,7 @@ class PopupMenu : public Popup {
 		Ref<Texture2D> icon;
 		int icon_max_width = 0;
 		Color icon_modulate = Color(1, 1, 1, 1);
+		Ref<Font> font;
 		String text;
 		String xl_text;
 		Ref<TextLine> text_buf;
@@ -327,11 +328,13 @@ public:
 	void set_item_indent(int p_idx, int p_indent);
 	void set_item_max_states(int p_idx, int p_max_states);
 	void set_item_multistate(int p_idx, int p_state);
+	void set_item_font(int p_idx, const Ref<Font> &p_font);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
 
 	void toggle_item_checked(int p_idx);
 
+	Ref<Font> get_item_font(int p_idx) const;
 	String get_item_text(int p_idx) const;
 	String get_item_xl_text(int p_idx) const;
 	Control::TextDirection get_item_text_direction(int p_idx) const;
