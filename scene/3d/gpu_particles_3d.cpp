@@ -949,6 +949,8 @@ GPUParticles3D::GPUParticles3D() {
 	set_collision_base_size(collision_base_size);
 	set_transform_align(TRANSFORM_ALIGN_DISABLED);
 	set_transform_align_custom_src(RS::ParticlesAlignCustomSrc::PARTICLES_ALIGN_CUSTOM_SRC_X);
+	set_transform_align_rotation_axis(RS::ParticlesAlignRotationAxis::PARTICLES_ALIGN_AXIS_Y);
+	set_transform_align_use_velocity(true);
 	set_use_fixed_seed(false);
 }
 
