@@ -43,6 +43,12 @@ class PhysicsMaterial;
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
 
+	enum DebugVisibilityMode {
+		DEBUG_VISIBILITY_MODE_DEFAULT,
+		DEBUG_VISIBILITY_MODE_FORCE_SHOW,
+		DEBUG_VISIBILITY_MODE_FORCE_HIDE,
+	};
+
 	enum {
 		MAP_DIRTY_TRANSFORMS = 1,
 		MAP_DIRTY_INSTANCES = 2,
@@ -158,6 +164,7 @@ class GridMap : public Node3D {
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
+	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
 	Ref<PhysicsMaterial> physics_material;
 #endif // PHYSICS_3D_DISABLED
 	bool bake_navigation = false;
@@ -257,6 +264,9 @@ public:
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
 
+	void set_collision_visibility_mode(DebugVisibilityMode p_show_collision);
+	DebugVisibilityMode get_collision_visibility_mode() const;
+
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
 
@@ -328,3 +338,5 @@ public:
 	GridMap();
 	~GridMap();
 };
+
+VARIANT_ENUM_CAST(GridMap::DebugVisibilityMode);
