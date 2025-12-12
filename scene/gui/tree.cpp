@@ -2928,6 +2928,8 @@ bool Tree::_is_sibling_branch_selected(TreeItem *p_from) const {
 }
 
 void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev, bool *r_in_range, bool p_force_deselect) {
+	ERR_FAIL_INDEX(p_col, p_selected->cells.size());
+
 	popup_editor->hide();
 
 	TreeItem::Cell &selected_cell = p_selected->cells.write[p_col];
