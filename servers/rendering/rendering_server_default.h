@@ -508,6 +508,8 @@ public:
 	FUNC2(lightmap_set_shadowmask_textures, RID, RID)
 	FUNC1R(ShadowmaskMode, lightmap_get_shadowmask_mode, RID)
 	FUNC2(lightmap_set_shadowmask_mode, RID, ShadowmaskMode)
+	FUNC1R(float, lightmap_get_specular_intensity, RID)
+	FUNC2(lightmap_set_specular_intensity, RID, float)
 
 	/* Shadow Atlas */
 	FUNC0R(RID, shadow_atlas_create)

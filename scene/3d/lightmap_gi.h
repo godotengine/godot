@@ -138,6 +138,8 @@ public:
 	void clear_shadowmask_textures();
 	bool has_shadowmask_textures();
 
+	void update_specular_intensity(float p_intensity);
+
 	virtual RID get_rid() const override;
 	LightmapGIData();
 	~LightmapGIData();
@@ -206,6 +208,7 @@ private:
 	LightmapGIData::ShadowmaskMode shadowmask_mode = LightmapGIData::SHADOWMASK_MODE_NONE;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
+	float specular_intensity = 1.0f;
 
 	Ref<LightmapGIData> light_data;
 	Node *last_owner = nullptr;
@@ -342,6 +345,9 @@ public:
 
 	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
 	Ref<CameraAttributes> get_camera_attributes() const;
+
+	float get_specular_intensity() const;
+	void set_specular_intensity(float p_strength);
 
 	AABB get_aabb() const override;
 

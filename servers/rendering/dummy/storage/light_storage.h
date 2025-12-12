@@ -195,6 +195,8 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override {}
 	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override { return RS::SHADOWMASK_MODE_NONE; }
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override {}
+	virtual float lightmap_get_specular_intensity(RID p_lightmap) override { return 1.0; }
+	virtual void lightmap_set_specular_intensity(RID p_lightmap, float p_strength) override {}
 
 	/* LIGHTMAP INSTANCE */
 
