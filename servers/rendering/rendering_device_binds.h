@@ -655,6 +655,7 @@ protected:
 class RDPipelineColorBlendStateAttachment : public RefCounted {
 	GDCLASS(RDPipelineColorBlendStateAttachment, RefCounted)
 	friend class RenderingDevice;
+	friend class RDPipelineColorBlendState;
 	RD::PipelineColorBlendState::Attachment base;
 
 public:
@@ -708,6 +709,18 @@ public:
 	RD_SETGET(bool, enable_logic_op)
 	RD_SETGET(RD::LogicOperation, logic_op)
 	RD_SETGET(Color, blend_constant)
+
+	RD::PipelineColorBlendState get_base() const {
+		RD::PipelineColorBlendState result = base;
+		result.attachments.clear();
+		for (int i = 0; i < attachments.size(); i++) {
+			Ref<RDPipelineColorBlendStateAttachment> attachment = attachments[i];
+			if (attachment.is_valid()) {
+				result.attachments.push_back(attachment->base);
+			}
+		}
+		return result;
+	}
 
 	void set_attachments(const TypedArray<RDPipelineColorBlendStateAttachment> &p_attachments) {
 		attachments = p_attachments;
