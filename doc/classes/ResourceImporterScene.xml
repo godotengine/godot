@@ -30,6 +30,9 @@
 		<member name="animation/trimming" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], trim the beginning and end of animations if there are no keyframe changes. This can reduce output file size and memory usage with certain 3D scenes, depending on the contents of their animation tracks.
 		</member>
+		<member name="array_mesh/deduplicate_surfaces" type="bool" setter="" getter="" default="true">
+			If the 3D model file contains only one mesh, this option has no effect. If [code]true[/code] and the 3D model file contains multiple meshes with the same surface names and formats, the surfaces will be merged together when the meshes are merged. This is useful for reducing the number of surfaces in the resulting mesh, and avoids duplicatng materials. If [code]false[/code] and the 3D model file contains multiple meshes, the surfaces will always be kept separate.
+		</member>
 		<member name="import_script/path" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an import script, which can run code after the import process has completed for custom processing. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/import_configuration.html#using-import-scripts-for-automation]Using import scripts for automation[/url] for more information.
 		</member>
@@ -47,6 +50,13 @@
 		</member>
 		<member name="materials/extract_path" type="String" setter="" getter="" default="&quot;&quot;">
 			Path extracted materials are saved to. If empty, source scene path is used.
+		</member>
+		<member name="mesh_library/save_meshes_to_files" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], each mesh will be saved to a separate file, next to the source file. The mesh library will contain references to these files. This allows using the meshes separately if desired. If [code]false[/code], the meshes will be saved only in the imported mesh library.
+			[b]Note:[/b] Saved meshes will be overwritten every time the source file is imported, and therefore should be considered read-only. Any changes made to the mesh files will be lost when the source file is re-imported. To change the materials, set the surface material overrides in the MeshInstance3D nodes using the meshes.
+		</member>
+		<member name="mesh_library/use_node_names_as_mesh_names" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the mesh names will be set to the names of the nodes in the 3D model file. If [code]false[/code], the mesh names will be set to the names of the meshes in the 3D model file. Enabling this is a common work-around when the author of the 3D model file did not properly set the mesh names in Blender or other 3D modeling apps. For example, a file may have a node named "Turret" with a mesh named "Cube.002", so enabling this option will set the mesh name to "Turret" instead of "Cube_002".
 		</member>
 		<member name="meshes/create_shadow_meshes" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables the generation of shadow meshes on import. This optimizes shadow rendering without reducing quality by welding vertices together when possible. This in turn reduces the memory bandwidth required to render shadows. Shadow mesh generation currently doesn't support using a lower detail level than the source mesh (but shadow rendering will make use of LODs when relevant).
