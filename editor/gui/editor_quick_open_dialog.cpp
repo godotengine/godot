@@ -317,11 +317,16 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		}
 
 		{
+			MarginContainer *mc = memnew(MarginContainer);
+			mc->set_theme_type_variation("NoBorderHorizontalWindow");
+			mc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			panel_container->add_child(mc);
+
 			// Search results
 			scroll_container = memnew(ScrollContainer);
-			scroll_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			scroll_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 			scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+			scroll_container->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 			scroll_container->hide();
 			panel_container->add_child(scroll_container);
 
