@@ -346,6 +346,9 @@
 		<member name="editors/2d/guides_color" type="Color" setter="" getter="">
 			The guides color to use in the 2D editor. Guides can be created by dragging the mouse cursor from the rulers.
 		</member>
+		<member name="editors/2d/parallax_preview_mode" type="int" setter="" getter="">
+			Controls the editor preview mode for [Parallax2D] nodes.
+		</member>
 		<member name="editors/2d/ruler_width" type="float" setter="" getter="">
 			The thickness of the coordinate ruler in the 2D editor. Increasing this will also increase the size of the ruler font, improving readability when using a lower editor scale. The editor may force a minimum size to keep the ruler numbers legible.
 		</member>
