@@ -93,6 +93,13 @@ public:
 		}
 	}
 
+	// This constructor makes it possible to construct Span like {a, b, c, ...}.
+	// Note: ONLY use this constructor in a function call, like function({a, b, c}).
+	//       A Span created like this must not be assigned to a variable.
+	//       Doing so will lead to undefined behavior, and may result in a crash.
+	_FORCE_INLINE_ constexpr Span(std::initializer_list<T> p_init) :
+			_ptr(p_init.size() > 0 ? p_init.begin() : nullptr), _len(p_init.size()) {}
+
 	_FORCE_INLINE_ constexpr uint64_t size() const { return _len; }
 	_FORCE_INLINE_ constexpr bool is_empty() const { return _len == 0; }
 
