@@ -86,6 +86,7 @@ private:
 	TransformAlign transform_align = TRANSFORM_ALIGN_DISABLED;
 	RS::ParticlesAlignCustomSrc transform_align_custom_src = RS::ParticlesAlignCustomSrc::PARTICLES_ALIGN_CUSTOM_SRC_X;
 	RS::ParticlesAlignRotationAxis transform_align_rotation_axis = RS::ParticlesAlignRotationAxis::PARTICLES_ALIGN_AXIS_Y;
+	bool transform_align_use_velocity = true;
 
 	Ref<Material> process_material;
 
@@ -188,6 +189,11 @@ public:
 
 	void set_transform_align_rotation_axis(RS::ParticlesAlignRotationAxis p_axis);
 	RS::ParticlesAlignRotationAxis get_transform_align_rotation_axis() const;
+
+	void set_transform_align_use_velocity(bool p_align_to_velocity);
+	bool get_transform_align_use_velocity() const;
+
+	uint32_t compute_align_flags() const;
 
 	void restart(bool p_keep_seed = false);
 

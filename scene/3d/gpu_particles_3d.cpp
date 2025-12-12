@@ -656,6 +656,20 @@ RS::ParticlesAlignRotationAxis GPUParticles3D::get_transform_align_rotation_axis
 	return transform_align_rotation_axis;
 }
 
+uint32_t GPUParticles3D::compute_align_flags() const {
+	return uint32_t(transform_align_use_velocity) & uint32_t(1);
+}
+
+void GPUParticles3D::set_transform_align_use_velocity(bool p_align_to_velocity){
+	transform_align_use_velocity = p_align_to_velocity;
+	RS::get_singleton()->particles_set_transform_align_flags(particles, compute_align_flags());
+	
+}
+
+bool GPUParticles3D::get_transform_align_use_velocity() const{
+	return transform_align_use_velocity;
+}
+
 void GPUParticles3D::convert_from_particles(Node *p_particles) {
 	CPUParticles3D *cpu_particles = Object::cast_to<CPUParticles3D>(p_particles);
 	ERR_FAIL_NULL_MSG(cpu_particles, "Only CPUParticles3D nodes can be converted to GPUParticles3D.");
@@ -833,6 +847,10 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform_align_rotation_axis", "align"), &GPUParticles3D::set_transform_align_rotation_axis);
 	ClassDB::bind_method(D_METHOD("get_transform_align_rotation_axis"), &GPUParticles3D::get_transform_align_rotation_axis);
 
+	ClassDB::bind_method(D_METHOD("set_transform_align_use_velocity", "align_use_velocity"), &GPUParticles3D::set_transform_align_use_velocity);
+	ClassDB::bind_method(D_METHOD("get_transform_align_use_velocity"), &GPUParticles3D::get_transform_align_use_velocity);
+
+	
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &GPUParticles3D::convert_from_particles);
 
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles3D::set_amount_ratio);
@@ -867,9 +885,11 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_visibility_aabb", "get_visibility_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime,View Depth"), "set_draw_order", "get_draw_order");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,Z-Billboard,Y to Velocity,Z-Billboard + Y to Velocity,Rotate around Axis"), "set_transform_align", "get_transform_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,Z-Billboard,Y to Velocity,Z-Billboard + Y to Velocity,Rotate around Axis, Local Billboard"), "set_transform_align", "get_transform_align");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align_custom_src", PROPERTY_HINT_ENUM, "Disabled, X, Y, Z, W"), "set_transform_align_custom_src", "get_transform_align_custom_src");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align_rotation_axis", PROPERTY_HINT_ENUM, "X, Y, Z"), "set_transform_align_rotation_axis", "get_transform_align_rotation_axis");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transform_align_use_velocity"), "set_transform_align_use_velocity", "get_transform_align_use_velocity");
+
 	ADD_GROUP("Trails", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");

@@ -1234,7 +1234,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
-	if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+	if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY && particles->transform_align  != RS::PARTICLES_TRANSFORM_ALIGN_LOCAL) {
 		return;
 	}
 
@@ -1311,6 +1311,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	copy_push_constant.align_mode = particles->transform_align;
 	copy_push_constant.transform_align_src = particles->transform_align_src;
 	copy_push_constant.subtype = uint32_t(particles->rotation_axis);
+	copy_push_constant.align_flags_velocity = uint32_t(particles->align_to_velocity);
 
 	if (do_sort) {
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();

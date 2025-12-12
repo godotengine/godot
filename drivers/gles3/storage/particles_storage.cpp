@@ -332,6 +332,14 @@ void ParticlesStorage::particles_set_transform_align_custom_src(RID p_particles,
 	//particles-> = p_transform_align;
 }
 
+void ParticlesStorage::particles_set_transform_align_flags(RID p_particles, uint32_t p_flags) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	//TODO FIXME
+	//particles-> = p_transform_align;
+}
+
 void ParticlesStorage::particles_set_transform_align_rotation_axis(RID p_particles, RS::ParticlesAlignRotationAxis p_rotation_axis) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
