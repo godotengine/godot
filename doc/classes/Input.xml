@@ -288,6 +288,42 @@
 				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices. Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
+		<method name="is_key_just_pressed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Returns [code]true[/code] when the user has [i]started[/i] pressing the Latin key in the current keyboard layout in the current frame. It will only return [code]true[/code] on the frame or tick that the user pressed down the button. You can pass a [enum Key] constant.
+				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
+				[method is_key_just_pressed] is only recommended over [method is_physical_key_just_pressed] in non-game applications. This ensures that shortcut keys behave as expected depending on the user's keyboard layout, as keyboard shortcuts are generally dependent on the keyboard layout in non-game applications. If in doubt, use [method is_physical_key_just_pressed].
+				[b]Note:[/b] Due to keyboard ghosting, [method is_key_just_pressed] may return [code]false[/code] even if one of the key is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
+				[b]Note:[/b] Returning [code]true[/code] does not imply that the key is [i]still[/i] pressed. A key can be pressed and released again rapidly, and [code]true[/code] will still be returned so as not to miss input.
+			</description>
+		</method>
+		<method name="is_key_just_released" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Returns [code]true[/code] when the user [i]stops[/i] pressing the Latin key in the current keyboard layout in the current frame. It will only return [code]true[/code] on the frame or tick that the user releases the button. You can pass a [enum Key] constant.
+				[method is_key_just_released] is only recommended over [method is_physical_key_just_released] in non-game applications. This ensures that shortcut keys behave as expected depending on the user's keyboard layout, as keyboard shortcuts are generally dependent on the keyboard layout in non-game applications. If in doubt, use [method is_physical_key_just_released].
+			</description>
+		</method>
+		<method name="is_key_label_just_pressed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Returns [code]true[/code] when the user has [i]started[/i] pressing the key with the [param keycode] printed on it in the current frame. It will only return [code]true[/code] on the frame or tick that the user pressed down the button. You can pass a [enum Key] constant or any Unicode character code.
+				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
+				[b]Note:[/b] Returning [code]true[/code] does not imply that the key is [i]still[/i] pressed. A key can be pressed and released again rapidly, and [code]true[/code] will still be returned so as not to miss input.
+			</description>
+		</method>
+		<method name="is_key_label_just_released" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Returns [code]true[/code] when the user [i]stops[/i] pressing the key with the [param keycode] printed on it in the current frame. It will only return [code]true[/code] on the frame or tick that the user releases the button. You can pass a [enum Key] constant or any Unicode character code.
+				[b]Note:[/b] Returning [code]true[/code] does not imply that the key is [i]still[/i] not pressed. A key can be released and pressed again rapidly, and [code]true[/code] will still be returned so as not to miss input.
+			</description>
+		</method>
 		<method name="is_key_label_pressed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="keycode" type="int" enum="Key" />
@@ -309,6 +345,24 @@
 			<param index="0" name="button" type="int" enum="MouseButton" />
 			<description>
 				Returns [code]true[/code] if you are pressing the mouse button specified with [enum MouseButton].
+			</description>
+		</method>
+		<method name="is_physical_key_just_pressed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Returns [code]true[/code] when the user has [i]started[/i] pressing the physical location on the 101/102-key US QWERTY keyboard in the current frame. It will only return [code]true[/code] on the frame or tick that the user pressed down the button. You can pass a [enum Key] constant.
+				[method is_physical_key_just_pressed] is recommended over [method is_key_just_pressed] for in-game actions, as it will make [kbd]W[/kbd]/[kbd]A[/kbd]/[kbd]S[/kbd]/[kbd]D[/kbd] layouts work regardless of the user's keyboard layout. [method is_physical_key_just_pressed] will also ensure that the top row number keys work on any keyboard layout. If in doubt, use [method is_physical_key_just_pressed].
+				[b]Note:[/b] Due to keyboard ghosting, [method is_physical_key_just_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
+				[b]Note:[/b] Returning [code]true[/code] does not imply that the key is [i]still[/i] pressed. A key can be pressed and released again rapidly, and [code]true[/code] will still be returned so as not to miss input.
+			</description>
+		</method>
+		<method name="is_physical_key_just_released" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Returns [code]true[/code] when the user [i]stops[/i] pressing the physical location on the 101/102-key US QWERTY keyboard in the current frame. It will only return [code]true[/code] on the frame or tick that the user releases the button. You can pass a [enum Key] constant.
+				[method is_physical_key_just_released] is recommended over [method is_key_just_released] for in-game actions, as it will make [kbd]W[/kbd]/[kbd]A[/kbd]/[kbd]S[/kbd]/[kbd]D[/kbd] layouts work regardless of the user's keyboard layout. [method is_physical_key_just_released] will also ensure that the top row number keys work on any keyboard layout. If in doubt, use [method is_physical_key_just_released].
 			</description>
 		</method>
 		<method name="is_physical_key_pressed" qualifiers="const">
