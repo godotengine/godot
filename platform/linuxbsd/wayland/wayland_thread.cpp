@@ -5415,7 +5415,17 @@ void WaylandThread::destroy() {
 			zwp_tablet_tool_v2_destroy(tool);
 		}
 
+		zwp_text_input_v3_destroy(ss->wp_text_input);
+
 		memdelete(ss);
+	}
+
+	if (registry.wp_tablet_manager) {
+		zwp_tablet_manager_v2_destroy(registry.wp_tablet_manager);
+	}
+
+	if (registry.wp_text_input_manager) {
+		zwp_text_input_manager_v3_destroy(registry.wp_text_input_manager);
 	}
 
 	for (struct wl_output *wl_output : registry.wl_outputs) {
