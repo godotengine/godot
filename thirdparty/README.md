@@ -96,7 +96,7 @@ Patches:
 ## brotli
 
 - Upstream: https://github.com/google/brotli
-- Version: 1.1.0 (ed738e842d2fbdf2d6459e39267a633c4a9b2f5d, 2023)
+- Version: 1.2.0 (028fb5a23661f123017c060daa546b55cf4bde29, 2025)
 - License: MIT
 
 Files extracted from upstream source:
