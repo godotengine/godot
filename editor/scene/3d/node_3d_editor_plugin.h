@@ -36,6 +36,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
@@ -273,8 +274,9 @@ private:
 	Label *locked_label = nullptr;
 	Label *zoom_limit_label = nullptr;
 
+	PanelContainer *tooltip_panel = nullptr;
 	Label *tooltip_label = nullptr;
-	Label *tooltip_label_desc = nullptr;
+	RichTextLabel *tooltip_label_desc = nullptr;
 
 	VBoxContainer *top_right_vbox = nullptr;
 	VBoxContainer *bottom_center_vbox = nullptr;

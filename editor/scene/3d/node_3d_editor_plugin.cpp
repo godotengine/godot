@@ -3603,7 +3603,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 			view_display_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHlDarkBackground")));
 			preview_camera->set_button_icon(get_editor_theme_icon(SNAME("Camera3DDarkBackground")));
 
-			tooltip_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
 			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
@@ -3621,7 +3620,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			info_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 			override_label_colors(info_label);
-
+			tooltip_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
+			tooltip_label->add_theme_font_size_override(SceneStringName(font_size), get_theme_default_font_size()+2);
+			tooltip_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 			frame_time_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 			// Set a minimum width to prevent the width from changing all the time
 			// when numbers vary rapidly. This minimum width is set based on a
@@ -5098,8 +5099,7 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 }
 
 void Node3DEditorViewport::_remove_preview_node() {
-	tooltip_label->hide();
-	tooltip_label_desc->hide();
+	tooltip_panel->hide();
 
 	set_message("");
 	if (preview_node->get_parent()) {
@@ -5201,8 +5201,7 @@ void Node3DEditorViewport::_reset_preview_material() const {
 }
 
 void Node3DEditorViewport::_remove_preview_material() {
-	tooltip_label->hide();
-	tooltip_label_desc->hide();
+	tooltip_panel->hide();
 
 	spatial_editor->set_preview_material(Ref<Material>());
 	spatial_editor->set_preview_reset_material(Ref<Material>());
@@ -5405,14 +5404,14 @@ void Node3DEditorViewport::_perform_drop_data() {
 
 bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	if (p_point == Vector2(Math::INF, Math::INF)) {
-		tooltip_label->hide();
+		tooltip_panel->hide();
 		return false;
 	}
 	preview_node_viewport_pos = p_point;
 
 	Dictionary d = p_data;
 	if (!d.has("type") || String(d["type"]) != "files") {
-		tooltip_label->hide();
+		tooltip_panel->hide();
 		return false;
 	}
 	Vector<String> files = d["files"];
@@ -5534,9 +5533,9 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	String desc = "File format is not supported...";
 
 	if (instantiate_type != 0) {
-		desc = TTR("Default: Added as sibling of selected node (except when root is selected).") +
-				"\n" + TTR("Hold Shift: Added as child of selected node.") +
-				"\n" + TTR("Hold Alt: Added as child of root node.");
+		desc = TTR("[ul][b]Default:[/b] Added as sibling of selected node (except when root is selected).") +
+				"\n" + TTR("[b]Hold Shift:[/b] Added as child of selected node.") +
+				"\n" + TTR("[b]Hold Alt:[/b] Added as child of root node.[/ul]");
 	}
 	if (files.size() > 1) {
 		title = TTR("Dropping multiple files...");
@@ -5553,15 +5552,14 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 							   OS::get_singleton()->has_feature("web_ios"))
 				? Key::META
 				: Key::CTRL;
-		desc = vformat(TTR("Default: Placed in Geometry's Material Override slot.") +
-						"\n" + TTR("Hold %s: Placed in Mesh's Surface Material Override slot."),
+		desc = vformat(TTR("[ul][b]Default:[/b] Placed in Geometry's Material Override slot.") +
+						"\n" + TTR("[b]Hold %s:[/b] Placed in Mesh's Surface Material Override slot.[/ul]"),
 				find_keycode_name(ctrl_key));
 	}
 
 	tooltip_label->set_text(title);
 	tooltip_label_desc->set_text(desc);
-	tooltip_label->show();
-	tooltip_label_desc->show();
+	tooltip_panel->show();
 
 	return false;
 }
@@ -6361,27 +6359,39 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	zoom_limit_label->hide();
 	bottom_center_vbox->add_child(zoom_limit_label);
 
+	tooltip_panel = memnew(PanelContainer);
+	tooltip_panel->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	tooltip_panel->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	tooltip_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	vbox->add_child(tooltip_panel);
+	tooltip_panel->hide();
+
+	VBoxContainer *tooltip_vbox = memnew(VBoxContainer);
+	tooltip_panel->add_child(tooltip_vbox);
 	tooltip_label = memnew(Label);
-	tooltip_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1));
-	tooltip_label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	tooltip_label->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
-	tooltip_label->set_offset(Side::SIDE_TOP, -70 * EDSCALE);
+	// tooltip_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1));
+	// tooltip_label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	tooltip_label->set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT);
 	tooltip_label->set_text(TTRC("Overriding material..."));
 	tooltip_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
-	tooltip_label->hide();
-	vbox->add_child(tooltip_label);
+	tooltip_vbox->add_child(tooltip_label);
 
-	tooltip_label_desc = memnew(Label);
+	tooltip_label_desc = memnew(RichTextLabel);
 	tooltip_label_desc->set_focus_mode(FOCUS_ACCESSIBILITY);
-	tooltip_label_desc->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
-	tooltip_label_desc->set_offset(Side::SIDE_TOP, -50 * EDSCALE);
+	tooltip_label_desc->set_use_bbcode(true);
+	tooltip_label_desc->set_fit_content(true);
+	tooltip_label_desc->set_scroll_active(false);
+	tooltip_label_desc->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
+	tooltip_label_desc->set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT);
 	tooltip_label_desc->add_theme_color_override(SceneStringName(font_color), Color(0.8f, 0.8f, 0.8f, 1));
-	tooltip_label_desc->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
-	tooltip_label_desc->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	tooltip_label_desc->add_theme_constant_override("line_spacing", 0);
-	tooltip_label_desc->hide();
-	vbox->add_child(tooltip_label_desc);
-
+	StyleBoxEmpty *empty_stylebox = memnew(StyleBoxEmpty);
+	empty_stylebox->set_content_margin(SIDE_LEFT, 5.0);
+	tooltip_label_desc->add_theme_style_override("normal", empty_stylebox);
+	// tooltip_label_desc->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
+	// tooltip_label_desc->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	tooltip_label_desc->add_theme_constant_override("paragraph_separation", 5);
+	tooltip_vbox->add_child(tooltip_label_desc);
+	
 	frame_time_gradient = memnew(Gradient);
 	// The color is set when the theme changes.
 	frame_time_gradient->add_point(0.5, Color());
