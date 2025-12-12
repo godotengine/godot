@@ -405,12 +405,12 @@ float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 			/* To accommodate for NaN on negative numbers for root, we will mirror the
 			 * results of the positive db range in order to get the desired numerical
 			 * value on the negative side. */
-			float positive_x = Math::pow(Math::abs(db) / 45.0f, 1.0f / 3.0f) + 1.0f;
-			Vector2 translation = Vector2(1.0f, 0.0f) - Vector2(positive_x, Math::abs(db));
+			float positive_x = Math::cbrt(-db / 45.0f) + 1.0f;
+			Vector2 translation = Vector2(1.0f, 0.0f) - Vector2(positive_x, -db);
 			Vector2 reflected_position = Vector2(1.0, 0.0f) + translation;
 			return reflected_position.x;
 		} else {
-			return Math::pow(db / 45.0f, 1.0f / 3.0f) + 1.0f;
+			return Math::cbrt(db / 45.0f) + 1.0f;
 		}
 	}
 }
