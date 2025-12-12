@@ -1669,6 +1669,9 @@
 		<member name="text_editor/theme/highlighting/gdscript/annotation_color" type="Color" setter="" getter="">
 			The GDScript syntax highlighter text color for annotations (e.g. [code]@export[/code]).
 		</member>
+		<member name="text_editor/theme/highlighting/gdscript/bracket_pair_colors" type="PackedColorArray" setter="" getter="">
+			The list of colors to use to color each pair of brackets. The color for a bracket pair is determined by its nesting level. The first color in the array is used for the outermost level, the second for the first nested level, and so on. If the nesting level exceeds the number of colors in the array, the colors will repeat from the beginning. An empty array disables this feature.
+		</member>
 		<member name="text_editor/theme/highlighting/gdscript/function_definition_color" type="Color" setter="" getter="">
 			The GDScript syntax highlighter text color for function definitions (e.g. the [code]_ready[/code] in [code]func _ready():[/code]).
 		</member>
