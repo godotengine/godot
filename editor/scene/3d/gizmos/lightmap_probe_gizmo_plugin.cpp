@@ -122,5 +122,6 @@ void LightmapProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(lines, material_lines);
 	}
 	const Ref<Material> icon = get_material("lightmap_probe_icon", p_gizmo);
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
+	const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
+	p_gizmo->add_unscaled_billboard(icon, icon_size);
 }
