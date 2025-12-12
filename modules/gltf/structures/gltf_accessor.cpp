@@ -638,7 +638,7 @@ Vector<T> GLTFAccessor::_decode_raw_numbers(const Ref<GLTFState> &p_gltf_state, 
 			stride_skip_bytes = declared_byte_stride - bytes_per_vector;
 		}
 	} else if (raw_buffer_view->get_vertex_attributes()) {
-		print_verbose("WARNING: glTF import: Buffer view byte stride should be declared for vertex attributes. Assuming packed data and reading anyway.");
+		PRINT_VERBOSE("WARNING: glTF import: Buffer view byte stride should be declared for vertex attributes. Assuming packed data and reading anyway.");
 	}
 	const int64_t min_raw_byte_size = actual_byte_stride * (raw_vector_count - 1) + bytes_per_vector + raw_read_offset_start;
 	const PackedByteArray raw_bytes = raw_buffer_view->load_buffer_view_data(p_gltf_state);

@@ -392,14 +392,14 @@ Error EditorExportPlatform::_save_pack_patch_file(const Ref<EditorExportPreset> 
 		double reduction_ratio = reduction_bytes / (double)p_data.size();
 
 		if (reduction_ratio >= p_preset->get_patch_delta_min_reduction()) {
-			print_verbose(vformat("Used delta encoding for patch of \"%s\", resulting in a patch of %d bytes, which reduced the size by %.1f%% (%d bytes) compared to the actual file.", p_path, patch_data.size(), reduction_ratio * 100, reduction_bytes));
+			PRINT_VERBOSE(vformat("Used delta encoding for patch of \"%s\", resulting in a patch of %d bytes, which reduced the size by %.1f%% (%d bytes) compared to the actual file.", p_path, patch_data.size(), reduction_ratio * 100, reduction_bytes));
 		} else {
-			print_verbose(vformat("Skipped delta encoding for patch of \"%s\", as it resulted in a patch of %d bytes, which only reduced the size by %.1f%% (%d bytes) compared to the actual file.", p_path, patch_data.size(), reduction_ratio * 100, reduction_bytes));
+			PRINT_VERBOSE(vformat("Skipped delta encoding for patch of \"%s\", as it resulted in a patch of %d bytes, which only reduced the size by %.1f%% (%d bytes) compared to the actual file.", p_path, patch_data.size(), reduction_ratio * 100, reduction_bytes));
 			patch_data = p_data;
 			delta = false;
 		}
 	} else {
-		print_verbose(vformat("Skipped delta encoding for patch of \"%s\", due to include/exclude filters.", p_path));
+		PRINT_VERBOSE(vformat("Skipped delta encoding for patch of \"%s\", due to include/exclude filters.", p_path));
 	}
 
 	return _save_pack_file(p_preset, p_userdata, p_path, patch_data, p_file, p_total, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, delta);
@@ -2409,9 +2409,9 @@ Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String
 
 	Error err = OS::get_singleton()->execute(ssh_path, args, &out, &exit_code, true);
 	if (out.is_empty()) {
-		print_verbose(vformat("Exit code: %d", exit_code));
+		PRINT_VERBOSE(vformat("Exit code: %d", exit_code));
 	} else {
-		print_verbose(vformat("Exit code: %d, Output: %s", exit_code, out.replace("\r\n", "\n")));
+		PRINT_VERBOSE(vformat("Exit code: %d, Output: %s", exit_code, out.replace("\r\n", "\n")));
 	}
 	if (r_out) {
 		*r_out = out.replace("\r\n", "\n").get_slicec('\n', 0);
@@ -2523,7 +2523,7 @@ Array EditorExportPlatform::get_current_presets() const {
 String EditorExportPlatform::simplify_path(const String &p_path) {
 	if (p_path.begins_with("uid://")) {
 		const String path = ResourceUID::uid_to_path(p_path);
-		print_verbose(vformat(R"(UID-referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+		PRINT_VERBOSE(vformat(R"(UID-referenced exported file name "%s" was replaced with "%s".)", p_path, path));
 		return path.simplify_path();
 	} else {
 		return p_path.simplify_path();

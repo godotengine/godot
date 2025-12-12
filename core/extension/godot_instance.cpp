@@ -52,7 +52,7 @@ GodotInstance::~GodotInstance() {
 }
 
 bool GodotInstance::initialize(GDExtensionInitializationFunction p_init_func) {
-	print_verbose("Godot Instance initialization");
+	PRINT_VERBOSE("Godot Instance initialization");
 	GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
 	GDExtensionConstPtr<const GDExtensionInitializationFunction> ptr((const GDExtensionInitializationFunction *)&p_init_func);
 	GDExtensionManager::LoadStatus status = gdextension_manager->load_extension_from_function("libgodot://main", ptr);
@@ -60,7 +60,7 @@ bool GodotInstance::initialize(GDExtensionInitializationFunction p_init_func) {
 }
 
 bool GodotInstance::start() {
-	print_verbose("GodotInstance::start()");
+	PRINT_VERBOSE("GodotInstance::start()");
 	Error err = Main::setup2();
 	if (err != OK) {
 		return false;
@@ -82,7 +82,7 @@ bool GodotInstance::iteration() {
 }
 
 void GodotInstance::stop() {
-	print_verbose("GodotInstance::stop()");
+	PRINT_VERBOSE("GodotInstance::stop()");
 	if (started) {
 		OS::get_singleton()->get_main_loop()->finalize();
 	}
@@ -90,7 +90,7 @@ void GodotInstance::stop() {
 }
 
 void GodotInstance::focus_out() {
-	print_verbose("GodotInstance::focus_out()");
+	PRINT_VERBOSE("GodotInstance::focus_out()");
 	if (started) {
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
@@ -99,7 +99,7 @@ void GodotInstance::focus_out() {
 }
 
 void GodotInstance::focus_in() {
-	print_verbose("GodotInstance::focus_in()");
+	PRINT_VERBOSE("GodotInstance::focus_in()");
 	if (started) {
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
@@ -108,7 +108,7 @@ void GodotInstance::focus_in() {
 }
 
 void GodotInstance::pause() {
-	print_verbose("GodotInstance::pause()");
+	PRINT_VERBOSE("GodotInstance::pause()");
 	if (started) {
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
@@ -117,7 +117,7 @@ void GodotInstance::pause() {
 }
 
 void GodotInstance::resume() {
-	print_verbose("GodotInstance::resume()");
+	PRINT_VERBOSE("GodotInstance::resume()");
 	if (started) {
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);

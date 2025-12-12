@@ -473,7 +473,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			}
 		}
 
-		print_verbose("LOD Generation: Triangles " + itos(index_count / 3) + ", vertices " + itos(vertex_count) + " (merged " + itos(merged_vertex_count) + ")" + (deformable ? ", deformable" : ""));
+		PRINT_VERBOSE("LOD Generation: Triangles " + itos(index_count / 3) + ", vertices " + itos(vertex_count) + " (merged " + itos(merged_vertex_count) + ")" + (deformable ? ", deformable" : ""));
 
 		const float max_mesh_error = 1.0f; // We only need LODs that can be selected by error threshold.
 		const unsigned min_target_indices = 12;
@@ -537,12 +537,12 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			current_indices = new_indices;
 
 			if (new_index_count == 0 || (new_index_count >= current_index_count * 0.75f)) {
-				print_verbose("  LOD stop: got " + itos(new_index_count / 3) + " triangles when asking for " + itos(target_index_count / 3));
+				PRINT_VERBOSE("  LOD stop: got " + itos(new_index_count / 3) + " triangles when asking for " + itos(target_index_count / 3));
 				break;
 			}
 
 			if (current_error > max_mesh_error) {
-				print_verbose("  LOD stop: reached " + rtos(current_error) + " cumulative error (step error " + rtos(step_error) + ")");
+				PRINT_VERBOSE("  LOD stop: reached " + rtos(current_error) + " cumulative error (step error " + rtos(step_error) + ")");
 				break;
 			}
 
@@ -559,7 +559,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			lod.indices = new_indices;
 			surfaces.write[i].lods.push_back(lod);
 
-			print_verbose("  LOD " + itos(surfaces.write[i].lods.size()) + ": " + itos(new_index_count / 3) + " triangles, error " + rtos(current_error) + " (step error " + rtos(step_error) + ")");
+			PRINT_VERBOSE("  LOD " + itos(surfaces.write[i].lods.size()) + ": " + itos(new_index_count / 3) + " triangles, error " + rtos(current_error) + " (step error " + rtos(step_error) + ")");
 		}
 
 		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
@@ -1176,7 +1176,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	//remove surfaces
 	clear();
 
-	print_verbose("Mesh: Gen indices: " + itos(gen_index_count));
+	PRINT_VERBOSE("Mesh: Gen indices: " + itos(gen_index_count));
 
 	//go through all indices
 	for (int i = 0; i < gen_index_count; i += 3) {

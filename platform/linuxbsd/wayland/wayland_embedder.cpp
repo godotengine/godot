@@ -2787,12 +2787,12 @@ Error WaylandEmbedder::init() {
 		String test_socket_path = runtime_dir_path + "/godot-wayland-" + itos(socket_id);
 		String test_socket_lock_path = test_socket_path + ".lock";
 
-		print_verbose(vformat("Trying to get socket %s", test_socket_path));
-		print_verbose(vformat("Opening lock %s", test_socket_lock_path));
+		PRINT_VERBOSE(vformat("Trying to get socket %s", test_socket_path));
+		PRINT_VERBOSE(vformat("Opening lock %s", test_socket_lock_path));
 		int test_lock_fd = open(test_socket_lock_path.utf8().get_data(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
 		if (flock(test_lock_fd, LOCK_EX | LOCK_NB) == -1) {
-			print_verbose(vformat("Can't lock %s", test_socket_lock_path));
+			PRINT_VERBOSE(vformat("Can't lock %s", test_socket_lock_path));
 			close(test_lock_fd);
 			++socket_id;
 			continue;

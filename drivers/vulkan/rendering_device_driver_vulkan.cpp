@@ -630,7 +630,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 
 #ifdef DEV_ENABLED
 	for (uint32_t i = 0; i < device_extension_count; i++) {
-		print_verbose(String("VULKAN: Found device extension ") + String::utf8(device_extensions[i].extensionName));
+		PRINT_VERBOSE(String("VULKAN: Found device extension ") + String::utf8(device_extensions[i].extensionName));
 	}
 #endif
 
@@ -648,7 +648,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 			if (requested_extension.value) {
 				ERR_FAIL_V_MSG(ERR_BUG, String("Required extension ") + String::utf8(requested_extension.key) + String(" not found."));
 			} else {
-				print_verbose(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found"));
+				PRINT_VERBOSE(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found"));
 			}
 		}
 	}
@@ -1005,12 +1005,12 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		}
 
 		if (fsr_capabilities.pipeline_supported || fsr_capabilities.primitive_supported || fsr_capabilities.attachment_supported) {
-			print_verbose("- Vulkan Fragment Shading Rate supported:");
+			PRINT_VERBOSE("- Vulkan Fragment Shading Rate supported:");
 			if (fsr_capabilities.pipeline_supported) {
-				print_verbose("  Pipeline fragment shading rate");
+				PRINT_VERBOSE("  Pipeline fragment shading rate");
 			}
 			if (fsr_capabilities.primitive_supported) {
-				print_verbose("  Primitive fragment shading rate");
+				PRINT_VERBOSE("  Primitive fragment shading rate");
 			}
 			if (fsr_capabilities.attachment_supported) {
 				// TODO: Expose these somehow to the end user.
@@ -1021,14 +1021,14 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 				fsr_capabilities.max_fragment_size.x = fsr_properties.maxFragmentSize.width; // either 4 or 8
 				fsr_capabilities.max_fragment_size.y = fsr_properties.maxFragmentSize.height; // generally the same as width
 
-				print_verbose(String("  Attachment fragment shading rate") +
+				PRINT_VERBOSE(String("  Attachment fragment shading rate") +
 						String(", min texel size: (") + itos(fsr_capabilities.min_texel_size.x) + String(", ") + itos(fsr_capabilities.min_texel_size.y) + String(")") +
 						String(", max texel size: (") + itos(fsr_capabilities.max_texel_size.x) + String(", ") + itos(fsr_capabilities.max_texel_size.y) + String(")") +
 						String(", max fragment size: (") + itos(fsr_capabilities.max_fragment_size.x) + String(", ") + itos(fsr_capabilities.max_fragment_size.y) + String(")"));
 			}
 
 		} else {
-			print_verbose("- Vulkan Variable Rate Shading not supported");
+			PRINT_VERBOSE("- Vulkan Variable Rate Shading not supported");
 		}
 
 		if (fdm_capabilities.attachment_supported || fdm_capabilities.dynamic_attachment_supported || fdm_capabilities.non_subsampled_images_supported) {
@@ -1038,51 +1038,51 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			fdm_capabilities.max_texel_size.y = fdm_properties.maxFragmentDensityTexelSize.height;
 			fdm_capabilities.invocations_supported = fdm_properties.fragmentDensityInvocations;
 
-			print_verbose(String("- Vulkan Fragment Density Map supported") +
+			PRINT_VERBOSE(String("- Vulkan Fragment Density Map supported") +
 					String(", min texel size: (") + itos(fdm_capabilities.min_texel_size.x) + String(", ") + itos(fdm_capabilities.min_texel_size.y) + String(")") +
 					String(", max texel size: (") + itos(fdm_capabilities.max_texel_size.x) + String(", ") + itos(fdm_capabilities.max_texel_size.y) + String(")"));
 
 			if (fdm_capabilities.dynamic_attachment_supported) {
-				print_verbose("  - dynamic fragment density map supported");
+				PRINT_VERBOSE("  - dynamic fragment density map supported");
 			}
 
 			if (fdm_capabilities.non_subsampled_images_supported) {
-				print_verbose("  - non-subsampled images supported");
+				PRINT_VERBOSE("  - non-subsampled images supported");
 			}
 		} else {
-			print_verbose("- Vulkan Fragment Density Map not supported");
+			PRINT_VERBOSE("- Vulkan Fragment Density Map not supported");
 		}
 
 		if (fdm_capabilities.offset_supported) {
-			print_verbose("- Vulkan Fragment Density Map Offset supported");
+			PRINT_VERBOSE("- Vulkan Fragment Density Map Offset supported");
 
 			fdm_capabilities.offset_granularity.x = fdmo_properties.fragmentDensityOffsetGranularity.width;
 			fdm_capabilities.offset_granularity.y = fdmo_properties.fragmentDensityOffsetGranularity.height;
 
-			print_verbose(vformat("  Offset granularity: (%d, %d)", fdm_capabilities.offset_granularity.x, fdm_capabilities.offset_granularity.y));
+			PRINT_VERBOSE(vformat("  Offset granularity: (%d, %d)", fdm_capabilities.offset_granularity.x, fdm_capabilities.offset_granularity.y));
 		} else if (use_fdm_offsets) {
-			print_verbose("- Vulkan Fragment Density Map Offset not supported");
+			PRINT_VERBOSE("- Vulkan Fragment Density Map Offset not supported");
 		}
 
 		if (multiview_capabilities.is_supported) {
 			multiview_capabilities.max_view_count = multiview_properties.maxMultiviewViewCount;
 			multiview_capabilities.max_instance_count = multiview_properties.maxMultiviewInstanceIndex;
 
-			print_verbose("- Vulkan multiview supported:");
-			print_verbose("  max view count: " + itos(multiview_capabilities.max_view_count));
-			print_verbose("  max instances: " + itos(multiview_capabilities.max_instance_count));
+			PRINT_VERBOSE("- Vulkan multiview supported:");
+			PRINT_VERBOSE("  max view count: " + itos(multiview_capabilities.max_view_count));
+			PRINT_VERBOSE("  max instances: " + itos(multiview_capabilities.max_instance_count));
 		} else {
-			print_verbose("- Vulkan multiview not supported");
+			PRINT_VERBOSE("- Vulkan multiview not supported");
 		}
 
-		print_verbose("- Vulkan subgroup:");
-		print_verbose("  size: " + itos(subgroup_capabilities.size));
-		print_verbose("  min size: " + itos(subgroup_capabilities.min_size));
-		print_verbose("  max size: " + itos(subgroup_capabilities.max_size));
-		print_verbose("  stages: " + subgroup_capabilities.supported_stages_desc());
-		print_verbose("  supported ops: " + subgroup_capabilities.supported_operations_desc());
+		PRINT_VERBOSE("- Vulkan subgroup:");
+		PRINT_VERBOSE("  size: " + itos(subgroup_capabilities.size));
+		PRINT_VERBOSE("  min size: " + itos(subgroup_capabilities.min_size));
+		PRINT_VERBOSE("  max size: " + itos(subgroup_capabilities.max_size));
+		PRINT_VERBOSE("  stages: " + subgroup_capabilities.supported_stages_desc());
+		PRINT_VERBOSE("  supported ops: " + subgroup_capabilities.supported_operations_desc());
 		if (subgroup_capabilities.quad_operations_in_all_stages) {
-			print_verbose("  quad operations in all stages");
+			PRINT_VERBOSE("  quad operations in all stages");
 		}
 	}
 
@@ -1680,7 +1680,7 @@ VmaPool RenderingDeviceDriverVulkan::_find_or_create_small_allocs_pool(uint32_t 
 		return small_allocs_pools[p_mem_type_index];
 	}
 
-	print_verbose("Creating VMA small objects pool for memory type index " + itos(p_mem_type_index));
+	PRINT_VERBOSE("Creating VMA small objects pool for memory type index " + itos(p_mem_type_index));
 
 	VmaPoolCreateInfo pci = {};
 	pci.memoryTypeIndex = p_mem_type_index;
@@ -4763,11 +4763,11 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 		if (p_data.is_empty()) {
 			// No pre-existing cache, just create it.
 		} else if (p_data.size() <= (int)sizeof(PipelineCacheHeader)) {
-			print_verbose("Invalid/corrupt Vulkan pipelines cache. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
+			PRINT_VERBOSE("Invalid/corrupt Vulkan pipelines cache. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 		} else {
 			const PipelineCacheHeader *loaded_header = reinterpret_cast<const PipelineCacheHeader *>(p_data.ptr());
 			if (loaded_header->magic != 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE) {
-				print_verbose("Invalid Vulkan pipelines cache magic number. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
+				PRINT_VERBOSE("Invalid Vulkan pipelines cache magic number. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 			} else {
 				const uint8_t *loaded_buffer_start = p_data.ptr() + sizeof(PipelineCacheHeader);
 				uint32_t loaded_buffer_size = p_data.size() - sizeof(PipelineCacheHeader);
@@ -4779,7 +4779,7 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 						loaded_header->driver_version != current_header->driver_version ||
 						memcmp(loaded_header->uuid, current_header->uuid, VK_UUID_SIZE) != 0 ||
 						loaded_header->driver_abi != current_header->driver_abi) {
-					print_verbose("Invalid Vulkan pipelines cache header. This may be due to an engine change, GPU change or graphics driver version change. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
+					PRINT_VERBOSE("Invalid Vulkan pipelines cache header. This may be due to an engine change, GPU change or graphics driver version change. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 				} else {
 					pipelines_cache.current_size = loaded_buffer_size;
 					pipelines_cache.buffer = p_data;

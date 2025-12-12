@@ -112,7 +112,7 @@ void CameraFeedAndroid::refresh_camera_metadata() {
 	status = ACameraMetadata_getConstEntry(metadata, ACAMERA_SENSOR_ORIENTATION, &orientation_entry);
 	if (status == ACAMERA_OK) {
 		orientation = orientation_entry.data.i32[0];
-		print_verbose(vformat("Camera %s: Orientation updated to %d.", camera_id, orientation));
+		PRINT_VERBOSE(vformat("Camera %s: Orientation updated to %d.", camera_id, orientation));
 	} else {
 		ERR_PRINT(vformat("Camera %s: Failed to get sensor orientation after refresh (status: %d).", camera_id, status));
 	}
@@ -120,12 +120,12 @@ void CameraFeedAndroid::refresh_camera_metadata() {
 	formats.clear();
 	_add_formats();
 
-	print_verbose(vformat("Camera %s: Metadata refreshed successfully.", camera_id));
+	PRINT_VERBOSE(vformat("Camera %s: Metadata refreshed successfully.", camera_id));
 }
 
 void CameraFeedAndroid::_set_rotation() {
 	if (!metadata) {
-		print_verbose(vformat("Camera %s: Metadata is null in _set_rotation, attempting refresh.", camera_id));
+		PRINT_VERBOSE(vformat("Camera %s: Metadata is null in _set_rotation, attempting refresh.", camera_id));
 		refresh_camera_metadata();
 	}
 
@@ -342,7 +342,7 @@ CameraFeed::FeedFormat CameraFeedAndroid::get_format() const {
 void CameraFeedAndroid::handle_pause() {
 	if (is_active()) {
 		was_active_before_pause = true;
-		print_verbose(vformat("Camera %s: Pausing (was active).", camera_id));
+		PRINT_VERBOSE(vformat("Camera %s: Pausing (was active).", camera_id));
 		deactivate_feed();
 	} else {
 		was_active_before_pause = false;
@@ -351,7 +351,7 @@ void CameraFeedAndroid::handle_pause() {
 
 void CameraFeedAndroid::handle_resume() {
 	if (was_active_before_pause) {
-		print_verbose(vformat("Camera %s: Resuming.", camera_id));
+		PRINT_VERBOSE(vformat("Camera %s: Resuming.", camera_id));
 		activate_feed();
 		was_active_before_pause = false;
 	}
@@ -362,7 +362,7 @@ void CameraFeedAndroid::handle_rotation_change() {
 		return;
 	}
 
-	print_verbose(vformat("Camera %s: Handling rotation change.", camera_id));
+	PRINT_VERBOSE(vformat("Camera %s: Handling rotation change.", camera_id));
 	refresh_camera_metadata();
 	_set_rotation();
 }
@@ -464,7 +464,7 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 		if (feed->metadata != nullptr) {
 			feed->_set_rotation();
 		} else {
-			print_verbose(vformat("Camera %s: Metadata invalidated in onImage, attempting refresh.", feed->camera_id));
+			PRINT_VERBOSE(vformat("Camera %s: Metadata invalidated in onImage, attempting refresh.", feed->camera_id));
 			feed->refresh_camera_metadata();
 			if (feed->metadata != nullptr && !feed->formats.is_empty()) {
 				feed->_set_rotation();
@@ -477,15 +477,15 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 }
 
 void CameraFeedAndroid::onSessionReady(void *context, ACameraCaptureSession *session) {
-	print_verbose("Capture session ready");
+	PRINT_VERBOSE("Capture session ready");
 }
 
 void CameraFeedAndroid::onSessionActive(void *context, ACameraCaptureSession *session) {
-	print_verbose("Capture session active");
+	PRINT_VERBOSE("Capture session active");
 }
 
 void CameraFeedAndroid::onSessionClosed(void *context, ACameraCaptureSession *session) {
-	print_verbose("Capture session closed");
+	PRINT_VERBOSE("Capture session closed");
 }
 
 void CameraFeedAndroid::deactivate_feed() {
@@ -528,7 +528,7 @@ void CameraFeedAndroid::onError(void *context, ACameraDevice *p_device, int erro
 }
 
 void CameraFeedAndroid::onDisconnected(void *context, ACameraDevice *p_device) {
-	print_verbose("Camera disconnected");
+	PRINT_VERBOSE("Camera disconnected");
 	auto *feed = static_cast<CameraFeedAndroid *>(context);
 	feed->set_active(false);
 }

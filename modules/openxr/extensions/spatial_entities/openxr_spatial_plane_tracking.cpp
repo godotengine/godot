@@ -468,7 +468,7 @@ Ref<Mesh> OpenXRPlaneTracker::get_mesh() {
 		// Cache this.
 		mesh.mesh = plane_mesh;
 	} else {
-		print_verbose("OpenXR: Can't create mesh for plane, no data.");
+		PRINT_VERBOSE("OpenXR: Can't create mesh for plane, no data.");
 	}
 	return mesh.mesh;
 }

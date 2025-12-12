@@ -49,7 +49,7 @@ void SnapshotCollector::deinitialize() {
 }
 
 void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_context) {
-	print_verbose("Starting to snapshot");
+	PRINT_VERBOSE("Starting to snapshot");
 	p_arr->clear();
 
 	// Gather all ObjectIDs first. The ObjectDB will be locked in debug_objects, so we can't serialize until it exits.
@@ -72,7 +72,7 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 		ObjectID oid = ids.first;
 		Object *obj = ObjectDB::get_instance(oid);
 		if (unlikely(obj == nullptr)) {
-			print_verbose(vformat("Object of class '%s' with ID %ud was found to be deleted after ObjectDB was snapshotted.", ids.second, (uint64_t)oid));
+			PRINT_VERBOSE(vformat("Object of class '%s' with ID %ud was found to be deleted after ObjectDB was snapshotted.", ids.second, (uint64_t)oid));
 			continue;
 		}
 
@@ -122,7 +122,7 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 		p_arr->push_back(debug_data.extra_debug_data);
 	}
 
-	print_verbose("Snapshot size: " + String::num_uint64(p_arr->size()));
+	PRINT_VERBOSE("Snapshot size: " + String::num_uint64(p_arr->size()));
 }
 
 Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
