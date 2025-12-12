@@ -581,6 +581,22 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_ma
 	Key key_mask = (Key)(int64_t)key->get_modifiers_mask();
 	if (key->is_pressed()) {
 		match &= (action_mask & key_mask) == action_mask;
+	} else if (!match) {
+		// released and mismatch keycode
+		BitField<KeyModifierMask> mask = {};
+		if (key->get_keycode() == Key::CTRL) {
+			mask.set_flag(KeyModifierMask::CTRL);
+		} else if (key->get_keycode() == Key::SHIFT) {
+			mask.set_flag(KeyModifierMask::SHIFT);
+		} else if (key->get_keycode() == Key::ALT) {
+			mask.set_flag(KeyModifierMask::ALT);
+		} else if (key->get_keycode() == Key::META) {
+			mask.set_flag(KeyModifierMask::META);
+		}
+		Key functional_key_mask = (Key)(int64_t)mask;
+
+		// exactly matches functional key
+		match |= functional_key_mask != Key::NONE && (action_mask & functional_key_mask) == functional_key_mask;
 	}
 	if (p_exact_match) {
 		match &= action_mask == key_mask;
