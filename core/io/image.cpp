@@ -3804,27 +3804,67 @@ Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 	return used_channels;
 }
 
-void Image::optimize_channels() {
-	switch (detect_used_channels()) {
+void Image::optimize_from_channels(UsedChannels p_channels) {
+	switch (p_channels) {
 		case USED_CHANNELS_L:
-			convert(FORMAT_L8);
+			if (format >= FORMAT_L8 && format <= FORMAT_RGB565) {
+				convert(FORMAT_L8);
+			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
+				convert(FORMAT_RGBF);
+			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
+				convert(FORMAT_RGBH);
+			}
 			break;
 		case USED_CHANNELS_LA:
-			convert(FORMAT_LA8);
+			if (format >= FORMAT_L8 && format <= FORMAT_RGB565) {
+				convert(FORMAT_LA8);
+			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
+				convert(FORMAT_RGBAF);
+			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
+				convert(FORMAT_RGBAH);
+			}
 			break;
 		case USED_CHANNELS_R:
-			convert(FORMAT_R8);
+			if (format >= FORMAT_L8 && format <= FORMAT_RGB565) {
+				convert(FORMAT_R8);
+			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
+				convert(FORMAT_RF);
+			} else if (format >= FORMAT_RH && format <= FORMAT_RGBE9995) {
+				convert(FORMAT_RH);
+			}
 			break;
 		case USED_CHANNELS_RG:
-			convert(FORMAT_RG8);
+			if (format >= FORMAT_L8 && format <= FORMAT_RGB565) {
+				convert(FORMAT_RG8);
+			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
+				convert(FORMAT_RGF);
+			} else if (format >= FORMAT_RH && format <= FORMAT_RGBE9995) {
+				convert(FORMAT_RGH);
+			}
 			break;
 		case USED_CHANNELS_RGB:
-			convert(FORMAT_RGB8);
+			if ((format >= FORMAT_L8 && format <= FORMAT_RGBA8) || format == FORMAT_RGB565) {
+				convert(FORMAT_RGB8);
+			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
+				convert(FORMAT_RGBF);
+			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
+				convert(FORMAT_RGBH);
+			}
 			break;
 		case USED_CHANNELS_RGBA:
-			convert(FORMAT_RGBA8);
+			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
+				convert(FORMAT_RGBA8);
+			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
+				convert(FORMAT_RGBAF);
+			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
+				convert(FORMAT_RGBAH);
+			}
 			break;
 	}
+}
+
+void Image::optimize_channels() {
+	optimize_from_channels(detect_used_channels());
 }
 
 void Image::_bind_methods() {
