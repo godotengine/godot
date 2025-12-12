@@ -1045,24 +1045,22 @@ void TileMapLayer::_physics_quadrants_update_cell(CellData &r_cell_data, SelfLis
 }
 
 void TileMapLayer::_physics_notification(int p_what) {
-	Transform2D gl_transform = get_global_transform();
 	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
+	bool in_editor = false;
+#ifdef TOOLS_ENABLED
+	in_editor = Engine::get_singleton()->is_editor_hint();
+#endif // TOOLS_ENABLED
 
 	switch (p_what) {
-		case NOTIFICATION_TRANSFORM_CHANGED:
-			// Move the collisison shapes along with the TileMap.
-			if (is_inside_tree() && tile_set.is_valid()) {
-				for (KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
-					for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : kv.value->bodies) {
-						const RID &body = kvbody.value.body;
-						Transform2D xform(0, tile_set->map_to_local(kv.key));
-						xform = gl_transform * xform;
-						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
-					}
-				}
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			// If we have a TileMap parent with collision_animatable = true, then it will move the physics bodies for us instead.
+			if (is_inside_tree() && (in_editor || tile_map_node == nullptr || !tile_map_node->is_collision_animatable())) {
+				// Move the physics bodies along with the TileMap.
+				Transform2D gl_transform = get_global_transform();
+				move_physics_bodies(gl_transform);
 			}
-			break;
-		case NOTIFICATION_ENTER_TREE:
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
 			// Changes in the tree may cause the space to change (e.g. when reparenting to a SubViewport).
 			if (is_inside_tree()) {
 				RID space = get_world_2d()->get_space();
@@ -1074,6 +1072,20 @@ void TileMapLayer::_physics_notification(int p_what) {
 					}
 				}
 			}
+		} break;
+	}
+}
+
+void TileMapLayer::move_physics_bodies(const Transform2D &p_global_transform) {
+	if (tile_set.is_valid()) {
+		for (KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
+			for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : kv.value->bodies) {
+				const RID &body = kvbody.value.body;
+				Transform2D xform(0, tile_set->map_to_local(kv.key));
+				xform = p_global_transform * xform;
+				PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+			}
+		}
 	}
 }
 
@@ -2020,16 +2032,6 @@ void TileMapLayer::_renamed() {
 	emit_signal(CoreStringName(changed));
 }
 
-void TileMapLayer::_update_notify_local_transform() {
-	bool notify = is_using_kinematic_bodies() || is_y_sort_enabled();
-	if (!notify) {
-		if (is_y_sort_enabled()) {
-			notify = true;
-		}
-	}
-	set_notify_local_transform(notify);
-}
-
 void TileMapLayer::_queue_internal_update() {
 	if (pending_update) {
 		return;
@@ -2139,7 +2141,6 @@ void TileMapLayer::_notification(int p_what) {
 			break;
 		}
 		case NOTIFICATION_ENTER_TREE: {
-			_update_notify_local_transform();
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] = true;
 			_queue_internal_update();
 		} break;
@@ -3315,7 +3316,6 @@ void TileMapLayer::set_y_sort_enabled(bool p_y_sort_enabled) {
 	emit_signal(CoreStringName(changed));
 
 	notify_property_list_changed();
-	_update_notify_local_transform();
 }
 
 void TileMapLayer::set_y_sort_origin(int p_y_sort_origin) {
