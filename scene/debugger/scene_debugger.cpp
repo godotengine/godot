@@ -415,6 +415,20 @@ Error SceneDebugger::_msg_runtime_node_select_set_visible(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_runtime_node_select_set_avoid_locked(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	bool avoid_locked = p_args[0];
+	RuntimeNodeSelect::get_singleton()->_set_avoid_locked(avoid_locked);
+	return OK;
+}
+
+Error SceneDebugger::_msg_runtime_node_select_set_prefer_group(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	bool prefer_group = p_args[0];
+	RuntimeNodeSelect::get_singleton()->_set_prefer_group(prefer_group);
+	return OK;
+}
+
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_reset_camera_2d();
 	return OK;
@@ -567,6 +581,8 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_set_type"] = _msg_runtime_node_select_set_type;
 	message_handlers["runtime_node_select_set_mode"] = _msg_runtime_node_select_set_mode;
 	message_handlers["runtime_node_select_set_visible"] = _msg_runtime_node_select_set_visible;
+	message_handlers["runtime_node_select_set_avoid_locked"] = _msg_runtime_node_select_set_avoid_locked;
+	message_handlers["runtime_node_select_set_prefer_group"] = _msg_runtime_node_select_set_prefer_group;
 	message_handlers["runtime_node_select_reset_camera_2d"] = _msg_runtime_node_select_reset_camera_2d;
 #ifndef _3D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
@@ -1859,18 +1875,6 @@ void RuntimeNodeSelect::_physics_frame() {
 			}
 		}
 
-		// Remove possible duplicates.
-		for (int i = 0; i < items.size(); i++) {
-			Node *item = items[i].item;
-			for (int j = 0; j < i; j++) {
-				if (items[j].item == item) {
-					items.remove_at(i);
-					i--;
-
-					break;
-				}
-			}
-		}
 #ifndef _3D_DISABLED
 	} else if (node_select_type == NODE_TYPE_3D) {
 		if (selection_drag_valid) {
@@ -1879,6 +1883,57 @@ void RuntimeNodeSelect::_physics_frame() {
 			_find_3d_items_at_pos(selection_position, items);
 		}
 #endif // _3D_DISABLED
+	}
+
+	if ((prefer_group_selection || avoid_locked_nodes) && !list_shortcut_pressed && node_select_mode == SELECT_MODE_SINGLE) {
+		for (int i = 0; i < items.size(); i++) {
+			Node *node = items[i].item;
+			Node *final_node = node;
+			real_t order = items[i].order;
+
+			// Replace the node by the group if grouped.
+			if (prefer_group_selection) {
+				while (node && node != root) {
+					if (node->has_meta("_edit_group_")) {
+						final_node = node;
+
+						if (Object::cast_to<CanvasItem>(final_node)) {
+							CanvasItem *ci_tmp = Object::cast_to<CanvasItem>(final_node);
+							order = ci_tmp->get_effective_z_index() + ci_tmp->get_canvas_layer();
+						} else if (Object::cast_to<Node3D>(final_node)) {
+							Node3D *node3d_tmp = Object::cast_to<Node3D>(final_node);
+							Camera3D *camera = root->get_camera_3d();
+							Vector3 pos = camera->project_ray_origin(selection_position);
+							order = -pos.distance_to(node3d_tmp->get_global_transform().origin);
+						}
+					}
+					node = node->get_parent();
+				}
+			}
+
+			// Filter out locked nodes.
+			if (avoid_locked_nodes && final_node->get_meta("_edit_lock_", false)) {
+				items.remove_at(i);
+				i--;
+				continue;
+			}
+
+			items.write[i].item = final_node;
+			items.write[i].order = order;
+		}
+	}
+
+	// Remove possible duplicates.
+	for (int i = 0; i < items.size(); i++) {
+		Node *item = items[i].item;
+		for (int j = 0; j < i; j++) {
+			if (items[j].item == item) {
+				items.remove_at(i);
+				i--;
+
+				break;
+			}
+		}
 	}
 
 	items.sort();
@@ -2334,7 +2389,29 @@ void RuntimeNodeSelect::_open_selection_list(const Vector<SelectResult> &p_items
 	root->add_child(selection_list);
 
 	for (const SelectResult &I : p_items) {
-		selection_list->add_item(I.item->get_name());
+		int locked = 0;
+		if (I.item->get_meta("_edit_lock_", false)) {
+			locked = 1;
+		} else {
+			Node *scene = SceneTree::get_singleton()->get_root();
+			Node *node = I.item;
+
+			while (node && node != scene->get_parent()) {
+				if (node->has_meta("_edit_group_")) {
+					locked = 2;
+				}
+				node = node->get_parent();
+			}
+		}
+
+		String suffix;
+		if (locked == 1) {
+			suffix = " (" + RTR("Locked") + ")";
+		} else if (locked == 2) {
+			suffix = " (" + RTR("Grouped") + ")";
+		}
+
+		selection_list->add_item((String)I.item->get_name() + suffix);
 		selection_list->set_item_metadata(-1, I.item);
 	}
 
@@ -2356,6 +2433,14 @@ void RuntimeNodeSelect::_set_selection_visible(bool p_visible) {
 	if (has_selection) {
 		_update_selection();
 	}
+}
+
+void RuntimeNodeSelect::_set_avoid_locked(bool p_enabled) {
+	avoid_locked_nodes = p_enabled;
+}
+
+void RuntimeNodeSelect::_set_prefer_group(bool p_enabled) {
+	prefer_group_selection = p_enabled;
 }
 
 // Copied and trimmed from the CanvasItemEditor implementation.

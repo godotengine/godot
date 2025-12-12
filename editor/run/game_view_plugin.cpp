@@ -95,6 +95,12 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	Array mode;
 	mode.append(select_mode);
 	p_session->send_message("scene:runtime_node_select_set_mode", mode);
+	Array avoid_locked;
+	avoid_locked.append(selection_avoid_locked);
+	p_session->send_message("scene:runtime_node_select_set_avoid_locked", avoid_locked);
+	Array prefer_group;
+	prefer_group.append(selection_prefer_group);
+	p_session->send_message("scene:runtime_node_select_set_prefer_group", prefer_group);
 	Array mute_audio_data;
 	mute_audio_data.append(mute_audio);
 	p_session->send_message("scene:debug_mute_audio", mute_audio_data);
@@ -179,6 +185,32 @@ void GameViewDebugger::set_selection_visible(bool p_visible) {
 	for (Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
 			I->send_message("scene:runtime_node_select_set_visible", message);
+		}
+	}
+}
+
+void GameViewDebugger::set_selection_avoid_locked(bool p_enabled) {
+	selection_avoid_locked = p_enabled;
+
+	Array message;
+	message.append(p_enabled);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:runtime_node_select_set_avoid_locked", message);
+		}
+	}
+}
+
+void GameViewDebugger::set_selection_prefer_group(bool p_enabled) {
+	selection_prefer_group = p_enabled;
+
+	Array message;
+	message.append(p_enabled);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:runtime_node_select_set_prefer_group", message);
 		}
 	}
 }
@@ -596,6 +628,25 @@ void GameView::_select_mode_pressed(int p_option) {
 	EditorSettings::get_singleton()->set_project_metadata("game_view", "select_mode", mode);
 }
 
+void GameView::_selection_options_menu_id_pressed(int p_id) {
+	switch (p_id) {
+		case SELECTION_AVOID_LOCKED: {
+			selection_avoid_locked = !selection_avoid_locked;
+			debugger->set_selection_avoid_locked(selection_avoid_locked);
+			EditorSettings::get_singleton()->set_project_metadata("game_view", "selection_avoid_locked", selection_avoid_locked);
+		} break;
+		case SELECTION_PREFER_GROUP: {
+			selection_prefer_group = !selection_prefer_group;
+			debugger->set_selection_prefer_group(selection_prefer_group);
+			EditorSettings::get_singleton()->set_project_metadata("game_view", "selection_prefer_group", selection_prefer_group);
+		} break;
+	}
+
+	PopupMenu *menu = selection_options_menu->get_popup();
+	menu->set_item_checked(menu->get_item_index(SELECTION_AVOID_LOCKED), selection_avoid_locked);
+	menu->set_item_checked(menu->get_item_index(SELECTION_PREFER_GROUP), selection_prefer_group);
+}
+
 void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 	switch (p_id) {
 		case EMBED_RUN_GAME_EMBEDDED: {
@@ -880,6 +931,7 @@ void GameView::_notification(int p_what) {
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
 
 			hide_selection->set_button_icon(get_editor_theme_icon(hide_selection->is_pressed() ? SNAME("GuiVisibilityHidden") : SNAME("GuiVisibilityVisible")));
+			selection_options_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			embed_options_menu->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
 
 			debug_mute_audio_button->set_button_icon(get_editor_theme_icon(debug_mute_audio ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
@@ -1271,6 +1323,26 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 		debugger->set_selection_visible(false);
 	}
 	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
+
+	selection_options_menu = memnew(MenuButton);
+	selection_hb->add_child(selection_options_menu);
+	selection_options_menu->set_flat(false);
+	selection_options_menu->set_theme_type_variation("FlatMenuButton");
+	selection_options_menu->set_h_size_flags(SIZE_SHRINK_END);
+	selection_options_menu->set_tooltip_text(TTRC("Selection Options"));
+
+	PopupMenu *selection_menu = selection_options_menu->get_popup();
+	selection_menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_selection_options_menu_id_pressed));
+	selection_menu->add_check_item(TTRC("Don't Select Locked Nodes"), SELECTION_AVOID_LOCKED);
+	selection_menu->add_check_item(TTRC("Select Group Over Children"), SELECTION_PREFER_GROUP);
+
+	selection_avoid_locked = EditorSettings::get_singleton()->get_project_metadata("game_view", "selection_avoid_locked", false);
+	selection_prefer_group = EditorSettings::get_singleton()->get_project_metadata("game_view", "selection_prefer_group", false);
+	selection_menu->set_item_checked(selection_menu->get_item_index(SELECTION_AVOID_LOCKED), selection_avoid_locked);
+	selection_menu->set_item_checked(selection_menu->get_item_index(SELECTION_PREFER_GROUP), selection_prefer_group);
+
+	debugger->set_selection_avoid_locked(selection_avoid_locked);
+	debugger->set_selection_prefer_group(selection_prefer_group);
 
 	selection_hb->add_child(memnew(VSeparator));
 
