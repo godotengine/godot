@@ -826,6 +826,7 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
 				wpd.vulkan.surface = wayland_thread.window_get_wl_surface(wd.id);
+				ERR_FAIL_NULL(wpd.vulkan.surface);
 				wpd.vulkan.display = wayland_thread.get_wl_display();
 			}
 #endif
@@ -847,6 +848,7 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 #ifdef GLES3_ENABLED
 		if (egl_manager) {
 			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
+			ERR_FAIL_NULL(wl_surface);
 			wd.wl_egl_window = wl_egl_window_create(wl_surface, wd.rect.size.width, wd.rect.size.height);
 
 			Error err = egl_manager->window_create(p_window_id, wayland_thread.get_wl_display(), wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
