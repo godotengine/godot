@@ -44,6 +44,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
@@ -463,6 +464,38 @@ void ScriptEditorDebugger::_msg_scene_inspect_object(uint64_t p_thread_id, const
 	_msg_scene_inspect_objects(p_thread_id, wrapped_data);
 }
 #endif // DISABLE_DEPRECATED
+
+void ScriptEditorDebugger::_msg_scene_select_path(uint64_t p_thread_id, const Array &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+	String scene_path = p_data[0];
+	String node_path = p_data[1];
+	if (EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() == scene_path) {
+		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node_or_null(node_path);
+		if (n) {
+			EditorSelection *selection = EditorNode::get_singleton()->get_editor_selection();
+			selection->clear();
+			selection->add_node(n);
+		}
+	}
+}
+
+void ScriptEditorDebugger::_msg_scene_set_object_property(uint64_t p_thread_id, const Array &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+	String scene_path = p_data[0];
+	String node_path = p_data[1];
+	String property_path = p_data[2];
+	Variant value = p_data[3];
+	if (EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() == scene_path) {
+		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node_or_null(node_path);
+		if (n) {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action("Update property remotely");
+			undo_redo->add_do_property(n, property_path, value);
+			undo_redo->add_undo_property(n, property_path, n->get(property_path));
+			undo_redo->commit_action();
+		}
+	}
+}
 
 void ScriptEditorDebugger::_msg_scene_debug_mute_audio(uint64_t p_thread_id, const Array &p_data) {
 	ERR_FAIL_COND(p_data.is_empty());
@@ -1001,6 +1034,8 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 #ifndef DISABLE_DEPRECATED
 	parse_message_handlers["scene:inspect_object"] = &ScriptEditorDebugger::_msg_scene_inspect_object;
 #endif // DISABLE_DEPRECATED
+	parse_message_handlers["scene:select_path"] = &ScriptEditorDebugger::_msg_scene_select_path;
+	parse_message_handlers["scene:set_object_property"] = &ScriptEditorDebugger::_msg_scene_set_object_property;
 	parse_message_handlers["scene:debug_mute_audio"] = &ScriptEditorDebugger::_msg_scene_debug_mute_audio;
 	parse_message_handlers["servers:memory_usage"] = &ScriptEditorDebugger::_msg_servers_memory_usage;
 	parse_message_handlers["servers:drawn"] = &ScriptEditorDebugger::_msg_servers_drawn;
