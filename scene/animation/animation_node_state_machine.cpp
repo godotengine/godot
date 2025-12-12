@@ -193,6 +193,8 @@ AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
 ////////////////////////////////////////////////////////
 
 void AnimationNodeStateMachinePlayback::_set_current(AnimationNodeStateMachine *p_state_machine, const StringName &p_state) {
+	p_state_machine->get_animation_tree()->call_deferred(SNAME("emit_signal"), SceneStringName(animation_state_exited), base_path + current);
+	p_state_machine->get_animation_tree()->call_deferred(SNAME("emit_signal"), SceneStringName(animation_state_entered), base_path + p_state);
 	current = p_state;
 	if (current == StringName()) {
 		group_start_transition = Ref<AnimationNodeStateMachineTransition>();
