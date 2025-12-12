@@ -1593,4 +1593,4 @@ const size_t PRIV(utt_size) = sizeof(PRIV(utt)) / sizeof(ucp_type_table);
 
 #endif /* SUPPORT_UNICODE */
 
-/* End of pcre2_ucptables.c */
+/* End of pcre2_ucptables_inc.h */

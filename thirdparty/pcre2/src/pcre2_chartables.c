@@ -19,10 +19,6 @@ PCRE2 is configured with --enable-rebuild-chartables. However, you can run
 pcre2_dftables manually with the -L option to build tables using the LC_ALL
 locale. */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "pcre2_internal.h"
 
 const uint8_t PRIV(default_tables)[] = {
