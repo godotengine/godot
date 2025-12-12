@@ -96,6 +96,7 @@ protected:
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
+	bool is_exiting() const;
 	void restart_editor(bool p_save = true);
 
 	// Editor tools.
