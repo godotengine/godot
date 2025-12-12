@@ -300,6 +300,20 @@
 				Marks the current scene tab as unsaved.
 			</description>
 		</method>
+		<method name="open_export_dialog">
+			<return type="void" />
+			<description>
+				Opens the project export dialog window.
+			</description>
+		</method>
+		<method name="open_project_settings">
+			<return type="void" />
+			<param index="0" name="general_page" type="String" default="&quot;&quot;" />
+			<param index="1" name="filter" type="String" default="&quot;&quot;" />
+			<description>
+				Opens the project settings window at the optionally specified [param general_page], with an optional [param filter] applied.
+			</description>
+		</method>
 		<method name="open_scene_from_path">
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />
@@ -472,6 +486,13 @@
 			<param index="1" name="with_preview" type="bool" default="true" />
 			<description>
 				Saves the currently active scene as a file at [param path].
+			</description>
+		</method>
+		<method name="search_asset_library">
+			<return type="void" />
+			<param index="0" name="filter" type="String" />
+			<description>
+				Opens the Editor Asset Library and applies the specified [param filter] to the search bar.
 			</description>
 		</method>
 		<method name="select_file">
