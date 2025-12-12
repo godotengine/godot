@@ -80,7 +80,7 @@ TEST_CASE("[FixedVector] Basic Checks") {
 	CHECK(vector.is_empty());
 	CHECK(!vector.is_full());
 
-	FixedVector<uint16_t, 2> vector1 = { 1, 2 };
+	FixedVector<uint16_t, 2> vector1 = FixedVector<uint16_t, 2>::make(1, 2);
 	CHECK_EQ(vector1.capacity(), 2);
 	CHECK_EQ(vector1.size(), 2);
 	CHECK_EQ(vector1[0], 1);
