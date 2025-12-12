@@ -54,7 +54,7 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"module_openxr_enabled",
 	"wayland",
 	"x11",
-	"rendering_device", // FIXME: There's no scons option to disable rendering device.
+	"rendering_device",
 	"forward_plus_renderer",
 	"forward_mobile_renderer",
 	"vulkan",
