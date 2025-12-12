@@ -79,6 +79,7 @@
 #include "scene/gui/reference_rect.h"
 #include "scene/gui/rich_text_effect.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/rich_text_label_parser.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
@@ -539,6 +540,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SpinBox);
 	GDREGISTER_CLASS(ColorPicker);
 	GDREGISTER_CLASS(ColorPickerButton);
+	GDREGISTER_CLASS(RichTextLabelBBCodeParser);
 	GDREGISTER_CLASS(RichTextLabel);
 	GDREGISTER_CLASS(RichTextEffect);
 	GDREGISTER_CLASS(CharFXTransform);
