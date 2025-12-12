@@ -6720,7 +6720,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				Node *call_expression = nullptr;
 				Node *assign_expression = nullptr;
 
-				if (array_size > 0) {
+				if (array_size != 0) {
 					prepos = _get_tkpos();
 					tk = _get_token();
 
@@ -6761,7 +6761,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
-									if (value < 0 || value >= array_size) {
+									if (value < 0 || (value >= array_size && array_size != -1)) {
 										_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), value, 0, array_size - 1));
 										return nullptr;
 									}
@@ -10434,10 +10434,15 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						bool first = true;
 						bool fixed_array_size = false;
 						int array_size = 0;
+						
 
 						do {
+							if (unsized_array_init) {
+								_set_error(RTR("An unsized array must be the final declaration in the buffer."));
+								return ERR_PARSE_ERROR;
+							}
 							tk = _get_token();
-
+							
 							if (first) {
 								first = false;
 
@@ -10447,15 +10452,11 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								}
 
 								if (tk.type == TK_BRACKET_OPEN) {
-									Error error = _parse_array_size(nullptr, constants, (buf.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM), nullptr, &array_size, &unsized_array_init);
+									Error error = _parse_array_size(nullptr, constants, false, nullptr, &array_size, nullptr);
 									if (error != OK) {
 										return error;
 									}
-									if (!unsized_array_init) {
-										fixed_array_size = true;
-									} else {
-										array_size = -1;
-									}
+									fixed_array_size = true;
 
 									tk = _get_token();
 								}
@@ -10494,15 +10495,13 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								if (error != OK) {
 									return error;
 								}
-								if (!unsized_array_init) {
-									fixed_array_size = true;
-								} else {
+								if (unsized_array_init) {
 									member->array_size = -1;
 								}
 								tk = _get_token();
 							}
 
-							if (!fixed_array_size && !unsized_array_init) {
+							if (!fixed_array_size) {
 								array_size = 0;
 							}
 
@@ -10561,13 +10560,11 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						tk = _get_token();
 
 						if (tk.text == "packed") {
-							_set_error(RTR("The packed format is not currently supported."));
+							_set_error(RTR("The packed format is not supported."));
 							return ERR_PARSE_ERROR;
-							// buf.format = ShaderNode::Buffer::BUFFORMAT_PACKED;
 						} else if (tk.text == "shared") {
-							_set_error(RTR("The shared format is not currently supported."));
+							_set_error(RTR("The shared format is not supported."));
 							return ERR_PARSE_ERROR;
-							// buf.format = ShaderNode::Buffer::BUFFORMAT_SHARED;
 						} else if (tk.text == "std140") {
 							buf.format = ShaderNode::Buffer::BUFFORMAT_STD140;
 						} else if (tk.text == "std430") {
@@ -10577,7 +10574,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							}
 							buf.format = ShaderNode::Buffer::BUFFORMAT_STD430;
 						} else {
-							_set_error(RTR("Expected format specifier."));
+							_set_error(RTR("Expected a valid format specifier."));
 							return ERR_PARSE_ERROR;
 						}
 

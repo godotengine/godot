@@ -497,8 +497,12 @@ public:
 			if (member.datatype == ShaderLanguage::TYPE_STRUCT) {
 				if (member.array_size != 0) {
 					TypedArray<Dictionary> out = Array();
-					out.resize(member.array_size);
-					out.fill(structs[member.struct_name].duplicate());
+					if (member.array_size == -1) {
+						out.resize(1);
+					} else {
+						out.resize(member.array_size);
+					}
+					out.fill(structs[member.struct_name].duplicate(true));
 					buf_dict[member.name] = out;
 				} else {
 					buf_dict[member.name] = structs[member.struct_name].duplicate();
@@ -507,10 +511,10 @@ public:
 				if (member.array_size != 0 ) {
 					Array out = Array();
 					out.set_typed(ShaderLanguage::shader_datatype_to_variant(member.datatype).get_type(), "", Variant());
-					if (member.array_size > 0) {
+					if (member.array_size != -1) {
 						out.resize(member.array_size);
 					} else {
-						out.resize(0);
+						out.resize(1);
 					}
 					buf_dict[member.name] = out;
 				} else {

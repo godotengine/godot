@@ -133,12 +133,10 @@ public:
 			}
 			// std430 has different requirements for padding for alignment in structs
 			PackedByteArray alignment_data;
-			int alignment_gap;
 			if (!std430 && alignment < std140_alignment) {
 				alignment = std140_alignment;
 			} 
-			alignment_gap = alignment - (struct_data.size() % alignment);
-			alignment_data.resize_initialized(alignment_gap);
+			alignment_data.resize_initialized(alignment - (struct_data.size() % alignment));
 			struct_data.append_array(alignment_data);
 			
 			data.append_array(struct_data);

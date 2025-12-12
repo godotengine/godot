@@ -1205,15 +1205,21 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		p_buffer_dirty = true;
 
 		int i = 0;
+		for (int id = p_uniform_buffers.size(); id < uniform_buffer_ids.size(); id++) {
+			if (uniform_buffer_ids[id].is_valid()) {
+				RD::get_singleton()->free(uniform_buffer_ids[id]);
+			}
+		}
 		uniform_buffer_ids.resize(p_uniform_buffers.size());
 		for (const ShaderCompiler::GeneratedCode::Buffer &B : p_uniform_buffers) {
 			PackedByteArray data;
 
 			if (p_buffer_params.has(B.bufName)) {
 				data = p_buffer_params[B.bufName];
+			} else {
+				data.resize_initialized(B.total_size);
 			}
 
-			data.resize(B.total_size);
 			if (uniform_buffer_ids[i].is_valid()) {
 				RD::get_singleton()->free(uniform_buffer_ids[i]);
 			}
@@ -1233,15 +1239,24 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		p_buffer_dirty = true;
 
 		int i = 0;
+
+		// clear out any RIDS that are about to get trimmed
+		for (int id = p_storage_buffers.size(); id < storage_buffer_ids.size(); id++) {
+			if (storage_buffer_ids[id].is_valid()) {
+				RD::get_singleton()->free(storage_buffer_ids[id]);
+			}
+		}
 		storage_buffer_ids.resize(p_storage_buffers.size());
 		for (const ShaderCompiler::GeneratedCode::Buffer &B : p_storage_buffers) {
 			PackedByteArray data;
 
 			if (p_buffer_params.has(B.bufName)) {
+				data.resize(p_buffer_params[B.bufName].size());
 				data = p_buffer_params[B.bufName];
+			} else {
+				data.resize_initialized(B.total_size);
 			}
 
-			data.resize(B.total_size);
 			if (storage_buffer_ids[i].is_valid()) {
 				RD::get_singleton()->free(storage_buffer_ids[i]);
 			}
@@ -1257,7 +1272,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		}
 	}
 
-	if (p_ubo_size == 0 && (p_texture_uniforms.is_empty()) && (p_uniform_buffers.is_empty())) {
+	if (p_ubo_size == 0 && (p_texture_uniforms.is_empty()) && (p_uniform_buffers.is_empty()) && (p_storage_buffers.is_empty())) {
 		// This material does not require an uniform set, so don't create it.
 		return false;
 	}
@@ -2181,6 +2196,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 			create_buffer_cache(new_buf, buf.structs, buf.members);
 			new_buf_cache.first = new_buf;
 			buffer_cache[buf.bufName] = new_buf_cache;
+			print_line(vformat("Cached buffer values: ") + ((Variant) new_buf).stringify());
 		}
 		buffer_list.~Vector(); // I want him gone
 	}

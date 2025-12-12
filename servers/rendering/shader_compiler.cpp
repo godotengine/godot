@@ -449,50 +449,33 @@ static String _get_global_shader_uniform_from_type_and_index(const String &p_buf
 }
 
 // helper function for calculating offsets for buffers
-uint32_t get_offset(SL::MemberNode *m, uint32_t &offset, const SL::ShaderNode *shader, SL::ShaderNode::Buffer::BufferFormat format = SL::ShaderNode::Buffer::BUFFORMAT_STD140) {
-	int d_alignment;
-	int d_size;
-	uint32_t local_offset;
+void get_offset(const SL::MemberNode *m, uint32_t &offset, const SL::ShaderNode *shader, SL::ShaderNode::Buffer::BufferFormat format = SL::ShaderNode::Buffer::BUFFORMAT_STD140) {
+	bool std430 = (format == SL::ShaderNode::Buffer::BUFFORMAT_STD430);
+	uint32_t local_offset = 0;
+	uint32_t alignment = _get_datatype_alignment(m->datatype);
+	uint32_t size = SL::get_datatype_size(m->datatype);
+	int array_size = 1;
+
 	if (m->datatype == SL::TYPE_STRUCT) {
-		for (SL::MemberNode *st_m : shader->structs[m->struct_name].shader_struct->members) {
-			_ALLOW_DISCARD_ get_offset(st_m, local_offset, shader);
+		for (const SL::MemberNode *st_m : shader->structs[m->struct_name].shader_struct->members) {
+			get_offset(st_m, local_offset, shader, format);
 		}
-		if (m->array_size > 0) {
-			int size = local_offset * m->array_size;
-			int mod = (16 * m->array_size);
-			if ((size % mod) != 0) {
-				size += mod - (size % mod);
-			}
-			d_size = size;
-			d_alignment = 16;
-		} else {
-			d_size = local_offset;
-			d_alignment = 0;
-		}
-	} else {
-		if (m->array_size > 0) {
-			int size = ShaderLanguage::get_datatype_size(m->datatype) * m->array_size;
-			int mod = (16 * m->array_size);
-			if ((size % mod) != 0) {
-				size += mod - (size % mod);
-			}
-			d_size = size;
-			d_alignment = 16;
-		} else {
-			d_size = ShaderLanguage::get_datatype_size(m->datatype);
-			d_alignment = _get_datatype_alignment(m->datatype);
+		if (!std430 && alignment < 16) {
+			alignment = 16;
 		}
 	}
 
-	int align = offset % d_alignment;
-
-	if (align != 0) {
-		offset += d_alignment - align;
+	if (m->array_size != 0) {
+		if (m->array_size > 0) {
+			array_size = m->array_size;
+		} else {
+			array_size = 1;
+		}
 	}
 
-	uint32_t retval = offset;
-	offset += d_size;
-	return retval;
+	
+
+	offset += size;
 }
 
 
@@ -825,14 +808,14 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					if (m->datatype == SL::TYPE_STRUCT) {
 						buffer_code += _mkid(m->struct_name);
 						if (!buffer_structs.has(m->struct_name)) {
-							buffer_structs[m->struct_name] = fill_struct_dict(shader->structs[m->struct_name], shader->structs);
+							buffer_structs[m->struct_name] = fill_struct_dict(shader->structs[m->struct_name], shader->structs).duplicate_deep();
 						}
 					} else {
 						buffer_code += _prestr(m->precision);
 						buffer_code += _typestr(m->datatype);
 					}
 					// calculate the offset of the member
-					offset = get_offset(m, total_offset, shader);
+					get_offset(m, total_offset, shader, buf.format);
 
 					buffer_code += " ";
 
@@ -841,14 +824,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					if (m->array_size != 0) {
 						buffer_code += "[";
-						if (m->array_size > 0) {
+						if (m->array_size != -1) { // array_size of -1 indicates unsized array
 							buffer_code += itos(m->array_size);
 						}
 						buffer_code += "]";
 					}
 
 					buffer_code += ";\n";
-					buffer.member_offsets.push_back(offset);
 					buffer.members.push_back(*m);
 				}
 				buffer_code += "} " + String(buf.name).replace("__", "_dus_");
