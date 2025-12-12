@@ -159,6 +159,9 @@ struct [[nodiscard]] Vector2i {
 			x(0), y(0) {}
 	constexpr Vector2i(int32_t p_x, int32_t p_y) :
 			x(p_x), y(p_y) {}
+	template <typename V, std::enable_if_t<std::is_arithmetic_v<V>, int> = 0>
+	constexpr explicit Vector2i(V p_v) :
+			x(p_v), y(p_v) {}
 	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 

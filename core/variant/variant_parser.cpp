@@ -712,12 +712,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return err;
 			}
 
-			if (args.size() != 2) {
-				r_err_str = "Expected 2 arguments for constructor";
+			if (args.size() == 0) {
+				value = Vector2();
+			} else if (args.size() == 1) {
+				value = Vector2(args[0]);
+			} else if (args.size() == 2) {
+				value = Vector2(args[0], args[1]);
+			} else {
+				r_err_str = vformat("Expected 0, 1 or 2 arguments for constructor, but got %d.", args.size());
 				return ERR_PARSE_ERROR;
 			}
-
-			value = Vector2(args[0], args[1]);
 		} else if (id == "Vector2i") {
 			Vector<int32_t> args;
 			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
@@ -725,12 +729,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return err;
 			}
 
-			if (args.size() != 2) {
-				r_err_str = "Expected 2 arguments for constructor";
+			if (args.size() == 0) {
+				value = Vector2i();
+			} else if (args.size() == 1) {
+				value = Vector2i(args[0]);
+			} else if (args.size() == 2) {
+				value = Vector2i(args[0], args[1]);
+			} else {
+				r_err_str = vformat("Expected 0, 1 or 2 arguments for constructor, but got %d.", args.size());
 				return ERR_PARSE_ERROR;
 			}
-
-			value = Vector2i(args[0], args[1]);
 		} else if (id == "Rect2") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
@@ -764,12 +772,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return err;
 			}
 
-			if (args.size() != 3) {
-				r_err_str = "Expected 3 arguments for constructor";
+			if (args.size() == 0) {
+				value = Vector3();
+			} else if (args.size() == 1) {
+				value = Vector3(args[0]);
+			} else if (args.size() == 3) {
+				value = Vector3(args[0], args[1], args[2]);
+			} else {
+				r_err_str = vformat("Expected 0, 1 or 3 arguments for constructor, but got %d.", args.size());
 				return ERR_PARSE_ERROR;
 			}
-
-			value = Vector3(args[0], args[1], args[2]);
 		} else if (id == "Vector3i") {
 			Vector<int32_t> args;
 			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
@@ -777,12 +789,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return err;
 			}
 
-			if (args.size() != 3) {
-				r_err_str = "Expected 3 arguments for constructor";
+			if (args.size() == 0) {
+				value = Vector3i();
+			} else if (args.size() == 1) {
+				value = Vector3i(args[0]);
+			} else if (args.size() == 3) {
+				value = Vector3i(args[0], args[1], args[2]);
+			} else {
+				r_err_str = vformat("Expected 0, 1 or 3 arguments for constructor, but got %d.", args.size());
 				return ERR_PARSE_ERROR;
 			}
-
-			value = Vector3i(args[0], args[1], args[2]);
 		} else if (id == "Vector4") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
@@ -790,12 +806,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return err;
 			}
 
-			if (args.size() != 4) {
-				r_err_str = "Expected 4 arguments for constructor";
+			if (args.size() == 0) {
+				value = Vector4();
+			} else if (args.size() == 1) {
+				value = Vector4(args[0]);
+			} else if (args.size() == 4) {
+				value = Vector4(args[0], args[1], args[2], args[3]);
+			} else {
+				r_err_str = vformat("Expected 0, 1 or 4 arguments for constructor, but got %d.", args.size());
 				return ERR_PARSE_ERROR;
 			}
-
-			value = Vector4(args[0], args[1], args[2], args[3]);
 		} else if (id == "Vector4i") {
 			Vector<int32_t> args;
 			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
@@ -803,12 +823,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return err;
 			}
 
-			if (args.size() != 4) {
-				r_err_str = "Expected 4 arguments for constructor";
+			if (args.size() == 0) {
+				value = Vector4i();
+			} else if (args.size() == 1) {
+				value = Vector4i(args[0]);
+			} else if (args.size() == 4) {
+				value = Vector4i(args[0], args[1], args[2], args[3]);
+			} else {
+				r_err_str = vformat("Expected 0, 1 or 4 arguments for constructor, but got %d.", args.size());
 				return ERR_PARSE_ERROR;
 			}
-
-			value = Vector4i(args[0], args[1], args[2], args[3]);
 		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
