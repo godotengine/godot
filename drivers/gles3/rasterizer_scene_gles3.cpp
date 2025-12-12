@@ -804,6 +804,11 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 		spec_constants |= SkyShaderGLES3::APPLY_TONEMAPPING;
 	}
 
+	const bool use_asymmetric_projection = (!p_use_multiview && !p_projection.is_frustum_symmetric());
+	if (use_asymmetric_projection) {
+		spec_constants |= SkyShaderGLES3::USE_ASYMMETRIC_PROJECTION;
+	}
+
 	RS::EnvironmentBG background = environment_get_background(p_env);
 
 	if (sky) {
@@ -873,6 +878,10 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_DENSITY, environment_get_fog_density(p_env), shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
 	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_SKY_AFFECT, environment_get_fog_sky_affect(p_env), shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
 	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::DIRECTIONAL_LIGHT_COUNT, sky_globals.directional_light_count, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+
+	if (use_asymmetric_projection) {
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::INV_PROJECTION_MATRIX, camera.inverse(), shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	}
 
 	if (p_use_multiview) {
 		glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);

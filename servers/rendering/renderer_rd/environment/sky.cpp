@@ -1177,6 +1177,8 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 			// This is unused so just reset to identity.
 			Projection ident;
 			RendererRD::MaterialStorage::store_camera(ident, sky_scene_state.ubo.combined_reprojection[i]);
+
+			sky_scene_state.ubo.full_projection = !view_inv_projection.is_frustum_symmetric();
 		}
 
 		RendererRD::MaterialStorage::store_camera(view_inv_projection, sky_scene_state.ubo.view_inv_projections[i]);
