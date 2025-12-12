@@ -64,6 +64,7 @@ public:
 			CALL_ERROR_METHOD_NOT_CONST,
 		};
 		Error error = Error::CALL_OK;
+		Error inner_error = Error::CALL_OK;
 		int argument = 0;
 		int expected = 0;
 	};

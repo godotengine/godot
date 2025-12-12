@@ -1969,6 +1969,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					function_call_time += t_taken;
 				}
 
+				if (r_err.inner_error == Callable::CallError::CALL_OK) {
+					r_err.inner_error = err.inner_error;
+				}
+
 				if (err.error != Callable::CallError::CALL_OK) {
 					String methodstr = *methodname;
 					String basestr = _get_var_type(base);
@@ -2008,6 +2012,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 						err_text = _get_call_error(vformat("function '%s' in base '%s'", methodstr, basestr), (const Variant **)argptrs, argc, temp_ret, err);
 					}
+
+					if (r_err.inner_error == Callable::CallError::CALL_OK) {
+						r_err.inner_error = err.error;
+					}
+
 					OPCODE_BREAK;
 				}
 #endif // DEBUG_ENABLED
