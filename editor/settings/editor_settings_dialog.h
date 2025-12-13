@@ -79,7 +79,6 @@ class EditorSettingsDialog : public AcceptDialog {
 	virtual void ok_pressed() override;
 
 	void _settings_changed();
-	void _settings_property_edited(const String &p_name);
 	void _settings_save();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -112,7 +111,6 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
 	void _shortcut_cell_double_clicked();
-	static void _set_shortcut_input(const String &p_name, Ref<InputEventKey> &p_event);
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
 
@@ -130,7 +128,6 @@ protected:
 
 public:
 	void popup_edit_settings();
-	static void update_navigation_preset();
 
 	EditorSettingsDialog();
 };
