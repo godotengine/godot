@@ -751,7 +751,7 @@ SpotLight3D::SpotLight3D() :
 AreaLight3D::AreaLight3D() :
 		Light3D(RenderingServer::LIGHT_AREA) {
 	// Decrease the default shadow bias to better suit most scenes.
-	set_param(PARAM_SHADOW_BIAS, 0.03);
+	set_param(PARAM_SHADOW_BIAS, 0.1);
 	set_param(PARAM_SIZE, 0.5);
 	set_param(PARAM_SPECULAR, 1.0);
 }
