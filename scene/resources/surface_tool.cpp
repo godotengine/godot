@@ -223,6 +223,14 @@ void SurfaceTool::begin(Mesh::PrimitiveType p_primitive) {
 	first = true;
 }
 
+int SurfaceTool::get_num_vertices() const {
+	return vertex_array.size();
+}
+
+int SurfaceTool::get_num_indices() const {
+	return index_array.size();
+}
+
 void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 	ERR_FAIL_COND(!begun);
 
@@ -1346,6 +1354,8 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_format", "channel_index"), &SurfaceTool::get_custom_format);
 
 	ClassDB::bind_method(D_METHOD("begin", "primitive"), &SurfaceTool::begin);
+	ClassDB::bind_method(D_METHOD("get_num_vertices"), &SurfaceTool::get_num_vertices);
+	ClassDB::bind_method(D_METHOD("get_num_indices"), &SurfaceTool::get_num_indices);
 
 	ClassDB::bind_method(D_METHOD("add_vertex", "vertex"), &SurfaceTool::add_vertex);
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &SurfaceTool::set_color);
