@@ -1011,6 +1011,10 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 				if (major_version == 4 && minor_version < 6) {
 					// Enable MeshInstance3D compat for projects created before 4.6.
 					set_setting("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d", true);
+
+					// Use old kinematic body behavior for GodotPhysics2D and GodotPhysics3D for projects created before 4.6.
+					set_setting("physics/2d/kinematic_body_initial_teleport", true);
+					set_setting("physics/3d/kinematic_body_initial_teleport", true);
 				}
 				break;
 			}
@@ -1737,6 +1741,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
 #ifndef DISABLE_DEPRECATED
 	GLOBAL_DEF_RST("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d", false);
+	GLOBAL_DEF_RST("physics/2d/kinematic_body_initial_teleport", false);
+	GLOBAL_DEF_RST("physics/3d/kinematic_body_initial_teleport", false);
 #endif
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
