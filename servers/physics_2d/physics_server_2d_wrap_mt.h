@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _2D_DISABLED
+
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
@@ -345,3 +347,5 @@ public:
 #ifdef DEBUG_ENABLED
 #undef MAIN_THREAD_SYNC_WARN
 #endif
+
+#endif // _2D_DISABLED
