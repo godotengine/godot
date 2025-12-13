@@ -695,7 +695,7 @@ Patches:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.25 (6daea4695c48338363b08022d2fb15deaef6ac09, 2025)
+- Version: 1.0 (73583c335e541c139821d0de2bf5f12960a04941, 2025)
 - License: MIT
 
 Files extracted from upstream repository:
