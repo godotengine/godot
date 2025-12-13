@@ -64,132 +64,6 @@ void EditorSettingsDialog::_settings_changed() {
 	timer->start();
 }
 
-void EditorSettingsDialog::_settings_property_edited() {
-	Vector<String> changed = EditorSettings::get_singleton()->get_changed_settings();
-	if (changed.is_empty()) {
-		return;
-	}
-
-	const String full_name = changed[changed.size() - 1];
-
-	// Set theme presets to Custom when controlled settings change.
-
-	if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast" || full_name == "interface/theme/draw_extra_borders" || full_name == "interface/theme/icon_saturation" || full_name == "interface/theme/draw_relationship_lines" || full_name == "interface/theme/corner_radius") {
-		EditorSettings::get_singleton()->set_manually("interface/theme/color_preset", "Custom");
-	} else if (full_name == "interface/theme/base_spacing" || full_name == "interface/theme/additional_spacing") {
-		EditorSettings::get_singleton()->set_manually("interface/theme/spacing_preset", "Custom");
-	} else if (full_name.begins_with("text_editor/theme/highlighting")) {
-		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", "Custom");
-	} else if (full_name.begins_with("editors/visual_editors/connection_colors") || full_name.begins_with("editors/visual_editors/category_colors")) {
-		EditorSettings::get_singleton()->set_manually("editors/visual_editors/color_theme", "Custom");
-	} else if (full_name == "editors/3d/navigation/orbit_mouse_button" || full_name == "editors/3d/navigation/pan_mouse_button" || full_name == "editors/3d/navigation/zoom_mouse_button" || full_name == "editors/3d/navigation/emulate_3_button_mouse") {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
-	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
-		update_navigation_preset();
-		_update_shortcuts();
-	}
-}
-
-void EditorSettingsDialog::update_navigation_preset() {
-	Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
-	Node3DEditorViewport::ViewportNavMouseButton set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-	Node3DEditorViewport::ViewportNavMouseButton set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-	Node3DEditorViewport::ViewportNavMouseButton set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-	bool set_3_button_mouse = false;
-	Ref<InputEventKey> orbit_mod_key_1;
-	Ref<InputEventKey> orbit_mod_key_2;
-	Ref<InputEventKey> pan_mod_key_1;
-	Ref<InputEventKey> pan_mod_key_2;
-	Ref<InputEventKey> zoom_mod_key_1;
-	Ref<InputEventKey> zoom_mod_key_2;
-	Ref<InputEventKey> orbit_snap_mod_key_1;
-	Ref<InputEventKey> orbit_snap_mod_key_2;
-	bool set_preset = false;
-
-	if (nav_scheme == Node3DEditorViewport::NAVIGATION_GODOT) {
-		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_3_button_mouse = false;
-		orbit_mod_key_1 = InputEventKey::create_reference(Key::NONE);
-		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		pan_mod_key_1 = InputEventKey::create_reference(Key::SHIFT);
-		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
-		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::ALT);
-		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA) {
-		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_RIGHT_MOUSE;
-		set_3_button_mouse = false;
-		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
-		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		pan_mod_key_1 = InputEventKey::create_reference(Key::NONE);
-		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
-		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
-		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) {
-		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_3_button_mouse = false;
-		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
-		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		pan_mod_key_1 = InputEventKey::create_reference(Key::SHIFT);
-		pan_mod_key_2 = InputEventKey::create_reference(Key::ALT);
-		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
-		zoom_mod_key_2 = InputEventKey::create_reference(Key::CTRL);
-		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
-		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_TABLET) {
-		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_3_button_mouse = true;
-		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
-		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		pan_mod_key_1 = InputEventKey::create_reference(Key::SHIFT);
-		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
-		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
-		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	}
-	// Set settings to the desired preset values.
-	if (set_preset) {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/orbit_mouse_button", (int)set_orbit_mouse_button);
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/pan_mouse_button", (int)set_pan_mouse_button);
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/zoom_mouse_button", (int)set_zoom_mouse_button);
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/emulate_3_button_mouse", set_3_button_mouse);
-		_set_shortcut_input("spatial_editor/viewport_orbit_modifier_1", orbit_mod_key_1);
-		_set_shortcut_input("spatial_editor/viewport_orbit_modifier_2", orbit_mod_key_2);
-		_set_shortcut_input("spatial_editor/viewport_pan_modifier_1", pan_mod_key_1);
-		_set_shortcut_input("spatial_editor/viewport_pan_modifier_2", pan_mod_key_2);
-		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_1", zoom_mod_key_1);
-		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_2", zoom_mod_key_2);
-		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_1", orbit_snap_mod_key_1);
-		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_2", orbit_snap_mod_key_2);
-	}
-}
-
-void EditorSettingsDialog::_set_shortcut_input(const String &p_name, Ref<InputEventKey> &p_event) {
-	Array sc_events;
-	if (p_event->get_keycode() != Key::NONE) {
-		sc_events.push_back((Variant)p_event);
-	}
-
-	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_name);
-	sc->set_events(sc_events);
-}
-
 void EditorSettingsDialog::_settings_save() {
 	if (!timer->is_stopped()) {
 		timer->stop();
@@ -419,13 +293,6 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 		undo_redo->add_do_method(this, "_settings_changed");
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
-	}
-
-	bool path_is_orbit_mod = p_path == "spatial_editor/viewport_orbit_modifier_1" || p_path == "spatial_editor/viewport_orbit_modifier_2";
-	bool path_is_pan_mod = p_path == "spatial_editor/viewport_pan_modifier_1" || p_path == "spatial_editor/viewport_pan_modifier_2";
-	bool path_is_zoom_mod = p_path == "spatial_editor/viewport_zoom_modifier_1" || p_path == "spatial_editor/viewport_zoom_modifier_2";
-	if (path_is_orbit_mod || path_is_pan_mod || path_is_zoom_mod) {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
 	}
 }
 
@@ -1021,9 +888,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsDialog::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 	restart_container->hide();
-
-	// Needs to be done via the signal instead of the notification, otherwise it happens too late.
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
 
 	// Shortcuts Tab
 
