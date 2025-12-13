@@ -27,7 +27,7 @@ half D_GGX(half NoH, half roughness, hvec3 n, hvec3 h) {
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 #ifdef SSS_MODE_SKIN
-hvec3 SSS_skin(half NdotL, half transmittance_depth, half transmittance_z, half transmittance_boost, hvec3 transmittance_color, hvec3 light_color) {
+hvec3 SSS_skin(half NdotL, half transmittance_depth, half transmittance_z, half transmittance_boost, hvec4 transmittance_color, hvec3 light_color) {
 	half scale = half(8.25) / transmittance_depth;
 	half d = scale * abs(transmittance_z);
 	float dd = float(-d * d);
@@ -41,7 +41,7 @@ hvec3 SSS_skin(half NdotL, half transmittance_depth, half transmittance_z, half 
 	return profile * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, half(0.0), half(1.0)) * half(1.0 / M_PI);
 }
 #else
-hvec3 SSS(half NdotL, half transmittance_depth, half transmittance_z, half transmittance_boost, hvec3 transmittance_color, hvec3 light_color) {
+hvec3 SSS(half NdotL, half transmittance_depth, half transmittance_z, half transmittance_boost, hvec4 transmittance_color, hvec3 light_color) {
 	half scale = half(8.25) / transmittance_depth;
 	half d = scale * abs(transmittance_z);
 	half dd = -d * d;
@@ -1468,10 +1468,36 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 	{
+		half transmittance_z = transmittance_depth;
+		transmittance_color.a *= light_attenuation_raw; // not including shadows or ltc falloff
+#ifndef SHADOWS_DISABLED
+		if (area_lights.data[idx].shadow_opacity > 0.001) {
+			// Redo shadowmapping, but shrink the model a bit to avoid artifacts.
+			vec2 texel_size = scene_data_block.data.shadow_atlas_pixel_size;
+			vec4 uv_rect = area_lights.data[idx].atlas_rect;
+			uv_rect.xy += texel_size;
+			uv_rect.zw -= texel_size * 2.0;
+			vec3 local_vert = (area_lights.data[idx].shadow_matrix * vec4(vertex - normal * area_lights.data[idx].transmittance_bias, 1.0)).xyz;
+
+			float shadow_len = length(local_vert); //need to remember shadow len from here
+			vec3 shadow_sample = normalize(local_vert);
+
+			shadow_sample.z = 1.0 + abs(shadow_sample.z);
+			vec2 pos = shadow_sample.xy / shadow_sample.z;
+			float inv_center_range = area_lights.data[idx].cone_attenuation;
+			float depth = shadow_len * inv_center_range;
+			depth = 1.0 - depth;
+
+			pos = pos * 0.5 + 0.5;
+			pos = uv_rect.xy + pos * uv_rect.zw;
+			float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos, 0.0).r;
+			transmittance_z = half((depth - shadow_z) / inv_center_range);
+		}
+#endif
 #ifdef SSS_MODE_SKIN
-		diffuse_light += SSS_skin(ltc_diffuse, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * ltc_diffuse_tex_color);
+		diffuse_light += SSS_skin(ltc_diffuse, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * ltc_diffuse_tex_color * area);
 #else
-		diffuse_light += SSS(ltc_diffuse, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * ltc_diffuse_tex_color);
+		diffuse_light += SSS(ltc_diffuse, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * ltc_diffuse_tex_color * area);
 #endif
 	}
 #endif //LIGHT_TRANSMITTANCE_USED
