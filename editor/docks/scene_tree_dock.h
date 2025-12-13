@@ -267,6 +267,7 @@ class SceneTreeDock : public EditorDock {
 	void _quick_open(const String &p_file_path);
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
+	void _setup_tree_menu();
 	void _update_tree_menu();
 
 	void _filter_changed(const String &p_filter);
