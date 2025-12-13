@@ -2600,7 +2600,6 @@ TypedArray<Dictionary> GraphEdit::_get_connection_list_from_node(const StringNam
 		return TypedArray<Dictionary>();
 	}
 
-
 	List<Ref<GraphEdit::Connection>> connections_from_node = connection_map.get(p_node);
 	TypedArray<Dictionary> connections_from_node_dict;
 
@@ -2617,7 +2616,6 @@ TypedArray<Dictionary> GraphEdit::_get_connection_list_from_node(const StringNam
 }
 
 bool GraphEdit::_has_connection(const StringName &p_node) const {
-
 	return connection_map.has(p_node) && connection_map[p_node].size() > 0;
 }
 
