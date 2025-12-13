@@ -75,6 +75,7 @@ ignore-words-list = [
 	"colour",
 	"curvelinear",
 	"doubleclick",
+	"ue",
 	"expct",
 	"findn",
 	"gird",

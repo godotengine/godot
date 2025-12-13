@@ -32,6 +32,7 @@
 
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
+#include "video/video_coding_common.h"
 
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
@@ -422,7 +423,9 @@ public:
 		// and it works fine on mobile, then go ahead.
 		TEXTURE_USAGE_TRANSIENT_BIT = (1 << 11),
 		TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT = (1 << 12),
-		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT,
+		TEXTURE_USAGE_VIDEO_DECODE_DST_BIT = (1 << 13),
+		TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT = (1 << 14),
+		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT,
 	};
 
 	struct TextureFormat {
@@ -436,6 +439,7 @@ public:
 		TextureSamples samples = TEXTURE_SAMPLES_1;
 		uint32_t usage_bits = 0;
 		Vector<DataFormat> shareable_formats;
+		Vector<VideoProfile> video_profiles;
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
 
@@ -533,6 +537,8 @@ public:
 		float max_lod = 1e20; // Something very large should do.
 		SamplerBorderColor border_color = SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 		bool unnormalized_uvw = false;
+
+		bool enable_ycbcr = false;
 	};
 
 	/**********************/
@@ -974,6 +980,7 @@ public:
 		SUPPORTS_VULKAN_MEMORY_MODEL,
 		SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE,
 		SUPPORTS_POINT_SIZE,
+		SUPPORTS_VIDEO_ENCODE_DECODE,
 	};
 
 	enum SubgroupOperations {
