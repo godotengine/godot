@@ -1346,6 +1346,8 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_format", "channel_index"), &SurfaceTool::get_custom_format);
 
 	ClassDB::bind_method(D_METHOD("begin", "primitive"), &SurfaceTool::begin);
+	ClassDB::bind_method(D_METHOD("get_vertex_count"), &SurfaceTool::get_vertex_count);
+	ClassDB::bind_method(D_METHOD("get_index_count"), &SurfaceTool::get_index_count);
 
 	ClassDB::bind_method(D_METHOD("add_vertex", "vertex"), &SurfaceTool::add_vertex);
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &SurfaceTool::set_color);
