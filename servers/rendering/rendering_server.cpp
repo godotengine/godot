@@ -2773,6 +2773,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_fractional_delta", "particles", "enable"), &RenderingServer::particles_set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("particles_set_collision_base_size", "particles", "size"), &RenderingServer::particles_set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("particles_set_transform_align", "particles", "align"), &RenderingServer::particles_set_transform_align);
+	ClassDB::bind_method(D_METHOD("particles_set_transform_align_custom_src", "particles", "custom_src"), &RenderingServer::particles_set_transform_align_custom_src);
+	ClassDB::bind_method(D_METHOD("particles_set_transform_align_flags", "particles", "flags"), &RenderingServer::particles_set_transform_align_flags);
+	ClassDB::bind_method(D_METHOD("particles_set_transform_align_rotation_axis", "particles", "p_rotation_axis"), &RenderingServer::particles_set_transform_align_rotation_axis);
 	ClassDB::bind_method(D_METHOD("particles_set_trails", "particles", "enable", "length_sec"), &RenderingServer::particles_set_trails);
 	ClassDB::bind_method(D_METHOD("particles_set_trail_bind_poses", "particles", "bind_poses"), &RenderingServer::_particles_set_trail_bind_poses);
 
@@ -2796,6 +2799,13 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD);
 	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY);
 	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY);
+	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_LOCAL);
+	BIND_ENUM_CONSTANT(PARTICLES_TRANSFORM_ALIGN_ROTATION);
+
+	BIND_ENUM_CONSTANT(PARTICLES_ALIGN_CUSTOM_SRC_DISABLED);
+	BIND_ENUM_CONSTANT(PARTICLES_ALIGN_CUSTOM_SRC_X);
+	BIND_ENUM_CONSTANT(PARTICLES_ALIGN_CUSTOM_SRC_Y);
+	BIND_ENUM_CONSTANT(PARTICLES_ALIGN_CUSTOM_SRC_W);
 
 	BIND_CONSTANT(PARTICLES_EMIT_FLAG_POSITION);
 	BIND_CONSTANT(PARTICLES_EMIT_FLAG_ROTATION_SCALE);
