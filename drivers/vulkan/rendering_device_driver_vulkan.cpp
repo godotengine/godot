@@ -2129,13 +2129,13 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if (p_format.video_profiles.size()) {
 		VkVideoProfileInfoKHR *vk_video_profiles = ALLOCA_ARRAY(VkVideoProfileInfoKHR, p_format.video_profiles.size());
 		for (int64_t i = 0; i < p_format.video_profiles.size(); i++) {
-			vk_video_profile_from_state(p_format.video_profiles[i], vk_video_profiles + i);
+			vk_video_profile_from_state(p_format.video_profiles[i], &vk_video_profiles[i]);
 		}
 
 		VkVideoProfileListInfoKHR *video_profile_list = ALLOCA_SINGLE(VkVideoProfileListInfoKHR);
 		video_profile_list->sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
 		video_profile_list->pNext = create_info_next;
-		video_profile_list->profileCount = 1;
+		video_profile_list->profileCount = p_format.video_profiles.size();
 		video_profile_list->pProfiles = vk_video_profiles;
 
 		create_info_next = video_profile_list;
@@ -2520,7 +2520,11 @@ void RenderingDeviceDriverVulkan::texture_get_copyable_layout(TextureID p_textur
 
 	uint32_t sbw = 0, sbh = 0;
 	*r_layout = {};
-	r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1, &sbw, &sbh);
+	if (tex_info->vk_create_info.format == VK_FORMAT_G8_B8R8_2PLANE_420_UNORM) {
+		r_layout->size = get_image_format_required_size(DATA_FORMAT_R8_UNORM, w, h, d, 1, &sbw, &sbh);
+	} else {
+		r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1, &sbw, &sbh);
+	}
 	r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
 }
 

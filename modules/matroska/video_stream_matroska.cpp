@@ -961,7 +961,7 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	src_yuv_texture = video_stream_encoding->create_texture(src_yuv_format);
 
 	RD::TextureFormat dst_rgba_format;
-	dst_rgba_format.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
+	dst_rgba_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 	dst_rgba_format.width = width;
 	dst_rgba_format.height = height;
 	dst_rgba_format.depth = 1;
@@ -1036,11 +1036,10 @@ void VideoStreamPlaybackMatroska::play() {
 	RD::ComputeListID compute_list = local_device->compute_list_begin();
 	local_device->compute_list_bind_compute_pipeline(compute_list, ycbcr_sampler_pipeline);
 	local_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-	local_device->compute_list_dispatch(compute_list, 64, 32, 1);
+	local_device->compute_list_dispatch(compute_list, 120, 68, 1);
 	local_device->compute_list_end();
 
 	print_line("------------------End Matroska Cluster-----------------------");
-
 	local_device->submit();
 	local_device->sync();
 }
@@ -1082,11 +1081,11 @@ Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
 
 // TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
-	Vector<uint8_t> data = local_device->texture_get_data(dst_rgba_texture, 0);
+	Vector<uint8_t> data = local_device->texture_get_data(src_yuv_texture, 0);
 
 	Ref<Image> frame;
 	frame.instantiate();
-	frame->set_data(width, height, false, Image::FORMAT_RGBA8, data);
+	frame->set_data(width, height, false, Image::FORMAT_R8, data);
 
 	image_texture->set_image(frame);
 }
