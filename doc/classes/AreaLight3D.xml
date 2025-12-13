@@ -32,7 +32,7 @@
 			If no texture is assigned, the area light emits uniform light across its surface.
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.5" />
-		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.03" />
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.1" />
 		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="1.0" />
 	</members>
 </class>
