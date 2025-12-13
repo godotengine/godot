@@ -40,6 +40,9 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #include "modules/modules_enabled.gen.h" // For lightmapper_rd.
 
@@ -893,6 +896,138 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 	return LightmapGI::BAKE_ERROR_OK;
 }
 
+void LightmapGI::_build_area_light_texture_atlas(const Vector<LightmapGI::LightsFound> &lights_found, HashMap<Ref<Texture2D>, Rect2> &r_texture_rects, Size2i &r_atlas_size, int &r_mipmaps) const {
+	r_mipmaps = 8;
+	r_atlas_size = Size2i(pow(2, r_mipmaps), pow(2, r_mipmaps));
+
+	for (int i = 0; i < lights_found.size(); i++) {
+		Light3D *light = lights_found[i].light;
+		if (Object::cast_to<AreaLight3D>(light)) {
+			AreaLight3D *l = Object::cast_to<AreaLight3D>(light);
+			if (l->get_area_texture().is_valid() && !r_texture_rects.has(l->get_area_texture())) {
+				r_texture_rects[l->get_area_texture()] = Rect2();
+			}
+		}
+	}
+
+	struct SortItem {
+		Ref<Texture2D> texture;
+		Size2i pixel_size;
+		Size2i size;
+		Point2i pos;
+
+		bool operator<(const SortItem &p_item) const {
+			//sort larger to smaller
+			if (size.height == p_item.size.height) {
+				return size.width > p_item.size.width;
+			} else {
+				return size.height > p_item.size.height;
+			}
+		}
+	};
+
+	//generate atlas
+	Vector<SortItem> itemsv;
+	itemsv.resize(r_texture_rects.size());
+	uint32_t base_size = 1;
+
+	int idx = 0;
+	int border = 1 << r_mipmaps;
+
+	for (const KeyValue<Ref<Texture2D>, Rect2> &E : r_texture_rects) {
+		Ref<Texture2D> tex = E.key;
+		Size2i tex_size = Size2i(tex->get_width(), tex->get_height());
+
+		SortItem &si = itemsv.write[idx];
+
+		si.size.width = (tex_size.width / border) + 1;
+		si.size.height = (tex_size.height / border) + 1;
+		si.pixel_size = tex_size;
+
+		if (base_size < (uint32_t)si.size.width) {
+			base_size = nearest_power_of_2_templated(si.size.width);
+		}
+
+		si.texture = tex;
+		idx++;
+	}
+
+	//sort items by size
+	itemsv.sort();
+
+	//attempt to create atlas
+	int item_count = itemsv.size();
+	SortItem *items = itemsv.ptrw();
+
+	int atlas_height = 0;
+
+	while (true) {
+		Vector<int> v_offsetsv;
+		v_offsetsv.resize(base_size);
+
+		int *v_offsets = v_offsetsv.ptrw();
+		memset(v_offsets, 0, sizeof(int) * base_size);
+
+		int max_height = 0;
+
+		for (int i = 0; i < item_count; i++) {
+			//best fit
+			SortItem &si = items[i];
+			int best_idx = -1;
+			int best_height = 0x7FFFFFFF;
+			for (uint32_t j = 0; j <= base_size - si.size.width; j++) {
+				int height = 0;
+				for (int k = 0; k < si.size.width; k++) {
+					int h = v_offsets[k + j];
+					if (h > height) {
+						height = h;
+						if (height > best_height) {
+							break; //already bad
+						}
+					}
+				}
+
+				if (height < best_height) {
+					best_height = height;
+					best_idx = j;
+				}
+			}
+
+			//update
+			for (int k = 0; k < si.size.width; k++) {
+				v_offsets[k + best_idx] = best_height + si.size.height;
+			}
+
+			si.pos.x = best_idx;
+			si.pos.y = best_height;
+
+			if (si.pos.y + si.size.height + 1 > max_height) {
+				max_height = si.pos.y + si.size.height + 1; // max_height is at least one border larger.
+			}
+		}
+
+		if ((uint32_t)max_height <= base_size * 2) {
+			atlas_height = max_height;
+			break; //good ratio, break;
+		}
+
+		base_size *= 2;
+	}
+
+	r_atlas_size.width = base_size * border;
+	r_atlas_size.height = nearest_power_of_2_templated(atlas_height * border);
+
+	for (int i = 0; i < item_count; i++) {
+		Rect2 uv_rect;
+		uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+		uv_rect.size = items[i].pixel_size;
+
+		uv_rect.position /= Size2(r_atlas_size);
+		uv_rect.size /= Size2(r_atlas_size);
+		r_texture_rects[items[i].texture] = uv_rect;
+	}
+}
+
 LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
 	if (p_image_data_path.is_empty()) {
 		if (get_light_data().is_null()) {
@@ -1173,6 +1308,23 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	{
+		Size2i size;
+		HashMap<Ref<Texture2D>, Rect2> area_light_atlas_texture_rects;
+		int mipmaps = 1;
+		_build_area_light_texture_atlas(lights_found, area_light_atlas_texture_rects, size, mipmaps);
+		if (area_light_atlas_texture_rects.size() > 0) {
+			TypedArray<RID> area_light_textures; // keys of area_light_atlas_texture_rects
+			TypedArray<Rect2> area_light_texture_rects; // values of area_light_atlas_texture_rects
+			for (const KeyValue<Ref<Texture2D>, Rect2> &E : area_light_atlas_texture_rects) {
+				area_light_textures.push_back(E.key->get_rid());
+				area_light_texture_rects.push_back(E.value);
+			}
+
+			PackedByteArray area_light_atlas_data = RS::get_singleton()->bake_render_area_light_atlas(area_light_textures, area_light_texture_rects, size, mipmaps);
+
+			lightmapper->add_area_light_atlas(size, mipmaps, area_light_atlas_data);
+		}
+
 		for (int i = 0; i < mesh_data.size(); i++) {
 			lightmapper->add_mesh(mesh_data[i]);
 		}
@@ -1212,6 +1364,22 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					energy *= (1.0 / Math::PI);
 				}
 				lightmapper->add_spot_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SPOT_ANGLE), l->get_param(Light3D::PARAM_SPOT_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
+			} else if (Object::cast_to<AreaLight3D>(light)) {
+				AreaLight3D *l = Object::cast_to<AreaLight3D>(light);
+				if (use_physical_light_units) {
+					energy *= (1.0 / Math::PI * 2.0);
+				}
+				Vector3 area_vec_x = xf.basis.get_column(Vector3::AXIS_X).normalized() * l->get_area_size().x;
+				Vector3 area_vec_y = xf.basis.get_column(Vector3::AXIS_Y).normalized() * l->get_area_size().y;
+				if (l->get_area_normalize_energy()) {
+					float surface_area = l->get_area_size().x * l->get_area_size().y;
+					energy /= surface_area;
+				}
+				Rect2 texture_rect = Rect2(0.0, 0.0, 0.0, 0.0);
+				if (l->get_area_texture().is_valid()) {
+					texture_rect = area_light_atlas_texture_rects[l->get_area_texture()];
+				}
+				lightmapper->add_area_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), area_vec_x, area_vec_y, l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR), texture_rect);
 			}
 		}
 		for (int i = 0; i < probes_found.size(); i++) {
