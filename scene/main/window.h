@@ -121,6 +121,8 @@ private:
 
 	String title;
 	String displayed_title;
+	String default_title;
+
 	mutable int current_screen = 0;
 	mutable Point2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -298,6 +300,7 @@ public:
 	virtual RID get_focused_accessibility_element() const override;
 
 	void set_title(const String &p_title);
+	void set_default_title(const String &p_title);
 	String get_title() const;
 	String get_displayed_title() const;
 

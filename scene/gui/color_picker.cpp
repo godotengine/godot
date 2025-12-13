@@ -1086,7 +1086,6 @@ void ColorPicker::_ensure_file_dialog() {
 	}
 
 	file_dialog = memnew(FileDialog);
-	file_dialog->set_mode_overrides_title(false);
 	file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	file_dialog->set_current_dir(Engine::get_singleton()->is_editor_hint() ? "res://" : "user://");
 	add_child(file_dialog, false, INTERNAL_MODE_FRONT);
