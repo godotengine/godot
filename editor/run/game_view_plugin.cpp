@@ -1070,8 +1070,8 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 void GameView::_window_close_request() {
 	if (window_wrapper->get_window_enabled()) {
-		// stop embedded process timer before close window wrapper,
-		// prevent send signal to focus EDITOR_GAME when window not enabled
+		// Stop the embedded process timer before closing the window wrapper,
+		// so the signal to focus EDITOR_GAME isn't sent when the window is not enabled.
 		embedded_process->reset();
 		window_wrapper->set_window_enabled(false);
 	}
