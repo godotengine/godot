@@ -437,7 +437,7 @@ Files extracted from upstream source:
 ## grisu2
 
 - Upstream: https://github.com/simdjson/simdjson/blob/master/src/to_chars.cpp
-- Version: git (4f4e81668ecb9d4d37fd5f59a1556d492507421d, 2023)
+- Version: git (667d0ed3c77f55cbda2082b034168d69898d1f88, 2025)
 - License: Apache and MIT
 
 Files extracted from upstream source:
