@@ -104,24 +104,71 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			if (mm->is_shift_pressed() && grabbing_spinner) {
 				diff_x *= 0.1;
 			}
-			grabbing_spinner_dist_cache += diff_x * grabbing_spinner_speed;
+
+			int diff_x_applied_speed = diff_x * grabbing_spinner_speed;
+			grabbing_spinner_dist_cache += diff_x_applied_speed;
 
 			if (!grabbing_spinner && Math::abs(grabbing_spinner_dist_cache) > 4 * grabbing_spinner_speed * EDSCALE) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+
+				_ensure_dial_popup();
+				double digits = ceil(log(fabs(get_value())) / log(10));
+				if (digits < CMP_EPSILON2) {
+					digits = 1;
+				}
+				dial_popup->get_dial()->set_zoom_from_value(get_value());
+
+				Rect2i usable_rect = dial_popup->get_usable_parent_rect();
+				Rect2i cp_rect(Point2i(), dial_popup->get_size());
+				for (int i = 0; i < 4; i++) {
+					if (i > 1) {
+						cp_rect.position.y = get_screen_position().y - cp_rect.size.y;
+					} else {
+						cp_rect.position.y = get_screen_position().y + get_size().height;
+					}
+
+					if (i & 1) {
+						cp_rect.position.x = get_screen_position().x;
+					} else {
+						cp_rect.position.x = get_screen_position().x - MAX(0, (cp_rect.size.x - get_size().x));
+					}
+
+					if (usable_rect.encloses(cp_rect)) {
+						break;
+					}
+				}
+				dial_popup->set_position(cp_rect.position);
+				dial_popup->popup();
+
 				grabbing_spinner = true;
 			}
 
 			if (grabbing_spinner) {
 				// Don't make the user scroll all the way back to 'in range' if they went off the end.
-				if (pre_grab_value < get_min() && !is_lesser_allowed()) {
-					pre_grab_value = get_min();
+				if (!is_lesser_allowed()) {
+					if (pre_grab_value < get_min()) {
+						pre_grab_value = get_min();
+					}
+					if (grabbing_spinner_total_applied < get_min() - pre_grab_value) {
+						grabbing_spinner_total_applied = get_min() - pre_grab_value;
+					}
 				}
-				if (pre_grab_value > get_max() && !is_greater_allowed()) {
-					pre_grab_value = get_max();
+				if (!is_greater_allowed()) {
+					if (pre_grab_value > get_max()) {
+						pre_grab_value = get_max();
+					}
+					if (grabbing_spinner_total_applied > get_max() - pre_grab_value) {
+						grabbing_spinner_total_applied = get_max() - pre_grab_value;
+					}
 				}
 
-				double new_value = pre_grab_value + get_step() * grabbing_spinner_dist_cache;
-				set_value((mm->is_command_or_control_pressed() && !editing_integer) ? Math::round(new_value) : new_value);
+				_ensure_dial_popup();
+				EditorRangeDial *dial = dial_popup->get_dial();
+
+				dial->add_zoom_from_mouse_dist(mm->get_relative().y);
+				grabbing_spinner_total_applied += dial->scale_diff(diff_x_applied_speed);
+
+				dial->set_value_no_step(pre_grab_value + grabbing_spinner_total_applied, mm->is_command_or_control_pressed() && !editing_integer);
 			}
 		} else if (updown_offset != -1) {
 			bool new_hover = (!is_layout_rtl() && mm->get_position().x > updown_offset) || (is_layout_rtl() && mm->get_position().x < updown_offset);
@@ -149,6 +196,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 void EditorSpinSlider::_grab_start() {
 	grabbing_spinner_attempt = true;
 	grabbing_spinner_dist_cache = 0;
+	grabbing_spinner_total_applied = 0;
 	pre_grab_value = get_value();
 	grabbing_spinner = false;
 	grabbing_spinner_mouse_pos = get_global_mouse_position();
@@ -161,6 +209,7 @@ void EditorSpinSlider::_grab_end() {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
 			mouse_over_grabber = true;
+			dial_popup->hide();
 			queue_redraw();
 			grabbing_spinner = false;
 			emit_signal("ungrabbed");
@@ -495,6 +544,10 @@ void EditorSpinSlider::_notification(int p_what) {
 				grabbing_spinner = false;
 				grabbing_spinner_attempt = false;
 			}
+
+			if (dial_popup) {
+				dial_popup->hide();
+			}
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER: {
@@ -512,6 +565,12 @@ void EditorSpinSlider::_notification(int p_what) {
 				_focus_entered();
 			}
 			value_input_closed_frame = 0;
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (dial_popup && !is_visible_in_tree()) {
+				dial_popup->hide();
+			}
 		} break;
 	}
 }
@@ -772,6 +831,22 @@ void EditorSpinSlider::_ensure_input_popup() {
 	if (is_inside_tree()) {
 		_update_value_input_stylebox();
 	}
+}
+
+void EditorSpinSlider::_ensure_dial_popup() {
+	if (dial_popup) {
+		return;
+	}
+
+	dial_popup = memnew(EditorRangeDialPopup);
+	bool slider_visible = !editing_integer;
+	bool has_limit = !is_greater_allowed() || !is_lesser_allowed();
+
+	EditorRangeDial *dial = dial_popup->get_dial();
+	dial->set_highlighting_range(slider_visible || has_limit);
+
+	add_child(dial_popup);
+	share(dial);
 }
 
 EditorSpinSlider::EditorSpinSlider() {
