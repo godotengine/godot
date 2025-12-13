@@ -107,7 +107,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);
 	String _get_shortcut_button_string(const String &p_shortcut_name);
 
-	bool _should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const;
+	bool _should_display_shortcut(const String &p_section, const String &p_section_tr, const String &p_name, const Array &p_events, bool p_match_localized_name) const;
 
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
