@@ -91,12 +91,13 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 		if (parent && origin == nullptr) {
 			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
-
 		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
 			warnings.push_back(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 		}
+        if (get_fov() != 75) {
+            warnings.push_back(RTR("Changing the FOV on a XRCamera3D node doesn't have any effect. The FOV is set by the target platform."));
+        }
 	}
-
 	return warnings;
 }
 
@@ -681,10 +682,13 @@ PackedStringArray XROrigin3D::get_configuration_warnings() const {
 				has_camera = true;
 			}
 		}
-
 		if (!has_camera) {
 			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
 		}
+        
+        if (get_scale() != Vector3(1, 1, 1)) {
+            warnings.push_back(RTR("Changing the scale on the XROrigin3D node is not supported; it'll break reprojection and cause other issues. Change the World Scale instead."));
+        }
 	}
 
 	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
