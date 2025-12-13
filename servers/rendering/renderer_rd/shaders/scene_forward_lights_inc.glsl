@@ -1259,7 +1259,9 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	float b_half_len = b_len / 2.0;
 	vec3 light_center = area_lights.data[idx].position + (area_width + area_height) / 2.0;
 	vec3 light_to_vert = vertex - light_center;
-	vec3 pos_local_to_light = vec3(dot(light_to_vert, normalize(area_width)), dot(light_to_vert, normalize(area_height)), dot(light_to_vert, -area_direction));
+	vec3 area_a_dir = normalize(area_width);
+	vec3 area_b_dir = normalize(area_height);
+	vec3 pos_local_to_light = vec3(dot(light_to_vert, area_a_dir), dot(light_to_vert, area_b_dir), dot(light_to_vert, -area_direction));
 
 	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
 	float dist = length(closest_point_local_to_light - pos_local_to_light);
@@ -1466,6 +1468,16 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	half specular_amount = half(area_lights.data[idx].specular_amount);
 	float area = a_len * b_len;
 
+#if defined(LIGHT_TRANSMITTANCE_USED) || defined(LIGHT_BACKLIGHT_USED)
+	hvec3 isotropic_light_color = hvec3(1.0); // independent of normal
+	if (area_lights.data[idx].projector_rect != vec4(0.0)) {
+		float lod = dist / sqrt(area);
+		lod = log(2048.0 * lod) / log(3.0);
+
+		vec2 uv = (closest_point_local_to_light.xy + vec2(a_half_len, b_half_len)) / vec2(a_len, b_len);
+		isotropic_light_color = fetch_ltc_lod(vec2(1.0) - uv, area_lights.data[idx].projector_rect, lod);
+	}
+#endif
 #ifdef LIGHT_TRANSMITTANCE_USED
 	{
 		half transmittance_z = transmittance_depth;
@@ -1494,10 +1506,11 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			transmittance_z = half((depth - shadow_z) / inv_center_range);
 		}
 #endif
+		// transmission can't use ltc_diffuse_tex_color, because for backface pixels texture would have to be sampled for opposite normal direction.
 #ifdef SSS_MODE_SKIN
-		diffuse_light += SSS_skin(ltc_diffuse, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * ltc_diffuse_tex_color * area);
+		diffuse_light += SSS_skin(ltc_diffuse, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * isotropic_light_color * area);
 #else
-		diffuse_light += SSS(ltc_diffuse, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * ltc_diffuse_tex_color * area);
+		diffuse_light += SSS(ltc_diffuse, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * isotropic_light_color * area);
 #endif
 	}
 #endif //LIGHT_TRANSMITTANCE_USED
@@ -1518,7 +1531,8 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif // DIFFUSE_TOON
 
 #if defined(LIGHT_BACKLIGHT_USED)
-	diffuse_light += max(1.0 - ltc_diffuse, 0.0) * backlight * ltc_diffuse_tex_color * color * area * light_attenuation;
+	// backlight can't use ltc_diffuse_tex_color, because for backface pixels texture would have to sampled for opposite normal direction.
+	diffuse_light += max(1.0 - ltc_diffuse, 0.0) * backlight * color * isotropic_light_color * area * light_attenuation;
 #endif
 
 #if defined(LIGHT_CLEARCOAT_USED)
