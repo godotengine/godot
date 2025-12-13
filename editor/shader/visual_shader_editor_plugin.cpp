@@ -3847,6 +3847,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 		position /= EDSCALE;
 	}
 	position /= graph->get_zoom();
+	position /= cached_theme_base_scale;
 	saved_node_pos_dirty = false;
 
 	int id_to_use = visual_shader->get_valid_node_id(type);
