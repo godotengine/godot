@@ -1079,63 +1079,62 @@ void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
 
 #define MAX_AREA_LIGHT_ATLAS_LOD 8.0
 
-vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
+hvec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
 	float low = min(max(floor(lod), 0.0), MAX_AREA_LIGHT_ATLAS_LOD - 1.0);
 	float high = min(max(floor(lod + 1.0), 1.0), MAX_AREA_LIGHT_ATLAS_LOD);
 	vec2 sample_pos = texture_rect.xy + clamp(uv, 0.0, 1.0) * texture_rect.zw; // take border into account
 	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, light_projector_sampler), sample_pos, low);
 	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, light_projector_sampler), sample_pos, high);
 
-	float blend = high - clamp(lod, high - 1.0, high);
-	vec4 sample_col = mix(sample_col_high, sample_col_low, blend);
+	half blend = half(high - clamp(lod, high - 1.0, high));
+	hvec4 sample_col = mix(hvec4(sample_col_high), hvec4(sample_col_low), blend);
 	return sample_col.rgb * sample_col.a; // premultiply alpha channel
 }
 
-vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5]) {
+hvec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[4]) {
 	vec3 L0 = normalize(L[0]);
 	vec3 L1 = normalize(L[1]);
 	vec3 L2 = normalize(L[2]);
 	vec3 L3 = normalize(L[3]);
 
-	vec3 F = vec3(0.0); // form factor
-	F += integrate_edge_hill(L0, L1);
-	F += integrate_edge_hill(L1, L2);
-	F += integrate_edge_hill(L2, L3);
-	F += integrate_edge_hill(L3, L0);
+	vec3 I = vec3(0.0); // form factor
+	I += integrate_edge_hill(L0, L1);
+	I += integrate_edge_hill(L1, L2);
+	I += integrate_edge_hill(L2, L3);
+	I += integrate_edge_hill(L3, L0);
+	hvec3 F = hvec3(I);
 
-	//return F;//
-	//F = vec3(0.0, 1.0, 0.0);
-	vec2 uv;
-	float lod = 0.0;
+	hvec2 uv;
+	half lod = half(0.0);
 
 	if (dot(F, F) < 1e-16) {
-		uv = vec2(0.5);
+		uv = hvec2(0.5);
 	} else {
-		vec3 lx = L[1] - L[0];
-		vec3 ly = L[3] - L[0];
-		vec3 ln = cross(lx, ly);
+		hvec3 lx = hvec3(L[1] - L[0]);
+		hvec3 ly = hvec3(L[3] - L[0]);
+		hvec3 ln = cross(lx, ly);
 
-		float dist_x_area = dot(L[0], ln);
-		float d = dist_x_area / dot(F, ln);
-		vec3 isec = d * F;
-		vec3 li = isec - L[0]; // light to intersection
+		half dist_x_area = dot(hvec3(L[0]), ln);
+		half d = dist_x_area / dot(F, ln);
+		hvec3 isec = d * F;
+		hvec3 li = isec - hvec3(L[0]); // light to intersection
 
-		float dot_lxy = dot(lx, ly);
-		float inv_dot_lxlx = 1.0 / dot(lx, lx);
-		vec3 ly_ = ly - lx * dot_lxy * inv_dot_lxlx;
+		half dot_lxy = dot(lx, ly);
+		half inv_dot_lxlx = half(1.0) / dot(lx, lx);
+		hvec3 ly_ = ly - lx * dot_lxy * inv_dot_lxlx;
 
 		uv.y = dot(li, ly_) / dot(ly_, ly_);
 		uv.x = dot(li, lx) * inv_dot_lxlx - dot_lxy * inv_dot_lxlx * uv.y;
 
-		lod = abs(dist_x_area) / pow(dot(ln, ln), 0.75);
-		lod = log(2048.0 * lod) / log(3.0);
+		lod = abs(dist_x_area) / pow(dot(ln, ln), half(0.75));
+		lod = log(half(2048.0) * lod) / log(half(3.0));
 	}
-	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod);
+	return fetch_ltc_lod(vec2(1.0) - vec2(uv), texture_rect, float(lod));
 }
 
-void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], vec4 texture_rect, out float integral, out vec3 tex_color) {
+void ltc_evaluate(vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], vec4 texture_rect, out half integral, out hvec3 tex_color) {
 	// default is white
-	tex_color = vec3(1.0);
+	tex_color = hvec3(1.0);
 	// construct the orthonormal basis around the normal vector
 	vec3 x, z;
 	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector
@@ -1149,12 +1148,12 @@ void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 point
 	L[1] = M_inv * points[1];
 	L[2] = M_inv * points[2];
 	L[3] = M_inv * points[3];
-	vec3[5] L_unclipped = L;
+	vec3[4] L_unclipped = { L[0], L[1], L[2], L[3] };
 
 	int n = 0;
 	clip_quad_to_horizon(L, n);
 	if (n == 0) {
-		integral = 0.0;
+		integral = half(0.0);
 		return;
 	}
 
@@ -1180,10 +1179,10 @@ void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 point
 		float alpha = -dot(points[1], r10) / dot(r10, r10);
 		float beta = -dot(points[1], r12) / dot(r12, r12);
 		if (0.0 < alpha && alpha < 1.0 && 0.0 < beta && beta < 1.0) { // fragment is on light {
-			integral = 2.0 * M_PI;
+			integral = half(1.0);
 			return;
 		} else {
-			integral = 0.0;
+			integral = half(0.0);
 			return;
 		}
 	}
@@ -1199,14 +1198,14 @@ void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 point
 		I += integrate_edge(L_proj[4], L_proj[0], L[4], L[0]);
 	}
 
-	integral = abs(I);
+	integral = half(abs(I) / (2.0 * M_PI));
 }
 
-void ltc_evaluate_specular(vec3 vertex, vec3 normal, vec3 eye_vec, float roughness, vec3 points[4], vec4 texture_rect, out vec2 fresnel, out float ltc_specular, out hvec3 ltc_specular_tex_color) {
-	half theta = acos_approx(dot(normal, eye_vec));
-	const float LTC_LUT_SIZE = 64.0;
-	vec2 lut_uv = vec2(max(roughness, half(0.02)), theta / half(0.5 * M_PI));
-	lut_uv = lut_uv * (63.0 / LTC_LUT_SIZE) + vec2(0.5 / LTC_LUT_SIZE); // offset by 1 pixel
+void ltc_evaluate_specular(vec3 normal, vec3 eye_vec, half roughness, vec3 points[4], vec4 texture_rect, out hvec2 fresnel, out half ltc_specular, out hvec3 ltc_specular_tex_color) {
+	half theta = half(acos_approx(dot(normal, eye_vec)));
+	const half LTC_LUT_SIZE = half(64.0);
+	hvec2 lut_pos = hvec2(max(roughness, half(0.02)), theta / half(0.5 * M_PI));
+	vec2 lut_uv = vec2(lut_pos * (half(63.0) / LTC_LUT_SIZE) + hvec2(half(0.5) / LTC_LUT_SIZE)); // offset by 1 pixel
 	vec4 M_brdf_abcd = texture(ltc_lut1, lut_uv);
 	vec3 M_brdf_e_mag_fres = texture(ltc_lut2, lut_uv).xyz;
 	float scale = 1.0 / (M_brdf_abcd.x * M_brdf_e_mag_fres.x - M_brdf_abcd.y * M_brdf_abcd.w);
@@ -1216,9 +1215,8 @@ void ltc_evaluate_specular(vec3 vertex, vec3 normal, vec3 eye_vec, float roughne
 			vec3(-M_brdf_abcd.w * scale, M_brdf_abcd.x * scale, 0),
 			vec3(-M_brdf_e_mag_fres.x * scale, M_brdf_abcd.y * scale, 0));
 
-	ltc_evaluate(vertex, normal, eye_vec, M_inv, points, texture_rect, ltc_specular, ltc_specular_tex_color);
-	ltc_specular = max(ltc_specular, 0.0) / (2.0 * M_PI);
-	fresnel = M_brdf_e_mag_fres.yz;
+	ltc_evaluate(normal, eye_vec, M_inv, points, texture_rect, ltc_specular, ltc_specular_tex_color);
+	fresnel = hvec2(M_brdf_e_mag_fres.yz);
 }
 
 // implementation of area lights with Linearly Transformed Cosines (LTC): https://eheitzresearch.wordpress.com/415-2/
@@ -1241,34 +1239,34 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		hvec3 binormal, hvec3 tangent, half anisotropy,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
-	float EPSILON = 1e-7f;
-	vec3 area_width = area_lights.data[idx].area_width;
-	vec3 area_height = area_lights.data[idx].area_height;
-	vec3 area_direction = area_lights.data[idx].direction;
+	half EPSILON = half(1e-7);
+	hvec3 area_width = hvec3(area_lights.data[idx].area_width);
+	hvec3 area_height = hvec3(area_lights.data[idx].area_height);
 
 	if (dot(area_width, area_width) < EPSILON || dot(area_height, area_height) < EPSILON) { // area is 0
 		return;
 	}
-	if (dot(area_direction, vertex - area_lights.data[idx].position) <= 0) {
+	if (dot(area_lights.data[idx].direction, vertex - area_lights.data[idx].position) <= 0) {
 		return; // vertex is behind light
 	}
 
-	float a_len = length(area_width);
-	float b_len = length(area_height);
-	float a_half_len = a_len / 2.0;
-	float b_half_len = b_len / 2.0;
-	vec3 light_center = area_lights.data[idx].position + (area_width + area_height) / 2.0;
-	vec3 light_to_vert = vertex - light_center;
-	vec3 area_a_dir = normalize(area_width);
-	vec3 area_b_dir = normalize(area_height);
-	vec3 pos_local_to_light = vec3(dot(light_to_vert, area_a_dir), dot(light_to_vert, area_b_dir), dot(light_to_vert, -area_direction));
+	half a_len = length(area_width);
+	half b_len = length(area_height);
+	half a_half_len = a_len / half(2.0);
+	half b_half_len = b_len / half(2.0);
+	hvec3 light_center = hvec3(area_lights.data[idx].position) + (area_width + area_height) / half(2.0);
+	hvec3 light_to_vert = hvec3(vertex) - light_center;
+	hvec3 area_a_dir = normalize(area_width);
+	hvec3 area_b_dir = normalize(area_height);
+	hvec3 area_direction = hvec3(area_lights.data[idx].direction);
+	hvec3 pos_local_to_light = hvec3(dot(light_to_vert, area_a_dir), dot(light_to_vert, area_b_dir), dot(light_to_vert, -area_direction));
 
-	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
-	float dist = length(closest_point_local_to_light - pos_local_to_light);
+	hvec3 closest_point_local_to_light = hvec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
+	half dist = length(closest_point_local_to_light - pos_local_to_light);
 
-	float light_length = max(0, dist);
-	half light_attenuation_raw = get_omni_attenuation(light_length, area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation);
-	half light_attenuation_ltc = light_attenuation_raw * (light_length * light_length); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+	half light_length = max(half(0.0), dist);
+	half light_attenuation_raw = get_omni_attenuation(float(light_length), area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation);
+	half light_attenuation_ltc = light_attenuation_raw * half(light_length * light_length); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 	half shadow = half(1.0);
 
 #ifndef SHADOWS_DISABLED
@@ -1398,14 +1396,13 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	points[2] = area_lights.data[idx].position + area_width + area_height - vertex;
 	points[3] = area_lights.data[idx].position + area_height - vertex;
 
-	float ltc_diffuse = float(0.0);
-	vec3 ltc_diffuse_tex_color = vec3(1.0);
-	float ltc_specular = float(0.0);
-	vec3 ltc_specular_tex_color = vec3(1.0);
-	vec2 ltc_fresnel = vec2(0.0);
-	ltc_evaluate(vertex, normal, eye_vec, mat3(1), points, area_lights.data[idx].projector_rect, ltc_diffuse, ltc_diffuse_tex_color);
-	ltc_diffuse = max(ltc_diffuse, 0.0) / (2.0 * M_PI);
-	ltc_evaluate_specular(vertex, normal, eye_vec, roughness, points, area_lights.data[idx].projector_rect, ltc_fresnel, ltc_specular, ltc_specular_tex_color);
+	half ltc_diffuse = half(0.0);
+	hvec3 ltc_diffuse_tex_color = hvec3(1.0);
+	half ltc_specular = half(0.0);
+	hvec3 ltc_specular_tex_color = hvec3(1.0);
+	hvec2 ltc_fresnel = hvec2(0.0);
+	ltc_evaluate(vec3(normal), vec3(eye_vec), mat3(1), points, area_lights.data[idx].projector_rect, ltc_diffuse, ltc_diffuse_tex_color);
+	ltc_evaluate_specular(vec3(normal), vec3(eye_vec), roughness, points, area_lights.data[idx].projector_rect, ltc_fresnel, ltc_specular, ltc_specular_tex_color);
 
 #if defined(LIGHT_CODE_USED)
 	// Light is written by the user shader.
@@ -1453,10 +1450,10 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	vec3 specular_light_highp = vec3(specular_light);
 	bool is_directional = false;
 	bool is_area = true;
-	float area_diffuse = ltc_diffuse;
-	float area_specular = ltc_specular;
-	vec3 area_diffuse_tex_color = ltc_diffuse_tex_color;
-	vec3 area_specular_tex_color = ltc_specular_tex_color;
+	float area_diffuse = float(ltc_diffuse);
+	float area_specular = float(ltc_specular);
+	vec3 area_diffuse_tex_color = vec3(ltc_diffuse_tex_color);
+	vec3 area_specular_tex_color = vec3(ltc_specular_tex_color);
 
 #CODE : LIGHT
 
@@ -1466,16 +1463,16 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 #else
 	half specular_amount = half(area_lights.data[idx].specular_amount);
-	float area = a_len * b_len;
+	half area = a_len * b_len;
 
 #if defined(LIGHT_TRANSMITTANCE_USED) || defined(LIGHT_BACKLIGHT_USED)
 	hvec3 isotropic_light_color = hvec3(1.0); // independent of normal
 	if (area_lights.data[idx].projector_rect != vec4(0.0)) {
-		float lod = dist / sqrt(area);
-		lod = log(2048.0 * lod) / log(3.0);
+		half lod = dist / sqrt(area);
+		lod = log(half(2048.0) * lod) / log(half(3.0));
 
-		vec2 uv = (closest_point_local_to_light.xy + vec2(a_half_len, b_half_len)) / vec2(a_len, b_len);
-		isotropic_light_color = fetch_ltc_lod(vec2(1.0) - uv, area_lights.data[idx].projector_rect, lod);
+		hvec2 uv = (closest_point_local_to_light.xy + hvec2(a_half_len, b_half_len)) / hvec2(a_len, b_len);
+		isotropic_light_color = fetch_ltc_lod(vec2(hvec2(1.0) - uv), area_lights.data[idx].projector_rect, float(lod));
 	}
 #endif
 #ifdef LIGHT_TRANSMITTANCE_USED
@@ -1489,7 +1486,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			vec4 uv_rect = area_lights.data[idx].atlas_rect;
 			uv_rect.xy += texel_size;
 			uv_rect.zw -= texel_size * 2.0;
-			vec3 local_vert = (area_lights.data[idx].shadow_matrix * vec4(vertex - normal * area_lights.data[idx].transmittance_bias, 1.0)).xyz;
+			vec3 local_vert = (area_lights.data[idx].shadow_matrix * vec4(vertex - vec3(normal) * area_lights.data[idx].transmittance_bias, 1.0)).xyz;
 
 			float shadow_len = length(local_vert); //need to remember shadow len from here
 			vec3 shadow_sample = normalize(local_vert);
@@ -1525,21 +1522,21 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	half diffuse = smoothstep(-roughness, max(roughness, half(0.01)), ltc_diffuse);
 	diffuse_light += diffuse * ltc_diffuse_tex_color * color * area * light_attenuation; // consider removing light attenuation or using raw.
 #else
-	if (metallic < 1.0) {
+	if (metallic < half(1.0)) {
 		diffuse_light += ltc_diffuse * ltc_diffuse_tex_color * color * light_attenuation_ltc; // consider removing light attenuation or using raw.
 	}
 #endif // DIFFUSE_TOON
 
 #if defined(LIGHT_BACKLIGHT_USED)
 	// backlight can't use ltc_diffuse_tex_color, because for backface pixels texture would have to sampled for opposite normal direction.
-	diffuse_light += max(1.0 - ltc_diffuse, 0.0) * backlight * color * isotropic_light_color * area * light_attenuation;
+	diffuse_light += max(half(1.0) - ltc_diffuse, half(0.0)) * backlight * color * isotropic_light_color * area * light_attenuation;
 #endif
 
 #if defined(LIGHT_CLEARCOAT_USED)
 	hvec3 cc_specular_tex_color = hvec3(1.0);
-	float cc_specular_ltc = 0.0;
-	vec2 fresnel_discard;
-	ltc_evaluate_specular(vertex, vertex_normal, eye_vec, clearcoat_roughness, points, area_lights.data[idx].projector_rect, fresnel_discard, cc_specular_ltc, cc_specular_tex_color);
+	half cc_specular_ltc = half(0.0);
+	hvec2 fresnel_discard;
+	ltc_evaluate_specular(vec3(vertex_normal), vec3(eye_vec), clearcoat_roughness, points, area_lights.data[idx].projector_rect, fresnel_discard, cc_specular_ltc, cc_specular_tex_color);
 	specular_light += cc_specular_ltc * cc_specular_tex_color * clearcoat * color * light_attenuation_ltc * specular_amount;
 #endif // LIGHT_CLEARCOAT_USED
 
@@ -1556,7 +1553,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
 	hvec3 spec_color = f0;
 
-	spec *= spec_color * max(half(ltc_fresnel.x), half(0.0)) + (f90 - spec_color) * max(half(ltc_fresnel.y), half(0.0));
+	spec *= spec_color * max(ltc_fresnel.x, half(0.0)) + (f90 - spec_color) * max(ltc_fresnel.y, half(0.0));
 	specular_light += spec * specular_amount * light_attenuation_ltc;
 #endif // SPECULAR_TOON
 
