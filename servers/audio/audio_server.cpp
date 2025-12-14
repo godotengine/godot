@@ -772,13 +772,21 @@ int AudioServer::thread_find_bus_index(const StringName &p_name) {
 
 #ifdef DEBUG_ENABLED
 void AudioServer::set_debug_mute(bool p_mute) {
+	bool old_debug_mute = debug_mute;
 	debug_mute = p_mute;
-}
-
-bool AudioServer::get_debug_mute() const {
-	return debug_mute;
+	if (old_debug_mute != p_mute) {
+		emit_signal(SNAME("debug_mute_toggled"), p_mute);
+	}
 }
 #endif // DEBUG_ENABLED
+
+bool AudioServer::get_debug_mute() const {
+#ifdef DEBUG_ENABLED
+	return debug_mute;
+#else
+	return false;
+#endif // DEBUG_ENABLED
+}
 
 void AudioServer::set_bus_count(int p_count) {
 	ERR_FAIL_COND(p_count < 1);
@@ -2097,6 +2105,8 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_stream_registered_as_sample", "stream"), &AudioServer::is_stream_registered_as_sample);
 	ClassDB::bind_method(D_METHOD("register_stream_as_sample", "stream"), &AudioServer::register_stream_as_sample);
 
+	ClassDB::bind_method(D_METHOD("get_debug_mute"), &AudioServer::get_debug_mute);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "output_device"), "set_output_device", "get_output_device");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "input_device"), "set_input_device", "get_input_device");
@@ -2107,6 +2117,8 @@ void AudioServer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
 	ADD_SIGNAL(MethodInfo("bus_renamed", PropertyInfo(Variant::INT, "bus_index"), PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
+
+	ADD_SIGNAL(MethodInfo("debug_mute_toggled", PropertyInfo(Variant::BOOL, "debug_mute_enabled")));
 
 	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_31);
