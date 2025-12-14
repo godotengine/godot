@@ -387,6 +387,7 @@ private:
 		uint64_t grow : 1;
 		uint64_t proximity_fade : 1;
 		uint64_t orm : 1;
+		uint64_t affine : 1;
 
 		// flag bitfield
 		uint32_t feature_mask;
@@ -441,6 +442,7 @@ private:
 		mk.emission_op = emission_op;
 		mk.alpha_antialiasing_mode = alpha_antialiasing_mode;
 		mk.orm = orm;
+		mk.affine = affine;
 
 		mk.stencil_mode = stencil_mode;
 		mk.stencil_flags = stencil_flags;
@@ -502,6 +504,7 @@ private:
 		StringName distance_fade_min;
 		StringName distance_fade_max;
 		StringName ao_light_affect;
+		StringName affine_mapping;
 
 		StringName metallic_texture_channel;
 		StringName ao_texture_channel;
@@ -569,6 +572,7 @@ private:
 	bool particles_anim_loop = false;
 	Transparency transparency = TRANSPARENCY_DISABLED;
 	ShadingMode shading_mode = SHADING_MODE_PER_PIXEL;
+	bool affine = false;
 
 	TextureFilter texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 
@@ -808,6 +812,9 @@ public:
 
 	void set_grow(float p_grow);
 	float get_grow() const;
+
+	void set_affine_mapping_enabled(bool p_enable);
+	bool is_affine_mapping_enabled() const;
 
 	void set_alpha_scissor_threshold(float p_threshold);
 	float get_alpha_scissor_threshold() const;
