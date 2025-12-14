@@ -128,6 +128,8 @@ private:
 	bool valid = false;
 	bool default_parallel = false;
 	bool parallel_enabled = false;
+
+	StringName name;
 #ifdef DEBUG_ENABLED
 	bool is_infinite = false;
 #endif
@@ -187,6 +189,9 @@ public:
 	bool can_process(bool p_tree_paused) const;
 	Node *get_bound_node() const;
 	double get_total_time() const;
+
+	void set_name(const StringName &p_name);
+	StringName get_name() const;
 
 	Tween();
 	Tween(SceneTree *p_parent_tree);
