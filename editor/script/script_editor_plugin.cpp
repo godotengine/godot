@@ -722,12 +722,12 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		}
 	}
 
-	history.resize(history_pos + 1);
 	ScriptHistory sh;
 	sh.control = c;
 	sh.state = Variant();
 
-	if (!lock_history && (history.is_empty() || history[history.size() - 1].control != sh.control)) {
+	if (!lock_history && (history.is_empty() || history[history_pos].control != sh.control)) {
+		history.resize(history_pos + 1);
 		history.push_back(sh);
 		history_pos++;
 	}
@@ -901,14 +901,12 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		_history_back();
 	}
 
-	//remove from history
-	history.resize(history_pos + 1);
-
-	for (int i = 0; i < history.size(); i++) {
+	for (int i = history.size() - 1; i >= 0; i--) {
 		if (history[i].control == tselected) {
 			history.remove_at(i);
-			i--;
-			history_pos--;
+			if (i <= history_pos) {
+				history_pos--;
+			}
 		}
 	}
 
