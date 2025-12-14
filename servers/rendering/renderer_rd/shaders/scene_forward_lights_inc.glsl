@@ -1107,6 +1107,7 @@ hvec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[4], 
 
 	if (dot(F, F) < 1e-16) {
 		uv = hvec2(0.5);
+		lod = half(max_mipmap);
 	} else {
 		hvec3 lx = hvec3(L[1] - L[0]);
 		hvec3 ly = hvec3(L[3] - L[0]);
@@ -1464,7 +1465,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	half specular_amount = half(area_lights.data[idx].specular_amount);
 	half area = a_len * b_len;
 
-#if defined(LIGHT_TRANSMITTANCE_USED) || defined(LIGHT_BACKLIGHT_USED) || defined(LIGHT_RIM_USED)
+#if defined(LIGHT_TRANSMITTANCE_USED) || defined(LIGHT_BACKLIGHT_USED) || defined(LIGHT_RIM_USED) || defined(DIFFUSE_TOON)
 	hvec3 isotropic_light_color = hvec3(1.0); // independent of normal
 	if (area_lights.data[idx].projector_rect != vec4(0.0)) {
 		half lod = dist / sqrt(area);
@@ -1519,10 +1520,10 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 #if defined(DIFFUSE_TOON)
 	half diffuse = smoothstep(-roughness, max(roughness, half(0.01)), ltc_diffuse);
-	diffuse_light += diffuse * ltc_diffuse_tex_color * color * area * light_attenuation; // consider removing light attenuation or using raw.
+	diffuse_light += diffuse * isotropic_light_color * color * area * light_attenuation;
 #else
 	if (metallic < half(1.0)) {
-		diffuse_light += ltc_diffuse * ltc_diffuse_tex_color * color * light_attenuation_ltc; // consider removing light attenuation or using raw.
+		diffuse_light += ltc_diffuse * ltc_diffuse_tex_color * color * light_attenuation_ltc;
 	}
 #endif // DIFFUSE_TOON
 
