@@ -31,8 +31,8 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
-#include "scene/resources/material.h"
 #include "scene/resources/3d/skin.h"
+#include "scene/resources/material.h"
 
 class Button;
 class ConfirmationDialog;
