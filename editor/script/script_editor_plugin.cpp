@@ -67,6 +67,7 @@
 #include "editor/shader/text_shader_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/control.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
@@ -871,7 +872,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		return;
 	}
 
-	Node *tselected = tab_container->get_tab_control(selected);
+	Control *tselected = tab_container->get_tab_control(selected);
 
 	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tselected);
 	if (current) {
@@ -901,12 +902,10 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		_history_back();
 	}
 
-	for (int i = history.size() - 1; i >= 0; i--) {
+	for (int i = 0; i < history.size(); i++) {
 		if (history[i].control == tselected) {
-			history.remove_at(i);
-			if (i <= history_pos) {
-				history_pos--;
-			}
+			history.write[i].resInfo = control_resource_map.get(tselected);
+			history.write[i].control = nullptr;
 		}
 	}
 
@@ -919,6 +918,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		current->clear_edit_menu();
 		_save_editor_state(current);
 	}
+	control_resource_map.erase(tselected);
 	memdelete(tselected);
 
 	if (script_close_queue.is_empty()) {
@@ -2663,6 +2663,11 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		}
 	}
 
+	ResourceInfo ri;
+	ri.resource = p_resource;
+	ri.is_help_class = true;
+	control_resource_map.insert(se, ri);
+
 	tab_container->add_child(se);
 
 	if (p_grab_focus) {
@@ -3741,6 +3746,11 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 
 	EditorHelp *eh = memnew(EditorHelp);
 
+	ResourceInfo ri;
+	ri.resource = p_class;
+	ri.is_help_class = true;
+	control_resource_map.insert(eh, ri);
+
 	eh->set_name(p_class);
 	tab_container->add_child(eh);
 	_go_to_tab(tab_container->get_tab_count() - 1);
@@ -3761,6 +3771,11 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	}
 
 	EditorHelp *eh = memnew(EditorHelp);
+
+	ResourceInfo ri;
+	ri.resource = cname;
+	ri.is_help_class = true;
+	control_resource_map.insert(eh, ri);
 
 	eh->set_name(cname);
 	tab_container->add_child(eh);
@@ -3856,7 +3871,7 @@ void ScriptEditor::_unlock_history() {
 }
 
 void ScriptEditor::_update_history_pos(int p_new_pos) {
-	Node *n = tab_container->get_current_tab_control();
+	Control *n = tab_container->get_current_tab_control();
 
 	if (Object::cast_to<ScriptEditorBase>(n)) {
 		history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
@@ -3866,9 +3881,25 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 	}
 
 	history_pos = p_new_pos;
-	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(history[history_pos].control));
-
 	n = history[history_pos].control;
+
+	if (n == nullptr) {
+		ResourceInfo ri = history[history_pos].resInfo;
+		lock_history = true;
+		if (ri.is_help_class) {
+			_help_class_open(ri.resource);
+		} else {
+			edit(ri.resource);
+		}
+		lock_history = false;
+		n = tab_container->get_current_tab_control();
+		for (int i = 0; i < history.size(); i++) {
+			if (history[i].resInfo.resource == ri.resource) {
+				history.write[i].control = n;
+			}
+		}
+	}
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(n));
 
 	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(n);
 	if (seb) {
