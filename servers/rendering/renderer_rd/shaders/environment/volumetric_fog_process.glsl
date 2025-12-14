@@ -307,11 +307,10 @@ const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
 // Higher values will make light in volumetric fog fade out sooner when it's occluded by shadow.
 const float INV_FOG_FADE = 10.0;
 
-vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
-	float max_lod = 11.0;
-	float low = min(max(floor(lod), 0.0), max_lod - 1.0);
-	float high = min(max(floor(lod + 1.0), 1.0), max_lod);
-	vec2 sample_pos = clamp(uv, 0.0, 1.0) * texture_rect.zw; // take border into account
+vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod, float max_mipmap) {
+	float low = min(max(floor(lod), 0.0), max_mipmap - 1.0);
+	float high = min(max(floor(lod + 1.0), 1.0), max_mipmap);
+	vec2 sample_pos = clamp(uv, 0.0, 1.0) * texture_rect.zw;
 	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, linear_sampler), texture_rect.xy + sample_pos, low);
 	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, linear_sampler), texture_rect.xy + sample_pos, high);
 
@@ -693,7 +692,7 @@ void main() {
 								lod = log(2048.0 * lod) / log(3.0);
 
 								vec2 uv = (closest_point_local_to_light.xy + vec2(a_half_len, b_half_len)) / vec2(a_len, b_len);
-								light *= fetch_ltc_lod(vec2(1.0) - uv, area_lights.data[light_index].projector_rect, lod);
+								light *= fetch_ltc_lod(vec2(1.0) - uv, area_lights.data[light_index].projector_rect, lod, area_lights.data[light_index].cone_angle);
 							}
 
 							if (area_lights.data[light_index].shadow_opacity > 0.001) {
