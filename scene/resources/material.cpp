@@ -4133,7 +4133,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "depth_texture", "heightmap_texture" },
 
 			{ "emission_energy", "emission_energy_multiplier" },
-			{ "affine_mapping", "affine_mapping" },
+			{ "affine", "affine" },
 
 			{ nullptr, nullptr },
 		};
