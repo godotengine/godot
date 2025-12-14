@@ -49,6 +49,7 @@ class VideoStreamPlaybackMatroska : public VideoStreamPlayback {
 	GDCLASS(VideoStreamPlaybackMatroska, VideoStreamPlayback);
 
 private:
+	//TODO: move structs into matroska.h
 	struct EbmlHeader {
 		uint64_t version;
 		uint64_t read_version;
@@ -171,10 +172,6 @@ private:
 	RenderingDevice *local_device;
 
 	RID video_session;
-
-	RID ycbcr_sampler;
-	RID ycbcr_sampler_shader;
-	RID ycbcr_sampler_pipeline;
 
 	RID src_yuv_texture;
 	RID dst_rgba_texture;

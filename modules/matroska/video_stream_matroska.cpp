@@ -937,19 +937,7 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	// All Matroska metadata is done, now create the yuv sampler, yuv image pool and dst image
 	video_stream_encoding->set_rendering_device(local_device);
 
-	//video_session = video_stream_encoding->create_video_session(width, height);
-
-	RD::SamplerState src_sampler_state;
-	src_sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-	src_sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-	src_sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-	src_sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-	src_sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-
-	// TODO State of the sampler depends on the metadata
-	src_sampler_state.enable_ycbcr = true;
-
-	ycbcr_sampler = video_stream_encoding->create_texture_sampler(src_sampler_state);
+	video_session = video_stream_encoding->create_video_session(width, height);
 
 	RD::TextureFormat src_yuv_format;
 	src_yuv_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
@@ -961,38 +949,13 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	src_yuv_texture = video_stream_encoding->create_texture(src_yuv_format);
 
 	RD::TextureFormat dst_rgba_format;
-	dst_rgba_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	dst_rgba_format.format = RD::DATA_FORMAT_R8_UNORM;
 	dst_rgba_format.width = width;
 	dst_rgba_format.height = height;
 	dst_rgba_format.depth = 1;
-	dst_rgba_format.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	dst_rgba_format.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 
 	dst_rgba_texture = local_device->texture_create(dst_rgba_format, RD::TextureView());
-
-	Vector<RD::PipelineImmutableSampler> samplers;
-
-	RD::Uniform src_uniform;
-	src_uniform.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-	src_uniform.binding = 0;
-	src_uniform.append_id(ycbcr_sampler);
-	src_uniform.append_id(src_yuv_texture);
-	samplers.push_back(src_uniform);
-
-	Ref<RDShaderFile> ycbcr_sampler_src;
-	ycbcr_sampler_src.instantiate();
-
-	Error err = ycbcr_sampler_src->parse_versions_from_text(ycbcr_sampler_shader_glsl);
-	if (err != OK) {
-		ycbcr_sampler_src->print_errors("Invalid ycbcr shader code");
-	}
-
-	Vector<uint8_t> ycbcr_sampler_binary = local_device->shader_compile_binary_from_spirv(ycbcr_sampler_src->get_spirv_stages());
-
-	ycbcr_sampler_shader = local_device->shader_create_from_bytecode_with_samplers(ycbcr_sampler_binary, RID(), samplers);
-	ERR_FAIL_COND(ycbcr_sampler_shader.is_null());
-
-	ycbcr_sampler_pipeline = local_device->compute_pipeline_create(ycbcr_sampler_shader);
-	ERR_FAIL_COND(ycbcr_sampler_pipeline.is_null());
 }
 
 void VideoStreamPlaybackMatroska::play() {
@@ -1007,7 +970,6 @@ void VideoStreamPlaybackMatroska::play() {
 
 	Cluster cluster = clusters[0];
 	print_line(vformat("------------Begin Matroska Cluster [%d]----------------", cluster.blocks.size()));
-	//local_device->video_session_begin();
 
 	Cluster::Block block = cluster.blocks[0];
 	file->seek(block.position);
@@ -1015,33 +977,7 @@ void VideoStreamPlaybackMatroska::play() {
 	video_stream_encoding->parse_container_block(frame, src_yuv_texture);
 
 	local_device->video_session_end();
-
-	Vector<RD::Uniform> uniforms;
-
-	RD::Uniform sampler;
-	sampler.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-	sampler.binding = 0;
-	sampler.append_id(ycbcr_sampler);
-	sampler.append_id(src_yuv_texture);
-	uniforms.append(sampler);
-
-	RD::Uniform dst_texture;
-	dst_texture.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-	dst_texture.binding = 1;
-	dst_texture.append_id(dst_rgba_texture);
-	uniforms.append(dst_texture);
-
-	RID uniform_set = local_device->uniform_set_create(uniforms, ycbcr_sampler_shader, 0);
-
-	RD::ComputeListID compute_list = local_device->compute_list_begin();
-	local_device->compute_list_bind_compute_pipeline(compute_list, ycbcr_sampler_pipeline);
-	local_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-	local_device->compute_list_dispatch(compute_list, 120, 68, 1);
-	local_device->compute_list_end();
-
 	print_line("------------------End Matroska Cluster-----------------------");
-	local_device->submit();
-	local_device->sync();
 }
 
 void VideoStreamPlaybackMatroska::stop() {
