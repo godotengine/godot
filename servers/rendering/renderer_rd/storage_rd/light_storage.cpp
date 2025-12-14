@@ -1135,6 +1135,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			light_data.projector_rect[1] = rect.position.y;
 			light_data.projector_rect[2] = rect.size.width;
 			light_data.projector_rect[3] = rect.size.height;
+			Size2i texture_size = rect.size * texture_storage->area_light_atlas_get_size();
+			light_data.cos_spot_angle = MIN(floor(log2(MIN(texture_size.x, texture_size.y)) - 1.0), texture_storage->area_light_atlas_get_mipmaps()); // max mipmaps
 		}
 
 		const bool needs_shadow =

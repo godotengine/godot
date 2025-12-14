@@ -2979,9 +2979,9 @@ void TextureStorage::update_area_light_atlas() {
 
 			Texture *src_tex = get_texture(E.key);
 
-			si.size.width = (src_tex->width / border) + 1;
+			si.size.width = (src_tex->width / border) + 1; // TODO: Try ceil instead (fit exactly)
 			si.size.height = (src_tex->height / border) + 1;
-			si.pixel_size = Size2i(src_tex->width, src_tex->height);
+			si.pixel_size = Size2i(ceil(float(src_tex->width) / border) * border, ceil(float(src_tex->height) / border) * border);
 
 			if (base_size < (uint32_t)si.size.width) {
 				base_size = nearest_power_of_2_templated(si.size.width);
@@ -3040,8 +3040,8 @@ void TextureStorage::update_area_light_atlas() {
 				si.pos.x = best_idx;
 				si.pos.y = best_height;
 
-				if (si.pos.y + si.size.height + 1 > max_height) {
-					max_height = si.pos.y + si.size.height + 1; // max_height is at least one border larger.
+				if (si.pos.y + si.size.height > max_height) {
+					max_height = si.pos.y + si.size.height;
 				}
 			}
 
@@ -3053,16 +3053,19 @@ void TextureStorage::update_area_light_atlas() {
 			base_size *= 2;
 		}
 
-		area_light_atlas.size.width = base_size * border;
-		area_light_atlas.size.height = nearest_power_of_2_templated(atlas_height * border);
+		area_light_atlas.size.width = (base_size+1) * border;
+		area_light_atlas.size.height = nearest_power_of_2_templated((atlas_height+1) * border);
 
 		for (int i = 0; i < item_count; i++) {
 			AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(items[i].texture);
 			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2); // TODO: the offset might not be necessary
-			t->uv_rect.size = items[i].pixel_size;
-
 			t->uv_rect.position /= Size2(area_light_atlas.size);
+			t->uv_rect.size = items[i].pixel_size;
 			t->uv_rect.size /= Size2(area_light_atlas.size);
+
+			// debug /////
+			//t->uv_rect = Rect2(Vector2(0.0, 0.0), Vector2(1.0, 1.0));
+			//////
 		}
 	} else {
 		//use border as size, so it at least has enough mipmaps
@@ -3102,35 +3105,48 @@ void TextureStorage::update_area_light_atlas() {
 		}
 	}
 
+	Color clear_color(0, 0, 0, 0);
+	if (area_light_atlas.textures.size() == 0) {
 	for (int i = 0; i < area_light_atlas.texture_mipmaps.size(); i++) {
 		const AreaLightAtlas::MipMap &mm = area_light_atlas.texture_mipmaps[i];
-
-		Color clear_color(0, 0, 0, 0);
-
-		if (area_light_atlas.textures.size()) {
-			if (i == 0) {
+			RD::get_singleton()->texture_clear(mm.texture, clear_color, 0, 1, 0, 1);
+		}
+	} else {
+		// Copy to Mipmap 0 / framebuffer
 				Vector<Color> cc;
 				cc.push_back(clear_color);
 
 				// Make area light MIPs
-				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::DRAW_CLEAR_ALL, cc);
+		const AreaLightAtlas::MipMap &mm0 = area_light_atlas.texture_mipmaps[0];
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm0.fb, RD::DRAW_CLEAR_ALL, cc);
 				for (const KeyValue<RID, AreaLightAtlas::Texture> &E : area_light_atlas.textures) {
 					AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(E.key);
 					Texture *src_tex = get_texture(E.key);
 					Rect2 uv_rect = t->uv_rect;
 
-					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, uv_rect, draw_list);
+			copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm0.fb, uv_rect, draw_list);
 				}
 				RD::get_singleton()->draw_list_end();
-			} else {
+
+		// Copy blurred mipmaps
 				for (const KeyValue<RID, AreaLightAtlas::Texture> &E : area_light_atlas.textures) {
+			Vector<RID> blur_textures;
+			RID prev_blur_texture;
 					AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(E.key);
-					Texture *src_tex = get_texture(E.key);
 					Rect2 uv_rect = t->uv_rect;
-					if (MIN(uv_rect.size.x * area_light_atlas.size.x, uv_rect.size.y * area_light_atlas.size.y) > pow(2, i)) {
+
+			for (int i = 0; i < area_light_atlas.texture_mipmaps.size(); i++) {
 						Vector2i mip_size = area_light_atlas.size / pow(2, i);
 						Vector2i mip_tex_size = uv_rect.size * mip_size;
+				if (MIN(mip_tex_size.x, mip_tex_size.y) < 1) {
+					break; // already too small
+				}
 						Rect2i uv_recti = Rect2i(uv_rect.position * mip_size, uv_rect.size * mip_size);
+				Texture *src_tex = get_texture(E.key);
+
+				if (i == 0 && mip_tex_size.width == src_tex->width && mip_tex_size.height == src_tex->height) {
+					prev_blur_texture = src_tex->rd_texture;
+				} else {
 						RD::TextureFormat tf_blur;
 						tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 						tf_blur.width = mip_tex_size.width;
@@ -3138,21 +3154,38 @@ void TextureStorage::update_area_light_atlas() {
 						tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
 						tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 						RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
+					blur_textures.push_back(blur_tex);
+
+					if (i == 0) {
+						RID shared_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), blur_tex, 0, 0);
+						Vector<RID> fb_vec;
+						fb_vec.push_back(shared_tex);
+						RID fb = RD::get_singleton()->framebuffer_create(fb_vec);
+						RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(fb, RD::DRAW_CLEAR_ALL, cc);
+						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, fb, Rect2(Vector2(0.0, 0.0), Vector2(1.0, 1.0)), draw_list);
+						RD::get_singleton()->draw_list_end();
+						prev_blur_texture = blur_tex;
+
+					} else {
+						const AreaLightAtlas::MipMap &mm = area_light_atlas.texture_mipmaps[i];
 						Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
 
 						if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-							copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_tex_size);
+							copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size); // TODO: copy_rect>src_texture_size works?
 						} else {
-							copy_effects->gaussian_blur_raster(src_tex->rd_texture, blur_tex, copy_rect, mip_tex_size);
+							copy_effects->gaussian_blur_raster(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
 						}
 
-						copy_effects->copy_to_fb_rect(blur_tex, mm.fb, uv_recti);
-						RD::get_singleton()->free_rid(blur_tex);
+						copy_effects->copy_to_fb_rect(blur_tex, mm.fb, uv_recti, false, false, false, false, RID(), false, false, true);
+						prev_blur_texture = blur_tex;
 					}
 				}
 			}
-		} else {
-			RD::get_singleton()->texture_clear(mm.texture, clear_color, 0, 1, 0, 1);
+			for (int i = 0; i < blur_textures.size(); i++) { // start at one, don't free original texture
+				RD::get_singleton()->free_rid(blur_textures[i]);
+			}
+			//Vector2 atlas_pixel_size = Vector2(1.0, 1.0) / area_light_atlas.size;
+			//t->uv_rect = Rect2(t->uv_rect.position + atlas_pixel_size * 0.5, t->uv_rect.size * (Vector2(1.0, 1.0) - atlas_pixel_size));
 		}
 	}
 }

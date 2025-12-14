@@ -148,10 +148,10 @@ private:
 		float attenuation;
 
 		float area_width[3];
-		float inv_spot_attenuation;
+		float inv_spot_attenuation; // area lights: 1 / (range + diagonal/2)
 
 		float area_height[3];
-		float cos_spot_angle;
+		float cos_spot_angle; // area lights: max mipmaps
 
 		float specular_amount;
 		float shadow_opacity;

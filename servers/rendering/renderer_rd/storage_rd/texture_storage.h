@@ -651,6 +651,13 @@ public:
 		return t->uv_rect;
 	}
 
+	_FORCE_INLINE_ int area_light_atlas_get_mipmaps() {
+		return area_light_atlas.mipmaps;
+	}
+	_FORCE_INLINE_ Size2i area_light_atlas_get_size() {
+		return area_light_atlas.size;
+	}
+
 	void area_light_atlas_mark_dirty_on_texture(RID p_texture);
 	void area_light_atlas_remove_texture(RID p_texture);
 
