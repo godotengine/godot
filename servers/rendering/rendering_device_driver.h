@@ -745,6 +745,11 @@ public:
 	virtual void command_timestamp_query_pool_reset(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_query_count) = 0;
 	virtual void command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) = 0;
 
+	// ----- VIDEO -----
+
+	// Basic.
+	virtual QueryPoolID video_query_pool_create(uint32_t p_query_count, const VideoProfile &p_video_profile) = 0;
+
 	/****************/
 	/**** LABELS ****/
 	/****************/
@@ -773,6 +778,7 @@ public:
 	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) = 0;
 
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) = 0;
+	virtual void video_session_add_query_pool(VideoSessionID p_video_session, QueryPoolID p_query_pool) = 0;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) = 0;
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) = 0;
 	virtual void video_session_free(VideoSessionID p_video_session) = 0;

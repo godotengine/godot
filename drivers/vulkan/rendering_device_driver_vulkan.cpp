@@ -566,6 +566,8 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	// Vulkan video extensions for hardware video processing
 	_register_requested_device_extension(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_MAINTENANCE_1_EXTENSION_NAME, false);
+	//_register_requested_device_extension(VK_KHR_VIDEO_MAINTENANCE_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME, false);
 
@@ -1229,6 +1231,15 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		create_info_next = &memory_report_info;
 	}
 #endif
+
+	VkPhysicalDeviceVideoMaintenance1FeaturesKHR video_maintenance1 = {};
+	if (true) {
+		video_maintenance1.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_1_FEATURES_KHR;
+		video_maintenance1.pNext = create_info_next;
+		video_maintenance1.videoMaintenance1 = true;
+
+		create_info_next = &video_maintenance1;
+	}
 
 	VkPhysicalDeviceVulkan11Features vulkan_1_1_features = {};
 	VkPhysicalDevice16BitStorageFeaturesKHR storage_features = {};
@@ -6105,6 +6116,21 @@ void RenderingDeviceDriverVulkan::command_timestamp_write(CommandBufferID p_cmd_
 	vkCmdWriteTimestamp(command_buffer->vk_command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, (VkQueryPool)p_pool_id.id, p_index);
 }
 
+RDD::QueryPoolID RenderingDeviceDriverVulkan::video_query_pool_create(uint32_t p_query_count, const VideoProfile &p_video_profile) {
+	VkVideoProfileInfoKHR vk_profile;
+	vk_video_profile_from_state(p_video_profile, &vk_profile);
+
+	VkQueryPoolCreateInfo query_pool_create_info = {};
+	query_pool_create_info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+	query_pool_create_info.pNext = &vk_profile;
+	query_pool_create_info.queryType = VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR;
+	query_pool_create_info.queryCount = p_query_count;
+
+	VkQueryPool vk_query_pool = VK_NULL_HANDLE;
+	vkCreateQueryPool(vk_device, &query_pool_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_QUERY_POOL), &vk_query_pool);
+	return RDD::QueryPoolID(vk_query_pool);
+}
+
 /****************/
 /**** LABELS ****/
 /****************/
@@ -6628,7 +6654,7 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	session_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR;
 	session_info.pNext = nullptr;
 	session_info.queueFamilyIndex = command_queue_family_index;
-	session_info.flags = 0;
+	session_info.flags = VK_VIDEO_SESSION_CREATE_INLINE_QUERIES_BIT_KHR;
 	session_info.pVideoProfile = &video_profile;
 	session_info.pictureFormat = dpb_info->vk_create_info.format;
 	session_info.maxCodedExtent.width = dpb_info->vk_create_info.extent.width;
@@ -6709,6 +6735,11 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	video_session_info->current_dpb_index = 0;
 
 	return RDD::VideoSessionID(video_session_info);
+}
+
+void RenderingDeviceDriverVulkan::video_session_add_query_pool(VideoSessionID p_video_session, RDD::QueryPoolID p_query_pool) {
+	VideoCodingSessionInfo *video_session = (VideoCodingSessionInfo *)p_video_session.id;
+	video_session->vk_query_pool = (VkQueryPool)p_query_pool.id;
 }
 
 void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) {
@@ -7194,6 +7225,18 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	h264_picture_info.pStdPictureInfo = &std_h264_info;
 	h264_picture_info.sliceCount = 1;
 	h264_picture_info.pSliceOffsets = &slice_offset;
+
+	if (video_session_info->vk_query_pool != VK_NULL_HANDLE) {
+		VkVideoInlineQueryInfoKHR *inline_query = ALLOCA_SINGLE(VkVideoInlineQueryInfoKHR);
+		inline_query->sType = VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR;
+		inline_query->pNext = nullptr;
+		inline_query->queryPool = video_session_info->vk_query_pool;
+		inline_query->firstQuery = 0;
+		inline_query->queryCount = 1;
+
+		//TODO: do queries better
+		h264_picture_info.pNext = nullptr;
+	}
 
 	VkVideoPictureResourceInfoKHR picture_info = {};
 	picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;

@@ -5850,6 +5850,9 @@ RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_
 	video_session.video_profile = p_profile;
 	video_session.driver_id = driver->video_session_create(p_profile, dpb_image, max_active_reference_pictures);
 
+	RDD::QueryPoolID query_pool = driver->video_query_pool_create(1, p_profile);
+	driver->video_session_add_query_pool(video_session.driver_id, query_pool);
+
 	RID rid = video_session_owner.make_rid(video_session);
 	return rid;
 }
