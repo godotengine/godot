@@ -2979,9 +2979,9 @@ void TextureStorage::update_area_light_atlas() {
 
 			Texture *src_tex = get_texture(E.key);
 
-			si.size.width = (src_tex->width / border) + 1; // TODO: Try ceil instead (fit exactly)
-			si.size.height = (src_tex->height / border) + 1;
-			si.pixel_size = Size2i(ceil(float(src_tex->width) / border) * border, ceil(float(src_tex->height) / border) * border);
+			si.size.width = ceil(float(src_tex->width) / border);
+			si.size.height = ceil(float(src_tex->height) / border);
+			si.pixel_size = Size2i(si.size.width * border, si.size.height * border);
 
 			if (base_size < (uint32_t)si.size.width) {
 				base_size = nearest_power_of_2_templated(si.size.width);
@@ -3053,19 +3053,15 @@ void TextureStorage::update_area_light_atlas() {
 			base_size *= 2;
 		}
 
-		area_light_atlas.size.width = (base_size+1) * border;
-		area_light_atlas.size.height = nearest_power_of_2_templated((atlas_height+1) * border);
+		area_light_atlas.size.width = (base_size) * border;
+		area_light_atlas.size.height = nearest_power_of_2_templated((atlas_height) * border);
 
 		for (int i = 0; i < item_count; i++) {
 			AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(items[i].texture);
-			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2); // TODO: the offset might not be necessary
+			t->uv_rect.position = items[i].pos * border;
 			t->uv_rect.position /= Size2(area_light_atlas.size);
 			t->uv_rect.size = items[i].pixel_size;
 			t->uv_rect.size /= Size2(area_light_atlas.size);
-
-			// debug /////
-			//t->uv_rect = Rect2(Vector2(0.0, 0.0), Vector2(1.0, 1.0));
-			//////
 		}
 	} else {
 		//use border as size, so it at least has enough mipmaps
@@ -3171,7 +3167,7 @@ void TextureStorage::update_area_light_atlas() {
 						Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
 
 						if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-							copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size); // TODO: copy_rect>src_texture_size works?
+							copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
 						} else {
 							copy_effects->gaussian_blur_raster(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
 						}
@@ -3184,8 +3180,6 @@ void TextureStorage::update_area_light_atlas() {
 			for (int i = 0; i < blur_textures.size(); i++) { // start at one, don't free original texture
 				RD::get_singleton()->free_rid(blur_textures[i]);
 			}
-			//Vector2 atlas_pixel_size = Vector2(1.0, 1.0) / area_light_atlas.size;
-			//t->uv_rect = Rect2(t->uv_rect.position + atlas_pixel_size * 0.5, t->uv_rect.size * (Vector2(1.0, 1.0) - atlas_pixel_size));
 		}
 	}
 }
