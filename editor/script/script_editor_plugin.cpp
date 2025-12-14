@@ -722,12 +722,12 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		}
 	}
 
-	history.resize(history_pos + 1);
 	ScriptHistory sh;
 	sh.control = c;
 	sh.state = Variant();
 
-	if (!lock_history && (history.is_empty() || history[history.size() - 1].control != sh.control)) {
+	if (!lock_history && (history.is_empty() || history[history_pos].control != sh.control)) {
+		history.resize(history_pos + 1);
 		history.push_back(sh);
 		history_pos++;
 	}
@@ -872,7 +872,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		return;
 	}
 
-	Node *tselected = tab_container->get_tab_control(selected);
+	Control *tselected = tab_container->get_tab_control(selected);
 
 	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tselected);
 	if (current) {
@@ -902,19 +902,11 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		_history_back();
 	}
 
-	//remove from history
-	history.resize(history_pos + 1);
-
 	for (int i = 0; i < history.size(); i++) {
 		if (history[i].control == tselected) {
-			history.remove_at(i);
-			i--;
-			history_pos--;
+			history.write[i].resource = control_resource_map.get(tselected);
+			history.write[i].control = nullptr;
 		}
-	}
-
-	if (history_pos >= history.size()) {
-		history_pos = history.size() - 1;
 	}
 
 	int idx = tab_container->get_current_tab();
@@ -922,6 +914,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		current->clear_edit_menu();
 		_save_editor_state(current);
 	}
+	control_resource_map.erase(tselected);
 	memdelete(tselected);
 
 	if (script_close_queue.is_empty()) {
@@ -929,7 +922,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 			idx = tab_container->get_tab_count() - 1;
 		}
 		if (idx >= 0) {
-			if (history_pos >= 0) {
+			if (history_pos >= 0 && history[history_pos].control != nullptr) {
 				idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
 			}
 			_go_to_tab(idx);
@@ -2686,6 +2679,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		}
 	}
 
+	control_resource_map.insert(se, p_resource);
 	tab_container->add_child(se);
 
 	if (p_grab_focus) {
@@ -3753,6 +3747,8 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 
 	EditorHelp *eh = memnew(EditorHelp);
 
+	control_resource_map.insert(eh, p_class);
+
 	eh->set_name(p_class);
 	tab_container->add_child(eh);
 	_go_to_tab(tab_container->get_tab_count() - 1);
@@ -3773,6 +3769,8 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	}
 
 	EditorHelp *eh = memnew(EditorHelp);
+
+	control_resource_map.insert(eh, cname);
 
 	eh->set_name(cname);
 	tab_container->add_child(eh);
@@ -3868,7 +3866,7 @@ void ScriptEditor::_unlock_history() {
 }
 
 void ScriptEditor::_update_history_pos(int p_new_pos) {
-	Node *n = tab_container->get_current_tab_control();
+	Control *n = tab_container->get_current_tab_control();
 
 	if (Object::cast_to<ScriptEditorBase>(n)) {
 		history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
@@ -3877,10 +3875,55 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 		history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
 	}
 
+	bool new_pos_is_larger = p_new_pos > history_pos;
 	history_pos = p_new_pos;
-	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(history[history_pos].control));
-
 	n = history[history_pos].control;
+
+	if (n == nullptr) {
+		// remove all deleted resources from history
+		bool adjusted_history_pos = false;
+		for (int i = history.size() - 1; i >= 0; i--) {
+			Ref<Resource> res = history[i].resource;
+			if (res.is_valid() && !ResourceLoader::exists(res->get_path())) {
+				history.remove_at(i);
+				if (i <= history_pos) {
+					history_pos--;
+					adjusted_history_pos = true;
+				}
+			}
+		}
+		if (new_pos_is_larger && adjusted_history_pos && history_pos < history.size() - 1) {
+			history_pos = history_pos + 1;
+		}
+		// handle history_pos = -1
+		if (history_pos < 0) {
+			_update_script_names();
+			_update_history_arrows();
+			_update_selected_editor_menu();
+			return;
+		}
+		n = history[history_pos].control;
+	}
+
+	// handle closed files
+	if (n == nullptr) {
+		Variant res = history[history_pos].resource;
+		Ref<Resource> res_ref = res;
+		lock_history = true;
+		if (res_ref.is_valid()) {
+			edit(res_ref);
+		} else {
+			_help_class_open(res);
+		}
+		lock_history = false;
+		n = tab_container->get_current_tab_control();
+		for (int i = 0; i < history.size(); i++) {
+			if (history[i].resource == res) {
+				history.write[i].control = n;
+			}
+		}
+	}
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(n));
 
 	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(n);
 	if (seb) {
