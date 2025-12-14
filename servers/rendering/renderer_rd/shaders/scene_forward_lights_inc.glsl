@@ -1464,14 +1464,14 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	half specular_amount = half(area_lights.data[idx].specular_amount);
 	half area = a_len * b_len;
 
-#if defined(LIGHT_TRANSMITTANCE_USED) || defined(LIGHT_BACKLIGHT_USED)
+#if defined(LIGHT_TRANSMITTANCE_USED) || defined(LIGHT_BACKLIGHT_USED) || defined(LIGHT_RIM_USED)
 	hvec3 isotropic_light_color = hvec3(1.0); // independent of normal
 	if (area_lights.data[idx].projector_rect != vec4(0.0)) {
 		half lod = dist / sqrt(area);
 		lod = log(half(2048.0) * lod) / log(half(3.0));
 
 		hvec2 uv = (closest_point_local_to_light.xy + hvec2(a_half_len, b_half_len)) / hvec2(a_len, b_len);
-		isotropic_light_color = fetch_ltc_lod(vec2(hvec2(1.0) - uv), area_lights.data[idx].projector_rect, float(lod));
+		isotropic_light_color = fetch_ltc_lod(vec2(hvec2(1.0) - uv), area_lights.data[idx].projector_rect, float(lod), max_mipmap);
 	}
 #endif
 #ifdef LIGHT_TRANSMITTANCE_USED
@@ -1514,7 +1514,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #if defined(LIGHT_RIM_USED) // same as for point lights
 	half cNdotV = max(dot(normal, eye_vec), half(1e-4));
 	half rim_light = pow(max(half(1e-4), half(1.0) - cNdotV), max(half(0.0), (half(1.0) - roughness) * half(16.0)));
-	diffuse_light += rim_light * rim * mix(hvec3(1.0), albedo, rim_tint) * ltc_diffuse_tex_color * color * area * light_attenuation_raw;
+	diffuse_light += rim_light * rim * mix(hvec3(1.0), albedo, rim_tint) * isotropic_light_color * color * area * light_attenuation_raw;
 #endif
 
 #if defined(DIFFUSE_TOON)
