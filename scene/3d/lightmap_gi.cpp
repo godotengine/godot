@@ -932,7 +932,7 @@ void LightmapGI::_build_area_light_texture_atlas(const Vector<LightmapGI::Lights
 	uint32_t base_size = 1;
 
 	int idx = 0;
-	int border = 1 << r_mipmaps;
+	int border = 1 << (r_mipmaps - 1);
 
 	for (const KeyValue<Ref<Texture2D>, Rect2> &E : r_texture_rects) {
 		Ref<Texture2D> tex = E.key;
@@ -940,9 +940,16 @@ void LightmapGI::_build_area_light_texture_atlas(const Vector<LightmapGI::Lights
 
 		SortItem &si = itemsv.write[idx];
 
-		si.size.width = (tex_size.width / border) + 1;
-		si.size.height = (tex_size.height / border) + 1;
-		si.pixel_size = tex_size;
+		Vector2i b_size = Vector2i(ceil(float(tex_size.width) / border), ceil(float(tex_size.height) / border));
+		si.size.width = b_size.width + 1;
+		si.size.height = b_size.height + 1;
+		si.pixel_size = b_size * border; // components are either small powers of 2 or N * border
+		if (tex_size.width < border) {
+			si.pixel_size.width = nearest_power_of_2_templated(tex_size.width);
+		}
+		if (tex_size.height < border) {
+			si.pixel_size.height = nearest_power_of_2_templated(tex_size.height);
+		}
 
 		if (base_size < (uint32_t)si.size.width) {
 			base_size = nearest_power_of_2_templated(si.size.width);
@@ -1001,8 +1008,8 @@ void LightmapGI::_build_area_light_texture_atlas(const Vector<LightmapGI::Lights
 			si.pos.x = best_idx;
 			si.pos.y = best_height;
 
-			if (si.pos.y + si.size.height + 1 > max_height) {
-				max_height = si.pos.y + si.size.height + 1; // max_height is at least one border larger.
+			if (si.pos.y + si.size.height > max_height) {
+				max_height = si.pos.y + si.size.height;
 			}
 		}
 
@@ -1019,7 +1026,7 @@ void LightmapGI::_build_area_light_texture_atlas(const Vector<LightmapGI::Lights
 
 	for (int i = 0; i < item_count; i++) {
 		Rect2 uv_rect;
-		uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+		uv_rect.position = items[i].pos * border;
 		uv_rect.size = items[i].pixel_size;
 
 		uv_rect.position /= Size2(r_atlas_size);

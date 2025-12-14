@@ -2964,7 +2964,7 @@ void TextureStorage::update_area_light_atlas() {
 		area_light_atlas.texture_mipmaps.clear();
 	}
 
-	int border = 1 << area_light_atlas.mipmaps;
+	int border = 1 << (area_light_atlas.mipmaps - 1);
 
 	if (area_light_atlas.textures.size()) {
 		//generate atlas
@@ -2978,10 +2978,17 @@ void TextureStorage::update_area_light_atlas() {
 			AreaLightAtlas::SortItem &si = itemsv.write[idx];
 
 			Texture *src_tex = get_texture(E.key);
+			Vector2i b_size = Vector2i(ceil(float(src_tex->width) / border), ceil(float(src_tex->height) / border));
+			si.size.width = b_size.width + 1;
+			si.size.height = b_size.height + 1;
 
-			si.size.width = ceil(float(src_tex->width) / border);
-			si.size.height = ceil(float(src_tex->height) / border);
-			si.pixel_size = Size2i(si.size.width * border, si.size.height * border);
+			si.pixel_size = b_size * border; // components are either small powers of 2 or N * border
+			if(src_tex->width < border) {
+				si.pixel_size.width = nearest_power_of_2_templated(src_tex->width);
+			}
+			if(src_tex->height < border) {
+				si.pixel_size.height = nearest_power_of_2_templated(src_tex->height);
+			}
 
 			if (base_size < (uint32_t)si.size.width) {
 				base_size = nearest_power_of_2_templated(si.size.width);
