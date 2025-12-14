@@ -1512,7 +1512,7 @@ void fragment() {)";
 
 	if (!flags[FLAG_UV1_USE_TRIPLANAR]) {
 		if (affine) {
-		code += R"(
+			code += R"(
 	vec2 base_uv = uv_affine.xy / uv_affine.z;
 )";
 		} else {
