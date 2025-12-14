@@ -1666,40 +1666,60 @@ PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedA
 	RID area_light_atlas_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	RD::get_singleton()->texture_clear(area_light_atlas_texture, Color(0, 0, 0, 0), 0, p_mipmaps, 0, 1);
 
-	for (int i = 0; i < p_mipmaps; i++) {
-		RID mip_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), area_light_atlas_texture, 0, i);
-		Vector<RID> fb;
-		fb.push_back(mip_tex);
-		RID mip_fb = RD::get_singleton()->framebuffer_create(fb);
+	for (int t_idx = 0; t_idx < p_area_light_textures.size(); t_idx++) {
+		RID texture = p_area_light_textures[t_idx];
+		Rect2 uv_rect = p_area_light_atlas_texture_rects[t_idx];
+		uv_rect.position = CLAMP(uv_rect.position, Vector2(0.0, 0.0), Vector2(1.0, 1.0));
+		uv_rect.size = CLAMP(uv_rect.size, Vector2(0.0, 0.0), Vector2(1.0 - uv_rect.position.x, 1.0 - uv_rect.position.y));
+		Vector<RID> blur_textures;
+		RID prev_blur_texture;
 
-		for (int t_idx = 0; t_idx < p_area_light_textures.size(); t_idx++) {
-			RID texture = p_area_light_textures[t_idx];
-			Rect2 uv_rect = p_area_light_atlas_texture_rects[t_idx];
-			uv_rect.position = CLAMP(uv_rect.position, Vector2(0.0, 0.0), Vector2(1.0, 1.0));
-			uv_rect.size = CLAMP(uv_rect.size, Vector2(0.0, 0.0), Vector2(1.0 - uv_rect.position.x, 1.0 - uv_rect.position.y));
+		for (int i = 0; i < p_mipmaps; i++) {
+			RID mip_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), area_light_atlas_texture, 0, i);
+			Vector<RID> fb;
+			fb.push_back(mip_tex);
+			RID mip_fb = RD::get_singleton()->framebuffer_create(fb);
+
 			Vector2i mip_size = p_size / pow(2, i);
 			Vector2i mip_tex_size = uv_rect.size * mip_size;
 			Rect2i uv_recti = Rect2i(uv_rect.position * mip_size, uv_rect.size * mip_size);
 			RID rd_texture = RendererRD::TextureStorage::get_singleton()->texture_get_rd_texture(texture);
+
+			RD::TextureFormat tf_blur;
+			tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			tf_blur.width = mip_tex_size.width;
+			tf_blur.height = mip_tex_size.height;
+			tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
+			tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+			RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
+			blur_textures.push_back(blur_tex);
+
 			if (i == 0) {
-				copy_effects->copy_to_fb_rect(rd_texture, mip_fb, uv_recti);
+				Vector<Color> cc;
+				cc.push_back(Color(0, 0, 0, 0));
+				RID shared_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), blur_tex, 0, 0);
+				Vector<RID> fb_vec;
+				fb_vec.push_back(shared_tex);
+				RID blur_fb = RD::get_singleton()->framebuffer_create(fb_vec);
+				RD::DrawListID rescale_draw_list = RD::get_singleton()->draw_list_begin(blur_fb, RD::DRAW_CLEAR_ALL, cc);
+				copy_effects->copy_to_atlas_fb(rd_texture, blur_fb, Rect2(Vector2(0.0, 0.0), Vector2(1.0, 1.0)), rescale_draw_list);
+				RD::get_singleton()->draw_list_end();
+
+				copy_effects->copy_to_fb_rect(blur_tex, mip_fb, uv_recti);
+				prev_blur_texture = blur_tex;
 			} else {
-				RD::TextureFormat tf_blur;
-				tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				tf_blur.width = mip_tex_size.width;
-				tf_blur.height = mip_tex_size.height;
-				tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
-				tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-				RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
 				Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
 				if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-					copy_effects->gaussian_blur(rd_texture, blur_tex, copy_rect, mip_tex_size);
+					copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
 				} else {
-					copy_effects->gaussian_blur_raster(rd_texture, blur_tex, copy_rect, mip_tex_size);
+					copy_effects->gaussian_blur_raster(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
 				}
 				copy_effects->copy_to_fb_rect(blur_tex, mip_fb, uv_recti);
-				RD::get_singleton()->free_rid(blur_tex);
+				prev_blur_texture = blur_tex;
 			}
+		}
+		for (int i = 0; i < blur_textures.size(); i++) { // start at one, don't free original texture
+			RD::get_singleton()->free_rid(blur_textures[i]);
 		}
 	}
 

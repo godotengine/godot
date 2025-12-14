@@ -2983,10 +2983,10 @@ void TextureStorage::update_area_light_atlas() {
 			si.size.height = b_size.height + 1;
 
 			si.pixel_size = b_size * border; // components are either small powers of 2 or N * border
-			if(src_tex->width < border) {
+			if (src_tex->width < border) {
 				si.pixel_size.width = nearest_power_of_2_templated(src_tex->width);
 			}
-			if(src_tex->height < border) {
+			if (src_tex->height < border) {
 				si.pixel_size.height = nearest_power_of_2_templated(src_tex->height);
 			}
 
