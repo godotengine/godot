@@ -105,6 +105,10 @@ EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
 	return EditorUndoRedoManager::get_singleton();
 }
 
+EditorExport *EditorInterface::get_editor_export() const {
+	return EditorExport::get_singleton();
+}
+
 AABB EditorInterface::_calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb) {
 	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
@@ -839,6 +843,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
 	ClassDB::bind_method(D_METHOD("get_editor_toaster"), &EditorInterface::get_editor_toaster);
 	ClassDB::bind_method(D_METHOD("get_editor_undo_redo"), &EditorInterface::get_editor_undo_redo);
+	ClassDB::bind_method(D_METHOD("get_editor_export"), &EditorInterface::get_editor_export);
 
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 

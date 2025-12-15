@@ -128,6 +128,16 @@ void EditorExport::emit_presets_runnable_changed() {
 }
 
 void EditorExport::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_export_platform", "platform"), &EditorExport::add_export_platform);
+	ClassDB::bind_method(D_METHOD("remove_export_platform", "platform"), &EditorExport::remove_export_platform);
+	ClassDB::bind_method(D_METHOD("get_export_platform_count"), &EditorExport::get_export_platform_count);
+	ClassDB::bind_method(D_METHOD("get_export_platform", "index"), &EditorExport::get_export_platform);
+	ClassDB::bind_method(D_METHOD("get_export_platform_index_by_name", "name"), &EditorExport::get_export_platform_index_by_name);
+	ClassDB::bind_method(D_METHOD("has_preset_with_name", "name", "exclude_index"), &EditorExport::has_preset_with_name, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_export_preset_count"), &EditorExport::get_export_preset_count);
+	ClassDB::bind_method(D_METHOD("get_export_preset", "index"), &EditorExport::get_export_preset);
+	ClassDB::bind_method(D_METHOD("remove_export_preset", "index"), &EditorExport::remove_export_preset);
+
 	ADD_SIGNAL(MethodInfo(_export_presets_updated));
 	ADD_SIGNAL(MethodInfo(_export_presets_runnable_updated));
 }

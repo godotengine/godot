@@ -15,6 +15,13 @@
 				Returns [code]true[/code] if the "Advanced" toggle is enabled in the export dialog.
 			</description>
 		</method>
+		<method name="set_custom_features" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="custom_features" type="String" />
+			<description>
+				Sets a comma-separated list of custom features added to this preset, as a string. See [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature tags[/url] in the documentation for more information.
+			</description>
+		</method>
 		<method name="get_custom_features" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -63,6 +70,17 @@
 				Returns PCK encryption key.
 			</description>
 		</method>
+		<method name="set_exclude_filter" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="exclude" type="String" />
+			<description>
+				Sets file filter to exclude during export. The filter should be a comma-separated list of patterns. Patterns can include wildcards:
+				- [code]*[/code] matches any characters
+				- Directory patterns end with [code]/*[/code] to match all files in that directory
+				Examples: [code]"*.ctex, *.import, music/*"[/code] would exclude all compressed texture files, import files, and all files in the music directory.
+				The matching is case-insensitive and applies to both file paths with and without the [code]res://[/code] prefix.
+			</description>
+		</method>
 		<method name="get_exclude_filter" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -93,6 +111,17 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns array of files to export.
+			</description>
+		</method>
+		<method name="set_include_filter" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="include" type="String" />
+			<description>
+				Sets file filter to include during export. The filter should be a comma-separated list of patterns. Patterns can include wildcards:
+				- [code]*[/code] matches any characters
+				- Directory patterns end with [code]/*[/code] to match all files in that directory
+				Examples: [code]"*.tscn, *.tres, scenes/*"[/code] would include all scene files, resource files, and all files in the scenes directory.
+				The matching is case-insensitive and applies to both file paths with and without the [code]res://[/code] prefix.
 			</description>
 		</method>
 		<method name="get_include_filter" qualifiers="const">
