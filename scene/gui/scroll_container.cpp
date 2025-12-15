@@ -606,7 +606,7 @@ void ScrollContainer::_update_scrollbars() {
 void ScrollContainer::_update_scroll_hints() {
 	Size2 size = get_size();
 	Rect2 margins = _get_margins();
-	Size2 scroll_size = size - margins.position + margins.size;
+	Size2 scroll_size = size - margins.position - margins.size;
 
 	float v_scroll_value = v_scroll->get_value();
 	bool v_scroll_below_max = v_scroll_value < (largest_child_min_size.height - scroll_size.height - 1);
