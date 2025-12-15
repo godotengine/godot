@@ -42,8 +42,11 @@
 #import "godot_window.h"
 #import "godot_window_delegate.h"
 #import "key_mapping_macos.h"
-#import "macos_quartz_core_spi.h"
 #import "os_macos.h"
+
+#ifdef TOOLS_ENABLED
+#import "macos_quartz_core_spi.h"
+#endif
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
@@ -3226,8 +3229,6 @@ Error DisplayServerMacOS::embed_process_update(WindowID p_window, EmbeddedProces
 	return OK;
 }
 
-#endif
-
 Error DisplayServerMacOS::request_close_embedded_process(OS::ProcessID p_pid) {
 	return OK;
 }
@@ -3242,6 +3243,8 @@ Error DisplayServerMacOS::remove_embedded_process(OS::ProcessID p_pid) {
 
 	return OK;
 }
+
+#endif
 
 void DisplayServerMacOS::process_events() {
 	_process_events(true);
