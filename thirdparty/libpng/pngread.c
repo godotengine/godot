@@ -3207,6 +3207,7 @@ png_image_read_composite(png_voidp argument)
       ptrdiff_t    step_row = display->row_bytes;
       unsigned int channels =
           (image->format & PNG_FORMAT_FLAG_COLOR) != 0 ? 3 : 1;
+      int optimize_alpha = (png_ptr->flags & PNG_FLAG_OPTIMIZE_ALPHA) != 0;
       int pass;
 
       for (pass = 0; pass < passes; ++pass)
@@ -3263,20 +3264,44 @@ png_image_read_composite(png_voidp argument)
 
                      if (alpha < 255) /* else just use component */
                      {
-                        /* This is PNG_OPTIMIZED_ALPHA, the component value
-                         * is a linear 8-bit value.  Combine this with the
-                         * current outrow[c] value which is sRGB encoded.
-                         * Arithmetic here is 16-bits to preserve the output
-                         * values correctly.
-                         */
-                        component *= 257*255; /* =65535 */
-                        component += (255-alpha)*png_sRGB_table[outrow[c]];
+                        if (optimize_alpha != 0)
+                        {
+                           /* This is PNG_OPTIMIZED_ALPHA, the component value
+                            * is a linear 8-bit value.  Combine this with the
+                            * current outrow[c] value which is sRGB encoded.
+                            * Arithmetic here is 16-bits to preserve the output
+                            * values correctly.
+                            */
+                           component *= 257*255; /* =65535 */
+                           component += (255-alpha)*png_sRGB_table[outrow[c]];
 
-                        /* So 'component' is scaled by 255*65535 and is
-                         * therefore appropriate for the sRGB to linear
-                         * conversion table.
-                         */
-                        component = PNG_sRGB_FROM_LINEAR(component);
+                           /* Clamp to the valid range to defend against
+                            * unforeseen cases where the data might be sRGB
+                            * instead of linear premultiplied.
+                            * (Belt-and-suspenders for CVE-2025-66293.)
+                            */
+                           if (component > 255*65535)
+                              component = 255*65535;
+
+                           /* So 'component' is scaled by 255*65535 and is
+                            * therefore appropriate for the sRGB-to-linear
+                            * conversion table.
+                            */
+                           component = PNG_sRGB_FROM_LINEAR(component);
+                        }
+                        else
+                        {
+                           /* Compositing was already done on the palette
+                            * entries.  The data is sRGB premultiplied on black.
+                            * Composite with the background in sRGB space.
+                            * This is not gamma-correct, but matches what was
+                            * done to the palette.
+                            */
+                           png_uint_32 background = outrow[c];
+                           component += ((255-alpha) * background + 127) / 255;
+                           if (component > 255)
+                              component = 255;
+                        }
                      }
 
                      outrow[c] = (png_byte)component;
