@@ -29,7 +29,6 @@
 /************************************************************************/
 
 #define RADIAL_A_THRESHOLD 0.0005f
-#define GRADIENT_STOP_SIZE 1024
 #define FIXPT_BITS 8
 #define FIXPT_SIZE (1<<FIXPT_BITS)
 
@@ -102,11 +101,11 @@ static inline uint32_t _alphaUnblend(uint32_t c)
 }
 
 
-static void _applyAA(const SwFill* fill, uint32_t begin, uint32_t end)
+static void _applyAA(SwFill* fill, uint32_t begin, uint32_t end)
 {
     if (begin == 0 || end == 0) return;
 
-    auto i = GRADIENT_STOP_SIZE - end;
+    auto i = SW_COLOR_TABLE - end;
     auto rgbaEnd = _alphaUnblend(fill->ctable[i]);
     auto rgbaBegin = _alphaUnblend(fill->ctable[begin]);
 
@@ -117,7 +116,7 @@ static void _applyAA(const SwFill* fill, uint32_t begin, uint32_t end)
         auto color = INTERPOLATE(rgbaEnd, rgbaBegin, dist);
         fill->ctable[i++] = ALPHA_BLEND((color | 0xff000000), (color >> 24));
 
-        if (i == GRADIENT_STOP_SIZE) i = 0;
+        if (i == SW_COLOR_TABLE) i = 0;
         t += dt;
     }
 }
@@ -126,11 +125,6 @@ static void _applyAA(const SwFill* fill, uint32_t begin, uint32_t end)
 static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* surface, uint8_t opacity)
 {
     if (fill->solid) return true;
-
-    if (!fill->ctable) {
-        fill->ctable = static_cast<uint32_t*>(malloc(GRADIENT_STOP_SIZE * sizeof(uint32_t)));
-        if (!fill->ctable) return false;
-    }
 
     const Fill::ColorStop* colors;
     auto cnt = fdata->colorStops(&colors);
@@ -145,8 +139,7 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
     auto g = pColors->g;
     auto b = pColors->b;
     auto rgba = surface->join(r, g, b, a);
-
-    auto inc = 1.0f / static_cast<float>(GRADIENT_STOP_SIZE);
+    auto inc = 1.0f / static_cast<float>(SW_COLOR_TABLE);
     auto pos = 1.5f * inc;
     uint32_t i = 0;
 
@@ -166,7 +159,7 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
     for (uint32_t j = 0; j < cnt - 1; ++j) {
         if (repeat && j == cnt - 2 && iAAEnd == 0) {
             iAAEnd = iAABegin;
-            _adjustAAMargin(iAAEnd, GRADIENT_STOP_SIZE - i);
+            _adjustAAMargin(iAAEnd, SW_COLOR_TABLE - i);
         }
 
         auto curr = colors + j;
@@ -177,7 +170,7 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
 
         auto rgba2 = surface->join(next->r, next->g, next->b, a2);
 
-        while (pos < next->offset && i < GRADIENT_STOP_SIZE) {
+        while (pos < next->offset && i < SW_COLOR_TABLE) {
             auto t = (pos - curr->offset) * delta;
             auto dist = static_cast<int32_t>(255 * t);
             auto dist2 = 255 - dist;
@@ -195,13 +188,13 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
     }
     rgba = ALPHA_BLEND((rgba | 0xff000000), a);
 
-    for (; i < GRADIENT_STOP_SIZE; ++i)
+    for (; i < SW_COLOR_TABLE; ++i)
         fill->ctable[i] = rgba;
 
     //For repeat fill spread apply anti-aliasing between the last and first colors,
     //othewise make sure the last color stop is represented at the end of the table.
     if (repeat) _applyAA(fill, iAABegin, iAAEnd);
-    else fill->ctable[GRADIENT_STOP_SIZE - 1] = rgba;
+    else fill->ctable[SW_COLOR_TABLE - 1] = rgba;
 
     return true;
 }
@@ -277,10 +270,12 @@ bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix& tr
     //This condition fulfills the SVG 1.1 std:
     //the focal point, if outside the end circle, is moved to be on the end circle
     //See: the SVG 2 std requirements: https://www.w3.org/TR/SVG2/pservers.html#RadialGradientNotes
-    if (fill->radial.a < 0) {
+    constexpr float precision = 0.01f;
+    if (fill->radial.a <= precision) {
         auto dist = sqrtf(fill->radial.dx * fill->radial.dx + fill->radial.dy * fill->radial.dy);
-        fill->radial.fx = cx + r * (fx - cx) / dist;
-        fill->radial.fy = cy + r * (fy - cy) / dist;
+        //retract focal point slightly from edge to avoid numerical errors:
+        fill->radial.fx = cx + r * (1.0f - precision) * (fx - cx) / dist;
+        fill->radial.fy = cy + r * (1.0f - precision) * (fy - cy) / dist;
         fill->radial.dx = cx - fill->radial.fx;
         fill->radial.dy = cy - fill->radial.fy;
         // Prevent loss of precision on Apple Silicon when dr=dy and dx=0 due to FMA
@@ -325,20 +320,20 @@ static inline uint32_t _clamp(const SwFill* fill, int32_t pos)
 {
     switch (fill->spread) {
         case FillSpread::Pad: {
-            if (pos >= GRADIENT_STOP_SIZE) pos = GRADIENT_STOP_SIZE - 1;
+            if (pos >= SW_COLOR_TABLE) pos = SW_COLOR_TABLE - 1;
             else if (pos < 0) pos = 0;
             break;
         }
         case FillSpread::Repeat: {
-            pos = pos % GRADIENT_STOP_SIZE;
-            if (pos < 0) pos = GRADIENT_STOP_SIZE + pos;
+            pos = pos % SW_COLOR_TABLE;
+            if (pos < 0) pos = SW_COLOR_TABLE + pos;
             break;
         }
         case FillSpread::Reflect: {
-            auto limit = GRADIENT_STOP_SIZE * 2;
+            auto limit = SW_COLOR_TABLE * 2;
             pos = pos % limit;
             if (pos < 0) pos = limit + pos;
-            if (pos >= GRADIENT_STOP_SIZE) pos = (limit - pos - 1);
+            if (pos >= SW_COLOR_TABLE) pos = (limit - pos - 1);
             break;
         }
     }
@@ -355,7 +350,7 @@ static inline uint32_t _fixedPixel(const SwFill* fill, int32_t pos)
 
 static inline uint32_t _pixel(const SwFill* fill, float pos)
 {
-    auto i = static_cast<int32_t>(pos * (GRADIENT_STOP_SIZE - 1) + 0.5f);
+    auto i = static_cast<int32_t>(pos * (SW_COLOR_TABLE - 1) + 0.5f);
     return fill->ctable[_clamp(fill, i)];
 }
 
@@ -550,8 +545,8 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
     //Rotation
     float rx = x + 0.5f;
     float ry = y + 0.5f;
-    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (GRADIENT_STOP_SIZE - 1);
-    float inc = (fill->linear.dx) * (GRADIENT_STOP_SIZE - 1);
+    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (SW_COLOR_TABLE - 1);
+    float inc = (fill->linear.dx) * (SW_COLOR_TABLE - 1);
 
     if (opacity == 255) {
         if (tvg::zero(inc)) {
@@ -578,7 +573,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
         } else {
             uint32_t counter = 0;
             while (counter++ < len) {
-                *dst = opBlendNormal(_pixel(fill, t / GRADIENT_STOP_SIZE), *dst, alpha(cmp));
+                *dst = opBlendNormal(_pixel(fill, t / SW_COLOR_TABLE), *dst, alpha(cmp));
                 ++dst;
                 t += inc;
                 cmp += csize;
@@ -609,7 +604,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
         } else {
             uint32_t counter = 0;
             while (counter++ < len) {
-                *dst = opBlendNormal(_pixel(fill, t / GRADIENT_STOP_SIZE), *dst, MULTIPLY(opacity, alpha(cmp)));
+                *dst = opBlendNormal(_pixel(fill, t / SW_COLOR_TABLE), *dst, MULTIPLY(opacity, alpha(cmp)));
                 ++dst;
                 t += inc;
                 cmp += csize;
@@ -624,8 +619,8 @@ void fillLinear(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32
     //Rotation
     float rx = x + 0.5f;
     float ry = y + 0.5f;
-    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (GRADIENT_STOP_SIZE - 1);
-    float inc = (fill->linear.dx) * (GRADIENT_STOP_SIZE - 1);
+    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (SW_COLOR_TABLE - 1);
+    float inc = (fill->linear.dx) * (SW_COLOR_TABLE - 1);
 
     if (tvg::zero(inc)) {
         auto src = MULTIPLY(a, A(_fixedPixel(fill, static_cast<int32_t>(t * FIXPT_SIZE))));
@@ -652,7 +647,7 @@ void fillLinear(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32
     } else {
         uint32_t counter = 0;
         while (counter++ < len) {
-            auto src = MULTIPLY(A(_pixel(fill, t / GRADIENT_STOP_SIZE)), a);
+            auto src = MULTIPLY(A(_pixel(fill, t / SW_COLOR_TABLE)), a);
             *dst = maskOp(src, *dst, ~src);
             ++dst;
             t += inc;
@@ -666,8 +661,8 @@ void fillLinear(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32
     //Rotation
     float rx = x + 0.5f;
     float ry = y + 0.5f;
-    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (GRADIENT_STOP_SIZE - 1);
-    float inc = (fill->linear.dx) * (GRADIENT_STOP_SIZE - 1);
+    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (SW_COLOR_TABLE - 1);
+    float inc = (fill->linear.dx) * (SW_COLOR_TABLE - 1);
 
     if (tvg::zero(inc)) {
         auto src = A(_fixedPixel(fill, static_cast<int32_t>(t * FIXPT_SIZE)));
@@ -697,7 +692,7 @@ void fillLinear(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32
     } else {
         uint32_t counter = 0;
         while (counter++ < len) {
-            auto src = MULTIPLY(A(_pixel(fill, t / GRADIENT_STOP_SIZE)), a);
+            auto src = MULTIPLY(A(_pixel(fill, t / SW_COLOR_TABLE)), a);
             auto tmp = maskOp(src, *cmp, 0);
             *dst = tmp + MULTIPLY(*dst, ~tmp);
             ++dst;
@@ -713,8 +708,8 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
     //Rotation
     float rx = x + 0.5f;
     float ry = y + 0.5f;
-    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (GRADIENT_STOP_SIZE - 1);
-    float inc = (fill->linear.dx) * (GRADIENT_STOP_SIZE - 1);
+    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (SW_COLOR_TABLE - 1);
+    float inc = (fill->linear.dx) * (SW_COLOR_TABLE - 1);
 
     if (tvg::zero(inc)) {
         auto color = _fixedPixel(fill, static_cast<int32_t>(t * FIXPT_SIZE));
@@ -740,7 +735,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
     } else {
         uint32_t counter = 0;
         while (counter++ < len) {
-            *dst = op(_pixel(fill, t / GRADIENT_STOP_SIZE), *dst, a);
+            *dst = op(_pixel(fill, t / SW_COLOR_TABLE), *dst, a);
             ++dst;
             t += inc;
         }
@@ -753,8 +748,8 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
     //Rotation
     float rx = x + 0.5f;
     float ry = y + 0.5f;
-    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (GRADIENT_STOP_SIZE - 1);
-    float inc = (fill->linear.dx) * (GRADIENT_STOP_SIZE - 1);
+    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (SW_COLOR_TABLE - 1);
+    float inc = (fill->linear.dx) * (SW_COLOR_TABLE - 1);
 
     if (tvg::zero(inc)) {
         auto color = _fixedPixel(fill, static_cast<int32_t>(t * FIXPT_SIZE));
@@ -791,7 +786,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
         } else {
             uint32_t counter = 0;
             while (counter++ < len) {
-                auto tmp = op(_pixel(fill, t / GRADIENT_STOP_SIZE), *dst, 255);
+                auto tmp = op(_pixel(fill, t / SW_COLOR_TABLE), *dst, 255);
                 *dst = op2(tmp, *dst, 255);
                 ++dst;
                 t += inc;
@@ -812,7 +807,7 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
         } else {
             uint32_t counter = 0;
             while (counter++ < len) {
-                auto tmp = op(_pixel(fill, t / GRADIENT_STOP_SIZE), *dst, 255);
+                auto tmp = op(_pixel(fill, t / SW_COLOR_TABLE), *dst, 255);
                 auto tmp2 = op2(tmp, *dst, 255);
                 *dst = INTERPOLATE(tmp2, *dst, a);
                 ++dst;
@@ -854,10 +849,6 @@ const Fill::ColorStop* fillFetchSolid(const SwFill* fill, const Fill* fdata)
 
 void fillReset(SwFill* fill)
 {
-    if (fill->ctable) {
-        free(fill->ctable);
-        fill->ctable = nullptr;
-    }
     fill->translucent = false;
     fill->solid = false;
 }
@@ -865,9 +856,5 @@ void fillReset(SwFill* fill)
 
 void fillFree(SwFill* fill)
 {
-    if (!fill) return;
-
-    if (fill->ctable) free(fill->ctable);
-
-    free(fill);
+    if (fill) free(fill);
 }
