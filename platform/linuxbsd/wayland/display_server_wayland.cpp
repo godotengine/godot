@@ -1204,11 +1204,12 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
 
-	// The XDG spec doesn't allow non-interactive resizes. Let's update the
-	// window's internal representation to account for that.
-	if (wd.rect_changed_callback.is_valid()) {
-		wd.rect_changed_callback.call(wd.rect);
+	Size2i new_size = p_size;
+	if (wd.visible) {
+		new_size = wayland_thread.window_set_size(p_window_id, p_size);
 	}
+
+	_update_window_rect(Rect2i(wd.rect.position, new_size), p_window_id);
 }
 
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window_id) const {
