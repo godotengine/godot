@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 set -o pipefail
 
 if [ ! -f "version.py" ]; then
