@@ -3950,10 +3950,12 @@ void WaylandThread::window_destroy(DisplayServer::WindowID p_window_id) {
 }
 
 struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServer::WindowID p_window_id) const {
-	ERR_FAIL_COND_V(!windows.has(p_window_id), nullptr);
-	const WindowState &ws = windows[p_window_id];
+	const WindowState *ws = windows.getptr(p_window_id);
+	if (ws) {
+		return ws->wl_surface;
+	}
 
-	return ws.wl_surface;
+	return nullptr;
 }
 
 WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer::WindowID p_window_id) {
