@@ -30,13 +30,13 @@
 
 #pragma once
 
-#include "core/object/callable.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/vector.h"
+#include "core/variant/callable.h"
 #include "core/variant/variant.h"
+#include "modules/gdscript/gdscript_function.h"
 
 // Forward declarations
-class GDScriptFunction;
 class GDScriptInstance;
 
 // Fallback mechanism to original GDScriptFunction for unsupported opcodes

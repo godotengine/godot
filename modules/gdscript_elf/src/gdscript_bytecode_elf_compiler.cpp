@@ -31,7 +31,6 @@
 #include "gdscript_bytecode_elf_compiler.h"
 
 #include "core/error/error_macros.h"
-#include "core/io/packed_byte_array.h"
 #include "gdscript_bytecode_c_codegen.h"
 #include "gdscript_c_compiler.h"
 #include "modules/gdscript/gdscript_function.h"

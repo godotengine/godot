@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/error/error_list.h"
-#include "core/io/packed_byte_array.h"
-#include "core/string/string.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 // Invokes RISC-V cross-compiler to compile C++ code to ELF
 class GDScriptCCompiler {

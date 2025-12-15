@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/string/string.h"
+#include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
 // Forward declarations

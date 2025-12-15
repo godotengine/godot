@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "core/io/packed_byte_array.h"
 #include "core/string/string_name.h"
 #include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 // Forward declarations
 class GDScriptFunction;

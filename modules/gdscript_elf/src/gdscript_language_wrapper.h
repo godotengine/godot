@@ -81,7 +81,6 @@ public:
 	virtual int find_function(const String &p_function, const String &p_code) const override;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
 	virtual bool can_make_function() const override;
-	virtual Script *create_script() const override;
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) override;
 	virtual bool overrides_external_editor() override;
 	virtual ScriptNameCasing preferred_file_name_casing() const override;
@@ -117,7 +116,6 @@ public:
 	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override;
 	virtual Vector<StackInfo> debug_get_current_stack_info() override;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) override;
-	virtual void frame() override;
 	virtual void profiling_start() override;
 	virtual void profiling_stop() override;
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override;

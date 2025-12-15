@@ -349,11 +349,6 @@ String GDScriptLanguageWrapper::debug_parse_stack_level_expression(int p_level, 
 	return original_language->debug_parse_stack_level_expression(p_level, p_expression, p_max_subitems, p_max_depth);
 }
 
-void GDScriptLanguageWrapper::frame() {
-	ERR_FAIL_NULL(original_language);
-	original_language->frame();
-}
-
 void GDScriptLanguageWrapper::profiling_start() {
 	ERR_FAIL_NULL(original_language);
 	original_language->profiling_start();

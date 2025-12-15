@@ -30,13 +30,12 @@
 
 #pragma once
 
-#include "core/io/packed_byte_array.h"
-#include "core/object/callable.h"
 #include "core/templates/hash_map.h"
+#include "core/variant/callable.h"
 #include "core/variant/variant.h"
+#include "modules/gdscript/gdscript_function.h"
 
 // Forward declarations
-class GDScriptFunction;
 class GDScriptInstance;
 class Sandbox;
 
