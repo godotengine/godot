@@ -34,3 +34,4 @@
 
 void initialize_gdscript_elf_module(ModuleInitializationLevel p_level);
 void uninitialize_gdscript_elf_module(ModuleInitializationLevel p_level);
+
