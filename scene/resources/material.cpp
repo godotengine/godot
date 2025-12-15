@@ -1480,7 +1480,7 @@ void vertex() {)";
 
 	if (affine) {
 		code += "vec4 pos = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);";
-		code += "uv_affine = vec3(UV*pos.w, pos.w);";
+		code += "uv_affine = vec3(UV * pos.w, pos.w);";
 	}
 
 	// End of the vertex shader function.
