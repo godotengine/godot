@@ -53,7 +53,7 @@
 		</method>
 		<method name="create_temp" qualifiers="static">
 			<return type="FileAccess" />
-			<param index="0" name="mode_flags" type="int" />
+			<param index="0" name="mode_flags" type="int" enum="FileAccess.ModeFlags" />
 			<param index="1" name="prefix" type="String" default="&quot;&quot;" />
 			<param index="2" name="extension" type="String" default="&quot;&quot;" />
 			<param index="3" name="keep" type="bool" default="false" />
