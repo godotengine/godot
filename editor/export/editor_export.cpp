@@ -133,8 +133,18 @@ void EditorExport::emit_presets_runnable_changed() {
 }
 
 void EditorExport::_bind_methods() {
-	ADD_SIGNAL(MethodInfo(_export_presets_updated));
-	ADD_SIGNAL(MethodInfo(_export_presets_runnable_updated));
+	ClassDB::bind_method(D_METHOD("add_export_platform", "platform"), &EditorExport::add_export_platform);
+	ClassDB::bind_method(D_METHOD("remove_export_platform", "platform"), &EditorExport::remove_export_platform);
+	ClassDB::bind_method(D_METHOD("get_export_platform_count"), &EditorExport::get_export_platform_count);
+	ClassDB::bind_method(D_METHOD("get_export_platform", "index"), &EditorExport::get_export_platform);
+	ClassDB::bind_method(D_METHOD("get_export_platform_index_by_name", "name"), &EditorExport::get_export_platform_index_by_name);
+	ClassDB::bind_method(D_METHOD("has_preset_with_name", "name", "exclude_index"), &EditorExport::has_preset_with_name, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_export_preset_count"), &EditorExport::get_export_preset_count);
+	ClassDB::bind_method(D_METHOD("get_export_preset", "index"), &EditorExport::get_export_preset);
+	ClassDB::bind_method(D_METHOD("remove_export_preset", "index"), &EditorExport::remove_export_preset);
+
+	ADD_SIGNAL(MethodInfo("export_presets_updated"));
+	ADD_SIGNAL(MethodInfo("export_presets_runnable_updated"));
 }
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
@@ -181,6 +191,7 @@ bool EditorExport::has_preset_with_name(const String &p_name, int p_exclude_inde
 }
 
 Ref<EditorExportPlatform> EditorExport::get_export_platform(int p_idx) {
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), nullptr, "EditorExport is not available");
 	ERR_FAIL_INDEX_V(p_idx, export_platforms.size(), Ref<EditorExportPlatform>());
 
 	return export_platforms[p_idx];
@@ -200,6 +211,7 @@ int EditorExport::get_export_preset_count() const {
 }
 
 Ref<EditorExportPreset> EditorExport::get_export_preset(int p_idx) {
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), nullptr, "EditorExport is not available");
 	ERR_FAIL_INDEX_V(p_idx, export_presets.size(), Ref<EditorExportPreset>());
 	return export_presets[p_idx];
 }
