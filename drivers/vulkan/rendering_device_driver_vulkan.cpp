@@ -331,10 +331,12 @@ static VkImageLayout RD_TO_VK_LAYOUT[RDD::TEXTURE_LAYOUT_MAX] = {
 	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL
 	VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR, // TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL
 	VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT, // TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL
+	VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR, // TEXTURE_LAYOUT_VIDEO_DECODE_DST
+	VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR, // TEXTURE_LAYOUT_VIDEO_DECODE_DPB
 };
 
-static VkPipelineStageFlags _rd_to_vk_pipeline_stages(BitField<RDD::PipelineStageBits> p_stages) {
-	VkPipelineStageFlags vk_flags = 0;
+static VkPipelineStageFlags2 _rd_to_vk_pipeline_stages(BitField<RDD::PipelineStageBits> p_stages) {
+	VkPipelineStageFlags2 vk_flags = 0;
 	if (p_stages.has_flag(RDD::PIPELINE_STAGE_COPY_BIT) || p_stages.has_flag(RDD::PIPELINE_STAGE_RESOLVE_BIT)) {
 		// Transfer has been split into copy and resolve bits. Clear them and merge them into one bit.
 		vk_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -349,7 +351,7 @@ static VkPipelineStageFlags _rd_to_vk_pipeline_stages(BitField<RDD::PipelineStag
 	}
 
 	// The rest of the flags have compatible numeric values with Vulkan.
-	return VkPipelineStageFlags(p_stages) | vk_flags;
+	return VkPipelineStageFlags2(p_stages) | vk_flags;
 }
 
 static VkAccessFlags _rd_to_vk_access_flags(BitField<RDD::BarrierAccessBits> p_access) {
@@ -370,6 +372,16 @@ static VkAccessFlags _rd_to_vk_access_flags(BitField<RDD::BarrierAccessBits> p_a
 		// Vulkan should never use this as API_TRAIT_CLEAR_RESOURCES_WITH_VIEWS is not specified.
 		// Therefore, storage is never cleared with an explicit command.
 		p_access.clear_flag(RDD::BARRIER_ACCESS_STORAGE_CLEAR_BIT);
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_VIDEO_DECODE_READ)) {
+		vk_flags |= VK_ACCESS_2_VIDEO_DECODE_READ_BIT_KHR;
+		p_access.clear_flag(RDD::BARRIER_ACCESS_VIDEO_DECODE_READ);
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE)) {
+		vk_flags |= VK_ACCESS_2_VIDEO_DECODE_WRITE_BIT_KHR;
+		p_access.clear_flag(RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE);
 	}
 
 	// The rest of the flags have compatible numeric values with Vulkan.
@@ -864,7 +876,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		if (enabled_device_extension_names.has(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
 			pipeline_cache_control_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES;
 			pipeline_cache_control_features.pNext = next_features;
-			next_features = &pipeline_cache_control_features;
+			//next_features = &pipeline_cache_control_features;
 		}
 
 		VkPhysicalDeviceFeatures2 device_features_2 = {};
@@ -1239,6 +1251,15 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		video_maintenance1.videoMaintenance1 = true;
 
 		create_info_next = &video_maintenance1;
+	}
+
+	VkPhysicalDeviceVulkan13Features vulkan_1_3_features = {};
+	if (true) {
+		vulkan_1_3_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+		vulkan_1_3_features.pNext = create_info_next;
+		vulkan_1_3_features.synchronization2 = true;
+
+		create_info_next = &vulkan_1_3_features;
 	}
 
 	VkPhysicalDeviceVulkan11Features vulkan_1_1_features = {};
@@ -2707,13 +2728,14 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 		ycbcr_conversion_create_info.format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 		ycbcr_conversion_create_info.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709;
 		ycbcr_conversion_create_info.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW;
-		ycbcr_conversion_create_info.components.r = VK_COMPONENT_SWIZZLE_R;
-		ycbcr_conversion_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
-		ycbcr_conversion_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
-		ycbcr_conversion_create_info.components.a = VK_COMPONENT_SWIZZLE_A;
-		ycbcr_conversion_create_info.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
-		ycbcr_conversion_create_info.yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
-		ycbcr_conversion_create_info.chromaFilter = VK_FILTER_LINEAR;
+		ycbcr_conversion_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		ycbcr_conversion_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		ycbcr_conversion_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		ycbcr_conversion_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		ycbcr_conversion_create_info.xChromaOffset = VK_CHROMA_LOCATION_MIDPOINT;
+		ycbcr_conversion_create_info.yChromaOffset = VK_CHROMA_LOCATION_MIDPOINT;
+		//TODO: ycbcr conversion requires all of minFilter, magFilter and chromaFilter to be the same
+		ycbcr_conversion_create_info.chromaFilter = p_state.mag_filter == SAMPLER_FILTER_LINEAR ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
 		ycbcr_conversion_create_info.forceExplicitReconstruction = false;
 
 		VkSamplerYcbcrConversion sampler_ycbcr_conversion;
@@ -2841,34 +2863,54 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		VectorView<MemoryAccessBarrier> p_memory_barriers,
 		VectorView<BufferBarrier> p_buffer_barriers,
 		VectorView<TextureBarrier> p_texture_barriers) {
-	VkMemoryBarrier *vk_memory_barriers = ALLOCA_ARRAY(VkMemoryBarrier, p_memory_barriers.size());
+	VkDependencyInfo dependency_info = {};
+	dependency_info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+	dependency_info.pNext = nullptr;
+	dependency_info.dependencyFlags = 0;
+
+	VkPipelineStageFlags2 vk_src_stages = _rd_to_vk_pipeline_stages(p_src_stages);
+	VkPipelineStageFlags2 vk_dst_stages = _rd_to_vk_pipeline_stages(p_dst_stages);
+
+	VkMemoryBarrier2 *vk_memory_barriers = ALLOCA_ARRAY(VkMemoryBarrier2, p_memory_barriers.size());
+	dependency_info.memoryBarrierCount = p_memory_barriers.size();
+	dependency_info.pMemoryBarriers = vk_memory_barriers;
 	for (uint32_t i = 0; i < p_memory_barriers.size(); i++) {
 		vk_memory_barriers[i] = {};
-		vk_memory_barriers[i].sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		vk_memory_barriers[i].sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
 		vk_memory_barriers[i].srcAccessMask = _rd_to_vk_access_flags(p_memory_barriers[i].src_access);
 		vk_memory_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_memory_barriers[i].dst_access);
+		vk_memory_barriers[i].srcStageMask = vk_src_stages;
+		vk_memory_barriers[i].dstStageMask = vk_dst_stages;
 	}
 
-	VkBufferMemoryBarrier *vk_buffer_barriers = ALLOCA_ARRAY(VkBufferMemoryBarrier, p_buffer_barriers.size());
+	VkBufferMemoryBarrier2 *vk_buffer_barriers = ALLOCA_ARRAY(VkBufferMemoryBarrier2, p_buffer_barriers.size());
+	dependency_info.bufferMemoryBarrierCount = p_buffer_barriers.size();
+	dependency_info.pBufferMemoryBarriers = vk_buffer_barriers;
 	for (uint32_t i = 0; i < p_buffer_barriers.size(); i++) {
 		vk_buffer_barriers[i] = {};
-		vk_buffer_barriers[i].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		vk_buffer_barriers[i].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
 		vk_buffer_barriers[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		vk_buffer_barriers[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		vk_buffer_barriers[i].srcAccessMask = _rd_to_vk_access_flags(p_buffer_barriers[i].src_access);
 		vk_buffer_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_buffer_barriers[i].dst_access);
+		vk_buffer_barriers[i].srcStageMask = vk_src_stages;
+		vk_buffer_barriers[i].dstStageMask = vk_dst_stages;
 		vk_buffer_barriers[i].buffer = ((const BufferInfo *)p_buffer_barriers[i].buffer.id)->vk_buffer;
 		vk_buffer_barriers[i].offset = p_buffer_barriers[i].offset;
 		vk_buffer_barriers[i].size = p_buffer_barriers[i].size;
 	}
 
-	VkImageMemoryBarrier *vk_image_barriers = ALLOCA_ARRAY(VkImageMemoryBarrier, p_texture_barriers.size());
+	VkImageMemoryBarrier2 *vk_image_barriers = ALLOCA_ARRAY(VkImageMemoryBarrier2, p_texture_barriers.size());
+	dependency_info.imageMemoryBarrierCount = p_texture_barriers.size();
+	dependency_info.pImageMemoryBarriers = vk_image_barriers;
 	for (uint32_t i = 0; i < p_texture_barriers.size(); i++) {
 		const TextureInfo *tex_info = (const TextureInfo *)p_texture_barriers[i].texture.id;
 		vk_image_barriers[i] = {};
-		vk_image_barriers[i].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		vk_image_barriers[i].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
 		vk_image_barriers[i].srcAccessMask = _rd_to_vk_access_flags(p_texture_barriers[i].src_access);
 		vk_image_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_texture_barriers[i].dst_access);
+		vk_image_barriers[i].srcStageMask = vk_src_stages;
+		vk_image_barriers[i].dstStageMask = vk_dst_stages;
 		vk_image_barriers[i].oldLayout = RD_TO_VK_LAYOUT[p_texture_barriers[i].prev_layout];
 		vk_image_barriers[i].newLayout = RD_TO_VK_LAYOUT[p_texture_barriers[i].next_layout];
 		vk_image_barriers[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2899,14 +2941,7 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 #endif
 
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	vkCmdPipelineBarrier(
-			command_buffer->vk_command_buffer,
-			_rd_to_vk_pipeline_stages(p_src_stages),
-			_rd_to_vk_pipeline_stages(p_dst_stages),
-			0,
-			p_memory_barriers.size(), vk_memory_barriers,
-			p_buffer_barriers.size(), vk_buffer_barriers,
-			p_texture_barriers.size(), vk_image_barriers);
+	vkCmdPipelineBarrier2KHR(command_buffer->vk_command_buffer, &dependency_info);
 }
 
 /****************/
@@ -6730,9 +6765,18 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 
 	video_session_info->video_operation = p_profile.operation;
 
-	video_session_info->dpb_image = p_dpb;
-	video_session_info->dpb_views.push_back(dpb_info->vk_view);
 	video_session_info->current_dpb_index = 0;
+	video_session_info->std_reference_infos.reserve(session_info.maxDpbSlots);
+
+	video_session_info->dpb_image = p_dpb;
+	for (size_t i = 0; i < session_info.maxDpbSlots; i++) {
+		RDD::TextureView format = RDD::TextureView();
+		format.format = dpb_info->rd_format;
+
+		TextureID id = texture_create_shared_from_slice(p_dpb, format, TEXTURE_SLICE_2D, i, 1, 0, 1);
+		TextureInfo *view = (TextureInfo *)id.id;
+		video_session_info->dpb_views.push_back(view->vk_view);
+	}
 
 	return RDD::VideoSessionID(video_session_info);
 }
@@ -7204,7 +7248,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	StdVideoDecodeH264PictureInfo std_h264_info = {};
 	std_h264_info.flags.field_pic_flag = p_std_h264_info.field_pic_flag;
 	std_h264_info.flags.is_intra = p_std_h264_info.is_intra;
-	std_h264_info.flags.IdrPicFlag = p_std_h264_info.is_intra;
+	std_h264_info.flags.IdrPicFlag = false;
 	std_h264_info.flags.bottom_field_flag = p_std_h264_info.bottom_field_flag;
 	std_h264_info.flags.is_reference = p_std_h264_info.is_reference;
 	std_h264_info.flags.complementary_field_pair = p_std_h264_info.complementary_field_pair;
@@ -7253,6 +7297,11 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	target_reference_slot_info.slotIndex = video_session_info->current_dpb_index;
 	target_reference_slot_info.pPictureResource = &reference_slot_picture;
 
+	if (p_std_h264_info.is_reference) {
+		video_session_info->std_reference_infos.push_back(h264_reference_slot);
+		video_session_info->current_dpb_index++;
+	}
+
 	// TODO reference slots
 	VkVideoDecodeInfoKHR decode_info = {};
 	decode_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
@@ -7263,8 +7312,8 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	decode_info.srcBufferRange = src_buffer_info->size;
 	decode_info.dstPictureResource = picture_info;
 	decode_info.pSetupReferenceSlot = &target_reference_slot_info;
-	decode_info.referenceSlotCount = 0;
-	decode_info.pReferenceSlots = nullptr;
+	decode_info.referenceSlotCount = reference_slot_infos.size() - 1;
+	decode_info.pReferenceSlots = reference_slot_infos.ptr();
 
 	vkCmdDecodeVideoKHR(cmd_buffer_info->vk_command_buffer, &decode_info);
 

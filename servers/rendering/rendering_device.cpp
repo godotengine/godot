@@ -2019,6 +2019,10 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 		return driver->texture_get_data(tex->driver_id, p_layer);
 	} else {
 		RDD::TextureAspect aspect = tex->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
+		if (tex->format == DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM) {
+			aspect = RDD::TEXTURE_ASPECT_PLANE0;
+		}
+
 		uint32_t mip_alignment = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
 		uint32_t buffer_size = 0;
 
@@ -5804,6 +5808,7 @@ void RenderingDevice::video_profile_get_capabilities(const VideoProfile &p_profi
 void RenderingDevice::video_profile_get_format_properties(const VideoProfile &p_profile) {
 }
 
+// TODO manage DPB directly from rendering device
 // TODO validate everything is alright
 RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_t p_width, uint32_t p_height) {
 	Vector<VideoProfile> video_profiles;
@@ -5844,11 +5849,10 @@ RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_
 	dpb_view.swizzle_g = TEXTURE_SWIZZLE_IDENTITY;
 	dpb_view.swizzle_b = TEXTURE_SWIZZLE_IDENTITY;
 
-	RDD::TextureID dpb_image = driver->texture_create(dpb_format, dpb_view);
-
 	VideoSession video_session;
 	video_session.video_profile = p_profile;
-	video_session.driver_id = driver->video_session_create(p_profile, dpb_image, max_active_reference_pictures);
+	video_session.dpb_id = driver->texture_create(dpb_format, dpb_view);
+	video_session.driver_id = driver->video_session_create(p_profile, video_session.dpb_id, max_active_reference_pictures);
 
 	RDD::QueryPoolID query_pool = driver->video_query_pool_create(1, p_profile);
 	driver->video_session_add_query_pool(video_session.driver_id, query_pool);
@@ -5866,8 +5870,19 @@ void RenderingDevice::video_session_add_h264_parameters(RID p_video_session, Vec
 
 	RDD::FenceID fence = driver->fence_create();
 
+	RDD::TextureBarrier tb;
+	tb.texture = video_session->dpb_id;
+	tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
+	tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
+	tb.src_access = RDD::BARRIER_ACCESS_NONE;
+	tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	tb.subresources.mipmap_count = 1;
+	tb.subresources.layer_count = 17;
+
 	driver->command_pool_reset(decode_pool);
 	driver->command_buffer_begin(decode_buffer);
+	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, {}, tb);
 	driver->command_video_session_reset(decode_buffer, video_session->driver_id);
 	driver->command_buffer_end(decode_buffer);
 	driver->command_queue_execute(decode_queue, decode_buffer, fence);
@@ -5922,8 +5937,38 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
 	ERR_FAIL_NULL(dst_texture);
 
+	RDD::BufferBarrier bb = {};
+	bb.buffer = src_buffer;
+	bb.size = buffer_size;
+	bb.offset = 0;
+	bb.src_access = RDD::BARRIER_ACCESS_NONE;
+	bb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_READ;
+
+	RDD::TextureBarrier decode_tb = {};
+	decode_tb.texture = dst_texture->driver_id;
+	decode_tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
+	decode_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
+	decode_tb.src_access = RDD::BARRIER_ACCESS_NONE;
+	decode_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	decode_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	decode_tb.subresources.mipmap_count = 1;
+	decode_tb.subresources.layer_count = 1;
+
+	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, bb, decode_tb);
 	driver->command_video_session_decode_h264(decode_buffer, video_session->driver_id, src_buffer, p_std_h264_info, dst_texture->driver_id);
-	driver->buffer_free(src_buffer);
+
+	RDD::TextureBarrier read_tb = {};
+	read_tb.texture = dst_texture->driver_id;
+	read_tb.prev_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
+	read_tb.next_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	read_tb.src_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	read_tb.dst_access = RDD::BARRIER_ACCESS_SHADER_READ_BIT;
+	read_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	read_tb.subresources.mipmap_count = 1;
+	read_tb.subresources.layer_count = 1;
+
+	//TODO: use this barrier in a shader
+	//driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_VIDEO_DECODE, RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT, {}, {}, read_tb);
 }
 
 void RenderingDevice::video_session_decode_av1(RID p_video_session, Span<uint8_t> p_obu, VideoDecodeAV1Frame p_std_av1_info, RID p_dst_texture) {

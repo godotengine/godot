@@ -1463,6 +1463,7 @@ private:
 	struct VideoSession {
 		VideoProfile video_profile;
 		RDD::VideoSessionID driver_id;
+		RDD::TextureID dpb_id;
 	};
 
 	RID_Owner<VideoSession, true> video_session_owner;

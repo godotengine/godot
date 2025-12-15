@@ -937,25 +937,22 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	// All Matroska metadata is done, now create the yuv sampler, yuv image pool and dst image
 	video_stream_encoding->set_rendering_device(local_device);
 
-	video_session = video_stream_encoding->create_video_session(width, height);
+	//TODO: be more precise with ycbcr sampler
+	RD::SamplerState sampler_info;
+	sampler_info.enable_ycbcr = true;
 
-	RD::TextureFormat src_yuv_format;
-	src_yuv_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-	src_yuv_format.width = width;
-	src_yuv_format.height = height;
-	src_yuv_format.depth = 1;
-	src_yuv_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	yuv_sampler = video_stream_encoding->create_texture_sampler(sampler_info);
 
-	src_yuv_texture = video_stream_encoding->create_texture(src_yuv_format);
+	RD::TextureFormat dst_yuv_format;
+	dst_yuv_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+	dst_yuv_format.width = width;
+	dst_yuv_format.height = height;
+	dst_yuv_format.depth = 1;
+	dst_yuv_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
-	RD::TextureFormat dst_rgba_format;
-	dst_rgba_format.format = RD::DATA_FORMAT_R8_UNORM;
-	dst_rgba_format.width = width;
-	dst_rgba_format.height = height;
-	dst_rgba_format.depth = 1;
-	dst_rgba_format.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-
-	dst_rgba_texture = local_device->texture_create(dst_rgba_format, RD::TextureView());
+	for (uint32_t i = 0; i < 2; i++) {
+		dst_yuv_pool.push_back(video_stream_encoding->create_texture(dst_yuv_format));
+	}
 }
 
 void VideoStreamPlaybackMatroska::play() {
@@ -971,10 +968,15 @@ void VideoStreamPlaybackMatroska::play() {
 	Cluster cluster = clusters[0];
 	print_line(vformat("------------Begin Matroska Cluster [%d]----------------", cluster.blocks.size()));
 
-	Cluster::Block block = cluster.blocks[0];
-	file->seek(block.position);
-	Vector<uint8_t> frame = file->get_buffer(block.size);
-	video_stream_encoding->parse_container_block(frame, src_yuv_texture);
+	for (uint32_t i = 0; i < 2; i++) {
+		RID dst_yuv = dst_yuv_pool[i];
+		Cluster::Block block = cluster.blocks[i];
+
+		file->seek(block.position);
+		Vector<uint8_t> frame = file->get_buffer(block.size);
+
+		video_stream_encoding->parse_container_block(frame, dst_yuv);
+	}
 
 	local_device->video_session_end();
 	print_line("------------------End Matroska Cluster-----------------------");
@@ -1017,13 +1019,16 @@ Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
 
 // TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
-	Vector<uint8_t> data = local_device->texture_get_data(src_yuv_texture, 0);
+	size_t index = (counter / 30) % dst_yuv_pool.size();
+	RID src_yuv = dst_yuv_pool[index];
+	Vector<uint8_t> data = local_device->texture_get_data(src_yuv, 0);
 
 	Ref<Image> frame;
 	frame.instantiate();
 	frame->set_data(width, height, false, Image::FORMAT_R8, data);
 
 	image_texture->set_image(frame);
+	counter++;
 }
 
 int VideoStreamPlaybackMatroska::get_channels() const {
