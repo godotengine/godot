@@ -104,6 +104,7 @@ Test cases follow the pattern: `TEST_CASE("[GDScript][ELF] Description")` in nam
 
 -   `[GDScript][ELF]` - ELF compilation tests (C code generation, cross-compiler detection, ELF compiler)
 -   `[GDScript][Fallback]` - Fallback mechanism tests (opcode support detection, statistics tracking)
+-   `[GDScript][ELF][Execution]` - Phase 3 ELF execution integration tests (sandbox management, function execution, parameter passing)
 -   `[RISC-V][Encoder]` - Instruction encoding tests (not applicable with C code generation approach)
 
 **Test File**: `tests/test_gdscript_bytecode_elf.h` - Test suite covering:
@@ -111,7 +112,7 @@ Test cases follow the pattern: `TEST_CASE("[GDScript][ELF] Description")` in nam
 - Fallback mechanism (opcode support, statistics)
 - C compiler detection and availability
 - ELF compiler basic functionality
-- **Phase 3 Testing**: ELF execution integration tests (see Testing Status below)
+- **Phase 3 Testing**: Basic API/structural tests for ELF execution integration (11 test cases exist, see Testing Status below)
 
 ### Writing Tests
 
@@ -205,7 +206,7 @@ namespace TestGDScriptELF {
 ### Pending Implementation
 
 -   Phase 2+: Additional method call opcodes (`OPCODE_CALL_METHOD_BIND`, `OPCODE_CALL_METHOD_BIND_RET`, etc.)
--   Phase 3 Testing: Comprehensive test suite for ELF execution integration (see Testing Status below)
+-   Phase 3 Testing: Comprehensive end-to-end integration tests for ELF execution (basic structural tests exist, see Testing Status below)
 -   Editor integration (optional)
 -   Migration progress tracking UI (optional)
 
@@ -483,17 +484,26 @@ When `GDScriptFunctionWrapper::call()` is invoked:
 - C compiler detection and availability
 - ELF compiler basic functionality
 
-**Phase 3 Tests**: ⏳ Pending
-- Sandbox instance management
-- ELF binary loading
-- Function address resolution
-- Argument marshaling
-- Return value extraction
-- Constants/operator_funcs parameter passing
-- Error handling and fallback
-- End-to-end ELF execution
+**Phase 3 Tests**: ✅ Basic Tests Complete
+- **11 test cases exist** covering API structure and basic functionality:
+  - Function wrapper basic functionality
+  - Sandbox instance management (null handling)
+  - Sandbox cleanup
+  - Parameter extraction (extended args structure)
+  - Constants parameter passing (address sharing mechanism)
+  - Operator functions parameter passing (address sharing mechanism)
+  - Function address resolution (caching mechanism)
+  - Error handling (fallback mechanism structure)
+  - C code generation parameter extraction
+  - Constants access NULL pointer handling
+  - Operator functions access NULL pointer handling
+- **Note**: These are basic API/structural tests that verify the code structure exists and handles edge cases (null pointers, etc.). Full end-to-end integration tests that require actual ELF compilation and execution are still pending.
 
-**Testing Readiness**: Not ready - Phase 3 tests need to be implemented before comprehensive testing can begin.
+**Testing Readiness**: Basic structural tests exist, but comprehensive integration testing requires:
+- RISC-V cross-compiler available in test environment
+- Real GDScriptFunction instances for full integration tests
+- Sandbox module fully functional in test context
+- Actual ELF binary compilation and execution verification
 
 ### Test Requirements
 
