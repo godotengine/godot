@@ -2352,6 +2352,8 @@ bool Main::iteration() {
 	double step = advance.idle_step;
 	double scaled_step = step * time_scale;
 
+	VisualServer::get_singleton()->sync_and_halt();
+
 	Engine::get_singleton()->_frame_step = step;
 	Engine::get_singleton()->_physics_interpolation_fraction = advance.interpolation_fraction;
 
@@ -2386,9 +2388,11 @@ bool Main::iteration() {
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
 
-		PhysicsServer::get_singleton()->flush_queries();
-
 		Physics2DServer::get_singleton()->sync();
+
+		VisualServer::get_singleton()->thaw();
+
+		PhysicsServer::get_singleton()->flush_queries();
 		Physics2DServer::get_singleton()->flush_queries();
 
 		if (OS::get_singleton()->get_main_loop()->iteration(frame_slice * time_scale)) {
@@ -2399,6 +2403,8 @@ bool Main::iteration() {
 
 		NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
 		message_queue->flush();
+
+		VisualServer::get_singleton()->sync_and_halt();
 
 		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
 
@@ -2414,6 +2420,8 @@ bool Main::iteration() {
 
 		Engine::get_singleton()->_in_physics = false;
 	}
+
+	VisualServer::get_singleton()->thaw();
 
 	if (InputDefault::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
 		InputDefault::get_singleton()->flush_buffered_events();

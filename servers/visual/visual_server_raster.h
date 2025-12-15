@@ -803,6 +803,8 @@ public:
 	virtual void pre_draw(bool p_will_draw);
 	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
+	virtual void sync_and_halt();
+	virtual void thaw();
 	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const;
 	virtual void init();
 	virtual void finish();

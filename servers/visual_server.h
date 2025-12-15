@@ -1189,6 +1189,8 @@ public:
 
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
+	virtual void sync_and_halt() = 0;
+	virtual void thaw() = 0;
 	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const = 0;
 	virtual void init() = 0;
 	virtual void finish() = 0;
