@@ -379,7 +379,9 @@ void FileDialog::_dir_submitted(String p_dir) {
 		new_dir = root_prefix.path_join(new_dir);
 	}
 	_change_dir(new_dir);
-	filename_edit->set_text("");
+	if (mode != FILE_MODE_SAVE_FILE) {
+		filename_edit->set_text("");
+	}
 	_push_history();
 }
 
@@ -628,7 +630,7 @@ void FileDialog::_file_list_selected(int p_item) {
 		} else {
 			set_default_ok_text(ETR("Open"));
 		}
-	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY || !dir_access->file_exists(filename_edit->get_text())) {
+	} else if (mode != FILE_MODE_SAVE_FILE) {
 		filename_edit->set_text("");
 		if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
 			set_default_ok_text(ETR("Select This Folder"));
