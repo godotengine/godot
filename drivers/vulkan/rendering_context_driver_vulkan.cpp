@@ -888,9 +888,13 @@ void RenderingContextDriverVulkan::_check_driver_workarounds(const VkPhysicalDev
 	// Workaround for the ARM Mali-G52 family of devices. (GH-112530)
 	//TODO
 	//crash with driverVersion: 0.24.2.8, 0.25.1.0, 0.34.0.0
-	r_device.workarounds.avoid_subpass_post_process =
-			r_device.vendor == Vendor::VENDOR_ARM &&
-			p_device_properties.deviceID == 0x74021000; // Mali-G52
+	if (r_device.vendor == Vendor::VENDOR_ARM && p_device_properties.deviceID == 0x74021000) {
+		r_device.workarounds.avoid_subpass_post_process = true;
+	}
+	// Workaround issue on Qualcomm XR2+ Gen2 with subpasses when MSAA and eye-tracked foveated rendering are enabled.
+	if (r_device.vendor == Vendor::VENDOR_QUALCOMM && p_device_properties.deviceID == 0x43050B00 && p_device_properties.driverVersion == 0x80335006) {
+		r_device.workarounds.avoid_subpass_post_process = true;
+	}
 
 	uint32_t driver_variant = VK_API_VERSION_VARIANT(p_device_properties.driverVersion);
 	uint32_t driver_major = VK_VERSION_MAJOR(p_device_properties.driverVersion);
