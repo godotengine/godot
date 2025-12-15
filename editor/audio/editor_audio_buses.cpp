@@ -1321,6 +1321,22 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 	open_layout(p_string);
 }
 
+void EditorAudioBuses::update_layout(EditorDock::DockLayout p_layout) {
+	bool new_floating = (p_layout == EditorDock::DOCK_LAYOUT_FLOATING);
+	if (floating == new_floating) {
+		return;
+	}
+	floating = new_floating;
+
+	if (floating) {
+		bus_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
+	} else {
+		bus_mc->set_theme_type_variation("NoBorderBottomPanel");
+		bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
+	}
+}
+
 void EditorAudioBuses::_bind_methods() {
 	ClassDB::bind_method("_update_bus", &EditorAudioBuses::_update_bus);
 	ClassDB::bind_method("_update_sends", &EditorAudioBuses::_update_sends);
@@ -1387,15 +1403,15 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb->add_child(_new);
 	_new->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_new_layout));
 
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontal");
-	mc->set_v_size_flags(SIZE_EXPAND_FILL);
-	main_vb->add_child(mc);
+	bus_mc = memnew(MarginContainer);
+	bus_mc->set_theme_type_variation("NoBorderBottomPanel");
+	bus_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(bus_mc);
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	bus_scroll->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
-	mc->add_child(bus_scroll);
+	bus_mc->add_child(bus_scroll);
 
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);

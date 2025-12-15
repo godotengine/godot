@@ -42,7 +42,6 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/texture_progress_bar.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
 class EditorAudioBuses;
@@ -154,6 +153,7 @@ class EditorAudioBuses : public EditorDock {
 
 	HBoxContainer *top_hb = nullptr;
 
+	MarginContainer *bus_mc = nullptr;
 	ScrollContainer *bus_scroll = nullptr;
 	HBoxContainer *bus_hb = nullptr;
 
@@ -169,6 +169,8 @@ class EditorAudioBuses : public EditorDock {
 
 	Timer *save_timer = nullptr;
 	String edited_path;
+
+	bool floating = false;
 
 	void _update_file_label_size();
 
@@ -200,6 +202,8 @@ class EditorAudioBuses : public EditorDock {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
 
 public:
 	void open_layout(const String &p_path);
