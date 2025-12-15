@@ -173,9 +173,10 @@ private:
 
 	RID video_session;
 
-	RID src_yuv_texture;
-	RID dst_rgba_texture;
+	RID yuv_sampler;
+	Vector<RID> dst_yuv_pool;
 
+	size_t counter;
 	Ref<ImageTexture> image_texture;
 
 	bool playing = false;
