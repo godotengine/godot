@@ -867,7 +867,7 @@ Patches:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.53 (75c53b6e853dc12c7b3c771edc9c9c841b15faaa, 2025)
+- Version: 1.1.54 (c15d38cb4bb10a5b7e075f74493ff13896e2597a, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
