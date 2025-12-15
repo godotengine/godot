@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/string/string_builder.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
@@ -58,26 +59,27 @@ private:
 	String generated_code;
 
 	// Generate function signature
-	void generate_function_signature(GDScriptFunction *p_function, String &r_code);
+	void generate_function_signature(GDScriptFunction *p_function, StringBuilder &r_code);
 
 	// Generate function body
-	void generate_function_body(GDScriptFunction *p_function, String &r_code);
+	void generate_function_body(GDScriptFunction *p_function, StringBuilder &r_code);
 
 	// Generate stack variable declarations
-	void generate_stack_variables(int p_stack_size, String &r_code);
+	void generate_stack_variables(int p_stack_size, StringBuilder &r_code);
 
 	// Generate parameter extraction from args array
 	// Extracts: result, instance, constants, operator_funcs, actual_args, actual_argcount
-	void generate_parameter_extraction(String &r_code);
+	// Also handles default arguments and initializes stack
+	void generate_parameter_extraction(GDScriptFunction *p_function, StringBuilder &r_code);
 
 	// Generate code for a single bytecode opcode
-	void generate_opcode(GDScriptFunction *p_function, int p_opcode, const int *p_code_ptr, int &p_ip, String &r_code);
+	void generate_opcode(GDScriptFunction *p_function, int p_opcode, const int *p_code_ptr, int &p_ip, StringBuilder &r_code);
 
 	// Generate fallback call for unsupported opcodes
-	void generate_fallback_call(int p_opcode, const int *p_args, int p_arg_count, String &r_code);
+	void generate_fallback_call(int p_opcode, const int *p_args, int p_arg_count, StringBuilder &r_code);
 
 	// Generate syscall using inline assembly
-	void generate_syscall(int p_syscall_number, String &r_code);
+	void generate_syscall(int p_syscall_number, StringBuilder &r_code);
 
 	// Helper: Get address type from encoded address
 	int get_address_type(int p_address);

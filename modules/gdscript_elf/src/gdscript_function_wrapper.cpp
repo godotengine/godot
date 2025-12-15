@@ -36,7 +36,7 @@
 #include "modules/sandbox/src/sandbox.h"
 
 // Static member definition
-HashMap<GDScriptInstance *, Ref<Sandbox>> GDScriptFunctionWrapper::instance_sandboxes;
+HashMap<GDScriptInstance *, Sandbox *> GDScriptFunctionWrapper::instance_sandboxes;
 
 GDScriptFunctionWrapper::GDScriptFunctionWrapper() {
 	original_function = nullptr;
@@ -61,8 +61,8 @@ Variant GDScriptFunctionWrapper::call(GDScriptInstance *p_instance, const Varian
 	// Phase 3: Try to execute ELF code if available
 	if (has_elf_code() && !elf_binary.is_empty()) {
 		// Get or create sandbox for this instance
-		Ref<Sandbox> sandbox = get_or_create_sandbox(p_instance);
-		if (!sandbox.is_valid()) {
+		Sandbox *sandbox = get_or_create_sandbox(p_instance);
+		if (sandbox == nullptr) {
 			// Fallback to original VM if sandbox creation fails
 			ERR_PRINT("GDScriptFunctionWrapper: Failed to get sandbox, falling back to VM");
 			return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
@@ -155,24 +155,24 @@ Variant GDScriptFunctionWrapper::call(GDScriptInstance *p_instance, const Varian
 		}
 
 		// Add instance pointer as Variant integer
-		extended_args_storage[p_argcount + 1] = (int64_t)(uintptr_t)p_instance;
+		extended_args_storage.write[p_argcount + 1] = Variant((int64_t)(uintptr_t)p_instance);
 		extended_args[p_argcount + 1] = &extended_args_storage[p_argcount + 1];
 
 		// Add constants address as Variant integer
 		if (needs_constants) {
-			extended_args_storage[p_argcount + 2] = (int64_t)cached_constants_address;
+			extended_args_storage.write[p_argcount + 2] = Variant((int64_t)cached_constants_address);
 			extended_args[p_argcount + 2] = &extended_args_storage[p_argcount + 2];
 		} else {
-			extended_args_storage[p_argcount + 2] = (int64_t)0;
+			extended_args_storage.write[p_argcount + 2] = Variant((int64_t)0);
 			extended_args[p_argcount + 2] = &extended_args_storage[p_argcount + 2];
 		}
 
 		// Add operator_funcs address as Variant integer
 		if (needs_operator_funcs) {
-			extended_args_storage[p_argcount + 3] = (int64_t)cached_operator_funcs_address;
+			extended_args_storage.write[p_argcount + 3] = Variant((int64_t)cached_operator_funcs_address);
 			extended_args[p_argcount + 3] = &extended_args_storage[p_argcount + 3];
 		} else {
-			extended_args_storage[p_argcount + 3] = (int64_t)0;
+			extended_args_storage.write[p_argcount + 3] = Variant((int64_t)0);
 			extended_args[p_argcount + 3] = &extended_args_storage[p_argcount + 3];
 		}
 
@@ -200,13 +200,13 @@ Variant GDScriptFunctionWrapper::call(GDScriptInstance *p_instance, const Varian
 	return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
 }
 
-Ref<Sandbox> GDScriptFunctionWrapper::get_or_create_sandbox(GDScriptInstance *p_instance) {
-	ERR_FAIL_NULL_V(p_instance, Ref<Sandbox>());
+Sandbox *GDScriptFunctionWrapper::get_or_create_sandbox(GDScriptInstance *p_instance) {
+	ERR_FAIL_NULL_V(p_instance, nullptr);
 
 	// Check if sandbox already exists for this instance
 	if (instance_sandboxes.has(p_instance)) {
-		Ref<Sandbox> existing = instance_sandboxes[p_instance];
-		if (existing.is_valid()) {
+		Sandbox *existing = instance_sandboxes[p_instance];
+		if (existing != nullptr) {
 			return existing;
 		}
 		// If invalid, remove from map and create new one
@@ -214,10 +214,10 @@ Ref<Sandbox> GDScriptFunctionWrapper::get_or_create_sandbox(GDScriptInstance *p_
 	}
 
 	// Create new sandbox instance
-	Ref<Sandbox> sandbox = memnew(Sandbox);
-	if (!sandbox.is_valid()) {
+	Sandbox *sandbox = memnew(Sandbox);
+	if (sandbox == nullptr) {
 		ERR_PRINT("GDScriptFunctionWrapper: Failed to create Sandbox instance");
-		return Ref<Sandbox>();
+		return nullptr;
 	}
 
 	// Store sandbox for this instance

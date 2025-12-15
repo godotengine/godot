@@ -61,7 +61,9 @@ Variant GDScriptELFFallback::call_original_function(
 }
 
 void GDScriptELFFallback::record_fallback_opcode(int p_opcode) {
-	fallback_counts[p_opcode] = fallback_counts.get(p_opcode, 0) + 1;
+	// Get current count (0 if doesn't exist) and increment
+	uint64_t current_count = fallback_counts.has(p_opcode) ? fallback_counts[p_opcode] : 0;
+	fallback_counts[p_opcode] = current_count + 1;
 }
 
 HashMap<int, uint64_t> GDScriptELFFallback::get_fallback_statistics() {

@@ -457,6 +457,7 @@ private:
 	friend class GDScriptLanguage;
 	friend class GDScriptBytecodeCCodeGenerator;
 	friend class GDScriptBytecodeELFCompiler;
+	friend class GDScriptFunctionWrapper;
 
 	StringName name;
 	StringName source;

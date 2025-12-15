@@ -33,6 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/templates/list.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/variant/array.h"
@@ -182,7 +183,7 @@ String GDScriptCCompiler::write_temp_c_file(const String &p_c_code) {
 Error GDScriptCCompiler::invoke_compiler(const String &p_c_file, const String &p_elf_file) {
 	// Build compiler arguments
 	// riscv64-unknown-elf-gcc -o output.elf -nostdlib -static -O0 input.c
-	Vector<String> arguments;
+	List<String> arguments;
 	arguments.push_back("-o");
 	arguments.push_back(p_elf_file);
 	arguments.push_back("-nostdlib");
@@ -190,17 +191,14 @@ Error GDScriptCCompiler::invoke_compiler(const String &p_c_file, const String &p
 	arguments.push_back("-O0");
 	arguments.push_back(p_c_file);
 
-	Array output;
-	int exit_code = OS::get_singleton()->execute(compiler_path, PackedStringArray(arguments), output, false, false);
+	String output;
+	int exit_code = 0;
+	Error err = OS::get_singleton()->execute(compiler_path, arguments, &output, &exit_code, true, nullptr, false);
 
-	if (exit_code != 0) {
-		String error_output;
-		if (output.size() > 0) {
-			error_output = output[0];
-		}
+	if (exit_code != 0 || err != OK) {
 		last_error = "Compiler failed with exit code " + itos(exit_code);
-		if (!error_output.is_empty()) {
-			last_error += ": " + error_output;
+		if (!output.is_empty()) {
+			last_error += ": " + output;
 		}
 		ERR_PRINT("GDScriptCCompiler: " + last_error);
 		return ERR_COMPILATION_FAILED;

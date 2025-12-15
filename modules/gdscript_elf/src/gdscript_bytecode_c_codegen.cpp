@@ -88,7 +88,7 @@ String GDScriptBytecodeCCodeGenerator::generate_c_code(GDScriptFunction *p_funct
 
 	// Generate parameter extraction from args array
 	// Extended args structure: [result_ptr, arg0, arg1, ..., argN, instance_ptr, constants_addr, operator_funcs_addr]
-	generate_parameter_extraction(code);
+	generate_parameter_extraction(p_function, code);
 
 	// Generate function body
 	generate_function_body(p_function, code);
@@ -99,7 +99,7 @@ String GDScriptBytecodeCCodeGenerator::generate_c_code(GDScriptFunction *p_funct
 	return generated_code;
 }
 
-void GDScriptBytecodeCCodeGenerator::generate_function_signature(GDScriptFunction *p_function, String &r_code) {
+void GDScriptBytecodeCCodeGenerator::generate_function_signature(GDScriptFunction *p_function, StringBuilder &r_code) {
 	// Generate function signature matching vmcall_address API
 	// Extended args structure: [result_ptr, arg0, arg1, ..., argN, instance_ptr, constants_addr, operator_funcs_addr]
 	// void gdscript_function_name(Variant** args, int argcount)
@@ -111,17 +111,20 @@ void GDScriptBytecodeCCodeGenerator::generate_function_signature(GDScriptFunctio
 	r_code += "void gdscript_" + func_name + "(Variant** args, int argcount)";
 }
 
-void GDScriptBytecodeCCodeGenerator::generate_stack_variables(int p_stack_size, String &r_code) {
+void GDScriptBytecodeCCodeGenerator::generate_stack_variables(int p_stack_size, StringBuilder &r_code) {
 	// Generate stack array: Variant stack[STACK_SIZE];
 	r_code += "    Variant stack[" + itos(p_stack_size) + "];\n";
 	r_code += "    int ip = 0; // Instruction pointer\n";
 	r_code += "\n";
 }
 
-void GDScriptBytecodeCCodeGenerator::generate_parameter_extraction(String &r_code) {
+void GDScriptBytecodeCCodeGenerator::generate_parameter_extraction(GDScriptFunction *p_function, StringBuilder &r_code) {
 	// Extract parameters from extended args array
 	// Extended args structure: [result_ptr, arg0, arg1, ..., argN, instance_ptr, constants_addr, operator_funcs_addr]
 	// Total: 1 (result) + actual_argcount + 3 (instance, constants, operator_funcs) = argcount
+
+	int argument_count = p_function->get_argument_count();
+	int default_arg_count = p_function->_default_arg_count;
 
 	r_code += "    // Extract parameters from extended args array\n";
 	r_code += "    // args[0] = result pointer\n";
@@ -142,6 +145,21 @@ void GDScriptBytecodeCCodeGenerator::generate_parameter_extraction(String &r_cod
 	r_code += "    int actual_argcount = argcount - 4;\n";
 	r_code += "    if (actual_argcount < 0) actual_argcount = 0;\n";
 	r_code += "    \n";
+	r_code += "    // Calculate defarg for default argument handling\n";
+	r_code += "    // defarg = argument_count - actual_argcount (when fewer args provided)\n";
+	r_code += "    int defarg = 0;\n";
+	if (default_arg_count > 0) {
+		r_code += "    if (actual_argcount < " + itos(argument_count) + ") {\n";
+		r_code += "        int min_args = " + itos(argument_count) + " - " + itos(default_arg_count) + ";\n";
+		r_code += "        if (actual_argcount < min_args) {\n";
+		r_code += "            // Too few arguments - error case, return default\n";
+		r_code += "            if (result != NULL) *result = Variant();\n";
+		r_code += "            return;\n";
+		r_code += "        }\n";
+		r_code += "        defarg = " + itos(argument_count) + " - actual_argcount;\n";
+		r_code += "    }\n";
+	}
+	r_code += "    \n";
 	r_code += "    // Extract instance pointer\n";
 	r_code += "    void* instance = (void*)(uintptr_t)(int64_t)(*args[argcount - 3]);\n";
 	r_code += "    \n";
@@ -154,13 +172,37 @@ void GDScriptBytecodeCCodeGenerator::generate_parameter_extraction(String &r_cod
 	r_code += "    gaddr_t operator_funcs_addr = (gaddr_t)(int64_t)(*args[argcount - 1]);\n";
 	r_code += "    Variant::ValidatedOperatorEvaluator* operator_funcs = (operator_funcs_addr != 0) ? (Variant::ValidatedOperatorEvaluator*)operator_funcs_addr : NULL;\n";
 	r_code += "    \n";
-	r_code += "    // Copy actual arguments to stack for easier access\n";
-	r_code += "    // Note: args[1] to args[actual_argcount] are the actual function arguments\n";
-	r_code += "    // We'll access them directly via args[i+1] when needed\n";
+	r_code += "    // Initialize fixed addresses (self, class, nil)\n";
+	r_code += "    // stack[0] = self (instance)\n";
+	r_code += "    // stack[1] = class (script)\n";
+	r_code += "    // stack[2] = nil\n";
+	r_code += "    if (instance != NULL) {\n";
+	r_code += "        stack[0] = Variant((Object*)instance);\n";
+	r_code += "    } else {\n";
+	r_code += "        stack[0] = Variant();\n";
+	r_code += "    }\n";
+	r_code += "    stack[1] = Variant(); // class - would need script reference\n";
+	r_code += "    stack[2] = Variant(); // nil\n";
+	r_code += "    \n";
+	r_code += "    // Initialize function arguments on stack\n";
+	r_code += "    // Arguments are placed at stack[FIXED_ADDRESSES_MAX + i] for i in [0, argument_count-1]\n";
+	r_code += "    const int FIXED_ADDRESSES_MAX = 3;\n";
+	r_code += "    for (int i = 0; i < " + itos(argument_count) + "; i++) {\n";
+	r_code += "        if (i < actual_argcount) {\n";
+	r_code += "            // Copy provided argument\n";
+	r_code += "            stack[FIXED_ADDRESSES_MAX + i] = *args[i + 1];\n";
+	r_code += "        } else {\n";
+	r_code += "            // Initialize with default (will be set by OPCODE_JUMP_TO_DEF_ARGUMENT)\n";
+	r_code += "            stack[FIXED_ADDRESSES_MAX + i] = Variant();\n";
+	r_code += "        }\n";
+	r_code += "    }\n";
+	r_code += "    \n";
+	r_code += "    // Initialize remaining stack slots\n";
+	r_code += "    // Note: This is simplified - full initialization would handle typed arguments, varargs, etc.\n";
 	r_code += "\n";
 }
 
-void GDScriptBytecodeCCodeGenerator::generate_function_body(GDScriptFunction *p_function, String &r_code) {
+void GDScriptBytecodeCCodeGenerator::generate_function_body(GDScriptFunction *p_function, StringBuilder &r_code) {
 	// Generate code for each bytecode instruction
 	const int *code_ptr = p_function->code.ptr();
 	int code_size = p_function->code.size();
@@ -188,7 +230,7 @@ void GDScriptBytecodeCCodeGenerator::generate_function_body(GDScriptFunction *p_
 	}
 }
 
-void GDScriptBytecodeCCodeGenerator::generate_opcode(GDScriptFunction *p_function, int p_opcode, const int *p_code_ptr, int &p_ip, String &r_code) {
+void GDScriptBytecodeCCodeGenerator::generate_opcode(GDScriptFunction *p_function, int p_opcode, const int *p_code_ptr, int &p_ip, StringBuilder &r_code) {
 	// Phase 2: Implement direct C code generation for supported opcodes
 	// Check if opcode is supported (Phase 2: simple assignments and control flow)
 	if (GDScriptELFFallback::is_opcode_supported(p_opcode)) {
@@ -290,6 +332,26 @@ void GDScriptBytecodeCCodeGenerator::generate_opcode(GDScriptFunction *p_functio
 			case GDScriptFunction::OPCODE_LINE: {
 				// OPCODE_LINE: code[ip+1] = line_number
 				// Metadata opcode for debugging - just skip it
+				p_ip += 2;
+				return;
+			}
+			case GDScriptFunction::OPCODE_JUMP_TO_DEF_ARGUMENT: {
+				// OPCODE_JUMP_TO_DEF_ARGUMENT: code[ip+1] is not used, defarg variable determines jump target
+				// The default_arguments array contains IP addresses for each default argument
+				// We need to generate a switch statement based on defarg
+				// Note: default_arguments is a Vector<int> in p_function, but we can't access it directly
+				// For now, use fallback - proper implementation would require passing default_arguments array
+				// or generating a switch statement with all default argument IPs
+				if (p_function->default_arguments.size() > 0) {
+					r_code += "    // Jump to default argument initialization based on defarg\n";
+					r_code += "    switch (defarg) {\n";
+					for (int i = 0; i < p_function->default_arguments.size(); i++) {
+						int target_ip = p_function->default_arguments[i];
+						r_code += "        case " + itos(i + 1) + ": goto label_" + itos(target_ip) + "; break;\n";
+					}
+					r_code += "        default: break; // No default argument needed\n";
+					r_code += "    }\n";
+				}
 				p_ip += 2;
 				return;
 			}
@@ -426,12 +488,12 @@ void GDScriptBytecodeCCodeGenerator::generate_opcode(GDScriptFunction *p_functio
 	p_ip += 1;
 }
 
-void GDScriptBytecodeCCodeGenerator::generate_fallback_call(int p_opcode, const int *p_args, int p_arg_count, String &r_code) {
+void GDScriptBytecodeCCodeGenerator::generate_fallback_call(int p_opcode, const int *p_args, int p_arg_count, StringBuilder &r_code) {
 	// Generate call to fallback function: gdscript_vm_fallback(opcode, instance, stack, ip)
 	r_code += "    gdscript_vm_fallback(" + itos(p_opcode) + ", instance, stack, ip);\n";
 }
 
-void GDScriptBytecodeCCodeGenerator::generate_syscall(int p_syscall_number, String &r_code) {
+void GDScriptBytecodeCCodeGenerator::generate_syscall(int p_syscall_number, StringBuilder &r_code) {
 	// Generate inline assembly syscall
 	// __asm__ volatile ("li a7, %0\n ecall\n" : : "i" (ECALL_NUMBER) : "a7");
 	r_code += "    __asm__ volatile (\"li a7, %0\\n ecall\\n\" : : \"i\" (" + itos(p_syscall_number) + ") : \"a7\");\n";

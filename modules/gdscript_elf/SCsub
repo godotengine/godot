@@ -6,8 +6,19 @@ Import("env_modules")
 
 env_gdscript_elf = env_modules.Clone()
 
+# Enable exceptions (required for sandbox module dependencies)
+if env["platform"] == "web":
+	env_gdscript_elf.Append(CXXFLAGS=["-fexceptions"])
+	env_gdscript_elf.Append(LINKFLAGS=["-fexceptions", "-s", "DISABLE_EXCEPTION_CATCHING=0"])
+elif env["platform"] != "windows" or env.get("use_mingw", False):
+	env_gdscript_elf.Append(CXXFLAGS=["-fexceptions"])
+else:
+	env_gdscript_elf.Append(CXXFLAGS=["/EHsc"])
+
 # Add include paths
 env_gdscript_elf.Prepend(CPPPATH=["#modules/gdscript_elf/src"])
+# Add sandbox/libriscv include paths (needed for guest_datatypes.h which includes libriscv/machine.hpp)
+env_gdscript_elf.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib", "#modules/sandbox/src"])
 
 # Source files
 sources = [

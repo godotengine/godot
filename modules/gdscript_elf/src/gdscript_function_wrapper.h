@@ -86,12 +86,13 @@ public:
 
 	// Get or create sandbox instance for a GDScriptInstance
 	// Returns null if sandbox creation fails
-	static Ref<Sandbox> get_or_create_sandbox(GDScriptInstance *p_instance);
+	static Sandbox *get_or_create_sandbox(GDScriptInstance *p_instance);
 
 	// Clean up sandbox for a GDScriptInstance (called when instance is destroyed)
 	static void cleanup_sandbox(GDScriptInstance *p_instance);
 
 private:
 	// Static map to associate GDScriptInstance with Sandbox
-	// Key: GDScriptInstance pointer, Value: Ref<Sandbox>
-	static HashMap<GDScriptInstance *, Ref<Sandbox>> instance_sandboxes;
+	// Key: GDScriptInstance pointer, Value: Sandbox pointer (Node, managed by scene tree)
+	static HashMap<GDScriptInstance *, Sandbox *> instance_sandboxes;
+};
