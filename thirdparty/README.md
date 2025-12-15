@@ -170,7 +170,7 @@ Patches:
 ## directx_headers
 
 - Upstream: https://github.com/microsoft/DirectX-Headers
-- Version: 1.611.1 (48f23952bc08a6dce0727339c07cedbc4797356c, 2023)
+- Version: 1.618.2 (dde59d560da2760fec612d6634124edc2a26b82f, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -181,8 +181,7 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-mingw-pragma.patch` ([GH-83452](https://github.com/godotengine/godot/pull/83452))
-- `0002-win7-8-dynamic-load.patch` ([GH-88496](https://github.com/godotengine/godot/pull/88496))
+- `0001-win7-8-dynamic-load.patch` ([GH-88496](https://github.com/godotengine/godot/pull/88496))
 
 
 ## doctest

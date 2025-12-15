@@ -1,16 +1,16 @@
 diff --git a/thirdparty/directx_headers/include/directx/d3dx12_root_signature.h b/thirdparty/directx_headers/include/directx/d3dx12_root_signature.h
-index 572efed852..2da79d10f1 100644
+index e194d30a3f..bf9a2c9101 100644
 --- a/thirdparty/directx_headers/include/directx/d3dx12_root_signature.h
 +++ b/thirdparty/directx_headers/include/directx/d3dx12_root_signature.h
-@@ -996,6 +996,7 @@ struct CD3DX12_GPU_DESCRIPTOR_HANDLE : public D3D12_GPU_DESCRIPTOR_HANDLE
- // two code paths for building root signatures, this helper method reconstructs a 1.0 signature when
- // 1.1 is not supported.
+@@ -1001,6 +1001,7 @@ struct CD3DX12_GPU_DESCRIPTOR_HANDLE : public D3D12_GPU_DESCRIPTOR_HANDLE
+ #endif
+ 
  inline HRESULT D3DX12SerializeVersionedRootSignature(
 +    _In_ HMODULE pLibD3D12,
      _In_ const D3D12_VERSIONED_ROOT_SIGNATURE_DESC* pRootSignatureDesc,
      D3D_ROOT_SIGNATURE_VERSION MaxVersion,
      _Outptr_ ID3DBlob** ppBlob,
-@@ -1006,13 +1007,18 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
+@@ -1011,13 +1012,18 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
          *ppErrorBlob = nullptr;
      }
  
@@ -30,7 +30,7 @@ index 572efed852..2da79d10f1 100644
  
                  case D3D_ROOT_SIGNATURE_VERSION_1_1:
  #if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
-@@ -1114,7 +1120,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
+@@ -1125,7 +1131,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
                      if (SUCCEEDED(hr))
                      {
                          const CD3DX12_ROOT_SIGNATURE_DESC desc_1_0(desc_1_1.NumParameters, pParameters_1_0, desc_1_1.NumStaticSamplers, pStaticSamplers == nullptr ? desc_1_1.pStaticSamplers : pStaticSamplers, desc_1_1.Flags);
@@ -39,7 +39,7 @@ index 572efed852..2da79d10f1 100644
                      }
  
                      if (pParameters)
-@@ -1145,7 +1151,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
+@@ -1159,7 +1165,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
              {
              case D3D_ROOT_SIGNATURE_VERSION_1_0:
              case D3D_ROOT_SIGNATURE_VERSION_1_1:
@@ -48,7 +48,7 @@ index 572efed852..2da79d10f1 100644
  
  #if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
              case D3D_ROOT_SIGNATURE_VERSION_1_2:
-@@ -1181,7 +1187,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
+@@ -1195,7 +1201,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
                  if (SUCCEEDED(hr))
                  {
                      const CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC desc(desc_1_1.NumParameters, desc_1_1.pParameters, desc_1_1.NumStaticSamplers, pStaticSamplers == nullptr ? desc_1_1.pStaticSamplers : pStaticSamplers, desc_1_1.Flags);
@@ -57,10 +57,10 @@ index 572efed852..2da79d10f1 100644
                  }
  
                  if (pStaticSamplers)
-@@ -1197,7 +1203,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
- #if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
+@@ -1216,7 +1222,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
          case D3D_ROOT_SIGNATURE_VERSION_1_2:
  #endif
+         default:
 -            return D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
 +            return d3d_D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
      }
