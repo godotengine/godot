@@ -1378,7 +1378,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					RID light = light_storage->light_instance_get_base_light(light_instance);
 
 					if (light_storage->light_has_shadow(light)) {
-						ERR_FAIL_MSG("AreaLights don't support shadows in Compatibility renderer");
+						ERR_FAIL_MSG("AreaLights don't support shadows in the Compatibility renderer.");
 					} else {
 						// Lights without shadow can all go in base pass.
 						inst->area_light_gl_cache.push_back((uint32_t)light_storage->light_instance_get_gl_id(light_instance));
@@ -2024,7 +2024,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 			light_data.area_height[0] = area_vec_b.x;
 			light_data.area_height[1] = area_vec_b.y;
 			light_data.area_height[2] = area_vec_b.z;
-			light_data.inv_spot_attenuation = 1.0 / (radius + Vector2(area_size.x, area_size.y).length() / 2.0); // center range
+			light_data.inv_spot_attenuation = 1.0f / (radius + area_size.length() / 2.0f); // center range
 
 			if (light->area_normalize_energy) {
 				// normalization to make larger lights output same amount of light as smaller lights with same energy

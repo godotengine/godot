@@ -1669,8 +1669,8 @@ PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedA
 	for (int t_idx = 0; t_idx < p_area_light_textures.size(); t_idx++) {
 		RID texture = p_area_light_textures[t_idx];
 		Rect2 uv_rect = p_area_light_atlas_texture_rects[t_idx];
-		uv_rect.position = CLAMP(uv_rect.position, Vector2(0.0, 0.0), Vector2(1.0, 1.0));
-		uv_rect.size = CLAMP(uv_rect.size, Vector2(0.0, 0.0), Vector2(1.0 - uv_rect.position.x, 1.0 - uv_rect.position.y));
+		uv_rect.position = uv_rect.position.clampf(0.0, 1.0);
+		uv_rect.size = uv_rect.size.clamp(Vector2(0.0, 0.0), Vector2(1.0 - uv_rect.position.x, 1.0 - uv_rect.position.y));
 		Vector<RID> blur_textures;
 		RID prev_blur_texture;
 

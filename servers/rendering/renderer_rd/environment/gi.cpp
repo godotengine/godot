@@ -2987,9 +2987,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					l.area_projector_rect[1] = proj_rect.position.y;
 					l.area_projector_rect[2] = proj_rect.size.width;
 					l.area_projector_rect[3] = proj_rect.size.height;
-					l.inv_spot_attenuation = 1.0 / (l.radius + Vector2(area_size.x, area_size.y).length() / 2.0); // center range
+					l.inv_spot_attenuation = 1.0f / (l.radius + area_size.length() / 2.0f); // center range
 					Size2i texture_size = proj_rect.size * RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_size();
-					l.cos_spot_angle = MIN(floor(log2(MAX(MIN(texture_size.x, texture_size.y), 1)) - 1.0), RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_mipmaps()); // max mipmaps
+					l.cos_spot_angle = MIN(Math::floor(Math::log2(MAX(MIN(texture_size.x, texture_size.y), 1.0f)) - 1.0f), RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_mipmaps()); // max mipmaps
 					if (RSG::light_storage->light_area_get_normalize_energy(light)) {
 						// normalization to make larger lights output same amount of light as smaller lights with same energy
 						float surface_area = area_size.x * area_size.y;

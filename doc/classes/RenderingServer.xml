@@ -21,6 +21,10 @@
 		<method name="area_light_create">
 			<return type="RID" />
 			<description>
+				Creates a new area light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				To place in a scene, attach this area light to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent node is [AreaLight3D].
 			</description>
 		</method>
 		<method name="bake_render_uv2">
@@ -2110,7 +2114,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Defines whether the energy of an [AreaLight3D] is normalized (divided) by its area. If set to [code]true[/code], changing the size does not affect the amount of total energy output. Equivalent to [member AreaLight3D.area_normalize_energy].
+				Defines whether the energy of an [AreaLight3D] is normalized (divided) by its area. If set to [code]true[/code], changing the size does not affect the total energy output. Equivalent to [member AreaLight3D.area_normalize_energy].
 			</description>
 		</method>
 		<method name="light_area_set_size">
@@ -4869,6 +4873,7 @@
 			Spot light (see [SpotLight3D]).
 		</constant>
 		<constant name="LIGHT_AREA" value="3" enum="LightType">
+			Area light (see [AreaLight3D]).
 		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy multiplier.

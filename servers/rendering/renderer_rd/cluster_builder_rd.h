@@ -144,7 +144,7 @@ public:
 	enum LightType {
 		LIGHT_TYPE_OMNI,
 		LIGHT_TYPE_SPOT,
-		LIGHT_TYPE_AREA
+		LIGHT_TYPE_AREA,
 	};
 
 	enum BoxType {
@@ -350,7 +350,7 @@ public:
 				float s = xform.basis.rows[i].length();
 				//scale[i] *= s; // lights ignore scale
 				xform.basis.rows[i] /= s;
-			};
+			}
 			xform.origin -= xform.basis.get_column(Vector3::AXIS_Z) * scale.z; // translate center to center of box
 
 			float depth = -xform.origin.z;

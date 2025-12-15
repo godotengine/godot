@@ -4,25 +4,25 @@
 		An area light, such as a neon light tube or a screen.
 	</brief_description>
 	<description>
-		An area light is a type of [Light3D] node that emits light over a 2-dimensional area, in the shape of a rectangle. The light is attenuated through the distance. This attenuation can be configured by changing the energy, [member area_attenuation], and [member area_range].
+		An area light is a type of [Light3D] node that emits light over a two-dimensional area, in the shape of a rectangle. The light is attenuated throughout the distance. This attenuation can be configured by changing the energy, [member area_attenuation], and [member area_range].
 		Light is emitted in the -Z direction of the node's global basis. For an unrotated light, this means that the light is emitted forwards, illuminating the front side of a 3D model (see [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT]).
 		Area lights can cast soft shadows using PCSS, which you can control by tweaking the size parameter. The shadow map is drawn from the center of the light.
-		[b]Note:[/b] Area lights have limited support in the Mobile or Compatibility renderer. In the Mobile renderer, the size of the penumbra doesn't vary is it should with PCSS. In Compatibility, area lights cannot cast shadows. For static lighting, consider instead using [LightmapGI] and a [QuadMesh] with [member PrimitiveMesh.add_uv2] set to [code]true[/code] and assign an emissive material to the [QuadMesh], then hide the [QuadMesh] after baking lightmaps.
+		[b]Note:[/b] Area lights have limited support in the Mobile and Compatibility renderers. In the Mobile renderer, the size of the penumbra doesn't vary as it should with PCSS. In Compatibility, area lights cannot cast shadows. For static lighting, consider instead using [LightmapGI] and a [QuadMesh] with [member PrimitiveMesh.add_uv2] set to [code]true[/code], assign an emissive material to the [QuadMesh], then hide the [QuadMesh] after baking lightmaps.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="area_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
-			Controls the distance attenuation function for area lights.
-			A value of [code]0.0[/code] will maintain a constant brightness through most of the range, but smoothly attenuate the light at the edge of the range. Use a value of [code]2.0[/code] for physically accurate lights as it results in the proper inverse square attenuation.
-			[b]Note:[/b] Setting attenuation to [code]2.0[/code] or higher may result in distant objects receiving minimal light, even within range. For example, with a range of [code]4096[/code], an object at [code]100[/code] units is attenuated by a factor of [code]0.0001[/code]. With a default brightness of [code]1[/code], the light would not be visible at that distance.
-			[b]Note:[/b] Using negative or values higher than [code]10.0[/code] may lead to unexpected results.
+			Controls the distance attenuation function for this area light.
+			A value of [code]0.0[/code] will maintain a constant brightness through most of the range, but will smoothly attenuate the light at the edge of the range. Use a value of [code]2.0[/code] for physically accurate lights as it results in the proper inverse square attenuation.
+			[b]Note:[/b] Setting attenuation to [code]2.0[/code] or higher may result in distant objects receiving minimal light, even when within range. For example, with a range of [code]4096[/code], an object at [code]100[/code] units is attenuated by a factor of [code]0.0001[/code]. With a default brightness of [code]1[/code], the light would not be visible at that distance.
+			[b]Note:[/b] Using negative values or values higher than [code]10.0[/code] may lead to unexpected results.
 		</member>
-		<member name="area_normalize_energy" type="bool" setter="set_area_normalize_energy" getter="get_area_normalize_energy" default="true">
-			Defines whether the energy is normalized (divided) by the surface area of the light. If set to [code]true[/code], changing the size does not affect the amount of total energy output, and does not dramatically alter the brightness of the scene.
+		<member name="area_normalize_energy" type="bool" setter="set_area_normalize_energy" getter="is_area_normalizing_energy" default="true">
+			Defines whether the energy is normalized (divided) by the surface area of the light. If set to [code]true[/code], changing the size does not affect the total energy output, and does not dramatically alter the brightness of the scene.
 		</member>
 		<member name="area_range" type="float" setter="set_param" getter="get_param" default="5.0">
-			The range of the area in meters. This determines the maximum distance at which the area can still emit light relative to its surface, but also to its borders (which are positioned according to [member area_size]).
+			The range of the area in meters. This determines the maximum distance from any point on the area at which the area can still emit light.
 		</member>
 		<member name="area_size" type="Vector2" setter="set_area_size" getter="get_area_size" default="Vector2(1, 1)">
 			The extents (width and height) of the area in meters.

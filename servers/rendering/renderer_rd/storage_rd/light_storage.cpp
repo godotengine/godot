@@ -426,7 +426,7 @@ RS::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(R
 
 void LightStorage::light_area_set_size(RID p_light, const Vector2 &p_size) {
 	Light *light = light_owner.get_or_null(p_light);
-	light->area_size = Vector2(MAX(p_size.x, 0), MAX(p_size.y, 0));
+	light->area_size = p_size.maxf(0.0f);
 	// The range in which objects are illuminated change, so the z-range of the shadow map needs to adjust accordingly.
 	light->version++;
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
@@ -1088,7 +1088,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			light_data.area_height[0] = area_vec_b.x;
 			light_data.area_height[1] = area_vec_b.y;
 			light_data.area_height[2] = area_vec_b.z;
-			light_data.inv_spot_attenuation = 1.0 / (radius + Vector2(area_size.x, area_size.y).length() / 2.0); // center range
+			light_data.inv_spot_attenuation = 1.0 / (radius + area_size.length() / 2.0); // center range
 
 			if (light->area_normalize_energy) {
 				// normalization to make larger lights output same amount of light as smaller lights with same energy
@@ -1136,7 +1136,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			light_data.projector_rect[2] = rect.size.width;
 			light_data.projector_rect[3] = rect.size.height;
 			Size2i texture_size = (rect.size * texture_storage->area_light_atlas_get_size()).ceil();
-			light_data.cos_spot_angle = MIN(floor(log2(MAX(MIN(texture_size.x, texture_size.y), 1)) - 1.0), texture_storage->area_light_atlas_get_mipmaps()); // max mipmaps
+			light_data.cos_spot_angle = MIN(Math::floor(Math::log2(MAX(MIN(texture_size.x, texture_size.y), 1.0f)) - 1.0f), texture_storage->area_light_atlas_get_mipmaps()); // max mipmaps
 		}
 
 		const bool needs_shadow =

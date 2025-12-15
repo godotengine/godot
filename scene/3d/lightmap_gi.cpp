@@ -940,7 +940,7 @@ void LightmapGI::_build_area_light_texture_atlas(const Vector<LightmapGI::Lights
 
 		SortItem &si = itemsv.write[idx];
 
-		Vector2i b_size = Vector2i(ceil(float(tex_size.width) / border), ceil(float(tex_size.height) / border));
+		Vector2i b_size = Vector2i(Math::ceil(float(tex_size.width) / border), Math::ceil(float(tex_size.height) / border));
 		si.size.width = b_size.width + 1;
 		si.size.height = b_size.height + 1;
 		si.pixel_size = b_size * border; // components are either small powers of 2 or N * border
@@ -1378,11 +1378,11 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				}
 				Vector3 area_vec_x = xf.basis.get_column(Vector3::AXIS_X).normalized() * l->get_area_size().x;
 				Vector3 area_vec_y = xf.basis.get_column(Vector3::AXIS_Y).normalized() * l->get_area_size().y;
-				if (l->get_area_normalize_energy()) {
+				if (l->is_area_normalizing_energy()) {
 					float surface_area = l->get_area_size().x * l->get_area_size().y;
 					energy /= surface_area;
 				}
-				Rect2 texture_rect = Rect2(0.0, 0.0, 0.0, 0.0);
+				Rect2 texture_rect; // must be zero if unused
 				if (l->get_area_texture().is_valid()) {
 					texture_rect = area_light_atlas_texture_rects[l->get_area_texture()];
 				}

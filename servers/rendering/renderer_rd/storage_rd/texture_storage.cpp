@@ -2978,7 +2978,7 @@ void TextureStorage::update_area_light_atlas() {
 			AreaLightAtlas::SortItem &si = itemsv.write[idx];
 
 			Texture *src_tex = get_texture(E.key);
-			Vector2i b_size = Vector2i(ceil(float(src_tex->width) / border), ceil(float(src_tex->height) / border));
+			Vector2i b_size = Vector2i(Math::ceil(float(src_tex->width) / border), Math::ceil(float(src_tex->height) / border));
 			si.size.width = b_size.width + 1;
 			si.size.height = b_size.height + 1;
 
@@ -3109,7 +3109,7 @@ void TextureStorage::update_area_light_atlas() {
 	}
 
 	Color clear_color(0, 0, 0, 0);
-	if (area_light_atlas.textures.size() == 0) {
+	if (area_light_atlas.textures.is_empty()) {
 		for (int i = 0; i < area_light_atlas.texture_mipmaps.size(); i++) {
 			const AreaLightAtlas::MipMap &mm = area_light_atlas.texture_mipmaps[i];
 			RD::get_singleton()->texture_clear(mm.texture, clear_color, 0, 1, 0, 1);

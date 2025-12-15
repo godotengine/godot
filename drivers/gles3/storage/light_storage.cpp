@@ -336,7 +336,7 @@ RS::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(R
 
 void LightStorage::light_area_set_size(RID p_light, const Vector2 &p_size) {
 	Light *light = light_owner.get_or_null(p_light);
-	light->area_size = Vector2(MAX(p_size.x, 0), MAX(p_size.y, 0));
+	light->area_size = p_size.maxf(0.0f);
 	// The range in which objects are illuminated change, so the z-range of the shadow map needs to adjust accordingly.
 	light->version++;
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);

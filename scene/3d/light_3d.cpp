@@ -52,8 +52,8 @@ real_t Light3D::get_param(Param p_param) const {
 	return param[p_param];
 }
 
-void Light3D::set_area_size(Vector2 p_size) {
-	area_size = Vector2(MAX(p_size.x, 0), MAX(p_size.y, 0));
+void Light3D::set_area_size(const Vector2 &p_size) {
+	area_size = p_size.maxf(0.0f);
 	RS::get_singleton()->light_area_set_size(light, area_size);
 
 	update_gizmos();
@@ -68,7 +68,7 @@ void Light3D::set_area_normalize_energy(bool p_enabled) {
 	RS::get_singleton()->light_area_set_normalize_energy(light, p_enabled);
 }
 
-bool Light3D::get_area_normalize_energy() const {
+bool Light3D::is_area_normalizing_energy() const {
 	return area_normalize_energy;
 }
 
@@ -440,7 +440,7 @@ void Light3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_area_size"), &AreaLight3D::get_area_size);
 
 	ClassDB::bind_method(D_METHOD("set_area_normalize_energy", "enable"), &AreaLight3D::set_area_normalize_energy);
-	ClassDB::bind_method(D_METHOD("get_area_normalize_energy"), &AreaLight3D::get_area_normalize_energy);
+	ClassDB::bind_method(D_METHOD("is_area_normalizing_energy"), &AreaLight3D::is_area_normalizing_energy);
 
 	ADD_GROUP("Light", "light_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lumens", PROPERTY_HINT_RANGE, "0,100000.0,0.01,or_greater,suffix:lm"), "set_param", "get_param", PARAM_INTENSITY);
@@ -760,7 +760,7 @@ void AreaLight3D::_bind_methods() {
 	ADD_GROUP("Area", "area_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.001,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "area_normalize_energy"), "set_area_normalize_energy", "get_area_normalize_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "area_normalize_energy"), "set_area_normalize_energy", "is_area_normalizing_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "area_size", PROPERTY_HINT_LINK, "suffix:m"), "set_area_size", "get_area_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "area_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture"), "set_area_texture", "get_area_texture");
 }
@@ -772,11 +772,11 @@ PackedStringArray AreaLight3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("Projector texture is not supported for area lights. Use the area_texture field instead."));
 	}
 	if (get_area_texture().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("Rendering textured area lights is not implemented in compatibility rendering mode."));
+		warnings.push_back(RTR("Rendering textured area lights is not implemented in the Compatibility rendering mode."));
 	}
 
 	if (has_shadow() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("Rendering area light shadows does not work in compatibility rendering mode."));
+		warnings.push_back(RTR("Rendering area light shadows does not work in the Compatibility rendering mode."));
 	}
 
 	return warnings;

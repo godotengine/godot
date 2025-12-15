@@ -536,7 +536,7 @@ public:
 		LIGHT_DIRECTIONAL,
 		LIGHT_OMNI,
 		LIGHT_SPOT,
-		LIGHT_AREA
+		LIGHT_AREA,
 	};
 
 	enum LightParam {
