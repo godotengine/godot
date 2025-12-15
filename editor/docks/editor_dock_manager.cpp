@@ -902,7 +902,7 @@ void EditorDockManager::add_dock(EditorDock *p_dock) {
 
 	p_dock->dock_slot_index = p_dock->default_slot;
 	all_docks.push_back(p_dock);
-	p_dock->connect("tab_style_changed", callable_mp(this, &EditorDockManager::_update_tab_style).bind(p_dock));
+	p_dock->connect("_tab_style_changed", callable_mp(this, &EditorDockManager::_update_tab_style).bind(p_dock));
 	p_dock->connect("renamed", callable_mp(this, &EditorDockManager::_update_tab_style).bind(p_dock));
 
 	if (p_dock->default_slot != DockConstants::DOCK_SLOT_NONE) {
@@ -921,7 +921,7 @@ void EditorDockManager::remove_dock(EditorDock *p_dock) {
 	_move_dock(p_dock, nullptr);
 
 	all_docks.erase(p_dock);
-	p_dock->disconnect("tab_style_changed", callable_mp(this, &EditorDockManager::_update_tab_style));
+	p_dock->disconnect("_tab_style_changed", callable_mp(this, &EditorDockManager::_update_tab_style));
 	p_dock->disconnect("renamed", callable_mp(this, &EditorDockManager::_update_tab_style));
 	_update_layout();
 }
