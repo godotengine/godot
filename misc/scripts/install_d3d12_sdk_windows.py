@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 if __name__ != "__main__":
     raise SystemExit(f'Utility script "{__file__}" should not be used as a module!')
