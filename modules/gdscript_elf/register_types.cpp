@@ -30,9 +30,9 @@
 
 #include "register_types.h"
 
+#include "modules/gdscript/gdscript.h"
 #include "src/gdscript_language_wrapper.h"
 #include "src/gdscript_wrapper.h"
-#include "modules/gdscript/gdscript.h"
 
 // Access the original GDScriptLanguage through its singleton
 // GDScriptLanguage::get_singleton() provides access to the original instance
@@ -46,7 +46,7 @@ void initialize_gdscript_elf_module(ModuleInitializationLevel p_level) {
 		// (modules initialize in alphabetical order, so "gdscript" comes before "gdscript_elf")
 		// Access the original GDScriptLanguage through its singleton
 		GDScriptLanguage *original_language = GDScriptLanguage::get_singleton();
-		
+
 		ERR_FAIL_NULL_MSG(original_language, "GDScript module must be initialized before gdscript_elf module");
 
 		// Unregister the original GDScriptLanguage

@@ -135,20 +135,20 @@ Script *GDScriptLanguageWrapper::create_script() const {
 	if (!original) {
 		return nullptr;
 	}
-	
+
 	// Wrap it in GDScriptWrapper
 	GDScript *gdscript = Object::cast_to<GDScript>(original);
 	if (!gdscript) {
 		// Not a GDScript, return as-is (shouldn't happen, but be safe)
 		return original;
 	}
-	
+
 	GDScriptWrapper *wrapper = memnew(GDScriptWrapper);
 	wrapper->set_original_script(Ref<GDScript>(gdscript));
-	
+
 	// Copy path and other properties from original
 	wrapper->set_path(original->get_path());
-	
+
 	return wrapper;
 }
 

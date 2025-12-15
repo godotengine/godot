@@ -213,9 +213,6 @@ cscope.po.out
 *.code-workspace
 .history/
 
-# Cursor
-.cursor/
-
 # Xcode
 xcuserdata/
 *.xcscmblueprint
