@@ -425,7 +425,7 @@
 			The texture to use for multiplying the intensity of the subsurface scattering transmittance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
 		</member>
 		<member name="texture_affine_mapping" type="bool" setter="set_affine_mapping_enabled" getter="is_affine_mapping_enabled" default="false">
-			If [code]true[/code] use affine texture mapping instead of perspective texture mapping. Only effective if [member uv1_triplanar] is [code]false[/code]
+			If [code]true[/code], use affine texture mapping instead of perspective texture mapping. Only effective if [member uv1_triplanar] is [code]false[/code].
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
 			Filter flags for the texture.
