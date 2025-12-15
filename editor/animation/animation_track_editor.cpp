@@ -8109,6 +8109,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	marker_edit->set_timeline(timeline);
 	marker_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	marker_edit->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
+	marker_edit->set_z_index(1); // Ensure marker appears over the animation track editor.
 	marker_edit->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_redraw_groups));
 	marker_edit->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_redraw_tracks));
 	marker_edit->connect(SceneStringName(draw), callable_mp((CanvasItem *)bezier_edit, &CanvasItem::queue_redraw));
