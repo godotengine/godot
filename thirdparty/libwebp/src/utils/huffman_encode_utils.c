@@ -14,7 +14,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "src/utils/huffman_encode_utils.h"
+#include "src/webp/types.h"
 #include "src/utils/utils.h"
 #include "src/webp/format_constants.h"
 
@@ -122,24 +124,24 @@ static void OptimizeHuffmanForRle(int length, uint8_t* const good_for_rle,
 static int CompareHuffmanTrees(const void* ptr1, const void* ptr2) {
   const HuffmanTree* const t1 = (const HuffmanTree*)ptr1;
   const HuffmanTree* const t2 = (const HuffmanTree*)ptr2;
-  if (t1->total_count_ > t2->total_count_) {
+  if (t1->total_count > t2->total_count) {
     return -1;
-  } else if (t1->total_count_ < t2->total_count_) {
+  } else if (t1->total_count < t2->total_count) {
     return 1;
   } else {
-    assert(t1->value_ != t2->value_);
-    return (t1->value_ < t2->value_) ? -1 : 1;
+    assert(t1->value != t2->value);
+    return (t1->value < t2->value) ? -1 : 1;
   }
 }
 
 static void SetBitDepths(const HuffmanTree* const tree,
                          const HuffmanTree* const pool,
                          uint8_t* const bit_depths, int level) {
-  if (tree->pool_index_left_ >= 0) {
-    SetBitDepths(&pool[tree->pool_index_left_], pool, bit_depths, level + 1);
-    SetBitDepths(&pool[tree->pool_index_right_], pool, bit_depths, level + 1);
+  if (tree->pool_index_left >= 0) {
+    SetBitDepths(&pool[tree->pool_index_left], pool, bit_depths, level + 1);
+    SetBitDepths(&pool[tree->pool_index_right], pool, bit_depths, level + 1);
   } else {
-    bit_depths[tree->value_] = level;
+    bit_depths[tree->value] = level;
   }
 }
 
@@ -198,10 +200,10 @@ static void GenerateOptimalTree(const uint32_t* const histogram,
       if (histogram[j] != 0) {
         const uint32_t count =
             (histogram[j] < count_min) ? count_min : histogram[j];
-        tree[idx].total_count_ = count;
-        tree[idx].value_ = j;
-        tree[idx].pool_index_left_ = -1;
-        tree[idx].pool_index_right_ = -1;
+        tree[idx].total_count = count;
+        tree[idx].value = j;
+        tree[idx].pool_index_left = -1;
+        tree[idx].pool_index_right = -1;
         ++idx;
       }
     }
@@ -215,29 +217,29 @@ static void GenerateOptimalTree(const uint32_t* const histogram,
         uint32_t count;
         tree_pool[tree_pool_size++] = tree[tree_size - 1];
         tree_pool[tree_pool_size++] = tree[tree_size - 2];
-        count = tree_pool[tree_pool_size - 1].total_count_ +
-                tree_pool[tree_pool_size - 2].total_count_;
+        count = tree_pool[tree_pool_size - 1].total_count +
+                tree_pool[tree_pool_size - 2].total_count;
         tree_size -= 2;
         {
           // Search for the insertion point.
           int k;
           for (k = 0; k < tree_size; ++k) {
-            if (tree[k].total_count_ <= count) {
+            if (tree[k].total_count <= count) {
               break;
             }
           }
           memmove(tree + (k + 1), tree + k, (tree_size - k) * sizeof(*tree));
-          tree[k].total_count_ = count;
-          tree[k].value_ = -1;
+          tree[k].total_count = count;
+          tree[k].value = -1;
 
-          tree[k].pool_index_left_ = tree_pool_size - 1;
-          tree[k].pool_index_right_ = tree_pool_size - 2;
+          tree[k].pool_index_left = tree_pool_size - 1;
+          tree[k].pool_index_right = tree_pool_size - 2;
           tree_size = tree_size + 1;
         }
       }
       SetBitDepths(&tree[0], tree_pool, bit_depths, 0);
     } else if (tree_size == 1) {  // Trivial case: only one element.
-      bit_depths[tree[0].value_] = 1;
+      bit_depths[tree[0].value] = 1;
     }
 
     {
