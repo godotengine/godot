@@ -53,6 +53,78 @@ typedef enum RO_INIT_TYPE
 #define WC_ERR_INVALID_CHARS 0x00000080
 #endif
 
+// Fake window to help with DirectInput events.
+HWND SDL_HelperWindow = NULL;
+static const TCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
+static const TCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
+static ATOM SDL_HelperWindowClass = 0;
+
+/*
+ * Creates a HelperWindow used for DirectInput.
+ */
+bool SDL_HelperWindowCreate(void)
+{
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+    WNDCLASS wce;
+
+    // Make sure window isn't created twice.
+    if (SDL_HelperWindow != NULL) {
+        return true;
+    }
+
+    // Create the class.
+    SDL_zero(wce);
+    wce.lpfnWndProc = DefWindowProc;
+    wce.lpszClassName = SDL_HelperWindowClassName;
+    wce.hInstance = hInstance;
+
+    // Register the class.
+    SDL_HelperWindowClass = RegisterClass(&wce);
+    if (SDL_HelperWindowClass == 0 && GetLastError() != ERROR_CLASS_ALREADY_EXISTS) {
+        return WIN_SetError("Unable to create Helper Window Class");
+    }
+
+    // Create the window.
+    SDL_HelperWindow = CreateWindowEx(0, SDL_HelperWindowClassName,
+                                      SDL_HelperWindowName,
+                                      WS_OVERLAPPED, CW_USEDEFAULT,
+                                      CW_USEDEFAULT, CW_USEDEFAULT,
+                                      CW_USEDEFAULT, HWND_MESSAGE, NULL,
+                                      hInstance, NULL);
+    if (!SDL_HelperWindow) {
+        UnregisterClass(SDL_HelperWindowClassName, hInstance);
+        return WIN_SetError("Unable to create Helper Window");
+    }
+
+    return true;
+}
+
+/*
+ * Destroys the HelperWindow previously created with SDL_HelperWindowCreate.
+ */
+void SDL_HelperWindowDestroy(void)
+{
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+
+    // Destroy the window.
+    if (SDL_HelperWindow != NULL) {
+        if (DestroyWindow(SDL_HelperWindow) == 0) {
+            WIN_SetError("Unable to destroy Helper Window");
+            return;
+        }
+        SDL_HelperWindow = NULL;
+    }
+
+    // Unregister the class.
+    if (SDL_HelperWindowClass != 0) {
+        if ((UnregisterClass(SDL_HelperWindowClassName, hInstance)) == 0) {
+            WIN_SetError("Unable to destroy Helper Window Class");
+            return;
+        }
+        SDL_HelperWindowClass = 0;
+    }
+}
+
 // Sets an error message based on an HRESULT
 bool WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
 {
@@ -197,6 +269,24 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
         } \
         return result;
 #endif
+
+BOOL WIN_IsWine(void)
+{
+    static bool checked;
+    static bool is_wine;
+
+    if (!checked) {
+        HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
+        if (ntdll) {
+            if (GetProcAddress(ntdll, "wine_get_version") != NULL) {
+                is_wine = true;
+            }
+            FreeLibrary(ntdll);
+        }
+        checked = true;
+    }
+    return is_wine;
+}
 
 // this is the oldest thing we run on (and we may lose support for this in SDL3 at any time!),
 //  so there's no "OrGreater" as that would always be TRUE. The other functions are here to

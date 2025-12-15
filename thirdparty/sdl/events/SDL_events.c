@@ -1094,7 +1094,8 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
         if (action == SDL_ADDEVENT) {
             if (!events) {
                 SDL_UnlockMutex(SDL_EventQ.lock);
-                return SDL_InvalidParamError("events");
+                SDL_InvalidParamError("events");
+                return -1;
             }
             for (i = 0; i < numevents; ++i) {
                 used += SDL_AddEvent(&events[i]);
@@ -1529,6 +1530,8 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
 
 #ifdef SDL_PLATFORM_ANDROID
     for (;;) {
+        SDL_PumpEventsInternal(true);
+
         if (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0) {
             return true;
         }
