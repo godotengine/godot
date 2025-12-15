@@ -805,6 +805,10 @@ String String::to_kebab_case() const {
 	return _separate_compound_words().replace_char(' ', '-');
 }
 
+String String::to_constant_case() const {
+	return to_snake_case().to_upper();
+}
+
 String String::get_with_code_lines() const {
 	const Vector<String> lines = split("\n");
 	String ret;

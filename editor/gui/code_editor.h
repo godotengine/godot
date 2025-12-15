@@ -242,6 +242,9 @@ public:
 	void insert_final_newline();
 
 	enum CaseStyle {
+		PASCALCASE,
+		SNAKECASE,
+		CONSTANTCASE,
 		UPPER,
 		LOWER,
 		CAPITALIZE,
