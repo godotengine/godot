@@ -40,7 +40,7 @@
 			<return type="void" />
 			<description>
 				Clears the tree. This removes all items.
-				Prints an error and does not allow you to clear the tree if it is called while mouse selection is happening.
+				Prints an error and does not allow clearing the tree if called during mouse selection.
 			</description>
 		</method>
 		<method name="create_item">
