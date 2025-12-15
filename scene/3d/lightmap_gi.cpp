@@ -1330,6 +1330,10 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			PackedByteArray area_light_atlas_data = RS::get_singleton()->bake_render_area_light_atlas(area_light_textures, area_light_texture_rects, size, mipmaps);
 
 			lightmapper->add_area_light_atlas(size, mipmaps, area_light_atlas_data);
+		} else {
+			Vector<uint8_t> empty_atlas_data;
+			empty_atlas_data.resize_initialized(4); // 1 pixel
+			lightmapper->add_area_light_atlas(Vector2i(1, 1), 1, empty_atlas_data);
 		}
 
 		for (int i = 0; i < mesh_data.size(); i++) {
