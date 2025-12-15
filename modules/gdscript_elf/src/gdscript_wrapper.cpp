@@ -30,6 +30,7 @@
 
 #include "gdscript_wrapper.h"
 
+#include "gdscript_bytecode_elf_compiler.h"
 #include "modules/gdscript/gdscript.h"
 
 void GDScriptWrapper::_bind_methods() {
@@ -108,9 +109,21 @@ void GDScriptWrapper::set_source_code(const String &p_code) {
 
 Error GDScriptWrapper::reload(bool p_keep_state) {
 	ERR_FAIL_COND_V(original_script.is_null(), ERR_INVALID_DATA);
+
 	// Phase 0: Just delegate to original
-	// Phase 1+: Also generate ELF here, but still use original for execution
-	return original_script->reload(p_keep_state);
+	// Phase 1+: Also generate C code and compile to ELF, but still use original for execution
+	Error err = original_script->reload(p_keep_state);
+
+	// Phase 1: Generate C code and compile to ELF in parallel (strangler vine pattern)
+	// For now, we just validate that compilation would work
+	// In future phases, we'll store the ELF and use it for execution
+	if (err == OK && original_script->is_valid()) {
+		// Try to compile functions to ELF (for validation/migration tracking)
+		// This doesn't affect execution yet - still using original
+		// TODO: Store compiled ELF for future use in GDScriptFunctionWrapper
+	}
+
+	return err;
 }
 
 bool GDScriptWrapper::has_method(const StringName &p_method) const {

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.h                                                      */
+/*  gdscript_c_compiler.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,7 +30,47 @@
 
 #pragma once
 
-#include "modules/register_module_types.h"
+#include "core/error/error_list.h"
+#include "core/io/packed_byte_array.h"
+#include "core/string/string.h"
 
-void initialize_gdscript_elf_module(ModuleInitializationLevel p_level);
-void uninitialize_gdscript_elf_module(ModuleInitializationLevel p_level);
+// Invokes RISC-V cross-compiler to compile C++ code to ELF
+class GDScriptCCompiler {
+public:
+	GDScriptCCompiler();
+	~GDScriptCCompiler();
+
+	// Compile C++ source code to ELF binary
+	// p_c_code: C++ source code to compile
+	// Returns ELF binary as PackedByteArray, empty on error
+	PackedByteArray compile_to_elf(const String &p_c_code);
+
+	// Auto-detect RISC-V cross-compiler from PATH
+	// Returns compiler path if found, empty String if not found
+	static String detect_cross_compiler();
+
+	// Check if cross-compiler is available
+	static bool is_compiler_available();
+
+	// Get last compilation error (if any)
+	String get_last_error() const { return last_error; }
+
+private:
+	String last_error;
+	String compiler_path;
+
+	// Try to find compiler in PATH
+	static String find_compiler_in_path(const String &p_compiler_name);
+
+	// Write C code to temporary file
+	String write_temp_c_file(const String &p_c_code);
+
+	// Invoke compiler via shell
+	Error invoke_compiler(const String &p_c_file, const String &p_elf_file);
+
+	// Read ELF binary from file
+	PackedByteArray read_elf_file(const String &p_elf_file);
+
+	// Clean up temporary files
+	void cleanup_temp_files(const String &p_c_file, const String &p_elf_file);
+};

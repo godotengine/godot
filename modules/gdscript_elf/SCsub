@@ -13,6 +13,11 @@ env_gdscript_elf.Prepend(CPPPATH=["#modules/gdscript_elf/src"])
 sources = [
     "src/gdscript_language_wrapper.cpp",
     "src/gdscript_wrapper.cpp",
+    "src/gdscript_function_wrapper.cpp",
+    "src/gdscript_bytecode_elf_compiler.cpp",
+    "src/gdscript_bytecode_c_codegen.cpp",
+    "src/gdscript_c_compiler.cpp",
+    "src/gdscript_elf_fallback.cpp",
 ]
 
 env_gdscript_elf.add_source_files(env.modules_sources, sources)

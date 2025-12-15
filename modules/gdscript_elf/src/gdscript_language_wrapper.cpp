@@ -373,4 +373,3 @@ int GDScriptLanguageWrapper::profiling_get_frame_data(ProfilingInfo *p_info_arr,
 	ERR_FAIL_NULL_V(original_language, 0);
 	return original_language->profiling_get_frame_data(p_info_arr, p_info_max);
 }
-

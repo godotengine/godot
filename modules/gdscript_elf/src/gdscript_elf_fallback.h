@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.h                                                      */
+/*  gdscript_elf_fallback.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,7 +30,43 @@
 
 #pragma once
 
-#include "modules/register_module_types.h"
+#include "core/object/callable.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
-void initialize_gdscript_elf_module(ModuleInitializationLevel p_level);
-void uninitialize_gdscript_elf_module(ModuleInitializationLevel p_level);
+// Forward declarations
+class GDScriptFunction;
+class GDScriptInstance;
+
+// Fallback mechanism to original GDScriptFunction for unsupported opcodes
+// Maintains same stack/register model (x/y arrays work same)
+// Bridges between ELF-compiled code and original GDScript VM
+class GDScriptELFFallback {
+public:
+	// Call original GDScriptFunction for unsupported opcode
+	// This is called from ELF-compiled code when encountering unsupported opcodes
+	// C interface: extern "C" void gdscript_vm_fallback(int opcode, void* instance, void* stack, int ip);
+	static void gdscript_vm_fallback(int p_opcode, void *p_instance, void *p_stack, int p_ip);
+
+	// C++ interface for calling original function
+	static Variant call_original_function(
+			GDScriptFunction *p_function,
+			GDScriptInstance *p_instance,
+			const Variant **p_args,
+			int p_argcount,
+			Callable::CallError &r_err,
+			GDScriptFunction::CallState *p_state = nullptr);
+
+	// Track migration progress - which opcodes use fallback
+	static void record_fallback_opcode(int p_opcode);
+	static HashMap<int, uint64_t> get_fallback_statistics();
+	static void reset_statistics();
+
+	// Check if an opcode is supported (doesn't need fallback)
+	static bool is_opcode_supported(int p_opcode);
+
+private:
+	// Statistics: opcode -> fallback count
+	static HashMap<int, uint64_t> fallback_counts;
+};

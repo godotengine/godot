@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.h                                                      */
+/*  gdscript_bytecode_elf_compiler.h                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,7 +30,48 @@
 
 #pragma once
 
-#include "modules/register_module_types.h"
+#include "core/io/packed_byte_array.h"
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
 
-void initialize_gdscript_elf_module(ModuleInitializationLevel p_level);
-void uninitialize_gdscript_elf_module(ModuleInitializationLevel p_level);
+// Forward declarations
+class GDScriptFunction;
+
+// Orchestrates bytecode-to-ELF compilation via C code generation
+class GDScriptBytecodeELFCompiler {
+public:
+	// Compile a GDScriptFunction's bytecode to RISC-V ELF
+	// Returns the ELF binary as a PackedByteArray
+	// Returns empty PackedByteArray on error
+	static PackedByteArray compile_function_to_elf(GDScriptFunction *p_function);
+
+	// Check if a function can be compiled to ELF
+	// Returns true if cross-compiler is available and function has bytecode
+	static bool can_compile_function(GDScriptFunction *p_function);
+
+	// Get list of unsupported opcodes for a function
+	// Returns list of opcode names that would require fallback
+	static Vector<String> get_unsupported_opcodes(GDScriptFunction *p_function);
+
+	// Check if cross-compiler is available
+	static bool is_compiler_available();
+
+	// Get last compilation error (if any)
+	static String get_last_error();
+
+private:
+	// Internal compilation state
+	struct CompilationState {
+		GDScriptFunction *function = nullptr;
+		PackedByteArray elf_output;
+		Vector<String> errors;
+		Vector<String> warnings;
+		bool has_unsupported_opcodes = false;
+	};
+
+	// Main compilation logic
+	static Error compile_internal(CompilationState &p_state);
+
+	// Validate function can be compiled
+	static bool validate_function(GDScriptFunction *p_function, CompilationState &p_state);
+};

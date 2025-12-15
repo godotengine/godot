@@ -100,4 +100,3 @@ public:
 	virtual String get_class_icon_path() const override;
 #endif // TOOLS_ENABLED
 };
-

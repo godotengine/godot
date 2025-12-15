@@ -123,4 +123,3 @@ public:
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override;
 };
-
