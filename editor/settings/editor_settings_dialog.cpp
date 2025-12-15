@@ -238,6 +238,14 @@ void EditorSettingsDialog::popup_edit_settings() {
 	_focus_current_search_box();
 }
 
+void EditorSettingsDialog::set_advanced_mode_enabled(bool p_enabled) {
+	advanced_switch->set_pressed(p_enabled);
+}
+
+void EditorSettingsDialog::set_current_section(const String &p_section) {
+	inspector->set_current_section(p_section);
+}
+
 void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_name) {
 	EditorNode::get_log()->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
