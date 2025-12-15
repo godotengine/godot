@@ -1321,7 +1321,6 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
-		actions.renames["AABB"] = "vec4(compressed_aabb_position, compressed_aabb_size)";
 		actions.renames["AABB_POS"] = "compressed_aabb_position_input";
 		actions.renames["AABB_SIZE"] = "compressed_aabb_size_input";
 
