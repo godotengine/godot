@@ -2014,6 +2014,22 @@ _FORCE_INLINE_ void TextServerAdvanced::_font_clear_cache(FontAdvanced *p_font_d
 	p_font_data->supported_scripts.clear();
 }
 
+bool TextServerAdvanced::_font_is_color(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, false);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+
+	FontForSizeAdvanced *ffsd = nullptr;
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd), false);
+#ifdef MODULE_FREETYPE_ENABLED
+	return ffsd->face && FT_HAS_COLOR(ffsd->face);
+#else
+	return false;
+#endif
+}
+
 hb_font_t *TextServerAdvanced::_font_get_hb_handle(const RID &p_font_rid, int64_t p_size, bool &r_is_color) const {
 	FontAdvanced *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL_V(fd, nullptr);
@@ -6742,8 +6758,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 		f = p_fonts[p_fb_index];
 	} else if (OS::get_singleton()->has_feature("system_fonts") && p_fonts.size() > 0 && ((p_fb_index == p_fonts.size()) || (p_fb_index > p_fonts.size() && p_start != p_prev_start))) {
 		// Try system fallback.
-		RID fdef = p_fonts[0];
-		if (_font_is_allow_system_fallback(fdef)) {
+		if (_font_is_allow_system_fallback(p_fonts[0])) {
 			_update_chars(p_sd);
 
 			int64_t next = p_end;
@@ -6758,7 +6773,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 			String script_code = String(scr_buffer);
 
 			String text = p_sd->text.substr(p_start, next - p_start);
-			f = _find_sys_font_for_text(fdef, script_code, p_sd->spans[p_span].language, text);
+			f = _find_sys_font_for_text(p_fonts[0], script_code, p_sd->spans[p_span].language, text);
 		}
 	}
 
@@ -6851,7 +6866,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 	Vector2i fss = _get_size(fd, fs);
 	hb_font_t *hb_font = _font_get_hb_handle(f, fs, color);
 
-	if (p_script == HB_TAG('Z', 's', 'y', 'e') && !color) {
+	if (p_script == HB_TAG('Z', 's', 'y', 'e') && !color && _font_is_allow_system_fallback(p_fonts[0])) {
 		// Color emoji is requested, skip non-color font.
 		_shape_run(p_sd, p_start, p_end, p_script, p_direction, p_fonts, p_span, p_fb_index + 1, p_start, p_end, f);
 		return;
@@ -7318,7 +7333,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 							}
 							sd->glyphs.push_back(gl);
 						} else {
-							FontPriorityList fonts(this, span.fonts, span.language, script_code);
+							FontPriorityList fonts(this, span.fonts, span.language, script_code, sd->script_iter->script_ranges[j].script == HB_TAG('Z', 's', 'y', 'e'));
 							_shape_run(sd, MAX(span.start - sd->start, script_run_start), MIN(span.end - sd->start, script_run_end), sd->script_iter->script_ranges[j].script, bidi_run_direction, fonts, k, 0, 0, 0, RID());
 						}
 					}
