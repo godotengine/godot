@@ -2407,6 +2407,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	frame_list->set_select_mode(ItemList::SELECT_MULTI);
+	frame_list->set_theme_type_variation("ItemListSecondary");
 
 	frame_list->set_max_columns(0);
 	frame_list->set_max_text_lines(2);

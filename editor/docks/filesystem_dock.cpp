@@ -488,13 +488,17 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				button_toggle_display_mode->set_button_icon(get_editor_theme_icon(SNAME("Panels1")));
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
-				tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 				tree->set_theme_type_variation("");
-				tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 				if (horizontal) {
 					toolbar2_hbc->hide();
+
+					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+					tree_mc->set_theme_type_variation("NoBorderBottomPanel");
 				} else {
 					toolbar2_hbc->show();
+
+					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+					tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 				}
 				button_file_list_display_mode->hide();
 
@@ -517,11 +521,19 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				if (is_vertical) {
 					tree->set_theme_type_variation("");
 					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
-					tree_mc->set_theme_type_variation("NoBorderHorizontal");
+					tree_mc->set_theme_type_variation("NoBorderBottomPanel");
+
+					files->set_theme_type_variation("");
+					files->set_scroll_hint_mode(horizontal ? ItemList::SCROLL_HINT_MODE_BOTH : ItemList::SCROLL_HINT_MODE_TOP);
+					files_mc->set_theme_type_variation(horizontal ? "NoBorderBottomPanel" : "NoBorderHorizontalBottom");
 				} else {
 					tree->set_theme_type_variation("TreeSecondary");
 					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);
 					tree_mc->set_theme_type_variation("");
+
+					files->set_theme_type_variation("ItemListSecondary");
+					files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_DISABLED);
+					files_mc->set_theme_type_variation("");
 				}
 				tree->ensure_cursor_is_visible();
 
@@ -4394,11 +4406,15 @@ FileSystemDock::FileSystemDock() {
 	button_file_list_display_mode->set_theme_type_variation("FlatMenuButton");
 	path_hb->add_child(button_file_list_display_mode);
 
+	files_mc = memnew(MarginContainer);
+	file_list_vb->add_child(files_mc);
+	files_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	files_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
 	files = memnew(FileSystemList);
-	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_accessibility_name(TTRC("Files"));
 	files->set_select_mode(ItemList::SELECT_MULTI);
-	files->set_theme_type_variation("ItemListSecondary");
+	files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
 	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
 	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
 	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
@@ -4407,7 +4423,7 @@ FileSystemDock::FileSystemDock() {
 	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	files->set_allow_rmb_select(true);
-	file_list_vb->add_child(files);
+	files_mc->add_child(files);
 
 	scanning_vb = memnew(VBoxContainer);
 	scanning_vb->hide();
