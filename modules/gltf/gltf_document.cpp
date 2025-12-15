@@ -3105,7 +3105,11 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
-				material->set_emission(Color(0, 0, 0));
+				material->set_emission_operator(BaseMaterial3D::EMISSION_OP_MULTIPLY);
+				// glTF spec: emissiveFactor × emissiveTexture. Use WHITE if no factor specified.
+				if (!material_dict.has("emissiveFactor")) {
+					material->set_emission(Color(1, 1, 1));
+				}
 			}
 		}
 
