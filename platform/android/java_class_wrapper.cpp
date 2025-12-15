@@ -1657,7 +1657,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 		String str_field = jstring_to_string(name, env);
 		env->DeleteLocalRef(name);
 		int mods = env->CallIntMethod(obj, Field_getModifiers);
-		if ((mods & 0x8) && (mods & 0x10) && (mods & 0x1)) { //static final public!
+		if ((mods & 0x8) && (mods & 0x1)) { //static public!
 
 			jobject objc = env->CallObjectMethod(obj, Field_get, nullptr);
 			if (objc) {
