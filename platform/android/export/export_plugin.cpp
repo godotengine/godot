@@ -875,7 +875,9 @@ void EditorExportPlatformAndroid::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			if (EditorExport::get_singleton()) {
-				EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformAndroid::_update_preset_status));
+				// Hack: We need to defer the call to ensure that the EditorExport singleton is fully initialized.
+				// otherwise "Attempt to connect nonexistent signal 'export_presets_runnable_updated' to callable 'EditorExportPlatformAndroid::_update_preset_status'." can happened.
+				callable_mp(EditorExport::get_singleton(), &EditorExport::connect_presets_runnable_updated).call_deferred(callable_mp(this, &EditorExportPlatformAndroid::_update_preset_status));
 			}
 		} break;
 
