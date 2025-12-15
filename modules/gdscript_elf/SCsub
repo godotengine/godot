@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_gdscript_elf = env_modules.Clone()
+
+# Add include paths
+env_gdscript_elf.Prepend(CPPPATH=["#modules/gdscript_elf/src"])
+
+# Source files
+sources = [
+    "src/gdscript_language_wrapper.cpp",
+    "src/gdscript_wrapper.cpp",
+]
+
+env_gdscript_elf.add_source_files(env.modules_sources, sources)
