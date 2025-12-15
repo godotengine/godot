@@ -1665,6 +1665,12 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	return key;
 }
 
+Key DisplayServerWayland::keyboard_get_label_from_physical(Key p_keycode) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	return wayland_thread.keyboard_get_label_from_physical(p_keycode);
+}
+
 bool DisplayServerWayland::color_picker(const Callable &p_callback) {
 #ifdef DBUS_ENABLED
 	if (!portal_desktop) {
