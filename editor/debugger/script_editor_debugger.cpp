@@ -2353,7 +2353,7 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_export->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalWindow");
+		mc->set_theme_type_variation("NoBorderBottomPanel");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		vmem_vb->add_child(mc);
 

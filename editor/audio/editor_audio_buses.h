@@ -172,7 +172,6 @@ class EditorAudioBuses : public EditorDock {
 
 	bool floating = false;
 
-	void _update_file_label();
 	void _update_file_label_size();
 
 	void _rebuild_buses();
@@ -188,7 +187,6 @@ class EditorAudioBuses : public EditorDock {
 	void _drop_at_index(int p_bus, int p_index);
 
 	void _server_save();
-	void _file_moved(const String &p_old_path, const String &p_new_path);
 
 	void _select_layout();
 	void _load_layout();
