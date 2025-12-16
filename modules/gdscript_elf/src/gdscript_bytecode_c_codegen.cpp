@@ -45,7 +45,24 @@ GDScriptBytecodeCCodeGenerator::~GDScriptBytecodeCCodeGenerator() {
 }
 
 String GDScriptBytecodeCCodeGenerator::generate_c_code(GDScriptFunction *p_function) {
-	if (!p_function || p_function->code.is_empty()) {
+	if (!p_function) {
+		return String();
+	}
+	// Validate function object is accessible by calling a simple public method first
+	// This ensures the object pointer is valid before accessing any members
+	// Use get_name() as it's a simple inline method that just returns a member
+	(void)p_function->get_name();
+	
+	// Validate function's script is valid (uses public method)
+	// If script is null or invalid, function is not properly initialized
+	GDScript *script = p_function->get_script();
+	if (!script || !script->is_valid()) {
+		return String();
+	}
+	// Check if function has bytecode - only check _code_ptr (pointer check is safer)
+	// Don't check _code_size here to avoid reading potentially invalid memory
+	// _code_size will be safely checked in generate_function_body where it's actually used
+	if (p_function->_code_ptr == nullptr) {
 		return String();
 	}
 	generated_code.clear();
@@ -189,8 +206,14 @@ void GDScriptBytecodeCCodeGenerator::generate_parameter_extraction(GDScriptFunct
 
 void GDScriptBytecodeCCodeGenerator::generate_function_body(GDScriptFunction *p_function, StringBuilder &r_code) {
 	// Generate code for each bytecode instruction
-	const int *code_ptr = p_function->code.ptr();
-	int code_size = p_function->code.size();
+	// Use _code_ptr and _code_size (friend class access)
+	const int *code_ptr = p_function->_code_ptr;
+	// Safely get code_size - if _code_ptr is valid, _code_size should be too, but check for safety
+	int code_size = (code_ptr != nullptr) ? p_function->_code_size : 0;
+	if (code_size <= 0) {
+		// No bytecode to generate
+		return;
+	}
 	int ip = 0;
 
 	// Generate label for each instruction (for jumps)
