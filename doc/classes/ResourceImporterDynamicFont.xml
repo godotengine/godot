@@ -83,5 +83,8 @@
 			[b]One Quarter of a Pixel:[/b] Always perform precise subpixel positioning regardless of font size. Highest quality, slowest rendering.
 			[b]Auto (Except Pixel Fonts):[/b] [b]Disabled[/b] for the pixel style fonts (each glyph contours contain only straight horizontal and vertical lines), [b]Auto[/b] for the other fonts.
 		</member>
+		<member name="use_for_color_emojis" type="bool" setter="" getter="" default="false">
+			If set to [code]true[/code], the font will be used to render color emojis, even if it is not a color font.
+		</member>
 	</members>
 </class>
