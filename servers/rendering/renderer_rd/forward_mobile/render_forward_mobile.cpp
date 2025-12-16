@@ -2015,6 +2015,10 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 			surface_aabb = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_aabb(surface->surface);
 			uv_scale = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_uv_scale(surface->surface);
 		}
+		else {
+			surface_aabb = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_aabb(surface->surface);
+			surface_aabb.size *= -1.0f;
+		}
 
 		fill_push_constant_instance_indices(&instance_data, inst);
 
