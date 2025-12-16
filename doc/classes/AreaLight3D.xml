@@ -7,7 +7,7 @@
 		An area light is a type of [Light3D] node that emits light over a two-dimensional area, in the shape of a rectangle. The light is attenuated throughout the distance. This attenuation can be configured by changing the energy, [member area_attenuation], and [member area_range].
 		Light is emitted in the -Z direction of the node's global basis. For an unrotated light, this means that the light is emitted forwards, illuminating the front side of a 3D model (see [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT]).
 		Area lights can cast soft shadows using PCSS, which you can control by tweaking the size parameter. The shadow map is drawn from the center of the light.
-		[b]Note:[/b] Area lights have limited support in the Mobile and Compatibility renderers. In the Mobile renderer, the size of the penumbra doesn't vary as it should with PCSS. In Compatibility, area lights cannot cast shadows. For static lighting, consider instead using [LightmapGI] and a [QuadMesh] with [member PrimitiveMesh.add_uv2] set to [code]true[/code], assign an emissive material to the [QuadMesh], then hide the [QuadMesh] after baking lightmaps.
+		[b]Note:[/b] Area lights have limited support in the Mobile and Compatibility renderers. In the Mobile renderer, the size of the penumbra doesn't vary as it should with PCSS. In Compatibility, area lights cannot cast shadows.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,6 +30,7 @@
 		<member name="area_texture" type="Texture2D" setter="set_area_texture" getter="get_area_texture">
 			An optional texture to use as a light source. Changing the texture at runtime might impact performance, as it needs to be drawn to the area light atlas with filtered mipmaps.
 			If no texture is assigned, the area light emits uniform light across its surface.
+			[b]Note:[/b] To reduce the performance impact of switching textures at runtime, make sure each dimension of an area texture is either a multiple of 128 pixels, or a power of two. This removes the need for a scaling pass, which slows down texture changes. The textures don't necessarily have to be square to be optimal. Examples of optimal texture sizes include 32x64, 128x128, and 256x384.
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.5" />
 		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="1.0" />
