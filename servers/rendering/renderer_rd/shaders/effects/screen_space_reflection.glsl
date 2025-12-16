@@ -29,6 +29,9 @@ layout(push_constant, std430) uniform Params {
 	float depth_tolerance;
 	bool orthogonal;
 	int view_index;
+	int pad1;
+	int pad2;
+	int pad3;
 }
 params;
 
