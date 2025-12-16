@@ -30,16 +30,120 @@
 
 #pragma once
 
+#include "core/io/resource_loader.h"
+#include "core/templates/local_vector.h"
 #include "gdscript_text_document.h"
 #include "gdscript_workspace.h"
 
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
+#include "editor/file_system/editor_file_system.h"
 
 #include "modules/jsonrpc/jsonrpc.h"
+#include "scene/resources/packed_scene.h"
 
 #define LSP_MAX_BUFFER_SIZE 4194304
 #define LSP_MAX_CLIENTS 8
+
+/**
+ * Used to load and cache scenes for autocompletion.
+ * */
+class SceneCache {
+private:
+	friend class GDScriptLanguageProtocol;
+
+	struct ScriptQueueForLoad {
+		String current_loaded_owner = "";
+		ResourceLoader::ThreadLoadStatus current_load_status = ResourceLoader::THREAD_LOAD_INVALID_RESOURCE;
+		LocalVector<String> script_path_queue;
+		bool is_empty() const { return script_path_queue.size() == 0; }
+		bool has_script_path(String p_script_path) const { return script_path_queue.has(p_script_path); }
+		bool has_current_load() const { return (not current_loaded_owner.is_empty() && (current_load_status == ResourceLoader::THREAD_LOAD_IN_PROGRESS || current_load_status == ResourceLoader::THREAD_LOAD_LOADED)); }
+
+		void clear() {
+			get_current_loaded_owner_res();
+			script_path_queue.clear();
+		}
+
+		void try_owners_for_load(LocalVector<String> &owners) {
+			Error r_error = Error::FAILED;
+			while (r_error != Error::OK && not owners.is_empty()) {
+				String owner_path = owners[0];
+				owners.remove_at(0);
+				r_error = ResourceLoader::load_threaded_request(owner_path);
+				if (r_error == Error::OK) {
+					current_loaded_owner = owner_path;
+					update_load_status();
+					LOG_LSP("Scene load started for:", get_front(), current_loaded_owner);
+				}
+			}
+		}
+
+		void update_load_status() {
+			if (not current_loaded_owner.is_empty()) {
+				current_load_status = ResourceLoader::load_threaded_get_status(current_loaded_owner);
+			} else {
+				current_load_status = ResourceLoader::THREAD_LOAD_INVALID_RESOURCE;
+			}
+		}
+
+		// can also be used to clean up currently loaded owner
+		// ResourceLoader has no way of dropping the load of a specific requested resource
+		Ref<PackedScene> get_current_loaded_owner_res() {
+			Ref<PackedScene> res;
+			if (has_current_load()) {
+				res = ResourceLoader::load_threaded_get(current_loaded_owner);
+				current_loaded_owner = "";
+				current_load_status = ResourceLoader::THREAD_LOAD_INVALID_RESOURCE;
+			}
+			return res;
+		}
+
+		void push_back(String p_script_path) { script_path_queue.push_back(p_script_path); }
+
+		String get_front() { return script_path_queue.size() > 0 ? script_path_queue[0] : ""; }
+
+		void push_front(String p_script_path) {
+			if (script_path_queue.size() > 0 && script_path_queue.has(p_script_path)) {
+				script_path_queue.erase(p_script_path);
+			}
+			script_path_queue.insert(0, p_script_path);
+		}
+
+		void remove_front() {
+			if (script_path_queue.size() == 0) {
+				return;
+			}
+			script_path_queue.remove_at(0);
+			get_current_loaded_owner_res();
+		}
+
+		void erase(String p_script_path) {
+			if (script_path_queue.size() == 0) {
+				return;
+			}
+			if (p_script_path == script_path_queue[0]) {
+				get_current_loaded_owner_res();
+			}
+			script_path_queue.erase(p_script_path);
+		}
+	};
+
+	HashMap<String, Node *> cache;
+	ScriptQueueForLoad pending_script_queue;
+
+	void _get_owner_paths(EditorFileSystemDirectory *p_dir, const String &p_path, LocalVector<String> &r_owner_paths);
+	void _try_scene_load_for_next_script();
+	void _enqueue_script_for_scene_load(String p_path);
+	void _poll_scene_load();
+	void _finalize_scene_load();
+
+public:
+	Node *get(const String &p_path);
+	void request_scene_load_for_script(const String &p_path);
+	void unload_scene_for_script(const String &p_path);
+	void clear();
+};
 
 class GDScriptLanguageProtocol : public JSONRPC {
 	GDCLASS(GDScriptLanguageProtocol, JSONRPC)
@@ -68,6 +172,7 @@ private:
 	static GDScriptLanguageProtocol *singleton;
 
 	HashMap<int, Ref<LSPeer>> clients;
+	SceneCache scene_cache;
 	Ref<TCPServer> server;
 	int latest_client_id = 0;
 	int next_client_id = 0;
@@ -95,6 +200,8 @@ public:
 	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() { return singleton; }
 	_FORCE_INLINE_ Ref<GDScriptWorkspace> get_workspace() { return workspace; }
 	_FORCE_INLINE_ Ref<GDScriptTextDocument> get_text_document() { return text_document; }
+	_FORCE_INLINE_ SceneCache *get_scene_cache() { return &scene_cache; }
+
 	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
 
 	void poll(int p_limit_usec);
