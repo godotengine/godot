@@ -59,8 +59,8 @@ namespace glslang {
 class TLiveTraverser : public TIntermTraverser {
 public:
     TLiveTraverser(const TIntermediate& i, bool traverseAll = false,
-                   bool preVisit = true, bool inVisit = false, bool postVisit = false) :
-        TIntermTraverser(preVisit, inVisit, postVisit),
+                   bool preVisit = true, bool inVisit = false, bool postVisit = false, bool includeDeclSymbol = false) :
+        TIntermTraverser(preVisit, inVisit, postVisit, false, includeDeclSymbol),
         intermediate(i), traverseAll(traverseAll)
     { }
 
@@ -128,6 +128,47 @@ protected:
                 node->getFalseBlock()->traverse(this);
 
             return false; // don't traverse any more, we did it all above
+        } else
+            return true; // traverse the whole subtree
+    }
+
+    // To prune semantically dead paths in switch statements with constant expressions.
+    virtual bool visitSwitch(TVisit /* visit */, TIntermSwitch* node)
+    {
+        if (traverseAll)
+            return true; // traverse all code
+
+        TIntermConstantUnion* constant = node->getCondition()->getAsConstantUnion();
+        if (constant) {
+            TConstUnion switchValue = constant->getConstArray()[0];
+            int liveBranch = -1;
+            const auto& body = node->getBody()->getSequence();
+            for (unsigned int i = 0; i < body.size(); ++i) {
+                if (body[i]->getAsBranchNode()) {
+                    if (body[i]->getAsBranchNode()->getFlowOp() == glslang::EOpCase) {
+                        TConstUnion caseValue =
+                            body[i]->getAsBranchNode()->getExpression()->getAsConstantUnion()->getConstArray()[0];
+                        if (switchValue == caseValue.getIConst()) {
+                            liveBranch = (int)i;
+                            break;
+                        }
+                    } else if (body[i]->getAsBranchNode()->getFlowOp() == glslang::EOpDefault) {
+                        liveBranch = (int)i;
+                    }
+                }
+            }
+            if (liveBranch != -1) {
+                for (int i = liveBranch; i < (int)body.size(); ++i) {
+                    if (body[i]->getAsAggregate()) {
+                        for (auto* inst : body[i]->getAsAggregate()->getSequence()) {
+                            if (inst->getAsBranchNode() && (inst->getAsBranchNode()->getFlowOp() == glslang::EOpBreak))
+                                return false; // found and traversed the live case(s)
+                            inst->traverse(this);
+                        }
+                    }
+                }
+            }
+            return false; // finished traversing all cases
         } else
             return true; // traverse the whole subtree
     }

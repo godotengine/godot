@@ -38,20 +38,21 @@
 #include <string>
 
 #include "../Include/ResourceLimits.h"
+#include "../Include/visibility.h"
 
 // Return pointer to user-writable Resource to pass through API in
 // future-proof way.
-extern TBuiltInResource* GetResources();
+GLSLANG_EXPORT extern TBuiltInResource* GetResources();
 
 // These are the default resources for TBuiltInResources, used for both
 //  - parsing this string for the case where the user didn't supply one,
 //  - dumping out a template for user construction of a config file.
-extern const TBuiltInResource* GetDefaultResources();
+GLSLANG_EXPORT extern const TBuiltInResource* GetDefaultResources();
 
 // Returns the DefaultTBuiltInResource as a human-readable string.
-std::string GetDefaultTBuiltInResourceString();
+GLSLANG_EXPORT std::string GetDefaultTBuiltInResourceString();
 
 // Decodes the resource limits from |config| to |resources|.
-void DecodeResourceLimits(TBuiltInResource* resources, char* config);
+GLSLANG_EXPORT void DecodeResourceLimits(TBuiltInResource* resources, char* config);
 
 #endif  // _STAND_ALONE_RESOURCE_LIMITS_INCLUDED_

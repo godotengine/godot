@@ -95,10 +95,14 @@ public:
         default:                   append("UNKNOWN ERROR: ");   break;
         }
     }
-    void location(const TSourceLoc& loc, bool absolute = false) {
+    void location(const TSourceLoc& loc, bool absolute = false, bool displayColumn = false) {
         const int maxSize = 24;
         char locText[maxSize];
-        snprintf(locText, maxSize, ":%d", loc.line);
+        if (displayColumn) {
+            snprintf(locText, maxSize, ":%d:%d", loc.line, loc.column);
+        } else {
+            snprintf(locText, maxSize, ":%d", loc.line);
+        }
 
         if(loc.getFilename() == nullptr && shaderFileName != nullptr && absolute) {
             //append(std::filesystem::absolute(shaderFileName).string());
@@ -119,9 +123,11 @@ public:
         append(s);
         append("\n");
     }
-    void message(TPrefixType message, const char* s, const TSourceLoc& loc) {
+    void message(TPrefixType message, const char* s, const TSourceLoc& loc, bool absolute = false,
+                 bool displayColumn = false)
+    {
         prefix(message);
-        location(loc);
+        location(loc, absolute, displayColumn);
         append(s);
         append("\n");
     }
