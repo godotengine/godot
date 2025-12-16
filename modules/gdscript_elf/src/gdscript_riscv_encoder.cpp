@@ -272,9 +272,9 @@ PackedByteArray GDScriptRISCVEncoder::encode_vm_call(int p_opcode, int p_ip, ELF
 	PackedByteArray result;
 
 	// Linux syscall numbers (RISC-V 64-bit) - used in hybrid and Linux modes
-	const int LINUX_WRITE = 64;   // write syscall
-	const int LINUX_EXIT = 93;    // exit syscall
-	const int LINUX_READ = 63;    // read syscall
+	//const int LINUX_WRITE = 64;   // write syscall
+	// const int LINUX_EXIT = 93;    // exit syscall
+	// const int LINUX_READ = 63;    // read syscall
 
 	if (p_mode == ELF64CompilationMode::HYBRID) {
 		// Hybrid mode: Choose syscall type based on operation
