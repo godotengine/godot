@@ -1,0 +1,30 @@
+!<arch>
+//                                              98        `
+a_file_with_very_long_name.txt/
+a_file_with_very_long_name2.txt/
+a_file_with_very_long_name3.txt/
+hello.c/        0           0     0     644     45        `
+int my_func(int param)
+{
+  return 2*param;
+}
+
+hello2.c/       0           0     0     644     7         `
+Hello2
+
+hello3.c/       0           0     0     644     8         `
+Hello23
+hello4.c/       0           0     0     644     10        `
+Hello24==
+hello41.c/      0           0     0     644     11        `
+Hello24==
+
+
+hello5.c/       0           0     0     644     8         `
+Hello25
+/0              0           0     0     644     6         `
+Hello
+/32             0           0     0     644     6         `
+Hello
+/65             0           0     0     644     6         `
+Hello

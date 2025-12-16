@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/serge1/ELFIO.git
+	branch = main
+	commit = 7d30a22fc5aac06adfe7887ae57f3701b6b5f913
+	parent = bfd55556630e3babfa08b5b0e9eb37367ca078b6
+	method = merge
+	cmdver = 0.4.9

@@ -1,0 +1,114 @@
+ELF Header:
+  Magic:   7f 45 4c 46 01 02 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, big endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              REL (Relocatable file)
+  Machine:                           PowerPC
+  Version:                           0x1
+  Entry point address:               0x0
+  Start of program headers:          0 (bytes into file)
+  Start of section headers:          616 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               52 (bytes)
+  Size of program headers:           0 (bytes)
+  Number of program headers:         0
+  Size of section headers:           40 (bytes)
+  Number of section headers:         16
+  Section header string table index: 13
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .text             PROGBITS        00000000 000034 000118 00  AX  0   0  4
+  [ 2] .rela.text        RELA            00000000 0007b8 0000d8 0c     14   1  4
+  [ 3] .data             PROGBITS        00000000 00014c 000000 00  WA  0   0  1
+  [ 4] .bss              NOBITS          00000000 00014c 000001 00  WA  0   0  1
+  [ 5] .rodata           PROGBITS        00000000 00014c 000006 00   A  0   0  4
+  [ 6] .ctors            PROGBITS        00000000 000154 000004 00  WA  0   0  4
+  [ 7] .rela.ctors       RELA            00000000 000890 00000c 0c     14   6  4
+  [ 8] .eh_frame         PROGBITS        00000000 000158 000058 00   A  0   0  4
+  [ 9] .rela.eh_frame    RELA            00000000 00089c 000024 0c     14   8  4
+  [10] .comment          PROGBITS        00000000 0001b0 000027 00      0   0  1
+  [11] .note.GNU-stack   PROGBITS        00000000 0001d7 000000 00      0   0  1
+  [12] .gnu.attributes   LOOS+ffffff5    00000000 0001d7 000014 00      0   0  1
+  [13] .shstrtab         STRTAB          00000000 0001eb 00007d 00      0   0  1
+  [14] .symtab           SYMTAB          00000000 0004e8 000180 10     15  14  4
+  [15] .strtab           STRTAB          00000000 000668 00014f 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+There are no section groups in this file.
+
+There are no program headers in this file.
+
+Relocation section '.rela.text' at offset 0x7b8 contains 18 entries:
+ Offset     Info    Type            Sym.Value  Sym. Name + Addend
+00000016  00000f06 R_PPC_ADDR16_HA   00000000   _ZSt4cout + 0
+0000001a  00000f04 R_PPC_ADDR16_LO   00000000   _ZSt4cout + 0
+0000001e  00000506 R_PPC_ADDR16_HA   00000000   .rodata + 0
+00000022  00000504 R_PPC_ADDR16_LO   00000000   .rodata + 0
+00000024  0000100a R_PPC_REL24       00000000   _ZStlsISt11char_traits + 0
+00000032  00001106 R_PPC_ADDR16_HA   00000000   _ZSt4endlIcSt11char_tr + 0
+00000036  00001104 R_PPC_ADDR16_LO   00000000   _ZSt4endlIcSt11char_tr + 0
+00000038  0000120a R_PPC_REL24       00000000   _ZNSolsEPFRSoS_E + 0
+0000009a  00000406 R_PPC_ADDR16_HA   00000000   .bss + 0
+0000009e  00000404 R_PPC_ADDR16_LO   00000000   .bss + 0
+000000a0  0000130a R_PPC_REL24       00000000   _ZNSt8ios_base4InitC1E + 0
+000000a6  00001406 R_PPC_ADDR16_HA   00000000   _ZNSt8ios_base4InitD1E + 0
+000000aa  00001404 R_PPC_ADDR16_LO   00000000   _ZNSt8ios_base4InitD1E + 0
+000000b2  00000406 R_PPC_ADDR16_HA   00000000   .bss + 0
+000000b6  00000404 R_PPC_ADDR16_LO   00000000   .bss + 0
+000000ba  00001506 R_PPC_ADDR16_HA   00000000   __dso_handle + 0
+000000be  00001504 R_PPC_ADDR16_LO   00000000   __dso_handle + 0
+000000c0  0000160a R_PPC_REL24       00000000   __cxa_atexit + 0
+
+Relocation section '.rela.ctors' at offset 0x890 contains 1 entries:
+ Offset     Info    Type            Sym.Value  Sym. Name + Addend
+00000000  00000201 R_PPC_ADDR32      00000000   .text + dc
+
+Relocation section '.rela.eh_frame' at offset 0x89c contains 3 entries:
+ Offset     Info    Type            Sym.Value  Sym. Name + Addend
+00000011  00001701 R_PPC_ADDR32      00000000   __gxx_personality_v0 + 0
+00000020  00000201 R_PPC_ADDR32      00000000   .text + 0
+00000040  00000201 R_PPC_ADDR32      00000000   .text + 5c
+
+There are no unwind sections in this file.
+
+Symbol table '.symtab' contains 24 entries:
+   Num:    Value  Size Type    Bind   Vis      Ndx Name
+     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND 
+     1: 00000000     0 FILE    LOCAL  DEFAULT  ABS test_ppc.cpp
+     2: 00000000     0 SECTION LOCAL  DEFAULT    1 
+     3: 00000000     0 SECTION LOCAL  DEFAULT    3 
+     4: 00000000     0 SECTION LOCAL  DEFAULT    4 
+     5: 00000000     0 SECTION LOCAL  DEFAULT    5 
+     6: 0000005c   128 FUNC    LOCAL  DEFAULT    1 _Z41__static_initializati
+     7: 00000000     1 OBJECT  LOCAL  DEFAULT    4 _ZStL8__ioinit
+     8: 000000dc    60 FUNC    LOCAL  DEFAULT    1 _GLOBAL__I_main
+     9: 00000000     0 SECTION LOCAL  DEFAULT    6 
+    10: 00000000     0 SECTION LOCAL  DEFAULT    8 
+    11: 00000000     0 SECTION LOCAL  DEFAULT   11 
+    12: 00000000     0 SECTION LOCAL  DEFAULT   10 
+    13: 00000000     0 SECTION LOCAL  DEFAULT   12 
+    14: 00000000    92 FUNC    GLOBAL DEFAULT    1 main
+    15: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND _ZSt4cout
+    16: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND _ZStlsISt11char_traitsIcE
+    17: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND _ZSt4endlIcSt11char_trait
+    18: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND _ZNSolsEPFRSoS_E
+    19: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND _ZNSt8ios_base4InitC1Ev
+    20: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND _ZNSt8ios_base4InitD1Ev
+    21: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND __dso_handle
+    22: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND __cxa_atexit
+    23: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND __gxx_personality_v0
+
+No version information found in this file.
+Attribute Section: gnu
+File Attributes
+  Tag_GNU_Power_ABI_FP: Hard float
+  Tag_GNU_Power_ABI_Vector: Generic
+  Tag_GNU_Power_ABI_Struct_Return: Memory

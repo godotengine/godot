@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Generator: Adobe Illustrator 9.0, SVG Export Plug-In  -->
+<!DOCTYPE svg [
+	<!ENTITY st0 "fill:none;stroke:#FFFFFF;stroke-width:12.1438;stroke-linejoin:round;">
+	<!ENTITY st1 "fill:none;stroke-width:1.2429;">
+	<!ENTITY st2 "fill:#FFFFFF;stroke:none;">
+	<!ENTITY st3 "fill:none;stroke:#FFFFFF;stroke-width:12.7649;stroke-linejoin:round;">
+	<!ENTITY st4 "fill:#FFFFFF;stroke-width:6.3824;stroke-linejoin:round;">
+	<!ENTITY st5 "fill:none;stroke:none;">
+	<!ENTITY st6 "fill-rule:nonzero;clip-rule:nonzero;stroke:#000000;stroke-miterlimit:4;">
+	<!ENTITY st7 "fill:#FFFFFF;stroke:#FFFFFF;stroke-width:12.7649;stroke-linejoin:round;">
+	<!ENTITY st8 "stroke:none;">
+	<!ENTITY st9 "fill:none;stroke-width:4.9715;stroke-linejoin:round;">
+]>
+<svg  xmlns="http://www.w3.org/2000/svg" width="48pt" height="48pt" viewBox="0 0 48 48" xml:space="preserve">
+	<g id="Layer_x0020_1" style="&st6;">
+		<path style="&st0;" d="M35.7,19.8v18.9H11V8.8h13.9l10.8,11z"/>
+		<path style="&st3;" d="M38.7,30.4L25,16.7l-7.7-3l2.7,8.7l13.3,13.4l5.4-5.4z"/>
+		<path style="&st7;" d="M35.7,8.8H11v29.9h24.7V8.8z"/>
+		<path style="&st4;" d="M35.7,8.8H11v29.9h24.7V8.8z"/>
+		<path style="&st2;" d="M35.7,8.8H11v29.9h24.7V8.8z"/>
+	</g>
+	<g id="Layer_x0020_4" style="&st6;">
+		<path style="&st9;" d="M38.7,30.4L25,16.7l-7.7-3l2.7,8.7l13.3,13.4l5.4-5.4z"/>
+		<path style="&st8;" d="M38.7,30.4L25,16.7l-7.7-3l2.7,8.7l13.3,13.4l5.4-5.4z"/>
+		<path style="&st8;" d="M20.6,14.7l-2.5,2.5L17,13.4l3.6,1.3z"/>
+		<path style="&st1;" d="M19.6,22.2l3-0.3l2.4-2.4l0.4-2.8"/>
+		<path style="&st2;" d="M20.4,14.9L18.3,17l1.6,5.2l2.7-0.3l2.4-2.4l0.3-2.4l-5-2.2z"/>
+	</g>
+	<g id="crop" style="&st6;">
+		<path style="&st5;" d="M48,48H0V0h48v48z"/>
+	</g>
+</svg>

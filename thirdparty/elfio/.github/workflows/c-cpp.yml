@@ -1,0 +1,99 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: CMake Build & Test
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-22.04, windows-latest, windows-2022, macos-13, macos-15]
+        build_type: [Release, Debug]
+        cpp_compiler: [g++, clang++, cl]
+        include:
+          - os: windows-latest
+            cpp_compiler: cl
+            c_compiler: cl
+          - os: windows-2022
+            cpp_compiler: cl
+            c_compiler: cl
+          - os: ubuntu-latest
+            cpp_compiler: g++
+            c_compiler: gcc
+          - os: ubuntu-latest
+            cpp_compiler: clang++
+            c_compiler: clang
+          - os: ubuntu-22.04
+            cpp_compiler: g++
+            c_compiler: gcc
+          - os: ubuntu-22.04
+            cpp_compiler: clang++
+            c_compiler: clang
+          - os: macos-13
+            cpp_compiler: g++
+            c_compiler: gcc
+          - os: macos-13
+            cpp_compiler: clang++
+            c_compiler: clang
+          - os: macos-15
+            cpp_compiler: g++
+            c_compiler: gcc
+          - os: macos-15
+            cpp_compiler: clang++
+            c_compiler: clang
+        exclude:
+          - os: windows-latest
+            cpp_compiler: g++
+          - os: windows-latest
+            cpp_compiler: clang++
+          - os: windows-2022
+            cpp_compiler: g++
+          - os: windows-2022
+            cpp_compiler: clang++
+          - os: ubuntu-latest
+            cpp_compiler: cl
+          - os: ubuntu-22.04
+            cpp_compiler: cl
+          - os: macos-13
+            cpp_compiler: cl
+          - os: macos-15
+            cpp_compiler: cl
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: 'Serge1/ELFIO'
+    
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build/${{ matrix.build_type }}/${{ matrix.cpp_compiler }}" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DELFIO_BUILD_EXAMPLES=YES -DELFIO_BUILD_TESTS=YES
+        -S ${{ github.workspace }}
+    
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+    
+    - name: Test
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ctest --build-config ${{ matrix.build_type }} --output-on-failure --verbose

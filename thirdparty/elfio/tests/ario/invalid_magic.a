@@ -1,0 +1,20 @@
+!<arkh>
+hello.c/        0           0     0     644     45        `
+int my_func(int param)
+{
+  return 2*param;
+}
+
+hello2.c/       0           0     0     644     7         `
+Hello2
+
+hello3.c/       0           0     0     644     8         `
+Hello23
+hello4.c/       0           0     0     644     10        `
+Hello24==
+hello41.c/      0           0     0     644     11        `
+Hello24==
+
+
+hello5.c/       0           0     0     644     8         `
+Hello25

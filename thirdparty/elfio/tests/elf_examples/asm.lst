@@ -1,0 +1,23 @@
+     1                                  ; nasm -f elf hello.asm		# this will produce hello.o ELF object file
+     2                                  ; ld -s -o hello hello.o	# this will produce hello executable
+     3                                  
+     4                                  section	.text
+     5                                      global _start			;must be declared for linker (ld)
+     6                                  
+     7                                  _start:					;tell linker entry point
+     8                                  
+     9 00000000 BA0E000000              	mov	edx,len	;message length
+    10 00000005 B9[00000000]            	mov	ecx,msg	;message to write
+    11 0000000A BB01000000              	mov	ebx,1	;file descriptor (stdout)
+    12 0000000F B804000000              	mov	eax,4	;system call number (sys_write)
+    13 00000014 CD80                    	int	0x80	;call kernel
+    14                                  
+    15 00000016 B801000000              	mov	eax,1	;system call number (sys_exit)
+    16 0000001B CD80                    	int	0x80	;call kernel
+    17                                  
+    18                                  section	.data
+    19                                  
+    20 00000000 48656C6C6F2C20776F-     msg	db	'Hello, world!',0xa	;our dear string
+    21 00000009 726C64210A         
+    22                                  len	equ	$ - msg			;length of our dear string
+    23                                  

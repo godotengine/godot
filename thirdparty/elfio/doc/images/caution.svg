@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Generator: Adobe Illustrator 9.0, SVG Export Plug-In  -->
+<!DOCTYPE svg [
+	<!ENTITY st0 "fill:#FFFFFF;stroke:none;">
+	<!ENTITY st1 "fill:#FFFFFF;stroke-width:6.6112;stroke-linecap:round;stroke-linejoin:round;">
+	<!ENTITY st2 "stroke:#FFFFFF;stroke-width:6.6112;">
+	<!ENTITY st3 "fill:none;stroke:none;">
+	<!ENTITY st4 "fill-rule:nonzero;clip-rule:nonzero;stroke:#000000;stroke-miterlimit:4;">
+	<!ENTITY st5 "stroke:none;">
+]>
+<svg  width="48pt" height="48pt" viewBox="0 0 48 48" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+	<g id="Layer_x0020_3" style="&st4;">
+		<g>
+			<path style="&st2;" d="M41.7,35.3L26.6,9.4c-0.6-1-1.7-1.7-2.9-1.6c-1.2,0-2.3,0.7-2.9,1.7L6.3,35.4c-0.6,1-0.6,2.3,0,3.3c0.6,1,1.7,1.6,2.9,1.6h29.6c1.2,0,2.3-0.6,2.9-1.7c0.6-1,0.6-2.3,0-3.3z"/>
+			<path style="&st1;" d="M23.7,11L9.2,37h29.6L23.7,11z"/>
+			<path style="&st0;" d="M23.7,11.9L10.3,36.1h27.5l-14-24.1z"/>
+			<g>
+				<path style="&st5;" d="M24.1,34c-1.1,0-1.8-0.8-1.8-1.8c0-1.1,0.7-1.8,1.8-1.8c1.1,0,1.8,0.7,1.8,1.8c0,1-0.7,1.8-1.8,1.8h0z M22.9,29.3l-0.4-9.1h3.2l-0.4,9.1h-2.3z"/>
+			</g>
+		</g>
+	</g>
+	<g id="crop_x0020_marks" style="&st4;">
+		<path style="&st3;" d="M48,48H0V0h48v48z"/>
+	</g>
+</svg>

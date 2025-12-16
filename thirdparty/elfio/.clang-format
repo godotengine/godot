@@ -1,0 +1,34 @@
+BasedOnStyle                         : LLVM
+
+AccessModifierOffset                 : -2
+AlignAfterOpenBracket                : true
+AlignConsecutiveAssignments          : true
+AlignConsecutiveDeclarations         : true
+AlignConsecutiveMacros               : true
+AlignEscapedNewlines                 : true
+AlignOperands                        : true
+AlignTrailingComments                : true
+BinPackParameters                    : false
+BraceWrapping:
+  AfterCaseLabel          : true
+  AfterClass              : true
+  AfterEnum               : true
+  AfterFunction           : true
+  AfterNamespace          : false
+  AfterStruct             : true
+  AfterExternBlock        : true
+  BeforeCatch             : true
+  BeforeElse              : true
+BreakBeforeBraces                    : Custom
+ColumnLimit                          : 80
+FixNamespaceComments                 : true
+IndentCaseLabels                     : false
+IndentWidth                          : 4
+NamespaceIndentation                 : Inner
+PointerAlignment                     : Left
+ReflowComments                       : false
+SortIncludes                         : false
+SpacesInConditionalStatement         : true
+SpacesInParentheses                  : true
+TabWidth                             : 4
+UseTab                               : Never

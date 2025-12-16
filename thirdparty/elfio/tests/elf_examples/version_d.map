@@ -1,0 +1,9 @@
+HELLO_1.0 {
+  global:
+  _Z20print_hello_world_v1v;
+};
+
+HELLO_2.0 {
+global:
+_Z20print_hello_world_v2v;
+};

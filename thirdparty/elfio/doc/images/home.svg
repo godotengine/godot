@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Generator: Adobe Illustrator 9.0, SVG Export Plug-In  -->
+<!DOCTYPE svg [
+	<!ENTITY st0 "fill-rule:nonzero;clip-rule:nonzero;fill:#FFFFFF;stroke:#000000;stroke-miterlimit:4;">
+	<!ENTITY st1 "fill:none;stroke:none;">
+	<!ENTITY st2 "fill:#000000;">
+	<!ENTITY st3 "fill:none;stroke:#FFFFFF;stroke-width:6.3469;stroke-linejoin:round;">
+	<!ENTITY st4 "fill-rule:evenodd;clip-rule:evenodd;stroke:none;">
+	<!ENTITY st5 "fill-rule:nonzero;clip-rule:nonzero;stroke:#000000;stroke-miterlimit:4;">
+]>
+<svg  width="48pt" height="48pt" viewBox="0 0 48 48" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+	<g id="Layer_x0020_3" style="&st0;">
+		<g style="&st4;">
+			<path style="&st3;" d="M22.9,7.1L5.1,21.8l0,0c-0.3,0.3-0.5,0.8-0.5,1.2c0,0.2,0,0.4,0.1,0.6c0.3,0.6,0.9,1,1.6,1c0,0,1.1,0,2.2,0c0,2.4,0,14.2,0,14.2c0,1.1,0.8,1.9,1.8,1.9h27.4c1.1,0,1.9-0.9,1.9-2c0,0,0-11.8,0-14.2c1,0,2,0,2,0c0.8,0,1.4-0.5,1.7-1.2
+				c0.1-0.2,0.1-0.4,0.1-0.6c0-0.5-0.2-1-0.7-1.4c0,0-3.6-3-4.5-3.7c0-1.2,0-6.9,0-6.9c0-1.2-0.8-2-2-2h-4.8c-1,0-1.7,0.6-1.9,1.5c-1.9-1.6-4.1-3.5-4.1-3.5l0.1,0.1c-0.7-0.7-1.8-0.8-2.7-0.1z"/>
+			<path style="&st2;" d="M22.9,7.1L5.1,21.8l0,0c-0.3,0.3-0.5,0.8-0.5,1.2c0,0.2,0,0.4,0.1,0.6c0.3,0.6,0.9,1,1.6,1c0,0,1.1,0,2.2,0c0,2.4,0,14.2,0,14.2c0,1.1,0.8,1.9,1.8,1.9h27.4c1.1,0,1.9-0.9,1.9-2c0,0,0-11.8,0-14.2c1,0,2,0,2,0c0.8,0,1.4-0.5,1.7-1.2
+				c0.1-0.2,0.1-0.4,0.1-0.6c0-0.5-0.2-1-0.7-1.4c0,0-3.6-3-4.5-3.7c0-1.2,0-6.9,0-6.9c0-1.2-0.8-2-2-2h-4.8c-1,0-1.7,0.6-1.9,1.5c-1.9-1.6-4.1-3.5-4.1-3.5l0.1,0.1c-0.7-0.7-1.8-0.8-2.7-0.1z"/>
+			<path style="&st2;" d="M41.8,22.8l-5.1-4.2v-0.1L31,13.7v0l-6.5-5.5C24.2,8,24,8,23.8,8.2L6.2,22.9c-0.1,0.1-0.1,0.3,0.1,0.3h1.6H10h28.1h1.2h2.3c0.2,0,0.4-0.2,0.2-0.4z"/>
+			<path d="M35.8,16.8l0-5.1c0-0.2-0.1-0.4-0.3-0.4h-3.2c-0.2,0-0.3,0.1-0.3,0.3v2.2l3.9,2.9z"/>
+			<path d="M11.9,24.7V37c0,0.3,0.1,0.4,0.3,0.4h23.6c0.3,0,0.4-0.2,0.4-0.4V24.7H11.9z"/>
+		</g>
+	</g>
+	<g id="crop_x0020_marks" style="&st5;">
+		<path style="&st1;" d="M48,48H0V0h48v48z"/>
+	</g>
+</svg>

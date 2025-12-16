@@ -1,0 +1,71 @@
+
+write_exe_i386_32_work:     file format elf32-i386
+write_exe_i386_32_work
+architecture: i386, flags 0x00000102:
+EXEC_P, D_PAGED
+start address 0x08048080
+
+Program Header:
+    LOAD off    0x00000000 vaddr 0x08048000 paddr 0x08048000 align 2**12
+         filesz 0x0000009d memsz 0x0000009d flags r-x
+    LOAD off    0x000000a0 vaddr 0x080490a0 paddr 0x080490a0 align 2**12
+         filesz 0x0000000e memsz 0x0000000e flags rw-
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000001d  08048080  08048080  00000080  2**4
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         0000000e  080490a0  080490a0  000000a0  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .note         00000020  00000000  00000000  000000ae  2**0
+                  CONTENTS, READONLY
+SYMBOL TABLE:
+no symbols
+
+
+
+Disassembly of section .text:
+
+08048080 <.text>:
+ 8048080:	b8 04 00 00 00       	mov    $0x4,%eax
+ 8048085:	bb 01 00 00 00       	mov    $0x1,%ebx
+ 804808a:	b9 a0 90 04 08       	mov    $0x80490a0,%ecx
+ 804808f:	ba 0e 00 00 00       	mov    $0xe,%edx
+ 8048094:	cd 80                	int    $0x80
+ 8048096:	b8 01 00 00 00       	mov    $0x1,%eax
+ 804809b:	cd 80                	int    $0x80
+
+Disassembly of section .data:
+
+080490a0 <.data>:
+ 80490a0:	48                   	dec    %eax
+ 80490a1:	65                   	gs
+ 80490a2:	6c                   	insb   (%dx),%es:(%edi)
+ 80490a3:	6c                   	insb   (%dx),%es:(%edi)
+ 80490a4:	6f                   	outsl  %ds:(%esi),(%dx)
+ 80490a5:	2c 20                	sub    $0x20,%al
+ 80490a7:	57                   	push   %edi
+ 80490a8:	6f                   	outsl  %ds:(%esi),(%dx)
+ 80490a9:	72 6c                	jb     0x8049117
+ 80490ab:	64 21 0a             	and    %ecx,%fs:(%edx)
+
+Disassembly of section .note:
+
+00000000 <.note>:
+   0:	11 00                	adc    %eax,(%eax)
+   2:	00 00                	add    %al,(%eax)
+   4:	00 00                	add    %al,(%eax)
+   6:	00 00                	add    %al,(%eax)
+   8:	77 00                	ja     0xa
+   a:	00 00                	add    %al,(%eax)
+   c:	43                   	inc    %ebx
+   d:	72 65                	jb     0x74
+   f:	61                   	popa   
+  10:	74 65                	je     0x77
+  12:	64 20 62 79          	and    %ah,%fs:0x79(%edx)
+  16:	20 45 4c             	and    %al,0x4c(%ebp)
+  19:	46                   	inc    %esi
+  1a:	49                   	dec    %ecx
+  1b:	4f                   	dec    %edi
+  1c:	00 00                	add    %al,(%eax)
+	...

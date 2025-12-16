@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Generator: Adobe Illustrator 9.0, SVG Export Plug-In  -->
+<!DOCTYPE svg [
+	<!ENTITY st0 "fill:none;stroke:none;">
+	<!ENTITY st1 "fill:#FFFFFF;stroke:#FFFFFF;stroke-width:7.5901;stroke-linejoin:round;">
+	<!ENTITY st2 "fill-rule:nonzero;clip-rule:nonzero;stroke:#000000;stroke-miterlimit:4;">
+	<!ENTITY st3 "stroke:none;">
+]>
+<svg  width="48pt" height="48pt" viewBox="0 0 48 48" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+	<g id="Layer_x0020_3" style="&st2;">
+		<g>
+			<path style="&st1;" d="M25.6,6.9c0-0.3-0.3-0.3-0.5-0.2L8.4,23.6c-0.5,0.5-0.4,0.7,0,1l16.6,16.6c0.1,0.1,0.4,0.1,0.4-0.1v-10h13.6c0.3,0,0.5-0.2,0.5-0.4l0-13.3c0-0.3-0.2-0.5-0.5-0.5H25.5l0.1-10.1z"/>
+			<path style="&st3;" d="M25.6,6.9c0-0.3-0.3-0.3-0.5-0.2L8.4,23.6c-0.5,0.5-0.4,0.7,0,1l16.6,16.6c0.1,0.1,0.4,0.1,0.4-0.1v-10h13.6c0.3,0,0.5-0.2,0.5-0.4l0-13.3c0-0.3-0.2-0.5-0.5-0.5H25.5l0.1-10.1z"/>
+		</g>
+	</g>
+	<g id="crop_x0020_marks" style="&st2;">
+		<path style="&st0;" d="M48,48H0V0h48v48z"/>
+	</g>
+</svg>
