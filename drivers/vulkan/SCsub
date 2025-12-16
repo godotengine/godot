@@ -31,6 +31,10 @@ elif env["platform"] == "windows":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_WIN32_KHR"])
 
 # Build Vulkan memory allocator and volk
+
+# We don't use it for now, and it depends on Windows APIs.
+env.AppendUnique(CPPDEFINES=["VMA_EXTERNAL_MEMORY_WIN32=0"])
+
 env_thirdparty_vma = env.Clone()
 env_thirdparty_vma.disable_warnings()
 thirdparty_sources_vma = [thirdparty_dir + "/vk_mem_alloc.cpp"]
