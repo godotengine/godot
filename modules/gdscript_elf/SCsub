@@ -11,6 +11,7 @@ env_gdscript_elf.Prepend(CPPPATH=["#modules/gdscript_elf/src"])
 
 # Source files - only C code generation, no ELF compilation
 sources = [
+    "register_types.cpp",
     "src/gdscript_language_wrapper.cpp",
     "src/gdscript_wrapper.cpp",
     "src/gdscript_function_wrapper.cpp",
