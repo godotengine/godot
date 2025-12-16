@@ -1076,7 +1076,7 @@ void EditorResourcePicker::_notification(int p_what) {
 			draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("Tree")), Rect2(Point2(), get_size()));
 		} break;
 
-		case NOTIFICATION_RESIZED: {
+		case NOTIFICATION_SORT_CHILDREN: {
 			_update_resource();
 		} break;
 
