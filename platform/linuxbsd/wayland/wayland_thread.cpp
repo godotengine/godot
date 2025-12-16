@@ -1680,6 +1680,16 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 			ss->xkb_compose_state = nullptr;
 		}
 
+		if (ss->xkb_keymap) {
+			xkb_keymap_unref(ss->xkb_keymap);
+			ss->xkb_keymap = nullptr;
+		}
+
+		if (ss->xkb_state) {
+			xkb_state_unref(ss->xkb_state);
+			ss->xkb_state = nullptr;
+		}
+
 		if (ss->wl_keyboard) {
 			wl_keyboard_destroy(ss->wl_keyboard);
 			ss->wl_keyboard = nullptr;
@@ -2309,7 +2319,7 @@ void WaylandThread::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	ss->repeat_key_delay_msec = 1000 / rate;
+	ss->repeat_key_delay_msec = rate ? 1000 / rate : 0;
 	ss->repeat_start_delay_msec = delay;
 }
 
