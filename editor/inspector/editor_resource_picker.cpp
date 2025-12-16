@@ -49,6 +49,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
+#include "scene/resources/3d/skin.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 

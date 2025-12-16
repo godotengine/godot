@@ -31,13 +31,13 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
-#include "scene/resources/3d/skin.h"
 #include "scene/resources/material.h"
 
 class Button;
 class ConfirmationDialog;
 class EditorFileDialog;
 class PopupMenu;
+class Skin;
 class TextureRect;
 class Tree;
 class TreeItem;
