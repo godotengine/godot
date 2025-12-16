@@ -105,6 +105,8 @@ private:
 	HashMap<String, PackedStringArray> favorite_properties;
 	Vector<String> recent_dirs;
 
+	Vector<Pair<String, PackedStringArray>> preset_settings;
+
 	bool save_changed_setting = true;
 	bool optimize_save = true; //do not save stuff that came from config but was not set from engine
 	bool initialized = false;
@@ -187,6 +189,9 @@ public:
 	void set_recent_dirs_bind(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites_and_recent_dirs();
+
+	Vector<Pair<String, PackedStringArray>> get_preset_settings() const;
+	Variant get_preset_custom_value(const String &p_property_name) const;
 
 	static HashMap<StringName, Color> get_godot2_text_editor_theme();
 	static bool is_default_text_editor_theme(const String &p_theme_name);

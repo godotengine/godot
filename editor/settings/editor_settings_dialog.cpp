@@ -935,18 +935,16 @@ void EditorSettingsPropertyWrapper::_setup_override_info() {
 	override_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	override_container->add_child(override_icon);
 
-	Variant::Type type = ProjectSettings::get_singleton()->get_editor_setting_override(property).get_type();
-	override_editor_property = get_parent_inspector()->instantiate_property_editor(ProjectSettings::get_singleton(), type, ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property, hint, hint_text, usage);
-	override_editor_property->set_object_and_property(ProjectSettings::get_singleton(), ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property);
-	override_editor_property->set_read_only(true);
-	override_editor_property->set_label(TTR("Overridden in project"));
-	override_editor_property->set_h_size_flags(SIZE_EXPAND_FILL);
-	override_container->add_child(override_editor_property);
+	preset_override_label = memnew(Label);
+	preset_override_label->set_text(TTR("Preset overridden in project"));
+	preset_override_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	override_container->add_child(preset_override_label);
 
 	goto_button = memnew(Button);
 	goto_button->set_tooltip_text(TTRC("Go to the override in the Project Settings."));
 	override_container->add_child(goto_button);
 	if (EditorNode::get_singleton()) {
+		// Assume the preset override property is in the same section.
 		goto_button->connect(SceneStringName(pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::open_setting_override).bind(property), CONNECT_DEFERRED);
 	}
 
@@ -964,19 +962,52 @@ void EditorSettingsPropertyWrapper::_setup_override_info() {
 }
 
 void EditorSettingsPropertyWrapper::_update_override() {
-	// Don't allow overriding theme properties, because it causes problems. Overriding Project Manager settings makes no sense.
-	// TODO: Find a better way to define exception prefixes (if the list happens to grow).
-	if (property.begins_with("interface/theme") || property.begins_with("project_manager") || Engine::get_singleton()->is_project_manager_hint()) {
+	// Overriding Project Manager settings makes no sense.
+	if (property.begins_with("project_manager") || Engine::get_singleton()->is_project_manager_hint()) {
 		can_override = false;
 		return;
 	}
 
-	const bool has_override = ProjectSettings::get_singleton()->is_project_loaded() && ProjectSettings::get_singleton()->has_editor_setting_override(property);
-	if (has_override) {
+	const bool had_override = override_container && override_container->is_visible();
+	const bool is_project_loaded = ProjectSettings::get_singleton()->is_project_loaded();
+	const bool has_override = is_project_loaded && ProjectSettings::get_singleton()->has_editor_setting_override(property);
+
+	if (had_override != has_override && !preset_property.is_empty() && preset_property == property && get_parent_inspector() && get_parent_inspector()->get_edited_object()) {
+		// Properties that this preset controls need to update too, so update the whole tree.
+		// Defer because it will delete this property.
+		callable_mp(get_parent_inspector(), &EditorInspector::update_tree).call_deferred();
+		return;
+	}
+
+	const bool preset_has_override = is_project_loaded && !preset_property.is_empty() && preset_property != property && ProjectSettings::get_singleton()->has_editor_setting_override(preset_property);
+
+	if (has_override || preset_has_override) {
 		if (!override_container) {
 			_setup_override_info();
 		}
-		override_editor_property->update_property();
+		if (has_override && !override_editor_property) {
+			Variant::Type type = ProjectSettings::get_singleton()->get_editor_setting_override(property).get_type();
+			override_editor_property = get_parent_inspector()->instantiate_property_editor(ProjectSettings::get_singleton(), type, ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property, hint, hint_text, usage);
+			override_editor_property->set_object_and_property(ProjectSettings::get_singleton(), ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property);
+			override_editor_property->set_read_only(true);
+			override_editor_property->set_label(TTR("Overridden in project"));
+			override_editor_property->set_h_size_flags(SIZE_EXPAND_FILL);
+			override_container->add_child(override_editor_property);
+			override_container->move_child(override_editor_property, 1);
+		}
+
+		if (override_editor_property) {
+			override_editor_property->set_visible(has_override);
+		}
+		remove_button->set_visible(has_override);
+		preset_override_label->set_visible(!has_override);
+
+		const bool preset_override_is_custom = preset_has_override && ProjectSettings::get_singleton()->get_editor_setting_override(preset_property) == EditorSettings::get_singleton()->get_preset_custom_value(preset_property);
+		editor_property->set_read_only(preset_has_override && !preset_override_is_custom);
+
+		if (has_override) {
+			override_editor_property->update_property();
+		}
 		set_bottom_editor(override_container);
 		override_container->show();
 	} else if (override_container) {
@@ -1009,6 +1040,7 @@ void EditorSettingsPropertyWrapper::_notification(int p_what) {
 		override_icon->set_texture(get_editor_theme_icon(SNAME("Hierarchy")));
 		goto_button->set_button_icon(get_editor_theme_icon(SNAME("MethodOverride")));
 		remove_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+		preset_override_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("readonly_color"), SNAME("EditorProperty")));
 	}
 }
 
@@ -1024,6 +1056,25 @@ void EditorSettingsPropertyWrapper::setup(const String &p_property, EditorProper
 	property = p_property;
 	editor_property = p_editor_property;
 	add_child(editor_property);
+
+	const Vector<Pair<String, PackedStringArray>> &presets = EditorSettings::get_singleton()->get_preset_settings();
+	for (const Pair<String, PackedStringArray> &pair : presets) {
+		if (pair.first == property) {
+			preset_property = property;
+			break;
+		}
+		bool found = false;
+		for (const String &setting : pair.second) {
+			if (property.begins_with(setting)) {
+				found = true;
+				break;
+			}
+		}
+		if (found) {
+			preset_property = pair.first;
+			break;
+		}
+	}
 
 	_update_override();
 

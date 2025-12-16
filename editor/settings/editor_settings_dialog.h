@@ -139,6 +139,7 @@ class EditorSettingsPropertyWrapper : public EditorProperty {
 	PropertyHint hint;
 	String hint_text;
 	uint32_t usage;
+	String preset_property;
 
 	EditorProperty *editor_property = nullptr;
 
@@ -147,6 +148,7 @@ class EditorSettingsPropertyWrapper : public EditorProperty {
 	EditorProperty *override_editor_property = nullptr;
 	Button *goto_button = nullptr;
 	Button *remove_button = nullptr;
+	Label *preset_override_label = nullptr;
 
 	void _setup_override_info();
 	void _update_override();
