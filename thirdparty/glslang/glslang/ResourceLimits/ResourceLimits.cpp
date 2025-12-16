@@ -39,9 +39,9 @@
 
 #include "glslang/Public/ResourceLimits.h"
 
-TBuiltInResource Resources;
+static TBuiltInResource Resources;
 
-const TBuiltInResource DefaultTBuiltInResource = {
+static const TBuiltInResource DefaultTBuiltInResource = {
     /* .MaxLights = */ 32,
     /* .MaxClipPlanes = */ 6,
     /* .MaxTextureUnits = */ 32,

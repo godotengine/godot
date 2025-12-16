@@ -2,7 +2,7 @@ diff --git a/thirdparty/spirv-reflect/spirv_reflect.c b/thirdparty/spirv-reflect
 index ba64a3f54d..599667be26 100644
 --- a/thirdparty/spirv-reflect/spirv_reflect.c
 +++ b/thirdparty/spirv-reflect/spirv_reflect.c
-@@ -2688,6 +2688,11 @@ static SpvReflectResult ParseDescriptorBlockVariableSizes(SpvReflectPrvParser* p
+@@ -2686,6 +2686,11 @@ static SpvReflectResult ParseDescriptorBlockVariableSizes(SpvReflectPrvParser* p
          // ...then array
          uint32_t element_count = (p_member_var->array.dims_count > 0 ? 1 : 0);
          for (uint32_t i = 0; i < p_member_var->array.dims_count; ++i) {

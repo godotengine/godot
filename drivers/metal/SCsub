@@ -19,6 +19,7 @@ thirdparty_sources = [
     "spirv_reflect.cpp",
     "spirv_glsl.cpp",
     "spirv_cross_parsed_ir.cpp",
+    "spirv_cross_util.cpp",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 

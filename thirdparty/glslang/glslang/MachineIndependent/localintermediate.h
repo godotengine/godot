@@ -48,6 +48,7 @@
 #include <functional>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class TInfoSink;
@@ -99,7 +100,8 @@ private:
 // A "call" is a pair: <caller, callee>.
 // There can be duplicates. General assumption is the list is small.
 struct TCall {
-    TCall(const TString& pCaller, const TString& pCallee) : caller(pCaller), callee(pCallee) { }
+    TCall(const TString& pCaller, const TString& pCallee)
+        : caller(pCaller), callee(pCallee), visited(false), currentPath(false), errorGiven(false) { }
     TString caller;
     TString callee;
     bool visited;
@@ -123,8 +125,8 @@ struct TRange {
 // within the same location range, component range, and index value.  Locations don't alias unless
 // all other dimensions of their range overlap.
 struct TIoRange {
-    TIoRange(TRange location, TRange component, TBasicType basicType, int index, bool centroid, bool smooth, bool flat)
-        : location(location), component(component), basicType(basicType), index(index), centroid(centroid), smooth(smooth), flat(flat)
+    TIoRange(TRange location, TRange component, TBasicType basicType, int index, bool centroid, bool smooth, bool flat, bool sample, bool patch)
+        : location(location), component(component), basicType(basicType), index(index), centroid(centroid), smooth(smooth), flat(flat), sample(sample), patch(patch)
     {
     }
     bool overlap(const TIoRange& rhs) const
@@ -138,6 +140,8 @@ struct TIoRange {
     bool centroid;
     bool smooth;
     bool flat;
+    bool sample;
+    bool patch;
 };
 
 // An offset range is a 2-D rectangle; the set of (binding, offset) pairs all lying
@@ -265,6 +269,7 @@ public:
         gpu_shader_fp64                           = 1 << 9,
         gpu_shader_int16                          = 1 << 10,
         gpu_shader_half_float                     = 1 << 11,
+        nv_gpu_shader5_types                      = 1 << 12,
     } feature;
     void insert(feature f) { features |= f; }
     void erase(feature f) { features &= ~f; }
@@ -339,6 +344,7 @@ public:
         numTaskNVBlocks(0),
         layoutPrimitiveCulling(false),
         numTaskEXTPayloads(0),
+        nonCoherentTileAttachmentReadQCOM(false),
         autoMapBindings(false),
         autoMapLocations(false),
         flattenUniformArrays(false),
@@ -367,6 +373,12 @@ public:
         localSizeSpecId[1] = TQualifier::layoutNotSet;
         localSizeSpecId[2] = TQualifier::layoutNotSet;
         xfbBuffers.resize(TQualifier::layoutXfbBufferEnd);
+        tileShadingRateQCOM[0] = 0;
+        tileShadingRateQCOM[1] = 0;
+        tileShadingRateQCOM[2] = 0;
+        tileShadingRateQCOMNotDefault[0] = false;
+        tileShadingRateQCOMNotDefault[1] = false;
+        tileShadingRateQCOMNotDefault[2] = false;
         shiftBinding.fill(0);
     }
 
@@ -435,6 +447,9 @@ public:
             break;
         case EShTargetVulkan_1_3:
             processes.addProcess("target-env vulkan1.3");
+            break;
+        case EShTargetVulkan_1_4:
+            processes.addProcess("target-env vulkan1.4");
             break;
         default:
             processes.addProcess("target-env vulkanUnknown");
@@ -560,8 +575,8 @@ public:
     TIntermConstantUnion* addConstantUnion(const TString*, const TSourceLoc&, bool literal = false) const;
     TIntermTyped* promoteConstantUnion(TBasicType, TIntermConstantUnion*) const;
     bool parseConstTree(TIntermNode*, TConstUnionArray, TOperator, const TType&, bool singleConstantParam = false);
-    TIntermLoop* addLoop(TIntermNode*, TIntermTyped*, TIntermTyped*, bool testFirst, const TSourceLoc&);
-    TIntermAggregate* addForLoop(TIntermNode*, TIntermNode*, TIntermTyped*, TIntermTyped*, bool testFirst,
+    TIntermLoop* addLoop(TIntermNode*, TIntermNode*, TIntermTyped*, bool testFirst, const TSourceLoc&);
+    TIntermAggregate* addForLoop(TIntermNode*, TIntermNode*, TIntermNode*, TIntermTyped*, bool testFirst,
         const TSourceLoc&, TIntermLoop*&);
     TIntermBranch* addBranch(TOperator, const TSourceLoc&);
     TIntermBranch* addBranch(TOperator, TIntermTyped*, const TSourceLoc&);
@@ -643,6 +658,21 @@ public:
     void output(TInfoSink&, bool tree);
 
     bool isEsProfile() const { return profile == EEsProfile; }
+
+    bool setTileShadingRateQCOM(int dim, int size)
+    {
+        if (tileShadingRateQCOMNotDefault[dim])
+            return size == tileShadingRateQCOM[dim];
+        tileShadingRateQCOMNotDefault[dim] = true;
+        tileShadingRateQCOM[dim] = size;
+        return true;
+    }
+    unsigned int getTileShadingRateQCOM(int dim) const { return tileShadingRateQCOM[dim]; }
+    bool isTileShadingRateQCOMSet() const
+    {
+        // Return true if any component has been set (i.e. any component is not default).
+        return tileShadingRateQCOMNotDefault[0] || tileShadingRateQCOMNotDefault[1] || tileShadingRateQCOMNotDefault[2];
+    }
 
     void setShiftBinding(TResourceType res, unsigned int shift)
     {
@@ -729,6 +759,21 @@ public:
         usePhysicalStorageBuffer = true;
     }
     bool usingPhysicalStorageBuffer() const { return usePhysicalStorageBuffer; }
+    void setReplicatedComposites()
+    {
+        useReplicatedComposites = true;
+    }
+    bool usingReplicatedComposites() const { return useReplicatedComposites; }
+    void setPromoteUint32Indices()
+    {
+        promoteUint32Indices = true;
+    }
+    bool usingPromoteUint32Indices() const { return promoteUint32Indices; }
+    void setShader64BitIndexing()
+    {
+        shader64BitIndexing = true;
+    }
+    bool usingShader64BitIndexing() const { return shader64BitIndexing; }
     void setUseVariablePointers()
     {
         useVariablePointers = true;
@@ -884,6 +929,8 @@ public:
     bool getNonCoherentDepthAttachmentReadEXT() const { return nonCoherentDepthAttachmentReadEXT; }
     void setNonCoherentStencilAttachmentReadEXT() { nonCoherentStencilAttachmentReadEXT = true; }
     bool getNonCoherentStencilAttachmentReadEXT() const { return nonCoherentStencilAttachmentReadEXT; }
+    void setNonCoherentTileAttachmentReadQCOM() { nonCoherentTileAttachmentReadQCOM = true; }
+    bool getNonCoherentTileAttachmentReadQCOM() const { return nonCoherentTileAttachmentReadQCOM; }
     void setPostDepthCoverage() { postDepthCoverage = true; }
     bool getPostDepthCoverage() const { return postDepthCoverage; }
     void setEarlyFragmentTests() { earlyFragmentTests = true; }
@@ -1024,11 +1071,11 @@ public:
 #endif
 
     bool usingScalarBlockLayout() const {
-        for (auto extIt = requestedExtensions.begin(); extIt != requestedExtensions.end(); ++extIt) {
-            if (*extIt == E_GL_EXT_scalar_block_layout)
-                return true;
-        }
-        return false;
+        return IsRequestedExtension(E_GL_EXT_scalar_block_layout);
+    }
+
+    bool usingTextureOffsetNonConst() const {
+        return IsRequestedExtension(E_GL_EXT_texture_offset_non_const);
     }
 
     bool IsRequestedExtension(const char* extension) const
@@ -1042,7 +1089,9 @@ public:
 
     void mergeGlobalUniformBlocks(TInfoSink& infoSink, TIntermediate& unit, bool mergeExistingOnly);
     void mergeUniformObjects(TInfoSink& infoSink, TIntermediate& unit);
-    void checkStageIO(TInfoSink&, TIntermediate&);
+    void mergeImplicitArraySizes(TInfoSink& infoSink, TIntermediate& unit);
+    void checkStageIO(TInfoSink&, TIntermediate&, EShMessages);
+    void optimizeStageIO(TInfoSink&, TIntermediate&);
 
     bool buildConvertOp(TBasicType dst, TBasicType src, TOperator& convertOp) const;
     TIntermTyped* createConversion(TBasicType convertTo, TIntermTyped* node) const;
@@ -1055,6 +1104,7 @@ public:
     int checkLocationRT(int set, int location);
     int addUsedOffsets(int binding, int offset, int numOffsets);
     bool addUsedConstantId(int id);
+    GLSLANG_EXPORT_FOR_TESTS
     static int computeTypeLocationSize(const TType&, EShLanguage);
     static int computeTypeUniformLocationSize(const TType&);
 
@@ -1093,26 +1143,42 @@ public:
     // Certain explicit conversions are allowed conditionally
     bool getArithemeticInt8Enabled() const {
         return numericFeatures.contains(TNumericFeatures::shader_explicit_arithmetic_types) ||
+               numericFeatures.contains(TNumericFeatures::nv_gpu_shader5_types) ||
                numericFeatures.contains(TNumericFeatures::shader_explicit_arithmetic_types_int8);
     }
     bool getArithemeticInt16Enabled() const {
         return numericFeatures.contains(TNumericFeatures::shader_explicit_arithmetic_types) ||
                numericFeatures.contains(TNumericFeatures::gpu_shader_int16) ||
+               numericFeatures.contains(TNumericFeatures::nv_gpu_shader5_types) ||
                numericFeatures.contains(TNumericFeatures::shader_explicit_arithmetic_types_int16);
     }
 
     bool getArithemeticFloat16Enabled() const {
         return numericFeatures.contains(TNumericFeatures::shader_explicit_arithmetic_types) ||
                numericFeatures.contains(TNumericFeatures::gpu_shader_half_float) ||
+               numericFeatures.contains(TNumericFeatures::nv_gpu_shader5_types) ||
                numericFeatures.contains(TNumericFeatures::shader_explicit_arithmetic_types_float16);
     }
     void updateNumericFeature(TNumericFeatures::feature f, bool on)
         { on ? numericFeatures.insert(f) : numericFeatures.erase(f); }
 
+    void setBuiltinAliasLookup(std::unordered_multimap<std::string, std::string> symbolMap) {
+        builtinAliasLookup = std::move(symbolMap);
+    }
+    const std::unordered_multimap<std::string, std::string>& getBuiltinAliasLookup() const {
+        return builtinAliasLookup;
+    }
+
 protected:
-    TIntermSymbol* addSymbol(long long Id, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
-    void error(TInfoSink& infoSink, const char*, EShLanguage unitStage = EShLangCount);
-    void warn(TInfoSink& infoSink, const char*, EShLanguage unitStage = EShLangCount);
+    TIntermSymbol* addSymbol(long long Id, const TString&, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
+    void error(TInfoSink& infoSink, const TSourceLoc* loc, EShMessages messages, const char*, EShLanguage unitStage = EShLangCount);
+    void error(TInfoSink& infoSink, const char* message, EShLanguage unitStage = EShLangCount) {
+        error(infoSink, nullptr, EShMsgDefault, message, unitStage);
+    }
+    void warn(TInfoSink& infoSink, const TSourceLoc* loc, EShMessages, const char*, EShLanguage unitStage = EShLangCount);
+    void warn(TInfoSink& infoSink, const char* message, EShLanguage unitStage = EShLangCount) {
+        warn(infoSink, nullptr, EShMsgDefault, message, unitStage);
+    }
     void mergeCallGraphs(TInfoSink&, TIntermediate&);
     void mergeModes(TInfoSink&, TIntermediate&);
     void mergeTrees(TInfoSink&, TIntermediate&);
@@ -1122,7 +1188,7 @@ protected:
     void mergeLinkerObjects(TInfoSink&, TIntermSequence& linkerObjects, const TIntermSequence& unitLinkerObjects, EShLanguage);
     void mergeBlockDefinitions(TInfoSink&, TIntermSymbol* block, TIntermSymbol* unitBlock, TIntermediate* unitRoot);
     void mergeImplicitArraySizes(TType&, const TType&);
-    void mergeErrorCheck(TInfoSink&, const TIntermSymbol&, const TIntermSymbol&, EShLanguage);
+    void mergeErrorCheck(TInfoSink&, const TIntermSymbol&, const TIntermSymbol&);
     void checkCallGraphCycles(TInfoSink&);
     void checkCallGraphBodies(TInfoSink&, bool keepUncalled);
     void inOutLocationCheck(TInfoSink&);
@@ -1218,6 +1284,10 @@ protected:
     bool layoutPrimitiveCulling;
     int numTaskEXTPayloads;
 
+    bool nonCoherentTileAttachmentReadQCOM;
+    int  tileShadingRateQCOM[3];
+    bool tileShadingRateQCOMNotDefault[3];
+
     // Base shift values
     std::array<unsigned int, EResCount> shiftBinding;
 
@@ -1242,6 +1312,9 @@ protected:
     bool subgroupUniformControlFlow;
     bool maximallyReconverges;
     bool usePhysicalStorageBuffer;
+    bool useReplicatedComposites { false };
+    bool promoteUint32Indices { false };
+    bool shader64BitIndexing { false };
 
     TSpirvRequirement* spirvRequirement;
     TSpirvExecutionMode* spirvExecutionMode;
@@ -1269,6 +1342,9 @@ protected:
 
     // Included text. First string is a name, second is the included text
     std::map<std::string, std::string> includeText;
+
+    // Maps from canonical symbol name to alias symbol names
+    std::unordered_multimap<std::string, std::string> builtinAliasLookup;
 
     // for OpModuleProcessed, or equivalent
     TProcesses processes;

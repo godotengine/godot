@@ -174,6 +174,9 @@ bool isArithmeticOperation(glslang::TOperator op)
     case glslang::EOpMatrixTimesMatrix:
 
     case glslang::EOpDot:
+    case glslang::EOpDotPackedEXT:
+    case glslang::EOpDotAccSatEXT:
+    case glslang::EOpDotPackedAccSatEXT:
 
     case glslang::EOpPostIncrement:
     case glslang::EOpPostDecrement:

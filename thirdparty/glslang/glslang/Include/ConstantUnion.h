@@ -899,6 +899,17 @@ public:
         unionArray = new TConstUnionVector(size, val);
     }
 
+    TConstUnionArray* clone() const
+    {
+        TConstUnionArray *copy = new TConstUnionArray(size());
+        if (unionArray) {
+            for (const auto i : *unionArray) {
+                copy->unionArray->push_back(i);
+            }
+        }
+        return copy;
+    }
+
     int size() const { return unionArray ? (int)unionArray->size() : 0; }
     TConstUnion& operator[](size_t index) { return (*unionArray)[index]; }
     const TConstUnion& operator[](size_t index) const { return (*unionArray)[index]; }
