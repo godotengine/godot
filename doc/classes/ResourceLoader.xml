@@ -10,6 +10,7 @@
 		[b]Note:[/b] Non-resource files such as plain text files cannot be read using [ResourceLoader]. Use [FileAccess] for those files instead, and be aware that non-resource files are not exported by default (see notes in the [FileAccess] class description for instructions on exporting them).
 	</description>
 	<tutorials>
+		<link title="Threaded Loading Demo">https://godotengine.org/asset-library/asset/2778</link>
 		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<methods>
