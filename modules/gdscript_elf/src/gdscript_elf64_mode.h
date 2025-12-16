@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_riscv_encoder.h                                            */
+/*  gdscript_elf64_mode.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,35 +30,8 @@
 
 #pragma once
 
-#include "core/variant/variant.h"
-#include "gdscript_elf64_mode.h"
-
-// Forward declaration
-class GDScriptFunction;
-
-// Encode GDScript bytecode to RISC-V machine instructions
-class GDScriptRISCVEncoder {
-public:
-	// Encode GDScript bytecode opcodes to RISC-V instructions
-	static PackedByteArray encode_function(GDScriptFunction *p_function, ELF64CompilationMode p_mode = ELF64CompilationMode::GODOT_SYSCALL);
-
-	// Encode single opcode to RISC-V instruction sequence
-	static PackedByteArray encode_opcode(int p_opcode, const int *p_code_ptr, int &p_ip, int p_code_size, ELF64CompilationMode p_mode = ELF64CompilationMode::GODOT_SYSCALL);
-
-private:
-	// RISC-V instruction encoding helpers (little-endian)
-	static uint32_t encode_r_type(uint8_t opcode, uint8_t rd, uint8_t funct3, uint8_t rs1, uint8_t rs2, uint8_t funct7);
-	static uint32_t encode_i_type(uint8_t opcode, uint8_t rd, uint8_t funct3, uint8_t rs1, int16_t imm);
-	static uint32_t encode_s_type(uint8_t opcode, uint8_t funct3, uint8_t rs1, uint8_t rs2, int16_t imm);
-	static uint32_t encode_u_type(uint8_t opcode, uint8_t rd, int32_t imm);
-	static uint32_t encode_j_type(uint8_t opcode, uint8_t rd, int32_t imm);
-
-	// Generate call to VM fallback (ecall or function call)
-	static PackedByteArray encode_vm_call(int p_opcode, int p_ip, ELF64CompilationMode p_mode = ELF64CompilationMode::GODOT_SYSCALL);
-
-	// Function prologue: set up stack frame
-	static PackedByteArray encode_prologue(int p_stack_size);
-
-	// Function epilogue: restore stack and return
-	static PackedByteArray encode_epilogue(int p_stack_size);
+// ELF64 compilation modes
+enum class ELF64CompilationMode {
+	GODOT_SYSCALL, // Mode 1: Godot sandbox syscalls (ECALL 500+)
+	LINUX_SYSCALL  // Mode 2: Standard Linux syscalls (1-400+)
 };

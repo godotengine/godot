@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "gdscript_elf64_writer.h"
+#include "gdscript_elf64_mode.h"
 
 #include "gdscript_riscv_encoder.h"
 #include "modules/gdscript/gdscript_function.h"
@@ -36,13 +37,13 @@
 #include <elfio/elfio.hpp>
 #include <sstream>
 
-PackedByteArray GDScriptELF64Writer::write_elf64(GDScriptFunction *p_function) {
+PackedByteArray GDScriptELF64Writer::write_elf64(GDScriptFunction *p_function, ELF64CompilationMode p_mode) {
 	if (!p_function || p_function->_code_ptr == nullptr || p_function->_code_size == 0) {
 		return PackedByteArray();
 	}
 
 	// 1. Encode RISC-V instructions from bytecode
-	PackedByteArray code = GDScriptRISCVEncoder::encode_function(p_function);
+	PackedByteArray code = GDScriptRISCVEncoder::encode_function(p_function, p_mode);
 	if (code.is_empty()) {
 		return PackedByteArray();
 	}
@@ -83,11 +84,12 @@ PackedByteArray GDScriptELF64Writer::write_elf64(GDScriptFunction *p_function) {
 	return elfio_to_packed_byte_array(writer);
 }
 
-bool GDScriptELF64Writer::can_write_elf64(GDScriptFunction *p_function) {
+bool GDScriptELF64Writer::can_write_elf64(GDScriptFunction *p_function, ELF64CompilationMode p_mode) {
 	if (!p_function) {
 		return false;
 	}
 	// Check if function has bytecode
+	// Mode-specific validation can be added here later
 	return p_function->_code_ptr != nullptr && p_function->_code_size > 0;
 }
 

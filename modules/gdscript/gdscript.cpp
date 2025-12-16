@@ -1183,22 +1183,22 @@ Ref<GDScript> GDScript::get_base() const {
 	return base;
 }
 
-Dictionary GDScript::compile_all_functions_to_elf64() const {
+Dictionary GDScript::compile_all_functions_to_elf64(int p_mode) const {
 	Dictionary result;
 	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
 		GDScriptFunction *func = E.value;
-		if (func && func->can_compile_to_elf64()) {
-			PackedByteArray elf = func->compile_to_elf64();
+		if (func && func->can_compile_to_elf64(p_mode)) {
+			PackedByteArray elf = func->compile_to_elf64(p_mode);
 			result[E.key] = elf;
 		}
 	}
 	return result;
 }
 
-bool GDScript::can_compile_to_elf64() const {
+bool GDScript::can_compile_to_elf64(int p_mode) const {
 	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
 		GDScriptFunction *func = E.value;
-		if (func && func->can_compile_to_elf64()) {
+		if (func && func->can_compile_to_elf64(p_mode)) {
 			return true;
 		}
 	}

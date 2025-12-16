@@ -29,10 +29,11 @@
 /**************************************************************************/
 
 #include "gdscript_riscv_encoder.h"
+#include "gdscript_elf64_mode.h"
 
 #include "modules/gdscript/gdscript_function.h"
 
-PackedByteArray GDScriptRISCVEncoder::encode_function(GDScriptFunction *p_function) {
+PackedByteArray GDScriptRISCVEncoder::encode_function(GDScriptFunction *p_function, ELF64CompilationMode p_mode) {
 	PackedByteArray instructions;
 
 	if (!p_function || p_function->_code_ptr == nullptr || p_function->_code_size == 0) {
@@ -52,7 +53,7 @@ PackedByteArray GDScriptRISCVEncoder::encode_function(GDScriptFunction *p_functi
 
 	// Encode each bytecode opcode
 	while (ip < code_size) {
-		PackedByteArray opcode_instructions = encode_opcode(code_ptr[ip], code_ptr, ip, code_size);
+		PackedByteArray opcode_instructions = encode_opcode(code_ptr[ip], code_ptr, ip, code_size, p_mode);
 
 		old_size = instructions.size();
 		instructions.resize(old_size + opcode_instructions.size());
@@ -68,7 +69,7 @@ PackedByteArray GDScriptRISCVEncoder::encode_function(GDScriptFunction *p_functi
 	return instructions;
 }
 
-PackedByteArray GDScriptRISCVEncoder::encode_opcode(int p_opcode, const int *p_code_ptr, int &p_ip, int p_code_size) {
+PackedByteArray GDScriptRISCVEncoder::encode_opcode(int p_opcode, const int *p_code_ptr, int &p_ip, int p_code_size, ELF64CompilationMode p_mode) {
 	PackedByteArray result;
 
 	switch (p_opcode) {
@@ -92,8 +93,8 @@ PackedByteArray GDScriptRISCVEncoder::encode_opcode(int p_opcode, const int *p_c
 			break;
 		}
 		default: {
-			// Fallback: encode syscall to VM
-			result = encode_vm_call(p_opcode, p_ip);
+			// Fallback: encode syscall to VM (mode-specific)
+			result = encode_vm_call(p_opcode, p_ip, p_mode);
 			p_ip += 1; // Advance by 1 for unknown opcodes
 			break;
 		}
@@ -158,17 +159,26 @@ uint32_t GDScriptRISCVEncoder::encode_j_type(uint8_t opcode, uint8_t rd, int32_t
 	return instruction;
 }
 
-PackedByteArray GDScriptRISCVEncoder::encode_vm_call(int p_opcode, int p_ip) {
+PackedByteArray GDScriptRISCVEncoder::encode_vm_call(int p_opcode, int p_ip, ELF64CompilationMode p_mode) {
 	// Encode syscall to VM fallback function
-	// For RISC-V: use ecall instruction or function call
-	// Simplified: encode ecall with opcode in a0 register
+	// Mode-specific syscall encoding
 	PackedByteArray result;
-	result.resize(4);
-
-	// li a0, opcode  (lui + addi for large values, or just addi for small)
-	// For now: placeholder - encode ecall
-	uint32_t ecall = 0x00000073; // ecall instruction
-	*reinterpret_cast<uint32_t *>(result.ptrw()) = ecall;
+	
+	if (p_mode == ELF64CompilationMode::GODOT_SYSCALL) {
+		// Mode 1: Godot syscall (ECALL 500+)
+		// For now: placeholder - encode ecall
+		// TODO: Map opcode to specific Godot ECALL number
+		result.resize(4);
+		uint32_t ecall = 0x00000073; // ecall instruction
+		*reinterpret_cast<uint32_t *>(result.ptrw()) = ecall;
+	} else {
+		// Mode 2: Linux syscall
+		// For now: placeholder - encode ecall
+		// TODO: Map opcode to Linux syscall number or emit error for unsupported
+		result.resize(4);
+		uint32_t ecall = 0x00000073; // ecall instruction
+		*reinterpret_cast<uint32_t *>(result.ptrw()) = ecall;
+	}
 
 	return result;
 }

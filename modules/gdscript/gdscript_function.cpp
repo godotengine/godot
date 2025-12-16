@@ -33,6 +33,7 @@
 #include "gdscript.h"
 
 #include "modules/gdscript_elf/src/gdscript_elf64_writer.h"
+#include "modules/gdscript_elf/src/gdscript_elf64_mode.h"
 
 Variant GDScriptFunction::get_constant(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
@@ -44,15 +45,17 @@ StringName GDScriptFunction::get_global_name(int p_idx) const {
 	return global_names[p_idx];
 }
 
-PackedByteArray GDScriptFunction::compile_to_elf64() const {
+PackedByteArray GDScriptFunction::compile_to_elf64(int p_mode) const {
 	if (_code_ptr == nullptr || _code_size == 0) {
 		return PackedByteArray();
 	}
-	return GDScriptELF64Writer::write_elf64(const_cast<GDScriptFunction *>(this));
+	ELF64CompilationMode mode = (p_mode == 1) ? ELF64CompilationMode::LINUX_SYSCALL : ELF64CompilationMode::GODOT_SYSCALL;
+	return GDScriptELF64Writer::write_elf64(const_cast<GDScriptFunction *>(this), mode);
 }
 
-bool GDScriptFunction::can_compile_to_elf64() const {
-	return GDScriptELF64Writer::can_write_elf64(const_cast<GDScriptFunction *>(this));
+bool GDScriptFunction::can_compile_to_elf64(int p_mode) const {
+	ELF64CompilationMode mode = (p_mode == 1) ? ELF64CompilationMode::LINUX_SYSCALL : ELF64CompilationMode::GODOT_SYSCALL;
+	return GDScriptELF64Writer::can_write_elf64(const_cast<GDScriptFunction *>(this), mode);
 }
 
 struct _GDFKC {

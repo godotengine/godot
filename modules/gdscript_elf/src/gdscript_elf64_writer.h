@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/variant/variant.h"
+#include "gdscript_elf64_mode.h"
 
 // Forward declarations
 class GDScriptFunction;
@@ -42,10 +43,10 @@ namespace ELFIO {
 class GDScriptELF64Writer {
 public:
 	// Write ELF64 binary from bytecode using elfio library
-	static PackedByteArray write_elf64(GDScriptFunction *p_function);
+	static PackedByteArray write_elf64(GDScriptFunction *p_function, ELF64CompilationMode p_mode = ELF64CompilationMode::GODOT_SYSCALL);
 
 	// Check if function can be written to ELF64
-	static bool can_write_elf64(GDScriptFunction *p_function);
+	static bool can_write_elf64(GDScriptFunction *p_function, ELF64CompilationMode p_mode = ELF64CompilationMode::GODOT_SYSCALL);
 
 private:
 	// Convert elfio binary to PackedByteArray
