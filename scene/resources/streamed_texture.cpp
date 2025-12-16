@@ -134,11 +134,12 @@ Error StreamedTexture2D::_load_data(const String &p_path, const uint32_t p_max_r
 	}
 
 	// Read flags (request_normal, request_roughness).
-#ifdef TOOLS_ENABLED
 	uint32_t flags = f->get_32();
+#ifdef TOOLS_ENABLED
 	p_load_data.request_normal = request_normal_callback && (flags & FORMAT_BIT_DETECT_NORMAL);
 	p_load_data.request_roughness = request_roughness_callback && (flags & FORMAT_BIT_DETECT_ROUGHNESS);
 #else
+	(void)flags; // Flags must be read to advance file position, but are unused in non-tools builds.
 	p_load_data.request_normal = false;
 	p_load_data.request_roughness = false;
 #endif
