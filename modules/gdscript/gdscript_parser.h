@@ -1330,12 +1330,14 @@ public:
 		CompletionCall call;
 	};
 
+protected:
+	String script_path;
+
 private:
 	friend class GDScriptAnalyzer;
 	friend class GDScriptParserRef;
 
 	bool _is_tool = false;
-	String script_path;
 	bool for_completion = false;
 	bool parse_body = true;
 	bool panic_mode = false;
