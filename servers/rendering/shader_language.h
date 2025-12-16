@@ -94,6 +94,7 @@ public:
 		TK_TYPE_SAMPLEREXT,
 		TK_INTERPOLATION_FLAT,
 		TK_INTERPOLATION_SMOOTH,
+		TK_INTERPOLATION_NOPERSPECTIVE,
 		TK_CONST,
 		TK_STRUCT,
 		TK_PRECISION_LOW,
@@ -253,6 +254,7 @@ public:
 	enum DataInterpolation {
 		INTERPOLATION_FLAT,
 		INTERPOLATION_SMOOTH,
+		INTERPOLATION_NOPERSPECTIVE,
 		INTERPOLATION_DEFAULT,
 	};
 
@@ -720,6 +722,8 @@ public:
 
 		HashMap<StringName, Constant> constants;
 		HashMap<StringName, Varying> varyings;
+		//used for low-end devices that don't support the GLSL `noperspective` keyword
+		Vector<StringName> noperspective_varyings;
 		HashMap<StringName, Uniform> uniforms;
 		HashMap<StringName, Struct> structs;
 		HashMap<StringName, Function> functions;

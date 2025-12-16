@@ -123,12 +123,29 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 	ERR_FAIL_V(0);
 }
 
-static String _interpstr(SL::DataInterpolation p_interp) {
-	switch (p_interp) {
+// Stage is only needed when INTERPOLATION_NOPERSPECTIVE is used
+static String _interpstr(SL::ShaderNode *p_node, const SL::ShaderNode::Varying *p_varying, StringName p_name, SL::ShaderNode::Varying::Stage stage) {
+	switch (p_varying->interpolation) {
 		case SL::INTERPOLATION_FLAT:
 			return "flat ";
 		case SL::INTERPOLATION_SMOOTH:
 			return "";
+		case SL::INTERPOLATION_NOPERSPECTIVE:
+			// opengl3_es doesn't support `noperspective`
+			if (RS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
+				return "noperspective ";
+			}
+
+			p_node->noperspective_varyings.append(p_name);
+
+			if (stage == SL::ShaderNode::Varying::STAGE_VERTEX) {
+				return "out float noperspective_" + p_name + "_wcomp;\n" +
+						"out " + _typestr(p_varying->type) + " noperspective_varying_" + p_name + ";\n";
+			} else {
+				return "in float noperspective_" + p_name + "_wcomp;\n" +
+						"in " + _typestr(p_varying->type) + " noperspective_varying_" + p_name + ";\n";
+			}
+
 		case SL::INTERPOLATION_DEFAULT:
 			return "";
 	}
@@ -699,7 +716,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 
 				String vcode;
-				String interp_mode = _interpstr(varying.interpolation);
 				vcode += _prestr(varying.precision, ShaderLanguage::is_float_type(varying.type));
 				vcode += _typestr(varying.type);
 				vcode += " " + _mkid(varying_name);
@@ -712,13 +728,27 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 
 				vcode += ";\n";
-				// GLSL ES 3.0 does not allow layout qualifiers for varyings
-				if (!RS::get_singleton()->is_low_end()) {
-					r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") ";
-					r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") ";
+				if (varying.interpolation != SL::INTERPOLATION_NOPERSPECTIVE) {
+					String interp_mode = _interpstr(pnode, &varying, varying_name, SL::ShaderNode::Varying::STAGE_UNKNOWN);
+					// GLSL ES 3.0 does not allow layout qualifiers for varyings
+					if (!RS::get_singleton()->is_low_end()) {
+						r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") ";
+						r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") ";
+					}
+					r_gen_code.stage_globals[STAGE_VERTEX] += interp_mode + "out " + vcode;
+					r_gen_code.stage_globals[STAGE_FRAGMENT] += interp_mode + "in " + vcode;
+				} else {
+					if (!RS::get_singleton()->is_low_end()) {
+						String interp_mode = _interpstr(pnode, &varying, varying_name, SL::ShaderNode::Varying::STAGE_UNKNOWN);
+						r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") ";
+						r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") ";
+						r_gen_code.stage_globals[STAGE_VERTEX] += interp_mode + "out " + vcode;
+						r_gen_code.stage_globals[STAGE_FRAGMENT] += interp_mode + "in " + vcode;
+					} else {
+						r_gen_code.stage_globals[STAGE_VERTEX] += _interpstr(pnode, &varying, varying_name, SL::ShaderNode::Varying::STAGE_VERTEX) + vcode;
+						r_gen_code.stage_globals[STAGE_FRAGMENT] += _interpstr(pnode, &varying, varying_name, SL::ShaderNode::Varying::STAGE_FRAGMENT) + vcode;
+					}
 				}
-				r_gen_code.stage_globals[STAGE_VERTEX] += interp_mode + "out " + vcode;
-				r_gen_code.stage_globals[STAGE_FRAGMENT] += interp_mode + "in " + vcode;
 
 				index += inc;
 			}
@@ -801,6 +831,18 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 		} break;
 		case SL::Node::NODE_TYPE_BLOCK: {
 			SL::BlockNode *bnode = (SL::BlockNode *)p_node;
+			bool generate_noperspective = shader->noperspective_varyings.size() > 0 && p_actions.entry_point_stages.has(current_func_name) && RS::get_singleton()->get_current_rendering_method() == "gl_compatibility";
+			Stage stage = STAGE_MAX;
+			if (generate_noperspective) {
+				stage = p_actions.entry_point_stages[current_func_name];
+
+				if (stage == STAGE_FRAGMENT) {
+					for (int i = 0; i < shader->noperspective_varyings.size(); ++i) {
+						const StringName &name = shader->noperspective_varyings[i];
+						code += _mkid(name) + " = " + "\tnoperspective_varying_" + (String)name + " / noperspective_" + name + "_wcomp;\n";
+					}
+				}
+			}
 
 			//variables
 			if (!bnode->single_statement) {
@@ -818,6 +860,17 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 				} else {
 					code += _mktab(p_level) + scode + ";\n";
+				}
+			}
+
+			// the vertex noperspective stuff must come last
+			if (generate_noperspective && stage == STAGE_VERTEX) {
+				String gcode;
+				code += "\tfloat noperspective_clip_pos_w = (projection_matrix * modelview * vec4(vertex, 1.0)).w;\n";
+				for (i = 0; i < shader->noperspective_varyings.size(); ++i) {
+					const StringName &name = shader->noperspective_varyings[i];
+					code += "\tnoperspective_" + name + "_wcomp = noperspective_clip_pos_w;\n";
+					code += "\tnoperspective_varying_" + name + " = " + _mkid(name) + " * noperspective_" + name + "_wcomp;\n";
 				}
 			}
 			if (!bnode->single_statement) {

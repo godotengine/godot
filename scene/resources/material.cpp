@@ -1214,7 +1214,7 @@ uniform vec3 uv2_offset;
 	}
 
 	if (affine) {
-		code += "varying vec3 uv_affine;\n";
+		code += "varying noperspective vec2 uv_affine;\n";
 	}
 
 	// Generate vertex shader.
@@ -1479,8 +1479,9 @@ void vertex() {)";
 	}
 
 	if (affine) {
-		code += "vec4 pos = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);";
-		code += "uv_affine = vec3(UV * pos.w, pos.w);";
+		code += R"(
+	uv_affine = UV;
+)";
 	}
 
 	// End of the vertex shader function.
@@ -1513,7 +1514,7 @@ void fragment() {)";
 	if (!flags[FLAG_UV1_USE_TRIPLANAR]) {
 		if (affine) {
 			code += R"(
-	vec2 base_uv = uv_affine.xy / uv_affine.z;
+	vec2 base_uv = uv_affine;
 )";
 		} else {
 			code += R"(
@@ -4133,7 +4134,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "depth_texture", "heightmap_texture" },
 
 			{ "emission_energy", "emission_energy_multiplier" },
-			{ "affine", "affine" },
+			{ "texture_affine_mapping", "texture_affine_mapping" },
 
 			{ nullptr, nullptr },
 		};
