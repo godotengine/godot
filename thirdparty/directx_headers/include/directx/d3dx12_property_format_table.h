@@ -62,8 +62,10 @@ public:
     static LPCSTR               GetName                 (DXGI_FORMAT Format, bool bHideInternalFormats = true);
     static bool                 IsSRGBFormat            (DXGI_FORMAT Format);
     static UINT                 GetBitsPerStencil       (DXGI_FORMAT Format);
+    static UINT                 GetBitsPerDepth         (DXGI_FORMAT Format);
     static void                 GetFormatReturnTypes    (DXGI_FORMAT Format, D3D_FORMAT_COMPONENT_INTERPRETATION* pInterpretations); // return array of 4 components
     static UINT                 GetNumComponentsInFormat(DXGI_FORMAT Format);
+    static UINT                 GetMinNumComponentsInFormats(DXGI_FORMAT FormatA, DXGI_FORMAT FormatB);
 
     // Converts the sequential component index (range from 0 to GetNumComponentsInFormat()) to
     // the absolute component index (range 0 to 3).
@@ -116,6 +118,8 @@ public:
     static UINT                                 GetDetailTableIndex         (DXGI_FORMAT  Format);
     static UINT                                 GetDetailTableIndexNoThrow  (DXGI_FORMAT  Format);
     static UINT                                 GetDetailTableIndexThrow    (DXGI_FORMAT  Format);
+    static bool                                 SupportsDepth               (DXGI_FORMAT Format);
+    static bool                                 SupportsStencil             (DXGI_FORMAT Format);
 private:
     static const FORMAT_DETAIL*                 GetFormatDetail             (DXGI_FORMAT  Format);
 
