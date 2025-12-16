@@ -172,7 +172,7 @@ layout(location = 21) in highp uvec4 prev_instance_color_custom_data;
 
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
-};
+}
 
 struct SceneData {
 	highp mat4 projection_matrix;
@@ -244,7 +244,7 @@ struct PositionalShadowData {
 
 layout(std140) uniform PositionalShadows { // ubo:9
 	PositionalShadowData positional_shadows[MAX_LIGHT_DATA_STRUCTS];
-};
+}
 
 uniform lowp uint positional_shadow_index;
 
@@ -266,7 +266,7 @@ struct DirectionalShadowData {
 
 layout(std140) uniform DirectionalShadows { // ubo:10
 	DirectionalShadowData directional_shadows[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-};
+}
 
 uniform lowp uint directional_shadow_index;
 
@@ -299,7 +299,7 @@ struct DirectionalLightData {
 
 layout(std140) uniform DirectionalLights { // ubo:7
 	DirectionalLightData directional_lights[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-};
+}
 
 #define DIRECTIONAL_LIGHT_ENABLED uint(1 << 0)
 #define DIRECTIONAL_LIGHT_BAKE_STATIC uint(1 << 1)
@@ -331,7 +331,7 @@ struct LightData { // This structure needs to be as packed as possible.
 #if !defined(DISABLE_LIGHT_OMNI) || defined(ADDITIVE_OMNI)
 layout(std140) uniform OmniLightData { // ubo:5
 	LightData omni_lights[MAX_LIGHT_DATA_STRUCTS];
-};
+}
 #ifdef BASE_PASS
 uniform uint omni_light_indices[MAX_FORWARD_LIGHTS];
 uniform uint omni_light_count;
@@ -341,7 +341,7 @@ uniform uint omni_light_count;
 #if !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_SPOT)
 layout(std140) uniform SpotLightData { // ubo:6
 	LightData spot_lights[MAX_LIGHT_DATA_STRUCTS];
-};
+}
 #ifdef BASE_PASS
 uniform uint spot_light_indices[MAX_FORWARD_LIGHTS];
 uniform uint spot_light_count;
@@ -1107,7 +1107,7 @@ uniform samplerCube refprobe2_texture; // texunit:-9
 
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
-};
+}
 
 /* Material Uniforms */
 #ifdef MATERIAL_UNIFORMS_USED
@@ -1228,7 +1228,7 @@ struct DirectionalLightData {
 
 layout(std140) uniform DirectionalLights { // ubo:7
 	DirectionalLightData directional_lights[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-};
+}
 
 #if defined(USE_ADDITIVE_LIGHTING) && (!defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT))
 // Directional shadows can be in the base pass or in the additive passes
@@ -1262,7 +1262,7 @@ struct LightData { // This structure needs to be as packed as possible.
 #if !defined(DISABLE_LIGHT_OMNI) || defined(ADDITIVE_OMNI)
 layout(std140) uniform OmniLightData { // ubo:5
 	LightData omni_lights[MAX_LIGHT_DATA_STRUCTS];
-};
+}
 #if defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
 uniform uint omni_light_indices[MAX_FORWARD_LIGHTS];
 uniform uint omni_light_count;
@@ -1272,7 +1272,7 @@ uniform uint omni_light_count;
 #if !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_SPOT)
 layout(std140) uniform SpotLightData { // ubo:6
 	LightData spot_lights[MAX_LIGHT_DATA_STRUCTS];
-};
+}
 #if defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
 uniform uint spot_light_indices[MAX_FORWARD_LIGHTS];
 uniform uint spot_light_count;
@@ -1301,7 +1301,7 @@ struct PositionalShadowData {
 
 layout(std140) uniform PositionalShadows { // ubo:9
 	PositionalShadowData positional_shadows[MAX_LIGHT_DATA_STRUCTS];
-};
+}
 
 uniform lowp uint positional_shadow_index;
 #else // ADDITIVE_DIRECTIONAL
@@ -1321,7 +1321,7 @@ struct DirectionalShadowData {
 
 layout(std140) uniform DirectionalShadows { // ubo:10
 	DirectionalShadowData directional_shadows[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-};
+}
 
 uniform lowp uint directional_shadow_index;
 #endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT))
