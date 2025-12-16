@@ -36,6 +36,8 @@
 #include "core/templates/self_list.h"
 #include "scene/main/scene_tree_fti.h"
 
+#include <cstdlib>
+
 #undef Window
 
 class ArrayMesh;
