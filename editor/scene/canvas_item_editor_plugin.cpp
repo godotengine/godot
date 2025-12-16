@@ -30,6 +30,7 @@
 
 #include "canvas_item_editor_plugin.h"
 
+#include "3d/node_3d_editor_plugin.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
@@ -2631,6 +2632,48 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				return true;
 			}
 
+			// first try to select subgizmos
+			if (selected_canvas_item) {
+				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item);
+				bool intersected_subgizmo = false;
+				if (se) {
+					for (Ref<EditorCanvasItemGizmo> gizmo : selected_canvas_item->get_gizmos()) {
+						if (gizmo.is_null()) {
+							continue;
+						}
+
+						int subgizmo_id = gizmo->subgizmos_intersect_point(click);
+						if (subgizmo_id != -1) {
+							if (b->is_shift_pressed()) {
+								if (se->subgizmos.has(subgizmo_id)) {
+									se->subgizmos.erase(subgizmo_id);
+								} else {
+									se->subgizmos.insert(subgizmo_id, gizmo->get_subgizmo_transform(subgizmo_id));
+								}
+							} else {
+								se->subgizmos.clear();
+								se->subgizmos.insert(subgizmo_id, gizmo->get_subgizmo_transform(subgizmo_id));
+							}
+
+							if (se->subgizmos.is_empty()) {
+								se->gizmo = Ref<EditorCanvasItemGizmo>();
+							} else {
+								se->gizmo = gizmo;
+							}
+
+							gizmo->redraw();
+							update_transform_gizmo();
+							intersected_subgizmo = true;
+							break; // only select the first hit
+						}
+					}
+				}
+
+				if (intersected_subgizmo) {
+					return true;
+				}
+			}
+
 			// Find the item to select.
 			CanvasItem *ci = nullptr;
 
@@ -2706,8 +2749,6 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Confirms box selection.
 			Node *scene = EditorNode::get_singleton()->get_edited_scene();
 			if (scene) {
-				List<CanvasItem *> selitems;
-
 				Point2 bsfrom = drag_from;
 				Point2 bsto = box_selecting_to;
 				if (bsfrom.x > bsto.x) {
@@ -2717,7 +2758,74 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					SWAP(bsfrom.y, bsto.y);
 				}
 
-				_find_canvas_items_in_rect(Rect2(bsfrom, bsto - bsfrom), scene, &selitems);
+				Rect2 selection_rect = Rect2(bsfrom, bsto - bsfrom);
+
+				// if we have a selected single canvas item, first try to select subgizmos
+				if (selected_canvas_item) {
+					Ref<EditorCanvasItemGizmo> old_gizmo;
+					CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item);
+					if (se) {
+						// clear out existing subgizmo selection unless we want to append
+						if (!b->is_shift_pressed()) {
+							se->subgizmos.clear();
+							old_gizmo = se->gizmo;
+							se->gizmo.unref();
+						}
+
+						bool found_subgizmos = false;
+						Vector<Ref<CanvasItemGizmo>> gizmos = selected_canvas_item->get_gizmos();
+						for (Ref<EditorCanvasItemGizmo> gizmo : gizmos) {
+							if (gizmo.is_null()) {
+								continue;
+							}
+							// only append to subgizmo selection of the currently
+							// selected gizmo
+							if (se->gizmo.is_valid() && se->gizmo != gizmo) {
+								continue;
+							}
+
+							Vector<int> subgizmos = gizmo->subgizmos_intersect_rect(selection_rect);
+							if (!subgizmos.is_empty()) {
+								se->gizmo = gizmo;
+
+								for (const int &subgizmo_id : subgizmos) {
+									if (!se->subgizmos.has(subgizmo_id)) {
+										se->subgizmos.insert(subgizmo_id, gizmo->get_subgizmo_transform(subgizmo_id));
+									} else {
+										// technically only when shift is pressed but when it's not
+										// pressed this branch will never be reached because subgizmos are
+										// cleared out above
+										se->subgizmos.erase(subgizmo_id);
+									}
+								}
+								found_subgizmos = true;
+								break; // we only ever select subgizmos from one gizmo
+							}
+						}
+
+						if (!b->is_shift_pressed() || found_subgizmos) {
+							if (se->gizmo.is_valid()) {
+								se->gizmo->redraw();
+							}
+
+							if (old_gizmo != se->gizmo && old_gizmo.is_valid()) {
+								old_gizmo->redraw();
+							}
+
+							update_transform_gizmo();
+						}
+
+						if (found_subgizmos) {
+							_reset_drag();
+							viewport->queue_redraw();
+							return true;
+						}
+					}
+				}
+
+				List<CanvasItem *> selitems;
+
+				_find_canvas_items_in_rect(selection_rect, scene, &selitems);
 				if (selitems.size() == 1 && editor_selection->get_selection().is_empty()) {
 					EditorNode::get_singleton()->push_item(selitems.front()->get());
 				}
@@ -4625,6 +4733,53 @@ void CanvasItemEditor::_selection_changed() {
 		temp_pivot = Vector2(Math::INF, Math::INF);
 		viewport->queue_redraw();
 	}
+
+	if (selected_canvas_item && editor_selection->get_top_selected_node_list().size() != 1) {
+		Vector<Ref<CanvasItemGizmo>> gizmos = selected_canvas_item->get_gizmos();
+		for (Ref<EditorCanvasItemGizmo> gizmo : gizmos) {
+			if (gizmo.is_null()) {
+				continue;
+			}
+			gizmo->set_selected(false);
+		}
+
+		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item);
+		if (se) {
+			se->gizmo.unref();
+			se->subgizmos.clear();
+		}
+		selected_canvas_item->update_gizmos();
+		selected_canvas_item = nullptr;
+	}
+
+	// Ensure gizmo updates are performed when the selection changes
+	// outside the 2D view (similar to what is done in 3D for GH-106713).
+	if (!is_visible()) {
+		const List<Node *> &top_selected = editor_selection->get_top_selected_node_list();
+		if (top_selected.size() == 1) {
+			CanvasItem *new_selected = Object::cast_to<CanvasItem>(top_selected.back()->get());
+			if (new_selected != selected_canvas_item) {
+				gizmos_dirty = true;
+			}
+		}
+	}
+
+	update_transform_gizmo();
+}
+
+void CanvasItemEditor::refresh_dirty_gizmos() {
+	if (!gizmos_dirty) {
+		return;
+	}
+
+	const List<Node *> &top_selected = editor_selection->get_top_selected_node_list();
+	if (top_selected.size() == 1) {
+		CanvasItem *new_selected = Object::cast_to<CanvasItem>(top_selected.back()->get());
+		if (new_selected != selected_canvas_item) {
+			edit(new_selected);
+		}
+	}
+	gizmos_dirty = false;
 }
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
@@ -5386,6 +5541,8 @@ void CanvasItemEditor::_bind_methods() {
 
 	ClassDB::bind_method("_request_gizmo", &CanvasItemEditor::_request_gizmo);
 	ClassDB::bind_method("_request_gizmo_for_id", &CanvasItemEditor::_request_gizmo_for_id);
+	ClassDB::bind_method("_set_subgizmo_selection", &CanvasItemEditor::_set_subgizmo_selection);
+	ClassDB::bind_method("_clear_subgizmo_selection", &CanvasItemEditor::_clear_subgizmo_selection);
 
 	ClassDB::bind_method(D_METHOD("update_viewport"), &CanvasItemEditor::update_viewport);
 	ClassDB::bind_method(D_METHOD("center_at", "position"), &CanvasItemEditor::center_at);
@@ -5815,6 +5972,54 @@ void CanvasItemEditor::_request_gizmo_for_id(ObjectID p_id) {
 	}
 }
 
+void CanvasItemEditor::_set_subgizmo_selection(Object *p_obj, Ref<CanvasItemGizmo> p_gizmo, int p_id, Transform2D p_transform) {
+	if (p_id == -1) {
+		_clear_subgizmo_selection(p_obj);
+		return;
+	}
+
+	CanvasItem *ci = nullptr;
+	if (p_obj) {
+		ci = Object::cast_to<CanvasItem>(p_obj);
+	} else {
+		ci = selected_canvas_item;
+	}
+
+	if (!ci) {
+		return;
+	}
+
+	CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
+	if (se) {
+		se->subgizmos.clear();
+		se->subgizmos.insert(p_id, p_transform);
+		se->gizmo = p_gizmo;
+		ci->update_gizmos();
+		update_transform_gizmo();
+	}
+}
+
+void CanvasItemEditor::_clear_subgizmo_selection(Object *p_obj) {
+	CanvasItem *ci = nullptr;
+	if (p_obj) {
+		ci = Object::cast_to<CanvasItem>(p_obj);
+	} else {
+		ci = selected_canvas_item;
+	}
+
+	if (!ci) {
+		return;
+	}
+
+	CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
+	if (se) {
+		se->subgizmos.clear();
+		se->gizmo.unref();
+		ci->update_gizmos();
+		update_transform_gizmo();
+	}
+}
+
 void _update_all_canvas_item_gizmos(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
@@ -5839,12 +6044,35 @@ void CanvasItemEditor::update_all_gizmos(Node *p_node) {
 	_update_all_canvas_item_gizmos(p_node);
 }
 
+bool CanvasItemEditor::is_subgizmo_selected(int p_id) {
+	CanvasItemEditorSelectedItem *se = selected_canvas_item ? editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item) : nullptr;
+	if (se) {
+		return se->subgizmos.has(p_id);
+	}
+	return false;
+}
+
 bool CanvasItemEditor::is_current_selected_gizmo(const EditorCanvasItemGizmo *p_gizmo) {
 	CanvasItemEditorSelectedItem *se = selected_canvas_item ? editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item) : nullptr;
 	if (se) {
 		return se->gizmo == p_gizmo;
 	}
 	return false;
+}
+
+Vector<int> CanvasItemEditor::get_subgizmo_selection() {
+	CanvasItemEditorSelectedItem *se = selected_canvas_item ? editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item) : nullptr;
+	Vector<int> result;
+	if (se) {
+		for (const KeyValue<int, Transform2D> &entry : se->subgizmos) {
+			result.push_back(entry.key);
+		}
+	}
+	return result;
+}
+
+void CanvasItemEditor::clear_subgizmo_selection(Object *p_obj) {
+	_clear_subgizmo_selection(p_obj);
 }
 
 CanvasItemEditor::CanvasItemEditor() {

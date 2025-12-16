@@ -567,6 +567,8 @@ private:
 
 	void _request_gizmo(Object *p_obj);
 	void _request_gizmo_for_id(ObjectID p_id);
+	void _set_subgizmo_selection(Object *p_obj, Ref<CanvasItemGizmo> p_gizmo, int p_id, Transform2D p_transform = Transform2D());
+	void _clear_subgizmo_selection(Object *p_obj = nullptr);
 
 protected:
 	void _notification(int p_what);
@@ -638,16 +640,19 @@ public:
 	Ref<CanvasItemGizmo> current_hover_gizmo;
 	int current_hover_gizmo_handle;
 	bool current_hover_gizmo_handle_secondary;
+	bool gizmos_dirty = false;
 
-	// TODO: GIZMOS actually implement this.
 	bool is_current_selected_gizmo(const EditorCanvasItemGizmo *p_gizmo);
 	Ref<EditorCanvasItemGizmo> get_current_hover_gizmo() { return current_hover_gizmo; }
 	int get_current_hover_gizmo_handle(bool &r_secondary) const {
 		r_secondary = current_hover_gizmo_handle_secondary;
 		return current_hover_gizmo_handle;
 	}
-	bool is_subgizmo_selected(int p_id) { return false; }
-	Vector<int> get_subgizmo_selection() { return Vector<int>(); }
+	bool is_subgizmo_selected(int p_id);
+	Vector<int> get_subgizmo_selection();
+	void clear_subgizmo_selection(Object *p_obj = nullptr);
+	void refresh_dirty_gizmos();
+	// TODO: GIZMOS actually implement this.
 	void update_transform_gizmo() {}
 	void update_all_gizmos(Node *p_node = nullptr);
 	void add_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_plugin);

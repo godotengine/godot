@@ -173,6 +173,37 @@ Vector<Ref<CanvasItemGizmo>> CanvasItem::get_gizmos() const {
 #endif
 }
 
+void CanvasItem::set_subgizmo_selection(Ref<CanvasItemGizmo> p_gizmo, int p_id, Transform2D p_transform) {
+	ERR_THREAD_GUARD;
+#ifdef TOOLS_ENABLED
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (is_part_of_edited_scene()) {
+		// done this way to avoid having editor references in CanvasItem
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_canvas_item_editor_group), SNAME("_set_subgizmo_selection"), this, p_gizmo, p_id, p_transform);
+	}
+#endif
+}
+
+void CanvasItem::clear_subgizmo_selection() {
+	ERR_THREAD_GUARD;
+#ifdef TOOLS_ENABLED
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (data.gizmos.is_empty()) {
+		return;
+	}
+
+	if (is_part_of_edited_scene()) {
+		// done this way to avoid having editor references in CanvasItem
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_canvas_item_editor_group), SNAME("_clear_subgizmo_selection"), this);
+	}
+#endif
+}
 void CanvasItem::set_visible(bool p_visible) {
 	ERR_MAIN_THREAD_GUARD;
 	if (visible == p_visible) {
@@ -1463,9 +1494,12 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_edit_get_transform"), &CanvasItem::_edit_get_transform);
 #endif //TOOLS_ENABLED
 
+	ClassDB::bind_method(D_METHOD("update_gizmos"), &CanvasItem::update_gizmos);
 	ClassDB::bind_method(D_METHOD("add_gizmo", "gizmo"), &CanvasItem::add_gizmo);
 	ClassDB::bind_method(D_METHOD("get_gizmos"), &CanvasItem::get_gizmos_bind);
 	ClassDB::bind_method(D_METHOD("clear_gizmos"), &CanvasItem::clear_gizmos);
+	ClassDB::bind_method(D_METHOD("set_subgizmo_selection"), &CanvasItem::set_subgizmo_selection);
+	ClassDB::bind_method(D_METHOD("clear_subgizmo_selection"), &CanvasItem::clear_subgizmo_selection);
 
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &CanvasItem::get_canvas_item);
 
