@@ -49,15 +49,15 @@ PackedByteArray GDScriptELF64Writer::write_elf64(GDScriptFunction *p_function) {
 
 	// 2. Create ELF64 file using elfio
 	ELFIO::elfio writer;
-	writer.create(ELFCLASS64, ELFDATA2LSB);
-	writer.set_os_abi(ELFOSABI_SYSV);
-	writer.set_type(ET_EXEC);
-	writer.set_machine(EM_RISCV); // From elfio/elf_types.hpp
+	writer.create(ELFIO::ELFCLASS64, ELFIO::ELFDATA2LSB);
+	writer.set_os_abi(ELFIO::ELFOSABI_NONE); // ELFOSABI_NONE = SYSV
+	writer.set_type(ELFIO::ET_EXEC);
+	writer.set_machine(ELFIO::EM_RISCV); // From elfio/elf_types.hpp
 
 	// 3. Create .text section with code
 	ELFIO::section *text_sec = writer.sections.add(".text");
-	text_sec->set_type(SHT_PROGBITS);
-	text_sec->set_flags(SHF_ALLOC | SHF_EXECINSTR);
+	text_sec->set_type(ELFIO::SHT_PROGBITS);
+	text_sec->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
 	text_sec->set_addr_align(0x10);
 
 	// Convert PackedByteArray to char* for elfio
@@ -65,14 +65,14 @@ PackedByteArray GDScriptELF64Writer::write_elf64(GDScriptFunction *p_function) {
 	text_sec->set_data(reinterpret_cast<const char *>(code_data), code.size());
 
 	// 4. Create loadable segment
-	const Elf64_Addr ENTRY_POINT = 0x10000;
-	const Elf_Xword PAGE_SIZE = 0x1000;
+	const ELFIO::Elf64_Addr ENTRY_POINT = 0x10000;
+	const ELFIO::Elf_Xword PAGE_SIZE = 0x1000;
 
 	ELFIO::segment *text_seg = writer.segments.add();
-	text_seg->set_type(PT_LOAD);
+	text_seg->set_type(ELFIO::PT_LOAD);
 	text_seg->set_virtual_address(ENTRY_POINT);
 	text_seg->set_physical_address(ENTRY_POINT);
-	text_seg->set_flags(PF_X | PF_R); // Executable + Readable
+	text_seg->set_flags(ELFIO::PF_X | ELFIO::PF_R); // Executable + Readable
 	text_seg->set_align(PAGE_SIZE);
 	text_seg->add_section(text_sec, text_sec->get_addr_align());
 
@@ -91,9 +91,9 @@ bool GDScriptELF64Writer::can_write_elf64(GDScriptFunction *p_function) {
 	return p_function->_code_ptr != nullptr && p_function->_code_size > 0;
 }
 
-PackedByteArray GDScriptELF64Writer::elfio_to_packed_byte_array(ELFIO::elfio &writer) {
+PackedByteArray GDScriptELF64Writer::elfio_to_packed_byte_array(ELFIO::elfio &p_writer) {
 	std::ostringstream oss;
-	if (!writer.save(oss)) {
+	if (!p_writer.save(oss)) {
 		return PackedByteArray();
 	}
 

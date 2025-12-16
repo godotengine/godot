@@ -7,6 +7,9 @@ env.tests_sources = []
 
 env_tests = env.Clone()
 
+# Add include paths for thirdparty libraries used in tests
+env_tests.Prepend(CPPPATH=["#thirdparty/elfio"])
+
 # We must disable the THREAD_LOCAL entirely in doctest to prevent crashes on debugging
 # Since we link with /MT thread_local is always expired when the header is used
 # So the debugger crashes the engine and it causes weird errors

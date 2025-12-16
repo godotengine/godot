@@ -43,6 +43,8 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
 
 namespace TestGDScriptELF {
 
@@ -88,19 +90,19 @@ static bool verify_elf64_structure(const PackedByteArray &p_elf) {
 	}
 
 	// Verify ELF64
-	if (reader.get_class() != ELFCLASS64) {
+	if (reader.get_class() != ELFIO::ELFCLASS64) {
 		DirAccess::remove_absolute(temp_file);
 		return false;
 	}
 
 	// Verify RISC-V machine type
-	if (reader.get_machine() != EM_RISCV) {
+	if (reader.get_machine() != ELFIO::EM_RISCV) {
 		DirAccess::remove_absolute(temp_file);
 		return false;
 	}
 
 	// Verify executable type
-	if (reader.get_type() != ET_EXEC) {
+	if (reader.get_type() != ELFIO::ET_EXEC) {
 		DirAccess::remove_absolute(temp_file);
 		return false;
 	}
@@ -117,11 +119,11 @@ static bool verify_elf64_structure(const PackedByteArray &p_elf) {
 		DirAccess::remove_absolute(temp_file);
 		return false;
 	}
-	if (text_sec->get_type() != SHT_PROGBITS) {
+	if (text_sec->get_type() != ELFIO::SHT_PROGBITS) {
 		DirAccess::remove_absolute(temp_file);
 		return false;
 	}
-	if ((text_sec->get_flags() & SHF_EXECINSTR) == 0) {
+	if ((text_sec->get_flags() & ELFIO::SHF_EXECINSTR) == 0) {
 		DirAccess::remove_absolute(temp_file);
 		return false;
 	}
@@ -266,5 +268,81 @@ func func2():
 		CHECK(elf_dict.has("func2"));
 	}
 }
+
+// E2E tests with Sandbox - TODO: Enable when sandbox module is available
+// These tests require sandbox module which has libriscv dependencies
+// For now, commented out to allow compilation without sandbox
+/*
+#include "modules/sandbox/src/sandbox.h"
+
+// Inline helper - no structs, just do it
+static Variant test_elf64_in_sandbox(const String &p_code, const StringName &p_func, const Array &p_args) {
+	// Compile GDScript
+	Ref<GDScript> script;
+	script.instantiate();
+	script->set_source_code(p_code);
+	if (script->reload() != OK) {
+		return Variant();
+	}
+
+	// Get function and compile to ELF64
+	const HashMap<StringName, GDScriptFunction *> &funcs = script->get_member_functions();
+	GDScriptFunction *func = funcs.has(p_func) ? funcs.get(p_func) : nullptr;
+	if (!func) {
+		return Variant();
+	}
+	PackedByteArray elf = func->compile_to_elf64();
+	if (elf.is_empty()) {
+		return Variant();
+	}
+
+	// Load in Sandbox
+	Ref<Sandbox> sandbox = Sandbox::FromBuffer(elf);
+	if (!sandbox.is_valid()) {
+		return Variant();
+	}
+
+	// Execute
+	Vector<Variant> args;
+	for (int i = 0; i < p_args.size(); i++) {
+		args.push_back(p_args[i]);
+	}
+	Callable::CallError err;
+	return sandbox->vmcall_fn(p_func, (const Variant **)args.ptr(), args.size(), err);
+}
+
+TEST_CASE("[GDScript][ELF64][E2E] Basic execution") {
+	String code = "func add(a: int, b: int) -> int: return a + b";
+	Array args;
+	args.push_back(10);
+	args.push_back(20);
+	Variant result = test_elf64_in_sandbox(code, "add", args);
+	CHECK(result == 30);
+}
+
+TEST_CASE("[GDScript][ELF64][E2E] Compare with VM") {
+	String code = "func mul(x: int, y: int) -> int: return x * y";
+
+	// Test in sandbox
+	Array args;
+	args.push_back(7);
+	args.push_back(6);
+	Variant sandbox_result = test_elf64_in_sandbox(code, "mul", args);
+
+	// Test in VM
+	Ref<GDScript> script;
+	script.instantiate();
+	script->set_source_code(code);
+	script->reload();
+	Vector<Variant> vm_args;
+	vm_args.push_back(7);
+	vm_args.push_back(6);
+	Callable::CallError err;
+	Variant vm_result = script->callp("mul", (const Variant **)vm_args.ptr(), vm_args.size(), err);
+
+	CHECK(sandbox_result == vm_result);
+	CHECK(sandbox_result == 42);
+}
+*/
 
 } // namespace TestGDScriptELF

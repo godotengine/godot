@@ -32,8 +32,11 @@
 
 #include "core/variant/variant.h"
 
-// Forward declaration
+// Forward declarations
 class GDScriptFunction;
+namespace ELFIO {
+	class elfio;
+}
 
 // Write ELF64 binary format from GDScript bytecode using elfio library
 class GDScriptELF64Writer {
@@ -46,5 +49,5 @@ public:
 
 private:
 	// Convert elfio binary to PackedByteArray
-	static PackedByteArray elfio_to_packed_byte_array(class ELFIO::elfio &writer);
+	static PackedByteArray elfio_to_packed_byte_array(ELFIO::elfio &p_writer);
 };
