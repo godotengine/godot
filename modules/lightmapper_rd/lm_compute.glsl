@@ -568,11 +568,11 @@ void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
 }
 
 vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod, float max_mipmap) {
-	float low = min(max(floor(lod), 0.0), max_mipmap - 1.0);
-	float high = min(max(floor(lod + 1.0), 1.0), max_mipmap);
+	float low = clamp(floor(lod), 0.0, max(max_mipmap - 1.0, 0.0));
+	float high = clamp(floor(lod + 1.0), 1.0, max(max_mipmap, 1.0));
 	vec2 sample_pos = texture_rect.xy + clamp(uv, 0.0, 1.0) * texture_rect.zw; // take border into account
-	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, linear_sampler), sample_pos, low);
-	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, linear_sampler), sample_pos, high);
+	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, area_light_atlas_sampler), sample_pos, low);
+	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, area_light_atlas_sampler), sample_pos, high);
 
 	float blend = high - clamp(lod, high - 1.0, high);
 	vec4 sample_col = mix(sample_col_high, sample_col_low, blend);

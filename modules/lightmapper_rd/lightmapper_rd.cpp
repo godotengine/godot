@@ -139,7 +139,7 @@ void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Ve
 	light_metadata.push_back(md);
 }
 
-void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur, const Rect2 &p_texture_rect) {
+void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur, const Rect2 &p_texture_rect, float p_max_mipmap) {
 	Light l;
 	l.type = LIGHT_TYPE_AREA;
 	l.position[0] = p_position.x;
@@ -168,6 +168,7 @@ void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Ve
 	l.area_texture_rect[1] = p_texture_rect.position.y;
 	l.area_texture_rect[2] = p_texture_rect.size.x;
 	l.area_texture_rect[3] = p_texture_rect.size.y;
+	l.cos_spot_angle = p_max_mipmap;
 	lights.push_back(l);
 
 	LightMetadata md;
@@ -1322,8 +1323,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 			tformat.mipmaps = area_light_atlas.mipmap_count;
 
-			//rd->texture_clear(area_light_atlas_tex, Color(0, 0, 0, 0), 0, area_light_atlas.mipmap_count, 0, 1); // texture recreated each time -> clearning not necessary
-
 			// now fill mipmap with data from Vector<Ref<Image>> area_light_atlas.images
 			Vector<Vector<uint8_t>> tdata;
 			tdata.push_back(area_light_atlas.atlas_data);
@@ -1468,6 +1467,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		sampler = rd->sampler_create(s);
 	}
 
+	RID area_light_atlas_sampler;
+	{
+		RD::SamplerState s;
+		s.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+		s.min_filter = RD::SAMPLER_FILTER_LINEAR;
+		s.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		s.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+
+		area_light_atlas_sampler = rd->sampler_create(s);
+	}
+
 	Vector<RD::Uniform> base_uniforms;
 	{
 		{
@@ -1549,15 +1559,22 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 		{
 			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 11;
-			u.append_id(cluster_indices_buffer);
+			u.append_id(area_light_atlas_sampler);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 12;
+			u.append_id(cluster_indices_buffer);
+			base_uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 13;
 			u.append_id(cluster_aabbs_buffer);
 			base_uniforms.push_back(u);
 		}
@@ -1598,9 +1615,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-#define FREE_RASTER_RESOURCES       \
-	rd->free_rid(rasterize_shader); \
-	rd->free_rid(sampler);          \
+#define FREE_RASTER_RESOURCES               \
+	rd->free_rid(rasterize_shader);         \
+	rd->free_rid(sampler);                  \
+	rd->free_rid(area_light_atlas_sampler); \
 	rd->free_rid(raster_depth_buffer);
 
 	/* Plot direct light */
