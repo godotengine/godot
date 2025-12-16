@@ -32,6 +32,10 @@
 
 #include "gdscript.h"
 
+#ifdef MODULE_GDSCRIPT_ELF_ENABLED
+#include "modules/gdscript_elf/src/gdscript_elf64_writer.h"
+#endif
+
 Variant GDScriptFunction::get_constant(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
 	return constants[p_idx];
@@ -41,6 +45,19 @@ StringName GDScriptFunction::get_global_name(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, global_names.size(), "<errgname>");
 	return global_names[p_idx];
 }
+
+#ifdef MODULE_GDSCRIPT_ELF_ENABLED
+PackedByteArray GDScriptFunction::compile_to_elf64() const {
+	if (_code_ptr == nullptr || _code_size == 0) {
+		return PackedByteArray();
+	}
+	return GDScriptELF64Writer::write_elf64(const_cast<GDScriptFunction *>(this));
+}
+
+bool GDScriptFunction::can_compile_to_elf64() const {
+	return GDScriptELF64Writer::can_write_elf64(const_cast<GDScriptFunction *>(this));
+}
+#endif
 
 struct _GDFKC {
 	int order = 0;

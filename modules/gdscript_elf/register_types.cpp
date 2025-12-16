@@ -31,58 +31,12 @@
 #include "register_types.h"
 
 #include "modules/gdscript/gdscript.h"
-#include "src/gdscript_language_wrapper.h"
-#include "src/gdscript_wrapper.h"
-
-// Access the original GDScriptLanguage through its singleton
-// GDScriptLanguage::get_singleton() provides access to the original instance
-
-// Our wrapper instance
-static GDScriptLanguageWrapper *script_language_wrapper = nullptr;
 
 void initialize_gdscript_elf_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		// At this point, gdscript module should already be initialized
-		// (modules initialize in alphabetical order, so "gdscript" comes before "gdscript_elf")
-		// Access the original GDScriptLanguage through its singleton
-		GDScriptLanguage *original_language = GDScriptLanguage::get_singleton();
-
-		ERR_FAIL_NULL_MSG(original_language, "GDScript module must be initialized before gdscript_elf module");
-
-		// Unregister the original GDScriptLanguage
-		ScriptServer::unregister_language(original_language);
-
-		// Create our wrapper
-		script_language_wrapper = memnew(GDScriptLanguageWrapper);
-		script_language_wrapper->set_original_language(original_language);
-
-		// Register the wrapper instead
-		ScriptServer::register_language(script_language_wrapper);
-
-		GDREGISTER_CLASS(GDScriptLanguageWrapper);
-		GDREGISTER_CLASS(GDScriptWrapper);
-	}
+	// Module initialization - no wrapper registration needed
+	// ELF64 functionality is directly integrated into GDScript classes
 }
 
 void uninitialize_gdscript_elf_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		if (script_language_wrapper) {
-			// Get the original language from the wrapper before deleting it
-			GDScriptLanguage *original_language = GDScriptLanguage::get_singleton();
-
-			// Unregister our wrapper
-			ScriptServer::unregister_language(script_language_wrapper);
-
-			// Delete the wrapper
-			memdelete(script_language_wrapper);
-			script_language_wrapper = nullptr;
-
-			// Re-register original for proper cleanup
-			// Note: This may cause issues if gdscript module uninitializes after us
-			// The original will be cleaned up by gdscript module's uninitialize
-			if (original_language) {
-				ScriptServer::register_language(original_language);
-			}
-		}
-	}
+	// Module cleanup - no wrapper cleanup needed
 }

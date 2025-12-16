@@ -458,6 +458,10 @@ private:
 	friend class GDScriptBytecodeCCodeGenerator;
 	friend class GDScriptBytecodeELFCompiler;
 	friend class GDScriptFunctionWrapper;
+#ifdef MODULE_GDSCRIPT_ELF_ENABLED
+	friend class GDScriptELF64Writer;
+	friend class GDScriptRISCVEncoder;
+#endif
 
 	StringName name;
 	StringName source;
@@ -598,6 +602,12 @@ public:
 	_FORCE_INLINE_ int get_argument_count() const { return _argument_count; }
 	_FORCE_INLINE_ Variant get_rpc_config() const { return rpc_config; }
 	_FORCE_INLINE_ int get_max_stack_size() const { return _stack_size; }
+
+	// Generate ELF64 binary directly from bytecode
+	PackedByteArray compile_to_elf64() const;
+
+	// Check if function can be compiled to ELF64
+	bool can_compile_to_elf64() const;
 
 	Variant get_constant(int p_idx) const;
 	StringName get_global_name(int p_idx) const;

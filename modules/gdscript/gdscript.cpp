@@ -1183,6 +1183,30 @@ Ref<GDScript> GDScript::get_base() const {
 	return base;
 }
 
+#ifdef MODULE_GDSCRIPT_ELF_ENABLED
+Dictionary GDScript::compile_all_functions_to_elf64() const {
+	Dictionary result;
+	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
+		GDScriptFunction *func = E.value;
+		if (func && func->can_compile_to_elf64()) {
+			PackedByteArray elf = func->compile_to_elf64();
+			result[E.key] = elf;
+		}
+	}
+	return result;
+}
+
+bool GDScript::can_compile_to_elf64() const {
+	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
+		GDScriptFunction *func = E.value;
+		if (func && func->can_compile_to_elf64()) {
+			return true;
+		}
+	}
+	return false;
+}
+#endif
+
 bool GDScript::inherits_script(const Ref<Script> &p_script) const {
 	Ref<GDScript> gd = p_script;
 	if (gd.is_null()) {

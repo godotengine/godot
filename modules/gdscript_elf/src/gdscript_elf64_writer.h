@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_function_wrapper.h                                           */
+/*  gdscript_elf64_writer.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,25 +30,21 @@
 
 #pragma once
 
-#include "core/variant/callable.h"
 #include "core/variant/variant.h"
-#include "modules/gdscript/gdscript_function.h"
 
-// Forward declarations
-class GDScriptInstance;
+// Forward declaration
+class GDScriptFunction;
 
-// Wrapper for GDScriptFunction - simple pass-through
-// Only generates C99 code, no ELF compilation or execution
-class GDScriptFunctionWrapper {
+// Write ELF64 binary format from GDScript bytecode using elfio library
+class GDScriptELF64Writer {
 public:
-	GDScriptFunction *original_function = nullptr;
+	// Write ELF64 binary from bytecode using elfio library
+	static PackedByteArray write_elf64(GDScriptFunction *p_function);
 
-	GDScriptFunctionWrapper();
-	~GDScriptFunctionWrapper();
+	// Check if function can be written to ELF64
+	static bool can_write_elf64(GDScriptFunction *p_function);
 
-	void set_original_function(GDScriptFunction *p_function);
-	GDScriptFunction *get_original_function() const { return original_function; }
-
-	// Main execution method - delegates to original
-	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, GDScriptFunction::CallState *p_state = nullptr);
+private:
+	// Convert elfio binary to PackedByteArray
+	static PackedByteArray elfio_to_packed_byte_array(class ELFIO::elfio &writer);
 };

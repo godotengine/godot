@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_function_wrapper.cpp                                         */
+/*  gdscript_riscv_encoder.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gdscript_function_wrapper.h"
+#pragma once
 
-#include "modules/gdscript/gdscript_function.h"
+#include "core/variant/variant.h"
 
-GDScriptFunctionWrapper::GDScriptFunctionWrapper() {
-	original_function = nullptr;
-}
+// Forward declaration
+class GDScriptFunction;
 
-GDScriptFunctionWrapper::~GDScriptFunctionWrapper() {
-	original_function = nullptr;
-}
+// Encode GDScript bytecode to RISC-V machine instructions
+class GDScriptRISCVEncoder {
+public:
+	// Encode GDScript bytecode opcodes to RISC-V instructions
+	static PackedByteArray encode_function(GDScriptFunction *p_function);
 
-void GDScriptFunctionWrapper::set_original_function(GDScriptFunction *p_function) {
-	original_function = p_function;
-}
+	// Encode single opcode to RISC-V instruction sequence
+	static PackedByteArray encode_opcode(int p_opcode, const int *p_code_ptr, int &p_ip, int p_code_size);
 
-// Main execution method - simple pass-through
-Variant GDScriptFunctionWrapper::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, GDScriptFunction::CallState *p_state) {
-	ERR_FAIL_NULL_V(original_function, Variant());
-	return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
-}
+private:
+	// RISC-V instruction encoding helpers (little-endian)
+	static uint32_t encode_r_type(uint8_t opcode, uint8_t rd, uint8_t funct3, uint8_t rs1, uint8_t rs2, uint8_t funct7);
+	static uint32_t encode_i_type(uint8_t opcode, uint8_t rd, uint8_t funct3, uint8_t rs1, int16_t imm);
+	static uint32_t encode_s_type(uint8_t opcode, uint8_t funct3, uint8_t rs1, uint8_t rs2, int16_t imm);
+	static uint32_t encode_u_type(uint8_t opcode, uint8_t rd, int32_t imm);
+	static uint32_t encode_j_type(uint8_t opcode, uint8_t rd, int32_t imm);
+
+	// Generate call to VM fallback (ecall or function call)
+	static PackedByteArray encode_vm_call(int p_opcode, int p_ip);
+
+	// Function prologue: set up stack frame
+	static PackedByteArray encode_prologue(int p_stack_size);
+
+	// Function epilogue: restore stack and return
+	static PackedByteArray encode_epilogue(int p_stack_size);
+};

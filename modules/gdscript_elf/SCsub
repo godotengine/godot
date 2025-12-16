@@ -7,15 +7,13 @@ Import("env_modules")
 env_gdscript_elf = env_modules.Clone()
 
 # Add include paths
-env_gdscript_elf.Prepend(CPPPATH=["#modules/gdscript_elf/src"])
+env_gdscript_elf.Prepend(CPPPATH=["#modules/gdscript_elf/src", "#thirdparty/elfio"])
 
-# Source files - only C code generation, no ELF compilation
+# Source files - ELF64 generation using elfio
 sources = [
     "register_types.cpp",
-    "src/gdscript_language_wrapper.cpp",
-    "src/gdscript_wrapper.cpp",
-    "src/gdscript_function_wrapper.cpp",
-    "src/gdscript_bytecode_c_codegen.cpp",
+    "src/gdscript_elf64_writer.cpp",
+    "src/gdscript_riscv_encoder.cpp",
     "src/gdscript_elf_fallback.cpp",
 ]
 
