@@ -284,7 +284,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 
 	p_image->set_data(w, h, p_image->has_mipmaps(), target_format, data);
 
-	print_verbose(vformat("CVTT: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
+	PRINT_VERBOSE(vformat("CVTT: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
 
 void image_decompress_cvtt(Image *p_image) {

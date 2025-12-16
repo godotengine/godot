@@ -73,7 +73,7 @@ Error FileAccessPatched::_apply_patch() const {
 
 		uint64_t total_usec_end = OS::get_singleton()->get_ticks_usec();
 
-		print_verbose(vformat(U"Applied delta patch to \"%s\" from \"%s\" in %d μs (%d μs I/O, %d μs decoding).", path, delta_patch.pack.get_file(), total_usec_end - total_usec_start, io_usec_end - io_usec_start, decode_usec_end - decode_usec_start));
+		PRINT_VERBOSE(vformat(U"Applied delta patch to \"%s\" from \"%s\" in %d μs (%d μs I/O, %d μs decoding).", path, delta_patch.pack.get_file(), total_usec_end - total_usec_start, io_usec_end - io_usec_start, decode_usec_end - decode_usec_start));
 	}
 
 	patched_file_data = old_file_data;

@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 #ifdef TOOLS_ENABLED
 	if (wait_for_debugger > 0) {
 		os->wait_for_debugger(wait_for_debugger);
-		print_verbose("Continuing execution.");
+		PRINT_VERBOSE("Continuing execution.");
 	}
 #else
 	if (wait_for_debugger > 0) {

@@ -6321,7 +6321,7 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 				}
 				wintab_WTEnable(wd.wtctx, true);
 			} else {
-				print_verbose("WinTab context creation failed.");
+				PRINT_VERBOSE("WinTab context creation failed.");
 			}
 		}
 	}
@@ -6499,7 +6499,7 @@ Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mo
 					wd.tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
 				}
 			} else {
-				print_verbose("WinTab context creation failed.");
+				PRINT_VERBOSE("WinTab context creation failed.");
 			}
 		} else {
 			wd.wtctx = nullptr;
@@ -7051,7 +7051,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT) {
 						winink_disabled = (parser->get_node_data().to_lower().strip_edges() != "true");
-						print_verbose(vformat("Wacom tablet config found at \"%s\", Windows Ink support is %s.", wacom_cfg, winink_disabled ? "disabled" : "enabled"));
+						PRINT_VERBOSE(vformat("Wacom tablet config found at \"%s\", Windows Ink support is %s.", wacom_cfg, winink_disabled ? "disabled" : "enabled"));
 						break;
 					}
 				}

@@ -1597,7 +1597,7 @@ Error AccessibilityDriverAccessKit::init() {
 
 	Error err = OS::get_singleton()->open_dynamic_library(path, library_handle);
 	if (err == OK && initialize_libaccesskit(dylibloader_verbose, library_handle) == 0) {
-		print_verbose("AccessKit loaded.");
+		PRINT_VERBOSE("AccessKit loaded.");
 	} else {
 		return ERR_CANT_CREATE;
 	}

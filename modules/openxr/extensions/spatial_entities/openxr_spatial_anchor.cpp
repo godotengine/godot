@@ -364,7 +364,7 @@ void OpenXRSpatialAnchorCapability::on_instance_created(const XrInstance p_insta
 		if (xr_result != XR_SUCCESS) {
 			// Check for stores for compatibility with beta runtimes.
 			// Lucky for us, related structs and enums are compatible.
-			print_verbose("OpenXR: xrEnumerateSpatialPersistenceScopesEXT is not supported, falling back to xrEnumerateSpatialPersistenceStoresEXT!");
+			PRINT_VERBOSE("OpenXR: xrEnumerateSpatialPersistenceScopesEXT is not supported, falling back to xrEnumerateSpatialPersistenceStoresEXT!");
 			xr_result = openxr_api->get_instance_proc_addr("xrEnumerateSpatialPersistenceStoresEXT", (PFN_xrVoidFunction *)&xrEnumerateSpatialPersistenceScopesEXT_ptr);
 		}
 		ERR_FAIL_COND(XR_FAILED(xr_result));
@@ -431,7 +431,7 @@ void OpenXRSpatialAnchorCapability::on_session_created(const XrSession p_session
 			}
 
 			// Output what we're using:
-			print_verbose("OpenXR: Using persistence scope " + get_spatial_persistence_scope_name(scope));
+			PRINT_VERBOSE("OpenXR: Using persistence scope " + get_spatial_persistence_scope_name(scope));
 
 			// Start by creating our persistence context.
 			create_persistence_context(scope, callable_mp(this, &OpenXRSpatialAnchorCapability::_on_persistence_context_completed));
@@ -580,9 +580,9 @@ bool OpenXRSpatialAnchorCapability::_load_supported_persistence_scopes() {
 
 		if (is_print_verbose_enabled()) {
 			if (!supported_persistence_scopes.is_empty()) {
-				print_verbose("OpenXR: Supported spatial persistence scopes:");
+				PRINT_VERBOSE("OpenXR: Supported spatial persistence scopes:");
 				for (const XrSpatialPersistenceScopeEXT &scope : supported_persistence_scopes) {
-					print_verbose(" - " + get_spatial_persistence_scope_name(scope));
+					PRINT_VERBOSE(" - " + get_spatial_persistence_scope_name(scope));
 				}
 			} else {
 				WARN_PRINT("OpenXR: No persistence scopes found!");

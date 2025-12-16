@@ -34,7 +34,7 @@
 
 #define WAYLAND_DISPLAY_SERVER_DEBUG_LOGS_ENABLED
 #ifdef WAYLAND_DISPLAY_SERVER_DEBUG_LOGS_ENABLED
-#define DEBUG_LOG_WAYLAND(...) print_verbose(__VA_ARGS__)
+#define DEBUG_LOG_WAYLAND(...) PRINT_VERBOSE(__VA_ARGS__)
 #else
 #define DEBUG_LOG_WAYLAND(...)
 #endif
@@ -512,7 +512,7 @@ String DisplayServerWayland::clipboard_get() const {
 
 	for (String mime : text_mimes) {
 		if (wayland_thread.selection_has_mime(mime)) {
-			print_verbose(vformat("Selecting media type \"%s\" from offered types.", mime));
+			PRINT_VERBOSE(vformat("Selecting media type \"%s\" from offered types.", mime));
 			data = wayland_thread.selection_get_mime(mime);
 			break;
 		}
@@ -573,7 +573,7 @@ String DisplayServerWayland::clipboard_get_primary() const {
 
 	for (String mime : text_mimes) {
 		if (wayland_thread.primary_has_mime(mime)) {
-			print_verbose(vformat("Selecting media type \"%s\" from offered types.", mime));
+			PRINT_VERBOSE(vformat("Selecting media type \"%s\" from offered types.", mime));
 			data = wayland_thread.primary_get_mime(mime);
 			break;
 		}
@@ -1404,7 +1404,7 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 		wd.emulate_vsync = (!wayland_thread.is_fifo_available() && rendering_context->window_get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
 
 		if (wd.emulate_vsync) {
-			print_verbose("VSYNC: manually throttling frames using MAILBOX.");
+			PRINT_VERBOSE("VSYNC: manually throttling frames using MAILBOX.");
 			rendering_context->window_set_vsync_mode(p_window_id, DisplayServer::VSYNC_MAILBOX);
 		}
 	}
@@ -1419,7 +1419,7 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 		wd.emulate_vsync = egl_manager->is_using_vsync();
 
 		if (wd.emulate_vsync) {
-			print_verbose("VSYNC: manually throttling frames with swap delay 0.");
+			PRINT_VERBOSE("VSYNC: manually throttling frames with swap delay 0.");
 			egl_manager->set_use_vsync(false);
 		}
 	}
@@ -1574,7 +1574,7 @@ Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid
 		scaled_rect.position = WaylandThread::scale_vector2i(scaled_rect.position, 1 / window_scale);
 		scaled_rect.size = WaylandThread::scale_vector2i(scaled_rect.size, 1 / window_scale);
 
-		print_verbose(vformat("Scaling embedded rect down by %f from %s to %s.", window_scale, p_rect, scaled_rect));
+		PRINT_VERBOSE(vformat("Scaling embedded rect down by %f from %s to %s.", window_scale, p_rect, scaled_rect));
 
 		godot_embedded_client_set_embedded_window_rect(embedded_client, scaled_rect.position.x, scaled_rect.position.y, scaled_rect.size.width, scaled_rect.size.height);
 	} else {
@@ -2125,7 +2125,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 					getenv("PRIMUS_LOAD_GLOBAL") ||
 					getenv("BUMBLEBEE_SOCKET") ||
 					getenv("__NV_PRIME_RENDER_OFFLOAD")) {
-				print_verbose("Optirun/primusrun detected. Skipping GPU detection");
+				PRINT_VERBOSE("Optirun/primusrun detected. Skipping GPU detection");
 				prime_idx = 0;
 			}
 
@@ -2139,14 +2139,14 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 				for (int i = 0; i < libraries.size(); ++i) {
 					if (FileAccess::exists(libraries[i] + "/libGL.so.1") ||
 							FileAccess::exists(libraries[i] + "/libGL.so")) {
-						print_verbose("Custom libGL override detected. Skipping GPU detection");
+						PRINT_VERBOSE("Custom libGL override detected. Skipping GPU detection");
 						prime_idx = 0;
 					}
 				}
 			}
 
 			if (prime_idx == -1) {
-				print_verbose("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
+				PRINT_VERBOSE("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
 				prime_idx = DetectPrimeEGL::detect_prime(EGL_PLATFORM_WAYLAND_KHR);
 			}
 
@@ -2264,7 +2264,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	bool dbus_ok = true;
 #ifdef SOWRAP_ENABLED
 	if (initialize_dbus(dylibloader_verbose) != 0) {
-		print_verbose("Failed to load DBus library!");
+		PRINT_VERBOSE("Failed to load DBus library!");
 		dbus_ok = false;
 	}
 #endif
@@ -2275,9 +2275,9 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		int version_rev = 0;
 		dbus_get_version(&version_major, &version_minor, &version_rev);
 		ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
-		print_verbose(vformat("DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+		PRINT_VERBOSE(vformat("DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
 		if (!ver_ok) {
-			print_verbose("Unsupported DBus library version!");
+			PRINT_VERBOSE("Unsupported DBus library version!");
 			dbus_ok = false;
 		}
 	}
