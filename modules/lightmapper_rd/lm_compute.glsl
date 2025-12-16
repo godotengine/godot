@@ -699,6 +699,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		r_light_dir = normalize(light_pos - p_position);
 		dist = length(bake_params.world_size);
 		attenuation = 1.0;
+		attenuation *= max(0.0, dot(p_normal, r_light_dir));
 		soft_shadowing_disk_size = light_data.size;
 	} else if (light_data.type == LIGHT_TYPE_AREA) {
 		if (dot(light_data.direction, p_position - light_data.position) <= 0) {
@@ -726,11 +727,14 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 
 		vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
 		dist = max(0.0001, distance(closest_point_local_to_light, pos_local_to_light));
+		if (dist > light_data.range) {
+			return;
+		}
 		// set light pos to closest point
 		light_pos = light_data.position + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm;
 		r_light_dir = normalize(light_pos - p_position);
 
-		attenuation = get_omni_attenuation(dist, 1.0 / light_data.range, light_data.attenuation - 2.0); // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+		attenuation = get_omni_attenuation(dist, 1.0 / light_data.range, light_data.attenuation) * dist * dist; // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 		attenuation *= ltc_diffuse;
 		soft_shadowing_disk_size = light_data.size / dist;
 	} else {
@@ -758,10 +762,10 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
 			attenuation *= 1.0 - pow(spot_rim, light_data.inv_spot_attenuation);
 		}
+		attenuation *= max(0.0, dot(p_normal, r_light_dir));
 	}
 
-	attenuation *= max(0.0, dot(p_normal, r_light_dir));
-	if (attenuation <= 0.0001) {
+	if (attenuation * light_data.energy <= 0.0001) {
 		return;
 	}
 
@@ -1215,7 +1219,7 @@ void main() {
 	imageStore(shadowmask, ivec3(atlas_pos, params.atlas_slice), vec4(shadowmask_value, shadowmask_value, shadowmask_value, 1.0));
 #endif
 
-#endif
+#endif // MODE_DIRECT_LIGHT
 
 #ifdef MODE_BOUNCE_LIGHT
 
