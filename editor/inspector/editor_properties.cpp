@@ -487,6 +487,7 @@ void EditorPropertyTextEnum::update_property() {
 
 		// Add an explicit empty value for clearing the property.
 		option_button->add_item("", options.size() + 1000);
+		option_button->set_item_metadata(-1, String());
 
 		for (int i = 0; i < options.size(); i++) {
 			option_button->add_item(option_names[i], i);
