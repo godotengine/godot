@@ -291,6 +291,8 @@ public:
 	void remove_gizmo(Ref<CanvasItemGizmo> p_gizmo);
 	void clear_gizmos();
 	void update_gizmos();
+	void set_subgizmo_selection(Ref<CanvasItemGizmo> p_gizmo, int p_id, Transform2D p_transform = Transform2D());
+	void clear_subgizmo_selection();
 
 	/* VISIBILITY */
 
