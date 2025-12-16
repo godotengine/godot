@@ -30,6 +30,11 @@
 
 #pragma once
 
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+
+#include <cstddef>
+
 // Path: EBML/
 #define EBML_ID_HEADER 0x1A45DFA3
 #define EBML_ID_VERSION 0x4286
@@ -343,3 +348,107 @@
 #define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG_DEFAULT 0x4484
 #define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG_STRING 0x4487
 #define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG_BINARY 0x4485
+
+struct EbmlHeader {
+	uint64_t version;
+	uint64_t read_version;
+
+	uint64_t max_id_length;
+	uint64_t max_size_length;
+
+	String doc_type;
+	uint64_t doc_type_version;
+	uint64_t doc_type_read_version;
+};
+
+struct SeekHead {
+	uint64_t segment_info_position = 0;
+	uint64_t tracks_position = 0;
+	uint64_t cues_position = 0;
+	uint64_t tags_position = 0;
+};
+
+struct SegmentInfo {
+	uint8_t uuid[16];
+	String filename;
+
+	uint8_t prev_uuid[16];
+	String prev_filename;
+
+	uint8_t next_uuid[16];
+	String next_filename;
+
+	// multiple
+	void *segment_family;
+
+	// TODO
+	void *chapter_translate;
+
+	uint64_t time_scale;
+	double duration;
+	void *creation_date;
+
+	String title;
+
+	String muxing_app;
+	String writing_app;
+};
+
+struct Track {
+	uint32_t track_number = 0;
+	uint64_t track_uid = 0;
+
+	bool flag_enabled = true;
+	bool flag_default = true;
+	bool flag_forced = false;
+	bool flag_hearing_impaired = false;
+	bool flag_visual_impaired = false;
+	bool flag_text_descriptions = false;
+	bool flag_original = false;
+	bool flag_commentary = false;
+	bool flag_lacing = false;
+
+	uint64_t default_duration = 0;
+	uint64_t default_decoded_field_duration = 0;
+
+	double track_timestamp_scale = 0.0;
+
+	uint64_t max_block_addition_id = 0;
+
+	String name = "";
+	String language = "";
+
+	String codec_id;
+	String coded_name;
+
+	uint64_t attachment_link = 0;
+
+	uint64_t codec_delay = 0;
+
+	uint64_t seek_pre_roll = 0;
+};
+
+struct Cluster {
+	uint64_t time;
+	uint64_t position;
+	uint64_t target_track;
+
+	HashMap<uint64_t, uint8_t> time_to_layer;
+
+	struct Block {
+		uint64_t position;
+		uint64_t size;
+		bool key;
+		bool invisible;
+		bool discardable;
+	};
+
+	Vector<Block> blocks;
+};
+
+struct Segment {
+	SeekHead seek_head;
+	SegmentInfo info;
+	Vector<Track> tracks;
+	Vector<Cluster> clusters;
+};
