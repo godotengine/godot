@@ -599,10 +599,10 @@ public:
 	_FORCE_INLINE_ int get_max_stack_size() const { return _stack_size; }
 
 	// Generate ELF64 binary directly from bytecode
-	PackedByteArray compile_to_elf64(int p_mode = 0) const; // 0 = GODOT_SYSCALL, 1 = LINUX_SYSCALL
+	PackedByteArray compile_to_elf64(int p_mode = 2) const; // 0 = GODOT_SYSCALL, 1 = LINUX_SYSCALL, 2 = HYBRID (default)
 
 	// Check if function can be compiled to ELF64
-	bool can_compile_to_elf64(int p_mode = 0) const; // 0 = GODOT_SYSCALL, 1 = LINUX_SYSCALL
+	bool can_compile_to_elf64(int p_mode = 2) const; // 0 = GODOT_SYSCALL, 1 = LINUX_SYSCALL, 2 = HYBRID (default)
 
 	Variant get_constant(int p_idx) const;
 	StringName get_global_name(int p_idx) const;

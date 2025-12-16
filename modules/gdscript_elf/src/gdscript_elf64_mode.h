@@ -32,6 +32,7 @@
 
 // ELF64 compilation modes
 enum class ELF64CompilationMode {
-	GODOT_SYSCALL, // Mode 1: Godot sandbox syscalls (ECALL 500+)
-	LINUX_SYSCALL  // Mode 2: Standard Linux syscalls (1-400+)
+	GODOT_SYSCALL, // Mode 1: Godot sandbox syscalls (ECALL 500+) - legacy, use HYBRID instead
+	LINUX_SYSCALL, // Mode 2: Standard Linux syscalls (1-400+) - legacy, use HYBRID instead
+	HYBRID         // Mode 3: Hybrid - use Godot syscalls by default, Linux syscalls when needed
 };

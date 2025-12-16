@@ -40,10 +40,10 @@ class GDScriptFunction;
 class GDScriptRISCVEncoder {
 public:
 	// Encode GDScript bytecode opcodes to RISC-V instructions
-	static PackedByteArray encode_function(GDScriptFunction *p_function, ELF64CompilationMode p_mode = ELF64CompilationMode::GODOT_SYSCALL);
+	static PackedByteArray encode_function(GDScriptFunction *p_function, ELF64CompilationMode p_mode = ELF64CompilationMode::HYBRID);
 
 	// Encode single opcode to RISC-V instruction sequence
-	static PackedByteArray encode_opcode(int p_opcode, const int *p_code_ptr, int &p_ip, int p_code_size, ELF64CompilationMode p_mode = ELF64CompilationMode::GODOT_SYSCALL);
+	static PackedByteArray encode_opcode(int p_opcode, const int *p_code_ptr, int &p_ip, int p_code_size, ELF64CompilationMode p_mode = ELF64CompilationMode::HYBRID);
 
 private:
 	// RISC-V instruction encoding helpers (little-endian)
@@ -54,7 +54,11 @@ private:
 	static uint32_t encode_j_type(uint8_t opcode, uint8_t rd, int32_t imm);
 
 	// Generate call to VM fallback (ecall or function call)
-	static PackedByteArray encode_vm_call(int p_opcode, int p_ip, ELF64CompilationMode p_mode = ELF64CompilationMode::GODOT_SYSCALL);
+	static PackedByteArray encode_vm_call(int p_opcode, int p_ip, ELF64CompilationMode p_mode = ELF64CompilationMode::HYBRID);
+
+	// Mode-specific syscall encoding
+	static PackedByteArray encode_godot_syscall(int p_ecall_number);
+	static PackedByteArray encode_linux_syscall(int p_syscall_number);
 
 	// Function prologue: set up stack frame
 	static PackedByteArray encode_prologue(int p_stack_size);

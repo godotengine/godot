@@ -2,17 +2,24 @@
 
 ## Overview
 
-The GDScript ELF64 compiler should support two execution modes:
+The GDScript ELF64 compiler supports three execution modes:
 
-1. **Godot Syscall Mode** (Mode 1): For execution within Godot's sandbox
+1. **Godot Syscall Mode** (Mode 0): Pure Godot sandbox execution
    - Uses custom ECALL numbers (500+) defined in `modules/sandbox/src/syscalls.h`
    - Allows calling back into Godot's API (Variant operations, Object methods, etc.)
    - Requires Godot sandbox runtime to execute
 
-2. **Linux Syscall Mode** (Mode 2): For standalone RISC-V Linux execution
+2. **Linux Syscall Mode** (Mode 1): Pure standalone RISC-V Linux execution
    - Uses standard Linux syscall numbers (1-400+)
    - Can run on real RISC-V hardware or emulators (qemu, spike, etc.)
    - Requires standard RISC-V Linux runtime environment
+   - Limited support (many GDScript features require Godot runtime)
+
+3. **Hybrid Mode** (Mode 2 - Default): **Recommended** - Single ELF with both syscall types
+   - Uses Godot syscalls (ECALL 500+) by default for Godot-specific operations
+   - Uses Linux syscalls (1-400+) when appropriate (e.g., standard I/O)
+   - Single binary works in both Godot sandbox and standalone libriscv
+   - Optimal syscall selection based on operation type
 
 ## Architecture Changes
 
@@ -20,8 +27,9 @@ The GDScript ELF64 compiler should support two execution modes:
 
 ```cpp
 enum class ELF64CompilationMode {
-    GODOT_SYSCALL,  // Mode 1: Godot sandbox syscalls
-    LINUX_SYSCALL   // Mode 2: Standard Linux syscalls
+    GODOT_SYSCALL,  // Mode 0: Pure Godot sandbox syscalls
+    LINUX_SYSCALL,  // Mode 1: Pure Linux syscalls
+    HYBRID          // Mode 2: Hybrid - both syscall types in same ELF (default)
 };
 ```
 
@@ -55,17 +63,28 @@ static PackedByteArray encode_syscall(int p_syscall_num, ELF64CompilationMode p_
 
 ### 3. Syscall Encoding Differences
 
-#### Mode 1: Godot Syscalls
+#### Mode 0: Pure Godot Syscalls
 - Uses ECALL numbers from `modules/sandbox/src/syscalls.h` (500+)
 - Example: `ECALL_VCALL = 501` for Variant calls
 - Encoding: `li a7, <ecall_number>; ecall`
 - Requires sandbox runtime with Godot syscall handlers
 
-#### Mode 2: Linux Syscalls
+#### Mode 1: Pure Linux Syscalls
 - Uses standard Linux syscall numbers
 - Example: `write = 64`, `exit = 93`, `read = 63`
 - Encoding: `li a7, <syscall_number>; ecall`
 - Requires Linux kernel or compatible runtime
+- Limited support (many GDScript features unsupported)
+
+#### Mode 2: Hybrid (Default - Recommended)
+- **Default**: Uses Godot ECALLs (500+) for Godot-specific operations
+  - Member access: `ECALL_OBJ_PROP_GET` (545)
+  - Variant operations: `ECALL_VCALL` (501)
+  - Object methods: `ECALL_OBJ_CALLP` (506)
+- **When needed**: Uses Linux syscalls (1-400+) for standard operations
+  - I/O operations: `write` (64) for stdout
+  - System operations: `exit` (93) for program termination
+- **Single ELF**: Contains both syscall types, works in both environments
 
 ### 4. Opcode Translation Strategy
 
@@ -133,22 +152,30 @@ static PackedByteArray encode_syscall(int p_syscall_num, ELF64CompilationMode p_
 ### 7. GDScript API Usage
 
 ```gdscript
-# Mode 1: Godot syscalls (default)
-var elf_godot = script.compile_all_functions_to_elf64(ELF64CompilationMode.GODOT_SYSCALL)
+# Mode 2: Hybrid (default - recommended)
+var elf_hybrid = script.compile_all_functions_to_elf64()  # Defaults to HYBRID
+var elf_hybrid_explicit = script.compile_all_functions_to_elf64(2)  # Explicit hybrid
 
-# Mode 2: Linux syscalls
-var elf_linux = script.compile_all_functions_to_elf64(ELF64CompilationMode.LINUX_SYSCALL)
+# Mode 0: Pure Godot syscalls
+var elf_godot = script.compile_all_functions_to_elf64(0)
+
+# Mode 1: Pure Linux syscalls
+var elf_linux = script.compile_all_functions_to_elf64(1)
 ```
 
 ### 8. CLI Tool Updates
 
-The `gdscript_elf64_compiler.gd` tool should support mode selection:
+The `gdscript_elf64_compiler.gd` tool supports mode selection:
 
 ```bash
-# Mode 1 (default)
+# Mode 2: Hybrid (default - recommended)
+godot --headless --script tools/gdscript_elf64_compiler.gd script.gd
+godot --headless --script tools/gdscript_elf64_compiler.gd script.gd --mode hybrid
+
+# Mode 0: Pure Godot
 godot --headless --script tools/gdscript_elf64_compiler.gd script.gd --mode godot
 
-# Mode 2
+# Mode 1: Pure Linux
 godot --headless --script tools/gdscript_elf64_compiler.gd script.gd --mode linux
 ```
 
@@ -157,7 +184,9 @@ godot --headless --script tools/gdscript_elf64_compiler.gd script.gd --mode linu
 1. **Flexibility**: Choose execution environment based on use case
 2. **Portability**: Linux mode enables running on real RISC-V hardware
 3. **Integration**: Godot mode enables tight integration with engine
-4. **Testing**: Can test same code in both environments
+4. **Hybrid Mode**: Single binary works in both environments (recommended)
+5. **Optimal Syscall Selection**: Hybrid mode chooses best syscall type per operation
+6. **Testing**: Can test same code in both environments
 
 ## Limitations
 

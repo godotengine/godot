@@ -1,6 +1,6 @@
 #!/usr/bin/env -S godot --headless --script
 # GDScript ELF64 Compiler Tool
-# Usage: godot --headless --script tools/gdscript_elf64_compiler.gd <input.gd> [output_dir]
+# Usage: godot --headless --script tools/gdscript_elf64_compiler.gd <input.gd> [output_dir] [--mode godot|linux|0|1]
 
 @tool
 extends SceneTree
@@ -16,21 +16,45 @@ func _init():
 			script_index = i
 			break
 	
-	# Get user arguments (everything after the script)
-	var user_args = []
-	if script_index >= 0:
-		for i in range(script_index + 1, args.size()):
-			# Skip Godot flags
-			if not args[i].begins_with("--"):
-				user_args.append(args[i])
+	# Parse arguments
+	var input_path = ""
+	var output_dir = "."
+	var mode = 2  # 0 = GODOT_SYSCALL, 1 = LINUX_SYSCALL, 2 = HYBRID (default)
 	
-	if user_args.size() < 1:
-		print("Usage: godot --headless --script tools/gdscript_elf64_compiler.gd <input.gd> [output_dir]")
+	if script_index >= 0:
+		var i = script_index + 1
+		while i < args.size():
+			var arg = args[i]
+			if arg == "--mode":
+				if i + 1 < args.size():
+					var mode_str = args[i + 1].to_lower()
+					if mode_str == "godot" or mode_str == "0":
+						mode = 0
+					elif mode_str == "linux" or mode_str == "1":
+						mode = 1
+					elif mode_str == "hybrid" or mode_str == "2":
+						mode = 2
+					else:
+						print("Error: Invalid mode '", args[i + 1], "'. Use 'godot'/'0', 'linux'/'1', or 'hybrid'/'2'")
+						quit(1)
+						return
+					i += 2
+					continue
+			elif not arg.begins_with("--"):
+				if input_path.is_empty():
+					input_path = arg
+				elif output_dir == ".":
+					output_dir = arg
+			i += 1
+	
+	if input_path.is_empty():
+		print("Usage: godot --headless --script tools/gdscript_elf64_compiler.gd <input.gd> [output_dir] [--mode godot|linux|hybrid|0|1|2]")
+		print("  --mode: Compilation mode (default: hybrid)")
+		print("    godot or 0: Pure Godot sandbox syscalls (ECALL 500+)")
+		print("    linux or 1: Pure Linux syscalls (1-400+)")
+		print("    hybrid or 2: Hybrid - Godot syscalls by default, Linux syscalls when needed (recommended)")
 		quit(1)
 		return
-	
-	var input_path = user_args[0]
-	var output_dir = user_args[1] if user_args.size() > 1 else "."
 	
 	# Load GDScript
 	var script = load(input_path) as GDScript
@@ -40,13 +64,13 @@ func _init():
 		return
 	
 	# Check if script can be compiled
-	if not script.can_compile_to_elf64():
-		print("Error: Script cannot be compiled to ELF64")
+	if not script.can_compile_to_elf64(mode):
+		print("Error: Script cannot be compiled to ELF64 in mode ", mode)
 		quit(1)
 		return
 	
-	# Compile all functions
-	var elf64_dict = script.compile_all_functions_to_elf64()
+	# Compile all functions with specified mode
+	var elf64_dict = script.compile_all_functions_to_elf64(mode)
 	if elf64_dict.is_empty():
 		print("Error: No functions were compiled")
 		quit(1)
@@ -90,11 +114,13 @@ func _init():
 			continue
 		file.store_buffer(elf_data)
 		file.close()
-		print("Compiled: ", func_name, " -> ", output_path, " (", elf_data.size(), " bytes)")
+		var mode_str = "godot" if mode == 0 else ("linux" if mode == 1 else "hybrid")
+		print("Compiled (", mode_str, "): ", func_name, " -> ", output_path, " (", elf_data.size(), " bytes)")
 		success_count += 1
 	
 	if success_count > 0:
-		print("Successfully compiled ", success_count, " function(s)")
+		var mode_str = "godot" if mode == 0 else ("linux" if mode == 1 else "hybrid")
+		print("Successfully compiled ", success_count, " function(s) in ", mode_str, " mode")
 		quit(0)
 	else:
 		print("Error: No functions were successfully compiled")

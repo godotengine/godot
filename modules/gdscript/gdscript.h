@@ -283,10 +283,10 @@ public:
 	bool is_abstract() const override { return _is_abstract; }
 
 	// Compile all functions to ELF64
-	Dictionary compile_all_functions_to_elf64(int p_mode = 0) const; // 0 = GODOT_SYSCALL, 1 = LINUX_SYSCALL
+	Dictionary compile_all_functions_to_elf64(int p_mode = 2) const; // 0 = GODOT_SYSCALL, 1 = LINUX_SYSCALL, 2 = HYBRID (default)
 
 	// Check if script can be compiled to ELF64
-	bool can_compile_to_elf64(int p_mode = 0) const; // 0 = GODOT_SYSCALL, 1 = LINUX_SYSCALL
+	bool can_compile_to_elf64(int p_mode = 2) const; // 0 = GODOT_SYSCALL, 1 = LINUX_SYSCALL, 2 = HYBRID (default)
 	Ref<GDScript> get_base() const;
 
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
