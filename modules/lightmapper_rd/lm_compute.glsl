@@ -911,7 +911,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	} else { // No soft shadows and anti-aliasing (disabled via parameter).
 		bool did_hit = false;
 		penumbra = 0.0;
-		penumbra_color = light_data.color.rgb;
+		penumbra_color = light_data.color.rgb * light_texture_color;
 		for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
 			vec4 hit_albedo = vec4(1.0);
 			vec3 hit_position;

@@ -1714,7 +1714,7 @@ PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedA
 				} else {
 					copy_effects->gaussian_blur_raster(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
 				}
-				copy_effects->copy_to_fb_rect(blur_tex, mip_fb, uv_recti);
+				copy_effects->copy_to_fb_rect(blur_tex, mip_fb, uv_recti, false, false, false, false, RID(), false, false, true);
 				prev_blur_texture = blur_tex;
 			}
 		}
