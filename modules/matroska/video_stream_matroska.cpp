@@ -60,6 +60,12 @@ Ref<VideoStreamPlayback> VideoStreamMatroska::instantiate_playback() {
 	return stream_playback;
 }
 
+void VideoStreamPlaybackMatroska::_skip_id(uint64_t p_id) {
+	uint64_t size = read_size();
+	WARN_PRINT(vformat("Unhandled element with ID [%x] of size [%d]", p_id, size));
+	src += size;
+}
+
 uint64_t VideoStreamPlaybackMatroska::read_id() {
 	uint8_t octet_length = 0;
 	uint8_t byte = src[0];
@@ -186,10 +192,10 @@ String VideoStreamPlaybackMatroska::read_string() {
 }
 
 Error VideoStreamPlaybackMatroska::parse_ebml_header(EbmlHeader *r_header) {
-	int64_t header_size = read_size();
+	uint64_t header_size = read_size();
 	const uint8_t *header_start = src;
 
-	while (src - header_start < header_size) {
+	while (src < header_start + header_size) {
 		uint64_t potential_id = read_id();
 
 		if (potential_id == EBML_ID_VERSION) {
@@ -243,22 +249,18 @@ Error VideoStreamPlaybackMatroska::parse_ebml_header(EbmlHeader *r_header) {
 			continue;
 		}
 
-		uint64_t size = read_size();
-		src += size;
-		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", potential_id, size));
+		_skip_id(potential_id);
 	}
 
 	return OK;
 }
 
 Error VideoStreamPlaybackMatroska::parse_segment(Segment *r_segment) {
-	int64_t segment_size = read_size();
+	uint64_t segment_size = read_size();
 	const uint8_t *segment_start = src;
 
-	r_segment->start = src - origin;
-
 	bool use_seek_head = false;
-	while (src - segment_start < segment_size) {
+	while (src < segment_start + segment_size) {
 		uint64_t potential_id = read_id();
 
 		if (potential_id == MATROSKA_ID_SEEK_HEAD) {
@@ -303,9 +305,7 @@ Error VideoStreamPlaybackMatroska::parse_segment(Segment *r_segment) {
 			continue;
 		}
 
-		uint64_t size = read_size();
-		src += size;
-		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", potential_id, size));
+		_skip_id(potential_id);
 	}
 
 	if (use_seek_head) {
@@ -326,7 +326,7 @@ Error VideoStreamPlaybackMatroska::parse_segment(Segment *r_segment) {
 			read_id();
 			parse_cues();
 
-			for (Cluster &cluster : clusters) {
+			for (Cluster &cluster : segment.clusters) {
 				src = segment_start + cluster.position;
 				read_id();
 				parse_cluster(&cluster);
@@ -345,10 +345,10 @@ Error VideoStreamPlaybackMatroska::parse_segment(Segment *r_segment) {
 }
 
 Error VideoStreamPlaybackMatroska::parse_seek_head(SeekHead *r_seak_head) {
-	int64_t seek_head_size = read_size();
+	uint64_t seek_head_size = read_size();
 	const uint8_t *seek_head_start = src;
 
-	while (src - seek_head_start < seek_head_size) {
+	while (src < seek_head_start + seek_head_size) {
 		uint64_t potential_id = read_id();
 
 		if (potential_id == MATROSKA_ID_SEEK) {
@@ -360,7 +360,7 @@ Error VideoStreamPlaybackMatroska::parse_seek_head(SeekHead *r_seak_head) {
 				uint64_t position = 0;
 			} seek;
 
-			while (src - seek_start < inner_size) {
+			while (src < seek_start + inner_size) {
 				uint64_t inner_id = read_id();
 
 				if (inner_id == MATROSKA_ID_SEEK_ID) {
@@ -392,7 +392,7 @@ Error VideoStreamPlaybackMatroska::parse_segment_info(SegmentInfo *r_segment_inf
 	int64_t segment_info_size = read_size();
 	const uint8_t *segment_info_start = src;
 
-	while (src - segment_info_start < segment_info_size) {
+	while (src < segment_info_start + segment_info_size) {
 		uint64_t id = read_id();
 
 		// TODO use CRC?
@@ -484,9 +484,7 @@ Error VideoStreamPlaybackMatroska::parse_segment_info(SegmentInfo *r_segment_inf
 			continue;
 		}
 
-		uint64_t skipped_size = read_size();
-		src += skipped_size;
-		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, skipped_size));
+		_skip_id(id);
 	}
 
 	src = segment_info_start + segment_info_size;
@@ -497,7 +495,7 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 	int64_t tracks_size = read_size();
 	const uint8_t *tracks_start = src;
 
-	while (src - tracks_start < tracks_size) {
+	while (src < tracks_start + tracks_size) {
 		uint64_t id = read_id();
 
 		// TODO use CRC
@@ -512,7 +510,7 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 			const uint8_t *entry_start = src;
 
 			Track track = {};
-			while (src - entry_start < entry_size) {
+			while (src < entry_start + entry_size) {
 				uint64_t inner_id = read_id();
 
 				if (inner_id == EBML_ID_VOID) {
@@ -680,7 +678,7 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 					int64_t video_size = read_size();
 					const uint8_t *video_start = src;
 
-					while (src - video_start < video_size) {
+					while (src < video_start + video_size) {
 						uint64_t video_id = read_id();
 
 						if (video_id == MATROSKA_ID_TRACK_VIDEO_PIXEL_WIDTH) {
@@ -716,18 +714,14 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 					continue;
 				}
 
-				uint64_t inner_size = read_size();
-				src += inner_size;
-				WARN_PRINT(vformat("Unhandled element with ID %x of size %d", inner_id, inner_size));
+				_skip_id(inner_id);
 			}
 
 			r_tracks.push_back(track);
 			continue;
 		}
 
-		uint64_t outer_size = read_size();
-		src += outer_size;
-		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, outer_size));
+		_skip_id(id);
 	}
 
 	src = tracks_start + tracks_size;
@@ -746,7 +740,7 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 	const uint8_t *cluster_start = src;
 
 	Vector<Cluster::Block> blocks;
-	while (src - cluster_start < cluster_size) {
+	while (src < cluster_start + cluster_size) {
 		uint64_t id = read_id();
 
 		if (id == EBML_ID_CRC32) {
@@ -802,9 +796,7 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 			continue;
 		}
 
-		uint64_t skipped_size = read_size();
-		src += skipped_size;
-		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, skipped_size));
+		_skip_id(id);
 	}
 
 	src = cluster_start + cluster_size;
@@ -815,7 +807,7 @@ Error VideoStreamPlaybackMatroska::parse_cues() {
 	int64_t cues_size = read_size();
 	const uint8_t *cues_start = src;
 
-	while (src - cues_start < cues_size) {
+	while (src < cues_start + cues_size) {
 		uint64_t id = read_id();
 
 		if (id == EBML_ID_CRC32) {
@@ -829,7 +821,7 @@ Error VideoStreamPlaybackMatroska::parse_cues() {
 			const uint8_t *element_start = src;
 
 			Cluster cluster = {};
-			while (src - element_start < element_size) {
+			while (src < element_start + element_size) {
 				uint64_t element_id = read_id();
 
 				if (element_id == MATROSKA_ID_CUES_CUE_POINT_TIME) {
@@ -841,7 +833,7 @@ Error VideoStreamPlaybackMatroska::parse_cues() {
 					int64_t positions_size = read_size();
 					const uint8_t *positions_start = src;
 
-					while (src - positions_start < positions_size) {
+					while (src < positions_start + positions_size) {
 						uint64_t positions_id = read_id();
 
 						if (positions_id == MATROSKA_ID_CUES_CUE_POINT_POSITIONS_TRACK) {
@@ -860,25 +852,20 @@ Error VideoStreamPlaybackMatroska::parse_cues() {
 							continue;
 						}
 
-						uint64_t skipped_size = read_size();
-						src += skipped_size;
-						ERR_PRINT(vformat("Missing id %x of size %d", element_id, skipped_size));
+						_skip_id(positions_id);
 					}
 
 					continue;
 				}
 
-				uint64_t skipped_size = read_size();
-				src += skipped_size;
-				ERR_PRINT(vformat("Missing id %x", element_id));
+				_skip_id(element_id);
 			}
 
-			clusters.push_back(cluster);
+			segment.clusters.push_back(cluster);
 			continue;
 		}
 
-		uint64_t skipped_size = read_size();
-		src += skipped_size;
+		_skip_id(id);
 	}
 
 	src = cues_start + cues_size;
@@ -925,9 +912,7 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 			break;
 		}
 
-		uint64_t size = read_size();
-		src += size;
-		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, size));
+		_skip_id(id);
 	}
 
 	if (video_stream_encoding.is_null()) {
@@ -965,8 +950,8 @@ void VideoStreamPlaybackMatroska::play() {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
 
-	Cluster cluster = clusters[0];
-	print_line(vformat("------------Begin Matroska Cluster [%d]----------------", cluster.blocks.size()));
+	Cluster cluster = segment.clusters[0];
+	print_line(vformat("------------Begin Matroska Cluster [%d]------------", cluster.blocks.size()));
 
 	for (uint32_t i = 0; i < 2; i++) {
 		RID dst_yuv = dst_yuv_pool[i];
@@ -979,7 +964,7 @@ void VideoStreamPlaybackMatroska::play() {
 	}
 
 	local_device->video_session_end();
-	print_line("------------------End Matroska Cluster-----------------------");
+	print_line("------------End Matroska Cluster------------");
 }
 
 void VideoStreamPlaybackMatroska::stop() {
