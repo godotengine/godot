@@ -28,7 +28,10 @@
 #include "../oct_inc.glsl"
 
 layout(push_constant, std430) uniform Params {
+	float border_size;
 	uint size;
+	uint pad1;
+	uint pad2;
 }
 params;
 

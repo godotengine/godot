@@ -60,6 +60,8 @@ layout(push_constant, std430) uniform Params {
 	float upscaled_height;
 	float sharpness;
 	int pass;
+	int pad1;
+	int pad2;
 }
 params;
 

@@ -65,7 +65,7 @@ private:
 		float upscaled_height;
 		float sharpness;
 		int pass;
-		int _unused0, _unused1;
+		int pad[2];
 	};
 
 	FsrUpscaleShaderRD fsr_shader;
