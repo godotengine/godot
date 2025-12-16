@@ -1079,7 +1079,7 @@ public:
 	void seat_state_echo_keys(SeatState *p_ss);
 
 	static int window_state_get_preferred_buffer_scale(WindowState *p_ws);
-	static double window_state_get_scale_factor(WindowState *p_ws);
+	static double window_state_get_scale_factor(const WindowState *p_ws);
 	static void window_state_update_size(WindowState *p_ws, int p_width, int p_height);
 
 	static Vector2i scale_vector2i(const Vector2i &p_vector, double p_amount);
@@ -1100,6 +1100,7 @@ public:
 
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
 	WindowState *window_get_state(DisplayServer::WindowID p_window_id);
+	const WindowState *window_get_state(DisplayServer::WindowID p_window_id) const;
 
 	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
 

@@ -3435,7 +3435,7 @@ int WaylandThread::window_state_get_preferred_buffer_scale(WindowState *p_ws) {
 	return max_size;
 }
 
-double WaylandThread::window_state_get_scale_factor(WindowState *p_ws) {
+double WaylandThread::window_state_get_scale_factor(const WindowState *p_ws) {
 	ERR_FAIL_NULL_V(p_ws, 1);
 
 	if (p_ws->fractional_scale > 0) {
@@ -3969,6 +3969,10 @@ struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServer::WindowID 
 }
 
 WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer::WindowID p_window_id) {
+	return windows.getptr(p_window_id);
+}
+
+const WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer::WindowID p_window_id) const {
 	return windows.getptr(p_window_id);
 }
 
