@@ -30,156 +30,22 @@
 
 #include "gdscript_function_wrapper.h"
 
-#include "gdscript_elf_fallback.h"
-#include "modules/gdscript/gdscript.h"
 #include "modules/gdscript/gdscript_function.h"
-#include "modules/sandbox/src/sandbox.h"
-
-// Static member definition
-HashMap<GDScriptInstance *, Sandbox *> GDScriptFunctionWrapper::instance_sandboxes;
 
 GDScriptFunctionWrapper::GDScriptFunctionWrapper() {
 	original_function = nullptr;
-	elf_binary.clear();
 }
 
 GDScriptFunctionWrapper::~GDScriptFunctionWrapper() {
-	// Don't delete original_function - it's managed elsewhere
 	original_function = nullptr;
-	elf_binary.clear();
 }
 
 void GDScriptFunctionWrapper::set_original_function(GDScriptFunction *p_function) {
 	original_function = p_function;
 }
 
-// Main execution method - intercepts GDScriptFunction::call()
-// Phase 3: ELF execution integration with sandbox
+// Main execution method - simple pass-through
 Variant GDScriptFunctionWrapper::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, GDScriptFunction::CallState *p_state) {
 	ERR_FAIL_NULL_V(original_function, Variant());
-
-	// Try to execute ELF code if available
-	if (has_elf_code() && !elf_binary.is_empty()) {
-		Sandbox *sandbox = get_or_create_sandbox(p_instance);
-		if (!sandbox) {
-			return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
-		}
-		if (!sandbox->has_program_loaded()) {
-			sandbox->load_buffer(elf_binary);
-			if (!sandbox->has_program_loaded()) {
-				return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
-			}
-		}
-		if (cached_function_address == 0) {
-			String func_name = original_function->get_name().operator String();
-			func_name = func_name.replace(".", "_").replace(" ", "_");
-			cached_function_address = sandbox->address_of("gdscript_" + func_name);
-			if (cached_function_address == 0) {
-				return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
-			}
-		}
-
-		// Prepare arguments for sandbox call
-		// Option B: Store constants/operator_funcs in sandbox memory and pass addresses
-		// Extended args array: [result_ptr, arg0, arg1, ..., argN, instance_ptr, constants_addr, operator_funcs_addr]
-		// Note: result_ptr is passed as first arg (A0) for return value storage
-
-		bool needs_constants = !original_function->constants.is_empty();
-		bool needs_operator_funcs = !original_function->operator_funcs.is_empty();
-
-		// Share constants array in sandbox memory if needed
-		if (needs_constants && cached_constants_address == 0 && !original_function->constants.is_empty()) {
-			PackedByteArray constants_bytes;
-			constants_bytes.resize(original_function->constants.size() * sizeof(Variant));
-			memcpy(constants_bytes.ptrw(), original_function->constants.ptr(), constants_bytes.size());
-			cached_constants_address = sandbox->share_byte_array(false, constants_bytes);
-			if (cached_constants_address == 0) {
-				return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
-			}
-		}
-
-		// Share operator_funcs array in sandbox memory if needed
-		if (needs_operator_funcs && cached_operator_funcs_address == 0 && !original_function->operator_funcs.is_empty()) {
-			PackedByteArray operator_funcs_bytes;
-			operator_funcs_bytes.resize(original_function->operator_funcs.size() * sizeof(Variant::ValidatedOperatorEvaluator));
-			memcpy(operator_funcs_bytes.ptrw(), original_function->operator_funcs.ptr(), operator_funcs_bytes.size());
-			cached_operator_funcs_address = sandbox->share_byte_array(false, operator_funcs_bytes);
-			if (cached_operator_funcs_address == 0) {
-				return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
-			}
-		}
-
-		// Create extended args array
-		// Structure: [result_ptr, arg0, arg1, ..., argN, instance_ptr, constants_addr, operator_funcs_addr]
-		// Total: 1 (result) + p_argcount + 3 (instance, constants, operator_funcs) = p_argcount + 4
-		int extended_argcount = p_argcount + 4;
-		Vector<Variant> extended_args_storage;
-		extended_args_storage.resize(extended_argcount);
-		const Variant **extended_args = (const Variant **)alloca(sizeof(Variant *) * extended_argcount);
-
-		// First arg: result pointer (will be filled by ELF function)
-		Variant result_variant;
-		extended_args[0] = &result_variant;
-
-		// Copy original arguments
-		for (int i = 0; i < p_argcount; i++) {
-			extended_args[i + 1] = p_args[i];
-		}
-
-		// Add instance pointer as Variant integer
-		extended_args_storage.write[p_argcount + 1] = Variant((int64_t)(uintptr_t)p_instance);
-		extended_args[p_argcount + 1] = &extended_args_storage[p_argcount + 1];
-
-		// Add constants address as Variant integer
-		if (needs_constants) {
-			extended_args_storage.write[p_argcount + 2] = Variant((int64_t)cached_constants_address);
-			extended_args[p_argcount + 2] = &extended_args_storage[p_argcount + 2];
-		} else {
-			extended_args_storage.write[p_argcount + 2] = Variant((int64_t)0);
-			extended_args[p_argcount + 2] = &extended_args_storage[p_argcount + 2];
-		}
-
-		// Add operator_funcs address as Variant integer
-		if (needs_operator_funcs) {
-			extended_args_storage.write[p_argcount + 3] = Variant((int64_t)cached_operator_funcs_address);
-			extended_args[p_argcount + 3] = &extended_args_storage[p_argcount + 3];
-		} else {
-			extended_args_storage.write[p_argcount + 3] = Variant((int64_t)0);
-			extended_args[p_argcount + 3] = &extended_args_storage[p_argcount + 3];
-		}
-
-		// Call function via sandbox
-		Callable::CallError call_error;
-		Variant result = sandbox->vmcall_address(cached_function_address, extended_args, extended_argcount, call_error);
-		if (call_error.error != Callable::CallError::CALL_OK) {
-			return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
-		}
-		r_err = call_error;
-		return result_variant;
-	}
 	return original_function->call(p_instance, p_args, p_argcount, r_err, p_state);
-}
-
-Sandbox *GDScriptFunctionWrapper::get_or_create_sandbox(GDScriptInstance *p_instance) {
-	if (!p_instance) {
-		return nullptr;
-	}
-	if (instance_sandboxes.has(p_instance)) {
-		Sandbox *existing = instance_sandboxes[p_instance];
-		if (existing) {
-			return existing;
-		}
-		instance_sandboxes.erase(p_instance);
-	}
-	Sandbox *sandbox = memnew(Sandbox);
-	if (sandbox) {
-		instance_sandboxes[p_instance] = sandbox;
-	}
-	return sandbox;
-}
-
-void GDScriptFunctionWrapper::cleanup_sandbox(GDScriptInstance *p_instance) {
-	if (p_instance && instance_sandboxes.has(p_instance)) {
-		instance_sandboxes.erase(p_instance);
-	}
 }

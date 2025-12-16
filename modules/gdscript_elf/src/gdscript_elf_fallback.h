@@ -39,14 +39,11 @@
 // Forward declarations
 class GDScriptInstance;
 
-// Fallback mechanism to original GDScriptFunction for unsupported opcodes
-// Maintains same stack/register model (x/y arrays work same)
-// Bridges between ELF-compiled code and original GDScript VM
+// Fallback mechanism for unsupported opcodes in generated C99 code
 class GDScriptELFFallback {
 public:
-	// Call original GDScriptFunction for unsupported opcode
-	// This is called from ELF-compiled code when encountering unsupported opcodes
-	// C interface: extern "C" void gdscript_vm_fallback(int opcode, void* instance, void* stack, int ip);
+	// C interface for generated C99 code to call back to VM
+	// extern "C" void gdscript_vm_fallback(int opcode, void* instance, void* stack, int ip);
 	static void gdscript_vm_fallback(int p_opcode, void *p_instance, void *p_stack, int p_ip);
 
 	// C++ interface for calling original function

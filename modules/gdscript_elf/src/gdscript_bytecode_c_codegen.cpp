@@ -35,7 +35,6 @@
 #include "core/templates/hash_map.h"
 #include "gdscript_elf_fallback.h"
 #include "modules/gdscript/gdscript_function.h"
-#include "modules/sandbox/src/syscalls.h"
 
 GDScriptBytecodeCCodeGenerator::GDScriptBytecodeCCodeGenerator() {
 	generated_code.clear();
@@ -53,23 +52,14 @@ String GDScriptBytecodeCCodeGenerator::generate_c_code(GDScriptFunction *p_funct
 
 	StringBuilder code;
 
-	// Generate includes
+	// Generate C99 includes
 	code.append("#include <stdint.h>\n");
+	code.append("#include <stdbool.h>\n");
 	code.append("// Note: Variant and other Godot types need to be available\n");
-	code.append("// This will be linked with Godot's runtime\n\n");
+	code.append("// This is C99 code generation only - no ELF compilation\n\n");
 
 	// Generate extern declaration for fallback function
-	code.append("extern void gdscript_vm_fallback(int opcode, void* instance, void* stack, int ip);\n");
-
-	// Generate syscall number definitions (from modules/sandbox/src/syscalls.h)
-	code.append("#define GAME_API_BASE 500\n");
-	code.append("#define ECALL_OBJ_PROP_GET (GAME_API_BASE + 45)\n");
-	code.append("#define ECALL_OBJ_PROP_SET (GAME_API_BASE + 46)\n");
-	code.append("#define ECALL_VCALL (GAME_API_BASE + 1)\n");
-
-	// Generate helper function declarations for global_names access
-	code.append("extern const StringName* get_global_name(int index);\n");
-	code.append("extern const char* get_global_name_cstr(int index, size_t* out_len);\n\n");
+	code.append("extern void gdscript_vm_fallback(int opcode, void* instance, void* stack, int ip);\n\n");
 
 	// Constants and operator functions are passed as parameters
 	// No need for extern declarations - they're function parameters
@@ -268,35 +258,10 @@ void GDScriptBytecodeCCodeGenerator::generate_opcode(GDScriptFunction *p_functio
 		}
 		case GDScriptFunction::OPCODE_CALL:
 		case GDScriptFunction::OPCODE_CALL_RETURN: {
+			// Method calls use fallback (no syscall infrastructure for C99-only)
+			generate_fallback_call(p_opcode, p_code_ptr, 0, r_code);
+			// Advance IP: opcode(1) + instr_arg_count(1) + instruction_args + argc(1) + methodname_idx(1) + [ret_addr(1) if RETURN]
 			int instr_arg_count = p_code_ptr[p_ip + 1];
-			int argc = p_code_ptr[p_ip + 2 + instr_arg_count];
-			int methodname_idx = p_code_ptr[p_ip + 3 + instr_arg_count];
-			int base_addr = p_code_ptr[p_ip + 2 + argc];
-			r_code += "    {\n";
-			r_code += "        size_t method_len;\n";
-			r_code += "        const char* method_cstr = get_global_name_cstr(" + itos(methodname_idx) + ", &method_len);\n";
-			r_code += "        Variant call_args[" + itos(argc) + "];\n";
-			for (int i = 0; i < argc; i++) {
-				r_code += "        call_args[" + itos(i) + "] = " + resolve_address(p_code_ptr[p_ip + 2 + i]) + ";\n";
-			}
-			r_code += "        register const Variant* object asm(\"a0\") = &" + resolve_address(base_addr) + ";\n";
-			r_code += "        register const char* method_ptr asm(\"a1\") = method_cstr;\n";
-			r_code += "        register size_t method_size asm(\"a2\") = method_len;\n";
-			r_code += "        register const Variant* args_ptr asm(\"a3\") = call_args;\n";
-			r_code += "        register size_t argcount_reg asm(\"a4\") = " + itos(argc) + ";\n";
-			if (p_opcode == GDScriptFunction::OPCODE_CALL_RETURN) {
-				int ret_addr = p_code_ptr[p_ip + 4 + instr_arg_count];
-				r_code += "        Variant call_result;\n";
-				r_code += "        register Variant* ret_ptr asm(\"a5\") = &call_result;\n";
-				r_code += "        register int syscall_number asm(\"a7\") = ECALL_VCALL;\n";
-				r_code += "        __asm__ volatile(\"ecall\" : \"=m\"(*ret_ptr) : \"r\"(object), \"m\"(*object), \"r\"(method_ptr), \"r\"(method_size), \"m\"(*method_ptr), \"r\"(args_ptr), \"r\"(argcount_reg), \"r\"(ret_ptr), \"m\"(*args_ptr), \"r\"(syscall_number));\n";
-				r_code += "        " + resolve_address(ret_addr) + " = call_result;\n";
-			} else {
-				r_code += "        register Variant* ret_ptr asm(\"a5\") = 0;\n";
-				r_code += "        register int syscall_number asm(\"a7\") = ECALL_VCALL;\n";
-				r_code += "        __asm__ volatile(\"ecall\" : : \"r\"(object), \"m\"(*object), \"r\"(method_ptr), \"r\"(method_size), \"m\"(*method_ptr), \"r\"(args_ptr), \"r\"(argcount_reg), \"r\"(ret_ptr), \"m\"(*args_ptr), \"r\"(syscall_number));\n";
-			}
-			r_code += "    }\n";
 			p_ip += 1 + 1 + instr_arg_count + 1 + 1 + ((p_opcode == GDScriptFunction::OPCODE_CALL_RETURN) ? 1 : 0);
 			return;
 		}
@@ -316,11 +281,7 @@ void GDScriptBytecodeCCodeGenerator::generate_fallback_call(int p_opcode, const 
 	r_code += "    gdscript_vm_fallback(" + itos(p_opcode) + ", instance, stack, ip);\n";
 }
 
-void GDScriptBytecodeCCodeGenerator::generate_syscall(int p_syscall_number, StringBuilder &r_code) {
-	// Generate inline assembly syscall
-	// __asm__ volatile ("li a7, %0\n ecall\n" : : "i" (ECALL_NUMBER) : "a7");
-	r_code += "    __asm__ volatile (\"li a7, %0\\n ecall\\n\" : : \"i\" (" + itos(p_syscall_number) + ") : \"a7\");\n";
-}
+// Syscall generation removed - C99 code generation only
 
 int GDScriptBytecodeCCodeGenerator::get_address_type(int p_address) {
 	// Extract address type from encoded address

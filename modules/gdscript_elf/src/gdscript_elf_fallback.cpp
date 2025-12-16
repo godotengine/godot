@@ -30,12 +30,12 @@
 
 #include "gdscript_elf_fallback.h"
 
-#include "core/error/error_macros.h"
 #include "modules/gdscript/gdscript_function.h"
 
-// C interface for ELF-compiled code to call back to VM
+// C interface for generated C99 code to call back to VM
 extern "C" void gdscript_vm_fallback(int p_opcode, void *p_instance, void *p_stack, int p_ip) {
-	// Minimal: Basic fallback - actual VM call handled by function wrapper
+	// Fallback function - called from generated C99 code for unsupported opcodes
+	// Note: This is just a placeholder since we're not executing the generated code
 }
 
 Variant GDScriptELFFallback::call_original_function(
@@ -55,15 +55,13 @@ Variant GDScriptELFFallback::call_original_function(
 // Statistics removed for minimal implementation
 
 bool GDScriptELFFallback::is_opcode_supported(int p_opcode) {
-	// Minimal: Only essential opcodes
+	// C99 code generation: Only essential opcodes (no CALL - uses fallback)
 	switch (p_opcode) {
 		case GDScriptFunction::OPCODE_ASSIGN:
 		case GDScriptFunction::OPCODE_JUMP:
 		case GDScriptFunction::OPCODE_JUMP_IF:
 		case GDScriptFunction::OPCODE_OPERATOR_VALIDATED:
 		case GDScriptFunction::OPCODE_RETURN:
-		case GDScriptFunction::OPCODE_CALL:
-		case GDScriptFunction::OPCODE_CALL_RETURN:
 		case GDScriptFunction::OPCODE_LINE:
 			return true;
 		default:

@@ -1,6 +1,6 @@
 def can_build(env, platform):
-    # This module depends on gdscript and sandbox modules
-    env.module_add_dependencies("gdscript_elf", ["gdscript", "sandbox"], True)
+    # This module depends on gdscript module only
+    env.module_add_dependencies("gdscript_elf", ["gdscript"], True)
     return True
 
 

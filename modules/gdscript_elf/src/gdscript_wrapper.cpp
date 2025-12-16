@@ -31,8 +31,6 @@
 #include "gdscript_wrapper.h"
 
 #include "gdscript_bytecode_c_codegen.h"
-#include "gdscript_c_compiler.h"
-#include "gdscript_elf_fallback.h"
 #include "modules/gdscript/gdscript.h"
 
 // Macro-based forwarding for pass-through methods
@@ -85,21 +83,14 @@ FORWARD_VOID(set_source_code, const String &p_code)
 Error GDScriptWrapper::reload(bool p_keep_state) {
 	ERR_FAIL_COND_V(original_script.is_null(), ERR_INVALID_DATA);
 	Error err = original_script->reload(p_keep_state);
-	if (err == OK && original_script->is_valid() && GDScriptCCompiler::is_compiler_available()) {
-		// Generate C code and compile to ELF for each function
+	if (err == OK && original_script->is_valid()) {
+		// Generate C99 code for each function (no ELF compilation)
 		GDScriptBytecodeCCodeGenerator codegen;
-		GDScriptCCompiler compiler;
 		for (int i = 0; i < original_script->get_member_count(); i++) {
 			GDScriptFunction *func = original_script->get_member_functions().getptr(original_script->get_member_name(i));
 			if (func && !func->code.is_empty()) {
 				String c_code = codegen.generate_c_code(func);
-				if (!c_code.is_empty()) {
-					PackedByteArray elf = compiler.compile_to_elf(c_code);
-					if (!elf.is_empty()) {
-						// Store ELF in function wrapper (would need access to wrapper)
-						// For now, compilation succeeds - execution handled in function wrapper
-					}
-				}
+				// C code generated but not compiled - just for inspection/debugging
 			}
 		}
 	}
