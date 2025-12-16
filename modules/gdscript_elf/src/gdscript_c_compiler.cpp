@@ -52,48 +52,26 @@ PackedByteArray GDScriptCCompiler::compile_to_elf(const String &p_c_code) {
 	last_error.clear();
 
 	if (p_c_code.is_empty()) {
-		last_error = "C code is empty";
 		return PackedByteArray();
 	}
-
-	// Auto-detect compiler if not set
 	if (compiler_path.is_empty()) {
 		compiler_path = detect_cross_compiler();
 		if (compiler_path.is_empty()) {
-			last_error = "RISC-V cross-compiler not found in PATH";
-			ERR_PRINT("GDScriptCCompiler: " + last_error);
 			return PackedByteArray();
 		}
 	}
 
-	// Write C code to temporary file
 	String c_file = write_temp_c_file(p_c_code);
 	if (c_file.is_empty()) {
-		last_error = "Failed to create temporary C file";
 		return PackedByteArray();
 	}
-
-	// Generate ELF output file path
 	String elf_file = c_file.get_basename() + ".elf";
-
-	// Invoke compiler
-	Error err = invoke_compiler(c_file, elf_file);
-	if (err != OK) {
+	if (invoke_compiler(c_file, elf_file) != OK) {
 		cleanup_temp_files(c_file, elf_file);
 		return PackedByteArray();
 	}
-
-	// Read ELF binary
 	PackedByteArray elf_binary = read_elf_file(elf_file);
-
-	// Clean up temporary files
 	cleanup_temp_files(c_file, elf_file);
-
-	if (elf_binary.is_empty()) {
-		last_error = "Failed to read ELF file";
-		return PackedByteArray();
-	}
-
 	return elf_binary;
 }
 
@@ -169,8 +147,6 @@ String GDScriptCCompiler::write_temp_c_file(const String &p_c_code) {
 
 	Ref<FileAccess> fa = FileAccess::open(temp_file, FileAccess::WRITE);
 	if (fa.is_null()) {
-		last_error = "Failed to create temporary C file: " + temp_file;
-		ERR_PRINT("GDScriptCCompiler: " + last_error);
 		return String();
 	}
 
@@ -196,19 +172,10 @@ Error GDScriptCCompiler::invoke_compiler(const String &p_c_file, const String &p
 	Error err = OS::get_singleton()->execute(compiler_path, arguments, &output, &exit_code, true, nullptr, false);
 
 	if (exit_code != 0 || err != OK) {
-		last_error = "Compiler failed with exit code " + itos(exit_code);
-		if (!output.is_empty()) {
-			last_error += ": " + output;
-		}
-		ERR_PRINT("GDScriptCCompiler: " + last_error);
+		last_error = output;
 		return ERR_COMPILATION_FAILED;
 	}
-
-	// Check if ELF file was created
-	Ref<FileAccess> fa = FileAccess::open(p_elf_file, FileAccess::READ);
-	if (fa.is_null()) {
-		last_error = "Compiler succeeded but ELF file not found: " + p_elf_file;
-		ERR_PRINT("GDScriptCCompiler: " + last_error);
+	if (!FileAccess::file_exists(p_elf_file)) {
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -218,8 +185,6 @@ Error GDScriptCCompiler::invoke_compiler(const String &p_c_file, const String &p
 PackedByteArray GDScriptCCompiler::read_elf_file(const String &p_elf_file) {
 	Ref<FileAccess> fa = FileAccess::open(p_elf_file, FileAccess::READ);
 	if (fa.is_null()) {
-		last_error = "Failed to open ELF file: " + p_elf_file;
-		ERR_PRINT("GDScriptCCompiler: " + last_error);
 		return PackedByteArray();
 	}
 

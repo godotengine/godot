@@ -39,51 +39,30 @@ static String last_compilation_error;
 
 PackedByteArray GDScriptBytecodeELFCompiler::compile_function_to_elf(GDScriptFunction *p_function) {
 	ERR_FAIL_NULL_V(p_function, PackedByteArray());
-
 	last_compilation_error.clear();
-
-	CompilationState state;
-	state.function = p_function;
-
-	Error err = compile_internal(state);
-	if (err != OK) {
-		// Log errors but return empty array
-		for (const String &error : state.errors) {
-			ERR_PRINT("GDScriptBytecodeELFCompiler: " + error);
-		}
-		if (!state.errors.is_empty()) {
-			last_compilation_error = state.errors[0];
-		}
+	if (!is_compiler_available() || p_function->code.is_empty()) {
 		return PackedByteArray();
 	}
-
-	return state.elf_output;
+	GDScriptBytecodeCCodeGenerator codegen;
+	String c_code = codegen.generate_c_code(p_function);
+	if (c_code.is_empty()) {
+		last_compilation_error = "Failed to generate C code";
+		return PackedByteArray();
+	}
+	GDScriptCCompiler compiler;
+	PackedByteArray elf = compiler.compile_to_elf(c_code);
+	if (elf.is_empty()) {
+		last_compilation_error = compiler.get_last_error();
+	}
+	return elf;
 }
 
 bool GDScriptBytecodeELFCompiler::can_compile_function(GDScriptFunction *p_function) {
-	ERR_FAIL_NULL_V(p_function, false);
-
-	// Check if compiler is available
-	if (!is_compiler_available()) {
-		return false;
-	}
-
-	// Check if function has bytecode
-	if (p_function->code.is_empty()) {
-		return false;
-	}
-
-	return true;
+	return p_function && is_compiler_available() && !p_function->code.is_empty();
 }
 
 Vector<String> GDScriptBytecodeELFCompiler::get_unsupported_opcodes(GDScriptFunction *p_function) {
-	ERR_FAIL_NULL_V(p_function, Vector<String>());
-
-	CompilationState state;
-	state.function = p_function;
-
-	validate_function(p_function, state);
-	return state.warnings; // Warnings contain unsupported opcode names
+	return Vector<String>(); // Simplified - no opcode tracking
 }
 
 bool GDScriptBytecodeELFCompiler::is_compiler_available() {
@@ -92,60 +71,4 @@ bool GDScriptBytecodeELFCompiler::is_compiler_available() {
 
 String GDScriptBytecodeELFCompiler::get_last_error() {
 	return last_compilation_error;
-}
-
-Error GDScriptBytecodeELFCompiler::compile_internal(CompilationState &p_state) {
-	ERR_FAIL_NULL_V(p_state.function, ERR_INVALID_PARAMETER);
-
-	// Validate function
-	if (!validate_function(p_state.function, p_state)) {
-		return ERR_INVALID_DATA;
-	}
-
-	// Check if compiler is available
-	if (!is_compiler_available()) {
-		p_state.errors.push_back("RISC-V cross-compiler not available");
-		return ERR_UNAVAILABLE;
-	}
-
-	// Generate C code from bytecode
-	GDScriptBytecodeCCodeGenerator codegen;
-	String c_code = codegen.generate_c_code(p_state.function);
-	if (c_code.is_empty()) {
-		p_state.errors.push_back("Failed to generate C code");
-		return ERR_COMPILATION_FAILED;
-	}
-
-	// Note: Generated C code expects constants and operator_funcs as parameters
-	// These need to be passed when calling the generated function
-	// For now, the generated code will compile but runtime linking is Phase 3
-
-	// Compile C code to ELF
-	GDScriptCCompiler compiler;
-	p_state.elf_output = compiler.compile_to_elf(c_code);
-	if (p_state.elf_output.is_empty()) {
-		p_state.errors.push_back("Failed to compile C code to ELF: " + compiler.get_last_error());
-		last_compilation_error = compiler.get_last_error();
-		return ERR_COMPILATION_FAILED;
-	}
-
-	return OK;
-}
-
-bool GDScriptBytecodeELFCompiler::validate_function(GDScriptFunction *p_function, CompilationState &p_state) {
-	ERR_FAIL_NULL_V(p_function, false);
-
-	// Check if function has bytecode
-	if (p_function->code.is_empty()) {
-		p_state.errors.push_back("Function has no bytecode");
-		return false;
-	}
-
-	// Check for unsupported opcodes (for now, all opcodes are unsupported in Phase 1)
-	// This will be gradually filled in as we implement opcode support
-	// For now, we'll allow compilation but mark it as having unsupported opcodes
-	p_state.has_unsupported_opcodes = true;
-	p_state.warnings.push_back("ELF compilation is in early phase - all opcodes will use fallback");
-
-	return true;
 }

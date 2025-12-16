@@ -58,15 +58,6 @@ public:
 			Callable::CallError &r_err,
 			GDScriptFunction::CallState *p_state = nullptr);
 
-	// Track migration progress - which opcodes use fallback
-	static void record_fallback_opcode(int p_opcode);
-	static HashMap<int, uint64_t> get_fallback_statistics();
-	static void reset_statistics();
-
 	// Check if an opcode is supported (doesn't need fallback)
 	static bool is_opcode_supported(int p_opcode);
-
-private:
-	// Statistics: opcode -> fallback count
-	static HashMap<int, uint64_t> fallback_counts;
 };

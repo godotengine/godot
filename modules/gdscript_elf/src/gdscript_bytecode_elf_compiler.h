@@ -49,8 +49,7 @@ public:
 	// Returns true if cross-compiler is available and function has bytecode
 	static bool can_compile_function(GDScriptFunction *p_function);
 
-	// Get list of unsupported opcodes for a function
-	// Returns list of opcode names that would require fallback
+	// Get list of unsupported opcodes for a function (simplified - returns empty)
 	static Vector<String> get_unsupported_opcodes(GDScriptFunction *p_function);
 
 	// Check if cross-compiler is available
@@ -58,20 +57,4 @@ public:
 
 	// Get last compilation error (if any)
 	static String get_last_error();
-
-private:
-	// Internal compilation state
-	struct CompilationState {
-		GDScriptFunction *function = nullptr;
-		PackedByteArray elf_output;
-		Vector<String> errors;
-		Vector<String> warnings;
-		bool has_unsupported_opcodes = false;
-	};
-
-	// Main compilation logic
-	static Error compile_internal(CompilationState &p_state);
-
-	// Validate function can be compiled
-	static bool validate_function(GDScriptFunction *p_function, CompilationState &p_state);
 };
