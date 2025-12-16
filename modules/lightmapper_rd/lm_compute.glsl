@@ -692,11 +692,13 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	float attenuation;
 	float soft_shadowing_disk_size;
 	vec3 light_texture_color = vec3(1.0);
+	vec3 shadow_dir;
 	Light light_data = lights.data[p_light_index];
 	if (light_data.type == LIGHT_TYPE_DIRECTIONAL) {
 		vec3 light_vec = light_data.direction;
 		light_pos = p_position - light_vec * length(bake_params.world_size);
 		r_light_dir = normalize(light_pos - p_position);
+		shadow_dir = r_light_dir;
 		dist = length(bake_params.world_size);
 		attenuation = 1.0;
 		attenuation *= max(0.0, dot(p_normal, r_light_dir));
@@ -731,15 +733,17 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 			return;
 		}
 		// set light pos to closest point
-		light_pos = light_data.position + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm;
-		r_light_dir = normalize(light_pos - p_position);
-
+		light_pos = light_data.position;
+		vec3 closest_point = light_data.position + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm;
+		r_light_dir = normalize(closest_point - p_position);
+		shadow_dir = normalize(light_pos - p_position);
 		attenuation = get_omni_attenuation(dist, 1.0 / light_data.range, light_data.attenuation) * dist * dist; // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 		attenuation *= ltc_diffuse;
 		soft_shadowing_disk_size = light_data.size / dist;
 	} else {
 		light_pos = light_data.position;
 		r_light_dir = normalize(light_pos - p_position);
+		shadow_dir = r_light_dir;
 		dist = distance(p_position, light_pos);
 		if (dist > light_data.range) {
 			return;
@@ -785,7 +789,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		vec3 bitan = normalize(cross(p_normal, tangent));
 
 		// Setup light tangent pass to calculate samples over disk aligned towards the light
-		vec3 light_to_point = -r_light_dir;
+		vec3 light_to_point = -shadow_dir;
 		vec3 light_aux = light_to_point.y < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
 		vec3 light_to_point_tan = normalize(cross(light_to_point, light_aux));
 		vec3 light_to_point_bitan = normalize(cross(light_to_point, light_to_point_tan));
@@ -854,7 +858,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 								sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
 								sample_penumbra *= 1.0 - hit_albedo.a;
 							}
-							origin = hit_position + r_light_dir * bake_params.bias;
+							origin = hit_position + shadow_dir * bake_params.bias;
 
 							if (sample_penumbra - EPSILON <= 0) {
 								break;
@@ -892,7 +896,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 							sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
 							sample_penumbra *= 1.0 - hit_albedo.a;
 						}
-						origin = hit_position + r_light_dir * bake_params.bias;
+						origin = hit_position + shadow_dir * bake_params.bias;
 
 						if (sample_penumbra - EPSILON <= 0) {
 							break;
@@ -915,7 +919,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
 			vec4 hit_albedo = vec4(1.0);
 			vec3 hit_position;
-			uint ret = trace_ray_closest_hit_triangle_albedo_alpha(p_position + r_light_dir * bake_params.bias, light_pos, hit_albedo, hit_position);
+			uint ret = trace_ray_closest_hit_triangle_albedo_alpha(p_position + shadow_dir * bake_params.bias, light_pos, hit_albedo, hit_position);
 			if (ret == RAY_MISS) {
 				if (!did_hit) {
 					penumbra = 1.0;
@@ -933,7 +937,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					penumbra *= 1.0 - hit_albedo.a;
 				}
 
-				p_position = hit_position + r_light_dir * bake_params.bias;
+				p_position = hit_position + shadow_dir * bake_params.bias;
 
 				if (penumbra - EPSILON <= 0) {
 					break;
