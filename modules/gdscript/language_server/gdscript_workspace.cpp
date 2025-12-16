@@ -116,6 +116,64 @@ void GDScriptWorkspace::didDeleteFiles(const Dictionary &p_params) {
 	}
 }
 
+Dictionary GDScriptWorkspace::willDeleteFiles(const Dictionary &p_params) {
+	LSP::WorkspaceEdit out_workspace_edit;
+
+	Array files = p_params["files"];
+	for (int i = 0; i < files.size(); ++i) {
+		Dictionary file = files[i];
+		String uri = file["uri"];
+		String path = get_file_path(uri);
+
+		if (path.ends_with(".gd")) {
+			// Editor should delete .uid file
+			LSP::DeleteFile delete_file;
+			delete_file.uri = get_file_uri(path + ".uid");
+			delete_file.options.ignoreIfNotExists = true;
+			out_workspace_edit.add_document_change(&delete_file);
+		} else {
+			// Editor should delete .import file
+			LSP::DeleteFile delete_file;
+			delete_file.uri = get_file_uri(path + ".import");
+			delete_file.options.ignoreIfNotExists = true;
+			out_workspace_edit.add_document_change(&delete_file);
+		}
+	}
+
+	return out_workspace_edit.to_json();
+}
+
+Dictionary GDScriptWorkspace::willRenameFiles(const Dictionary &p_params) {
+	LSP::WorkspaceEdit out_workspace_edit;
+
+	Array files = p_params["files"];
+	for (int i = 0; i < files.size(); ++i) {
+		Dictionary file = files[i];
+		String old_uri = file["oldUri"];
+		String old_path = get_file_path(old_uri);
+		String new_uri = file["newUri"];
+		String new_path = get_file_path(new_uri);
+
+		if (old_path.ends_with(".gd") && FileAccess::exists(old_path + ".uid")) {
+			// Editor should rename .uid file
+			LSP::RenameFile rename_file;
+			rename_file.oldUri = get_file_uri(old_path + ".uid");
+			rename_file.newUri = get_file_uri(new_path + ".uid");
+			rename_file.options.ignoreIfExists = true;
+			out_workspace_edit.add_document_change(&rename_file);
+		} else if (FileAccess::exists(old_path + ".import")) {
+			// Editor should rename .import file
+			LSP::RenameFile rename_file;
+			rename_file.oldUri = get_file_uri(old_path + ".import");
+			rename_file.newUri = get_file_uri(new_path + ".import");
+			rename_file.options.ignoreIfExists = true;
+			out_workspace_edit.add_document_change(&rename_file);
+		}
+	}
+
+	return out_workspace_edit.to_json();
+}
+
 void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
 	HashMap<String, ExtendGDScriptParser *>::Iterator parser = parse_results.find(p_path);
 	HashMap<String, ExtendGDScriptParser *>::Iterator scr = scripts.find(p_path);
@@ -450,7 +508,6 @@ Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_cont
 		remove_cache_parser(p_path);
 		parse_results[p_path] = parser;
 		scripts[p_path] = parser;
-
 	} else {
 		if (last_parser && last_script && last_parser->value != last_script->value) {
 			memdelete(last_parser->value);

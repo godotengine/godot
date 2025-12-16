@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "../gdscript_parser.h"
 #include "gdscript_extend_parser.h"
 #include "godot_lsp.h"
 
@@ -94,6 +93,8 @@ public:
 	Dictionary generate_script_api(const String &p_path);
 	Error resolve_signature(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::SignatureHelp &r_signature);
 	void didDeleteFiles(const Dictionary &p_params);
+	Dictionary willDeleteFiles(const Dictionary &p_params);
+	Dictionary willRenameFiles(const Dictionary &p_params);
 	Dictionary rename(const LSP::TextDocumentPositionParams &p_doc_pos, const String &new_name);
 	bool can_rename(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::DocumentSymbol &r_symbol, LSP::Range &r_range);
 	Vector<LSP::Location> find_usages_in_file(const LSP::DocumentSymbol &p_symbol, const String &p_file_path);

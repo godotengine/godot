@@ -310,6 +310,181 @@ struct TextEdit {
 	 * empty string.
 	 */
 	String newText;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["range"] = range.to_json();
+		dict["newText"] = newText;
+		return dict;
+	}
+};
+
+struct DocumentChange {
+	virtual Dictionary to_json() const = 0;
+	virtual ~DocumentChange() = default;
+};
+/**
+ * Options to create a file.
+ */
+struct CreateFileOptions {
+	/**
+	 * Overwrite existing file. Overwrite wins over `ignoreIfExists`
+	 */
+	bool overwrite = false;
+	/**
+	 * Ignore if exists.
+	 */
+	bool ignoreIfExists = false;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["overwrite"] = overwrite;
+		dict["ignoreIfExists"] = ignoreIfExists;
+		return dict;
+	}
+};
+/**
+ * Create file operation
+ */
+struct CreateFile : public DocumentChange {
+	/**
+	 * The resource to create.
+	 */
+	String uri;
+	/**
+	 * Additional options.
+	 */
+	CreateFileOptions options;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["kind"] = "create";
+		dict["uri"] = uri;
+		dict["options"] = options.to_json();
+		return dict;
+	}
+};
+
+/**
+ * Rename file options.
+ */
+struct RenameFileOptions {
+	/**
+	 * Overwrite target if existing. Overwrite wins over `ignoreIfExists`.
+	 */
+	bool overwrite = false;
+	/**
+	 * Ignores if target exists.
+	 */
+	bool ignoreIfExists = false;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["overwrite"] = overwrite;
+		dict["ignoreIfExists"] = ignoreIfExists;
+		return dict;
+	}
+};
+
+/**
+ * Rename file operation.
+ */
+struct RenameFile : public DocumentChange {
+	/**
+	 * The old (existing) location.
+	 */
+	String oldUri;
+	/**
+	 * The new location.
+	 */
+	String newUri;
+	/**
+	 * Rename options.
+	 */
+	RenameFileOptions options;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["kind"] = "rename";
+		dict["oldUri"] = oldUri;
+		dict["newUri"] = newUri;
+		dict["options"] = options.to_json();
+		return dict;
+	}
+};
+
+/**
+ * Delete file options.
+ */
+struct DeleteFileOptions {
+	/**
+	 * Delete the content recursively if a folder is denoted.
+	 */
+	bool recursive = false;
+	/**
+	 * Ignore the operation if the file doesn't exist.
+	 */
+	bool ignoreIfNotExists = false;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["recursive"] = recursive;
+		dict["ignoreIfNotExists"] = ignoreIfNotExists;
+		return dict;
+	}
+};
+
+/**
+ * Delete file operation.
+ */
+struct DeleteFile : public DocumentChange {
+	/**
+	 * The file to delete.
+	 */
+	String uri;
+	/**
+	 * Delete options.
+	 */
+	DeleteFileOptions options;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["kind"] = "delete";
+		dict["uri"] = uri;
+		dict["options"] = options.to_json();
+		return dict;
+	}
+};
+
+/**
+ * Describes textual changes on a single text document. The text document is
+ * referred to as a OptionalVersionedTextDocumentIdentifier to allow clients to
+ * check the text document version before an edit is applied. A TextDocumentEdit
+ * describes all changes on a version Si and after they are applied move the
+ * document to version Si+1. So the creator of a TextDocumentEdit doesn’t need
+ * to sort the array of edits or do any kind of ordering. However the edits must
+ * be non overlapping.
+ */
+struct TextDocumentEdit : public DocumentChange {
+	/**
+	 * The text document to change.
+	 */
+	TextDocumentIdentifier textDocument;
+	/**
+	 * The edits to be applied.
+	 */
+	Vector<TextEdit> edits;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["textDocument"] = textDocument.to_json();
+		Array out_edits;
+		for (int i = 0; i < edits.size(); i++) {
+			out_edits[i] = edits[i].to_json();
+		}
+		dict["edits"] = out_edits;
+		return dict;
+	}
 };
 
 /**
@@ -320,6 +495,22 @@ struct WorkspaceEdit {
 	 * Holds changes to existing resources.
 	 */
 	HashMap<String, Vector<TextEdit>> changes;
+	/**
+	 * Depending on the client capability
+	 * `workspace.workspaceEdit.resourceOperations` document changes are either
+	 * an array of `TextDocumentEdit`s to express changes to n different text
+	 * documents where each text document edit addresses a specific version of
+	 * a text document. Or it can contain above `TextDocumentEdit`s mixed with
+	 * create, rename and delete file / folder operations.
+	 *
+	 * Whether a client supports versioned document edits is expressed via
+	 * `workspace.workspaceEdit.documentChanges` client capability.
+	 *
+	 * If a client neither supports `documentChanges` nor
+	 * `workspace.workspaceEdit.resourceOperations` then only plain `TextEdit`s
+	 * using the `changes` property are supported.
+	 */
+	Vector<Dictionary> documentChanges;
 
 	_FORCE_INLINE_ void add_edit(const String &uri, const TextEdit &edit) {
 		if (changes.has(uri)) {
@@ -329,25 +520,6 @@ struct WorkspaceEdit {
 			edits.push_back(edit);
 			changes[uri] = edits;
 		}
-	}
-
-	_FORCE_INLINE_ Dictionary to_json() const {
-		Dictionary dict;
-
-		Dictionary out_changes;
-		for (const KeyValue<String, Vector<TextEdit>> &E : changes) {
-			Array edits;
-			for (int i = 0; i < E.value.size(); ++i) {
-				Dictionary text_edit;
-				text_edit["range"] = E.value[i].range.to_json();
-				text_edit["newText"] = E.value[i].newText;
-				edits.push_back(text_edit);
-			}
-			out_changes[E.key] = edits;
-		}
-		dict["changes"] = out_changes;
-
-		return dict;
 	}
 
 	_FORCE_INLINE_ void add_change(const String &uri, const int &line, const int &start_character, const int &end_character, const String &new_text) {
@@ -365,6 +537,39 @@ struct WorkspaceEdit {
 			edit_list.push_back(new_edit);
 			changes.insert(uri, edit_list);
 		}
+	}
+
+	_FORCE_INLINE_ void add_document_change(const DocumentChange *document_change) {
+		documentChanges.push_back(document_change->to_json());
+	}
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+
+		Dictionary out_changes;
+		for (const KeyValue<String, Vector<TextEdit>> &E : changes) {
+			Array edits;
+			for (int i = 0; i < E.value.size(); ++i) {
+				Dictionary text_edit;
+				text_edit["range"] = E.value[i].range.to_json();
+				text_edit["newText"] = E.value[i].newText;
+				edits.push_back(text_edit);
+			}
+			out_changes[E.key] = edits;
+		}
+		if (out_changes.size()) {
+			dict["changes"] = out_changes;
+		}
+
+		Array out_document_changes;
+		for (int i = 0; i < documentChanges.size(); i++) {
+			out_document_changes.push_back(documentChanges[i]);
+		}
+		if (out_document_changes.size()) {
+			dict["documentChanges"] = out_document_changes;
+		}
+
+		return dict;
 	}
 };
 
@@ -1616,7 +1821,7 @@ struct FileOperationPattern {
 	/**
 	 * The glob pattern to match.
 	 */
-	String glob = "**/*.gd";
+	String glob;
 
 	/**
 	 * Whether to match `file`s or `folder`s with this pattern.
@@ -1663,8 +1868,12 @@ struct FileOperationRegistrationOptions {
 	 */
 	Vector<FileOperationFilter> filters;
 
-	FileOperationRegistrationOptions() {
-		filters.push_back(FileOperationFilter());
+	FileOperationRegistrationOptions(String glob) {
+		FileOperationPattern pattern;
+		pattern.glob = glob;
+		FileOperationFilter filter;
+		filter.pattern = pattern;
+		filters.push_back(filter);
 	}
 
 	Dictionary to_json() const {
@@ -1685,13 +1894,23 @@ struct FileOperationRegistrationOptions {
  */
 struct FileOperations {
 	/**
+	 * The server is interested in receiving willDeleteFiles file notifications.
+	 */
+	FileOperationRegistrationOptions willDelete = FileOperationRegistrationOptions("*");
+	/**
+	 * The server is interested in receiving willRenameFiles file notifications.
+	 */
+	FileOperationRegistrationOptions willRename = FileOperationRegistrationOptions("*");
+	/**
 	 * The server is interested in receiving didDeleteFiles file notifications.
 	 */
-	FileOperationRegistrationOptions didDelete;
+	FileOperationRegistrationOptions didDelete = FileOperationRegistrationOptions("*/*gd");
 
 	Dictionary to_json() const {
 		Dictionary dict;
 
+		dict["willDelete"] = willDelete.to_json();
+		dict["willRename"] = willRename.to_json();
 		dict["didDelete"] = didDelete.to_json();
 
 		return dict;
