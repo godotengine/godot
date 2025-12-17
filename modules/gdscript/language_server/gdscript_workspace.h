@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "../gdscript_parser.h"
+#include "core/error/error_macros.h"
 #include "gdscript_extend_parser.h"
 #include "godot_lsp.h"
 
@@ -44,9 +44,20 @@ private:
 	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);
 	Node *_get_owner_scene_node(String p_path);
 
+#ifndef DISABLE_DEPRECATED
+	void didDeleteFiles() {}
+	Error parse_script(const String &p_path, const String &p_content) {
+		WARN_DEPRECATED;
+		return Error::FAILED;
+	}
+	Error parse_local_script(const String &p_path) {
+		WARN_DEPRECATED;
+		return Error::FAILED;
+	}
+#endif // DISABLE_DEPRECATED
+
 protected:
 	static void _bind_methods();
-	void remove_cache_parser(const String &p_path);
 	bool initialized = false;
 	HashMap<StringName, LSP::DocumentSymbol> native_symbols;
 
@@ -60,9 +71,6 @@ protected:
 
 	void reload_all_workspace_scripts();
 
-	ExtendGDScriptParser *get_parse_successed_script(const String &p_path);
-	ExtendGDScriptParser *get_parse_result(const String &p_path);
-
 	void list_script_files(const String &p_root_dir, List<String> &r_files);
 
 	void apply_new_signal(Object *obj, String function, PackedStringArray args);
@@ -71,15 +79,10 @@ public:
 	String root;
 	String root_uri;
 
-	HashMap<String, ExtendGDScriptParser *> scripts;
-	HashMap<String, ExtendGDScriptParser *> parse_results;
 	HashMap<StringName, ClassMembers> native_members;
 
 public:
 	Error initialize();
-
-	Error parse_script(const String &p_path, const String &p_content);
-	Error parse_local_script(const String &p_path);
 
 	String get_file_path(const String &p_uri);
 	String get_file_uri(const String &p_path) const;
@@ -88,12 +91,11 @@ public:
 	void completion(const LSP::CompletionParams &p_params, List<ScriptLanguage::CodeCompletionOption> *r_options);
 
 	const LSP::DocumentSymbol *resolve_symbol(const LSP::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name = "", bool p_func_required = false);
-	void resolve_related_symbols(const LSP::TextDocumentPositionParams &p_doc_pos, List<const LSP::DocumentSymbol *> &r_list);
+
 	const LSP::DocumentSymbol *resolve_native_symbol(const LSP::NativeSymbolInspectParams &p_params);
 	void resolve_document_links(const String &p_uri, List<LSP::DocumentLink> &r_list);
 	Dictionary generate_script_api(const String &p_path);
 	Error resolve_signature(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::SignatureHelp &r_signature);
-	void didDeleteFiles(const Dictionary &p_params);
 	Dictionary rename(const LSP::TextDocumentPositionParams &p_doc_pos, const String &new_name);
 	bool can_rename(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::DocumentSymbol &r_symbol, LSP::Range &r_range);
 	Vector<LSP::Location> find_usages_in_file(const LSP::DocumentSymbol &p_symbol, const String &p_file_path);
