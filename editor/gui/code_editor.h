@@ -227,6 +227,23 @@ class CodeTextEditor : public VBoxContainer {
 	void _toggle_files_pressed();
 
 protected:
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+
+	bool show_code_actions = true;
+	PopupMenu *code_action_popup = nullptr;
+	void _on_code_action_id_pressed(int p_id);
+	void popup_code_actions(int p_line, bool p_from_shortcut = false);
+	void _deferred_popup_code_actions();
+
+	AHashMap<int, LocalVector<EditorLanguage::CodeActionGroup>> code_actions;
+	LocalVector<EditorLanguage::CodeActionOperation> ungrouped_current_code_actions;
+
+	Rect2 _get_code_action_button_inline_rect() const;
+	void _on_text_editor_draw() const;
+
+	Ref<Texture2D> code_action_dropdown_icon;
+	Ref<Texture2D> code_action_icon;
+
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
 	void _text_changed();
@@ -296,6 +313,21 @@ public:
 	void goto_next_bookmark();
 	void goto_prev_bookmark();
 	void remove_all_bookmarks();
+	void clear_code_action_groups() {
+		code_actions.clear();
+	}
+	void add_code_action_group_for_line(int p_line, const EditorLanguage::CodeActionGroup &p_action) {
+		if (!code_actions.has(p_line)) {
+			code_actions.insert(p_line, LocalVector<EditorLanguage::CodeActionGroup>());
+		}
+		code_actions[p_line].push_back(p_action);
+	}
+	bool code_actions_exist_for_line(int p_line) const {
+		if (!code_actions.has(p_line)) {
+			return false;
+		}
+		return !code_actions[p_line].is_empty();
+	}
 
 	void set_zoom_factor(float p_zoom_factor);
 	float get_zoom_factor();
