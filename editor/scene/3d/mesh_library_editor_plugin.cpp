@@ -140,6 +140,14 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 		item_id = p_library->get_last_unused_item_id();
 		p_library->create_item(item_id);
 		p_library->set_item_name(item_id, mesh_instance_node->get_name());
+
+		// Try to decipher some Node meta Variant data that can potentially be exported as item meta.
+		Variant _variant = mesh_instance_node->get_meta(SNAME("category"), StringName());
+		StringName category = _variant;
+		if (category) {
+			p_library->set_item_category(item_id, category);
+		}
+
 	} else if (!p_merge) {
 		WARN_PRINT(vformat("MeshLibrary export found a MeshInstance3D with a duplicated name '%s' in the exported scene that overrides a previously parsed MeshInstance3D item with the same name.", mesh_instance_node->get_name()));
 	}

@@ -45,6 +45,8 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 
 		if (what == "name") {
 			set_item_name(idx, p_value);
+		} else if (what == "category") {
+			set_item_category(idx, p_value);
 		} else if (what == "mesh") {
 			set_item_mesh(idx, p_value);
 		} else if (what == "mesh_transform") {
@@ -109,6 +111,8 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (what == "name") {
 		r_ret = get_item_name(idx);
+	} else if (what == "category") {
+		r_ret = get_item_category(idx);
 	} else if (what == "mesh") {
 		r_ret = get_item_mesh(idx);
 	} else if (what == "mesh_transform") {
@@ -144,6 +148,7 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<int, Item> &E : item_map) {
 		String prop_name = vformat("%s/%d/", PNAME("item"), E.key);
 		p_list->push_back(PropertyInfo(Variant::STRING, prop_name + PNAME("name")));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, prop_name + PNAME("category")));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("mesh_cast_shadow"), PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"));
@@ -166,6 +171,12 @@ void MeshLibrary::create_item(int p_item) {
 void MeshLibrary::set_item_name(int p_item, const String &p_name) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].name = p_name;
+	emit_changed();
+}
+
+void MeshLibrary::set_item_category(int p_item, const StringName &p_category) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	item_map[p_item].category = p_category;
 	emit_changed();
 }
 
@@ -223,6 +234,11 @@ void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) 
 String MeshLibrary::get_item_name(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), "", "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].name;
+}
+
+StringName MeshLibrary::get_item_category(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), StringName(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].category;
 }
 
 Ref<Mesh> MeshLibrary::get_item_mesh(int p_item) const {
@@ -370,6 +386,7 @@ void MeshLibrary::reset_state() {
 void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_item", "id"), &MeshLibrary::create_item);
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
+	ClassDB::bind_method(D_METHOD("set_item_category", "id", "category"), &MeshLibrary::set_item_category);
 	ClassDB::bind_method(D_METHOD("set_item_mesh", "id", "mesh"), &MeshLibrary::set_item_mesh);
 	ClassDB::bind_method(D_METHOD("set_item_mesh_transform", "id", "mesh_transform"), &MeshLibrary::set_item_mesh_transform);
 	ClassDB::bind_method(D_METHOD("set_item_mesh_cast_shadow", "id", "shadow_casting_setting"), &MeshLibrary::set_item_mesh_cast_shadow);
@@ -381,6 +398,7 @@ void MeshLibrary::_bind_methods() {
 #endif // PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
+	ClassDB::bind_method(D_METHOD("get_item_category", "id"), &MeshLibrary::get_item_category);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_transform", "id"), &MeshLibrary::get_item_mesh_transform);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_cast_shadow", "id"), &MeshLibrary::get_item_mesh_cast_shadow);
