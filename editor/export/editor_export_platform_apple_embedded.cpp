@@ -235,6 +235,10 @@ bool EditorExportPlatformAppleEmbedded::get_export_option_visibility(const Edito
 			p_option == "application/signature") {
 		return advanced_options_enabled;
 	}
+	if (p_option == "capabilities/performance_a12") {
+		String rendering_method = get_project_setting(Ref<EditorExportPreset>(p_preset), "rendering/renderer/rendering_method.mobile");
+		return !(rendering_method == "forward_plus" || rendering_method == "mobile");
+	}
 
 	return true;
 }
@@ -498,6 +502,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		// Note that capabilities listed here are requirements for the app to be installed.
 		// They don't enable anything.
 		Vector<String> capabilities_list = p_config.capabilities;
+		String rendering_method = get_project_setting(p_preset, "rendering/renderer/rendering_method.mobile");
 
 		if ((bool)p_preset->get("capabilities/access_wifi") && !capabilities_list.has("wifi")) {
 			capabilities_list.push_back("wifi");
@@ -505,7 +510,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		if ((bool)p_preset->get("capabilities/performance_gaming_tier") && !capabilities_list.has("iphone-performance-gaming-tier")) {
 			capabilities_list.push_back("iphone-performance-gaming-tier");
 		}
-		if ((bool)p_preset->get("capabilities/performance_a12") && !capabilities_list.has("iphone-ipad-minimum-performance-a12")) {
+		if (((bool)p_preset->get("capabilities/performance_a12") || rendering_method == "forward_plus" || rendering_method == "mobile") && !capabilities_list.has("iphone-ipad-minimum-performance-a12")) {
 			capabilities_list.push_back("iphone-ipad-minimum-performance-a12");
 		}
 		for (const String &capability : capabilities_list) {
