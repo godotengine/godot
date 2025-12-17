@@ -405,9 +405,9 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 			if (abs(input_position_delta) < playback_half_delay) {
 				if (input_position_delta > 0) {
 					// buffer underrun correction
-					#ifdef DEBUG_ENABLED
-							print_verbose(String(get_class_name()) + " buffer underrun: input_position=" + itos(input_position) + " input_ofs=" + itos(input_ofs) + " input_size=" + itos(input_size));
-					#endif
+#ifdef DEBUG_ENABLED
+					print_verbose(String(get_class_name()) + " buffer underrun: input_position=" + itos(input_position) + " input_ofs=" + itos(input_ofs) + " input_size=" + itos(input_size));
+#endif
 					if (input_ofs < playback_delay) {
 						// Modulo wraparound bottom
 						input_ofs += (unsigned int)buf.size();
@@ -415,9 +415,9 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 					input_ofs -= playback_delay;
 				} else {
 					// buffer overrun correction
-					#ifdef DEBUG_ENABLED
-							print_verbose(String(get_class_name()) + " buffer overrun: input_position=" + itos(input_position) + " input_ofs=" + itos(input_ofs) + " input_size=" + itos(input_size));
-					#endif
+#ifdef DEBUG_ENABLED
+					print_verbose(String(get_class_name()) + " buffer overrun: input_position=" + itos(input_position) + " input_ofs=" + itos(input_ofs) + " input_size=" + itos(input_size));
+#endif
 					input_ofs += playback_delay;
 					if ((int)input_ofs >= buf.size()) {
 						// Modulo wraparound
