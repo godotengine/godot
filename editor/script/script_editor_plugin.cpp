@@ -2665,7 +2665,6 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	ResourceInfo ri;
 	ri.resource = p_resource;
-	ri.is_help_class = true;
 	control_resource_map.insert(se, ri);
 
 	tab_container->add_child(se);
