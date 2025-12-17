@@ -437,8 +437,11 @@ class DocumentEditorContainer : public MarginContainer {
 
 	void _toggle_files_pressed(bool p_pressed);
 
+	void _on_document_edits_requested(const Array &p_doc_edits);
+
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	static Dictionary get_context_data(Control *p_tab_control);
@@ -521,6 +524,9 @@ class ScriptEditor : public EditorDock {
 
 	void _update_margins();
 	void _apply_editor_settings();
+
+	static EditorLanguage::DocumentEditOperation _get_doc_edit_operation_from_dict(const Dictionary &p_dict);
+	void _on_document_edits_requested(const Array &p_doc_edits);
 
 protected:
 	void _notification(int p_what);
