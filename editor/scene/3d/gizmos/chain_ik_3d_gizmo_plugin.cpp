@@ -42,6 +42,9 @@ ChainIK3DGizmoPlugin::ChainIK3DGizmoPlugin() {
 	selection_materials.unselected_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	selection_materials.unselected_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
+	selection_materials.unselected_fill_mat = selection_materials.unselected_mat->duplicate();
+	selection_materials.unselected_fill_mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
+
 	selection_materials.selected_mat.instantiate();
 	Ref<Shader> sh;
 	sh.instantiate();
@@ -66,11 +69,38 @@ void fragment() {
 }
 )");
 	selection_materials.selected_mat->set_shader(sh);
+
+	selection_materials.selected_fill_mat.instantiate();
+	Ref<Shader> sh_fill;
+	sh_fill.instantiate();
+	sh_fill->set_code(R"(
+// Skeleton 3D gizmo bones shader (double-sided fill).
+
+shader_type spatial;
+render_mode unshaded, shadows_disabled, cull_disabled;
+
+void vertex() {
+	if (!OUTPUT_IS_SRGB) {
+		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)));
+	}
+	VERTEX = VERTEX;
+	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
+	POSITION.z = mix(POSITION.z, POSITION.w, 0.998);
+}
+
+void fragment() {
+	ALBEDO = COLOR.rgb;
+	ALPHA = COLOR.a;
+}
+)");
+	selection_materials.selected_fill_mat->set_shader(sh_fill);
 }
 
 ChainIK3DGizmoPlugin::~ChainIK3DGizmoPlugin() {
 	selection_materials.unselected_mat.unref();
+	selection_materials.unselected_fill_mat.unref();
 	selection_materials.selected_mat.unref();
+	selection_materials.selected_fill_mat.unref();
 }
 
 bool ChainIK3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -100,13 +130,15 @@ void ChainIK3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Ref<ArrayMesh> skeleton_mesh;
 	Ref<ArrayMesh> mesh;
-	get_joints_mesh(skeleton, ik, p_gizmo->is_selected(), skeleton_mesh, mesh);
+	Ref<ArrayMesh> fill_mesh;
+	get_joints_mesh(skeleton, ik, p_gizmo->is_selected(), skeleton_mesh, mesh, fill_mesh);
 	Transform3D skel_tr = ik->get_global_transform().inverse() * skeleton->get_global_transform();
 	p_gizmo->add_mesh(skeleton_mesh, Ref<Material>(), skel_tr, skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
 	p_gizmo->add_mesh(mesh, Ref<Material>(), skel_tr);
+	p_gizmo->add_mesh(fill_mesh, Ref<Material>(), skel_tr, skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
 }
 
-void ChainIK3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_ik, bool p_is_selected, Ref<ArrayMesh> &r_skinned_mesh, Ref<ArrayMesh> &r_mesh) {
+void ChainIK3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_ik, bool p_is_selected, Ref<ArrayMesh> &r_skinned_mesh, Ref<ArrayMesh> &r_mesh, Ref<ArrayMesh> &r_fill_mesh) {
 	Color bone_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/ik_chain");
 	static const Color limitation_x_axis_color = Color(1, 0, 0, 1);
 	static const Color limitation_z_axis_color = Color(0, 0, 1, 1);
@@ -121,13 +153,20 @@ void ChainIK3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_
 	surface_tool_without_skin.instantiate();
 	surface_tool_without_skin->begin(Mesh::PRIMITIVE_LINES);
 
+	Ref<SurfaceTool> fill_surface_tool;
+	fill_surface_tool.instantiate();
+	fill_surface_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
+
 	if (p_is_selected) {
 		surface_tool->set_material(selection_materials.selected_mat);
 		surface_tool_without_skin->set_material(selection_materials.selected_mat);
+		fill_surface_tool->set_material(selection_materials.selected_fill_mat);
 	} else {
 		selection_materials.unselected_mat->set_albedo(bone_color);
+		selection_materials.unselected_fill_mat->set_albedo(bone_color);
 		surface_tool->set_material(selection_materials.unselected_mat);
 		surface_tool_without_skin->set_material(selection_materials.unselected_mat);
+		fill_surface_tool->set_material(selection_materials.unselected_fill_mat);
 	}
 
 	PackedInt32Array bones;
@@ -177,15 +216,17 @@ void ChainIK3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_
 						// Limitation space should bind parent bone rest.
 						int parent = p_skeleton->get_bone_parent(prev_bone);
 						Ref<SurfaceTool> limitation_surface_tool = parent >= 0 ? surface_tool : surface_tool_without_skin;
+						bones.write[0] = parent >= 0 ? parent : prev_bone;
+						fill_surface_tool->set_bones(bones);
+						fill_surface_tool->set_weights(weights);
 						if (parent >= 0) {
-							bones.write[0] = parent;
 							limitation_surface_tool->set_bones(bones);
 							limitation_surface_tool->set_weights(weights);
 						}
 						Transform3D tr = anc_global_pose;
 						tr.basis *= it_ik->get_joint_limitation_space(i, prev_joint, bone_vector.normalized());
 						float sl = MIN(current_length, prev_length);
-						lim->draw_shape(limitation_surface_tool, tr, sl, bone_color);
+						lim->draw_shape(limitation_surface_tool, tr, sl, bone_color, -1, fill_surface_tool);
 						sl *= 0.1;
 						Vector3 x_axis = tr.basis.get_column(Vector3::AXIS_X).normalized() * sl;
 						Vector3 z_axis = tr.basis.get_column(Vector3::AXIS_Z).normalized() * sl;
@@ -219,15 +260,17 @@ void ChainIK3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_
 						// Limitation space should bind parent bone rest.
 						int parent = p_skeleton->get_bone_parent(current_bone);
 						Ref<SurfaceTool> limitation_surface_tool = parent >= 0 ? surface_tool : surface_tool_without_skin;
+						bones.write[0] = parent >= 0 ? parent : current_bone;
+						fill_surface_tool->set_bones(bones);
+						fill_surface_tool->set_weights(weights);
 						if (parent >= 0) {
-							bones.write[0] = parent;
 							limitation_surface_tool->set_bones(bones);
 							limitation_surface_tool->set_weights(weights);
 						}
 						Transform3D tr = anc_global_pose;
 						tr.basis *= it_ik->get_joint_limitation_space(i, j, bone_vector.normalized());
 						float sl = MIN(current_length, prev_length);
-						lim->draw_shape(limitation_surface_tool, tr, sl, bone_color);
+						lim->draw_shape(limitation_surface_tool, tr, sl, bone_color, -1, fill_surface_tool);
 						sl *= 0.1;
 						Vector3 x_axis = tr.basis.get_column(Vector3::AXIS_X).normalized() * sl;
 						Vector3 z_axis = tr.basis.get_column(Vector3::AXIS_Z).normalized() * sl;
@@ -266,6 +309,7 @@ void ChainIK3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_
 
 	r_skinned_mesh = surface_tool->commit();
 	r_mesh = surface_tool_without_skin->commit();
+	r_fill_mesh = fill_surface_tool->commit();
 }
 
 void ChainIK3DGizmoPlugin::draw_line(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_begin_pos, const Vector3 &p_end_pos, const Color &p_color) {

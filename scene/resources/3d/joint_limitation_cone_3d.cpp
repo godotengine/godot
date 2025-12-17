@@ -101,7 +101,7 @@ Vector3 JointLimitationCone3D::_solve(const Vector3 &p_direction) const {
 }
 
 #ifdef TOOLS_ENABLED
-void JointLimitationCone3D::draw_shape(Ref<SurfaceTool> &p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color) const {
+void JointLimitationCone3D::draw_shape(Ref<SurfaceTool> p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color, int p_bone_index, Ref<SurfaceTool> p_fill_surface_tool) const {
 	static const int N = 16;
 	static const real_t DP = Math::TAU / (real_t)N;
 

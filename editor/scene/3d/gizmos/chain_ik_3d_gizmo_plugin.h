@@ -41,12 +41,14 @@ class ChainIK3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 	struct SelectionMaterials {
 		Ref<StandardMaterial3D> unselected_mat;
+		Ref<StandardMaterial3D> unselected_fill_mat;
 		Ref<ShaderMaterial> selected_mat;
+		Ref<ShaderMaterial> selected_fill_mat;
 	};
 	static SelectionMaterials selection_materials;
 
 public:
-	static void get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_ik, bool p_is_selected, Ref<ArrayMesh> &r_skinned_mesh, Ref<ArrayMesh> &r_mesh);
+	static void get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_ik, bool p_is_selected, Ref<ArrayMesh> &r_skinned_mesh, Ref<ArrayMesh> &r_mesh, Ref<ArrayMesh> &r_fill_mesh);
 	static void draw_line(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_begin_pos, const Vector3 &p_end_pos, const Color &p_color);
 
 	bool has_gizmo(Node3D *p_spatial) override;

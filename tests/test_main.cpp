@@ -180,6 +180,7 @@
 #ifdef MODULE_GLTF_ENABLED
 #include "tests/scene/test_gltf_document.h"
 #endif
+#include "tests/scene/test_joint_limitation_kusudama_3d.h"
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
