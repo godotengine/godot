@@ -1031,15 +1031,13 @@ Size2 TabContainer::get_minimum_size() const {
 		ms.width += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
 		ms.height += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
 
-		if (!get_clip_tabs()) {
-			if (get_popup()) {
-				ms.width += theme_cache.menu_icon->get_width();
-			}
+		if (get_popup()) {
+			ms.width += theme_cache.menu_icon->get_width();
+		}
 
-			if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
-					(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
-				ms.width += theme_cache.side_margin;
-			}
+		if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
+				(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
+			ms.width += theme_cache.side_margin;
 		}
 	}
 
@@ -1078,9 +1076,7 @@ void TabContainer::set_popup(Node *p_popup) {
 	if (had_popup != bool(popup)) {
 		queue_redraw();
 		_update_margins();
-		if (!get_clip_tabs()) {
-			update_minimum_size();
-		}
+		update_minimum_size();
 	}
 }
 
