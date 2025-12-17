@@ -232,7 +232,7 @@ void GDScriptParser::clear() {
 	*this = GDScriptParser();
 }
 
-void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
+void GDScriptParser::push_error(const String &p_message, const Node *p_origin, const ScriptLanguage::CodeActionGroup &p_code_actions) {
 	// TODO: Improve error reporting by pointing at source code.
 	// TODO: Errors might point at more than one place at once (e.g. show previous declaration).
 	panic_mode = true;
@@ -251,11 +251,13 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 		err.end_column = p_origin->end_column;
 	}
 
+	err.code_actions = p_code_actions;
+
 	errors.push_back(err);
 }
 
 #ifdef DEBUG_ENABLED
-void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
+void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions) {
 	ERR_FAIL_NULL(p_source);
 	ERR_FAIL_INDEX(p_code, GDScriptWarning::WARNING_MAX);
 
@@ -268,11 +270,110 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 		return;
 	}
 
+	ScriptLanguage::CodeActionGroup action_group;
+	action_group.title = GDScriptWarning::get_name_from_code(p_code);
+	action_group.actions.append_array(p_code_actions);
+
+#ifdef TOOLS_ENABLED
+	// Create the ignore code action.
+	ScriptLanguage::CodeActionOperation ignore_action;
+	ScriptLanguage::TextEditOperation ignore_op;
+	ignore_op.start_line = p_source->start_line;
+	ignore_op.end_line = p_source->start_line;
+
+	int col = 0;
+
+	const Node *curr = p_source;
+
+	// For UNUSED_PARAMETER, the identifier is the node that is passed in. The
+	// ancestry appears to go like:
+	// IDENTIFIER -> PARAMETER -> SUITE -> FUNCTION (where we want to be) -> CLASS -> ROOT
+	// We want to traverse up to the FUNCTION, then get its column.
+	if (p_code == GDScriptWarning::UNUSED_PARAMETER && p_source->type == Node::Type::IDENTIFIER) {
+		ERR_FAIL_COND_MSG(p_source->type != Node::Type::IDENTIFIER, "UNUSED_PARAMETER warning didn't have an IdentifierNode as the source");
+		while (curr != nullptr && curr->parent != nullptr) {
+			if (curr->parent->type == Node::Type::FUNCTION) {
+				col = curr->parent->start_column;
+				if (((FunctionNode *)curr->parent)->is_static) {
+					col -= 7; // length of string "static "
+				}
+				break;
+			}
+			curr = curr->parent;
+		}
+		curr = p_source->parent;
+	}
+
+	// For parameters, we want to move up the tree to find the function they belong to.
+	// NOTE: If a warning can occur where we have a parameter of something other than a function,
+	// then that needs to be handled as well.
+	else if (p_source->type == Node::Type::PARAMETER) {
+		while (curr != nullptr && curr->parent != nullptr) {
+			if (curr->parent->type == Node::Type::FUNCTION) {
+				col = curr->parent->start_column;
+				if (((FunctionNode *)curr->parent)->is_static) {
+					col -= 7; // length of string "static "
+				}
+				break;
+			}
+			curr = curr->parent;
+		}
+	}
+
+	// Most other warning types' column can be found by traversing up the tree
+	// until we hit their suite or class.
+	else {
+		while (curr != nullptr && curr->parent != nullptr) {
+			if (curr->parent->type == Node::Type::SUITE) {
+				col = curr->parent->start_column;
+				break;
+			}
+			if (curr->parent->type == Node::Type::CLASS) {
+				col = curr->start_column;
+				break;
+			}
+			curr = curr->parent;
+		}
+
+		if ((curr->type == Node::Type::FUNCTION && ((FunctionNode *)curr)->is_static) || (curr->type == Node::Type::VARIABLE && ((VariableNode *)curr)->is_static)) {
+			col -= 7; // length of string "static "
+		}
+	}
+
+	ignore_op.start_col = col;
+	ignore_op.end_col = col;
+
+	String warning_name = GDScriptWarning::get_name_from_code(p_code);
+
+	// Find the existing leading whitespace/indentation used for this line of
+	// code, and copy it for after the newline.
+	String line = source.split("\n")[p_source->start_line - 1];
+	String leading_whitespace;
+	for (int i = 0; i < line.length() - 1; i++) {
+		if (line[i] == '\t' || line[i] == ' ') {
+			leading_whitespace += line[i];
+		} else {
+			break;
+		}
+	}
+
+	ignore_op.new_text = vformat("@warning_ignore(\"%s\")\n%s", warning_name.to_lower(), leading_whitespace);
+	ignore_action.description = vformat("Ignore \"%s\"", warning_name);
+
+	ScriptLanguage::DocumentEditOperation doc_edit;
+	doc_edit.file_path = script_path;
+	doc_edit.edits.append(ignore_op);
+
+	ignore_action.document_edits.append(doc_edit);
+	action_group.actions.append(ignore_action);
+#endif // TOOLS_ENABLED
+
 	PendingWarning pw;
 	pw.source = p_source;
 	pw.code = p_code;
 	pw.treated_as_error = warn_level == GDScriptWarning::ERROR;
 	pw.symbols = p_symbols;
+	pw.code_actions = action_group;
 
 	pending_warnings.push_back(pw);
 }
@@ -293,9 +394,10 @@ void GDScriptParser::apply_pending_warnings() {
 		warning.start_column = pw.source->start_column;
 		warning.end_line = pw.source->end_line;
 		warning.end_column = pw.source->end_column;
+		warning.code_actions = pw.code_actions;
 
 		if (pw.treated_as_error) {
-			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.source);
+			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.source, warning.code_actions);
 			continue;
 		}
 
@@ -429,7 +531,7 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body) {
 	clear();
 
-	String source = p_source_code;
+	source = p_source_code;
 	int cursor_line = -1;
 	int cursor_column = -1;
 	for_completion = p_for_completion;
@@ -2168,7 +2270,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						break;
 					case Node::PRELOAD:
 						// `preload` is a function-like keyword.
-						push_warning(expression, GDScriptWarning::RETURN_VALUE_DISCARDED, "preload");
+						push_warning(expression, GDScriptWarning::RETURN_VALUE_DISCARDED, {}, "preload");
 						break;
 					case Node::LAMBDA:
 						// Standalone lambdas can't be used, so make this an error.
@@ -2177,7 +2279,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					case Node::LITERAL:
 						// Allow strings as multiline comments.
 						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() != Variant::STRING) {
-							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
+							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION, {});
 						}
 						break;
 					case Node::TERNARY_OPERATOR:
@@ -2235,7 +2337,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	if (unreachable && result != nullptr) {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
-			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
+			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, {}, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
 		} else {
 			// TODO: Properties setters and getters with unreachable code are not being warned
 		}
@@ -2821,7 +2923,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 #ifdef DEBUG_ENABLED
 	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
-		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.operator String());
+		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, {}, identifier->name.operator String());
 	}
 #endif
 	return identifier;
@@ -3671,7 +3773,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 #ifdef DEBUG_ENABLED
 			// Check spoofing.
 			if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier)) {
-				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier);
+				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, {}, identifier);
 			}
 #endif
 			get_node->full_path += identifier;

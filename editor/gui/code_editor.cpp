@@ -937,6 +937,11 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
+		if (show_code_actions && mb->is_pressed() && _get_code_action_button_inline_rect().has_point(mb->get_position())) {
+			popup_code_actions(text_editor->get_caret_line());
+			accept_event();
+			return;
+		}
 		if (mb->is_pressed() && mb->is_command_or_control_pressed()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				_zoom_in();
@@ -960,6 +965,16 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	}
 #endif
 
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (show_code_actions && mm.is_valid()) {
+		if (_get_code_action_button_inline_rect().has_point(mm->get_position()) && get_code_actions_for_line(text_editor->get_caret_line()).size() > 0) {
+			text_editor->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
+		} else {
+			text_editor->set_default_cursor_shape(Control::CURSOR_IBEAM);
+		}
+	}
+
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
@@ -976,6 +991,11 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 			}
 			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
 				_zoom_to(1);
+				accept_event();
+				return;
+			}
+			if (ED_IS_SHORTCUT("script_editor/code_actions", p_event)) {
+				popup_code_actions(text_editor->get_caret_line());
 				accept_event();
 				return;
 			}
@@ -1163,6 +1183,16 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_indent_size(EDITOR_GET("text_editor/behavior/indent/size"));
 	text_editor->set_auto_indent_enabled(EDITOR_GET("text_editor/behavior/indent/auto_indent"));
 	text_editor->set_indent_wrapped_lines(EDITOR_GET("text_editor/behavior/indent/indent_wrapped_lines"));
+
+	// Behavior: Code Actions
+	show_code_actions = EDITOR_GET("text_editor/behavior/code_actions/show_code_actions_button");
+	if (text_editor->is_connected("draw", callable_mp(this, &CodeTextEditor::_on_text_editor_draw))) {
+		if (!show_code_actions) {
+			text_editor->disconnect("draw", callable_mp(this, &CodeTextEditor::_on_text_editor_draw));
+		}
+	} else if (show_code_actions) {
+		text_editor->connect("draw", callable_mp(this, &CodeTextEditor::_on_text_editor_draw));
+	}
 
 	// Completion
 	text_editor->set_auto_brace_completion_enabled(EDITOR_GET("text_editor/completion/auto_brace_complete"));
@@ -1629,6 +1659,9 @@ void CodeTextEditor::_update_text_editor_theme() {
 	warning_button->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 	warning_button->add_theme_color_override(SceneStringName(font_color), warning_color);
 
+	code_action_dropdown_icon = get_editor_theme_icon(SNAME("CodeActionDropdown"));
+	code_action_icon = get_editor_theme_icon(SNAME("CodeAction"));
+
 	const int child_count = status_bar->get_child_count();
 	for (int i = 0; i < child_count; i++) {
 		Control *child = Object::cast_to<Control>(status_bar->get_child(i));
@@ -1918,6 +1951,7 @@ void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("show_goto_popup"));
 	ADD_SIGNAL(MethodInfo("navigation_preview_ended"));
 	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "p_zoom_factor")));
+	ADD_SIGNAL(MethodInfo("document_edits_requested", PropertyInfo(Variant::DICTIONARY, "edits")));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {
@@ -1940,15 +1974,135 @@ void CodeTextEditor::update_toggle_files_button() {
 	toggle_files_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Files Panel"), ED_GET_SHORTCUT("script_editor/toggle_files_panel")->get_as_text()));
 }
 
+Rect2 CodeTextEditor::_get_code_action_button_inline_rect() const {
+	const int line = text_editor->get_caret_line();
+	const int indent_level = text_editor->get_indent_level(line);
+
+	const int row_height = text_editor->get_line_height();
+	Size2 icon_size(row_height, row_height);
+
+	Point2 icon_position = text_editor->get_rect_at_line_column(line, 0).position;
+	icon_position.x = text_editor->get_total_gutter_width() + (row_height / 2.0);
+	icon_position.y = icon_position.y + (row_height / 2.0) - (icon_size.y / 2.0);
+
+	// If the current line doesn't have indentation, then the button will cover
+	// the beginning of the line, so we need to find a better place for it.
+	if (text_editor->get_line_width(line) > 0 && indent_level < 4) {
+		// Check if line above has space.
+		if (line > 0 && (text_editor->get_indent_level(line - 1) >= 4 || text_editor->get_line_width(line - 1) == 0)) {
+			icon_position.y -= row_height;
+		}
+
+		// Check if line below has space.
+		else if (line <= text_editor->get_line_count() - 1 && (text_editor->get_indent_level(line + 1) >= 4 || text_editor->get_line_width(line + 1) == 0)) {
+			icon_position.y += row_height;
+		}
+
+		// If it's the last line of the file, then there will be space
+		// underneath it.
+		else if (line == text_editor->get_line_count() - 1) {
+			icon_position.y += row_height;
+		}
+	}
+
+	icon_position = icon_position.round();
+
+	Rect2 icon_rect(icon_position, icon_size);
+	return icon_rect;
+}
+
+void CodeTextEditor::_on_text_editor_draw() const {
+	if (!code_action_dropdown_icon.is_valid() || get_code_actions_for_line(text_editor->get_caret_line()).size() <= 0) {
+		return;
+	}
+
+	RID ci = text_editor->get_text_canvas_item();
+	Rect2 inline_rect = _get_code_action_button_inline_rect();
+	code_action_dropdown_icon->draw_rect(ci, inline_rect);
+}
+
+void CodeTextEditor::_on_code_action_id_pressed(int p_id) {
+	emit_signal(SNAME("document_edits_requested"), ungrouped_current_code_actions[p_id].to_dict()["document_edits"]);
+}
+
+Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> CodeTextEditor::get_code_actions_for_line(int p_line) const {
+	Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> actions_this_line;
+	for (const ScriptLanguage::CodeActionGroupWithDiagnostics &group : code_actions) {
+		ScriptLanguage::CodeActionGroupWithDiagnostics filtered_group;
+		filtered_group.title = group.title;
+
+		for (const ScriptLanguage::CodeActionAndDiagnostics &action : group.actions) {
+			for (const ScriptLanguage::Warning &w : action.related_warnings) {
+				if (p_line == w.start_line - 1 && p_line <= w.end_line - 1) {
+					filtered_group.actions.append(action);
+					break;
+				}
+			}
+
+			for (const ScriptLanguage::ScriptError &e : action.related_errors) {
+				if (p_line == e.line - 1) {
+					filtered_group.actions.append(action);
+					break;
+				}
+			}
+		}
+
+		if (filtered_group.actions.size() > 0) {
+			actions_this_line.append(filtered_group);
+		}
+	}
+	return actions_this_line;
+}
+
+void CodeTextEditor::popup_code_actions(int p_line) {
+	if (code_action_popup == nullptr) {
+		code_action_popup = memnew(PopupMenu);
+		code_action_popup->connect(SceneStringName(id_pressed), callable_mp(this, &CodeTextEditor::_on_code_action_id_pressed));
+		add_child(code_action_popup);
+	}
+	code_action_popup->clear();
+
+	ungrouped_current_code_actions.clear();
+	int action_index = 0;
+	for (const ScriptLanguage::CodeActionGroupWithDiagnostics &group : get_code_actions_for_line(p_line)) {
+		code_action_popup->add_separator(group.title, -1);
+		for (const ScriptLanguage::CodeActionAndDiagnostics &action : group.actions) {
+			code_action_popup->add_icon_item(code_action_icon, action.code_action.description, action_index);
+			ungrouped_current_code_actions.append(action.code_action);
+			action_index++;
+		}
+	}
+
+	if (action_index == 0) {
+		return;
+	}
+
+	Rect2 line_rect = text_editor->get_rect_at_line_column(text_editor->get_caret_line(), 0);
+	Point2 pos = text_editor->get_global_transform_with_canvas().xform(line_rect.position);
+	pos += get_window()->get_position();
+	pos.y += line_rect.size.y;
+	code_action_popup->popup(Rect2i(pos, Size2i()));
+}
+
+String CodeTextEditor::get_tooltip(const Point2 &p_pos) const {
+	if (show_code_actions && _get_code_action_button_inline_rect().has_point(p_pos) && get_code_actions_for_line(text_editor->get_caret_line()).size() > 0) {
+		return TTRC("Show Code Actions") + vformat(" (%s)", ED_GET_SHORTCUT("script_editor/code_actions")->get_as_text());
+	} else {
+		return "";
+	}
+}
+
 CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
 	ED_SHORTCUT("script_editor/zoom_in", TTRC("Zoom In"), KeyModifierMask::CMD_OR_CTRL | Key::EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTRC("Zoom Out"), KeyModifierMask::CMD_OR_CTRL | Key::MINUS);
 	ED_SHORTCUT_ARRAY("script_editor/reset_zoom", TTRC("Reset Zoom"),
 			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KEY_0), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_0) });
+	ED_SHORTCUT("script_editor/code_actions", TTRC("Show Code Actions"), KeyModifierMask::ALT | Key::ENTER);
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);
+	text_editor->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	text_editor->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_GDSCRIPT);
 	text_editor->set_draw_bookmarks_gutter(true);
