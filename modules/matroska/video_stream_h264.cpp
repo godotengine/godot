@@ -671,6 +671,9 @@ RID VideoStreamH264::create_texture(RD::TextureFormat &p_texture_template) {
 
 	p_texture_template.video_profiles = video_profiles;
 
+	// TODO: how do we know this?
+	//p_texture_template.height += 8;
+
 	RD::TextureView texture_view;
 	texture_view.ycbcr_sampler = texture_sampler;
 
