@@ -1117,6 +1117,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_highlight_all_occurrences(EDITOR_GET("text_editor/appearance/caret/highlight_all_occurrences"));
 
 	// Appearance: Gutters
+	text_editor->set_draw_code_actions(EDITOR_GET("text_editor/appearance/gutters/show_code_actions"));
 	text_editor->set_draw_line_numbers(EDITOR_GET("text_editor/appearance/gutters/show_line_numbers"));
 	text_editor->set_line_numbers_zero_padded(EDITOR_GET("text_editor/appearance/gutters/line_numbers_zero_padded"));
 
@@ -1817,6 +1818,14 @@ void CodeTextEditor::remove_all_bookmarks() {
 	text_editor->clear_bookmarked_lines();
 }
 
+void CodeTextEditor::clear_code_actions() {
+	text_editor->clear_code_actions();
+}
+
+void CodeTextEditor::add_code_actions(int p_start_line, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions) {
+	text_editor->add_code_actions(p_start_line, p_code_actions);
+}
+
 void CodeTextEditor::_zoom_in() {
 	int s = text_editor->get_theme_font_size(SceneStringName(font_size));
 	_zoom_to(zoom_factor * (s + MAX(1.0f, EDSCALE)) / s);
@@ -1898,6 +1907,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_draw_bookmarks_gutter(true);
 
 	text_editor->set_virtual_keyboard_show_on_focus(false);
+	text_editor->set_draw_code_actions(true);
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_highlight_matching_braces_enabled(true);
 	text_editor->set_auto_indent_enabled(true);

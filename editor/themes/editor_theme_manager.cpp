@@ -536,6 +536,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/bookmark_color"] = Color(0.08, 0.49, 0.98);
 			colors["text_editor/theme/highlighting/breakpoint_color"] = p_config.dark_icon_and_font ? p_config.error_color : Color(1, 0.27, 0.2, 1);
 			colors["text_editor/theme/highlighting/executing_line_color"] = Color(0.98, 0.89, 0.27);
+			colors["text_editor/theme/highlighting/code_action_color"] = Color(0.98, 0.89, 0.27);
 			colors["text_editor/theme/highlighting/code_folding_color"] = alpha3;
 			colors["text_editor/theme/highlighting/folded_code_region_color"] = Color(0.68, 0.46, 0.77, 0.2);
 			colors["text_editor/theme/highlighting/search_result_color"] = alpha1;
@@ -618,6 +619,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	p_theme->set_color("bookmark_color",                  "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/bookmark_color"));
 	p_theme->set_color("breakpoint_color",                "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/breakpoint_color"));
 	p_theme->set_color("executing_line_color",            "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/executing_line_color"));
+	p_theme->set_color("code_action_color",               "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/code_action_color"));
 	p_theme->set_color("code_folding_color",              "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/code_folding_color"));
 	p_theme->set_color("folded_code_region_color",        "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/folded_code_region_color"));
 	p_theme->set_color("search_result_color",             "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/search_result_color"));

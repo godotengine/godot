@@ -493,6 +493,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("breakpoint", "CodeEdit", icons["breakpoint"]);
 	theme->set_icon("bookmark", "CodeEdit", icons["bookmark"]);
 	theme->set_icon("executing_line", "CodeEdit", icons["arrow_right"]);
+	theme->set_icon("code_action", "CodeEdit", icons["code_action"]);
 	theme->set_icon("can_fold", "CodeEdit", icons["arrow_down"]);
 	theme->set_icon("folded", "CodeEdit", icons["arrow_right"]);
 	theme->set_icon("can_fold_code_region", "CodeEdit", icons["region_unfolded"]);
@@ -520,6 +521,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("bookmark_color", "CodeEdit", Color(0.5, 0.64, 1, 0.8));
 	theme->set_color("breakpoint_color", "CodeEdit", Color(0.9, 0.29, 0.3));
 	theme->set_color("executing_line_color", "CodeEdit", Color(0.98, 0.89, 0.27));
+	theme->set_color("code_action_color", "CodeEdit", Color(0.98, 0.89, 0.27));
 	theme->set_color("current_line_color", "CodeEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("code_folding_color", "CodeEdit", Color(0.8, 0.8, 0.8, 0.8));
 	theme->set_color("folded_code_region_color", "CodeEdit", Color(0.68, 0.46, 0.77, 0.2));

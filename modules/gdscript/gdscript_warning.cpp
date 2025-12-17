@@ -267,4 +267,17 @@ GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) 
 	return WARNING_MAX;
 }
 
+ScriptLanguage::CodeActionOperation GDScriptWarning::get_ignore_code_action_from_code(int p_line, Code p_code) {
+	ScriptLanguage::CodeActionOperation action;
+	ScriptLanguage::TextEditOperation op;
+	op.start_line = p_line;
+	op.start_col = 0;
+	op.end_line = p_line;
+	op.end_col = 0;
+	op.new_text = vformat("@warning_ignore(\"%s\")\n", get_name_from_code(p_code).to_lower());
+	action.description = vformat("Ignore \"%s\"", get_name_from_code(p_code));
+	action.edits.append(op);
+	return action;
+}
+
 #endif // DEBUG_ENABLED

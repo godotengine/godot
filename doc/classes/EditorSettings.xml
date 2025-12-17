@@ -1368,6 +1368,9 @@
 		<member name="text_editor/appearance/gutters/line_numbers_zero_padded" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers with zero padding (e.g. [code]007[/code] instead of [code]7[/code]).
 		</member>
+		<member name="text_editor/appearance/gutters/show_code_actions" type="bool" setter="" getter="">
+			If [code]true[/code], displays a gutter on the left with a lightbulb icon for lines where a Code Action is available.
+		</member>
 		<member name="text_editor/appearance/gutters/show_info_gutter" type="bool" setter="" getter="">
 			If [code]true[/code], displays a gutter at the left containing icons for methods with signal connections and for overridden methods.
 		</member>
@@ -1597,6 +1600,9 @@
 		</member>
 		<member name="text_editor/theme/highlighting/caret_color" type="Color" setter="" getter="">
 			The script editor's caret color.
+		</member>
+		<member name="text_editor/theme/highlighting/code_action_color" type="Color" setter="" getter="">
+			The script editor's color for the lightbulb icon indicating a Code Action is available for a given line.
 		</member>
 		<member name="text_editor/theme/highlighting/code_folding_color" type="Color" setter="" getter="">
 			The script editor's color for the code folding icon (displayed in the gutter).
