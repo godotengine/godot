@@ -2135,7 +2135,7 @@ void EditorFileSystem::_update_script_classes() {
 	if (update_script_paths.is_empty()) {
 		// Ensure the global class file is always present; it's essential for exports to work.
 		if (!FileAccess::exists(ProjectSettings::get_singleton()->get_global_class_list_path())) {
-			ScriptServer::save_global_classes();
+			EditorNode::get_editor_data().script_class_save_global_classes();
 		}
 		return;
 	}
@@ -2559,8 +2559,8 @@ void EditorFileSystem::_register_global_class_script(const String &p_search_path
 	if (lang.is_empty()) {
 		return; // No lang found that can handle this global class
 	}
-
-	ScriptServer::add_global_class(p_script_update.name, p_script_update.extends, lang, p_target_path, p_script_update.is_abstract, p_script_update.is_tool);
+	ResourceUID::ID uid = first_scan && !scanning ? ResourceLoader::get_resource_uid(p_target_path) : get_file_uid(p_target_path);
+	ScriptServer::add_global_class(p_script_update.name, p_script_update.extends, lang, p_target_path, p_script_update.is_abstract, p_script_update.is_tool, uid);
 	EditorNode::get_editor_data().script_class_set_icon_path(p_script_update.name, p_script_update.icon_path);
 	EditorNode::get_editor_data().script_class_set_name(p_target_path, p_script_update.name);
 }
