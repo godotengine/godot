@@ -940,6 +940,11 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
+		if (show_code_actions && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && _get_code_action_button_inline_rect().has_point(mb->get_position())) {
+			popup_code_actions(text_editor->get_caret_line());
+			accept_event();
+			return;
+		}
 		if (mb->is_pressed() && mb->is_command_or_control_pressed()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				_zoom_in();
@@ -963,6 +968,18 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	}
 #endif
 
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (show_code_actions && mm.is_valid() && mm->get_button_mask().is_empty()) {
+		if (_get_code_action_button_inline_rect().has_point(mm->get_position()) && code_actions_exist_for_line(text_editor->get_caret_line())) {
+			text_editor->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
+			text_editor->set_symbol_tooltip_on_hover_enabled(false);
+		} else {
+			text_editor->set_default_cursor_shape(Control::CURSOR_IBEAM);
+			text_editor->set_symbol_tooltip_on_hover_enabled(true);
+		}
+	}
+
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
@@ -979,6 +996,11 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 			}
 			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
 				_zoom_to(1);
+				accept_event();
+				return;
+			}
+			if (ED_IS_SHORTCUT("script_editor/code_actions", p_event)) {
+				popup_code_actions(text_editor->get_caret_line(), true);
 				accept_event();
 				return;
 			}
@@ -1009,6 +1031,9 @@ void CodeTextEditor::_line_col_changed() {
 }
 
 void CodeTextEditor::_text_changed() {
+	code_actions.clear();
+	ungrouped_current_code_actions.clear();
+
 	if (code_complete_enabled && text_editor->is_insert_text_operation()) {
 		code_complete_timer_line = text_editor->get_caret_line();
 		code_complete_timer->start();
@@ -1159,6 +1184,16 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_indent_size(EDITOR_GET("text_editor/behavior/indent/size"));
 	text_editor->set_auto_indent_enabled(EDITOR_GET("text_editor/behavior/indent/auto_indent"));
 	text_editor->set_indent_wrapped_lines(EDITOR_GET("text_editor/behavior/indent/indent_wrapped_lines"));
+
+	// Behavior: Code Actions
+	show_code_actions = EDITOR_GET("text_editor/behavior/code_actions/show_code_actions_button");
+	if (text_editor->is_connected(SceneStringName(draw), callable_mp(this, &CodeTextEditor::_on_text_editor_draw))) {
+		if (!show_code_actions) {
+			text_editor->disconnect(SceneStringName(draw), callable_mp(this, &CodeTextEditor::_on_text_editor_draw));
+		}
+	} else if (show_code_actions) {
+		text_editor->connect(SceneStringName(draw), callable_mp(this, &CodeTextEditor::_on_text_editor_draw));
+	}
 
 	// Completion
 	text_editor->set_auto_brace_completion_enabled(EDITOR_GET("text_editor/completion/auto_brace_complete"));
@@ -1666,6 +1701,9 @@ void CodeTextEditor::_update_text_editor_theme() {
 	warning_button->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 	warning_button->add_theme_color_override(SceneStringName(font_color), warning_color);
 
+	code_action_dropdown_icon = get_editor_theme_icon(SNAME("CodeActionDropdown"));
+	code_action_icon = get_editor_theme_icon(SNAME("CodeAction"));
+
 	const int child_count = status_bar->get_child_count();
 	for (int i = 0; i < child_count; i++) {
 		Control *child = Object::cast_to<Control>(status_bar->get_child(i));
@@ -1948,6 +1986,7 @@ void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("show_goto_popup"));
 	ADD_SIGNAL(MethodInfo("navigation_preview_ended"));
 	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "zoom_factor")));
+	ADD_SIGNAL(MethodInfo("document_edits_requested", PropertyInfo(Variant::DICTIONARY, "edits")));
 	ADD_SIGNAL(MethodInfo("_request_save_new_history", PropertyInfo(Variant::DICTIONARY, "state")));
 }
 
@@ -1956,15 +1995,160 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 	code_complete_ud = p_ud;
 }
 
+Rect2 CodeTextEditor::_get_code_action_button_inline_rect() const {
+	const int line = text_editor->get_caret_line();
+	const int indent_level = text_editor->get_indent_level(line);
+
+	const int line_spacing = text_editor->get_theme_constant("line_spacing");
+	const int row_height = text_editor->get_line_height() - line_spacing;
+	Size2 icon_size(row_height, row_height);
+
+	Rect2i rect = text_editor->get_rect_at_line_column(line, 0);
+	if (rect.position == Point2i(-1, -1)) {
+		return Rect2i();
+	}
+
+	Point2 icon_position = rect.position;
+	icon_position.x = text_editor->get_total_gutter_width() + (row_height / 2.0);
+	icon_position.y = icon_position.y + (row_height / 2.0) - (icon_size.y / 2.0) + (line_spacing / 2.0);
+
+	// If the current line doesn't have indentation, then the button will cover
+	// the beginning of the line, so we need to find a better place for it.
+	if (text_editor->get_line_width(line) > 0 && indent_level < 4) {
+		// If there is a line above, and it has space for the button, we can put it there.
+		if (line > 0 && (text_editor->get_indent_level(line - 1) >= 4 || text_editor->get_line_width(line - 1) == 0)) {
+			icon_position.y -= text_editor->get_line_height();
+		}
+
+		// If this is the last line, or the line below has space for the button, we can put it there.
+		else if (line == text_editor->get_line_count() - 1 || text_editor->get_indent_level(line + 1) >= 4 || text_editor->get_line_width(line + 1) == 0) {
+			icon_position.y += text_editor->get_line_height() * (1 + text_editor->get_line_wrap_count(line));
+		}
+	}
+
+	icon_position = icon_position.round();
+
+	return Rect2(icon_position, icon_size);
+}
+
+void CodeTextEditor::_on_text_editor_draw() const {
+	if (!code_action_dropdown_icon.is_valid() || !code_actions_exist_for_line(text_editor->get_caret_line())) {
+		return;
+	}
+
+	RID ci = text_editor->get_text_canvas_item();
+	Rect2 inline_rect = _get_code_action_button_inline_rect();
+	if (inline_rect.position == Point2i()) {
+		return;
+	}
+	code_action_dropdown_icon->draw_rect(ci, inline_rect);
+}
+
+void CodeTextEditor::_on_code_action_id_pressed(int p_id) {
+	EditorLanguage::CodeActionOperation ca = ungrouped_current_code_actions[p_id];
+	Array document_edits_arr;
+	for (const EditorLanguage::DocumentEditOperation &doc_edit : ca.document_edits) {
+		Dictionary de_dict;
+		de_dict["file_path"] = doc_edit.file_path;
+
+		Array edits_arr;
+		for (const EditorLanguage::TextEdit &edit : doc_edit.edits) {
+			Dictionary te_dict;
+			te_dict["start_line"] = edit.start_line;
+			te_dict["start_column"] = edit.start_column;
+			te_dict["end_line"] = edit.end_line;
+			te_dict["end_column"] = edit.end_column;
+			te_dict["new_text"] = edit.new_text;
+			edits_arr.append(te_dict);
+		}
+		de_dict["edits"] = edits_arr;
+		document_edits_arr.append(de_dict);
+	}
+	emit_signal(SNAME("document_edits_requested"), document_edits_arr);
+}
+
+void CodeTextEditor::popup_code_actions(int p_line, bool p_from_shortcut) {
+	if (code_action_popup == nullptr) {
+		code_action_popup = memnew(PopupMenu);
+		code_action_popup->connect(SceneStringName(id_pressed), callable_mp(this, &CodeTextEditor::_on_code_action_id_pressed));
+		add_child(code_action_popup);
+	}
+	code_action_popup->clear();
+
+	ungrouped_current_code_actions.clear();
+	int action_index = 0;
+
+	if (!code_actions.has(p_line)) {
+		return;
+	}
+
+	for (const EditorLanguage::CodeActionGroup &group : code_actions[p_line]) {
+		code_action_popup->add_separator(group.title, -1);
+		for (const EditorLanguage::CodeActionOperation &action : group.actions) {
+			code_action_popup->add_icon_item(code_action_icon, action.description, action_index);
+			ungrouped_current_code_actions.push_back(action);
+			action_index++;
+		}
+	}
+
+	if (action_index == 0) {
+		return;
+	}
+
+	if (p_from_shortcut) {
+		if (!text_editor->is_caret_visible()) {
+			text_editor->adjust_viewport_to_caret();
+		}
+		callable_mp(this, &CodeTextEditor::_deferred_popup_code_actions).call_deferred();
+		return;
+	}
+
+	// Accessing from the button, so we should just use the button's position
+	// to determine where to place the popup.
+	Rect2 button_rect = _get_code_action_button_inline_rect();
+	Point2 pos = button_rect.position;
+	pos.y += button_rect.size.y;
+	pos = text_editor->get_global_transform_with_canvas().xform(pos);
+
+	pos += get_window()->get_position();
+	code_action_popup->popup(Rect2i(pos, Size2i()));
+	code_action_popup->set_focused_item(1); // The item at index 0 will be the first section's header.
+}
+
+void CodeTextEditor::_deferred_popup_code_actions() {
+	// This method is necessary because adjust_viewport_to_caret doesn't take effect until the next frame,
+	// so if we try to call get_rect_at_line_column() immediately after it, we get invalid data.
+	int l = text_editor->get_caret_line();
+	int c = text_editor->get_caret_column();
+
+	Rect2 line_rect = text_editor->get_rect_at_line_column(l, c);
+	Point2 pos = text_editor->get_global_transform_with_canvas().xform(line_rect.position);
+	pos.y += line_rect.size.y;
+
+	pos += get_window()->get_position();
+	code_action_popup->popup(Rect2i(pos, Size2i()));
+	code_action_popup->set_focused_item(1); // The item at index 0 will be the first section's header.
+}
+
+String CodeTextEditor::get_tooltip(const Point2 &p_pos) const {
+	if (show_code_actions && _get_code_action_button_inline_rect().has_point(p_pos) && code_actions_exist_for_line(text_editor->get_caret_line())) {
+		return TTRC("Show Code Actions") + vformat(" (%s)", ED_GET_SHORTCUT("script_editor/code_actions")->get_as_text());
+	} else {
+		return "";
+	}
+}
+
 CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
 	ED_SHORTCUT("script_editor/zoom_in", TTRC("Zoom In"), KeyModifierMask::CMD_OR_CTRL | Key::EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTRC("Zoom Out"), KeyModifierMask::CMD_OR_CTRL | Key::MINUS);
 	ED_SHORTCUT_ARRAY("script_editor/reset_zoom", TTRC("Reset Zoom"),
 			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KEY_0), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_0) });
+	ED_SHORTCUT("script_editor/code_actions", TTRC("Show Code Actions"), KeyModifierMask::CMD_OR_CTRL | Key::APOSTROPHE);
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);
+	text_editor->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	text_editor->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_GDSCRIPT);
 	text_editor->set_draw_bookmarks_gutter(true);

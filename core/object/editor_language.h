@@ -193,6 +193,74 @@ public:
 	 */
 	virtual void format_code(String &r_code, uint32_t p_from_line, uint32_t p_to_line) const {}
 
+	/* CODE ACTIONS */
+	/**
+	 * @brief Specifies a series of text edits to make to a particular document.
+	 */
+	struct DocumentEditOperation {
+		String file_path;
+		LocalVector<TextEdit> edits;
+	};
+
+	/**
+	 * @brief Specifies a code action that the user can perform, in the form of
+	 * the description or title presented to the user, and the set of underlying
+	 * document edits that the code action will perform.
+	 */
+	struct CodeActionOperation {
+		String description;
+		LocalVector<DocumentEditOperation> document_edits;
+	};
+
+	/**
+	 * @brief Specifies a group of code actions, so they can be displayed together
+	 * in Godot's built-in script editor. For example, if a line has the `UNTYPED_DECLARATION`
+	 * and `UNUSED_VARIABLE` warnings, the quick fix menu will display:
+	 * ```text
+	 * -- UNTYPED_DECLARATION --
+	 * Add type specifier "String"
+	 * Ignore "UNTYPED_DECLARATION"
+	 *
+	 * -- UNUSED_VARIABLE --
+	 * Add underscore to variable name
+	 * Remove variable declaration
+	 * Ignore "UNUSED_VARIABLE"
+	 * ```
+	 *
+	 * Note that the LSP does not support groups like this, so external IDEs will display
+	 * all actions in one continuous list.
+	 *
+	 * This chart demonstrates an example of what a `CodeActionGroup` for an `UNTYPED_DECLARATION`
+	 * warning might look like:
+	 * ```text
+	 * CodeActionGroup
+	 * ├─ title = "UNTYPED_DECLARATION"
+	 * └─ actions
+	 *    ├─ actions[0]
+	 *    │  ├─ description = "Add type specifier \"String\""
+	 *    │  └─ edits
+	 *    │     └─ edits[0]
+	 *    │        ├─ new_text = ": String"
+	 *    │        ├─ start_line = 4
+	 *    │        ├─ start_column = 5
+	 *    │        ├─ end_line = 4
+	 *    │        └─ end_column = 5
+	 *    └─ actions[1]
+	 *       ├─ description = "Ignore \"UNTYPED_DECLARATION\""
+	 *       └─ edits
+	 *          └─ edits[0]
+	 *             ├─ new_text = "@warning_ignore('untyped_declaration')"
+	 *             ├─ start_line = 3
+	 *             ├─ start_column = 0
+	 *             ├─ end_line = 3
+	 *             └─ end_column = 0
+	 * ```
+	 */
+	struct CodeActionGroup {
+		String title;
+		LocalVector<CodeActionOperation> actions;
+	};
+
 	struct Warning {
 		/// One-based.
 		int start_line = 0;
@@ -204,6 +272,7 @@ public:
 
 		String string_code;
 		String message;
+		CodeActionGroup code_actions;
 	};
 
 	struct ScriptError {
@@ -214,6 +283,7 @@ public:
 		int end_line = -1;
 		int end_column = -1;
 		String message;
+		CodeActionGroup code_actions;
 	};
 
 	/**

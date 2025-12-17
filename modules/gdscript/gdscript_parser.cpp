@@ -44,6 +44,10 @@
 #include "servers/text/text_server.h"
 #endif
 
+#ifdef TOOLS_ENABLED
+#include "editor/gdscript_code_actions.h"
+#endif // TOOLS_ENABLED
+
 // This function is used to determine that a type is "built-in" as opposed to native
 // and custom classes. So `Variant::NIL` and `Variant::OBJECT` are excluded:
 // `Variant::NIL` - `null` is literal, not a type.
@@ -266,13 +270,20 @@ void GDScriptParser::push_error(const String &p_message, int p_start_line, int p
 	errors.push_back(err);
 }
 
+#ifdef TOOLS_ENABLED
+void GDScriptParser::append_code_actions_to_last_error(const EditorLanguage::CodeActionGroup &p_code_action_group) {
+	ERR_FAIL_COND_MSG(errors.is_empty(), "There is no error for a code action group to be added to.");
+	errors.back()->get().code_actions = p_code_action_group;
+}
+#endif // TOOLS_ENABLED
+
 #ifdef DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_NULL(p_source);
-	push_warning(p_source->start_line, p_source->start_column, p_source->end_line, p_source->end_column, p_code, p_symbols);
+	push_warning(p_source, p_source->start_line, p_source->start_column, p_source->end_line, p_source->end_column, p_code, p_symbols);
 }
 
-void GDScriptParser::push_warning(int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
+void GDScriptParser::push_warning(const Node *p_source, int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_INDEX(p_code, GDScriptWarning::WARNING_MAX);
 
 	if (is_project_ignoring_warnings || is_script_ignoring_warnings) {
@@ -293,6 +304,17 @@ void GDScriptParser::push_warning(int p_start_line, int p_start_column, int p_en
 	pw.treated_as_error = warn_level == GDScriptWarning::ERROR;
 	pw.symbols = p_symbols;
 
+#ifdef TOOLS_ENABLED
+	EditorLanguage::CodeActionGroup action_group;
+	action_group.title = GDScriptWarning::get_name_from_code(p_code);
+	const LocalVector<EditorLanguage::CodeActionOperation> code_actions = GDScriptCodeActions::get_code_actions_for_warning(p_source, p_code, script_path);
+	for (const EditorLanguage::CodeActionOperation &op : code_actions) {
+		action_group.actions.push_back(op);
+	}
+	action_group.actions.push_back(GDScriptCodeActions::ignore_warning(p_code, source, script_path, p_start_line));
+	pw.code_actions = action_group;
+#endif // TOOLS_ENABLED
+
 	pending_warnings.push_back(pw);
 }
 
@@ -312,9 +334,15 @@ void GDScriptParser::apply_pending_warnings() {
 		warning.start_column = pw.start_column;
 		warning.end_line = pw.end_line;
 		warning.end_column = pw.end_column;
+#ifdef TOOLS_ENABLED
+		warning.code_actions = pw.code_actions;
+#endif // TOOLS_ENABLED
 
 		if (pw.treated_as_error) {
 			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.start_line, pw.start_column, pw.end_line, pw.end_column);
+#ifdef TOOLS_ENABLED
+			append_code_actions_to_last_error(warning.code_actions);
+#endif // TOOLS_ENABLED
 			continue;
 		}
 
@@ -448,7 +476,7 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body) {
 	clear();
 
-	String source = p_source_code;
+	source = p_source_code;
 	int cursor_line = -1;
 	int cursor_column = -1;
 	for_completion = p_for_completion;
@@ -3907,7 +3935,7 @@ bool GDScriptParser::parse_standalone_string() {
 		// For compatibility we allow standalone strings without erroring.
 		advance();
 #ifdef DEBUG_ENABLED
-		push_warning(previous.start_line, previous.start_column, previous.end_line, previous.end_column, GDScriptWarning::STANDALONE_EXPRESSION);
+		push_warning(nullptr, previous.start_line, previous.start_column, previous.end_line, previous.end_column, GDScriptWarning::STANDALONE_EXPRESSION);
 #endif
 		if (!match(GDScriptTokenizer::Token::NEWLINE)) {
 			push_error("Expected newline after comment string.");
