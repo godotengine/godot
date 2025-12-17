@@ -362,6 +362,10 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
+String OS::expand_path(const String &p_path) const {
+	return p_path;
+}
+
 void OS::create_lock_file() {
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
 		return;
