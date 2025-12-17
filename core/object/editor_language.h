@@ -193,6 +193,56 @@ public:
 	 */
 	virtual void format_code(String &r_code, uint32_t p_from_line, uint32_t p_to_line) const {}
 
+	/* CODE ACTIONS */
+	struct DocumentEditOperation {
+		String file_path;
+		Vector<ScriptLanguage::TextEdit> edits;
+
+		const Dictionary to_dict() const {
+			Dictionary out;
+			out["file_path"] = file_path;
+
+			Array edits_arr;
+			for (const ScriptLanguage::TextEdit &edit : edits) {
+				edits_arr.append(edit.to_dict());
+			}
+			out["edits"] = edits_arr;
+			return out;
+		}
+
+		static DocumentEditOperation from_dict(const Dictionary &p_dict) {
+			DocumentEditOperation out;
+			out.file_path = p_dict["file_path"];
+
+			for (const Variant &v : Array(p_dict["edits"])) {
+				out.edits.append(ScriptLanguage::TextEdit::from_dict(v));
+			}
+			return out;
+		}
+	};
+
+	struct CodeActionOperation {
+		String description;
+		Vector<DocumentEditOperation> document_edits;
+
+		const Dictionary to_dict() const {
+			Dictionary out;
+			out["description"] = description;
+
+			Array document_edits_arr;
+			for (const DocumentEditOperation &doc_edit : document_edits) {
+				document_edits_arr.append(doc_edit.to_dict());
+			}
+			out["document_edits"] = document_edits_arr;
+			return out;
+		}
+	};
+
+	struct CodeActionGroup {
+		String title;
+		Vector<CodeActionOperation> actions;
+	};
+
 	struct Warning {
 		/// One-based.
 		int start_line = 0;
@@ -204,6 +254,7 @@ public:
 
 		String string_code;
 		String message;
+		CodeActionGroup code_actions;
 	};
 
 	struct ScriptError {
@@ -214,6 +265,18 @@ public:
 		int end_line = -1;
 		int end_column = -1;
 		String message;
+		CodeActionGroup code_actions;
+	};
+
+	struct CodeActionAndDiagnostics {
+		CodeActionOperation code_action;
+		Vector<Warning> related_warnings;
+		Vector<ScriptError> related_errors;
+	};
+
+	struct CodeActionGroupWithDiagnostics {
+		String title;
+		Vector<CodeActionAndDiagnostics> actions;
 	};
 
 	/**
@@ -230,6 +293,8 @@ public:
 	 * @return `true` if the script has no errors, otherwise `false`.
 	 */
 	virtual bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const { return true; }
+
+	virtual Error get_code_actions(const String &p_code, const String &p_path, Vector<CodeActionGroupWithDiagnostics> *r_actions) { return ERR_UNAVAILABLE; }
 
 	virtual ~EditorLanguage() = default;
 };
