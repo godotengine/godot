@@ -817,6 +817,11 @@ LocalizationEditor::LocalizationEditor() {
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 
+		mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
+
 		translation_remap_options = memnew(Tree);
 		translation_remap_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		translation_remap_options->set_columns(2);

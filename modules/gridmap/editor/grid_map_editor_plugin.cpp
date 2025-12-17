@@ -45,6 +45,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
 #include "scene/main/window.h"
@@ -1637,10 +1638,15 @@ GridMapEditor::GridMapEditor() {
 
 	toolbar->add_child(options);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderBottomPanel");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	mesh_library_palette = memnew(ItemList);
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	add_child(mesh_library_palette);
-	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
+	mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
+	mc->add_child(mesh_library_palette);
 	mesh_library_palette->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 	mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 

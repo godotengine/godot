@@ -1875,7 +1875,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// MarginContainers with negative margins, to negate borders. Used with scroll hints.
 		{
-			int margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
+			int panel_margin = p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
+			int margin = -panel_margin;
 
 			p_theme->set_type_variation("NoBorderHorizontal", "MarginContainer");
 			p_theme->set_constant("margin_left", "NoBorderHorizontal", margin);
@@ -1886,7 +1887,15 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_constant("margin_right", "NoBorderHorizontalBottom", margin);
 			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
 
-			margin = margin - p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
+			int bottom_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
+			margin = -bottom_margin;
+
+			// Used in editors residing in the bottom panel.
+			p_theme->set_type_variation("NoBorderBottomPanel", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderBottomPanel", margin);
+			p_theme->set_constant("margin_right", "NoBorderBottomPanel", margin);
+
+			margin = -panel_margin - bottom_margin;
 
 			// Used in the animation track editor.
 			p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
