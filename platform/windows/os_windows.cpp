@@ -2502,6 +2502,19 @@ String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
 	return get_data_path().path_join(p_user_dir).replace_char('\\', '/');
 }
 
+String OS_Windows::expand_path(const String &p_path) const {
+	String path = p_path;
+
+	if (path.begins_with("~/") || path.begins_with("~\\")) {
+		String home = get_environment("USERPROFILE");
+		if (!home.is_empty()) {
+			path = home + path.substr(1);
+		}
+	}
+
+	return path;
+}
+
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");

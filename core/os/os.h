@@ -319,6 +319,8 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
+	virtual String expand_path(const String &p_path) const;
+
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }
 
 	void create_lock_file();
