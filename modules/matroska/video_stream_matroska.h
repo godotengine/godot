@@ -67,7 +67,10 @@ private:
 	RID video_session;
 
 	RID yuv_sampler;
+	RID yuv_shader;
+	RID yuv_pipeline;
 	Vector<RID> dst_yuv_pool;
+	Vector<RID> dst_rgba_pool;
 
 	size_t counter;
 	Ref<ImageTexture> image_texture;
