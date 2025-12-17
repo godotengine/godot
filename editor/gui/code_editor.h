@@ -226,6 +226,24 @@ class CodeTextEditor : public VBoxContainer {
 	void _toggle_files_pressed();
 
 protected:
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+
+	bool show_code_actions = true;
+	PopupMenu *code_action_popup = nullptr;
+	void _on_code_action_id_pressed(int p_id);
+	void popup_code_actions(int p_line, bool p_from_shortcut = false);
+	void _deferred_popup_code_actions();
+	Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> get_code_actions_for_line(int p_line) const;
+
+	Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> code_actions;
+	LocalVector<ScriptLanguage::CodeActionOperation> ungrouped_current_code_actions;
+
+	Rect2 _get_code_action_button_inline_rect() const;
+	void _on_text_editor_draw() const;
+
+	Ref<Texture2D> code_action_dropdown_icon;
+	Ref<Texture2D> code_action_icon;
+
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
 	void _text_changed();
@@ -295,6 +313,9 @@ public:
 	void goto_next_bookmark();
 	void goto_prev_bookmark();
 	void remove_all_bookmarks();
+	void set_code_actions(const Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> &p_actions) {
+		code_actions = p_actions;
+	}
 
 	void set_zoom_factor(float p_zoom_factor);
 	float get_zoom_factor();

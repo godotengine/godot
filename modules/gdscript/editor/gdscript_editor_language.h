@@ -46,6 +46,8 @@ public:
 
 	virtual void format_code(String &r_code, uint32_t p_from_line, uint32_t p_to_line) const override;
 
+	virtual Error get_code_actions(const String &p_code, const String &p_path, Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> *r_actions) override;
+
 	GDScriptEditorLanguage() {
 		ERR_FAIL_COND(singleton != nullptr);
 		singleton = this;
