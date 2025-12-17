@@ -1580,6 +1580,9 @@ void FileDialog::_select_drive(int p_idx) {
 }
 
 void FileDialog::_change_dir(const String &p_new_dir) {
+	if (p_new_dir.is_relative_path()) {
+		dir_access->change_dir(OS::get_singleton()->get_resource_dir());
+	}
 	if (root_prefix.is_empty()) {
 		dir_access->change_dir(p_new_dir);
 	} else {
