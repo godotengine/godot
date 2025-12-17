@@ -48,6 +48,8 @@ public:
 
 	virtual bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const override;
 
+	virtual Error get_code_actions(const String &p_code, const String &p_path, Vector<CodeActionGroupWithDiagnostics> *r_actions) override;
+
 	GDScriptEditorLanguage() {
 		ERR_FAIL_COND(singleton != nullptr);
 		singleton = this;
