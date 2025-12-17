@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include "editor/docks/editor_dock_manager.h"
+#include "editor/docks/dock_constants.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/margin_container.h"
 
 class ConfigFile;
+class DockTabContainer;
 class Shortcut;
 class WindowWrapper;
 
@@ -72,6 +73,7 @@ private:
 	bool enabled = true;
 	int previous_tab_index = -1;
 	WindowWrapper *dock_window = nullptr;
+	DockTabContainer *parent_dock_container = nullptr;
 	int dock_slot_index = DockConstants::DOCK_SLOT_NONE;
 
 	void _set_default_slot_bind(EditorPlugin::DockSlot p_slot);
@@ -80,6 +82,7 @@ private:
 	void _emit_changed();
 
 protected:
+	void _notification(int p_notification);
 	static void _bind_methods();
 
 	GDVIRTUAL1(_update_layout, int)
@@ -89,6 +92,7 @@ protected:
 public:
 	void open();
 	void make_visible();
+	void make_floating();
 	void close();
 
 	void set_title(const String &p_title);
@@ -129,6 +133,11 @@ public:
 
 	String get_display_title() const;
 	String get_effective_layout_key() const;
+
+	DockTabContainer *get_parent_container() const { return parent_dock_container; }
+	void set_tab_index(int p_index, bool p_set_current);
+	void update_tab_style();
+	Ref<Texture2D> get_effective_icon(const Callable &p_icon_fetch);
 
 	virtual void update_layout(DockLayout p_layout) { GDVIRTUAL_CALL(_update_layout, p_layout); }
 	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const { GDVIRTUAL_CALL(_save_layout_to_config, p_layout, p_section); }

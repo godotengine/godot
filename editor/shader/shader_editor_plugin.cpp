@@ -842,7 +842,7 @@ void ShaderEditorPlugin::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (make_floating_shortcut.is_valid() && make_floating_shortcut->matches_event(p_event)) {
-		EditorDockManager::get_singleton()->make_dock_floating(shader_dock);
+		shader_dock->make_floating();
 	}
 }
 
