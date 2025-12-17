@@ -714,9 +714,8 @@ public:
 		VideoCodingOperation video_operation;
 		VkQueryPool vk_query_pool = VK_NULL_HANDLE;
 
-		TextureID dpb_image;
-		Vector<VkImageView> dpb_views;
 		uint64_t current_dpb_index;
+		Vector<TextureInfo *> dpb_views;
 
 		Vector<void *> std_reference_infos;
 	};
@@ -726,7 +725,7 @@ public:
 	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) override final;
 	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) override final;
 
-	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) override final;
+	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) override final;
 	virtual void video_session_add_query_pool(VideoSessionID p_video_session, QueryPoolID p_query_pool) override final;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) override final;

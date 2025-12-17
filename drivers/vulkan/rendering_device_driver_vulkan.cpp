@@ -354,8 +354,8 @@ static VkPipelineStageFlags2 _rd_to_vk_pipeline_stages(BitField<RDD::PipelineSta
 	return VkPipelineStageFlags2(p_stages) | vk_flags;
 }
 
-static VkAccessFlags _rd_to_vk_access_flags(BitField<RDD::BarrierAccessBits> p_access) {
-	VkAccessFlags vk_flags = 0;
+static VkAccessFlags2 _rd_to_vk_access_flags(BitField<RDD::BarrierAccessBits> p_access) {
+	VkAccessFlags2 vk_flags = 0;
 	if (p_access.has_flag(RDD::BARRIER_ACCESS_COPY_READ_BIT) || p_access.has_flag(RDD::BARRIER_ACCESS_RESOLVE_READ_BIT)) {
 		vk_flags |= VK_ACCESS_TRANSFER_READ_BIT;
 		p_access.clear_flag(RDD::BARRIER_ACCESS_COPY_READ_BIT);
@@ -385,7 +385,7 @@ static VkAccessFlags _rd_to_vk_access_flags(BitField<RDD::BarrierAccessBits> p_a
 	}
 
 	// The rest of the flags have compatible numeric values with Vulkan.
-	return VkAccessFlags(p_access) | vk_flags;
+	return VkAccessFlags2(p_access) | vk_flags;
 }
 
 // RDD::CompareOperator == VkCompareOp.
@@ -3104,16 +3104,23 @@ Error RenderingDeviceDriverVulkan::command_queue_execute(CommandQueueID p_cmd_qu
 	const CommandBufferInfo *rdd_command_buffer = (const CommandBufferInfo *)(p_cmd_buffer.id);
 	Fence *fence_info = (Fence *)p_fence.id;
 
-	VkSubmitInfo submit_info = {};
-	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.waitSemaphoreCount = 0;
-	submit_info.pWaitSemaphores = nullptr;
-	submit_info.commandBufferCount = 1;
-	submit_info.pCommandBuffers = &rdd_command_buffer->vk_command_buffer;
-	submit_info.signalSemaphoreCount = 0;
-	submit_info.pSignalSemaphores = nullptr;
+	VkCommandBufferSubmitInfo cmd_buffer_submit = {};
+	cmd_buffer_submit.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+	cmd_buffer_submit.pNext = nullptr;
+	cmd_buffer_submit.commandBuffer = rdd_command_buffer->vk_command_buffer;
+	cmd_buffer_submit.deviceMask = 0;
 
-	vkQueueSubmit(device_queue.queue, 1, &submit_info, fence_info->vk_fence);
+	VkSubmitInfo2 submit_info = {};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
+	submit_info.pNext = nullptr;
+	submit_info.waitSemaphoreInfoCount = 0;
+	submit_info.pWaitSemaphoreInfos = nullptr;
+	submit_info.commandBufferInfoCount = 1;
+	submit_info.pCommandBufferInfos = &cmd_buffer_submit;
+	submit_info.signalSemaphoreInfoCount = 0;
+	submit_info.pSignalSemaphoreInfos = nullptr;
+
+	vkQueueSubmit2KHR(device_queue.queue, 1, &submit_info, fence_info->vk_fence);
 
 	return OK;
 }
@@ -6649,11 +6656,15 @@ void RenderingDeviceDriverVulkan::video_profile_get_format_properties(const Vide
 	}
 }
 
-RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) {
+RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) {
 	VkVideoProfileInfoKHR video_profile = {};
 	vk_video_profile_from_state(p_profile, &video_profile);
 
-	TextureInfo *dpb_info = (TextureInfo *)p_dpb.id;
+	Vector<TextureInfo *> dpb_textures;
+	dpb_textures.resize(p_dpb_views.size());
+	for (size_t i = 0; i < p_dpb_views.size(); i++) {
+		dpb_textures.set(i, (TextureInfo *)p_dpb_views[i].id);
+	}
 
 	CommandQueueFamilyID command_queue_family = command_queue_family_get(COMMAND_QUEUE_FAMILY_DECODE_BIT);
 	uint32_t command_queue_family_index = command_queue_family.id - 1;
@@ -6691,12 +6702,12 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	session_info.queueFamilyIndex = command_queue_family_index;
 	session_info.flags = VK_VIDEO_SESSION_CREATE_INLINE_QUERIES_BIT_KHR;
 	session_info.pVideoProfile = &video_profile;
-	session_info.pictureFormat = dpb_info->vk_create_info.format;
-	session_info.maxCodedExtent.width = dpb_info->vk_create_info.extent.width;
-	session_info.maxCodedExtent.height = dpb_info->vk_create_info.extent.height;
-	session_info.referencePictureFormat = dpb_info->vk_create_info.format;
-	session_info.maxDpbSlots = dpb_info->vk_create_info.arrayLayers;
-	session_info.maxActiveReferencePictures = p_max_active_reference_pictures;
+	session_info.pictureFormat = dpb_textures[0]->vk_create_info.format;
+	session_info.maxCodedExtent.width = dpb_textures[0]->vk_create_info.extent.width;
+	session_info.maxCodedExtent.height = dpb_textures[0]->vk_create_info.extent.height;
+	session_info.referencePictureFormat = dpb_textures[0]->vk_create_info.format;
+	session_info.maxDpbSlots = dpb_textures.size();
+	session_info.maxActiveReferencePictures = dpb_textures.size() - 1;
 	session_info.pStdHeaderVersion = &video_capabilities.stdHeaderVersion;
 
 	VkVideoSessionKHR video_session;
@@ -6766,17 +6777,9 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	video_session_info->video_operation = p_profile.operation;
 
 	video_session_info->current_dpb_index = 0;
+	video_session_info->dpb_views = dpb_textures;
+
 	video_session_info->std_reference_infos.reserve(session_info.maxDpbSlots);
-
-	video_session_info->dpb_image = p_dpb;
-	for (size_t i = 0; i < session_info.maxDpbSlots; i++) {
-		RDD::TextureView format = RDD::TextureView();
-		format.format = dpb_info->rd_format;
-
-		TextureID id = texture_create_shared_from_slice(p_dpb, format, TEXTURE_SLICE_2D, i, 1, 0, 1);
-		TextureInfo *view = (TextureInfo *)id.id;
-		video_session_info->dpb_views.push_back(view->vk_view);
-	}
 
 	return RDD::VideoSessionID(video_session_info);
 }
@@ -6791,7 +6794,7 @@ void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSession
 
 	TightLocalVector<StdVideoH264SequenceParameterSet> sps_sets;
 	for (VideoCodingH264SequenceParameterSet rd_sps : p_sps_sets) {
-		StdVideoH264SequenceParameterSet vk_sps;
+		StdVideoH264SequenceParameterSet vk_sps = {};
 
 		vk_sps.flags.constraint_set0_flag = rd_sps.constraint_set0_flag;
 		vk_sps.flags.constraint_set1_flag = rd_sps.constraint_set1_flag;
@@ -6926,6 +6929,8 @@ void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSession
 		vk_sps.pScalingLists = nullptr;
 
 		StdVideoH264SequenceParameterSetVui *vk_sps_vui = ALLOCA_SINGLE(StdVideoH264SequenceParameterSetVui);
+		*vk_sps_vui = {};
+		vk_sps_vui->pHrdParameters = nullptr;
 
 		vk_sps_vui->flags.aspect_ratio_info_present_flag = rd_sps.vui.aspect_ratio_info_present_flag;
 		vk_sps_vui->flags.overscan_info_present_flag = rd_sps.vui.overscan_info_present_flag;
@@ -6967,7 +6972,7 @@ void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSession
 
 	TightLocalVector<StdVideoH264PictureParameterSet> pps_sets;
 	for (VideoCodingH264PictureParameterSet rd_pps : p_pps_sets) {
-		StdVideoH264PictureParameterSet vk_pps;
+		StdVideoH264PictureParameterSet vk_pps = {};
 
 		vk_pps.flags.transform_8x8_mode_flag = rd_pps.transform_8x8_mode_flag;
 		vk_pps.flags.redundant_pic_cnt_present_flag = rd_pps.redundant_pic_cnt_present_flag;
@@ -7193,7 +7198,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 		reference_slot_picture.codedOffset.y = 0;
 		reference_slot_picture.codedExtent = extent;
 		reference_slot_picture.baseArrayLayer = 0;
-		reference_slot_picture.imageViewBinding = video_session_info->dpb_views[i];
+		reference_slot_picture.imageViewBinding = video_session_info->dpb_views[i]->vk_view;
 
 		reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 		reference_slot_info.pNext = &h264_dpb_slot;
@@ -7226,7 +7231,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	reference_slot_picture.codedOffset.y = 0;
 	reference_slot_picture.codedExtent = extent;
 	reference_slot_picture.baseArrayLayer = 0;
-	reference_slot_picture.imageViewBinding = video_session_info->dpb_views[dpb_index];
+	reference_slot_picture.imageViewBinding = video_session_info->dpb_views[dpb_index]->vk_view;
 
 	reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 	reference_slot_info.pNext = &h264_dpb_slot;
@@ -7262,6 +7267,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	std_h264_info.PicOrderCnt[0] = p_std_h264_info.pic_order_cnt_top_field;
 	std_h264_info.PicOrderCnt[1] = p_std_h264_info.pic_order_cnt_bottom_field;
 
+	// TODO: consider using for interlaced video.
 	uint32_t slice_offset = 0;
 	VkVideoDecodeH264PictureInfoKHR h264_picture_info = {};
 	h264_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR;

@@ -5830,29 +5830,33 @@ RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_
 	// TODO: Determine with driver capabilities
 	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 
-	uint32_t max_active_reference_pictures;
 	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
 		dpb_format.array_layers = 17;
-		max_active_reference_pictures = 16;
 	} else if (p_profile.operation == VIDEO_OPERATION_DECODE_AV1) {
 		dpb_format.array_layers = 10;
-		max_active_reference_pictures = 9;
 	} else {
 		dpb_format.array_layers = 999999;
-		max_active_reference_pictures = 999999;
 	}
 
-	RDD::TextureView dpb_view = {};
-	dpb_view.format = dpb_format.format;
-	dpb_view.swizzle_a = TEXTURE_SWIZZLE_IDENTITY;
-	dpb_view.swizzle_r = TEXTURE_SWIZZLE_IDENTITY;
-	dpb_view.swizzle_g = TEXTURE_SWIZZLE_IDENTITY;
-	dpb_view.swizzle_b = TEXTURE_SWIZZLE_IDENTITY;
+	RDD::TextureView dpb_view_format = {};
+	dpb_view_format.format = dpb_format.format;
+	dpb_view_format.swizzle_a = TEXTURE_SWIZZLE_IDENTITY;
+	dpb_view_format.swizzle_r = TEXTURE_SWIZZLE_IDENTITY;
+	dpb_view_format.swizzle_g = TEXTURE_SWIZZLE_IDENTITY;
+	dpb_view_format.swizzle_b = TEXTURE_SWIZZLE_IDENTITY;
 
 	VideoSession video_session;
 	video_session.video_profile = p_profile;
-	video_session.dpb_id = driver->texture_create(dpb_format, dpb_view);
-	video_session.driver_id = driver->video_session_create(p_profile, video_session.dpb_id, max_active_reference_pictures);
+	video_session.dpb_id = driver->texture_create(dpb_format, dpb_view_format);
+
+	Vector<RDD::TextureID> dpb_views;
+	dpb_views.push_back(video_session.dpb_id);
+	for (size_t i = 1; i < dpb_format.array_layers; i++) {
+		RDD::TextureID dpb_view = driver->texture_create_shared_from_slice(video_session.dpb_id, dpb_view_format, TEXTURE_SLICE_2D, i, 1, 0, 1);
+		dpb_views.push_back(dpb_view);
+	}
+
+	video_session.driver_id = driver->video_session_create(p_profile, dpb_views);
 
 	RDD::QueryPoolID query_pool = driver->video_query_pool_create(1, p_profile);
 	driver->video_session_add_query_pool(video_session.driver_id, query_pool);
@@ -5958,17 +5962,17 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	driver->command_video_session_decode_h264(decode_buffer, video_session->driver_id, src_buffer, p_std_h264_info, dst_texture->driver_id);
 
 	RDD::TextureBarrier read_tb = {};
-	read_tb.texture = dst_texture->driver_id;
-	read_tb.prev_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
-	read_tb.next_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	read_tb.texture = video_session->dpb_id;
+	read_tb.prev_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
+	read_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
 	read_tb.src_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
-	read_tb.dst_access = RDD::BARRIER_ACCESS_SHADER_READ_BIT;
+	read_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_READ;
 	read_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
 	read_tb.subresources.mipmap_count = 1;
 	read_tb.subresources.layer_count = 1;
 
 	//TODO: use this barrier in a shader
-	//driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_VIDEO_DECODE, RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT, {}, {}, read_tb);
+	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_VIDEO_DECODE, RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, {}, {}, read_tb);
 }
 
 void RenderingDevice::video_session_decode_av1(RID p_video_session, Span<uint8_t> p_obu, VideoDecodeAV1Frame p_std_av1_info, RID p_dst_texture) {

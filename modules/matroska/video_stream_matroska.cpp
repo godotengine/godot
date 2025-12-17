@@ -931,7 +931,7 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	RD::TextureFormat dst_yuv_format;
 	dst_yuv_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 	dst_yuv_format.width = width;
-	dst_yuv_format.height = height;
+	dst_yuv_format.height = height + 8; //TODO: stream encoding uses a mutable reference not a copy
 	dst_yuv_format.depth = 1;
 	dst_yuv_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
@@ -1010,7 +1010,7 @@ void VideoStreamPlaybackMatroska::update(double p_delta) {
 
 	Ref<Image> frame;
 	frame.instantiate();
-	frame->set_data(width, height, false, Image::FORMAT_R8, data);
+	frame->set_data(width, height + 8, false, Image::FORMAT_R8, data);
 
 	image_texture->set_image(frame);
 	counter++;
