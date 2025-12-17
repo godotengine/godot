@@ -32,6 +32,7 @@
 
 #include "../grid_map.h"
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/item_list.h"
@@ -45,8 +46,8 @@ class ButtonGroup;
 class EditorZoomWidget;
 class BaseButton;
 
-class GridMapEditor : public VBoxContainer {
-	GDCLASS(GridMapEditor, VBoxContainer);
+class GridMapEditor : public EditorDock {
+	GDCLASS(GridMapEditor, EditorDock);
 
 	static constexpr int32_t GRID_CURSOR_SIZE = 50;
 
@@ -274,7 +275,6 @@ class GridMapEditorPlugin : public EditorPlugin {
 	GDCLASS(GridMapEditorPlugin, EditorPlugin);
 
 	GridMapEditor *grid_map_editor = nullptr;
-	Button *panel_button = nullptr;
 
 protected:
 	void _notification(int p_what);
