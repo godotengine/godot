@@ -2348,7 +2348,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			r_self_height = compute_item_height(p_item);
 			label_h = r_self_height + theme_cache.v_separation;
 
-			if (p_pos.y + label_h - theme_cache.offset.y + p_draw_ofs.y < 0) {
+			if (p_pos.y + label_h - theme_cache.offset.y < 0) {
 				continue; // No need to draw.
 			}
 
@@ -2708,7 +2708,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 		}
 
-		if (p_pos.y + label_h - theme_cache.offset.y + p_draw_ofs.y >= 0) {
+		if (p_pos.y + label_h - theme_cache.offset.y >= 0) {
 			// Draw the folding arrow.
 			if (!p_item->disable_folding && !hide_folding && p_item->first_child && p_item->get_visible_child_count() != 0) { // Has visible children, draw the guide box.
 				Ref<Texture2D> arrow;
