@@ -34,61 +34,56 @@
 #include "editor/docks/editor_dock.h"
 #include "scene/gui/dialogs.h"
 
-// Performs the actual search
-class FindInFiles : public Node {
-	GDCLASS(FindInFiles, Node);
+// Performs the actual search.
+class FindInFilesSearch : public Node {
+	GDCLASS(FindInFilesSearch, Node);
+
+	// Config.
+	String pattern;
+	HashSet<String> extension_filter;
+	HashSet<String> include_wildcards;
+	HashSet<String> exclude_wildcards;
+	String root_dir;
+	bool whole_words = true;
+	bool match_case = true;
+
+	// State.
+	bool searching = false;
+	String current_dir;
+	Vector<PackedStringArray> folders_stack;
+	Vector<String> files_to_scan;
+	int initial_files_count = 0;
+
+	void _process();
+	void _iterate();
+	void _scan_dir(const String &p_path, PackedStringArray &r_out_folders, PackedStringArray &r_out_files_to_scan);
+	void _scan_file(const String &p_fpath);
+
+	bool _is_file_matched(const HashSet<String> &p_wildcards, const String &p_file_path, bool p_case_sensitive) const;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
-	static const char *SIGNAL_RESULT_FOUND;
-	static const char *SIGNAL_FINISHED;
-
 	void set_search_text(const String &p_pattern);
 	void set_whole_words(bool p_whole_word);
 	void set_match_case(bool p_match_case);
-	void set_folder(const String &folder);
-	void set_filter(const HashSet<String> &exts);
+	void set_folder(const String &p_folder);
+	void set_filter(const HashSet<String> &p_exts);
 	void set_includes(const HashSet<String> &p_include_wildcards);
 	void set_excludes(const HashSet<String> &p_exclude_wildcards);
 
-	String get_search_text() const { return _pattern; }
+	String get_search_text() const { return pattern; }
 
-	bool is_whole_words() const { return _whole_words; }
-	bool is_match_case() const { return _match_case; }
+	bool is_whole_words() const { return whole_words; }
+	bool is_match_case() const { return match_case; }
 
 	void start();
 	void stop();
 
-	bool is_searching() const { return _searching; }
+	bool is_searching() const { return searching; }
 	float get_progress() const;
-
-protected:
-	void _notification(int p_what);
-
-	static void _bind_methods();
-
-private:
-	void _process();
-	void _iterate();
-	void _scan_dir(const String &path, PackedStringArray &out_folders, PackedStringArray &out_files_to_scan);
-	void _scan_file(const String &fpath);
-
-	bool _is_file_matched(const HashSet<String> &p_wildcards, const String &p_file_path, bool p_case_sensitive) const;
-
-	// Config
-	String _pattern;
-	HashSet<String> _extension_filter;
-	HashSet<String> _include_wildcards;
-	HashSet<String> _exclude_wildcards;
-	String _root_dir;
-	bool _whole_words = true;
-	bool _match_case = true;
-
-	// State
-	bool _searching = false;
-	String _current_dir;
-	Vector<PackedStringArray> _folders_stack;
-	Vector<String> _files_to_scan;
-	int _initial_files_count = 0;
 };
 
 class LineEdit;
@@ -96,25 +91,47 @@ class CheckBox;
 class FileDialog;
 class HBoxContainer;
 
-// Prompts search parameters
+// Prompts search parameters.
 class FindInFilesDialog : public AcceptDialog {
 	GDCLASS(FindInFilesDialog, AcceptDialog);
 
+	void _on_folder_button_pressed();
+	void _on_folder_selected(String p_path);
+	void _on_search_text_modified(const String &p_text);
+	void _on_search_text_submitted(const String &p_text);
+	void _on_replace_text_submitted(const String &p_text);
+
+	String _validate_filter_wildcard(const String &p_expression) const;
+
+	bool replace_mode = false;
+	LineEdit *search_text_line_edit = nullptr;
+
+	Label *replace_label = nullptr;
+	LineEdit *replace_text_line_edit = nullptr;
+
+	LineEdit *folder_line_edit = nullptr;
+	CheckBox *match_case_checkbox = nullptr;
+	CheckBox *whole_words_checkbox = nullptr;
+	Button *find_button = nullptr;
+	Button *replace_button = nullptr;
+	FileDialog *folder_dialog = nullptr;
+	HBoxContainer *filters_container = nullptr;
+	LineEdit *includes_line_edit = nullptr;
+	LineEdit *excludes_line_edit = nullptr;
+
+	HashMap<String, bool> filters_preferences;
+
+protected:
+	void _notification(int p_what);
+
+	void custom_action(const String &p_action) override;
+	static void _bind_methods();
+
 public:
-	enum FindInFilesMode {
-		SEARCH_MODE,
-		REPLACE_MODE
-	};
+	void set_search_text(const String &p_text);
+	void set_replace_text(const String &p_text);
 
-	static const char *SIGNAL_FIND_REQUESTED;
-	static const char *SIGNAL_REPLACE_REQUESTED;
-
-	FindInFilesDialog();
-
-	void set_search_text(const String &text);
-	void set_replace_text(const String &text);
-
-	void set_find_in_files_mode(FindInFilesMode p_mode);
+	void set_replace_mode(bool p_replace);
 
 	String get_search_text() const;
 	String get_replace_text() const;
@@ -125,39 +142,7 @@ public:
 	HashSet<String> get_includes() const;
 	HashSet<String> get_excludes() const;
 
-protected:
-	void _notification(int p_what);
-
-	void _visibility_changed();
-	void custom_action(const String &p_action) override;
-	static void _bind_methods();
-
-private:
-	void _on_folder_button_pressed();
-	void _on_folder_selected(String path);
-	void _on_search_text_modified(const String &text);
-	void _on_search_text_submitted(const String &text);
-	void _on_replace_text_submitted(const String &text);
-
-	String validate_filter_wildcard(const String &p_expression) const;
-
-	FindInFilesMode _mode;
-	LineEdit *_search_text_line_edit = nullptr;
-
-	Label *_replace_label = nullptr;
-	LineEdit *_replace_text_line_edit = nullptr;
-
-	LineEdit *_folder_line_edit = nullptr;
-	CheckBox *_match_case_checkbox = nullptr;
-	CheckBox *_whole_words_checkbox = nullptr;
-	Button *_find_button = nullptr;
-	Button *_replace_button = nullptr;
-	FileDialog *_folder_dialog = nullptr;
-	HBoxContainer *_filters_container = nullptr;
-	LineEdit *_includes_line_edit = nullptr;
-	LineEdit *_excludes_line_edit = nullptr;
-
-	HashMap<String, bool> _filters_preferences;
+	FindInFilesDialog();
 };
 
 class Button;
@@ -166,46 +151,11 @@ class Tree;
 class TreeItem;
 class ProgressBar;
 
-// Display search results
+// Display search results.
 class FindInFilesPanel : public MarginContainer {
 	GDCLASS(FindInFilesPanel, MarginContainer);
 
-public:
-	static const char *SIGNAL_RESULT_SELECTED;
-	static const char *SIGNAL_FILES_MODIFIED;
-	static const char *SIGNAL_CLOSE_BUTTON_CLICKED;
-
-	FindInFilesPanel();
-
-	FindInFiles *get_finder() const { return _finder; }
-
-	void set_with_replace(bool with_replace);
-	void set_replace_text(const String &text);
-	bool is_keep_results() const;
-	void set_search_labels_visibility(bool p_visible);
-
-	void start_search();
-	void stop_search();
-
-protected:
-	static void _bind_methods();
-
-	void _notification(int p_what);
-
-private:
-	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
-	void _on_result_found(const String &fpath, int line_number, int begin, int end, String text);
-	void _on_theme_changed();
-	void _on_finished();
-	void _on_refresh_button_clicked();
-	void _on_cancel_button_clicked();
-	void _on_close_button_clicked();
-	void _on_result_selected();
-	void _on_item_edited();
-	void _on_replace_text_changed(const String &text);
-	void _on_replace_all_clicked();
-
-	enum {
+	enum FindButtons {
 		FIND_BUTTON_REPLACE,
 		FIND_BUTTON_REMOVE,
 	};
@@ -217,33 +167,62 @@ private:
 		int begin_trimmed = 0;
 	};
 
-	void apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text);
-	void update_replace_buttons();
-	void update_matches_text();
-	String get_replace_text();
+	FindInFilesSearch *finder = nullptr;
+	Label *find_label = nullptr;
+	Label *search_text_label = nullptr;
+	Tree *results_display = nullptr;
+	Label *status_label = nullptr;
+	CheckButton *keep_results_button = nullptr;
+	Button *refresh_button = nullptr;
+	Button *cancel_button = nullptr;
+	Button *close_button = nullptr;
+	ProgressBar *progress_bar = nullptr;
+	HashMap<String, TreeItem *> file_items;
+	HashMap<TreeItem *, int> file_items_results_count;
+	HashMap<TreeItem *, Result> result_items;
+	bool with_replace = false;
 
-	void draw_result_text(Object *item_obj, Rect2 rect);
+	HBoxContainer *replace_container = nullptr;
+	LineEdit *replace_line_edit = nullptr;
+	Button *replace_all_button = nullptr;
 
-	void clear();
+	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
+	void _on_result_found(const String &p_fpath, int p_line_number, int p_begin, int p_end, const String &p_text);
+	void _on_theme_changed();
+	void _on_finished();
+	void _on_refresh_button_clicked();
+	void _on_cancel_button_clicked();
+	void _on_close_button_clicked();
+	void _on_result_selected();
+	void _on_item_edited();
+	void _on_replace_text_changed(const String &p_text);
+	void _on_replace_all_clicked();
 
-	FindInFiles *_finder = nullptr;
-	Label *_find_label = nullptr;
-	Label *_search_text_label = nullptr;
-	Tree *_results_display = nullptr;
-	Label *_status_label = nullptr;
-	CheckButton *_keep_results_button = nullptr;
-	Button *_refresh_button = nullptr;
-	Button *_cancel_button = nullptr;
-	Button *_close_button = nullptr;
-	ProgressBar *_progress_bar = nullptr;
-	HashMap<String, TreeItem *> _file_items;
-	HashMap<TreeItem *, int> _file_items_results_count;
-	HashMap<TreeItem *, Result> _result_items;
-	bool _with_replace = false;
+	void _apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text);
+	void _update_replace_buttons();
+	void _update_matches_text();
+	String _get_replace_text();
 
-	HBoxContainer *_replace_container = nullptr;
-	LineEdit *_replace_line_edit = nullptr;
-	Button *_replace_all_button = nullptr;
+	void _draw_result_text(Object *p_item_obj, const Rect2 &p_rect);
+
+	void _clear();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	FindInFilesSearch *get_finder() const { return finder; }
+
+	void set_with_replace(bool p_with_replace);
+	void set_replace_text(const String &p_text);
+	bool is_keep_results() const;
+	void set_search_labels_visibility(bool p_visible);
+
+	void start_search();
+	void stop_search();
+
+	FindInFilesPanel();
 };
 
 class PopupMenu;
@@ -256,37 +235,55 @@ class TabContainer;
 class FindInFilesContainer : public EditorDock {
 	GDCLASS(FindInFilesContainer, EditorDock);
 
-	enum {
+	enum PanelMenuOptions {
 		PANEL_CLOSE,
 		PANEL_CLOSE_OTHERS,
 		PANEL_CLOSE_RIGHT,
 		PANEL_CLOSE_ALL,
 	};
 
-	void _on_theme_changed();
+	TabContainer *tabs = nullptr;
+	bool update_bar = true;
+	PopupMenu *tabs_context_menu = nullptr;
+
 	void _on_tab_close_pressed(int p_tab);
 	void _update_bar_visibility();
 	void _bar_menu_option(int p_option);
 	void _bar_input(const Ref<InputEvent> &p_input);
-	void _on_dock_closed();
-
-	TabContainer *_tabs = nullptr;
-	bool _update_bar = true;
-	PopupMenu *_tabs_context_menu = nullptr;
+	void _on_theme_changed();
 
 	FindInFilesPanel *_create_new_panel();
 	FindInFilesPanel *_get_current_panel();
 
-protected:
-	static void _bind_methods();
-	void _notification(int p_what);
+	void _result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end);
+	void _files_modified();
+	void _close_panel(FindInFilesPanel *p_panel);
+	void _on_dock_closed();
 
-	void _on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end);
-	void _on_find_in_files_modified_files(const PackedStringArray &p_paths);
-	void _on_find_in_files_close_button_clicked(FindInFilesPanel *p_panel);
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
-	FindInFilesContainer();
-
 	FindInFilesPanel *get_panel_for_results(const String &p_label);
+
+	FindInFilesContainer();
+};
+
+class FindInFiles : public Object {
+	GDCLASS(FindInFiles, Object);
+
+	FindInFilesDialog *dialog = nullptr;
+	FindInFilesContainer *container = nullptr;
+
+	void _start_search(bool p_with_replace);
+	void _result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end);
+	void _files_modified();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void open_dialog(const String &p_initial_text, bool p_replace = false);
+	FindInFiles();
 };
