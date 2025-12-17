@@ -224,6 +224,86 @@ public:
 	virtual String get_extension() const = 0;
 	virtual void finish() = 0;
 
+	struct TextEdit {
+		String new_text;
+		int start_line = -1;
+		int start_column;
+		int end_line;
+		int end_column;
+
+		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
+
+		const Dictionary to_dict() const {
+			Dictionary out;
+			out["start_line"] = start_line;
+			out["start_column"] = start_column;
+			out["end_line"] = end_line;
+			out["end_column"] = end_column;
+			out["new_text"] = new_text;
+			return out;
+		}
+
+		static TextEdit from_dict(const Dictionary &p_dict) {
+			TextEdit out;
+			out.start_line = p_dict["start_line"];
+			out.start_column = p_dict["start_column"];
+			out.end_line = p_dict["end_line"];
+			out.end_column = p_dict["end_column"];
+			out.new_text = p_dict["new_text"];
+			return out;
+		}
+	};
+
+	/* CODE ACTIONS */
+	struct DocumentEditOperation {
+		String file_path;
+		Vector<ScriptLanguage::TextEdit> edits;
+
+		const Dictionary to_dict() const {
+			Dictionary out;
+			out["file_path"] = file_path;
+
+			Array edits_arr;
+			for (const ScriptLanguage::TextEdit &edit : edits) {
+				edits_arr.append(edit.to_dict());
+			}
+			out["edits"] = edits_arr;
+			return out;
+		}
+
+		static DocumentEditOperation from_dict(const Dictionary &p_dict) {
+			DocumentEditOperation out;
+			out.file_path = p_dict["file_path"];
+
+			for (const Variant &v : Array(p_dict["edits"])) {
+				out.edits.append(TextEdit::from_dict(v));
+			}
+			return out;
+		}
+	};
+
+	struct CodeActionOperation {
+		String description;
+		Vector<DocumentEditOperation> document_edits;
+
+		const Dictionary to_dict() const {
+			Dictionary out;
+			out["description"] = description;
+
+			Array document_edits_arr;
+			for (const DocumentEditOperation &doc_edit : document_edits) {
+				document_edits_arr.append(doc_edit.to_dict());
+			}
+			out["document_edits"] = document_edits_arr;
+			return out;
+		}
+	};
+
+	struct CodeActionGroup {
+		String title;
+		Vector<CodeActionOperation> actions;
+	};
+
 	/* EDITOR FUNCTIONS */
 #ifdef TOOLS_ENABLED
 	// Must not return `nullptr`. `EditorLanguage` can be used as default implementation for languages without editor support.
@@ -238,6 +318,7 @@ public:
 		int code;
 		String string_code;
 		String message;
+		CodeActionGroup code_actions;
 	};
 
 	struct ScriptError {
@@ -247,6 +328,18 @@ public:
 		/// One-based.
 		int column = -1;
 		String message;
+		CodeActionGroup code_actions;
+	};
+
+	struct CodeActionAndDiagnostics {
+		CodeActionOperation code_action;
+		Vector<Warning> related_warnings;
+		Vector<ScriptError> related_errors;
+	};
+
+	struct CodeActionGroupWithDiagnostics {
+		String title;
+		Vector<CodeActionAndDiagnostics> actions;
 	};
 
 	enum TemplateLocation {
@@ -320,16 +413,6 @@ public:
 		LOCATION_PARENT_MASK = 1 << 8,
 		LOCATION_OTHER_USER_CODE = 1 << 9,
 		LOCATION_OTHER = 1 << 10,
-	};
-
-	struct TextEdit {
-		String new_text;
-		int start_line = -1;
-		int start_column;
-		int end_line;
-		int end_column;
-
-		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
 	};
 
 	struct CodeCompletionOption {
