@@ -72,14 +72,10 @@ enum class SDLJoyButton {
 };
 
 typedef uint32_t SDL_JoystickID;
-typedef struct HWND__ *HWND;
 
 class JoypadSDL {
 public:
 	JoypadSDL(InputDefault *in);
-#ifdef WINDOWS_ENABLED
-	JoypadSDL(InputDefault *in, HWND p_helper_window);
-#endif
 	~JoypadSDL();
 
 	static JoypadSDL *get_singleton();

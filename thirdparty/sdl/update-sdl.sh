@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=3.2.16
+VERSION=3.2.28
 
 target=$(dirname "$(realpath $0)")
 pushd $target
@@ -61,7 +61,7 @@ mkdir $target/loadso
 cp -rv loadso/dlopen $target/loadso
 
 mkdir $target/sensor
-cp -rv sensor/{*.{c,h},dummy} $target/sensor
+cp -rv sensor/{*.{c,h},dummy,windows} $target/sensor
 
 mkdir $target/thread
 cp -rv thread/{*.{c,h},pthread,windows} $target/thread

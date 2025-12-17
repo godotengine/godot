@@ -1656,7 +1656,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	input = memnew(InputDefault);
 #ifdef SDL_ENABLED
-	joypad_sdl = memnew(JoypadSDL(input, hWnd));
+	joypad_sdl = memnew(JoypadSDL(input));
 	if (joypad_sdl->initialize() != OK) {
 		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
 		memdelete(joypad_sdl);

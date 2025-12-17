@@ -32,9 +32,10 @@
 #include "hidapi/SDL_hidapi_nintendo.h"
 #include "../events/SDL_events_c.h"
 
-
-#ifdef SDL_PLATFORM_ANDROID
+#ifdef SDL_PLATFORM_WIN32
+#include "../core/windows/SDL_windows.h"
 #endif
+
 
 // Many gamepads turn the center button into an instantaneous button press
 #define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS 250
@@ -147,6 +148,51 @@ static SDL_vidpid_list SDL_ignored_gamepads = {
     NULL, 0, 0, NULL,
     0, NULL,
     false
+};
+
+/*
+    List of words in gamepad names that indicate that the gamepad should not be detected.
+    See also `initial_blacklist_devices` in SDL_joystick.c
+*/
+
+enum SDL_GamepadBlacklistWordsPosition {
+    GAMEPAD_BLACKLIST_BEGIN,
+    GAMEPAD_BLACKLIST_END,
+    GAMEPAD_BLACKLIST_ANYWHERE,
+};
+
+struct SDL_GamepadBlacklistWords {
+    const char* str;
+    enum SDL_GamepadBlacklistWordsPosition pos;
+};
+
+static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
+#ifdef SDL_PLATFORM_LINUX
+    {" Motion Sensors", GAMEPAD_BLACKLIST_END}, // Don't treat the PS3 and PS4 motion controls as a separate gamepad
+    {" IMU",            GAMEPAD_BLACKLIST_END}, // Don't treat the Nintendo IMU as a separate gamepad
+    {" Touchpad",       GAMEPAD_BLACKLIST_END}, // "Sony Interactive Entertainment DualSense Wireless Controller Touchpad"
+
+    // Don't treat the Wii extension controls as a separate gamepad
+    {" Accelerometer",  GAMEPAD_BLACKLIST_END},
+    {" IR",             GAMEPAD_BLACKLIST_END},
+    {" Motion Plus",    GAMEPAD_BLACKLIST_END},
+    {" Nunchuk",        GAMEPAD_BLACKLIST_END},
+#endif
+
+    // The Google Pixel fingerprint sensor, as well as other fingerprint sensors, reports itself as a joystick
+    {"uinput-",         GAMEPAD_BLACKLIST_BEGIN},
+
+    {"Synaptics ",      GAMEPAD_BLACKLIST_ANYWHERE}, // "Synaptics TM2768-001", "SynPS/2 Synaptics TouchPad"
+    {"Trackpad",        GAMEPAD_BLACKLIST_ANYWHERE},
+    {"Clickpad",        GAMEPAD_BLACKLIST_ANYWHERE},
+    // "PG-90215 Keyboard", "Usb Keyboard Usb Keyboard Consumer Control", "Framework Laptop 16 Keyboard Module - ISO System Control"
+    {" Keyboard",       GAMEPAD_BLACKLIST_ANYWHERE},
+    {" Laptop ",        GAMEPAD_BLACKLIST_ANYWHERE}, // "Framework Laptop 16 Numpad Module System Control"
+    {"Mouse ",          GAMEPAD_BLACKLIST_BEGIN}, // "Mouse passthrough"
+    {" Pen",            GAMEPAD_BLACKLIST_END}, // "Wacom One by Wacom S Pen"
+    {" Finger",         GAMEPAD_BLACKLIST_END}, // "Wacom HID 495F Finger"
+    {" LED ",           GAMEPAD_BLACKLIST_ANYWHERE}, // "ASRock LED Controller"
+    {" Thelio ",        GAMEPAD_BLACKLIST_ANYWHERE}, // "System76 Thelio Io 2"
 };
 
 static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_GUID jGUID, const char *mappingString, bool *existing, SDL_GamepadMappingPriority priority);
@@ -311,7 +357,7 @@ void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id)
 {
     SDL_Event event;
 
-    if (!SDL_gamepads_initialized) {
+    if (!SDL_gamepads_initialized || SDL_IsJoystickBeingAdded()) {
         return;
     }
 
@@ -777,7 +823,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
 
         if (SDL_IsJoystickSteamController(vendor, product)) {
             // Steam controllers have 2 back paddle buttons
-            SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "paddle1:b11,paddle2:b12,", sizeof(mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchPro(vendor, product) ||
                    SDL_IsJoystickNintendoSwitchProInputOnly(vendor, product)) {
             // Nintendo Switch Pro controllers have a screenshot button
@@ -913,7 +959,7 @@ static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_GUID guid, bo
                 // An exact match, including CRC
                 return mapping;
             } else if (crc && exact_match_crc) {
-                return NULL;
+                continue;
             }
 
             if (!best_match) {
@@ -1729,17 +1775,6 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForNameAndGUID(const char *
     SDL_AssertJoysticksLocked();
 
     mapping = SDL_PrivateGetGamepadMappingForGUID(guid, false);
-#ifdef SDL_PLATFORM_LINUX
-    if (!mapping && name) {
-        if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
-            // The Linux driver xpad.c maps the wireless dpad to buttons
-            bool existing;
-            mapping = SDL_PrivateAddMappingForGUID(guid,
-                                                   "none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-                                                   &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
-        }
-    }
-#endif // SDL_PLATFORM_LINUX
 
     return mapping;
 }
@@ -1785,6 +1820,11 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
     bool existing;
     char name_string[128];
     char mapping[1024];
+
+    // Remove the CRC from the GUID
+    // We already know that this GUID doesn't have a mapping without the CRC, and we want newly
+    // added mappings without a CRC to override this mapping.
+    SDL_SetJoystickGUIDCRC(&guid, 0);
 
     // Remove any commas in the name
     SDL_strlcpy(name_string, name, sizeof(name_string));
@@ -2660,35 +2700,37 @@ bool SDL_IsGamepad(SDL_JoystickID instance_id)
  */
 bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-#ifdef SDL_PLATFORM_LINUX
-    if (SDL_endswith(name, " Motion Sensors")) {
-        // Don't treat the PS3 and PS4 motion controls as a separate gamepad
-        return true;
-    }
-    if (SDL_strncmp(name, "Nintendo ", 9) == 0 && SDL_strstr(name, " IMU") != NULL) {
-        // Don't treat the Nintendo IMU as a separate gamepad
-        return true;
-    }
-    if (SDL_endswith(name, " Accelerometer") ||
-        SDL_endswith(name, " IR") ||
-        SDL_endswith(name, " Motion Plus") ||
-        SDL_endswith(name, " Nunchuk")) {
-        // Don't treat the Wii extension controls as a separate gamepad
-        return true;
-    }
-#endif
+    int i;
+    for (i = 0; i < SDL_arraysize(SDL_gamepad_blacklist_words); i++) {
+        const struct SDL_GamepadBlacklistWords *blacklist_word = &SDL_gamepad_blacklist_words[i];
 
-    if (name && SDL_strcmp(name, "uinput-fpc") == 0) {
-        // The Google Pixel fingerprint sensor reports itself as a joystick
-        return true;
+        switch (blacklist_word->pos) {
+            case GAMEPAD_BLACKLIST_BEGIN:
+                if (SDL_startswith(name, blacklist_word->str)) {
+                    return true;
+                }
+                break;
+            
+            case GAMEPAD_BLACKLIST_END:
+                if (SDL_endswith(name, blacklist_word->str)) {
+                    return true;
+                }
+                break;
+
+            case GAMEPAD_BLACKLIST_ANYWHERE:
+                if (SDL_strstr(name, blacklist_word->str) != NULL) {
+                    return true;
+                }
+                break;
+        }
     }
 
 #ifdef SDL_PLATFORM_WIN32
     if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", false) &&
-        SDL_GetHintBoolean("STEAM_COMPAT_PROTON", false)) {
-        // We are launched by Steam and running under Proton
+        WIN_IsWine()) {
+        // We are launched by Steam and running under Proton or Wine
         // We can't tell whether this controller is a Steam Virtual Gamepad,
-        // so assume that Proton is doing the appropriate filtering of controllers
+        // so assume that is doing the appropriate filtering of controllers
         // and anything we see here is fine to use.
         return false;
     }
