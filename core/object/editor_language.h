@@ -119,6 +119,8 @@ public:
 	 */
 	virtual int32_t find_function(const String &p_function, const String &p_code) const { return -1; }
 
+	virtual Error get_code_actions(const String &p_code, const String &p_path, Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> *r_actions) { return ERR_UNAVAILABLE; }
+
 	virtual ~EditorLanguage() = default;
 };
 
