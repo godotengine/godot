@@ -402,7 +402,7 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 		for (int i = 0; i < p_frames; i++) {
 			int input_position_delta = (int)input_position - (int)input_ofs;
 			// Maintain playback delay barrier around current input_pos to easily minimize stutter
-			if (Math::abs(input_position_delta) < playback_half_delay) {
+			if ((unsigned int)Math::abs(input_position_delta) < playback_half_delay) {
 				if (input_position_delta > 0) {
 					// buffer underrun correction
 #ifdef DEBUG_ENABLED
