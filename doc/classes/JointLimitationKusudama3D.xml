@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="JointLimitationKusudama3D" inherits="JointLimitation3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A Kusudama joint limitation that constrains bone orientation using multiple cones connected by tangent paths.
+	</brief_description>
+	<description>
+		JointLimitationKusudama3D represents a spherical constraint region using multiple sequence cones that are automatically connected by smooth tangent paths. The term "Kusudama" originates from Japanese papercraft models made by sewing or gluing pyramidal units through a common vertex, which this constraint visually resembles.
+		[b]How Kusudamas Work:[/b]
+		Each cone is defined by a center direction and a radius (radii may vary per cone). The constraint allows bone orientations within any of these cones. Additionally, adjacent cones in the sequence are automatically connected by tangent paths, creating a smooth transition region between cones. The inside of tangent circles is forbidden, while the region outside both tangent circles (between the cones) forms the allowed path.
+		[b]Important:[/b] Cones form a linear sequence, not a closed loop. The last cone in the array does not automatically connect back to the first cone. To create a closed constraint region, you must explicitly add a final cone that connects back to the first, or arrange your cones so the last one naturally connects to the first.
+		[b]Constraint Solving Process:[/b]
+		If there are no cones ([code]cone_count[/code] is 0), the constraint is effectively disabled and the bone direction is returned unchanged. Otherwise:
+		1. First, the solver checks if the bone direction is within any sequence cone. If so, the orientation is allowed.
+		2. If not, it checks if the bone direction is within the tangent path regions between adjacent cones.
+		3. If the bone is outside all allowed regions, it is constrained to the nearest boundary point.
+		The solver is [b]stateless[/b]: output depends only on the current input direction. When the input is [b]just outside[/b] a cone (within ~2° of its boundary), that cone's boundary point is returned for continuity. Otherwise boundaries are scored in [b]exponential map (expmap) space[/b] (tangent at the first cone center): [code]score = d_sq_expmap + k * chord_dist[/code]. The solver uses [b]smooth Voronoi power[/b] (e=2) for weights [code]w_i = 1/(score_i^2 + ε)[/code], then the [b]Karcher (Fréchet) mean[/b] on the sphere: start from the Euclidean weighted average normalized, then 8 geodesic gradient steps (log-map tangent sum, exp-map back) for minimal sum jerk. If the input is near antipodal to the first cone center, it falls back to [code]score = dot(boundary, input) - k * distance[/code]. [b]Discontinuities[/b]—output jumping between boundaries for small input change—are bugs.
+		[b]Use case:[/b] Typical 3-cone setups model joints like knees, elbows, and shoulders: bone direction is constrained to cones plus tangent paths. Knees and elbows often have [b]long-and-thin[/b] limitations (one cone with a larger radius for the main bend, two with smaller radii); shoulders tend to have a [b]weirder shape[/b] (less symmetric, more irregular cone layout). When posing, the direction sweeps through the allowed region; the Karcher mean over smooth Voronoi weights keeps output continuous at boundaries and minimizes jerk (flipping or snapping to the opposite side).
+		[b]Continuity assumption:[/b] Small changes of direction are assumed to yield small changes of jerk, including when moving into or out of the forbidden region. Crossing the boundary (e.g. from allowed to forbidden and back) should keep jerk between open regions small so that motion remains smooth.
+		[b]Note:[/b] Kusudamas constrain the swing (direction) of the bone.
+		[b]Tangent Cone Calculation:[/b]
+		The tangent cones connecting adjacent sequence cones are automatically calculated. The tangent cone radius is determined by the formula: [code](π - (θa + θb)) / 2[/code], where [code]θa[/code] and [code]θb[/code] are the apex angles of the two sequence cones being connected. This ensures smooth transitions between cones while maintaining the constraint boundaries.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_cone_center" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the center direction vector of the cone at the specified index. This vector points in the direction the cone opens and should be normalized.
+			</description>
+		</method>
+		<method name="get_cone_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of cones in this kusudama constraint.
+			</description>
+		</method>
+		<method name="get_cone_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the radius of the cone at the specified index. This determines how wide the cone opens.
+			</description>
+		</method>
+		<method name="set_cone_center">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="center" type="Vector3" />
+			<description>
+				Sets the center direction vector of the cone at the specified index. The vector will be normalized automatically. This defines the direction in which the cone opens. Tangent paths between adjacent cones are automatically recalculated when a cone center is changed.
+			</description>
+		</method>
+		<method name="set_cone_count">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<description>
+				Sets the number of cones (0 to 10). If the count is [code]0[/code], all cones are cleared. If increasing the count, new cones are added with default values (center at the +Y axis, radius of [code]0.785398[/code] radians, approximately [code]45[/code] degrees). If decreasing, excess cones are removed. Tangent paths between adjacent cones are automatically recalculated.
+			</description>
+		</method>
+		<method name="set_cone_radius">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Sets the radius of the cone at the specified index in radians. The editor exposes this as 1° to 180°. Larger values create wider cones. Tangent paths between adjacent cones are automatically recalculated when a cone radius is changed.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="cones" type="PackedVector4Array" setter="set_cones" getter="get_cones" default="PackedVector4Array()">
+			The array of cones that define this kusudama constraint. Each cone is stored as a Vector4 where the XYZ components represent the center direction (stored raw; normalized internally) and the W component is the cone radius in radians (engine property range 1° to 180°). Cone count is 0 to 10. The cones form a linear sequence where adjacent cones are automatically connected by smooth tangent paths. When this property is modified, tangent paths between adjacent cones are automatically recalculated.
+		</member>
+	</members>
+</class>
