@@ -359,7 +359,13 @@ void FileDialog::update_dir() {
 			drives->set_item_disabled(-1, true);
 			drives->select(drives->get_item_count() - 1);
 		} else {
-			drives->select(dir_access->get_current_drive());
+			int cur = dir_access->get_current_drive();
+			for (int i = 0; i < drives->get_item_count(); i++) {
+				if (drives->get_item_metadata(i).operator int() == cur) {
+					drives->select(i);
+					break;
+				}
+			}
 		}
 	}
 
@@ -1322,6 +1328,7 @@ void FileDialog::set_root_subfolder(const String &p_root) {
 		root_prefix = dir_access->get_current_dir();
 	}
 	invalidate();
+	_update_drives();
 	update_dir();
 }
 
@@ -1599,8 +1606,22 @@ void FileDialog::_change_dir(const String &p_new_dir) {
 }
 
 void FileDialog::_update_drives(bool p_select) {
+	if (access != ACCESS_FILESYSTEM) {
+		drives->hide();
+		return;
+	}
+
+	HashMap<int, String> drive_map;
 	int dc = dir_access->get_drive_count();
-	if (dc == 0 || access != ACCESS_FILESYSTEM) {
+	int cur = dir_access->get_current_drive();
+	for (int i = 0; i < dc; i++) {
+		String drv = dir_access->get_drive(i);
+		if (!root_prefix.is_empty() && !drv.begins_with(root_prefix)) {
+			continue;
+		}
+		drive_map[i] = drv;
+	}
+	if (drive_map.size() == 0) {
 		drives->hide();
 	} else {
 		drives->clear();
@@ -1612,12 +1633,12 @@ void FileDialog::_update_drives(bool p_select) {
 		dp->add_child(drives);
 		drives->show();
 
-		for (int i = 0; i < dir_access->get_drive_count(); i++) {
-			drives->add_item(dir_access->get_drive(i));
-		}
-
-		if (p_select) {
-			drives->select(dir_access->get_current_drive());
+		for (const KeyValue<int, String> &drv : drive_map) {
+			drives->add_item(drv.value);
+			drives->set_item_metadata(-1, drv.key);
+			if (p_select && drv.key == cur) {
+				drives->select(drives->get_item_count() - 1);
+			}
 		}
 	}
 }
