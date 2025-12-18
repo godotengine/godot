@@ -48,6 +48,7 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 	l->set_text(p_label + " ");
 	t.hb->add_child(l);
 	t.progress = memnew(ProgressBar);
+	t.progress->set_theme_type_variation("PopupProgressBar");
 	t.progress->set_max(p_steps);
 	t.progress->set_value(p_steps);
 	Control *ec = memnew(Control);
@@ -198,6 +199,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	VBoxContainer *vb2 = memnew(VBoxContainer);
 	t.vb->add_margin_child(p_label, vb2);
 	t.progress = memnew(ProgressBar);
+	t.progress->set_theme_type_variation("PopupProgressBar");
 	t.progress->set_max(p_steps);
 	t.progress->set_value(p_steps);
 	vb2->add_child(t.progress);
