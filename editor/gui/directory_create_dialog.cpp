@@ -40,24 +40,38 @@
 
 String DirectoryCreateDialog::_sanitize_input(const String &p_path) const {
 	String path = p_path.strip_edges();
-	if (mode == MODE_DIRECTORY) {
+	if (mode == MODE_CREATE_DIRECTORY) {
 		path = path.trim_suffix("/");
 	}
 	return path;
 }
 
-String DirectoryCreateDialog::_validate_path(const String &p_path) const {
+String DirectoryCreateDialog::_validate_path(const String &p_path, bool *p_warning) const {
+	*p_warning = false;
+
 	if (p_path.is_empty()) {
 		return TTR("Name cannot be empty.");
 	}
-	if (mode == MODE_FILE && p_path.ends_with("/")) {
-		return TTR("File name can't end with /.");
+	if (mode == MODE_DUPLICATE_FILE) {
+		if (p_path.ends_with("/")) {
+			return TTR("File name can't end with /.");
+		}
+
+		const String base_ext = base_name.get_extension().to_lower();
+		if (!base_name.is_empty() && !p_path.has_extension(base_ext)) {
+			if (FileAccess::exists(base_dir.path_join(base_name) + ".import")) {
+				return vformat(TTR("Extension of an imported resource can't be different from the original (%s)."), base_ext);
+			} else {
+				*p_warning = true;
+				return vformat(TTR("Extension shouldn't be different from the original (%s)."), base_ext);
+			}
+		}
 	}
 
 	const PackedStringArray splits = p_path.split("/");
 	for (int i = 0; i < splits.size(); i++) {
 		const String &part = splits[i];
-		bool is_file = mode == MODE_FILE && i == splits.size() - 1;
+		bool is_file = mode == MODE_DUPLICATE_FILE && i == splits.size() - 1;
 
 		if (part.is_empty()) {
 			if (is_file) {
@@ -97,20 +111,21 @@ String DirectoryCreateDialog::_validate_path(const String &p_path) const {
 
 void DirectoryCreateDialog::_on_dir_path_changed() {
 	const String path = _sanitize_input(dir_path->get_text());
-	const String error = _validate_path(path);
+	bool warning;
+	const String error = _validate_path(path, &warning);
 
 	if (error.is_empty()) {
 		if (path.contains_char('/')) {
-			if (mode == MODE_DIRECTORY) {
+			if (mode == MODE_CREATE_DIRECTORY) {
 				validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Using slashes in folder names will create subfolders recursively."), EditorValidationPanel::MSG_OK);
 			} else {
 				validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Using slashes in path will create the file in subfolder, creating new subfolders if necessary."), EditorValidationPanel::MSG_OK);
 			}
-		} else if (mode == MODE_FILE) {
+		} else if (mode == MODE_DUPLICATE_FILE) {
 			validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("File name is valid."), EditorValidationPanel::MSG_OK);
 		}
 	} else {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, error, EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, error, warning ? EditorValidationPanel::MSG_WARNING : EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -118,8 +133,9 @@ void DirectoryCreateDialog::ok_pressed() {
 	const String path = _sanitize_input(dir_path->get_text());
 
 	// The OK button should be disabled if the path is invalid, but just in case.
-	const String error = _validate_path(path);
-	ERR_FAIL_COND_MSG(!error.is_empty(), error);
+	bool warning;
+	const String error = _validate_path(path, &warning);
+	ERR_FAIL_COND_MSG(!warning && !error.is_empty(), error);
 
 	accept_callback.call(base_dir.path_join(path));
 	hide();
@@ -133,6 +149,7 @@ void DirectoryCreateDialog::_post_popup() {
 void DirectoryCreateDialog::config(const String &p_base_dir, const Callable &p_accept_callback, int p_mode, const String &p_title, const String &p_default_name) {
 	set_title(p_title);
 	base_dir = p_base_dir;
+	base_name = p_default_name;
 	base_path_label->set_text(vformat(TTR("Base path: %s"), base_dir));
 	accept_callback = p_accept_callback;
 	mode = p_mode;
@@ -140,7 +157,7 @@ void DirectoryCreateDialog::config(const String &p_base_dir, const Callable &p_a
 	dir_path->set_text(p_default_name);
 	validation_panel->update();
 
-	if (p_mode == MODE_FILE) {
+	if (p_mode == MODE_DUPLICATE_FILE) {
 		int extension_pos = p_default_name.rfind_char('.');
 		if (extension_pos > -1) {
 			dir_path->select(0, extension_pos);

@@ -176,7 +176,7 @@ void EditorDirDialog::_make_dir() {
 	TreeItem *ti = tree->get_selected();
 	ERR_FAIL_NULL(ti);
 	const String &directory = ti->get_metadata(0);
-	makedialog->config(directory, callable_mp(this, &EditorDirDialog::_make_dir_confirm).bind(directory), DirectoryCreateDialog::MODE_DIRECTORY, "new folder");
+	makedialog->config(directory, callable_mp(this, &EditorDirDialog::_make_dir_confirm).bind(directory), DirectoryCreateDialog::MODE_CREATE_DIRECTORY, "new folder");
 	makedialog->popup_centered();
 }
 
