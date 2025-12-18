@@ -7950,15 +7950,20 @@ void EditorNode::_update_main_menu_type() {
 	// Delete all menu.
 	if (main_menu_bar) {
 		for (PopupMenu *menu : main_menu_items) {
-			main_menu_bar->remove_child(menu);
+			if (menu->get_parent() == main_menu_bar) {
+				main_menu_bar->remove_child(menu);
+			}
 		}
 		memdelete(main_menu_bar);
 		main_menu_bar = nullptr;
 	}
 	if (main_menu_button) {
-		main_menu_button->get_popup()->clear(false);
+		PopupMenu *popup = main_menu_button->get_popup();
+		popup->clear(false);
 		for (PopupMenu *menu : main_menu_items) {
-			main_menu_button->get_popup()->remove_child(menu);
+			if (menu->get_parent() == popup) {
+				popup->remove_child(menu);
+			}
 		}
 		memdelete(main_menu_button);
 		main_menu_button = nullptr;
@@ -7978,7 +7983,9 @@ void EditorNode::_update_main_menu_type() {
 		main_menu_button->set_switch_on_hover(true);
 
 		for (PopupMenu *menu : main_menu_items) {
-			main_menu_button->get_popup()->add_submenu_node_item(menu->get_name(), menu);
+			if (menu != apple_menu) {
+				main_menu_button->get_popup()->add_submenu_node_item(menu->get_name(), menu);
+			}
 		}
 
 #ifdef ANDROID_ENABLED
@@ -8004,7 +8011,9 @@ void EditorNode::_update_main_menu_type() {
 		main_menu_bar->set_switch_on_hover(true);
 
 		for (PopupMenu *menu : main_menu_items) {
-			main_menu_bar->add_child(menu);
+			if (menu != apple_menu || menu_type == MENU_TYPE_GLOBAL) {
+				main_menu_bar->add_child(menu);
+			}
 		}
 
 		title_bar->add_child(main_menu_bar);
@@ -8624,9 +8633,9 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/quick_open_scene", TTRC("Quick Open Scene..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::O);
 	ED_SHORTCUT_AND_COMMAND("editor/quick_open_script", TTRC("Quick Open Script..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::ALT + Key::O);
 
-	ED_SHORTCUT("editor/export_as_mesh_library", TTRC("MeshLibrary...")),
+	ED_SHORTCUT("editor/export_as_mesh_library", TTRC("MeshLibrary..."));
 
-			ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTRC("Reload Saved Scene"));
+	ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTRC("Reload Saved Scene"));
 	ED_SHORTCUT_AND_COMMAND("editor/close_scene", TTRC("Close Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::W);
 	ED_SHORTCUT_AND_COMMAND("editor/close_all_scenes", TTRC("Close All Scenes"));
 	ED_SHORTCUT_OVERRIDE("editor/close_scene", "macos", KeyModifierMask::CMD_OR_CTRL + Key::W);
@@ -8693,7 +8702,7 @@ EditorNode::EditorNode() {
 	if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::APPLICATION_MENU_ID)) {
 		apple_menu = memnew(PopupMenu);
 		apple_menu->set_system_menu(NativeMenu::APPLICATION_MENU_ID);
-		add_child(apple_menu);
+		_add_to_main_menu("", apple_menu);
 
 		apple_menu->add_shortcut(ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
 		apple_menu->add_separator();
