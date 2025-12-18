@@ -1027,8 +1027,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 						csi->get_gchandle_intptr(), &properties, &state_backup.event_signals);
 
 				for (const Pair<StringName, Variant> &G : state_backup.properties) {
-        			obj->set(G.first, G.second);
-    			}
+					obj->set(G.first, G.second);
+				}
 			}
 		}
 
