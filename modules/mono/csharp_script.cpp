@@ -776,7 +776,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			List<PropertyInfo> prop_list;
 			obj->get_property_list(&prop_list);
 			for (const PropertyInfo &P : prop_list) {
-    			if ((P.usage & PROPERTY_USAGE_STORAGE) && !properties.has(P.name)) {
+				if ((P.usage & PROPERTY_USAGE_STORAGE) && !properties.has(P.name)) {
         			properties[P.name] = obj->get(P.name);
     			}
 			}
