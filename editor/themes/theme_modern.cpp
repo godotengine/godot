@@ -2362,12 +2362,9 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	}
 
 	// Asset Library.
-	Ref<StyleBoxFlat> assetlib_panel_style = p_config.base_style->duplicate();
-	assetlib_panel_style->set_bg_color(p_config.surface_low_color);
-	assetlib_panel_style->set_content_margin_all(p_config.base_margin * 2 * EDSCALE);
-
 	p_theme->set_stylebox("bg", "AssetLib", EditorThemeManager::make_empty_stylebox(p_config.base_margin, p_config.base_margin, p_config.base_margin, p_config.base_margin));
-	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", assetlib_panel_style);
+	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.foreground_panel);
+	p_theme->set_stylebox("downloads", "AssetLib", p_theme->get_stylebox(SceneStringName(panel), SNAME("ScrollContainerSecondary")));
 	p_theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5)); // FIXME: Use a defined color instead.
 	p_theme->set_icon("dismiss", "AssetLib", p_theme->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 
