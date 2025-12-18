@@ -82,11 +82,12 @@ private:
 	public:
 		enum FramebufferConfigType {
 			FB_CONFIG_RENDER_PASS, // Single pass framebuffer for normal rendering.
+			FB_CONFIG_RENDER_PASS_TO_SRGB, // Single pass framebuffer for normal rendering to the sRGB target directly.
 			FB_CONFIG_RENDER_AND_POST_PASS, // Two subpasses, one for normal rendering, one for post processing.
 			FB_CONFIG_MAX
 		};
 
-		RID get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth = false);
+		RID get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth, bool &r_srgb_target);
 		virtual void free_data() override;
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
 
@@ -172,7 +173,7 @@ private:
 	void _fill_instance_data(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1, bool p_update_buffer = true);
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
 
-	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Color &p_default_bg_color, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
+	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_pancake_shadows, bool p_using_srgb_target);
 	void _setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
 
 	RID render_base_uniform_set;
