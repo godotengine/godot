@@ -67,8 +67,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual Size2 get_minimum_size() const override;
-
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
 	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
 
