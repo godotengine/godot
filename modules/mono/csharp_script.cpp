@@ -777,8 +777,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			obj->get_property_list(&prop_list);
 			for (const PropertyInfo &P : prop_list) {
 				if ((P.usage & PROPERTY_USAGE_STORAGE) && !properties.has(P.name)) {
-        			properties[P.name] = obj->get(P.name);
-    			}
+					properties[P.name] = obj->get(P.name);
+				}
 			}
 			for (const Variant *s = properties.next(nullptr); s != nullptr; s = properties.next(s)) {
 				StringName name = *s;
