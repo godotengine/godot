@@ -89,6 +89,9 @@ public:
 
 	NSMenu *get_native_menu_handle(const RID &p_rid);
 
+	virtual String get_system_menu_text(SystemMenus p_menu_id) const override;
+	virtual void set_system_menu_text(SystemMenus p_menu_id, const String &p_name) override;
+
 	virtual Size2 get_size(const RID &p_rid) const override;
 	virtual void popup(const RID &p_rid, const Vector2i &p_position) override;
 
