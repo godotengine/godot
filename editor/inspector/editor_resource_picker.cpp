@@ -1615,7 +1615,7 @@ void EditorSkinPicker::set_create_options(Object *p_menu_node) {
 }
 
 bool EditorSkinPicker::handle_menu_selected(int p_which) {
-	Ref<Skin> skin = Ref<Skin>(get_rest_skin());
+	Ref<Skin> skin = get_rest_skin();
 
 	switch (p_which) {
 		case OBJ_MENU_REST_SKIN: {

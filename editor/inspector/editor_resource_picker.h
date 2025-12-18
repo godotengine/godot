@@ -211,7 +211,7 @@ class EditorSkinPicker : public EditorResourcePicker {
 		OBJ_MENU_REST_SKIN = 50,
 	};
 
-	Ref<Skin> rest_skin = nullptr;
+	Ref<Skin> rest_skin;
 
 public:
 	virtual void set_create_options(Object *p_menu_node) override;
