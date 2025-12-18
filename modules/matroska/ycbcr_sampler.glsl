@@ -9,7 +9,8 @@ layout(binding = 0) uniform sampler2D src_yuv;
 layout(binding = 1, rgba8) uniform writeonly image2D dst_rgba;
 
 void main() {
-	ivec2 uv = ivec2(gl_GlobalInvocationID.xy);
-	vec4 pixel = texelFetch(src_yuv, uv, 0);
-	imageStore(dst_rgba, uv, pixel);
+	ivec2 dimensions = textureSize(src_yuv, 0);
+	vec2 uv = gl_GlobalInvocationID.xy / vec2(dimensions);
+	vec4 pixel = textureLod(src_yuv, uv, 0);
+	imageStore(dst_rgba, ivec2(gl_GlobalInvocationID.xy), pixel);
 }
