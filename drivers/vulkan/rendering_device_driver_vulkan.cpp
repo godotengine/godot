@@ -7294,7 +7294,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	StdVideoDecodeH264PictureInfo std_h264_info = {};
 	std_h264_info.flags.field_pic_flag = p_std_h264_info.field_pic_flag;
 	std_h264_info.flags.is_intra = p_std_h264_info.is_intra;
-	std_h264_info.flags.IdrPicFlag = false;
+	std_h264_info.flags.IdrPicFlag = p_std_h264_info.is_intra;
 	std_h264_info.flags.bottom_field_flag = p_std_h264_info.bottom_field_flag;
 	std_h264_info.flags.is_reference = p_std_h264_info.is_reference;
 	std_h264_info.flags.complementary_field_pair = p_std_h264_info.complementary_field_pair;

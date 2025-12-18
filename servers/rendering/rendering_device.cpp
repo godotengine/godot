@@ -5949,15 +5949,19 @@ void RenderingDevice::video_session_add_av1_parameters(RID p_video_session, Vide
 }
 
 void RenderingDevice::video_session_begin() {
+	return;
 	driver->command_pool_reset(decode_pool);
 	driver->command_buffer_begin(decode_buffer);
 }
 
 void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_t> p_nal_unit, VideoDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture) {
+	driver->command_pool_reset(decode_pool);
+	driver->command_buffer_begin(decode_buffer);
+
 	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
 	ERR_FAIL_NULL(video_session);
 
-	uint64_t buffer_size = p_nal_unit.size() + 3;
+	uint64_t buffer_size = p_nal_unit.size() + 4;
 	buffer_size += 128 - (buffer_size % 128);
 
 	BitField<RDD::BufferUsageBits> buffer_usage = {};
@@ -5967,7 +5971,7 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	RDD::BufferID src_buffer = driver->buffer_create_video_session(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, video_session->video_profile);
 	uint8_t *write_ptr = driver->buffer_map(src_buffer);
 
-	uint8_t start_code[3] = { 0, 0, 1 };
+	uint8_t start_code[4] = { 0, 0, 0, 1 };
 	memcpy(write_ptr, start_code, sizeof(start_code));
 	memcpy(write_ptr + sizeof(start_code), p_nal_unit.begin(), p_nal_unit.size());
 	driver->buffer_unmap(src_buffer);
@@ -5995,18 +5999,38 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, bb, decode_tb);
 	driver->command_video_session_decode_h264(decode_buffer, video_session->driver_id, src_buffer, p_std_h264_info, dst_texture->driver_id);
 
-	RDD::TextureBarrier read_tb = {};
-	read_tb.texture = video_session->dpb_id;
-	read_tb.prev_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
-	read_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
-	read_tb.src_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
-	read_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_READ;
-	read_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-	read_tb.subresources.mipmap_count = 1;
-	read_tb.subresources.layer_count = 1;
+	Vector<RDD::TextureBarrier> texture_barriers;
 
-	//TODO: use this barrier in a shader
-	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_VIDEO_DECODE, RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, {}, {}, read_tb);
+	RDD::TextureBarrier dpb_read_tb = {};
+	dpb_read_tb.texture = video_session->dpb_id;
+	dpb_read_tb.prev_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
+	dpb_read_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
+	dpb_read_tb.src_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	dpb_read_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_READ;
+	dpb_read_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	dpb_read_tb.subresources.mipmap_count = 1;
+	dpb_read_tb.subresources.layer_count = 1;
+	texture_barriers.push_back(dpb_read_tb);
+
+	RDD::TextureBarrier dst_transfer_tb = {};
+	dst_transfer_tb.texture = dst_texture->driver_id;
+	dst_transfer_tb.prev_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
+	dst_transfer_tb.next_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	dst_transfer_tb.src_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	dst_transfer_tb.dst_access = RDD::BARRIER_ACCESS_NONE;
+	dst_transfer_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	dst_transfer_tb.subresources.mipmap_count = 1;
+	dst_transfer_tb.subresources.layer_count = 1;
+	texture_barriers.push_back(dst_transfer_tb);
+
+	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_VIDEO_DECODE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, {}, texture_barriers);
+
+	RDD::FenceID fence = driver->fence_create();
+	driver->command_buffer_end(decode_buffer);
+	driver->command_queue_execute(decode_queue, decode_buffer, fence);
+
+	driver->fence_wait(fence);
+	driver->fence_free(fence);
 }
 
 void RenderingDevice::video_session_decode_av1(RID p_video_session, Span<uint8_t> p_obu, VideoDecodeAV1Frame p_std_av1_info, RID p_dst_texture) {
@@ -6033,6 +6057,7 @@ void RenderingDevice::video_session_decode_av1(RID p_video_session, Span<uint8_t
 }
 
 void RenderingDevice::video_session_end() {
+	return;
 	RDD::FenceID fence = driver->fence_create();
 	driver->command_buffer_end(decode_buffer);
 	driver->command_queue_execute(decode_queue, decode_buffer, fence);

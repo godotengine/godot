@@ -936,7 +936,7 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	dst_yuv_format.depth = 1;
 	dst_yuv_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
-	for (uint32_t i = 0; i < 2; i++) {
+	for (size_t i = 0; i < 16; i++) {
 		dst_yuv_pool.push_back(video_stream_encoding->create_texture(dst_yuv_format));
 	}
 
@@ -948,7 +948,7 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	dst_rgba_format.depth = 1;
 	dst_rgba_format.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
-	for (uint32_t i = 0; i < 2; i++) {
+	for (size_t i = 0; i < 16; i++) {
 		dst_rgba_pool.push_back(local_device->texture_create(dst_rgba_format, RD::TextureView()));
 	}
 
@@ -986,7 +986,7 @@ void VideoStreamPlaybackMatroska::play() {
 	Cluster cluster = segment.clusters[0];
 	print_line(vformat("------------Begin Matroska Cluster [%d]------------", cluster.blocks.size()));
 
-	for (uint32_t i = 0; i < 2; i++) {
+	for (uint32_t i = 0; i < 16; i++) {
 		RID dst_yuv = dst_yuv_pool[i];
 		Cluster::Block block = cluster.blocks[i];
 
@@ -999,32 +999,34 @@ void VideoStreamPlaybackMatroska::play() {
 	local_device->video_session_end();
 	print_line("------------End Matroska Cluster------------");
 
-	Vector<RD::Uniform> uniforms;
-	RD::Uniform src_texture = {};
-	src_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-	src_texture.binding = 0;
-	src_texture.append_id(yuv_sampler);
-	src_texture.append_id(dst_yuv_pool[0]);
-	uniforms.push_back(src_texture);
+	for (size_t i = 0; i < 16; i++) {
+		Vector<RD::Uniform> uniforms;
+		RD::Uniform src_texture = {};
+		src_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		src_texture.binding = 0;
+		src_texture.append_id(yuv_sampler);
+		src_texture.append_id(dst_yuv_pool[i]);
+		uniforms.push_back(src_texture);
 
-	RD::Uniform dst_texture = {};
-	dst_texture.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-	dst_texture.binding = 1;
-	dst_texture.append_id(dst_rgba_pool[0]);
-	uniforms.push_back(dst_texture);
+		RD::Uniform dst_texture = {};
+		dst_texture.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+		dst_texture.binding = 1;
+		dst_texture.append_id(dst_rgba_pool[i]);
+		uniforms.push_back(dst_texture);
 
-	RID uniform_set = local_device->uniform_set_create(uniforms, yuv_shader, 0);
+		RID uniform_set = local_device->uniform_set_create(uniforms, yuv_shader, 0);
 
-	// Bind things
-	RD::ComputeListID compute_list = local_device->compute_list_begin();
-	local_device->compute_list_bind_compute_pipeline(compute_list, yuv_pipeline);
-	local_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-	local_device->compute_list_dispatch(compute_list, 1920, 1080, 1);
-	local_device->compute_list_end();
+		// Bind things
+		RD::ComputeListID compute_list = local_device->compute_list_begin();
+		local_device->compute_list_bind_compute_pipeline(compute_list, yuv_pipeline);
+		local_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+		local_device->compute_list_dispatch(compute_list, 1920, 1080, 1);
+		local_device->compute_list_end();
 
-	// Execute
-	local_device->submit();
-	local_device->sync();
+		// Execute
+		local_device->submit();
+		local_device->sync();
+	}
 }
 
 void VideoStreamPlaybackMatroska::stop() {
@@ -1064,7 +1066,8 @@ Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
 
 // TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
-	RID src_rgba = dst_rgba_pool[0];
+	size_t index = counter % 16;
+	RID src_rgba = dst_rgba_pool[index];
 	Vector<uint8_t> data = local_device->texture_get_data(src_rgba, 0);
 
 	Ref<Image> frame;
@@ -1072,6 +1075,7 @@ void VideoStreamPlaybackMatroska::update(double p_delta) {
 	frame->set_data(width, height, false, Image::FORMAT_RGBA8, data);
 
 	image_texture->set_image(frame);
+	counter++;
 }
 
 int VideoStreamPlaybackMatroska::get_channels() const {
