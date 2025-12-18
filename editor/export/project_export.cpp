@@ -756,6 +756,8 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
 	preset->set_exclude_filter(current->get_exclude_filter());
+	preset->set_customized_files(current->get_customized_files());
+	preset->set_selected_files(current->get_selected_files());
 	preset->set_patches(current->get_patches());
 	preset->set_patch_delta_encoding_enabled(current->is_patch_delta_encoding_enabled());
 	preset->set_patch_delta_zstd_level(current->get_patch_delta_zstd_level());
