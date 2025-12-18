@@ -67,13 +67,14 @@
 # 陳間時光（MorningFungame） <morningfungame@gmail.com>, 2025.
 # Stenyin <cbcbccc2003@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# RogerFang <newlag@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:08+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2025-12-08 20:00+0000\n"
+"Last-Translator: RogerFang <newlag@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hant/>\n"
 "Language: zh_Hant\n"
@@ -81,7 +82,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -720,6 +721,9 @@ msgstr "網格 Y 間距"
 
 msgid "Blend X Value"
 msgstr "混合 X 值"
+
+msgid "Blend Y Value"
+msgstr "混合 Y 值"
 
 msgid "Max Y"
 msgstr "最大 Y"
@@ -18319,6 +18323,11 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "公證流程通常少於一小時。"
 
 msgid ""
+"You can check the progress manually by opening a Terminal and running the "
+"following command:"
+msgstr "您可以透過開啟終端機並執行以下命令來手動檢查進度："
+
+msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr "若要將公證票據附加至匯出應用程式（選用），請執行以下指令："
@@ -18328,6 +18337,13 @@ msgstr "未安裝 Xcode 命令列工具。"
 
 msgid "Could not start xcrun executable."
 msgstr "無法啟動 xcrun 可執行檔。"
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"請參閱以下說明以尋找您的團隊 ID：https://developer.apple.com/help/glossary/"
+"team-id"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "內建 CodeSign 失敗，錯誤：「%s」。"

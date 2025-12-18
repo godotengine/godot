@@ -62,7 +62,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-27 05:03+0000\n"
+"PO-Revision-Date: 2025-12-07 19:00+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
@@ -526,11 +526,17 @@ msgstr "굽기 다중 스레드 사용"
 msgid "Baking Use High Priority Threads"
 msgstr "굽기 높은 우선순위 스레드 사용"
 
+msgid "NavMesh Edge Merge Errors"
+msgstr "NavMesh 에지 병합 오류"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "NavMesh 셀 크기 불일치"
+
 msgid "Low Processor Usage Mode"
 msgstr "저사양 모드"
 
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "낮은 프로세서 사용률 모드 슬립 (µsec)"
+msgstr "저사양 모드 슬립 (µsec)"
 
 msgid "Delta Smoothing"
 msgstr "델타 스무딩"
@@ -545,7 +551,7 @@ msgid "Physics Ticks per Second"
 msgstr "초당 물리 틱"
 
 msgid "Max Physics Steps per Frame"
-msgstr "프레임 당 최대 물리 스텝"
+msgstr "프레임 당 최대 물리 단계"
 
 msgid "Max FPS"
 msgstr "최대 FPS"
@@ -563,16 +569,16 @@ msgid "Use Accumulated Input"
 msgstr "누적 입력 사용"
 
 msgid "Emulate Mouse From Touch"
-msgstr "터치로 마우스 에뮬레이트"
+msgstr "터치로부터 마우스 에뮬레이트"
 
 msgid "Emulate Touch From Mouse"
-msgstr "마우스 터치 에뮬레이트"
+msgstr "마우스로부터 터치 에뮬레이트"
 
 msgid "Compatibility"
 msgstr "호환성"
 
 msgid "Legacy Just Pressed Behavior"
-msgstr "오래된 just_pressed 동작"
+msgstr "레거시 방금 눌린 행동"
 
 msgid "Sensors"
 msgstr "센서"
@@ -5907,10 +5913,10 @@ msgid "Bidirectional"
 msgstr "양방향"
 
 msgid "Start Position"
-msgstr "시작점"
+msgstr "시작 위치"
 
 msgid "End Position"
-msgstr "끝점"
+msgstr "끝 위치"
 
 msgid "Enter Cost"
 msgstr "입장 비용"

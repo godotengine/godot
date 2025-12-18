@@ -113,13 +113,14 @@
 # linesgamer <linesgamer202@gmail.com>, 2025.
 # Timeo Buergler <buergler.timeo@gmail.com>, 2025.
 # gebirgsbaerbel <reichart.barbara@gmail.com>, 2025.
+# IDontPutRealNames <scriptoblox@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-14 10:01+0000\n"
-"Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
+"PO-Revision-Date: 2025-12-06 11:00+0000\n"
+"Last-Translator: IDontPutRealNames <scriptoblox@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
 "Language: de\n"
@@ -127,7 +128,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -582,6 +583,9 @@ msgstr "Backen benutzt mehrere Threads"
 msgid "Baking Use High Priority Threads"
 msgstr "Backen benutzt mehrere Threads mit hoher Priorität"
 
+msgid "NavMesh Cell Size Mismatch"
+msgstr "NavMesh Cellen Grösen stimmen nich überein"
+
 msgid "Low Processor Usage Mode"
 msgstr "Prozessorenergiesparmodus"
 
@@ -1020,6 +1024,9 @@ msgstr "Provisioning-Profil-UUID Debug"
 msgid "Provisioning Profile UUID Release"
 msgstr "Provisioning-Profil-UUID Release"
 
+msgid "Provisioning Profile Specifier Debug"
+msgstr "Provisionirungs-Profil Specifizierer Debug"
+
 msgid "Export Method Release"
 msgstr "Exportmethode Release"
 
@@ -1217,6 +1224,9 @@ msgstr "Positions-Tracks normalisieren"
 
 msgid "Reset All Bone Poses After Import"
 msgstr "Alle Knochenposen nach dem Import zurücksetzen"
+
+msgid "Retarget Method"
+msgstr "Methode neu anvisieren"
 
 msgid "Keep Global Rest on Leftovers"
 msgstr "Globale Standardpose bei Resten beibehalten"
@@ -1572,6 +1582,9 @@ msgstr "Hinting"
 msgid "Subpixel Positioning"
 msgstr "Subpixel-Positionierung"
 
+msgid "Keep Rounding Remainders"
+msgstr "Behalte Rundungs-Übereste"
+
 msgid "Oversampling"
 msgstr "Oversampling"
 
@@ -1704,6 +1717,9 @@ msgstr "Normal Map-Quelle"
 msgid "Process"
 msgstr "Prozessierung"
 
+msgid "Channel Remap"
+msgstr "Kanalneuzuweisung"
+
 msgid "Red"
 msgstr "Rot"
 
@@ -1821,6 +1837,9 @@ msgstr "Auswählbar"
 
 msgid "Use Folding"
 msgstr "Einklappen benutzen"
+
+msgid "Name Split Ratio"
+msgstr "Namensteilungsverhältnis"
 
 msgid "Base Type"
 msgstr "Basistyp"
@@ -2119,6 +2138,9 @@ msgstr "Default-Farbwahlmodus"
 msgid "Default Color Picker Shape"
 msgstr "Default-Farbwahlform"
 
+msgid "Color Picker Show Intensity"
+msgstr "Farbpipette zeigt Intensität"
+
 msgid "Theme"
 msgstr "Theme"
 
@@ -2136,6 +2158,9 @@ msgstr "Icon- und Schriftfarbe"
 
 msgid "Base Color"
 msgstr "Grundfarbe"
+
+msgid "Accent Color"
+msgstr "Tönungsfarbe"
 
 msgid "Use System Accent Color"
 msgstr "System-Akzentfarbe nutzen"
@@ -2269,6 +2294,9 @@ msgstr "Schnellöffnungsdialog"
 msgid "Max Results"
 msgstr "Max. Ergebnisse"
 
+msgid "Show Search Highlight"
+msgstr "Suchhervorhebung anzeigen"
+
 msgid "Include Addons"
 msgstr "Addons einschließen"
 
@@ -2361,6 +2389,9 @@ msgstr "Hinweis-Liste"
 
 msgid "Appearance"
 msgstr "Aussehen"
+
+msgid "Enable Inline Color Picker"
+msgstr "Inline-Farbpipette aktivieren"
 
 msgid "Caret"
 msgstr "Textcursor"
@@ -2983,6 +3014,12 @@ msgstr "Remote-Hostname"
 msgid "Debugger"
 msgstr "Debugger"
 
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Automatisch wechseln zu abgelegenen Scenen Baum"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "Automatisches wechseln zu Stapel Spur"
+
 msgid "Profiler Frame History Size"
 msgstr "Profiler-Frame-Verlaufsgröße"
 
@@ -3526,6 +3563,9 @@ msgstr "GDScript"
 msgid "Max Call Stack"
 msgstr "Max. Call-Stack"
 
+msgid "Always Track Local Variables"
+msgstr "Immer lokale Variablen vervolgen"
+
 msgid "Exclude Addons"
 msgstr "Addons ausschließen"
 
@@ -3546,6 +3586,27 @@ msgstr "Schattenvariable"
 
 msgid "Shadowed Variable Base Class"
 msgstr "Schattenbariable der Basisklasse"
+
+msgid "Unreachable Code"
+msgstr "Unereichbarer Code"
+
+msgid "Unreachable Pattern"
+msgstr "Unereichbares Muster"
+
+msgid "Unsafe Property Access"
+msgstr "Unsichere Eigenschaft Zugriff"
+
+msgid "Unsafe Method Access"
+msgstr "Unsicherer methoden Zugriff"
+
+msgid "Return Value Discarded"
+msgstr "Zurückgegebener Wert weggeworfen"
+
+msgid "Missing Tool"
+msgstr "Fehlendes Werkzeug"
+
+msgid "Redundant Await"
+msgstr "Überflüssiger Erwarte"
 
 msgid "Language Server"
 msgstr "Sprachserver"
@@ -4407,6 +4468,9 @@ msgstr "XR-Features"
 
 msgid "XR Mode"
 msgstr "XR-Modus"
+
+msgid "Gesture"
+msgstr "Geste"
 
 msgid "Swipe to Dismiss"
 msgstr "Zum Ablehnen wischen"
@@ -9757,8 +9821,59 @@ msgstr "Hochrunter"
 msgid "Up"
 msgstr "Oben"
 
+msgid "Up Hover"
+msgstr "Hoch drüber"
+
+msgid "Up Pressed"
+msgstr "Hoch gedrückt"
+
+msgid "Up Disabled"
+msgstr "Hoch deaktiviert"
+
 msgid "Down"
 msgstr "Unten"
+
+msgid "Down Hover"
+msgstr "Gedrückt drüber"
+
+msgid "Down Pressed"
+msgstr "Gedrückt"
+
+msgid "Down Disabled"
+msgstr "Gedrückt deaktiviert"
+
+msgid "Up Background"
+msgstr "Hoch hintergrund"
+
+msgid "Up Background Hovered"
+msgstr "Hoch Hintergrund"
+
+msgid "Up Background Pressed"
+msgstr "Drüber Hintergrund gedrückt"
+
+msgid "Up Background Disabled"
+msgstr "Drüber Hintergrund deaktiviert"
+
+msgid "Down Background"
+msgstr "Gedrückt Hintergrund"
+
+msgid "Down Background Hovered"
+msgstr "Gedrückt Hintergrund drüber Farbe"
+
+msgid "Down Background Pressed"
+msgstr "Gedrückt Hintergrund"
+
+msgid "Down Background Disabled"
+msgstr "Gedrückt Hintergrund deaktiviert"
+
+msgid "Buttons Vertical Separation"
+msgstr "Knöpfe vertical Trennung"
+
+msgid "Buttons Width"
+msgstr "Knopfbreite"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Setze minimum Knöpfen Breite von Symbolen"
 
 msgid "Embedded Border"
 msgstr "Eingebetteter Rand"
@@ -9802,6 +9917,12 @@ msgstr "Schließen-V-Versatz"
 msgid "Buttons Separation"
 msgstr "Button-Trennung"
 
+msgid "Load"
+msgstr "Laden"
+
+msgid "Save"
+msgstr "Speichern"
+
 msgid "Parent Folder"
 msgstr "Parent-Ordner"
 
@@ -9826,8 +9947,29 @@ msgstr "Dateinamensfilter umschalten"
 msgid "Folder"
 msgstr "Ordner"
 
+msgid "Thumbnail Mode"
+msgstr "Vorschaubildmodus"
+
+msgid "List Mode"
+msgstr "Listen modus"
+
 msgid "Create Folder"
 msgstr "Ordner erstellen"
+
+msgid "Sort"
+msgstr "Sortiren"
+
+msgid "Favorite Up"
+msgstr "Favorite hoch"
+
+msgid "Favorite Down"
+msgstr "Favorite runter"
+
+msgid "File Thumbnail"
+msgstr "Datei Vorschaubild"
+
+msgid "Folder Thumbnail"
+msgstr "Ordner Vorschaubild"
 
 msgid "Folder Icon Color"
 msgstr "Ordner-Icon-Farbe"
@@ -10438,6 +10580,12 @@ msgstr "Filmschreiber"
 msgid "Speaker Mode"
 msgstr "Speaker-Modus"
 
+msgid "Video Quality"
+msgstr "Video-Qualität"
+
+msgid "Audio Quality"
+msgstr "Ton Qualität"
+
 msgid "Movie File"
 msgstr "Filmdatei"
 
@@ -10447,6 +10595,12 @@ msgstr "V-Sync deaktivieren"
 msgid "Metadata Flags"
 msgstr "Metadaten-Flags"
 
+msgid "Excluded Regions"
+msgstr "Ausgeschlossene Regionen"
+
+msgid "Included Regions"
+msgstr "Eingeschlossene regionen"
+
 msgid "Path Types"
 msgstr "Pfadtypen"
 
@@ -10455,6 +10609,9 @@ msgstr "Pfad-Rids"
 
 msgid "Path Owner IDs"
 msgstr "Pfad-Owner-IDs"
+
+msgid "Path Length"
+msgstr "Pfad länge"
 
 msgid "Default Cell Size"
 msgstr "Default-Zellengröße"
@@ -10768,6 +10925,15 @@ msgstr "Halbe-Auflösung-Durchlauf verwenden"
 msgid "Use Quarter Res Pass"
 msgstr "Viertel-Auflösung-Durchlauf verwenden"
 
+msgid "Unused Constant"
+msgstr "Unbenutzte Konstante"
+
+msgid "Unused Function"
+msgstr "Unbenutzte Funktion"
+
+msgid "Formatting Error"
+msgstr "Formatierungsfehler"
+
 msgid "Internal Size"
 msgstr "Interne Größe"
 
@@ -10788,6 +10954,9 @@ msgstr "S3TC BPTC importieren"
 
 msgid "Import ETC2 ASTC"
 msgstr "ETC2 ASTC importieren"
+
+msgid "Compress With GPU"
+msgstr "Komprimiert mit GPU"
 
 msgid "Lossless Compression"
 msgstr "Verlustfreie Komprimierung"

@@ -152,13 +152,14 @@
 # Natahan-Tatan <me@natahan.net>, 2025.
 # vitawrap <thevitawrap@gmail.com>, 2025.
 # Mvsqu3 <paulkevinb.22@gmail.com>, 2025.
+# FelixBlanchard <thekingofcarcosa@protonmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-24 19:51+0000\n"
-"Last-Translator: aioshiro <aioshiro57@proton.me>\n"
+"PO-Revision-Date: 2025-12-03 14:00+0000\n"
+"Last-Translator: FelixBlanchard <thekingofcarcosa@protonmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -620,6 +621,12 @@ msgstr "Pré-calculer l'utilisation de multiples Threads"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Pré-calculer en utilisant les tâches parallèles hautes priorités"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "Erreur de fusion d'arête NavMesh"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "Inadéquation de la taille de la cellule NavMesh"
 
 msgid "Low Processor Usage Mode"
 msgstr "Mode de faible utilisation du processeur"

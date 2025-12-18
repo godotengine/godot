@@ -90,13 +90,15 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Miz Tan <miz3232@users.noreply.hosted.weblate.org>, 2025.
 # kakeudon17 <tazayuu17@gmail.com>, 2025.
+# Amir Sabbagh <amir420c@gmail.com>, 2025.
+# Acotto <perc.fg.music@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-22 11:51+0000\n"
-"Last-Translator: kakeudon17 <tazayuu17@gmail.com>\n"
+"PO-Revision-Date: 2025-12-18 20:24+0000\n"
+"Last-Translator: Amir Sabbagh <amir420c@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -104,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -746,6 +748,9 @@ msgstr "グリッドYのステップ:"
 msgid "Blend X Value"
 msgstr "X値のブレンド"
 
+msgid "Blend Y Value"
+msgstr "Y値のブレンド"
+
 msgid "Max Y"
 msgstr "最大のY"
 
@@ -760,6 +765,9 @@ msgstr "最小のX"
 
 msgid "X Value"
 msgstr "X値"
+
+msgid "Max X"
+msgstr "最大のX"
 
 msgid "Parameter Changed: %s"
 msgstr "パラメーターが変更されました: %s"
@@ -11821,8 +11829,44 @@ msgstr ""
 "シーンに含まれています。\n"
 "プレビューは無効です。"
 
+msgid "Set Preview Sun Direction"
+msgstr "プレビュー太陽の方向を設定"
+
+msgid "Set Preview Sun Altitude"
+msgstr "プレビュー太陽の高度を設定"
+
+msgid "Set Preview Sun Azimuth"
+msgstr "プレビュー太陽の方位角を設定"
+
+msgid "Set Preview Sun Color"
+msgstr "プレビュー太陽の色を設定"
+
+msgid "Set Preview Sun Energy"
+msgstr "プレビュー太陽のエネルギーを設定"
+
 msgid "Set Preview Sun Max Shadow Distance"
 msgstr "セットプレビューの太陽の影の最大距離"
+
+msgid "Set Preview Environment Sky Color"
+msgstr "プレビュー環境の空の色を設定"
+
+msgid "Set Preview Environment Ground Color"
+msgstr "プレビュー環境の地面の色を設定"
+
+msgid "Set Preview Environment Energy"
+msgstr "プレビュー環境のエネルギーを設定"
+
+msgid "Set Preview Environment Ambient Occlusion"
+msgstr "プレビュー環境のアンビエントオクルージョンを設定"
+
+msgid "Set Preview Environment Glow"
+msgstr "プレビュー環境のグローを設定"
+
+msgid "Set Preview Environment Tonemap"
+msgstr "プレビュー環境のトーンマップを設定"
+
+msgid "Set Preview Environment Global Illumination"
+msgstr "プレビュー環境のグローバルイルミネーションを設定"
 
 msgid "Select Mode"
 msgstr "選択モード"
@@ -11845,6 +11889,9 @@ msgstr "ロック済み"
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "選択したノードのロックを解除し、選択と移動を可能にします。"
 
+msgid "Unlock"
+msgstr "ロック解除"
+
 msgid ""
 "Groups the selected node with its children. This selects the parent when any "
 "child node is clicked in 2D and 3D view."
@@ -11861,6 +11908,12 @@ msgid ""
 msgstr ""
 "選択したノードを子ノードからグループ解除します。子ノードは、2Dおよび3Dビューで"
 "は個々のアイテムになります。"
+
+msgid "Ungroup"
+msgstr "グループ解除"
+
+msgid "LMB+Drag: Measure the distance between two points in 3D space."
+msgstr "LMB＋ドラッグ：3D空間の2点間の距離を測定します。"
 
 msgid "Ruler Mode"
 msgstr "定規モード"
@@ -11880,6 +11933,9 @@ msgstr ""
 "シーンにDirectionalLight3Dノードが追加されている場合、プレビューの太陽光は無効"
 "になります。"
 
+msgid "Toggle preview sunlight."
+msgstr "プレビュー太陽光を切り替えます。"
+
 msgid ""
 "Toggle preview environment.\n"
 "If a WorldEnvironment node is added to the scene, preview environment is "
@@ -11890,7 +11946,7 @@ msgstr ""
 "ります。"
 
 msgid "Toggle preview environment."
-msgstr "プレビューの環境を切り替えます。"
+msgstr "プレビュー環境を切り替えます。"
 
 msgid "Edit Sun and Environment settings."
 msgstr "太陽と環境の設定を編集します。"
@@ -11987,6 +12043,9 @@ msgstr "ギズモ"
 
 msgid "View Origin"
 msgstr "原点を表示"
+
+msgid "Preview Translation"
+msgstr "プレビュー翻訳"
 
 msgid "Settings..."
 msgstr "設定..."
@@ -12171,6 +12230,9 @@ msgstr "ジオメトリの面は面積を持ちません。"
 msgid "The geometry doesn't contain any faces."
 msgstr "ジオメトリーは面を含んでいません。"
 
+msgid "Generation Time (sec)"
+msgstr "生成時間 (秒)"
+
 msgid "Create Emitter"
 msgstr "放出源を作成"
 
@@ -12243,6 +12305,12 @@ msgstr "In-Controlポイントをリセット"
 msgid "Reset Point Tilt"
 msgstr "ポイントの傾きをリセット"
 
+msgid "Toggle Open/Closed Curve"
+msgstr "曲線を開く / 閉じる"
+
+msgid "Create Curve in Path3D"
+msgstr "Path3D にカーブを作成"
+
 msgid "Shift+Click: Select multiple Points"
 msgstr "Shift+クリック: 複数のポイントを選択"
 
@@ -12279,6 +12347,12 @@ msgstr ""
 msgid "Assign"
 msgstr "割り当て"
 
+msgid "Bone Metadata"
+msgstr "ボーンメタデータ"
+
+msgid "Add Bone Metadata"
+msgstr "ボーンメタデータを追加"
+
 msgid "Set Bone Transform"
 msgstr "ボーン トランスフォームの設定"
 
@@ -12309,6 +12383,12 @@ msgstr "スケルトンプロファイルをエクスポート..."
 
 msgid "Set Bone Parentage"
 msgstr "ボーンの親子関係を設定"
+
+msgid "Revert Bone"
+msgstr "ボーンを元に戻す"
+
+msgid "Revert"
+msgstr "元に戻す"
 
 msgid "Skeleton3D"
 msgstr "Skeleton3D"
@@ -12386,11 +12466,29 @@ msgstr "スナップの設定"
 msgid "Grid Offset:"
 msgstr "グリッドのオフセット:"
 
+msgid "X Offset"
+msgstr "Xオフセット"
+
+msgid "Y Offset"
+msgstr "Yオフセット"
+
 msgid "Grid Step:"
 msgstr "グリッドのステップ:"
 
+msgid "X Step"
+msgstr "Xステップ"
+
 msgid "Primary Line Every:"
 msgstr "基本ラインの間隔:"
+
+msgid "X Primary Step"
+msgstr "Xプライマリステップ"
+
+msgid "steps"
+msgstr "ステップ"
+
+msgid "Y Primary Step"
+msgstr "Yプライマリステップ"
 
 msgid "Rotation Offset:"
 msgstr "回転のオフセット:"
@@ -12499,6 +12597,16 @@ msgstr "右クリック: クリックした位置にノードを追加。"
 msgid "Click to change object's pivot."
 msgstr "クリックしてオブジェクトの回転ピボットを変更します。"
 
+msgid "Shift: Set temporary pivot."
+msgstr "Shift: 一時ピボットを設定します。"
+
+msgid ""
+"Click this button while holding Shift to put the temporary pivot in the "
+"center of the selected nodes."
+msgstr ""
+"Shiftキーを押しながらこのボタンをクリックすると、選択したノードの中心に一時ピ"
+"ボットが配置されます。"
+
 msgid "Paste Pose"
 msgstr "ポーズを貼り付け"
 
@@ -12540,6 +12648,9 @@ msgstr "1600%にズーム"
 
 msgid "Shift: Scale proportionally."
 msgstr "Shift: 比率を保って拡大縮小。"
+
+msgid "Change Pivot"
+msgstr "ピボットを変更"
 
 msgid "Pan Mode"
 msgstr "パンモード"
@@ -12819,6 +12930,9 @@ msgstr "単発"
 msgid "Disconnects the signal after its first emission."
 msgstr "最初の放出後に信号を切断します。"
 
+msgid "Append Source"
+msgstr "ソースを追加"
+
 msgid "The source object is automatically sent when the signal is emitted."
 msgstr "シグナルが発信されると、オブジェクトが自動的に送信されます。"
 
@@ -12854,6 +12968,9 @@ msgstr "シグナル %s からすべての接続を除去してもよろしい�
 
 msgid "Filter Signals"
 msgstr "シグナルを絞り込む"
+
+msgid "Connections"
+msgstr "接続"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "このシグナルからすべての接続を除去してもよろしいですか？"
@@ -13110,6 +13227,9 @@ msgstr ""
 "オンの場合、コントロールノードを移動すると、オフセットの代わりにアンカーが変更"
 "されます。"
 
+msgid "Change Anchors"
+msgstr "アンカーを変更"
+
 msgid "Sizing settings for children of a Container node."
 msgstr "コンテナノードの子のサイズ設定。"
 
@@ -13355,6 +13475,9 @@ msgstr ""
 "カスタムタイプを追加したり、他のテーマからタイプとそのアイテムをインポートでき"
 "ます。"
 
+msgid "Rename Theme Type"
+msgstr "テーマタイプ名を変更"
+
 msgid "Remove All Color Items"
 msgstr "すべてのカラーアイテムを除去"
 
@@ -13537,6 +13660,9 @@ msgstr ""
 "このStyleBoxをメインスタイルに固定します。そのプロパティを編集すると、他すべて"
 "のこのタイプのStyleBoxで同じプロパティが更新されます。"
 
+msgid "Pin this StyleBox as a main style."
+msgstr "このStyleBoxをメインスタイルに固定します。"
+
 msgid "Add Item Type"
 msgstr "アイテムのタイプを追加"
 
@@ -13584,6 +13710,12 @@ msgstr "基底型を設定"
 
 msgid "Add a type from a list of available types or create a new one."
 msgstr "利用可能なタイプのリストからタイプを追加するか、新規に作成します。"
+
+msgid "Rename current type."
+msgstr "現在の型の名前を変更します。"
+
+msgid "Remove current type."
+msgstr "現在の型を削除します。"
 
 msgid "Show Default"
 msgstr "デフォルトを表示"
@@ -13713,6 +13845,9 @@ msgstr "無効な PackedScene リソースです。ルートには Control ノ�
 
 msgid "Invalid file, not a PackedScene resource."
 msgstr "無効なファイルです。PackedScene のリソースではありません。"
+
+msgid "Invalid PackedScene resource, could not instantiate it."
+msgstr "無効な PackedScene リソースのため、インスタンス化できませんでした。"
 
 msgid "Reload the scene to reflect its most actual state."
 msgstr "最も実際の状態を反映させるためにシーンをリロードします。"
@@ -13894,6 +14029,12 @@ msgstr "無効なルートノード名が置き換えられました。"
 msgid "Root Type:"
 msgstr "ルートの型:"
 
+msgid "Other Type"
+msgstr "その他の型"
+
+msgid "Select Node"
+msgstr "ノードを選択"
+
 msgid "Scene Name:"
 msgstr "シーン名:"
 
@@ -14041,6 +14182,13 @@ msgstr "取り消す"
 msgid "Don't Ask Again"
 msgstr "次回から確認しない"
 
+msgid ""
+"This dialog can also be enabled/disabled in the Editor Settings: Docks > "
+"Scene Tree > Ask Before Revoking Unique Name."
+msgstr ""
+"このダイアログはエディター設定の ドック > シーンツリー > ユニーク名を無効にす"
+"る前に確認する で表示/非表示を切り替えられます。"
+
 msgid "Allowed:"
 msgstr "許可:"
 
@@ -14122,6 +14270,9 @@ msgstr "選択したアニメーションを最初から再生する。(Shift+D)
 msgid "Play selected animation from current pos. (D)"
 msgstr "選択したアニメーションを現在の位置から再生する。(D)"
 
+msgid "Load Sheet"
+msgstr "シートを読み込む"
+
 msgid "Delete Frame"
 msgstr "フレームを削除"
 
@@ -14159,7 +14310,7 @@ msgid "Frame Order"
 msgstr "フレームオーダー"
 
 msgid "As Selected"
-msgstr "選択中で"
+msgstr "選択順"
 
 msgid "By Row"
 msgstr "行別"
@@ -14203,8 +14354,20 @@ msgstr "水平"
 msgid "Vertical"
 msgstr "垂直"
 
+msgid "X Size"
+msgstr "X サイズ"
+
+msgid "Y Size"
+msgstr "Y サイズ"
+
 msgid "Separation"
 msgstr "間隔"
+
+msgid "X Separation"
+msgstr "X 間隔"
+
+msgid "Y Separation"
+msgstr "Y 間隔"
 
 msgid "Offset"
 msgstr "オフセット"
@@ -14220,6 +14383,9 @@ msgstr "スプライトフレーム"
 
 msgid "Toggle SpriteFrames Bottom Panel"
 msgstr "スプライトフレームの下部パネルを切り替え"
+
+msgid "Toggle color channel preview selection."
+msgstr "カラーチャンネルのプレビュー選択を切り替えます。"
 
 msgid "Move GradientTexture2D Fill Point"
 msgstr "GradientTexture2D 塗りポイントを移動"
@@ -14254,11 +14420,29 @@ msgstr "Snapモード:"
 msgid "Pixel Snap"
 msgstr "ピクセルスナップ"
 
+msgid "Offset X"
+msgstr "X オフセット"
+
+msgid "Offset Y"
+msgstr "Y オフセット"
+
 msgid "Step:"
 msgstr "ステップ:"
 
+msgid "Step X"
+msgstr "X ステップ"
+
+msgid "Step Y"
+msgstr "Y ステップ"
+
 msgid "Separation:"
 msgstr "間隔:"
+
+msgid "Separation X"
+msgstr "X 間隔"
+
+msgid "Separation Y"
+msgstr "Y 間隔"
 
 msgid "Edit Region"
 msgstr "領域を編集"
@@ -14277,6 +14461,9 @@ msgstr "検索:"
 
 msgid "Folder:"
 msgstr "フォルダー:"
+
+msgid "Select Folder"
+msgstr "このフォルダーを選択"
 
 msgid "Includes:"
 msgstr "含まれる内容:"
@@ -14424,8 +14611,26 @@ msgstr "スクリプトのパス/名前は有効です。"
 msgid "Will create a new script file."
 msgstr "新規スクリプトファイルが作成されます。"
 
+msgid "Parent Name"
+msgstr "親の名前"
+
+msgid "Search Parent"
+msgstr "親を検索"
+
+msgid "Select Parent"
+msgstr "親を選択"
+
+msgid "Use Template"
+msgstr "テンプレートを使用"
+
+msgid "Template"
+msgstr "テンプレート"
+
 msgid "Built-in Script:"
 msgstr "組み込みスクリプト:"
+
+msgid "Select File"
+msgstr "ファイルを選択"
 
 msgid "Attach Node Script"
 msgstr "ノードにスクリプトをアタッチする"
@@ -14499,6 +14704,9 @@ msgstr "テーマのインポート"
 msgid "Save Theme As..."
 msgstr "テーマを名前をつけて保存..."
 
+msgid "Make the script editor floating."
+msgstr "スクリプトエディタをフローティング化します。"
+
 msgid "Open '%s' in Godot online documentation."
 msgstr "Godotのオンラインドキュメントで '%s' を開く。"
 
@@ -14568,6 +14776,9 @@ msgstr "テーマを再読み込み"
 msgid "Close All"
 msgstr "すべて閉じる"
 
+msgid "Close Tabs Below"
+msgstr "下のタブを全て閉じる"
+
 msgid "Close Docs"
 msgstr "ドキュメントを閉じる"
 
@@ -14621,6 +14832,12 @@ msgstr "JSON"
 
 msgid "Markdown"
 msgstr "Markdown"
+
+msgid "ConfigFile"
+msgstr "Configファイル"
+
+msgid "Script"
+msgstr "スクリプト"
 
 msgid "Connections to method:"
 msgstr "メソッドへの接続:"
@@ -14788,6 +15005,9 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "'%s' という名前のアクションがすでに存在します。"
 
+msgid "Built-in actions are always shown when searching."
+msgstr "検索時には常に組み込みアクションが表示されます。"
+
 msgid "Action %s"
 msgstr "アクション: %s"
 
@@ -14878,11 +15098,20 @@ msgstr "%s は無効なパスです。リソースパス (res://) に存在し�
 msgid "Add Autoload"
 msgstr "自動読み込みを追加"
 
+msgid "Autoload Path"
+msgstr "パスを自動読み込み"
+
 msgid "Set path or press \"Add\" to create a script."
 msgstr "パスを設定するか、「追加」 を押してスクリプトを作成します。"
 
+msgid "Select Autoload Path"
+msgstr "自動読み込みパスを選択"
+
 msgid "Node Name:"
 msgstr "ノード名:"
+
+msgid "Autoloads"
+msgstr "自動読み込み"
 
 msgid "Global Variable"
 msgstr "グローバル変数"
@@ -14983,6 +15212,12 @@ msgstr "Waylandディスプレイ（Linuxのみ）。"
 msgid "X11 display (Linux only)."
 msgstr "X11ディスプレイ（Linuxのみ）。"
 
+msgid ""
+"RenderingDevice based rendering (if disabled, the OpenGL backend is required)."
+msgstr ""
+"RenderingDeviceベースのレンダリング（無効の場合、OpenGLバックエンドが必要で"
+"す）。"
+
 msgid "Forward+ renderer for advanced 3D graphics."
 msgstr "高度な3Dグラフィックス用のForward+レンダラー。"
 
@@ -14994,6 +15229,10 @@ msgstr "RenderingDeviceのDirect3D 12バックエンド。"
 
 msgid "Metal backend of RenderingDevice (Apple arm64 only)."
 msgstr "RenderingDeviceのMetalバックエンド(Apple arm64のみ)。"
+
+msgid "OpenGL backend (if disabled, the RenderingDevice backend is required)."
+msgstr ""
+"OpenGL バックエンド(無効の場合は RenderingDevice のバックエンドが必要です)。"
 
 msgid "Physics Server and capabilities for 2D."
 msgstr "2D 物理サーバーと機能。"
@@ -15294,6 +15533,9 @@ msgstr "既存のレイアウトを選択:"
 msgid "Or enter new layout name"
 msgstr "または、新しいレイアウト名を入力"
 
+msgid "New layout name"
+msgstr "新しいレイアウト名"
+
 msgid "Edit Built-in Action: %s"
 msgstr "組み込みアクションの編集: %s"
 
@@ -15332,6 +15574,9 @@ msgstr "プロジェクトのオーバーライド: %s"
 
 msgid "Go to the override in the Project Settings."
 msgstr "プロジェクト設定のオーバーライドに移動します。"
+
+msgid "Remove this override."
+msgstr "このオーバーライドを除去します。"
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "左スティック 左, ジョイスティック 0 左"
@@ -15432,6 +15677,18 @@ msgstr "ジョイパッドのボタン"
 msgid "Joypad Axes"
 msgstr "ジョイパッドの軸"
 
+msgctxt "Key Location"
+msgid "Unspecified"
+msgstr "未指定"
+
+msgctxt "Key Location"
+msgid "Left"
+msgstr "左"
+
+msgctxt "Key Location"
+msgid "Right"
+msgstr "右"
+
 msgid "Event Configuration for \"%s\""
 msgstr "%s のイベントの設定"
 
@@ -15468,6 +15725,9 @@ msgstr "キーラベル (Unicode、大文字と小文字を区別しない)"
 
 msgid "Physical location"
 msgstr "物理位置"
+
+msgid "Alt or Option key"
+msgstr "Alt または Optionキー"
 
 msgid "Shift key"
 msgstr "Shift キー"
@@ -15733,12 +15993,24 @@ msgstr "\\ Sampler"
 msgid "[default]"
 msgstr "[デフォルト]"
 
+msgid "Expand output port"
+msgstr "出力ポートを展開"
+
+msgid "Select preview port"
+msgstr "プレビューポートを選択"
+
 msgid ""
 "The 2D preview cannot correctly show the result retrieved from instance "
 "parameter."
 msgstr ""
 "2D プレビューでは、インスタンスパラメータから取得した結果を正しく表示できませ"
 "ん。"
+
+msgid "Copy Preview Shader Parameters From Material"
+msgstr "プレビューシェーダーパラメータをマテリアルからコピー"
+
+msgid "Paste Preview Shader Parameters To Material"
+msgstr "プレビューシェーダーパラメータをマテリアルへ貼り付け"
 
 msgid "Add Input Port"
 msgstr "入力ポートを追加"
@@ -15884,6 +16156,12 @@ msgstr "定数を設定: %s"
 msgid "Invalid name for varying."
 msgstr "Varyingの名前が無効です。"
 
+msgid "Varying with that name already exists."
+msgstr "その名前の Varying は既に存在します。"
+
+msgid "Boolean type cannot be used with `%s` varying mode."
+msgstr "Boolean 型は `%s` で使用できません。"
+
 msgid "Add Node(s) to Visual Shader"
 msgstr "ビジュアルシェーダーにノードを追加"
 
@@ -15941,8 +16219,14 @@ msgstr "間に新しいノードを挿入"
 msgid "Insert New Reroute"
 msgstr "間に新しいリルートを挿入"
 
+msgid "Filter Parameters"
+msgstr "パラメーターを絞り込む"
+
 msgid "Copy Parameters From Material"
 msgstr "マテリアルのパラメーターをコピーする"
+
+msgid "Paste Parameters To Material"
+msgstr "マテリアルにパラメーターを貼り付け"
 
 msgid "High-end node"
 msgstr "ハイエンドノード"
@@ -15952,6 +16236,12 @@ msgstr "シェーダーノードの作成"
 
 msgid "Create Shader Varying"
 msgstr "シェーダーのVaryingを作成"
+
+msgid "Varying Type"
+msgstr "Varying の型"
+
+msgid "Varying Mode"
+msgstr "Varying のモード"
 
 msgid "Delete Shader Varying"
 msgstr "シェーダーVaryingを削除する"
@@ -16015,6 +16305,9 @@ msgstr "カラーパラメーター。"
 
 msgid "(Fragment/Light mode only) Derivative function."
 msgstr "(フラグメント/ライトモードのみ)導関数。"
+
+msgid "Derivative function."
+msgstr "導関数。"
 
 msgid "Returns the boolean result of the %s comparison between two parameters."
 msgstr "2つのパラメーター間の %s 比較のブール結果を返します。"
@@ -16121,6 +16414,9 @@ msgstr "ブール定数。"
 
 msgid "Boolean parameter."
 msgstr "ブール値パラメーター。"
+
+msgid "Translated to '%s' in Godot Shading Language."
+msgstr "'%s' をGodotシェーディング言語に翻訳しました。"
 
 msgid "'%s' input parameter for all shader modes."
 msgstr "すべてのシェーダーモードの '%s' 入力パラメーター。"
@@ -16717,6 +17013,9 @@ msgstr ""
 msgid "Returns the vector that points in the direction of refraction."
 msgstr "屈折の方向を指すベクトルを返します。"
 
+msgid "Remaps a vector from the input range to the output range."
+msgstr "ベクトルを入力範囲から出力範囲に再マップします。"
+
 msgid ""
 "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
 "\n"
@@ -16868,6 +17167,9 @@ msgstr ""
 "接続を自由に再ルーティングしたり、複数の入力ポートを単一の出力ポートに接続する"
 "ために使用できます。"
 
+msgid "[None]"
+msgstr "[None]"
+
 msgid "Edit Visual Property: %s"
 msgstr "ビジュアルプロパティを編集: %s"
 
@@ -16899,6 +17201,9 @@ msgstr "[デフォルト]"
 
 msgid "Select a Locale"
 msgstr "ロケールを選択"
+
+msgid "Locale Filter"
+msgstr "ロケールフィルター"
 
 msgid "Show All Locales"
 msgstr "すべてのロケールを表示"
@@ -17145,6 +17450,9 @@ msgstr "プル"
 msgid "Push"
 msgstr "プッシュ"
 
+msgid "Extra options"
+msgstr "追加オプション"
+
 msgid "Force Push"
 msgstr "強制プッシュ"
 
@@ -17175,6 +17483,15 @@ msgstr "分割"
 msgid "Unified"
 msgstr "統合済み"
 
+msgid "CSG operation returned an empty array."
+msgstr "CSG演算は空の配列を返しました。"
+
+msgid "CSG operation returned an empty mesh."
+msgstr "CSG演算は空のメッシュを返しました。"
+
+msgid "Create baked CSGShape3D Mesh Instance"
+msgstr "ベイク済み CSGShape3D メッシュインスタンスを作成"
+
 msgid ""
 "Can not add a baked collision shape as sibling for the scene root.\n"
 "Move the CSG root node below a parent node."
@@ -17182,6 +17499,30 @@ msgstr ""
 "ベイクされたコリジョンシェイプをシーンルートの兄弟ノードとして追加することはで"
 "きません。\n"
 "CSGルートノードを親ノードの下に移動してください。"
+
+msgid "CSG operation returned an empty shape."
+msgstr "CSG演算は空の形状を返しました。"
+
+msgid "Create baked CSGShape3D Collision Shape"
+msgstr "ベイク済みCSGShape3Dコリジョンシェイプを作成"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "Bake Mesh Instance"
+msgstr "メッシュインスタンスをベイク"
+
+msgid "Bake Collision Shape"
+msgstr "コリジョンシェイプをベイク"
+
+msgid "Change CSG Box Size"
+msgstr "CSGボックスサイズを変更"
+
+msgid "Change CSG Cylinder Radius"
+msgstr "CSGシリンダーの半径を変更"
+
+msgid "Change CSG Cylinder Height"
+msgstr "CSGシリンダーの高さを変更"
 
 msgid "Change Torus Inner Radius"
 msgstr "トーラスの内半径を変更"
@@ -17191,6 +17532,15 @@ msgstr "トーラスの外半径を変更"
 
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Convert() の型引数が無効です。TYPE_* 定数を使用してください。"
+
+msgid "Expected an integer between 0 and 2^32 - 1."
+msgstr "0から2^32−1 の範囲の整数が必要です。"
+
+msgid "Expected a string of length 1 (a character)."
+msgstr "1文字の文字列が必要です。"
+
+msgid "Range too big."
+msgstr "範囲が大きすぎます。"
 
 msgid "Cannot resize array."
 msgstr "配列のサイズを変更できません。"
@@ -17340,6 +17690,12 @@ msgstr "Y軸を編集"
 msgid "Edit Z Axis"
 msgstr "Z軸を編集"
 
+msgid "Keep Selection"
+msgstr "選択範囲を保持"
+
+msgid "Clear Rotation"
+msgstr "回転をクリア"
+
 msgid "GridMap Settings"
 msgstr "グリッドマップの設定"
 
@@ -17359,15 +17715,36 @@ msgid "Cursor Rotate Z"
 msgstr "Z軸でカーソルを回転"
 
 msgid "Change Grid Floor:"
-msgstr "グリッド床を変更:"
+msgstr "グリッドフロアを変更:"
+
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"グリッドフロアを変更:\n"
+"前の平面(%s)\n"
+"次の平面(%s)"
 
 msgid "Filter Meshes"
 msgstr "メッシュを絞り込む"
+
+msgid "View as Thumbnails"
+msgstr "サムネイルとして表示"
+
+msgid "View as List"
+msgstr "リストとして表示"
 
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "メッシュを使うにはメッシュライブラリリソースをこのグリッドマップに設定してくだ"
 "さい。"
+
+msgid "GridMap"
+msgstr "グリッドマップ"
+
+msgid "Toggle GridMap Bottom Panel"
+msgstr "グリッドマップ下パネルの切り替え"
 
 msgid "All Clips"
 msgstr "すべてのクリップ"
@@ -17504,6 +17881,9 @@ msgstr "間接ライティングを統合する"
 msgid "Integrate indirect lighting %d%%"
 msgstr "間接照明を統合します %d%%"
 
+msgid "Baking light probes"
+msgstr "ライトプローブをベイク"
+
 msgid "Integrating light probes %d%%"
 msgstr "ライトマップの生成 %d%%"
 
@@ -17550,6 +17930,19 @@ msgstr ""
 msgid ".NET assemblies not found"
 msgstr ".NET アセンブリが見つかりません"
 
+msgid ""
+"Unable to load .NET runtime, specifically hostfxr.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
+"Godot."
+msgstr ""
+".NETランタイム（hostfxr）の読み込みに失敗しました。\n"
+"プロジェクトの作成・編集を行うとクラッシュする可能性があります。\n"
+"\n"
+"https://dotnet.microsoft.com/ja-jp/download から .NET SDK 8.0 以上をインストー"
+"ルし、Godot を再起動してください。"
+
 msgid "%d (%s)"
 msgstr "%d (%s)"
 
@@ -17560,9 +17953,15 @@ msgctxt "Network"
 msgid "Down"
 msgstr "下り"
 
+msgid "Incoming Bandwidth"
+msgstr "受信帯域幅"
+
 msgctxt "Network"
 msgid "Up"
 msgstr "上り"
+
+msgid "Outgoing Bandwidth"
+msgstr "送信帯域幅"
 
 msgid "Incoming RPC"
 msgstr "RPC受信"
@@ -17714,11 +18113,32 @@ msgstr ""
 "このノードが動作するためには、NavigationPolygonリソースが設定または作成されて"
 "いる必要があります。"
 
+msgid "Start Position"
+msgstr "開始位置"
+
+msgid "End Position"
+msgstr "終了位置"
+
 msgid "Change Start Position"
 msgstr "開始位置を変更"
 
 msgid "Change End Position"
 msgstr "終了位置を変更"
+
+msgid "Set Obstacle Vertices"
+msgstr "障害物の頂点を設定"
+
+msgid "Add Vertex"
+msgstr "頂点を追加"
+
+msgid "Edit Vertex"
+msgstr "頂点を編集"
+
+msgid "Delete Vertex"
+msgstr "頂点を削除"
+
+msgid "Clear Vertices"
+msgstr "頂点をクリア"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
@@ -17745,6 +18165,9 @@ msgid ""
 msgstr ""
 "リソースが別の型からインポートされたため、ナビゲーションメッシュを作成できませ"
 "ん。"
+
+msgid "Bake"
+msgstr "ベイク"
 
 msgid "Bake NavigationMesh"
 msgstr "NavigationMesh をベイク"
@@ -18228,6 +18651,9 @@ msgstr "APKを最適化..."
 
 msgid "Could not unzip temporary unaligned APK."
 msgstr "temporary unaligned APKを展開できませんでした。"
+
+msgid "Metal renderer require iOS 14+."
+msgstr "MetalレンダラーにはiOS 14以降が必要です。"
 
 msgid "Export Icons"
 msgstr "エクスポートアイコン"
@@ -19080,6 +19506,9 @@ msgstr ""
 "イヤにもオブジェクトをペイントしないことを意味します。\n"
 "これを解決するには、Cull Mask プロパティで少なくとも1ビットを有効にします。"
 
+msgid "Fog Volumes are only visible when using the Forward+ renderer."
+msgstr "フォグボリュームは、Forward+ レンダラー使用時のみ表示されます。"
+
 msgid ""
 "Fog Volumes need volumetric fog to be enabled in the scene's Environment in "
 "order to be visible."
@@ -19166,6 +19595,13 @@ msgid "Generating Probe Acceleration Structures"
 msgstr "プローブAcceleration Structureを作成する"
 
 msgid ""
+"Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will "
+"still work."
+msgstr ""
+"%s ではライトマップをベイクできません。既存のベイク済みライトマップのレンダリ"
+"ングは引き続き機能します。"
+
+msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
 msgstr ""
 "NavigationAgent3D は、親ノードを継承する Node3D 配下でのみ使用できます。"
@@ -19175,6 +19611,10 @@ msgid ""
 "be useful."
 msgstr ""
 "NavigationLink3Dが機能するには、開始位置と終了位置が異なる必要があります。"
+
+msgid "NavigationObstacle3D does not support negative or zero scaling."
+msgstr ""
+"NavigationObstacle3D は負またはゼロのスケーリングをサポートしていません。"
 
 msgid ""
 "Occlusion culling is disabled in the Project Settings, which means occlusion "
@@ -20359,6 +20799,9 @@ msgstr ""
 msgid "uniform buffer"
 msgstr "uniformバッファ"
 
+msgid "Expected an identifier for stencil mode."
+msgstr "ステンシルモードの識別子が必要です。"
+
 msgid "Expected an identifier for render mode."
 msgstr "レンダリング モードの識別子が必要です。"
 
@@ -20369,10 +20812,19 @@ msgid "Duplicated render mode: '%s'."
 msgstr "レンダリング モードが重複しています: '%s'"
 
 msgid ""
+"Redefinition of stencil mode: '%s'. The '%s' mode has already been set to "
+"'%s'."
+msgstr ""
+"ステンシルモードの再定義: '%s'。 '%s'モードはすでに '%s'に設定されています。"
+
+msgid ""
 "Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."
 msgstr ""
 "レンダリング モードの再定義: '%s'。「%s」モードはすでに「%s」に設定されていま"
 "す。"
+
+msgid "Invalid stencil mode: '%s'."
+msgstr "無効なステンシルモード: '%s'。"
 
 msgid "Invalid render mode: '%s'."
 msgstr "無効なレンダリング モード: '%s'。"

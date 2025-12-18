@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:08+0000\n"
+"PO-Revision-Date: 2025-12-02 13:21+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -78,7 +78,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "Зняти"
@@ -726,6 +726,9 @@ msgstr "Крок сітки Y"
 msgid "Blend X Value"
 msgstr "Значення суміші X"
 
+msgid "Blend Y Value"
+msgstr "Значення Y суміші"
+
 msgid "Max Y"
 msgstr "Макс Y"
 
@@ -740,6 +743,9 @@ msgstr "Мін X"
 
 msgid "X Value"
 msgstr "X Значення"
+
+msgid "Max X"
+msgstr "Макс X"
 
 msgid "Parameter Changed: %s"
 msgstr "Параметр змінено: %s"
@@ -19199,6 +19205,13 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "Процес нотаріального засвідчення зазвичай займає менше години."
 
 msgid ""
+"You can check the progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+"Ви можете перевірити прогрес вручну, відкривши термінал і виконавши таку "
+"команду:"
+
+msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -19210,6 +19223,13 @@ msgstr "Інструменти командного рядка Xcode не вст
 
 msgid "Could not start xcrun executable."
 msgstr "Не вдалося запустити виконуваний файл xcrun."
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"Дивіться інструкції щодо пошуку ідентифікатора вашої команди: https://"
+"developer.apple.com/help/glossary/team-id"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "Вбудований CodeSign не вдався з помилкою \"%s\"."

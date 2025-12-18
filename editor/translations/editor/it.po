@@ -121,13 +121,14 @@
 # Leonardo Di Pasquale <leondipas@gmail.com>, 2025.
 # Denyer Pimentel <dj18pim@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Pietro Marini <pietromarinivr2006@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-17 13:03+0000\n"
-"Last-Translator: Micky <micheledevita2@gmail.com>\n"
+"PO-Revision-Date: 2025-12-10 16:36+0000\n"
+"Last-Translator: Pietro Marini <pietromarinivr2006@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -19515,6 +19516,13 @@ msgstr "Gli strumenti da riga di comando di Xcode non sono installati."
 
 msgid "Could not start xcrun executable."
 msgstr "Impossibile avviare l'eseguibile xcrun."
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"Consulta istruzioni su come trovare il tuo ID team: https://"
+"developer.apple.com/help/glossary/team-id"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "Firma del codice incorporata fallita con l'errore \"%s\"."

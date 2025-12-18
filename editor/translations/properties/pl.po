@@ -104,7 +104,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-11 09:52+0000\n"
+"PO-Revision-Date: 2025-12-02 02:07+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
@@ -568,6 +568,12 @@ msgstr "Użyj wielu wątków do wypalania"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Użyj wątków wysokiego priorytetu do wypalania"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "Błędy scalania brzegów siatki nawigacji"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "Niedopasowanie rozmiaru komórki siatki nawigacji"
 
 msgid "Low Processor Usage Mode"
 msgstr "Tryb niskiego wykorzystania procesora"

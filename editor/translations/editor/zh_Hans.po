@@ -115,7 +115,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-11-25 20:51+0000\n"
+"PO-Revision-Date: 2025-12-02 13:21+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
@@ -764,6 +764,9 @@ msgstr "栅格 Y 步长"
 msgid "Blend X Value"
 msgstr "混合 X 值"
 
+msgid "Blend Y Value"
+msgstr "混合 Y 值"
+
 msgid "Max Y"
 msgstr "最大 Y"
 
@@ -778,6 +781,9 @@ msgstr "最小 X"
 
 msgid "X Value"
 msgstr "X 值"
+
+msgid "Max X"
+msgstr "最大 X"
 
 msgid "Parameter Changed: %s"
 msgstr "修改参数：%s"
@@ -18415,6 +18421,11 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "公证过程通常不到一个小时。"
 
 msgid ""
+"You can check the progress manually by opening a Terminal and running the "
+"following command:"
+msgstr "你可以手动检查进度，请打开终端并运行以下命令："
+
+msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr "运行以下命令将公证票证装订到导出的应用中（可选）："
@@ -18424,6 +18435,13 @@ msgstr "未安装 Xcode 命令行工具。"
 
 msgid "Could not start xcrun executable."
 msgstr "无法启动 xcrun 可执行文件。"
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"查找团队 ID 请参考这里的步骤：https://developer.apple.com/help/glossary/team-"
+"id"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "内置 CodeSign 失败，错误为“%s”。"

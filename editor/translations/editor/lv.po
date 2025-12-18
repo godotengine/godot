@@ -8,7 +8,7 @@
 # Anonymous <noreply@weblate.org>, 2020.
 # StiLins <aigars.skilins@gmail.com>, 2020.
 # Rihards Kubilis <oldcar@inbox.lv>, 2020.
-# M E <gruffy7932@gmail.com>, 2021, 2022.
+# M E <gruffy7932@gmail.com>, 2021, 2022, 2025.
 # D āvis <dlektauers@gmail.com>, 2022.
 # Agnis Aldiņš <agnis16@gmail.com>, 2023.
 # Andrejs <ledaviskylv@gmail.com>, 2023, 2025.
@@ -21,8 +21,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:08+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2025-12-10 05:35+0000\n"
+"Last-Translator: M E <gruffy7932@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "Neiestatīts"
@@ -544,11 +544,23 @@ msgstr "Izveidot punktus."
 msgid "Blend:"
 msgstr "Sapludināt:"
 
+msgid "Point"
+msgstr "Punkts"
+
+msgid "Open Editor"
+msgstr "Atvērt Redaktoru"
+
+msgid "Max"
+msgstr "Max"
+
 msgid "Value"
 msgstr "Vērtība"
 
 msgid "Open Animation Node"
 msgstr "Atvērt Animācijas Mezglu"
+
+msgid "Triangle already exists."
+msgstr "Trijstūris"
 
 msgid "Add Triangle"
 msgstr "Pievienot Trijstūri"
@@ -2126,7 +2138,7 @@ msgid "Install from file"
 msgstr "Instalēt no faila"
 
 msgid "Import Templates From ZIP File"
-msgstr "Importēr šablonus no ZIP faila"
+msgstr "Importēt šablonus no ZIP faila"
 
 msgid "Template Package"
 msgstr "Šablona pakotne"

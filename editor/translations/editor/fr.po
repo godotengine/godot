@@ -201,13 +201,14 @@
 # czepyga <maxime.czepyga@gmail.com>, 2025.
 # itsaboon <jackdgrabina@gmail.com>, 2025.
 # Bamowen <mathieu.monsauret@gmail.com>, 2025.
+# Korimi <hmvg2007@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-05 12:51+0000\n"
-"Last-Translator: Bamowen <mathieu.monsauret@gmail.com>\n"
+"PO-Revision-Date: 2025-12-13 20:00+0000\n"
+"Last-Translator: Korimi <hmvg2007@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -215,7 +216,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.14.1-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "Non défini"
@@ -569,10 +570,10 @@ msgid "Delete Nodes"
 msgstr "Supprimer le(s) nœud(s)"
 
 msgid "Follow Input Port Connection"
-msgstr "Suivre le port d'entrée de la connexion"
+msgstr "Suivre la connexion du port d'entrée"
 
 msgid "Follow Output Port Connection"
-msgstr "Suivre le port de sortie de la connexion"
+msgstr "Suivre la connexion du port de sortie"
 
 msgid "Go Up One Level"
 msgstr "Monter d’un niveau"
@@ -3770,7 +3771,7 @@ msgid "Favorites"
 msgstr "Favoris"
 
 msgid "View items as a grid of thumbnails."
-msgstr "Afficher les éléments sous forme de grille de vignettes."
+msgstr "Afficher les éléments sous forme de grille d'aperçus."
 
 msgid "View items as a list."
 msgstr "Afficher les éléments sous forme de liste."
@@ -7256,7 +7257,7 @@ msgid "Refresh files."
 msgstr "Rafraîchir les fichiers."
 
 msgid "(Un)favorite current folder."
-msgstr "Ajouter ou supprimer aux favoris le dossier courant."
+msgstr "(Dé)favoriser le dossier courant."
 
 msgid "Current Drive"
 msgstr "Profil actuel"
@@ -16708,13 +16709,13 @@ msgid "Grayscale function."
 msgstr "Fonction niveau de gris."
 
 msgid "Converts HSV vector to RGB equivalent."
-msgstr "Convertit le vecteur HSV en équivalent RGB."
+msgstr "Convertit le vecteur TSV en équivalent RGB."
 
 msgid "Converts color from linear to sRGB color space."
 msgstr "Convertit la couleur de l'espace linéaire à sRGB."
 
 msgid "Converts RGB vector to HSV equivalent."
-msgstr "Convertit le vecteur RGB en équivalent HSV."
+msgstr "Convertit le vecteur RGB en équivalent TSV."
 
 msgid "Sepia function."
 msgstr "Fonction Sepia."
@@ -19674,6 +19675,13 @@ msgstr "Les outils en ligne de commande Xcode ne sont pas installés."
 
 msgid "Could not start xcrun executable."
 msgstr "Impossible de démarrer le sous-processus."
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"Voir les instructions pour trouver l'ID de votre équipe : https://"
+"developer.apple.com/help/glossary/team-id"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "CodeSign intégré a échoué avec l'erreur : \"%s\"."

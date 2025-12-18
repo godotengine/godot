@@ -50,13 +50,14 @@
 # Chang-Chia Tseng <pswo10680@gmail.com>, 2024.
 # STENYIN lee <stenyin@gmail.com>, 2025.
 # Myeongjin <aranet100@gmail.com>, 2025.
+# RogerFang <newlag@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-19 22:59+0000\n"
-"Last-Translator: STENYIN lee <stenyin@gmail.com>\n"
+"PO-Revision-Date: 2025-12-08 20:00+0000\n"
+"Last-Translator: RogerFang <newlag@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_Hant\n"
@@ -64,7 +65,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Application"
 msgstr "應用"
@@ -518,6 +519,12 @@ msgstr "烘焙使用多執行緒"
 
 msgid "Baking Use High Priority Threads"
 msgstr "烘焙使用高優先順序執行緒"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "導航網格邊緣合併錯誤"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "導航網格單元大小不匹配"
 
 msgid "Low Processor Usage Mode"
 msgstr "處理器節能模式使用率"

@@ -155,13 +155,14 @@
 # Julián Lacomba <julian_alberto93@yahoo.com.ar>, 2025.
 # Ignacio Parentella <ignacio.parentella@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Myeongjin <aranet100@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-01 13:02+0000\n"
-"Last-Translator: Julián Lacomba <julian_alberto93@yahoo.com.ar>\n"
+"PO-Revision-Date: 2025-12-15 17:00+0000\n"
+"Last-Translator: Alejandro Moctezuma <moctezumaalejandro25@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -169,7 +170,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1-dev\n"
 
 msgid "Unset"
 msgstr "No Establecido"
@@ -403,7 +404,7 @@ msgid "Paste"
 msgstr "Pegar"
 
 msgid "Toggle Tab Focus Mode"
-msgstr "Act./Desact. Modo Foco de Pestaña"
+msgstr "Alternar modo foco de pestaña"
 
 msgid "Undo"
 msgstr "Deshacer"
@@ -728,7 +729,7 @@ msgstr ""
 "la activación falla."
 
 msgid "Set the blending position within the space"
-msgstr "Establecer la posición de mezclado dentro del espacio"
+msgstr "Establece la posición de combinación dentro del espacio"
 
 msgid "Select and move points, create points with RMB."
 msgstr "Seleccionar y mover puntos, crear puntos con clic derecho."
@@ -749,13 +750,13 @@ msgid "Sync:"
 msgstr "Sincronizar:"
 
 msgid "Blend:"
-msgstr "Mezcla:"
+msgstr "Combinación:"
 
 msgid "Point"
 msgstr "Punto"
 
 msgid "Blend Value"
-msgstr "Valor de Mezcla"
+msgstr "Valor de Combinación"
 
 msgid "Open Editor"
 msgstr "Abrir Editor"
@@ -791,7 +792,8 @@ msgid "Remove BlendSpace2D Triangle"
 msgstr "Eliminar Triángulo BlendSpace2D"
 
 msgid "No triangles exist, so no blending can take place."
-msgstr "No existen triángulos, por lo tanto, no se puede realizar el mezclado."
+msgstr ""
+"No existen triángulos, por lo tanto, no se puede realizar ninguna combinación."
 
 msgid "Toggle Auto Triangles"
 msgstr "Act./Desact. Triángulos Automáticos"
@@ -803,7 +805,8 @@ msgid "Erase points and triangles."
 msgstr "Borrar puntos y triángulos."
 
 msgid "Generate blend triangles automatically (instead of manually)"
-msgstr "Generar triángulos combinados automáticamente (en lugar de manualmente)"
+msgstr ""
+"Generar triángulos de combinación automáticamente (en lugar de manualmente)"
 
 msgid "Grid X Step"
 msgstr "Paso X de Cuadrícula"
@@ -812,7 +815,10 @@ msgid "Grid Y Step"
 msgstr "Paso Y de Cuadrícula"
 
 msgid "Blend X Value"
-msgstr "Valor X de Fusión"
+msgstr "Valor X de Combinación"
+
+msgid "Blend Y Value"
+msgstr "Valor Y de Combinación"
 
 msgid "Max Y"
 msgstr "Max Y"
@@ -829,6 +835,9 @@ msgstr "Min X"
 msgid "X Value"
 msgstr "Valor X"
 
+msgid "Max X"
+msgstr "Max X"
+
 msgid "Parameter Changed: %s"
 msgstr "Parámetro Modificado: %s"
 
@@ -839,7 +848,7 @@ msgid "Edit Filters"
 msgstr "Editar Filtros"
 
 msgid "Output node can't be added to the blend tree."
-msgstr "El nodo de salida no puede ser agregado al blend tree."
+msgstr "El nodo de Salida no se puede añadir al árbol de combinación."
 
 msgid "Add Node to BlendTree"
 msgstr "Añadir Nodo a BlendTree"
@@ -1206,10 +1215,10 @@ msgid "Duplicate Animation"
 msgstr "Duplicar Animación"
 
 msgid "Blend Next Changed"
-msgstr "Mezclar el Siguiente Cambio"
+msgstr "Siguiente Combinación Cambiada"
 
 msgid "Change Blend Time"
-msgstr "Cambiar Tiempo de Mezcla"
+msgstr "Cambiar Tiempo de Combinación"
 
 msgid "[Global] (create)"
 msgstr "[Global] (crear)"
@@ -1317,10 +1326,10 @@ msgid "Error!"
 msgstr "¡Error!"
 
 msgid "Cross-Animation Blend Times"
-msgstr "Tiempos de Mezcla entre Animaciones"
+msgstr "Tiempos de Combinación de Animación Cruzada"
 
 msgid "Blend Times:"
-msgstr "Tiempos de Mezcla:"
+msgstr "Tiempos de Combinación:"
 
 msgid "Next (Auto Queue):"
 msgstr "Siguiente (Cola Automática):"
@@ -1546,7 +1555,7 @@ msgid "Select node in scene."
 msgstr "Selecciona nodo en escena."
 
 msgid "Use Blend"
-msgstr "Usar Mezcla"
+msgstr "Usar Combinación"
 
 msgid "Update Mode (How this property is set)"
 msgstr "Modo de actualización (Cómo se establece)"
@@ -1618,7 +1627,7 @@ msgid "Toggle Track Enabled"
 msgstr "Act./Desact. Pista"
 
 msgid "Don't Use Blend"
-msgstr "No Usar Mezcla"
+msgstr "No Usar Combinación"
 
 msgid "Nearest"
 msgstr "Más Cercano"
@@ -1672,7 +1681,7 @@ msgid "Change Animation Loop Mode"
 msgstr "Cambiar Modo Loop de Animación"
 
 msgid "Change Animation Use Blend"
-msgstr "Cambiar Uso de Mezcla en la Animación"
+msgstr "Cambiar Uso de Combinación de Animación"
 
 msgid ""
 "Compressed tracks can't be edited or removed. Re-import the animation with "
@@ -1723,7 +1732,7 @@ msgid "Rearrange Tracks"
 msgstr "Reordenar Pistas"
 
 msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
-msgstr "Las pistas de Formas Combinadas solo se aplican a nodos MeshInstance3D."
+msgstr "Las pistas de Forma Combinada solo se aplican a nodos MeshInstance3D."
 
 msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
 msgstr ""
@@ -2156,7 +2165,7 @@ msgid "3D Pos/Rot/Scl Track:"
 msgstr "Pista de Pos/Rot/Escala 3D:"
 
 msgid "Blendshape Track:"
-msgstr "Pista de Forma Combinada:"
+msgstr "Pista de Blendshape:"
 
 msgid "Value Track:"
 msgstr "Pista de Escala 3D:"
@@ -5635,7 +5644,7 @@ msgid "Output"
 msgstr "Salida"
 
 msgid "Toggle Output Bottom Panel"
-msgstr "Act./Desact. Panel Inferior de Salida"
+msgstr "Alternar panel inferior de salidas"
 
 msgid "Don't Save"
 msgstr "No Guardar"
@@ -10674,8 +10683,8 @@ msgid ""
 "The material to use for this tile. This can be used to apply a different "
 "blend mode or custom shaders to a single tile."
 msgstr ""
-"El material a utilizar para este tile. Esto puede ser utilizado para aplicar "
-"un modo de mezcla diferente o shaders personalizados a un único tile."
+"El material a usar para este Tile. Esto puede usarse para aplicar un modo de "
+"combinación diferente o shaders personalizados a un solo Tile."
 
 msgid ""
 "The sorting order for this tile. Higher values will make the tile render in "
@@ -11160,7 +11169,7 @@ msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "La Malla contenedora no es del tipo ArrayMesh."
 
 msgid "Can't unwrap mesh with blend shapes."
-msgstr "No se puede desenvolver la malla con formas de mezcla."
+msgstr "No se puede desenvolver la malla con formas combinadas."
 
 msgid "Only triangles are supported for lightmap unwrap."
 msgstr "Solo se admiten triángulos para el unwrap de Lightmap."
@@ -14052,7 +14061,7 @@ msgid "Many"
 msgstr "Muchas"
 
 msgid "Disabled LineEdit"
-msgstr "Desactivar LineEdit"
+msgstr "LineEdit Desactivado"
 
 msgid "Tab 1"
 msgstr "Tab 1"
@@ -19482,6 +19491,13 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "El proceso de notarización generalmente toma menos de una hora."
 
 msgid ""
+"You can check the progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+"Puedes verificar el progreso manualmente abriendo una Terminal y ejecutando "
+"el siguiente comando:"
+
+msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -19493,6 +19509,13 @@ msgstr "Las herramientas de línea de comandos de Xcode no están instaladas."
 
 msgid "Could not start xcrun executable."
 msgstr "No se pudo iniciar el ejecutable xcrun."
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"Consulta las instrucciones para encontrar tu ID de equipo: https://"
+"developer.apple.com/la/help/glossary/team-id"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "El CodeSign incorporado falló con el error \"%s\"."
@@ -20222,10 +20245,11 @@ msgid ""
 "maps onto the underlying surface.\n"
 "If you don't want the Albedo texture to be visible, set Albedo Mix to 0."
 msgstr ""
-"El decal tiene una textura Normal y/o ORM, pero no tiene una textura Albedo.\n"
-"Se requiere una textura Albedo con un canal alfa para mezclar los mapas "
-"normales/ORM en la superficie subyacente.\n"
-"Si no desea que la textura Albedo sea visible, ajuste Mezcla Albedo a 0."
+"El decal tiene una textura Normal y/o ORM, pero no se ha establecido ninguna "
+"textura Albedo.\n"
+"Se requiere una textura Albedo con un canal alfa para combinar los mapas "
+"normal/ORM sobre la superficie subyacente.\n"
+"Si no quieres que la textura Albedo sea visible, establece Mezcla Albedo a 0."
 
 msgid ""
 "The decal's Cull Mask has no bits enabled, which means the decal will not "

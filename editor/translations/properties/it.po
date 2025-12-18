@@ -95,13 +95,14 @@
 # Yousra El Majdoubi <y.elmajdoubi0820221@arts.ac.uk>, 2025.
 # Alessio <alexio-dev@proton.me>, 2025.
 # Adriano Inghingolo <adriano.inghi@gmail.com>, 2025.
+# Pietro Marini <pietromarinivr2006@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-17 13:03+0000\n"
-"Last-Translator: Micky <micheledevita2@gmail.com>\n"
+"PO-Revision-Date: 2025-12-10 16:36+0000\n"
+"Last-Translator: Pietro Marini <pietromarinivr2006@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -563,6 +564,12 @@ msgstr "Utilizza più di un thread per il precalcolo"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Usa i thread ad alta priorità per il precalcolo"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "Errori nell' unione dei margini delle NavMesh"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "Incongruenza nella dimensione delle celle NavMesh"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modalità basso consumo del processore"

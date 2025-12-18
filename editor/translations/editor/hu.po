@@ -37,7 +37,7 @@
 # bedo david <bedo.david7676@gmail.com>, 2024.
 # Attila Diós <xatixatix@gmail.com>, 2024.
 # TheFocusDev <thefocusdev@protonmail.com>, 2024.
-# Milán Had <hadobas.milan10@gmail.com>, 2024.
+# Milán Had <hadobas.milan10@gmail.com>, 2024, 2025.
 # Dávid Groniewsky <gro.david.d@gmail.com>, 2024.
 # Zsolt Levente Deli <delizsoltlevente@gmail.com>, 2025.
 # Dfo <s.daneee@gmail.com>, 2025.
@@ -50,8 +50,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:07+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2025-12-08 20:00+0000\n"
+"Last-Translator: Milán Had <hadobas.milan10@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -59,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "Nincs beállítva"
@@ -4625,6 +4625,13 @@ msgstr "Hiba a kulcstárolók könyvtárának létrehozásakor"
 
 msgid "Invalid package name:"
 msgstr "Érvénytelen csomagnév:"
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"Lásd az instrukciókat csapat azonosító kód megkereséséhez: https://"
+"developer.apple.com/help/glossary/team-id"
 
 msgid "Creating probes"
 msgstr "Vizsgálók létrehozása"

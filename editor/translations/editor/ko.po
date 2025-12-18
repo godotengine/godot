@@ -86,7 +86,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-28 16:00+0000\n"
+"PO-Revision-Date: 2025-12-16 18:00+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
@@ -95,7 +95,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1-dev\n"
 
 msgid "Unset"
 msgstr "설정 해제"
@@ -695,7 +695,7 @@ msgid "Open Animation Node"
 msgstr "애니메이션 노드 열기"
 
 msgid "Triangle already exists."
-msgstr "삼각형이 이미 있습니다."
+msgstr "삼각형이 이미 존재합니다."
 
 msgid "Add Triangle"
 msgstr "삼각형 추가"
@@ -734,7 +734,10 @@ msgid "Grid Y Step"
 msgstr "격자 Y 단계"
 
 msgid "Blend X Value"
-msgstr "블렌드 X값"
+msgstr "블렌드 X 값"
+
+msgid "Blend Y Value"
+msgstr "블렌드 Y 값"
 
 msgid "Max Y"
 msgstr "최대 Y"
@@ -750,6 +753,9 @@ msgstr "최소 X"
 
 msgid "X Value"
 msgstr "X 값"
+
+msgid "Max X"
+msgstr "최대 X"
 
 msgid "Parameter Changed: %s"
 msgstr "매개변수 변경됨: %s"
@@ -870,7 +876,7 @@ msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
 msgstr "애니메이션 이름에 잘못된 문자가 있습니다: '/', ':', ',', '['."
 
 msgid "Animation with the same name already exists."
-msgstr "이 이름으로 된 애니메이션이 이미 있습니다."
+msgstr "같은 이름으로 된 애니메이션이 이미 존재합니다."
 
 msgid "Enter a library name."
 msgstr "라이브러리 이름을 입력하세요."
@@ -879,7 +885,7 @@ msgid "Library name contains invalid characters: '/', ':', ',' or '['."
 msgstr "라이브러리 이름에 잘못된 문자가 있습니다: '/', ':', ',', '['."
 
 msgid "Library with the same name already exists."
-msgstr "이 이름으로 된 라이브러리가 이미 있습니다."
+msgstr "같은 이름으로 된 라이브러리가 이미 존재합니다."
 
 msgid "Animation name is valid."
 msgstr "애니메이션 이름이 올바릅니다."
@@ -1253,10 +1259,10 @@ msgid "Move Node"
 msgstr "노드 이동"
 
 msgid "Transition exists!"
-msgstr "전환이 있습니다!"
+msgstr "전환이 존재합니다!"
 
 msgid "Play/Travel to %s"
-msgstr "%s로 재생/이동"
+msgstr "%s(으)로 재생/이동"
 
 msgid "Edit %s"
 msgstr "%s 편집"
@@ -2111,7 +2117,7 @@ msgid "Animation Delete Markers"
 msgstr "애니메이션 삭제 마커"
 
 msgid "Marker '%s' already exists!"
-msgstr "'%s' 마커가 이미 있습니다!"
+msgstr "마커 '%s'이(가) 이미 존재합니다!"
 
 msgid "Add Marker Key"
 msgstr "마커 키 추가"
@@ -2397,7 +2403,7 @@ msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "\"%s\"에 대한 애셋 파일을 여는 중 오류 (ZIP 형식이 아닙니다)."
 
 msgid "%s (already exists)"
-msgstr "%s (이미 있습니다)"
+msgstr "%s (이미 존재함)"
 
 msgid "%d file conflicts with your project and won't be installed"
 msgid_plural "%d files conflict with your project and won't be installed"
@@ -3327,7 +3333,7 @@ msgid ""
 "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
 "not update the original property value. See [%s] for more details."
 msgstr ""
-"[b]참고:[/b] 반환된 배열은 [i]복사된 배열[/i] 이며, 배열을 변경해도 원래 속성 "
+"[b]참고:[/b] 반환된 배열은 [i]복사된 배열[/i]이며, 배열을 변경해도 원래 속성 "
 "값은 업데이트되지 않습니다. 자세한 사항은 [%s]를 참조하세요."
 
 msgid "Editor"
@@ -3632,7 +3638,7 @@ msgstr ""
 "알 수 없는 확장자로 이름을 바꾸면 파일이 더 이상 편집기에 보여지지 않습니다."
 
 msgid "A file or folder with this name already exists."
-msgstr "이 이름은 이미 어떤 파일이나 폴더가 쓰고 있습니다."
+msgstr "이 이름으로 된 파일이나 폴더가 이미 존재합니다."
 
 msgid "Could not create base directory: %s"
 msgstr "기본 디렉터리를 만들 수 없음: %s"
@@ -3675,7 +3681,8 @@ msgstr "폴더 만들기"
 
 msgid ""
 "Do you wish to convert these files to %s? (This operation cannot be undone!)"
-msgstr "이 파일들을 %s로 변환하시겠습니까? (이 작업은 되돌릴 수 없습니다!)"
+msgstr ""
+"이러한 파일을 %s(으)로 변환하시겠습니까? (이 작업은 되돌릴 수 없습니다!)"
 
 msgid "Could not create folder: %s"
 msgstr "폴더를 만들 수 없음: %s"
@@ -6735,10 +6742,10 @@ msgid "Folder name begins with a dot."
 msgstr "폴더 이름이 마침표로 시작합니다."
 
 msgid "File with that name already exists."
-msgstr "이 이름으로 된 파일이 이미 있습니다."
+msgstr "해당 이름으로 된 파일이 이미 존재합니다."
 
 msgid "Folder with that name already exists."
-msgstr "이 이름으로 된 폴더가 이미 있습니다."
+msgstr "해당 이름으로 된 폴더가 이미 존재합니다."
 
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
@@ -6856,8 +6863,8 @@ msgid ""
 "File \"%s\" already exists.\n"
 "Do you want to overwrite it?"
 msgstr ""
-"\"%s\" 파일이 이미 있습니다.\n"
-"덮어쓰시겠습니까?"
+"파일 \"%s\"이(가) 이미 존재합니다.\n"
+"덮어쓰기를 원합니까?"
 
 msgid "Select This Folder"
 msgstr "이 폴더 선택"
@@ -6887,7 +6894,7 @@ msgid "The path specified is invalid."
 msgstr "지정된 경로가 올바르지 않습니다."
 
 msgid "Could not create folder. File with that name already exists."
-msgstr "폴더를 만들 수 없습니다. 다른 파일이 이 이름을 이미 쓰고 있습니다."
+msgstr "폴더를 만들 수 없었습니다. 해당 이름으로 된 파일이 이미 존재합니다."
 
 msgid "Could not create folder."
 msgstr "폴더를 만들 수 없습니다."
@@ -8528,8 +8535,8 @@ msgid ""
 "Godot %s.\n"
 "\n"
 msgstr ""
-"경고: 이 프로젝트는 Godot %s에서 마지막으로 편집되었습니다. 이를 열면 Godot %s"
-"로 변경됩니다.\n"
+"경고: 이 프로젝트는 Godot %s에서 마지막으로 편집되었습니다. 이를 열면 Godot "
+"%s(으)로 변경됩니다.\n"
 "\n"
 
 msgid ""
@@ -8546,7 +8553,7 @@ msgstr ""
 "\n"
 
 msgid "Open anyway? Project will be modified."
-msgstr "그래도 여시겠습니까? 프로젝트가 수정될 것입니다."
+msgstr "그래도 여시겠습니까? 프로젝트가 수정됩니다."
 
 msgid "Remove %d projects from the list?"
 msgstr "목록에서 프로젝트 %d개를 제거하시겠습니까?"
@@ -13875,7 +13882,7 @@ msgid "Root node valid."
 msgstr "루트 노드가 올바릅니다."
 
 msgid "Create New Scene"
-msgstr "씬 만들기"
+msgstr "새 씬 만들기"
 
 msgid ""
 "The root node of a scene is recommended to not be transformed, since "
@@ -14404,7 +14411,7 @@ msgid "Invalid inherited parent name or path."
 msgstr "잘못된 상속된 부모 이름 또는 경로."
 
 msgid "File exists, it will be reused."
-msgstr "파일이 있습니다. 재사용될 것입니다."
+msgstr "파일이 존재합니다. 재사용됩니다."
 
 msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
@@ -14430,7 +14437,7 @@ msgid "Will load an existing script file."
 msgstr "기존 스크립트 파일을 불러옵니다."
 
 msgid "Script file already exists."
-msgstr "스크립트 파일이 이미 있습니다."
+msgstr "스크립트 파일이 이미 존재합니다."
 
 msgid "No suitable template."
 msgstr "적당한 템플릿이 없습니다."
@@ -14904,7 +14911,7 @@ msgid "Keyword cannot be used as an Autoload name."
 msgstr "Keyword는 Autoload으로 사용할 수 없습니다."
 
 msgid "Autoload '%s' already exists!"
-msgstr "오토로드 '%s'이(가) 이미 있습니다!"
+msgstr "오토로드 '%s'이(가) 이미 존재합니다!"
 
 msgid "Rename Autoload"
 msgstr "오토로드 이름 바꾸기"
@@ -15294,7 +15301,7 @@ msgid "Profile must be a valid filename and must not contain '.'"
 msgstr "프로필 이름은 '.' 이 없는 올바른 파일 이름이어야 합니다"
 
 msgid "Profile with this name already exists."
-msgstr "이 이름으로 된 프로필이 이미 있습니다."
+msgstr "이 이름으로 된 프로필이 이미 존재합니다."
 
 msgid "(Editor Disabled, Properties Disabled)"
 msgstr "(편집기 비활성화됨, 속성 비활성화됨)"
@@ -15320,8 +15327,8 @@ msgstr "주요 기능:"
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import aborted."
 msgstr ""
-"프로필 '%s'이(가) 이미 있습니다. 가져오기 전에 이미 있는 프로필을 먼저 제거하"
-"세요. 가져오기를 중단합니다."
+"프로필 '%s'이(가) 이미 존재합니다. 가져오기 전에 이미 있는 프로필을 먼저 제거"
+"하세요. 가져오기를 중단합니다."
 
 msgid "Current Profile:"
 msgstr "현재 프로필:"
@@ -15666,7 +15673,7 @@ msgid "Will load an existing shader file."
 msgstr "기존 셰이더 파일을 불러옵니다."
 
 msgid "Shader file already exists."
-msgstr "셰이더 파일이 이미 있습니다."
+msgstr "셰이더 파일이 이미 존재합니다."
 
 msgid "Shader path/name is valid."
 msgstr "셰이더의 경로/이름이 올바릅니다."
@@ -15745,7 +15752,7 @@ msgid "Name must be a valid identifier."
 msgstr "이름은 올바른 식별자여야 합니다."
 
 msgid "Global shader parameter '%s' already exists."
-msgstr "전역 셰이더 매개변수 '%s'이(가) 이미 있습니다."
+msgstr "전역 셰이더 매개변수 '%s'이(가) 이미 존재합니다."
 
 msgid "Name '%s' is a reserved shader language keyword."
 msgstr "'%s'은(는) 셰이더 언어의 예약된 키워드입니다."
@@ -16220,7 +16227,7 @@ msgstr "불리언 값이 참이거나 거짓이면 관련 정수형 스칼라를
 msgid ""
 "Returns an associated transform if the provided boolean value is true or "
 "false."
-msgstr "불리언 값이 참이거나 거짓이면 관련 트랜스폼을 반환합니다."
+msgstr "불리언 값이 참이거나 거짓이면 연관된 변형을 반환합니다."
 
 msgid ""
 "Returns an associated unsigned integer scalar if the provided boolean value "
@@ -17286,7 +17293,7 @@ msgid "Remotes"
 msgstr "원격"
 
 msgid "Create New Remote"
-msgstr "새 원격 추가"
+msgstr "새 원격 만들기"
 
 msgid "Remove Remote"
 msgstr "원격 제거"
@@ -17643,7 +17650,7 @@ msgid "Automatic"
 msgstr "자동"
 
 msgid "Edit Transitions"
-msgstr "트랜지션 편집"
+msgstr "전환 편집"
 
 msgid "Using Any Clip -> %s."
 msgstr "아무 클립 사용 -> %s."
@@ -17655,7 +17662,7 @@ msgid "Using All Clips -> Any Clip."
 msgstr "모든 클립 사용 -> 아무 클립."
 
 msgid "No transition available."
-msgstr "사용 가능한 트랜지션이 없습니다."
+msgstr "사용 가능한 전환이 없습니다."
 
 msgid "Next Beat"
 msgstr "다음 박자"
@@ -17688,13 +17695,13 @@ msgid "AudioStreamInteractive Transition Editor"
 msgstr "AudioStreamInteractive 전환 편집기"
 
 msgid "Use Transition:"
-msgstr "트랜지션 사용:"
+msgstr "전환 사용:"
 
 msgid "Transition From:"
-msgstr "트랜지션 시작점:"
+msgstr "전환 시작점:"
 
 msgid "Transition To:"
-msgstr "트랜지션 도착점:"
+msgstr "전환 도착점:"
 
 msgid "Same Position"
 msgstr "같은 위치"
@@ -18863,6 +18870,11 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "공증 과정은 일반적으로 한 시간 이내에 소요됩니다."
 
 msgid ""
+"You can check the progress manually by opening a Terminal and running the "
+"following command:"
+msgstr "터미널을 열고 다음 명령을 실행하여 진행을 수동으로 확인할 수 있습니다:"
+
+msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -18874,6 +18886,13 @@ msgstr "Xcode 명령줄 도구가 설치되지 않았습니다."
 
 msgid "Could not start xcrun executable."
 msgstr "xcrun 실행 파일을 시작하지 못했습니다."
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"팀 ID를 찾으러면 지침을 참조하세요: https://developer.apple.com/kr/help/"
+"glossary/team-id"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "내장 CodeSign이 오류 \"%s\"(으)로 실패했습니다."

@@ -134,7 +134,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-12 15:51+0000\n"
+"PO-Revision-Date: 2025-12-06 11:00+0000\n"
 "Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
@@ -790,6 +790,9 @@ msgstr "Raster-Y-Schritt"
 msgid "Blend X Value"
 msgstr "Blende-X-Wert"
 
+msgid "Blend Y Value"
+msgstr "Blende-Y-Wert"
+
 msgid "Max Y"
 msgstr "Max Y"
 
@@ -804,6 +807,9 @@ msgstr "Min X"
 
 msgid "X Value"
 msgstr "X-Wert"
+
+msgid "Max X"
+msgstr "Max. X"
 
 msgid "Parameter Changed: %s"
 msgstr "Parameter geändert: %s"
@@ -19500,6 +19506,13 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "Der Notarisierungprozess dauert gewöhnlich weniger als eine Stunde."
 
 msgid ""
+"You can check the progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+"Der Fortschritt kann manuell überprüft werden, indem ein Terminal geöffnet "
+"und der folgende Befehl ausgeführt wird:"
+
+msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -19511,6 +19524,13 @@ msgstr "Xcode-Kommandozeilen-Tools sind nicht installiert."
 
 msgid "Could not start xcrun executable."
 msgstr "Xcrun-Anwendung konnte nicht gestartet werden."
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"Siehe die Anweisungen zum Finden der eigenen Team-ID: https://"
+"developer.apple.com/help/glossary/team-id"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "Built-in-CodeSign fehlgeschlagen mit Fehler „%s“."

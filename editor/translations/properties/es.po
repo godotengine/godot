@@ -120,7 +120,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-06 13:51+0000\n"
+"PO-Revision-Date: 2025-12-04 15:00+0000\n"
 "Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
@@ -583,6 +583,12 @@ msgstr "Bakear Usando Múltiples Hilos"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Bakear Usando Alta Prioridad de Hilos"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "Errores de Fusión de Bordes de NavMesh"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "Tamaño de Celda de NavMesh Incompatible"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modo de Bajo Uso del Procesador"

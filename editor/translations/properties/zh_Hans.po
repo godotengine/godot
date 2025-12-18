@@ -102,8 +102,8 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-11-25 20:51+0000\n"
-"Last-Translator: 烟汐忆梦_YM <193446537@qq.com>\n"
+"PO-Revision-Date: 2025-12-02 13:21+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -565,6 +565,12 @@ msgstr "烘焙使用多线程"
 
 msgid "Baking Use High Priority Threads"
 msgstr "烘焙使用高优先级线程"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "导航网格边缘合并错误"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "导航网格单元格大小不匹配"
 
 msgid "Low Processor Usage Mode"
 msgstr "低处理器占用模式"

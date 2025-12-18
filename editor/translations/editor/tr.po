@@ -124,13 +124,14 @@
 # pessiuff <pessimistic.main@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Sueda Ünlü <sue.unlu@gmail.com>, 2025.
+# Aras Ege Gündüz <araszekeriya@hotmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-27 12:11+0000\n"
-"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
+"PO-Revision-Date: 2025-12-15 17:00+0000\n"
+"Last-Translator: Aras Ege Gündüz <araszekeriya@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -138,7 +139,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1-dev\n"
 
 msgid "Unset"
 msgstr "Kaldır"
@@ -780,6 +781,9 @@ msgstr "Izgara Y Adımı"
 msgid "Blend X Value"
 msgstr "Harmanlama X Değeri"
 
+msgid "Blend Y Value"
+msgstr "Y Ekseninde Karıştırma Değeri"
+
 msgid "Max Y"
 msgstr "En Büyük Y"
 
@@ -794,6 +798,9 @@ msgstr "En Küçük X"
 
 msgid "X Value"
 msgstr "X Değeri"
+
+msgid "Max X"
+msgstr "Maksimum X Değeri"
 
 msgid "Parameter Changed: %s"
 msgstr "Parametre Değişti: %s"
@@ -1693,6 +1700,17 @@ msgstr "3B Konum/Dönme/Ölçek izleri, sadece 3B-tabanlı düğümlere uygulana
 
 msgid "Add Track"
 msgstr "İz Ekle"
+
+msgid ""
+"Audio tracks can only point to nodes of type:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
+msgstr ""
+"Ses izleri yalnızca şu türdeki düğümlere (node) yönlendirilebilir:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
 
 msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr ""
@@ -8907,6 +8925,9 @@ msgstr "Önce projeyi yedekle"
 msgid "Convert Full Project"
 msgstr "Projeyi Tam Dönüştür"
 
+msgid "See Migration Guide"
+msgstr "Geçiş Rehberine Bakın"
+
 msgid ""
 "This option will perform full project conversion, updating scenes, resources "
 "and scripts from Godot 3 to work in Godot 4.\n"
@@ -9457,6 +9478,9 @@ msgstr "Çokgen Noktalarını Sil"
 msgid "Edit Camera2D Limits"
 msgstr "2B Kamera Limitlerini Düzenle"
 
+msgid "Snap Camera2D Limits to the Viewport"
+msgstr "Camera2D Sınırlarını Görünüm Alanına (Viewport) Sabitle"
+
 msgid "Camera2D"
 msgstr "Camera2D"
 
@@ -9504,6 +9528,9 @@ msgstr "Üretiliyor..."
 
 msgid "Loading emission mask requires ParticleProcessMaterial."
 msgstr "Yayılım maskesinin yüklenmesi için ParticleProcessMaterial gerekir."
+
+msgid "Convert to CPUParticles2D"
+msgstr "CPUParticles2D’ye Dönüştür"
 
 msgid "Generation Time (sec):"
 msgstr "Üretme Süresi (sn):"
@@ -11602,23 +11629,60 @@ msgstr ""
 msgid "OmniLight3D Cluster"
 msgstr "OmniLight3D Kümesi"
 
+msgid ""
+"Highlights tiles of pixels that are affected by at least one OmniLight3D."
+msgstr "En az bir OmniLight3D’den etkilenen piksel karolarını (tile) vurgular."
+
 msgid "SpotLight3D Cluster"
 msgstr "SpotLight3D Kümesi"
+
+msgid ""
+"Highlights tiles of pixels that are affected by at least one SpotLight3D."
+msgstr "En az bir SpotLight3D’den etkilenen piksel karolarını (tile) vurgular."
 
 msgid "Decal Cluster"
 msgstr "Çıkartma Kümesi"
 
+msgid "Highlights tiles of pixels that are affected by at least one Decal."
+msgstr "En az bir Decal’dan etkilenen piksel karolarını (tile) vurgular."
+
 msgid "ReflectionProbe Cluster"
 msgstr "YansımaSondası Kümesi"
+
+msgid ""
+"Highlights tiles of pixels that are affected by at least one ReflectionProbe."
+msgstr ""
+"En az bir ReflectionProbe’dan etkilenen piksel karolarını (tile) vurgular."
 
 msgid "Occlusion Culling Buffer"
 msgstr "Perdeleme Kaldırma Arabelleği"
 
+msgid ""
+"Represents occluders with black pixels. Requires occlusion culling to be "
+"enabled to have a visible effect."
+msgstr ""
+"Occluder’ları siyah piksellerle gösterir. Görünür bir etki için occlusion "
+"culling özelliğinin açık olması gerekir."
+
 msgid "Motion Vectors"
 msgstr "Hareket Vektörleri"
 
+msgid ""
+"Represents motion vectors with colored lines in the direction of motion. Gray "
+"dots represent areas with no per-pixel motion."
+msgstr ""
+"Hareket vektörlerini, hareket yönünü gösteren renkli çizgilerle temsil eder. "
+"Gri noktalar, piksel başına hareket olmayan alanları ifade eder."
+
 msgid "Internal Buffer"
 msgstr "Dahili Arabellek"
+
+msgid ""
+"Shows the scene rendered in linear colorspace before any tonemapping or post-"
+"processing."
+msgstr ""
+"Sahneyi, herhangi bir tonemapping veya post-processing uygulanmadan önce "
+"lineer renk uzayında render edilmiş hâliyle gösterir."
 
 msgid "Display Advanced..."
 msgstr "Gelişmiş Görüntüleme..."
@@ -14652,6 +14716,23 @@ msgstr "'%s' açılamıyor. Dosya taşınmış ya da silinmiş olabilir."
 msgid "Close and save changes?"
 msgstr "Kapat ve değişiklikleri kaydet?"
 
+msgid "Importing theme failed. File is not a text editor theme file (.tet)."
+msgstr ""
+"Tema içe aktarılamadı. Dosya bir metin düzenleyici tema dosyası (.tet) değil."
+
+msgid ""
+"Importing theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr ""
+"Tema içe aktarılamadı. Dosya adı “Default”, “Custom” veya “Godot 2” olamaz."
+
+msgid "Importing theme failed. Failed to copy theme file."
+msgstr "Tema içe aktarılamadı. Tema dosyası kopyalanamadı."
+
+msgid ""
+"Saving theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr ""
+"Tema kaydedilemedi. Dosya adı “Default”, “Custom” veya “Godot 2” olamaz."
+
 msgid "Error writing TextFile:"
 msgstr "TextFile yazılırken hata oluştu:"
 
@@ -14831,6 +14912,9 @@ msgstr "Kaynak"
 
 msgid "Target"
 msgstr "Hedef"
+
+msgid "Error at ([hint=Line %d, column %d]%d, %d[/hint]):"
+msgstr "Hata şu konumda: ([hint=Satır %d, sütun %d]%d, %d[/hint])"
 
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
@@ -15710,6 +15794,15 @@ msgstr "Tuş Etiketi (Evrensel Kod, Büyük/Küçük Harfe Duyarsız)"
 
 msgid "Physical location"
 msgstr "Fiziksel konum"
+
+msgid "Shift key"
+msgstr "Shift tuşu"
+
+msgid "Control key"
+msgstr "Control tuşu"
+
+msgid "Meta/Windows or Command key"
+msgstr "Meta/Windows ya da Command tuşu"
 
 msgid "Add Project Setting"
 msgstr "Proje Ayarı Ekle"
@@ -17601,6 +17694,9 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
 "convert() için geçersiz türde bağımsız değişken, TYPE_* sabitlerini kullanın."
 
+msgid "Range too big."
+msgstr "Aralık çok büyük."
+
 msgid "Cannot resize array."
 msgstr "Dizi yeniden boyutlandırılamıyor."
 
@@ -19035,6 +19131,13 @@ msgstr "Xcode komut satırı araçları kurulu değil."
 msgid "Could not start xcrun executable."
 msgstr "xcrun uygulaması başlatılamadı."
 
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"Takım kimliğinizi bulma talimatları için şu adresi ziyaret edin: https://"
+"developer.apple.com/help/glossary/team-id"
+
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "Yerleşik CodeSign (kod imzalama), \"%s\" hatasıyla başarısız oldu."
 
@@ -19529,6 +19632,15 @@ msgstr ""
 "ya da başka bir PhysicalBone2D 'nin alt-düğümü olarak çalışabilir!"
 
 msgid ""
+"PhysicsBody2D will not work correctly on a non-interpolated branch of the "
+"SceneTree.\n"
+"Check the node's inherited physics_interpolation_mode."
+msgstr ""
+"PhysicsBody2D, SceneTree içinde enterpolasyon uygulanmayan (non-interpolated) "
+"bir dalda doğru şekilde çalışmaz.\n"
+"Bu düğümün kalıtımla aldığı physics_interpolation_mode ayarını kontrol edin."
+
+msgid ""
 "The TileMap node is deprecated as it is superseded by the use of multiple "
 "TileMapLayer nodes.\n"
 "To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
@@ -20015,6 +20127,15 @@ msgid "Node A and Node B must be different PhysicsBody3Ds"
 msgstr "Düğüm A ve Düğüm B, farklı birer FizikCisim3B olmalıdır (PhysicsBody3D)"
 
 msgid ""
+"PhysicsBody3D will not work correctly on a non-interpolated branch of the "
+"SceneTree.\n"
+"Check the node's inherited physics_interpolation_mode."
+msgstr ""
+"PhysicsBody3D, SceneTree içinde enterpolasyon uygulanmayan (non-interpolated) "
+"bir dalda doğru şekilde çalışmaz.\n"
+"Düğümün kalıtımla aldığı physics_interpolation_mode ayarını kontrol edin."
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
@@ -20171,6 +20292,13 @@ msgstr ""
 "çalışmayabilir."
 
 msgid ""
+"XRCamera3D should have physics_interpolation_mode set to OFF in order to "
+"avoid jitter."
+msgstr ""
+"XRCamera3D için, titreşimi (jitter) önlemek amacıyla "
+"physics_interpolation_mode ayarının KAPALI (OFF) olması gerekir."
+
+msgid ""
 "XRNode3D may not function as expected without an XROrigin3D node as its "
 "parent."
 msgstr ""
@@ -20182,6 +20310,13 @@ msgstr "Hiç bir izleyici ismi ayarlanmadı."
 
 msgid "No pose is set."
 msgstr "Hiçbir duruş ayarlanmadı."
+
+msgid ""
+"XRNode3D should have physics_interpolation_mode set to OFF in order to avoid "
+"jitter."
+msgstr ""
+"XRNode3D için, titreşimi (jitter) önlemek amacıyla physics_interpolation_mode "
+"ayarının KAPALI (OFF) olarak ayarlanması gerekir."
 
 msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr ""
@@ -20261,6 +20396,19 @@ msgstr "Erişilebilirlik İsmi, Node sınıf adını içermemelidir."
 
 msgid "Accessibility Name must not include control character."
 msgstr "Erişilebilirlik İsmi kontrol karakteri içermemelidir."
+
+msgid "%s grabbed. Select target and use %s to drop, use %s to cancel."
+msgstr ""
+"%s tutuldu. Hedefi seçin ve bırakmak için %s tuşunu, iptal etmek için %s "
+"tuşunu kullanın."
+
+msgid "%s can be dropped here. Use %s to drop, use %s to cancel."
+msgstr ""
+"%s buraya bırakılabilir. Bırakmak için %s tuşunu, iptal etmek için %s tuşunu "
+"kullanın."
+
+msgid "%s can not be dropped here. Use %s to cancel."
+msgstr "%s buraya bırakılamaz. İptal etmek için %s tuşunu kullanın."
 
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
@@ -20800,6 +20948,9 @@ msgstr "Varsayılan durum, \"default\", yalnızca bir defa tanımlanmalı."
 msgid "'%s' must be placed within a '%s' block."
 msgstr "'%s', bir '%s' bloğunun içine yerleştirilmelidir."
 
+msgid "Undefined identifier '%s' in a case label."
+msgstr "Bir case etiketinde tanımsız tanımlayıcı: ‘%s’."
+
 msgid "Expected an unsigned integer constant."
 msgstr "İşaretsiz bir tamsayı sabiti bekleniyor."
 
@@ -20858,6 +21009,12 @@ msgstr "Geçersiz gölgelendirici türü. Geçerli türler şunlar: %s"
 
 msgid "Unexpected token: '%s'."
 msgstr "Beklenmeyen simge: '%s'."
+
+msgid "Stencil mode reference value cannot be negative: '%s'."
+msgstr "Stencil modu referans değeri negatif olamaz: ‘%s’."
+
+msgid "Stencil mode reference value cannot be greater than 255: '%s'."
+msgstr "Stencil modu referans değeri 255’ten büyük olamaz: ‘%s’."
 
 msgid "Expected a struct identifier."
 msgstr "Bir yapı (struct) tanımlayıcısı bekleniyor."

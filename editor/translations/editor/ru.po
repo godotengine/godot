@@ -228,13 +228,14 @@
 # Сергей Казорин <kazorin@basealt.ru>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # zhoeshin <ayron64632723837@gmail.com>, 2025.
+# Ivan <ctapiuxleb3@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-23 15:51+0000\n"
-"Last-Translator: Andrey Razin <AndreyRazinWork@yandex.ru>\n"
+"PO-Revision-Date: 2025-12-15 17:00+0000\n"
+"Last-Translator: penggrin12 <miner.sidor@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -243,7 +244,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1-dev\n"
 
 msgid "Unset"
 msgstr "Не задано"
@@ -887,6 +888,9 @@ msgstr "Шаг сетки по Y"
 msgid "Blend X Value"
 msgstr "Значение смешивания по X"
 
+msgid "Blend Y Value"
+msgstr "Значение смешивания по Y"
+
 msgid "Max Y"
 msgstr "Макс. Y"
 
@@ -901,6 +905,9 @@ msgstr "Мин. X"
 
 msgid "X Value"
 msgstr "Значение X"
+
+msgid "Max X"
+msgstr "Макс. X"
 
 msgid "Parameter Changed: %s"
 msgstr "Параметр изменён: %s"
@@ -2582,7 +2589,7 @@ msgid "The following files failed extraction from asset \"%s\":"
 msgstr "Следующие файлы не удалось извлечь из ассета «%s»:"
 
 msgid "(and %s more files)"
-msgstr "(и ещё %d файлов)"
+msgstr "(и ещё %s файлов)"
 
 msgid "Asset \"%s\" installed successfully!"
 msgstr "Ассет «%s» успешно установлен!"
@@ -3726,7 +3733,7 @@ msgid "Move Tab Right"
 msgstr "Переместить вкладку вправо"
 
 msgid "Make Floating"
-msgstr "Сделать плавающей"
+msgstr "Сделать плавающим"
 
 msgid "Make this dock floating."
 msgstr "Сделать эту панель плавающей."
@@ -9391,7 +9398,7 @@ msgid "Unmute game audio."
 msgstr "Включить звук в игре."
 
 msgid "Mute game audio."
-msgstr "Заглушить звук в игре"
+msgstr "Заглушить аудио игры."
 
 msgid "Alt+RMB: Show list of all nodes at position clicked."
 msgstr "Alt+ПКМ: Показать список всех узлов в позиции щелчка."
@@ -19395,6 +19402,13 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "Процесс подтверждения обычно занимает менее часа."
 
 msgid ""
+"You can check the progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+"Можно проверить ход выполнения вручную, открыв терминал и выполнив следующую "
+"команду:"
+
+msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -19406,6 +19420,13 @@ msgstr "Инструменты командной строки Xcode не уст
 
 msgid "Could not start xcrun executable."
 msgstr "Не удалось запустить исполняемый файл xcrun."
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"Инструкции по поиску ID вашей команды см. здесь: https://developer.apple.com/"
+"help/glossary/team-id"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "Работа встроенной утилиты CodeSign завершилась с ошибкой «%s»."
