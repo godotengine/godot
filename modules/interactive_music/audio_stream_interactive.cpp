@@ -485,7 +485,7 @@ void AudioStreamInteractive::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_CLIPS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Clips,clip_,page_size=999,unfoldable,numbered,swap_method=_inspector_array_swap_clip,add_button_text=" + String(TTRC("Add Clip"))), "set_clip_count", "get_clip_count");
 	for (int i = 0; i < MAX_CLIPS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING_NAME, "clip_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_name", "get_clip_name", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clip_" + itos(i) + "/stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_stream", "get_clip_stream", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clip_" + itos(i) + "/stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_stream", "get_clip_stream", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::INT, "clip_" + itos(i) + "/auto_advance", PROPERTY_HINT_ENUM, "Disabled,Enabled,ReturnToHold", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_auto_advance", "get_clip_auto_advance", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::INT, "clip_" + itos(i) + "/next_clip", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_auto_advance_next_clip", "get_clip_auto_advance_next_clip", i);
 	}

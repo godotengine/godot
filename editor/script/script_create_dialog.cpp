@@ -843,7 +843,7 @@ String ScriptCreateDialog::_get_script_origin_label(const ScriptLanguage::Templa
 void ScriptCreateDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("config", "inherits", "path", "built_in_enabled", "load_enabled"), &ScriptCreateDialog::config, DEFVAL(true), DEFVAL(true));
 
-	ADD_SIGNAL(MethodInfo("script_created", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
+	ADD_SIGNAL(MethodInfo("script_created", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static())));
 }
 
 ScriptCreateDialog::ScriptCreateDialog() {

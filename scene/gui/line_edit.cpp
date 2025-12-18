@@ -3524,7 +3524,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 
 	ADD_GROUP("Icon", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_right_icon", "get_right_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_expand_mode", PROPERTY_HINT_ENUM, "Original,Fit to Text,Fit to LineEdit"), "set_icon_expand_mode", "get_icon_expand_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "right_icon_scale", PROPERTY_HINT_RANGE, "0.1,1.0,0.01"), "set_right_icon_scale", "get_right_icon_scale");
 

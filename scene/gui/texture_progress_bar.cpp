@@ -703,9 +703,9 @@ void TextureProgressBar::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_stretch_margin", "get_stretch_margin", SIDE_BOTTOM);
 
 	ADD_GROUP("Textures", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_under_texture", "get_under_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_over", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_over_texture", "get_over_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_progress_texture", "get_progress_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_under_texture", "get_under_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_over", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_over_texture", "get_over_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_progress_texture", "get_progress_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_progress_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_progress_offset", "get_texture_progress_offset");
 
 	ADD_GROUP("Tint", "tint_");

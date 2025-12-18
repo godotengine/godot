@@ -189,7 +189,7 @@ void PacketPeerStream::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_buffer_max_size"), "set_input_buffer_max_size", "get_input_buffer_max_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_buffer_max_size"), "set_output_buffer_max_size", "get_output_buffer_max_size");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream_peer", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_stream_peer", "get_stream_peer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream_peer", PROPERTY_HINT_RESOURCE_TYPE, StreamPeer::get_class_static(), PROPERTY_USAGE_NONE), "set_stream_peer", "get_stream_peer");
 }
 
 Error PacketPeerStream::_poll_buffer() const {

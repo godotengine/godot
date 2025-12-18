@@ -36,7 +36,7 @@ void OpenXRStructureBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_next", "entity"), &OpenXRStructureBase::set_next);
 	ClassDB::bind_method(D_METHOD("get_next"), &OpenXRStructureBase::get_next);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRStructureBase"), "set_next", "get_next");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next", PROPERTY_HINT_RESOURCE_TYPE, OpenXRStructureBase::get_class_static()), "set_next", "get_next");
 
 	GDVIRTUAL_BIND(_get_header, "next");
 }

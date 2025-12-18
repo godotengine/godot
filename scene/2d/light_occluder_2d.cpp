@@ -295,7 +295,7 @@ void LightOccluder2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_as_sdf_collision", "enable"), &LightOccluder2D::set_as_sdf_collision);
 	ClassDB::bind_method(D_METHOD("is_set_as_sdf_collision"), &LightOccluder2D::is_set_as_sdf_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D"), "set_occluder_polygon", "get_occluder_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, OccluderPolygon2D::get_class_static()), "set_occluder_polygon", "get_occluder_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdf_collision"), "set_as_sdf_collision", "is_set_as_sdf_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "occluder_light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");
 }
