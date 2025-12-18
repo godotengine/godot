@@ -19,9 +19,6 @@ msgstr ""
 "% 10 == 0) ? 2 : 3));\n"
 "X-Generator: Weblate 5.4-dev\n"
 
-msgid "All Recognized"
-msgstr "כל המוכרים"
-
 msgid "Save"
 msgstr "שמירה"
 
@@ -39,6 +36,9 @@ msgstr "פתיחה"
 
 msgid "Select Current Folder"
 msgstr "נא לבחור את התיקייה הנוכחית"
+
+msgid "All Recognized"
+msgstr "כל המוכרים"
 
 msgid "Open a File"
 msgstr "פתיחת קובץ"

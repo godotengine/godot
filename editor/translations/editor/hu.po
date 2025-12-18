@@ -37,19 +37,21 @@
 # bedo david <bedo.david7676@gmail.com>, 2024.
 # Attila Diós <xatixatix@gmail.com>, 2024.
 # TheFocusDev <thefocusdev@protonmail.com>, 2024.
-# Milán Had <hadobas.milan10@gmail.com>, 2024.
+# Milán Had <hadobas.milan10@gmail.com>, 2024, 2025.
 # Dávid Groniewsky <gro.david.d@gmail.com>, 2024.
 # Zsolt Levente Deli <delizsoltlevente@gmail.com>, 2025.
 # Dfo <s.daneee@gmail.com>, 2025.
 # therealmate <hellogaming91@gmail.com>, 2025.
 # Nagy-Kollár Vince <nagy.kollar.vince@gmail.com>, 2025.
+# Rémi Verschelde <remi@godotengine.org>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-25 19:02+0000\n"
-"Last-Translator: Nagy-Kollár Vince <nagy.kollar.vince@gmail.com>\n"
+"PO-Revision-Date: 2025-12-08 20:00+0000\n"
+"Last-Translator: Milán Had <hadobas.milan10@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -57,10 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
-
-msgid "Unset"
-msgstr "Nincs beállítva"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Physical"
 msgstr "Fizikai"
@@ -415,6 +414,9 @@ msgstr "Frissítés"
 msgid "Show Hidden"
 msgstr "Rejtettek megjelenítése"
 
+msgid "Focus Path"
+msgstr "Elérési Út Fókuszálása"
+
 msgid "Swap Input Direction"
 msgstr "Irányok Felcserélése"
 
@@ -688,6 +690,9 @@ msgstr "Következő Megváltozott Keverése"
 msgid "Change Blend Time"
 msgstr "Keverési Idő Módosítása"
 
+msgid "Animation"
+msgstr "Animáció"
+
 msgid "Animation position (in seconds)."
 msgstr "Animáció pozíció (másodpercekben)."
 
@@ -696,9 +701,6 @@ msgstr "Animáció lejátszás skálázása globálisan a Node-nak."
 
 msgid "Animation Tools"
 msgstr "Animációs Eszközök"
-
-msgid "Animation"
-msgstr "Animáció"
 
 msgid "Duplicate..."
 msgstr "Megkettőzés..."
@@ -1033,6 +1035,9 @@ msgstr "A vágólap üres!"
 msgid "Paste Tracks"
 msgstr "Sávok beillesztése"
 
+msgid "Create Node"
+msgstr "Node létrehozás"
+
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
 "Válasszon egy AnimationPlayer node-ot az animációk létrehozásához és "
@@ -1072,9 +1077,6 @@ msgstr "Ugrás a Következő Lépésre"
 msgid "Go to Previous Step"
 msgstr "Ugrás az Előző Lépésre"
 
-msgid "Apply Reset"
-msgstr "Visszaállítás"
-
 msgid "Use Bezier Curves"
 msgstr "Bézier görbék használata"
 
@@ -1105,14 +1107,6 @@ msgstr "Átmenet Típus:"
 msgctxt "Transition Type"
 msgid "Sine"
 msgstr "Szinusz"
-
-msgctxt "Ease Type"
-msgid "InOut"
-msgstr "BeKi"
-
-msgctxt "Ease Type"
-msgid "OutIn"
-msgstr "KiBe"
 
 msgid "Select Tracks to Copy"
 msgstr "Másolandó nyomvonalak kiválasztása"
@@ -1455,9 +1449,6 @@ msgstr "Folytatás"
 msgid "Debug with External Editor"
 msgstr "Hibakeresés külső szerkesztővel"
 
-msgid "Debugger"
-msgstr "Hibakereső"
-
 msgid "Deploy with Remote Debug"
 msgstr "Indítás Távoli Teszteléssel"
 
@@ -1519,6 +1510,9 @@ msgstr ""
 "betöltődik a futó játékba.\n"
 "Távoli eszköz használatakor hatékonyabb, ha a hálózati fájlrendszer opció "
 "engedélyezve van."
+
+msgid "Debugger"
+msgstr "Hibakereső"
 
 msgid "Debug"
 msgstr "Hibakeresés"
@@ -1849,6 +1843,9 @@ msgstr "Felülírás"
 msgid "Create Script"
 msgstr "Szkript Létrehozása"
 
+msgid "Groups"
+msgstr "Csoportok"
+
 msgid "Add to Group"
 msgstr "Hozzáadás Csoporthoz"
 
@@ -1879,6 +1876,9 @@ msgstr "Beállítás Alapértelmezettként '%s'-hez"
 msgid "Clear Default for '%s'"
 msgstr "Alapértelmezett Törlése '%s'-nél"
 
+msgid "Import"
+msgstr "Import"
+
 msgid "Import As:"
 msgstr "Importálás Mint:"
 
@@ -1890,6 +1890,9 @@ msgstr "Nem sikerült betölteni az erőforrást."
 
 msgid "Make Sub-Resources Unique"
 msgstr "Tegye Az Al-Erőforrásokat Egyedivé"
+
+msgid "Inspector"
+msgstr "Ellenőrző"
 
 msgid "Create a new resource in memory and edit it."
 msgstr "Új erőforrás létrehozása a memóriában, majd annak szerkesztése."
@@ -1911,12 +1914,6 @@ msgstr "A nemrég módosított objektumok előzményei."
 
 msgid "Open Documentation"
 msgstr "Dokumentáció megnyitása"
-
-msgid "Groups"
-msgstr "Csoportok"
-
-msgid "Select a single node to edit its signals and groups."
-msgstr "Válasszon ki egy node-ot a jelzések és csoportok módosításához."
 
 msgid "Error loading scene from %s"
 msgstr "Hiba a %s jelenet betöltése közben"
@@ -1956,9 +1953,6 @@ msgstr "Kód Csatolása"
 
 msgid "Remove Node(s)"
 msgstr "Node(-ok) eltávolítása"
-
-msgid "Create Node"
-msgstr "Node létrehozás"
 
 msgid "This operation requires a single selected node."
 msgstr "Ehez a művelethez egy kiválasztott Node szükséges."
@@ -2169,8 +2163,38 @@ msgstr "%d további mappa"
 msgid "%d more files"
 msgstr "%d további fájl"
 
+msgid "Save & Restart"
+msgstr "Mentés és újraindítás"
+
 msgid "Forward+"
 msgstr "Előre+"
+
+msgid "Open Recent"
+msgstr "Legutóbbi Megnyitása"
+
+msgid "Version Control"
+msgstr "Verziókezelés"
+
+msgid "Tools"
+msgstr "Eszközök"
+
+msgid "Editor Layout"
+msgstr "Szerkesztő Elrendezés"
+
+msgid "Open Editor Data/Settings Folder"
+msgstr "Szerkesztő adatok/beállítások mappa megnyitása"
+
+msgid "Open Editor Data Folder"
+msgstr "Szerkesztő Adatmappájának Megnyitása"
+
+msgid "Open Editor Settings Folder"
+msgstr "Szerkesztő beállításai mappa megnyitása"
+
+msgid "Manage Editor Features..."
+msgstr "A Szerkesztő funkcióinak kezelése ..."
+
+msgid "Manage Export Templates..."
+msgstr "Exportálási sablonok kezelése..."
 
 msgid "Distraction Free Mode"
 msgstr "Zavarmentes Mód"
@@ -2192,9 +2216,6 @@ msgstr "Jelenet megnyitása..."
 
 msgid "Reopen Closed Scene"
 msgstr "Bezárt jelenet újbóli megnyitása"
-
-msgid "Open Recent"
-msgstr "Legutóbbi Megnyitása"
 
 msgid "Save Scene"
 msgstr "Jelenet Mentése"
@@ -2220,26 +2241,17 @@ msgstr "Mentett jelenet újratöltése"
 msgid "Close Scene"
 msgstr "Jelenet bezárása"
 
-msgid "Quit"
-msgstr "Kilépés"
-
 msgid "Editor Settings..."
 msgstr "Szerkesztő beállításai..."
 
-msgid "Project"
-msgstr "Projekt"
+msgid "Quit"
+msgstr "Kilépés"
 
 msgid "Find in Files..."
 msgstr "Keresés a fájlokban..."
 
-msgid "Version Control"
-msgstr "Verziókezelés"
-
 msgid "Export"
 msgstr "Exportálás"
-
-msgid "Tools"
-msgstr "Eszközök"
 
 msgid "Orphan Resource Explorer..."
 msgstr "Árva erőforrás-kezelő..."
@@ -2247,32 +2259,11 @@ msgstr "Árva erőforrás-kezelő..."
 msgid "Quit to Project List"
 msgstr "Kilépés a projektlistába"
 
-msgid "Editor Layout"
-msgstr "Szerkesztő Elrendezés"
-
 msgid "Take Screenshot"
 msgstr "Képernyőkép készítése"
 
 msgid "Toggle Fullscreen"
 msgstr "Teljes Képernyő"
-
-msgid "Open Editor Data/Settings Folder"
-msgstr "Szerkesztő adatok/beállítások mappa megnyitása"
-
-msgid "Open Editor Data Folder"
-msgstr "Szerkesztő Adatmappájának Megnyitása"
-
-msgid "Open Editor Settings Folder"
-msgstr "Szerkesztő beállításai mappa megnyitása"
-
-msgid "Manage Editor Features..."
-msgstr "A Szerkesztő funkcióinak kezelése ..."
-
-msgid "Manage Export Templates..."
-msgstr "Exportálási sablonok kezelése..."
-
-msgid "Help"
-msgstr "Súgó"
 
 msgid "Report a Bug"
 msgstr "Hiba bejelentése"
@@ -2280,23 +2271,29 @@ msgstr "Hiba bejelentése"
 msgid "Send Docs Feedback"
 msgstr "Visszajelzé Küldése s A Dokumentumokról"
 
-msgid "Save & Restart"
-msgstr "Mentés és újraindítás"
+msgid "Open Script Editor"
+msgstr "Szkript szerkesztő megnyitása"
+
+msgid "Open Asset Library"
+msgstr "Eszköz Könyvtár Megnyitása"
+
+msgid "Open the next Editor"
+msgstr "Következő Szerkesztő Megnyitása"
+
+msgid "Open the previous Editor"
+msgstr "Előző Szerkesztő Megnyitása"
+
+msgid "Project"
+msgstr "Projekt"
+
+msgid "Help"
+msgstr "Súgó"
 
 msgid "Update Continuously"
 msgstr "Folyamatos frissítés"
 
 msgid "Hide Update Spinner"
 msgstr "Frissítési forgó elrejtése"
-
-msgid "Import"
-msgstr "Import"
-
-msgid "Inspector"
-msgstr "Ellenőrző"
-
-msgid "Node"
-msgstr "Node"
 
 msgid "Don't Save"
 msgstr "Nincs Mentés"
@@ -2317,9 +2314,6 @@ msgstr "Sabloncsomag"
 msgid "Export Library"
 msgstr "Könyvtár Exportálása"
 
-msgid "Open & Run a Script"
-msgstr "Szkriptet Megnyit és Futtat"
-
 msgid "Restart"
 msgstr "Újraindítás"
 
@@ -2331,24 +2325,6 @@ msgstr "Új Örökölt"
 
 msgid "Load Errors"
 msgstr "Betöltési Hibák"
-
-msgid "Open 2D Editor"
-msgstr "2D szerkesztő megnyitása"
-
-msgid "Open 3D Editor"
-msgstr "3D Szerkesztő Megnyitása"
-
-msgid "Open Script Editor"
-msgstr "Szkript szerkesztő megnyitása"
-
-msgid "Open Asset Library"
-msgstr "Eszköz Könyvtár Megnyitása"
-
-msgid "Open the next Editor"
-msgstr "Következő Szerkesztő Megnyitása"
-
-msgid "Open the previous Editor"
-msgstr "Előző Szerkesztő Megnyitása"
 
 msgid "Warning!"
 msgstr "Figyelmeztetés!"
@@ -2469,25 +2445,8 @@ msgstr "ZIP fájl"
 msgid "Manage Export Templates"
 msgstr "Export Sablonok Kezelése"
 
-msgid "Search Replacement For:"
-msgstr "Csere keresése:"
-
 msgid "Dependencies For:"
 msgstr "Függőségek:"
-
-msgid ""
-"Scene '%s' is currently being edited.\n"
-"Changes will only take effect when reloaded."
-msgstr ""
-"'%s' jelenet éppen szerkesztés alatt áll.\n"
-"A változások újratöltés után lépnek érvénybe."
-
-msgid ""
-"Resource '%s' is in use.\n"
-"Changes will only take effect when reloaded."
-msgstr ""
-"A(z) '%s' forrás éppen használatban van.\n"
-"A változtatások újratöltéskor lépnek életbe."
 
 msgid "Dependencies"
 msgstr "Függőségek"
@@ -2500,9 +2459,6 @@ msgstr "HIbásak Kijavítása"
 
 msgid "Dependency Editor"
 msgstr "Függőség Szerkesztő"
-
-msgid "Search Replacement Resource:"
-msgstr "Csere Forrás Keresése:"
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -2528,20 +2484,14 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "Nem eltávolítható:"
 
-msgid "Error loading:"
-msgstr "Hiba betöltéskor:"
+msgid "Fix Dependencies"
+msgstr "Függőségek Megjavítása"
 
 msgid "Load failed due to missing dependencies:"
 msgstr "A betöltés nem sikerült a hiányzó függőségek miatt:"
 
 msgid "Which action should be taken?"
 msgstr "Melyik lépést tegyük meg?"
-
-msgid "Fix Dependencies"
-msgstr "Függőségek Megjavítása"
-
-msgid "Errors loading!"
-msgstr "Hibák a betöltés során!"
 
 msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "Véglegesen törlöl %d elemet? (Nem visszavonható!)"
@@ -2681,84 +2631,6 @@ msgstr "Alsó panel kinyitása"
 msgid "Move"
 msgstr "Áthelyezés"
 
-msgid "Select Current Folder"
-msgstr "Aktuális Mappa Kiválasztása"
-
-msgid "Select This Folder"
-msgstr "Válassza ezt a mappát"
-
-msgid "Open a File"
-msgstr "Fálj Megnyitása"
-
-msgid "Open File(s)"
-msgstr "Fájl(ok) Megnyitása"
-
-msgid "Open a Directory"
-msgstr "Könyvtár Megnyitása"
-
-msgid "Open a File or Directory"
-msgstr "Fájl vagy Könyvtár Megnyitása"
-
-msgid "Save a File"
-msgstr "Fájl Mentése"
-
-msgid "Could not create folder."
-msgstr "Nem sikerült létrehozni a mappát."
-
-msgid "Go Back"
-msgstr "Ugrás Vissza"
-
-msgid "Go Forward"
-msgstr "Ugrás Előre"
-
-msgid "Go Up"
-msgstr "Ugrás Fel"
-
-msgid "Toggle Hidden Files"
-msgstr "Rejtett fálok megjelenítése/elrejtése"
-
-msgid "Toggle Favorite"
-msgstr "Kedvencek Mutatása/Elrejtése"
-
-msgid "Toggle Mode"
-msgstr "Mód váltása"
-
-msgid "Focus Path"
-msgstr "Elérési Út Fókuszálása"
-
-msgid "Move Favorite Up"
-msgstr "Kedvenc fentebb helyezése"
-
-msgid "Move Favorite Down"
-msgstr "Kedvenc lentebb helyezése"
-
-msgid "Go to previous folder."
-msgstr "Ugrás az előző mappára."
-
-msgid "Go to next folder."
-msgstr "Ugrás a következő mappára."
-
-msgid "Go to parent folder."
-msgstr "Lépjen a szülőmappába."
-
-msgid "Refresh files."
-msgstr "Fájlok frissítése."
-
-msgid "(Un)favorite current folder."
-msgstr "Jelenlegi mappa kedvenccé tétele/eltávolítása a kedvencek közül."
-
-msgid "Directories & Files:"
-msgstr "Könyvtárak és Fájlok:"
-
-msgid "Toggle the visibility of hidden files."
-msgstr "A rejtett fájlok láthatóságának ki- és bekapcsolása."
-
-msgid "Preview:"
-msgstr "Előnézet:"
-
-msgid "File:"
-msgstr "Fájl:"
-
 msgid "No sub-resources found."
 msgstr "Nem található alerőforrás."
 
@@ -2792,6 +2664,9 @@ msgstr "Mentés..."
 
 msgid "Enable"
 msgstr "Engedélyezés"
+
+msgid "Preview:"
+msgstr "Előnézet:"
 
 msgid "Pre-render Configurations"
 msgstr "Elő-Renderelési beállítások"
@@ -2828,11 +2703,6 @@ msgstr "Elnevezések amik _-al kezdődnek foglaltak a szerkesztő metaadatoknak.
 
 msgid "On"
 msgstr "Be"
-
-msgid "(%d change)"
-msgid_plural "(%d changes)"
-msgstr[0] "Bezárja és menti a változásokat?"
-msgstr[1] "Bezárja és menti a változásokat?"
 
 msgid "Resize Array"
 msgstr "Tömb átméretezése"
@@ -2909,9 +2779,6 @@ msgstr "Nyelv:"
 msgid "Script Name:"
 msgstr "Szkript neve:"
 
-msgid "Activate now?"
-msgstr "Aktiválja most?"
-
 msgid "The path specified doesn't exist."
 msgstr "A megadott útvonal nem létezik."
 
@@ -2942,11 +2809,17 @@ msgstr "Projekt neve:"
 msgid "Project Path:"
 msgstr "Projekt Elérési Útja:"
 
+msgid "Toggle Favorite"
+msgstr "Kedvencek Mutatása/Elrejtése"
+
 msgid "Scanning for projects..."
 msgstr "Projektek beolvasása..."
 
 msgid "Missing Project"
 msgstr "Hiányzó projekt"
+
+msgid "Manage Tags"
+msgstr "Címkék kezelése"
 
 msgid "New Window"
 msgstr "Új ablak"
@@ -2987,9 +2860,6 @@ msgstr ""
 "Megjegyzés: A csomagtár használatához internetkapcsolat szükséges, és "
 "adatforgalommal jár."
 
-msgid "Manage Tags"
-msgstr "Címkék kezelése"
-
 msgid "Remove Missing"
 msgstr "Hiányzó eltávolítása"
 
@@ -3007,12 +2877,6 @@ msgstr "Projektcímkék kezelése"
 
 msgid "Restart Now"
 msgstr "Újraindítás most"
-
-msgid "Play the project."
-msgstr "Projekt futtatása."
-
-msgid "Play the edited scene."
-msgstr "Szerkesztett Scene futtatása."
 
 msgid "Network Profiler"
 msgstr "Hálózati profilkészítő"
@@ -3061,8 +2925,8 @@ msgstr "Láthatósági Téglalap Generálása"
 msgid "Load Emission Mask"
 msgstr "Kibocsátási Maszk Betöltése"
 
-msgid "Emission Mask"
-msgstr "Kibocsátási Maszk"
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
 
 msgid "Convert to CPUParticles2D"
 msgstr "Konvertálás CPUParticles2D-re"
@@ -3190,9 +3054,6 @@ msgstr "Rács Y eltolása:"
 msgid "Sync Bones to Polygon"
 msgstr "Csontok Szinkronizálása Sokszögre"
 
-msgid "Skeleton2D"
-msgstr "Csontváz2D"
-
 msgid "Update Preview"
 msgstr "Előnézet frissítése"
 
@@ -3265,6 +3126,15 @@ msgstr "Körvonalháló Készítése"
 msgid "Outline Size:"
 msgstr "Körvonal Mérete:"
 
+msgid "X-Axis"
+msgstr "X-Tengely"
+
+msgid "Y-Axis"
+msgstr "Y-Tengely"
+
+msgid "Z-Axis"
+msgstr "Z-Tengely"
+
 msgid "Remove item %d?"
 msgstr "%d elem eltávolítása?"
 
@@ -3329,15 +3199,6 @@ msgstr "Forrás Mesh:"
 
 msgid "Mesh Up Axis:"
 msgstr "Mesh \"Fel\" Tengelye:"
-
-msgid "X-Axis"
-msgstr "X-Tengely"
-
-msgid "Y-Axis"
-msgstr "Y-Tengely"
-
-msgid "Z-Axis"
-msgstr "Z-Tengely"
 
 msgid "Random Rotation:"
 msgstr "Véletlenszerű Forgatás:"
@@ -3438,9 +3299,6 @@ msgstr "Kijelöltek csoportosítása"
 msgid "Ungroup Selected"
 msgstr "kijelölt csoportok szétbontása"
 
-msgid "Select Mode"
-msgstr "Kiválasztó Mód"
-
 msgid "Move Mode"
 msgstr "Mozgató Mód"
 
@@ -3449,6 +3307,9 @@ msgstr "Forgató Mód"
 
 msgid "Scale Mode"
 msgstr "Méretezési mód"
+
+msgid "Select Mode"
+msgstr "Kiválasztó Mód"
 
 msgid "Ruler Mode"
 msgstr "Vonalzó mód"
@@ -3540,6 +3401,12 @@ msgstr "Felületi Pontok"
 msgid "Surface Points+Normal (Directed)"
 msgstr "Felületi Pontok + Normálok (Irányított)"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Curve Point #"
 msgstr "Görbe Pont #"
 
@@ -3569,6 +3436,9 @@ msgstr "Sokszög Szerkesztése (Pont Eltávolítása)"
 
 msgid "Create physical bones"
 msgstr "Fizikai csontok létrehozása"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Insert Key (Existing Tracks)"
 msgstr "Kulcs Beszúrása (Meglévő Nyomvonalakra)"
@@ -3989,6 +3859,9 @@ msgstr "Kép Hozzáadása"
 msgid "Unable to load images"
 msgstr "Nem lehet betölteni a képeket"
 
+msgid "(empty)"
+msgstr "(üres)"
+
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "HIBA: A kép erőforrást nem lehetett betölteni!"
 
@@ -4004,27 +3877,11 @@ msgstr "Animáció Törlése?"
 msgid "Change Animation FPS"
 msgstr "Animáció FPS Módosítása"
 
-msgid "(empty)"
-msgstr "(üres)"
-
 msgid "Animations:"
 msgstr "Animációk:"
 
 msgid "Animation Frames:"
 msgstr "Animációs Képkockák:"
-
-msgid "Play selected animation backwards from current pos. (A)"
-msgstr ""
-"A kiválasztott animáció lejátszása visszafelé a jelenlegi pozícióból. (A)"
-
-msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr "A kiválasztott animáció lejátszása visszafelé a végétől. (Shift + A)"
-
-msgid "Play selected animation from start. (Shift+D)"
-msgstr "A kiválasztott animáció lejátszása az elejétől. (Shift + D)"
-
-msgid "Play selected animation from current pos. (D)"
-msgstr "A kiválasztott animáció lejátszása az jelenlegi pozícióból. (D)"
 
 msgid "Zoom Reset"
 msgstr "Nagyítás visszaállítása"
@@ -4386,9 +4243,6 @@ msgstr "3D szerkesztő"
 msgid "Scene Tree Editing"
 msgstr "Jelenetfa szerkesztése"
 
-msgid "Node Dock"
-msgstr "Node dokk"
-
 msgid "FileSystem Dock"
 msgstr "Fájlrendszer dokk"
 
@@ -4560,6 +4414,9 @@ msgstr "Fordítások:"
 msgid "Resources:"
 msgstr "Erőforrások:"
 
+msgid "File:"
+msgstr "Fájl:"
+
 msgid "Password"
 msgstr "Jelszó"
 
@@ -4599,6 +4456,9 @@ msgstr "Nincs elég bájt a bájtok dekódolására, vagy hibás formátum."
 msgid "%s/s"
 msgstr "%s/s"
 
+msgid "Node"
+msgstr "Node"
+
 msgid "Incoming RPC"
 msgstr "Bejövő RPC"
 
@@ -4619,6 +4479,13 @@ msgstr "Hiba a kulcstárolók könyvtárának létrehozásakor"
 
 msgid "Invalid package name:"
 msgstr "Érvénytelen csomagnév:"
+
+msgid ""
+"See instructions on finding your team ID: https://developer.apple.com/help/"
+"glossary/team-id"
+msgstr ""
+"Lásd az instrukciókat csapat azonosító kód megkereséséhez: https://"
+"developer.apple.com/help/glossary/team-id"
 
 msgid "Creating probes"
 msgstr "Vizsgálók létrehozása"
