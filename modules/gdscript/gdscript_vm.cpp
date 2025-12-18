@@ -1629,15 +1629,21 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 
-				Callable::CallError err;
-				Variant::construct(to_type, *dst, (const Variant **)&src, 1, err);
+				// Assume all PackedArray type enums are greater than or equal to Variant::PACKED_BYTE_ARRAY.
+				if (to_type >= Variant::PACKED_BYTE_ARRAY && src->get_type() == to_type) {
+					// Avoid making a copy when casting to the same type of PackedArray.
+					*dst = *src;
+				} else {
+					Callable::CallError err;
+					Variant::construct(to_type, *dst, (const Variant **)&src, 1, err);
 
 #ifdef DEBUG_ENABLED
-				if (err.error != Callable::CallError::CALL_OK) {
-					err_text = "Invalid cast: could not convert value to '" + Variant::get_type_name(to_type) + "'.";
-					OPCODE_BREAK;
-				}
+					if (err.error != Callable::CallError::CALL_OK) {
+						err_text = "Invalid cast: could not convert value to '" + Variant::get_type_name(to_type) + "'.";
+						OPCODE_BREAK;
+					}
 #endif
+				}
 
 				ip += 4;
 			}
