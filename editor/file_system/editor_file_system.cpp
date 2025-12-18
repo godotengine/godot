@@ -3555,7 +3555,10 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 }
 
 Error EditorFileSystem::copy_file(const String &p_from, const String &p_to) {
-	_copy_file(p_from, p_to);
+	Error err = _copy_file(p_from, p_to);
+	if (err != OK) {
+		return err;
+	}
 
 	EditorFileSystemDirectory *parent = get_filesystem_path(p_to.get_base_dir());
 	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
