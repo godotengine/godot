@@ -2336,7 +2336,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		Ref<StyleBoxFlat> editor_help_title_style = p_config.base_style->duplicate();
 		editor_help_title_style->set_bg_color(_get_base_color(p_config, p_config.dark_theme ? -0.55 : -0.9));
 		editor_help_title_style->set_content_margin_individual(p_config.base_margin * 2 * EDSCALE, p_config.base_margin * EDSCALE, p_config.base_margin * 2 * EDSCALE, p_config.base_margin * EDSCALE);
-		editor_help_title_style->set_corner_radius_individual(0, 0, p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE);
+		editor_help_title_style->set_corner_radius_individual(p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE, 0, 0);
 		if (p_config.draw_extra_borders) {
 			editor_help_title_style->set_border_width_all(Math::round(EDSCALE));
 			editor_help_title_style->set_border_color(p_config.extra_border_color_2);
