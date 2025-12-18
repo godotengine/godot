@@ -659,16 +659,12 @@ XrResult OpenXRAPI::attempt_create_instance(XrVersion p_version) {
 bool OpenXRAPI::create_instance() {
 	// Create our OpenXR instance, this will query any registered extension wrappers for extensions we need to enable.
 
-	// We explicitly set the version to 1.x.48 in order to workaround a bug (see #108850) in Meta's runtime.
-	// Once that is fixed, restore this to using XR_API_VERSION_1_x, which is the version associated with the
-	// OpenXR headers that we're using.
-
-	XrResult result = attempt_create_instance(XR_MAKE_VERSION(1, 1, 48)); // Replace with XR_API_VERSION_1_1
+	XrResult result = attempt_create_instance(XR_API_VERSION_1_1);
 	if (result == XR_ERROR_API_VERSION_UNSUPPORTED) {
 		// Couldn't initialize OpenXR 1.1, try 1.0
 		print_verbose("OpenXR: Falling back to OpenXR 1.0");
 
-		result = attempt_create_instance(XR_MAKE_VERSION(1, 0, 48)); // Replace with XR_API_VERSION_1_0
+		result = attempt_create_instance(XR_API_VERSION_1_0);
 	}
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance [" + get_error_string(result) + "].");
 
