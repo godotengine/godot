@@ -616,6 +616,7 @@ public:
 	MODBIND0RC(String, get_support_data_info);
 	MODBIND1RC(bool, save_support_data, const String &);
 	MODBIND0RC(PackedByteArray, get_support_data);
+	MODBIND1RC(bool, is_locale_using_support_data, const String &);
 
 	MODBIND1RC(bool, is_locale_right_to_left, const String &);
 
