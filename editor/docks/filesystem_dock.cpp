@@ -1576,12 +1576,12 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 
 		Error err = EditorFileSystem::get_singleton()->copy_file(old_path, new_path);
 		if (err != OK) {
-			EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + U" → " + new_path + ": " + error_names[err] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + U" → " + new_path + ": " + TTR(error_names[err]) + "\n");
 		}
 	} else {
 		Error err = EditorFileSystem::get_singleton()->copy_directory(old_path, new_path);
 		if (err != OK) {
-			EditorNode::get_singleton()->add_io_error(TTR("Error duplicating directory:") + "\n" + old_path + U" → " + new_path + ": " + error_names[err] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Error duplicating directory:") + "\n" + old_path + U" → " + new_path + ": " + TTR(error_names[err]) + "\n");
 		}
 	}
 }
@@ -1894,7 +1894,7 @@ void FileSystemDock::_duplicate_operation_confirm(const String &p_path) {
 	if (!DirAccess::dir_exists_absolute(base_dir)) {
 		Error err = EditorFileSystem::get_singleton()->make_dir_recursive(base_dir);
 		if (err != OK) {
-			EditorNode::get_singleton()->show_warning(vformat(TTR("Could not create base directory: %s"), error_names[err]));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Could not create base directory: %s"), TTR(error_names[err])));
 			return;
 		}
 	}
@@ -2894,7 +2894,7 @@ void FileSystemDock::create_directory(const String &p_path, const String &p_base
 	}
 	Error err = EditorFileSystem::get_singleton()->make_dir_recursive(trimmed_path, p_base_dir);
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Could not create folder: %s"), error_names[err]));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Could not create folder: %s"), TTR(error_names[err])));
 	}
 }
 
