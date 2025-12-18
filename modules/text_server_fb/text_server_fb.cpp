@@ -3145,6 +3145,9 @@ bool TextServerFallback::_font_is_language_supported(const RID &p_font_rid, cons
 	if (fd->language_support_overrides.has(p_language)) {
 		return fd->language_support_overrides[p_language];
 	} else {
+		if (fd->language_support_overrides.has("*")) {
+			return fd->language_support_overrides["*"];
+		}
 		return true;
 	}
 }
@@ -3193,6 +3196,9 @@ bool TextServerFallback::_font_is_script_supported(const RID &p_font_rid, const 
 	if (fd->script_support_overrides.has(p_script)) {
 		return fd->script_support_overrides[p_script];
 	} else {
+		if (fd->script_support_overrides.has("*")) {
+			return fd->script_support_overrides["*"];
+		}
 		return true;
 	}
 }
