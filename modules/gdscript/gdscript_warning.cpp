@@ -73,7 +73,7 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"(The %s "%s" has the same name as a %s.)", symbols[0], symbols[1], symbols[2]);
 		case UNREACHABLE_CODE:
 			CHECK_SYMBOLS(1);
-			return vformat(R"*(Unreachable code (statement after return) in function "%s()".)*", symbols[0]);
+			return vformat(R"*(Unreachable code (statement after return) in %s.)*", symbols[0]);
 		case UNREACHABLE_PATTERN:
 			return "Unreachable pattern (pattern after wildcard or bind).";
 		case STANDALONE_EXPRESSION:
