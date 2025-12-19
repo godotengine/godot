@@ -98,8 +98,8 @@ enum SkyUniformLocation {
 	SKY_EMPTY7, // Unused, put here to avoid conflicts with SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION.
 	SKY_EMPTY8, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION.
 	SKY_MULTIVIEW_UNIFORM_LOCATION,
-	SKY_EMPTY8, // Unused, put here to avoid conflicts with SCENE_PREV_DATA_UNIFORM_LOCATION.
-	SKY_EMPTY9, // Unused, put here to avoid conflicts with SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION.
+	SKY_EMPTY9, // Unused, put here to avoid conflicts with SCENE_PREV_DATA_UNIFORM_LOCATION.
+	SKY_EMPTY10, // Unused, put here to avoid conflicts with SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION.
 };
 
 struct RenderDataGLES3 {
