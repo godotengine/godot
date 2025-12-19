@@ -530,7 +530,7 @@ vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5], f
 vec3 ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4], vec4 texture_rect, float max_mipmap) {
 	// construct the orthonormal basis around the normal vector
 	vec3 x, z;
-	vec3 eye_vec = vec3(0.0, 0.0, -1.0);
+	vec3 eye_vec = abs(normal.z) < 0.7 ? vec3(0.0, 0.0, -1.0) : vec3(1.0, 0.0, 0.0);
 	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector
 	x = cross(normal, z);
 

@@ -622,12 +622,12 @@ vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5], f
 	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod, max_mipmap);
 }
 
-float ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4], vec4 texture_rect, float max_mipmap, out vec3 tex_color) {
+float ltc_evaluate_diff(vec3 normal, vec3 points[4], vec4 texture_rect, float max_mipmap, out vec3 tex_color) {
 	// default is white
 	tex_color = vec3(1.0);
 	// construct the orthonormal basis around the normal vector
 	vec3 x, z;
-	vec3 eye_vec = vec3(0.0, 0.0, -1.0);
+	vec3 eye_vec = abs(normal.z) < 0.7 ? vec3(0.0, 0.0, -1.0) : vec3(1.0, 0.0, 0.0);
 	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector
 	x = cross(normal, z);
 
@@ -722,7 +722,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		points[2] = light_data.position + h_area_width + h_area_height - p_position;
 		points[3] = light_data.position - h_area_width + h_area_height - p_position;
 
-		float ltc_diffuse = max(ltc_evaluate_diff(p_position, p_normal, points, light_data.area_texture_rect, light_data.cos_spot_angle, light_texture_color), 0);
+		float ltc_diffuse = max(ltc_evaluate_diff(p_normal, points, light_data.area_texture_rect, light_data.cos_spot_angle, light_texture_color), 0);
 
 		vec3 light_to_vert = p_position - light_data.position;
 		vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -light_data.direction)); // p_position in LIGHT SPACE
