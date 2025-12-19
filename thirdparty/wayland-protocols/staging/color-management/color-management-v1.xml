@@ -325,7 +325,7 @@
           - IEC 61966-2-4
         </description>
       </entry>
-      <entry name="srgb" value="9" deprecated-since="2">
+      <entry name="srgb" value="9">
         <description summary="Deprecated (ambiguous sRGB transfer function)">
           Transfer characteristics as defined by
           - IEC 61966-2-1 sRGB
@@ -335,7 +335,7 @@
           workflows.
         </description>
       </entry>
-      <entry name="ext_srgb" value="10" deprecated-since="2">
+      <entry name="ext_srgb" value="10">
         <description summary="Deprecated (Extended sRGB piece-wise transfer function)">
           Transfer characteristics as defined by
           - IEC 61966-2-1 sYCC
@@ -778,7 +778,7 @@
              summary="attempted to use an unsupported feature"/>
     </enum>
 
-    <event name="preferred_changed" deprecated-since="2">
+    <event name="preferred_changed">
       <description summary="the preferred image description changed (32-bit)">
         Starting from interface version 2, 'preferred_changed2' is sent instead
         of this event. See the 'preferred_changed2' event for the definition.
@@ -1440,7 +1440,7 @@
            summary="ad hoc human-readable explanation"/>
     </event>
 
-    <event name="ready" deprecated-since="2">
+    <event name="ready">
       <description summary="the object is ready to be used (32-bit)">
         Starting from interface version 2, the 'ready2' event is sent instead
         of this event.
