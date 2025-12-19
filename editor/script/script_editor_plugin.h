@@ -384,16 +384,13 @@ class ScriptEditor : public PanelContainer {
 
 	Vector<Ref<EditorSyntaxHighlighter>> syntax_highlighters;
 
-	struct ResourceInfo {
-		bool is_help_class = false;
-		Variant resource;
-	};
-	HashMap<Control *, ResourceInfo> control_resource_map;
+	HashMap<Control *, Variant> control_resource_map;
 
 	struct ScriptHistory {
 		Control *control = nullptr;
 		Variant state;
-		ResourceInfo resInfo;
+		// String (if helper class) / Ref<Resource> (if script)
+		Variant resource;
 	};
 
 	Vector<ScriptHistory> history;
