@@ -127,10 +127,10 @@ void StyleBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("test_mask", "point", "rect"), &StyleBox::test_mask);
 
 	ADD_GROUP("Content Margins", "content_margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_left", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_top", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_right", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_bottom", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_left", PROPERTY_HINT_RANGE, "-1,2048,suffix:px"), "set_content_margin", "get_content_margin", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_top", PROPERTY_HINT_RANGE, "-1,2048,suffix:px"), "set_content_margin", "get_content_margin", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_right", PROPERTY_HINT_RANGE, "-1,2048,suffix:px"), "set_content_margin", "get_content_margin", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_bottom", PROPERTY_HINT_RANGE, "-1,2048,suffix:px"), "set_content_margin", "get_content_margin", SIDE_BOTTOM);
 
 	GDVIRTUAL_BIND(_draw, "to_canvas_item", "rect")
 	GDVIRTUAL_BIND(_get_draw_rect, "rect")
