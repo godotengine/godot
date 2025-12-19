@@ -119,6 +119,15 @@ open internal class VkSurfaceView(context: Context) : SurfaceView(context), Surf
 		vkThread.requestExitAndWait()
 	}
 
+	/**
+	 * Requests the render thread to exit and block up to the given [timeInMs] until it's done.
+	 *
+	 * @return true if the thread exited, false otherwise.
+	 */
+	fun requestRenderThreadExitAndWait(timeInMs: Long): Boolean {
+		return vkThread.requestExitAndWait(timeInMs)
+	}
+
 	override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
 		vkThread.onSurfaceChanged(width, height)
 	}
