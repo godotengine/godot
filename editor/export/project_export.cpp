@@ -1108,7 +1108,14 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 
 		String path = p_dir->get_file_path(i);
 
-		file->set_icon(0, EditorNode::get_singleton()->get_class_icon(type));
+		Ref<Texture2D> icon;
+		if (!type.is_empty()) {
+			icon = EditorNode::get_singleton()->get_class_icon(type);
+		}
+		if (icon.is_null()) {
+			icon = get_editor_theme_icon(SNAME("File"));
+		}
+		file->set_icon(0, icon);
 		file->set_editable(0, true);
 		file->set_metadata(0, path);
 
