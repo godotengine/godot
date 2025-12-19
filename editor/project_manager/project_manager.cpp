@@ -1314,6 +1314,14 @@ void ProjectManager::_open_donate_page() {
 	OS::get_singleton()->shell_open("https://fund.godotengine.org/?ref=project_manager");
 }
 
+void ProjectManager::_menu_option(int p_option) {
+	if (p_option == EDITOR_OPEN_SETTINGS) {
+		if (quick_settings_dialog) {
+			quick_settings_dialog->_show_full_settings();
+		}
+	}
+}
+
 // Object methods.
 
 ProjectManager::ProjectManager() {
@@ -1439,13 +1447,21 @@ ProjectManager::ProjectManager() {
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
-		bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
-		if (global_menu) {
+#ifdef MACOS_ENABLED
+		{
 			MenuBar *main_menu_bar = memnew(MenuBar);
 			main_menu_bar->set_start_index(0); // Main menu, add to the start of global menu.
 			main_menu_bar->set_prefer_global_menu(true);
 			left_hbox->add_child(main_menu_bar);
+			if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::APPLICATION_MENU_ID)) {
+				PopupMenu *apple_menu = memnew(PopupMenu);
+				apple_menu->set_system_menu(NativeMenu::APPLICATION_MENU_ID);
+				main_menu_bar->add_child(apple_menu);
 
+				apple_menu->add_item(TTRC("Editor Settings..."), EDITOR_OPEN_SETTINGS, KeyModifierMask::META + Key::COMMA);
+				apple_menu->add_separator();
+				apple_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectManager::_menu_option));
+			}
 			if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::WINDOW_MENU_ID)) {
 				PopupMenu *window_menu = memnew(PopupMenu);
 				window_menu->set_system_menu(NativeMenu::WINDOW_MENU_ID);
@@ -1459,6 +1475,8 @@ ProjectManager::ProjectManager() {
 				main_menu_bar->add_child(help_menu);
 			}
 		}
+#endif
+
 		if (can_expand) {
 			// Spacer to center main toggles.
 			left_spacer = memnew(Control);
