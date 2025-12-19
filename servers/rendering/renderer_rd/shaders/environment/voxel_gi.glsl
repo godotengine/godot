@@ -617,7 +617,7 @@ bool compute_area_light(uint index, vec3 pos, vec3 normal, inout vec3 light) {
 	if (light_length >= lights.data[index].radius) {
 		return false;
 	}
-	float attenuation = get_omni_attenuation(light_length * params.cell_size, 1.0 / (lights.data[index].radius * params.cell_size), lights.data[index].attenuation - 2.0); // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+	float attenuation = get_omni_attenuation(light_length * params.cell_size, 1.0 / (lights.data[index].radius * params.cell_size), lights.data[index].attenuation) * light_length * light_length * params.cell_size * params.cell_size; // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 
 	if (attenuation < 0.01) {
 		return false;

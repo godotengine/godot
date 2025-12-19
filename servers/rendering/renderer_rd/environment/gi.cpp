@@ -2974,7 +2974,8 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				if (l.type == RS::LIGHT_AREA) {
 					Vector3 area_vec_a = to_probe_xform.basis.xform(xform.basis.get_column(0).normalized() * area_size.x);
 					Vector3 area_vec_b = to_probe_xform.basis.xform(xform.basis.get_column(1).normalized() * area_size.y);
-
+					// adjust energy for probe space
+					l.energy *= Math::sqrt(area_vec_a.length_squared() * area_vec_b.length_squared()) / (area_size.x * area_size.y);
 					l.area_width[0] = area_vec_a.x;
 					l.area_width[1] = area_vec_a.y;
 					l.area_width[2] = area_vec_a.z;

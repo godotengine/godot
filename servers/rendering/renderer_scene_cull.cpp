@@ -3822,6 +3822,7 @@ void RendererSceneCull::render_probes() {
 							cache->spot_angle != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ANGLE) ||
 							cache->spot_attenuation != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ATTENUATION) ||
 							cache->area_size != RSG::light_storage->light_area_get_size(instance->base) ||
+							cache->area_normalize_energy != RSG::light_storage->light_area_get_normalize_energy(instance->base) ||
 							cache->area_texture != RSG::light_storage->light_area_get_texture(instance->base)) {
 						cache_dirty = true;
 					}
@@ -3903,6 +3904,7 @@ void RendererSceneCull::render_probes() {
 					cache->spot_angle = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
 					cache->spot_attenuation = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 					cache->area_size = RSG::light_storage->light_area_get_size(instance->base);
+					cache->area_normalize_energy = RSG::light_storage->light_area_get_normalize_energy(instance->base);
 					cache->area_texture = RSG::light_storage->light_area_get_texture(instance->base);
 					idx++;
 				}
