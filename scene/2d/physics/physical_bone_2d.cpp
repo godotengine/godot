@@ -178,7 +178,7 @@ void PhysicalBone2D::_stop_physics_simulation() {
 		PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 		PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);
 		PhysicsServer2D::get_singleton()->body_set_collision_priority(get_rid(), 1.0);
-		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_STATIC);
+		set_body_mode(PhysicsServer2D::BODY_MODE_STATIC);
 	}
 }
 
@@ -290,7 +290,7 @@ PhysicalBone2D::PhysicalBone2D() {
 	// Stop the RigidBody from executing its force integration.
 	PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 	PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);
-	PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_STATIC);
+	set_body_mode(PhysicsServer2D::BODY_MODE_STATIC);
 
 	child_joint = nullptr;
 }
