@@ -1780,7 +1780,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides document highlight support.
 	 */
-	bool documentHighlightProvider = false;
+	bool documentHighlightProvider = true;
 
 	/**
 	 * The server provides document symbol support.

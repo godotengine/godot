@@ -46,6 +46,7 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didSave"), &GDScriptTextDocument::didSave);
 	ClassDB::bind_method(D_METHOD("nativeSymbol"), &GDScriptTextDocument::nativeSymbol);
 	ClassDB::bind_method(D_METHOD("documentSymbol"), &GDScriptTextDocument::documentSymbol);
+	ClassDB::bind_method(D_METHOD("documentHighlight"), &GDScriptTextDocument::documentHighlight);
 	ClassDB::bind_method(D_METHOD("completion"), &GDScriptTextDocument::completion);
 	ClassDB::bind_method(D_METHOD("resolve"), &GDScriptTextDocument::resolve);
 	ClassDB::bind_method(D_METHOD("rename"), &GDScriptTextDocument::rename);
@@ -175,6 +176,26 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	if (HashMap<String, ExtendGDScriptParser *>::ConstIterator parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
 		LSP::DocumentSymbol symbol = parser->value->get_symbols();
 		arr.push_back(symbol.to_json(true));
+	}
+	return arr;
+}
+
+Array GDScriptTextDocument::documentHighlight(const Dictionary &p_params) {
+	Array arr;
+	LSP::TextDocumentPositionParams params;
+	params.load(p_params);
+
+	const LSP::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
+	if (symbol) {
+		String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(params.textDocument.uri);
+		Vector<LSP::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_usages_in_file(*symbol, path);
+
+		for (const LSP::Location &usage : usages) {
+			Dictionary highlights;
+			highlights["range"] = usage.range.to_json();
+			highlights["kind"] = 1;
+			arr.push_back(highlights);
+		}
 	}
 	return arr;
 }
