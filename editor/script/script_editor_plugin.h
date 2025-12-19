@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/object/script_language.h"
-#include "core/templates/hash_map.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
