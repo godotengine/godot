@@ -305,7 +305,7 @@ void ProjectDialog::_update_target_auto_dir() {
 	}
 	int naming_convention = (int)EDITOR_GET("project_manager/directory_naming_convention");
 	switch (naming_convention) {
-		case 0: // No convention
+		case 0: // No Convention
 			break;
 		case 1: // kebab-case
 			new_auto_dir = new_auto_dir.to_kebab_case();

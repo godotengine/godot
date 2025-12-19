@@ -175,7 +175,6 @@ void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_
 	container->add_child(label);
 
 	p_control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	p_control->set_stretch_ratio(2.0);
 	container->add_child(p_control);
 }
 
