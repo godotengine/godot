@@ -4351,6 +4351,9 @@ void CanvasItemEditor::_update_editor_settings() {
 	ruler_width_scaled = MAX(ruler_width_unscaled * EDSCALE, ruler_font_size * 2.0);
 
 	grab_distance = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+
+	resample_delay = EDITOR_GET("editors/2d/auto_resample_delay");
+	resample_timer->set_wait_time(resample_delay);
 }
 
 void CanvasItemEditor::_project_settings_changed() {
@@ -4613,10 +4616,17 @@ void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
 
 	zoom_widget->set_zoom(zoom);
 	update_viewport();
+	if (resample) {
+		resample_timer->start();
+	}
 }
 
 void CanvasItemEditor::_update_zoom(real_t p_zoom) {
 	_zoom_on_position(p_zoom, viewport_scrollable->get_size() / 2.0);
+}
+
+void CanvasItemEditor::_update_oversampling() {
+	EditorNode::get_singleton()->get_scene_root()->set_oversampling_override(resample ? zoom : 0.0);
 }
 
 void CanvasItemEditor::_shortcut_zoom_set(real_t p_zoom) {
@@ -5130,6 +5140,14 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			undo_redo->commit_action();
 
 		} break;
+		case AUTO_RESAMPLE_CANVAS_ITEMS: {
+			resample = !resample;
+			int idx = view_menu->get_popup()->get_item_index(AUTO_RESAMPLE_CANVAS_ITEMS);
+			view_menu->get_popup()->set_item_checked(idx, resample);
+			resample_timer->stop();
+			_update_oversampling();
+			EditorSettings::get_singleton()->set_project_metadata("2d_editor", "resample", resample);
+		} break;
 	}
 }
 
@@ -5184,6 +5202,9 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		zoom_widget->set_zoom(zoom);
 		viewport->queue_redraw(); // Redraw to update the global canvas transform after zoom changes.
 		callable_mp(this, &CanvasItemEditor::center_at).call_deferred(rect.get_center()); // Defer because the updated transform is needed.
+		if (resample) {
+			resample_timer->start();
+		}
 	} else {
 		center_at(rect.get_center());
 	}
@@ -5252,6 +5273,9 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		// and the zoom level will still be the same (relative to the editor scale).
 		zoom = real_t(p_state["zoom"]) * MAX(1, EDSCALE);
 		zoom_widget->set_zoom(zoom);
+		if (resample) {
+			resample_timer->start();
+		}
 	}
 
 	if (state.has("ofs")) {
@@ -5445,6 +5469,14 @@ void CanvasItemEditor::clear() {
 	snap_rotation_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
 	snap_rotation_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
 	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_scale_step", 0.1);
+
+	if (resample) {
+		if (resample_timer->is_inside_tree()) {
+			resample_timer->start();
+		} else {
+			_update_oversampling();
+		}
+	}
 }
 
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
@@ -5906,7 +5938,11 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTRC("Center Selection"), Key::F), VIEW_CENTER_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTRC("Frame Selection"), KeyModifierMask::SHIFT | Key::F), VIEW_FRAME_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/clear_guides", TTRC("Clear Guides")), CLEAR_GUIDES);
+
 	p->add_separator();
+	resample = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "resample", true);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/auto_resample_canvas_items", TTRC("Auto Resample CanvasItems")), AUTO_RESAMPLE_CANVAS_ITEMS);
+	p->set_item_checked(p->get_item_index(AUTO_RESAMPLE_CANVAS_ITEMS), resample);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTRC("Preview Canvas Scale")), PREVIEW_CANVAS_SCALE);
 
 	theme_menu = memnew(PopupMenu);
@@ -6015,6 +6051,12 @@ CanvasItemEditor::CanvasItemEditor() {
 	add_node_menu = memnew(PopupMenu);
 	add_child(add_node_menu);
 	add_node_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_add_node_pressed));
+
+	resample_timer = memnew(Timer);
+	resample_timer->set_wait_time(resample_delay);
+	resample_timer->set_one_shot(true);
+	add_child(resample_timer);
+	resample_timer->connect("timeout", callable_mp(this, &CanvasItemEditor::_update_oversampling));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTRC("Multiply grid step by 2"), Key::KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTRC("Divide grid step by 2"), Key::KP_DIVIDE);
