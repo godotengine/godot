@@ -62,6 +62,7 @@ public:
 
 	Variant nativeSymbol(const Dictionary &p_params);
 	Array documentSymbol(const Dictionary &p_params);
+	Array documentHighlight(const Dictionary &p_params);
 	Array completion(const Dictionary &p_params);
 	Dictionary resolve(const Dictionary &p_params);
 	Dictionary rename(const Dictionary &p_params);

@@ -1761,7 +1761,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides document highlight support.
 	 */
-	bool documentHighlightProvider = false;
+	bool documentHighlightProvider = true;
 
 	/**
 	 * The server provides document symbol support.
@@ -2118,4 +2118,55 @@ static String marked_documentation(const String &p_bbcode) {
 	}
 	return markdown;
 }
+
+/**
+ * A document highlight kind.
+ */
+namespace DocumentHighlightKind {
+/**
+ * A textual occurrence.
+ */
+static const int Text = 1;
+
+/**
+ * Read-access of a symbol, like reading a variable.
+ */
+static const int Read = 2;
+
+/**
+ * Write-access of a symbol, like writing to a variable.
+ */
+static const int Write = 3;
+}; // namespace DocumentHighlightKind
+
+/**
+ * A document highlight is a range inside a text document which deserves
+ * special attention. Usually a document highlight is visualized by changing
+ * the background color of its range.
+ */
+struct DocumentHighlight {
+	/**
+	 * The range this highlight applies to.
+	 */
+	Range range;
+
+	/**
+	 * The highlight kind, default is DocumentHighlightKind.Text.
+	 */
+	int kind = DocumentHighlightKind::Text;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["range"] = range.to_json();
+		dict["kind"] = kind;
+		return dict;
+	}
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		range.load(p_params["range"]);
+		if (p_params.has("kind")) {
+			kind = p_params["kind"];
+		}
+	}
+};
 } // namespace LSP
