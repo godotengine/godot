@@ -130,7 +130,7 @@ public:
 		return _value;
 	}
 
-	template <typename T_Other, std::enable_if_t<std::is_base_of_v<RefCounted, T> && std::is_base_of_v<T, T_Other>, int> = 0>
+	template <typename U = T, typename T_Other, std::enable_if_t<std::is_base_of_v<RefCounted, U> && std::is_base_of_v<U, T_Other>, int> = 0>
 	_FORCE_INLINE_ operator Ref<T_Other>() const {
 		return Ref<T_Other>(_value);
 	}
