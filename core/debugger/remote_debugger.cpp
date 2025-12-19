@@ -413,12 +413,10 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	}
 
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
-	ERR_FAIL_NULL(script_lang);
-
 	Array msg = {
 		p_can_continue,
-		script_lang->debug_get_error(),
-		script_lang->debug_get_stack_level_count() > 0,
+		script_lang ? script_lang->debug_get_error() : String(),
+		script_lang && (script_lang->debug_get_stack_level_count() > 0),
 		Thread::get_caller_id()
 	};
 	if (allow_focus_steal_fn) {
@@ -479,19 +477,24 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 			} else if (command == "get_stack_dump") {
 				DebuggerMarshalls::ScriptStackDump dump;
-				int slc = script_lang->debug_get_stack_level_count();
-				for (int i = 0; i < slc; i++) {
-					ScriptLanguage::StackInfo frame;
-					frame.file = script_lang->debug_get_stack_level_source(i);
-					frame.line = script_lang->debug_get_stack_level_line(i);
-					frame.func = script_lang->debug_get_stack_level_function(i);
-					dump.frames.push_back(frame);
+				if (script_lang) {
+					int slc = script_lang->debug_get_stack_level_count();
+					for (int i = 0; i < slc; i++) {
+						ScriptLanguage::StackInfo frame;
+						frame.file = script_lang->debug_get_stack_level_source(i);
+						frame.line = script_lang->debug_get_stack_level_line(i);
+						frame.func = script_lang->debug_get_stack_level_function(i);
+						dump.frames.push_back(frame);
+					}
 				}
 				send_message("stack_dump", dump.serialize());
 
 			} else if (command == "get_stack_frame_vars") {
 				ERR_FAIL_COND(data.size() != 1);
-				ERR_FAIL_NULL(script_lang);
+				if (!script_lang) {
+					send_message("stack_frame_vars", Array{ 0 });
+					continue;
+				}
 				int lv = data[0];
 
 				List<String> members;
