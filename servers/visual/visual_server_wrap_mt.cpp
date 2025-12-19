@@ -43,6 +43,10 @@ void VisualServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
 void VisualServerWrapMT::thread_flush() {
 }
 
+void VisualServerWrapMT::thread_halt() {
+	thread_halt_semaphore.wait();
+}
+
 void VisualServerWrapMT::_thread_callback(void *_instance) {
 	VisualServerWrapMT *vsmt = reinterpret_cast<VisualServerWrapMT *>(_instance);
 
@@ -99,6 +103,19 @@ void VisualServerWrapMT::sync() {
 		command_queue.push_and_sync(this, &VisualServerWrapMT::thread_flush);
 	} else {
 		command_queue.flush_all(); //flush all pending from other threads
+	}
+}
+
+void VisualServerWrapMT::sync_and_halt() {
+	if (create_thread) {
+		command_queue.push_and_sync(this, &VisualServerWrapMT::thread_flush);
+		command_queue.push(this, &VisualServerWrapMT::thread_halt);
+	}
+}
+
+void VisualServerWrapMT::thaw() {
+	if (create_thread) {
+		thread_halt_semaphore.post();
 	}
 }
 
