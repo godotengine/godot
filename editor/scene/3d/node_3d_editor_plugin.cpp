@@ -6156,7 +6156,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Cascades"), VIEW_DISPLAY_DEBUG_SDFGI, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Probes"), VIEW_DISPLAY_DEBUG_SDFGI_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
+			TTRC("Left-click a SDFGI probe to display its occlusion information (white = not occluded, red = fully occluded).\nRequires SDFGI to be enabled in Environment to have a visible effect."));
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
 			TTRC("Displays the scene luminance computed from the 3D buffer. This is used for Auto Exposure calculation.\nRequires Auto Exposure to be enabled in CameraAttributes to have a visible effect."));
