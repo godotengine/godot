@@ -250,8 +250,11 @@ void NavigationAgent3D::_notification(int p_what) {
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 
-			if (agent_parent && avoidance_enabled) {
-				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
+			if (agent_parent) {
+				previous_origin = agent_parent->get_global_position();
+				if (avoidance_enabled) {
+					NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
+				}
 			}
 
 #ifdef DEBUG_ENABLED
@@ -877,6 +880,8 @@ void NavigationAgent3D::_update_navigation() {
 			_transition_to_navigation_finished();
 		}
 	}
+
+	previous_origin = origin;
 }
 
 void NavigationAgent3D::_advance_waypoints(const Vector3 &p_origin) {
@@ -915,11 +920,17 @@ void NavigationAgent3D::_move_to_next_waypoint() {
 bool NavigationAgent3D::_is_within_waypoint_distance(const Vector3 &p_origin) const {
 	const Vector<Vector3> &navigation_path = navigation_result->get_path();
 	Vector3 waypoint = navigation_path[navigation_path_index] - Vector3(0, path_height_offset, 0);
-	return p_origin.distance_to(waypoint) < path_desired_distance;
+	Vector3 flattened_origin = p_origin - Vector3(0, path_height_offset, 0);
+	Vector3 flattened_prev_origin = previous_origin - Vector3(0, path_height_offset, 0);
+	return p_origin.distance_to(waypoint) < path_desired_distance ||
+			waypoint.distance_squared_to(Geometry3D::get_closest_point_to_segment(waypoint, flattened_prev_origin, flattened_origin)) < path_desired_distance * path_desired_distance;
 }
 
 bool NavigationAgent3D::_is_within_target_distance(const Vector3 &p_origin) const {
-	return p_origin.distance_to(target_position) < target_desired_distance;
+	Vector3 flattened_origin = p_origin - Vector3(0, path_height_offset, 0);
+	Vector3 flattened_prev_origin = previous_origin - Vector3(0, path_height_offset, 0);
+	return p_origin.distance_to(target_position) < target_desired_distance ||
+			target_position.distance_squared_to(Geometry3D::get_closest_point_to_segment(target_position, flattened_prev_origin, flattened_origin)) < target_desired_distance * target_desired_distance;
 }
 
 void NavigationAgent3D::_trigger_waypoint_reached() {

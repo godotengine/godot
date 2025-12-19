@@ -76,6 +76,8 @@ class NavigationAgent3D : public Node {
 
 	Vector3 target_position;
 
+	Vector3 previous_origin;
+
 	Ref<NavigationPathQueryParameters3D> navigation_query;
 	Ref<NavigationPathQueryResult3D> navigation_result;
 	int navigation_path_index = 0;
