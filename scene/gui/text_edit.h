@@ -486,7 +486,7 @@ private:
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
-	int _get_column_x_offset_for_line(int p_char, int p_line, int p_column) const;
+	float _get_column_x_offset_for_line(int p_char, int p_line, int p_column) const;
 	bool _is_line_col_in_range(int p_line, int p_column, int p_from_line, int p_from_column, int p_to_line, int p_to_column, bool p_include_edges = true) const;
 
 	void _offset_carets_after(int p_old_line, int p_old_column, int p_new_line, int p_new_column, bool p_include_selection_begin = true, bool p_include_selection_end = true);
@@ -547,7 +547,7 @@ private:
 	// Scrolling.
 	int first_visible_line = 0;
 	int first_visible_line_wrap_ofs = 0;
-	int first_visible_col = 0;
+	float first_visible_col = 0;
 
 	bool scrolling = false;
 	bool updating_scrolls = false;
@@ -701,6 +701,9 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	void _set_selection_mode_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
 	Point2i _get_line_column_at_pos_bind_compat_100913(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
+	Point2i get_line_column_at_pos_bind_compat_114221(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
+	void set_h_scroll_bind_compat_114221(int p_scroll);
+	int get_h_scroll_bind_compat_114221() const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -934,7 +937,7 @@ public:
 	String get_word_at_pos(const Vector2 &p_pos) const;
 	String get_word(int p_line, int p_column) const;
 
-	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
+	Point2i get_line_column_at_pos(const Point2 &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
 	Point2i get_pos_at_line_column(int p_line, int p_column) const;
 	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
 
@@ -1064,8 +1067,8 @@ public:
 	void set_v_scroll(double p_scroll);
 	double get_v_scroll() const;
 
-	void set_h_scroll(int p_scroll);
-	int get_h_scroll() const;
+	void set_h_scroll(double p_scroll);
+	double get_h_scroll() const;
 
 	void set_v_scroll_speed(float p_speed);
 	float get_v_scroll_speed() const;
