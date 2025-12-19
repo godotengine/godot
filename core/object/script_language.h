@@ -222,7 +222,8 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	struct Warning {
-		int start_line = -1, end_line = -1;
+		int start_line = 0;
+		int end_line = 0;
 		int code;
 		String string_code;
 		String message;

@@ -269,7 +269,10 @@ public:
 		// };
 		// Type type = NO_ERROR;
 		String message;
-		int line = 0, column = 0;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -337,8 +340,10 @@ public:
 		};
 
 		Type type = NONE;
-		int start_line = 0, end_line = 0;
-		int start_column = 0, end_column = 0;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
 
@@ -1108,8 +1113,10 @@ public:
 			StringName name;
 			FunctionNode *source_function = nullptr;
 
-			int start_line = 0, end_line = 0;
-			int start_column = 0, end_column = 0;
+			int start_line = 0;
+			int start_column = 0;
+			int end_line = 0;
+			int end_column = 0;
 
 			DataType get_datatype() const;
 			String get_name() const;

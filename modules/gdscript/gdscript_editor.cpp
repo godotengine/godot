@@ -169,8 +169,8 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 			for (const GDScriptParser::ParserError &pe : parser.get_errors()) {
 				ScriptLanguage::ScriptError e;
 				e.path = p_path;
-				e.line = pe.line;
-				e.column = pe.column;
+				e.line = pe.start_line;
+				e.column = pe.start_column;
 				e.message = pe.message;
 				r_errors->push_back(e);
 			}
@@ -180,8 +180,8 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 				for (const GDScriptParser::ParserError &pe : depended_parser->get_errors()) {
 					ScriptLanguage::ScriptError e;
 					e.path = E.key;
-					e.line = pe.line;
-					e.column = pe.column;
+					e.line = pe.start_line;
+					e.column = pe.start_column;
 					e.message = pe.message;
 					r_errors->push_back(e);
 				}

@@ -575,7 +575,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 		StringBuilder error_string;
 		for (const GDScriptParser::ParserError &error : parser.get_errors()) {
-			error_string.append(vformat(">> ERROR at line %d: %s\n", error.line, error.message));
+			error_string.append(vformat(">> ERROR at line %d: %s\n", error.start_line, error.message));
 		}
 		result.output += error_string.as_string();
 		if (!p_is_generating) {

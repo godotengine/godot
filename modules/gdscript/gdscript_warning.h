@@ -158,7 +158,10 @@ public:
 	static_assert(std_size(default_warning_levels) == WARNING_MAX, "Amount of default levels does not match the amount of warnings.");
 
 	Code code = WARNING_MAX;
-	int start_line = -1, end_line = -1;
+	int start_line = 0;
+	int start_column = 0;
+	int end_line = 0;
+	int end_column = 0;
 	Vector<String> symbols;
 
 	String get_name() const;
