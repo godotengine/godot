@@ -105,6 +105,8 @@ private:
 	HashMap<String, PackedStringArray> favorite_properties;
 	Vector<String> recent_dirs;
 
+	Vector<Pair<String, PackedStringArray>> preset_settings;
+
 	bool save_changed_setting = true;
 	bool optimize_save = true; //do not save stuff that came from config but was not set from engine
 	bool initialized = false;
@@ -121,6 +123,7 @@ private:
 	void _set_initialized();
 	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
 	void _load_default_visual_shader_editor_theme();
+	void _update_linked_settings(const StringName &p_name, const Variant &p_value);
 	static String _guess_exec_args_for_extenal_editor(const String &p_value);
 	const String _get_project_metadata_path() const;
 #ifndef DISABLE_DEPRECATED
@@ -186,6 +189,9 @@ public:
 	void set_recent_dirs_bind(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites_and_recent_dirs();
+
+	Vector<Pair<String, PackedStringArray>> get_preset_settings() const;
+	Variant get_preset_custom_value(const String &p_property_name) const;
 
 	static HashMap<StringName, Color> get_godot2_text_editor_theme();
 	static bool is_default_text_editor_theme(const String &p_theme_name);

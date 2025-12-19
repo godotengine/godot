@@ -238,11 +238,160 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config() {
 	ThemeConfiguration config;
 
-	// Basic properties.
+	// Presets.
+
+	config.preset = EDITOR_GET("interface/theme/color_preset");
+	const bool is_color_preset_custom = config.preset == "Custom";
+	config.spacing_preset = EDITOR_GET("interface/theme/spacing_preset");
+	const bool is_spacing_preset_custom = config.spacing_preset == "Custom";
 
 	config.style = EDITOR_GET("interface/theme/style");
-	config.preset = EDITOR_GET("interface/theme/color_preset");
-	config.spacing_preset = EDITOR_GET("interface/theme/spacing_preset");
+
+	// Handle theme style.
+	if (!is_color_preset_custom) {
+		if (config.style == "Classic") {
+			config.draw_relationship_lines = RELATIONSHIP_ALL;
+			config.corner_radius = 3;
+		} else { // Default
+			config.draw_relationship_lines = config.default_relationship_lines;
+			config.corner_radius = config.default_corner_radius;
+		}
+
+		// Enforce values to match their preset in case they were adjusted or overridden.
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_relationship_lines", config.draw_relationship_lines, !is_color_preset_custom);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/corner_radius", config.corner_radius, !is_color_preset_custom);
+	}
+
+	// Handle color preset.
+	{
+		const bool follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
+		const bool use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
+		DisplayServer *display_server = DisplayServer::get_singleton();
+		Color system_base_color;
+		String &effective_color_theme = config.preset;
+
+		if (follow_system_theme) {
+			system_base_color = display_server->get_base_color();
+			String dark_theme = "Default";
+			String light_theme = "Light";
+
+			effective_color_theme = light_theme; // Assume light theme if we can't detect system theme attributes.
+
+			if (system_base_color == Color(0, 0, 0, 0)) {
+				if (display_server->is_dark_mode_supported() && display_server->is_dark_mode()) {
+					effective_color_theme = dark_theme;
+				}
+			} else if (system_base_color.get_luminance() < 0.5) {
+				effective_color_theme = dark_theme;
+			}
+		}
+
+		Color preset_accent_color;
+		Color preset_base_color;
+		float preset_contrast = config.default_contrast;
+		bool preset_draw_extra_borders = false;
+		float preset_icon_saturation = config.default_icon_saturation;
+
+		// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
+		const float light_contrast = config.style == "Modern" ? -0.4 : -0.06;
+
+		// Please use alphabetical order if you're adding a new color preset here.
+		if (effective_color_theme == "Black (OLED)") {
+			preset_accent_color = Color(0.45, 0.75, 1.0);
+			preset_base_color = Color(0, 0, 0);
+			// The contrast rate value is irrelevant on a fully black theme.
+			preset_contrast = 0.0;
+			preset_draw_extra_borders = true;
+		} else if (effective_color_theme == "Breeze Dark") {
+			preset_accent_color = Color(0.239, 0.682, 0.914);
+			preset_base_color = Color(0.1255, 0.1373, 0.149);
+		} else if (effective_color_theme == "Godot 2") {
+			preset_accent_color = Color(0.53, 0.67, 0.89);
+			preset_base_color = Color(0.24, 0.23, 0.27);
+			preset_icon_saturation = 1;
+		} else if (effective_color_theme == "Godot 3") {
+			preset_accent_color = Color(0.44, 0.73, 0.98);
+			preset_base_color = Color(0.21, 0.24, 0.29);
+			preset_icon_saturation = 1;
+		} else if (effective_color_theme == "Gray") {
+			preset_accent_color = Color(0.44, 0.73, 0.98);
+			preset_base_color = Color(0.24, 0.24, 0.24);
+		} else if (effective_color_theme == "Light") {
+			preset_accent_color = Color(0.18, 0.50, 1.00);
+			preset_base_color = Color(0.9, 0.9, 0.9);
+			preset_contrast = light_contrast;
+			preset_icon_saturation = 1;
+		} else if (effective_color_theme == "Solarized (Dark)") {
+			preset_accent_color = Color(0.15, 0.55, 0.82);
+			preset_base_color = Color(0.03, 0.21, 0.26);
+			preset_contrast = 0.23;
+		} else if (effective_color_theme == "Solarized (Light)") {
+			preset_accent_color = Color(0.15, 0.55, 0.82);
+			preset_base_color = Color(0.89, 0.86, 0.79);
+			preset_contrast = light_contrast;
+		} else {
+			// Default or Custom.
+			preset_accent_color = Color(0.337, 0.62, 1.0);
+			preset_base_color = Color(0.153, 0.153, 0.153);
+		}
+
+		config.accent_color = preset_accent_color;
+		config.base_color = preset_base_color;
+		config.contrast = preset_contrast;
+		config.draw_extra_borders = preset_draw_extra_borders;
+		config.icon_saturation = preset_icon_saturation;
+
+		if (follow_system_theme && system_base_color != Color(0, 0, 0, 0)) {
+			config.base_color = system_base_color;
+		}
+
+		if (use_system_accent_color) {
+			Color system_accent_color = display_server->get_accent_color();
+			if (system_accent_color != Color(0, 0, 0, 0)) {
+				config.accent_color = system_accent_color;
+			}
+		}
+
+		// Enforce values to match their preset in case they were adjusted or overridden.
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", config.accent_color, !is_color_preset_custom);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", config.base_color, !is_color_preset_custom);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast, !is_color_preset_custom);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders, !is_color_preset_custom);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/icon_saturation", config.icon_saturation, !is_color_preset_custom);
+	}
+
+	// Handle theme spacing preset.
+	{
+		int preset_base_spacing = 0;
+		int preset_extra_spacing = 0;
+		Size2 preset_dialogs_buttons_min_size;
+
+		if (config.spacing_preset == "Compact") {
+			preset_base_spacing = 2;
+			preset_extra_spacing = 2;
+			preset_dialogs_buttons_min_size = Size2(90, 26);
+		} else if (config.spacing_preset == "Spacious") {
+			preset_base_spacing = 6;
+			preset_extra_spacing = 2;
+			preset_dialogs_buttons_min_size = Size2(112, 36);
+		} else { // Default
+			preset_base_spacing = 4;
+			preset_extra_spacing = 0;
+			preset_dialogs_buttons_min_size = Size2(105, 34);
+		}
+
+		config.base_spacing = preset_base_spacing;
+		config.extra_spacing = preset_extra_spacing;
+		config.dialogs_buttons_min_size = preset_dialogs_buttons_min_size;
+
+		// Enforce values to match their preset in case they were adjusted or overridden.
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/base_spacing", config.base_spacing, !is_spacing_preset_custom);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/additional_spacing", config.extra_spacing, !is_spacing_preset_custom);
+	}
+
+	// Load properties after their presets update in case the project overrides them.
+
+	// Basic properties.
 
 	config.base_color = EDITOR_GET("interface/theme/base_color");
 	config.accent_color = EDITOR_GET("interface/theme/accent_color");
@@ -266,165 +415,6 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	config.gizmo_handle_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 	config.subresource_hue_tint = EDITOR_GET("docks/property_editor/subresource_hue_tint");
 	config.dragging_hover_wait_msec = (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000;
-
-	// Handle theme style.
-	if (config.preset != "Custom") {
-		if (config.style == "Classic") {
-			config.draw_relationship_lines = RELATIONSHIP_ALL;
-			config.corner_radius = 3;
-		} else { // Default
-			config.draw_relationship_lines = config.default_relationship_lines;
-			config.corner_radius = config.default_corner_radius;
-		}
-
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/corner_radius", config.corner_radius);
-
-		// Enforce values in case they were adjusted or overridden.
-		EditorSettings::get_singleton()->set_manually("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
-		EditorSettings::get_singleton()->set_manually("interface/theme/corner_radius", config.corner_radius);
-	}
-
-	// Handle color preset.
-	{
-		const bool follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
-		const bool use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
-		DisplayServer *display_server = DisplayServer::get_singleton();
-		Color system_base_color = display_server->get_base_color();
-		Color system_accent_color = display_server->get_accent_color();
-
-		if (follow_system_theme) {
-			String dark_theme = "Default";
-			String light_theme = "Light";
-
-			config.preset = light_theme; // Assume light theme if we can't detect system theme attributes.
-
-			if (system_base_color == Color(0, 0, 0, 0)) {
-				if (display_server->is_dark_mode_supported() && display_server->is_dark_mode()) {
-					config.preset = dark_theme;
-				}
-			} else {
-				if (system_base_color.get_luminance() < 0.5) {
-					config.preset = dark_theme;
-				}
-			}
-		}
-
-		if (config.preset != "Custom") {
-			Color preset_accent_color;
-			Color preset_base_color;
-			float preset_contrast = config.default_contrast;
-			bool preset_draw_extra_borders = false;
-			float preset_icon_saturation = config.default_icon_saturation;
-
-			// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
-			const float light_contrast = config.style == "Modern" ? -0.4 : -0.06;
-
-			// Please use alphabetical order if you're adding a new color preset here.
-			if (config.preset == "Black (OLED)") {
-				preset_accent_color = Color(0.45, 0.75, 1.0);
-				preset_base_color = Color(0, 0, 0);
-				// The contrast rate value is irrelevant on a fully black theme.
-				preset_contrast = 0.0;
-				preset_draw_extra_borders = true;
-			} else if (config.preset == "Breeze Dark") {
-				preset_accent_color = Color(0.239, 0.682, 0.914);
-				preset_base_color = Color(0.1255, 0.1373, 0.149);
-			} else if (config.preset == "Godot 2") {
-				preset_accent_color = Color(0.53, 0.67, 0.89);
-				preset_base_color = Color(0.24, 0.23, 0.27);
-				preset_icon_saturation = 1;
-			} else if (config.preset == "Godot 3") {
-				preset_accent_color = Color(0.44, 0.73, 0.98);
-				preset_base_color = Color(0.21, 0.24, 0.29);
-				preset_icon_saturation = 1;
-			} else if (config.preset == "Gray") {
-				preset_accent_color = Color(0.44, 0.73, 0.98);
-				preset_base_color = Color(0.24, 0.24, 0.24);
-			} else if (config.preset == "Light") {
-				preset_accent_color = Color(0.18, 0.50, 1.00);
-				preset_base_color = Color(0.9, 0.9, 0.9);
-				preset_contrast = light_contrast;
-				preset_icon_saturation = 1;
-			} else if (config.preset == "Solarized (Dark)") {
-				preset_accent_color = Color(0.15, 0.55, 0.82);
-				preset_base_color = Color(0.03, 0.21, 0.26);
-				preset_contrast = 0.23;
-			} else if (config.preset == "Solarized (Light)") {
-				preset_accent_color = Color(0.15, 0.55, 0.82);
-				preset_base_color = Color(0.89, 0.86, 0.79);
-				preset_contrast = light_contrast;
-			} else { // Default
-				preset_accent_color = Color(0.337, 0.62, 1.0);
-				preset_base_color = Color(0.153, 0.153, 0.153);
-			}
-
-			config.accent_color = preset_accent_color;
-			config.base_color = preset_base_color;
-			config.contrast = preset_contrast;
-			config.draw_extra_borders = preset_draw_extra_borders;
-			config.icon_saturation = preset_icon_saturation;
-
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", config.accent_color);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", config.base_color);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/icon_saturation", config.icon_saturation);
-		}
-
-		if (follow_system_theme && system_base_color != Color(0, 0, 0, 0)) {
-			config.base_color = system_base_color;
-			config.preset = "Custom";
-		}
-
-		if (use_system_accent_color && system_accent_color != Color(0, 0, 0, 0)) {
-			config.accent_color = system_accent_color;
-			config.preset = "Custom";
-		}
-
-		// Enforce values in case they were adjusted or overridden.
-		EditorSettings::get_singleton()->set_manually("interface/theme/color_preset", config.preset);
-		EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", config.accent_color);
-		EditorSettings::get_singleton()->set_manually("interface/theme/base_color", config.base_color);
-		EditorSettings::get_singleton()->set_manually("interface/theme/contrast", config.contrast);
-		EditorSettings::get_singleton()->set_manually("interface/theme/draw_extra_borders", config.draw_extra_borders);
-		EditorSettings::get_singleton()->set_manually("interface/theme/icon_saturation", config.icon_saturation);
-	}
-
-	// Handle theme spacing preset.
-	{
-		if (config.spacing_preset != "Custom") {
-			int preset_base_spacing = 0;
-			int preset_extra_spacing = 0;
-			Size2 preset_dialogs_buttons_min_size;
-
-			if (config.spacing_preset == "Compact") {
-				preset_base_spacing = 2;
-				preset_extra_spacing = 2;
-				preset_dialogs_buttons_min_size = Size2(90, 26);
-			} else if (config.spacing_preset == "Spacious") {
-				preset_base_spacing = 6;
-				preset_extra_spacing = 2;
-				preset_dialogs_buttons_min_size = Size2(112, 36);
-			} else { // Default
-				preset_base_spacing = 4;
-				preset_extra_spacing = 0;
-				preset_dialogs_buttons_min_size = Size2(105, 34);
-			}
-
-			config.base_spacing = preset_base_spacing;
-			config.extra_spacing = preset_extra_spacing;
-			config.dialogs_buttons_min_size = preset_dialogs_buttons_min_size;
-
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_spacing", config.base_spacing);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/additional_spacing", config.extra_spacing);
-		}
-
-		// Enforce values in case they were adjusted or overridden.
-		EditorSettings::get_singleton()->set_manually("interface/theme/spacing_preset", config.spacing_preset);
-		EditorSettings::get_singleton()->set_manually("interface/theme/base_spacing", config.base_spacing);
-		EditorSettings::get_singleton()->set_manually("interface/theme/additional_spacing", config.extra_spacing);
-	}
 
 	// Generated properties.
 
@@ -473,9 +463,7 @@ void _load_text_editor_theme() {
 		// Make sure it is actually a color.
 		if (val.is_valid_html_color()) {
 			const Color color_value = Color::html(val);
-			// Change manually to prevent settings_changed spam.
-			settings->set_initial_value(setting_key, color_value);
-			settings->set_manually(setting_key, color_value);
+			settings->set_initial_value(setting_key, color_value, true);
 		}
 	}
 	// If it doesn't load a setting just use what is currently loaded.
@@ -567,10 +555,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 		}
 		EditorSettings *settings = EditorSettings::get_singleton();
 		for (const KeyValue<StringName, Color> &setting : colors) {
-			settings->set_initial_value(setting.key, setting.value);
-			if (is_default_theme || is_godot2_theme) {
-				settings->set_manually(setting.key, setting.value);
-			}
+			settings->set_initial_value(setting.key, setting.value, !is_custom_theme);
 		}
 	} else {
 		// Custom user theme.
@@ -627,29 +612,30 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 
 void EditorThemeManager::_populate_visual_shader_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
-	String visual_shader_color_theme = ed_settings->get("editors/visual_editors/color_theme");
-	if (visual_shader_color_theme == "Default") {
+	const String &visual_shader_color_theme = EDITOR_GET("editors/visual_editors/color_theme");
+	const bool is_custom_theme = visual_shader_color_theme == "Custom";
+	if (is_custom_theme || visual_shader_color_theme == "Default") {
 		// Connection type colors
-		ed_settings->set_initial_value("editors/visual_editors/connection_colors/scalar_color", Color(0.55, 0.55, 0.55), true);
-		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector2_color", Color(0.44, 0.43, 0.64), true);
-		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector3_color", Color(0.337, 0.314, 0.71), true);
-		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector4_color", Color(0.7, 0.65, 0.147), true);
-		ed_settings->set_initial_value("editors/visual_editors/connection_colors/boolean_color", Color(0.243, 0.612, 0.349), true);
-		ed_settings->set_initial_value("editors/visual_editors/connection_colors/transform_color", Color(0.71, 0.357, 0.64), true);
-		ed_settings->set_initial_value("editors/visual_editors/connection_colors/sampler_color", Color(0.659, 0.4, 0.137), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/scalar_color", Color(0.55, 0.55, 0.55), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector2_color", Color(0.44, 0.43, 0.64), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector3_color", Color(0.337, 0.314, 0.71), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector4_color", Color(0.7, 0.65, 0.147), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/boolean_color", Color(0.243, 0.612, 0.349), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/transform_color", Color(0.71, 0.357, 0.64), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/sampler_color", Color(0.659, 0.4, 0.137), !is_custom_theme);
 
 		// Node category colors (used for the node headers)
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/output_color", Color(0.26, 0.10, 0.15), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/color_color", Color(0.5, 0.5, 0.1), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/conditional_color", Color(0.208, 0.522, 0.298), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/input_color", Color(0.502, 0.2, 0.204), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/scalar_color", Color(0.1, 0.5, 0.6), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/textures_color", Color(0.5, 0.3, 0.1), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/transform_color", Color(0.5, 0.3, 0.5), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/utility_color", Color(0.2, 0.2, 0.2), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/vector_color", Color(0.2, 0.2, 0.5), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/special_color", Color(0.098, 0.361, 0.294), true);
-		ed_settings->set_initial_value("editors/visual_editors/category_colors/particle_color", Color(0.12, 0.358, 0.8), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/output_color", Color(0.26, 0.10, 0.15), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/color_color", Color(0.5, 0.5, 0.1), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/conditional_color", Color(0.208, 0.522, 0.298), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/input_color", Color(0.502, 0.2, 0.204), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/scalar_color", Color(0.1, 0.5, 0.6), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/textures_color", Color(0.5, 0.3, 0.1), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/transform_color", Color(0.5, 0.3, 0.5), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/utility_color", Color(0.2, 0.2, 0.2), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/vector_color", Color(0.2, 0.2, 0.5), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/special_color", Color(0.098, 0.361, 0.294), !is_custom_theme);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/particle_color", Color(0.12, 0.358, 0.8), !is_custom_theme);
 
 	} else if (visual_shader_color_theme == "Legacy") {
 		// Connection type colors

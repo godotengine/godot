@@ -8903,6 +8903,142 @@ void Node3DEditor::_update_theme() {
 	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 }
 
+static bool _update_shortcut_input(const String &p_name, Ref<InputEventKey> &p_event, bool p_set) {
+	Array sc_events;
+	if (p_event->get_keycode() != Key::NONE) {
+		sc_events.push_back((Variant)p_event);
+	}
+
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_name);
+	Array cur_events = sc->get_events();
+	bool different = cur_events.size() != sc_events.size() || cur_events.size() > 1;
+	if (!different && cur_events.size() == 1) {
+		const Ref<InputEventKey> cur_event = Object::cast_to<InputEventKey>(cur_events[0].get_validated_object());
+		ERR_FAIL_COND_V(cur_event.is_null(), false);
+		different = !p_event->is_match(cur_event, true);
+	}
+	if (p_set && different) {
+		sc->set_events(sc_events);
+	}
+	return different;
+}
+
+static bool _update_navigation_preset(bool p_set) {
+	Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+	Node3DEditorViewport::ViewportNavMouseButton set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+	Node3DEditorViewport::ViewportNavMouseButton set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+	Node3DEditorViewport::ViewportNavMouseButton set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+	bool set_3_button_mouse = false;
+	Ref<InputEventKey> orbit_mod_key_1;
+	Ref<InputEventKey> orbit_mod_key_2;
+	Ref<InputEventKey> pan_mod_key_1;
+	Ref<InputEventKey> pan_mod_key_2;
+	Ref<InputEventKey> zoom_mod_key_1;
+	Ref<InputEventKey> zoom_mod_key_2;
+	bool set_preset = false;
+
+	if (nav_scheme == Node3DEditorViewport::NAVIGATION_GODOT) {
+		set_preset = true;
+		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_3_button_mouse = false;
+		orbit_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		pan_mod_key_1 = InputEventKey::create_reference(Key::SHIFT);
+		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
+		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA) {
+		set_preset = true;
+		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_RIGHT_MOUSE;
+		set_3_button_mouse = false;
+		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
+		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		pan_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
+		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) {
+		set_preset = true;
+		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+		set_3_button_mouse = false;
+		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
+		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		pan_mod_key_1 = InputEventKey::create_reference(Key::SHIFT);
+		pan_mod_key_2 = InputEventKey::create_reference(Key::ALT);
+		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
+		zoom_mod_key_2 = InputEventKey::create_reference(Key::CTRL);
+	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_TABLET) {
+		set_preset = true;
+		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_3_button_mouse = true;
+		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
+		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		pan_mod_key_1 = InputEventKey::create_reference(Key::SHIFT);
+		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
+		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+	}
+
+	if (p_set && set_preset) {
+		// Set settings to the desired preset values.
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/orbit_mouse_button", (int)set_orbit_mouse_button);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/pan_mouse_button", (int)set_pan_mouse_button);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/zoom_mouse_button", (int)set_zoom_mouse_button);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/emulate_3_button_mouse", set_3_button_mouse);
+		bool updated = false;
+		updated |= _update_shortcut_input("spatial_editor/viewport_orbit_modifier_1", orbit_mod_key_1, true);
+		updated |= _update_shortcut_input("spatial_editor/viewport_orbit_modifier_2", orbit_mod_key_2, true);
+		updated |= _update_shortcut_input("spatial_editor/viewport_pan_modifier_1", pan_mod_key_1, true);
+		updated |= _update_shortcut_input("spatial_editor/viewport_pan_modifier_2", pan_mod_key_2, true);
+		updated |= _update_shortcut_input("spatial_editor/viewport_zoom_modifier_1", zoom_mod_key_1, true);
+		updated |= _update_shortcut_input("spatial_editor/viewport_zoom_modifier_2", zoom_mod_key_2, true);
+		if (updated) {
+			EditorSettings::get_singleton()->mark_setting_changed("shortcuts");
+		}
+	} else if (!p_set) {
+		if (!set_preset) {
+			// Custom mode can have any shortcuts.
+			return false;
+		}
+		if (_update_shortcut_input("spatial_editor/viewport_orbit_modifier_1", orbit_mod_key_1, false)) {
+			return true;
+		}
+		if (_update_shortcut_input("spatial_editor/viewport_orbit_modifier_2", orbit_mod_key_2, false)) {
+			return true;
+		}
+		if (_update_shortcut_input("spatial_editor/viewport_pan_modifier_1", pan_mod_key_1, false)) {
+			return true;
+		}
+		if (_update_shortcut_input("spatial_editor/viewport_pan_modifier_2", pan_mod_key_2, false)) {
+			return true;
+		}
+		if (_update_shortcut_input("spatial_editor/viewport_zoom_modifier_1", zoom_mod_key_1, false)) {
+			return true;
+		}
+		if (_update_shortcut_input("spatial_editor/viewport_zoom_modifier_2", zoom_mod_key_2, false)) {
+			return true;
+		}
+		return false;
+	}
+	return true;
+}
+
+void Node3DEditor::update_navigation_preset() {
+	_update_navigation_preset(true);
+}
+
+static bool _navigation_preset_changed() {
+	return _update_navigation_preset(false);
+}
+
 void Node3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -8960,7 +9096,8 @@ void Node3DEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d")) {
+			EditorSettings *editor_settings = EditorSettings::get_singleton();
+			if (editor_settings->check_changed_settings_in_group("editors/3d")) {
 				const Color selection_box_color = EDITOR_GET("editors/3d/selection_box_color");
 				const Color active_selection_box_color = EDITOR_GET("editors/3d/active_selection_box_color");
 
@@ -8982,6 +9119,15 @@ void Node3DEditor::_notification(int p_what) {
 					viewports[i]->update_transform_gizmo_view();
 				}
 				update_gizmo_opacity();
+			}
+			if (editor_settings->check_changed_settings_in_group("shortcuts")) {
+				// Set to custom navigation scheme if modifier shortcuts were changed.
+				if (_navigation_preset_changed()) {
+					editor_settings->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
+				}
+			}
+			if (editor_settings->check_changed_settings_in_group("editors/3d/navigation/navigation_scheme")) {
+				update_navigation_preset();
 			}
 		} break;
 

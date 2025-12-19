@@ -49,6 +49,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/project_manager/engine_update_label.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/translations/editor_translation.h"
 #include "main/main.h"
@@ -72,13 +73,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	bool changed = _set_only(p_name, p_value);
 	if (changed && initialized) {
 		changed_settings.insert(p_name);
-		if (p_name == SNAME("text_editor/external/exec_path")) {
-			const StringName exec_args_name = "text_editor/external/exec_flags";
-			const String exec_args_value = _guess_exec_args_for_extenal_editor(p_value);
-			if (!exec_args_value.is_empty() && _set_only(exec_args_name, exec_args_value)) {
-				changed_settings.insert(exec_args_name);
-			}
-		}
+		_update_linked_settings(p_name, p_value);
 		emit_signal(SNAME("settings_changed"));
 
 		if (p_name == SNAME("interface/editor/editor_language")) {
@@ -1158,6 +1153,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			}
 		}
 	}
+
+	preset_settings.append(Pair<String, PackedStringArray>("interface/theme/color_preset",
+			{ "interface/theme/accent_color",
+					"interface/theme/base_color",
+					"interface/theme/contrast",
+					"interface/theme/draw_extra_borders",
+					"interface/theme/icon_saturation",
+					"interface/theme/draw_relationship_lines",
+					"interface/theme/corner_radius" }));
+	preset_settings.append(Pair<String, PackedStringArray>("interface/theme/spacing_preset", { "interface/theme/base_spacing", "interface/theme/additional_spacing" }));
+	preset_settings.append(Pair<String, PackedStringArray>("text_editor/theme/color_theme", { "text_editor/theme/highlighting" }));
+	preset_settings.append(Pair<String, PackedStringArray>("editors/visual_editors/color_theme", { "editors/visual_editors/connection_colors", "editors/visual_editors/category_colors" }));
+	preset_settings.append(Pair<String, PackedStringArray>("editors/3d/navigation/navigation_scheme", { "editors/3d/navigation/orbit_mouse_button", "editors/3d/navigation/pan_mouse_button", "editors/3d/navigation/zoom_mouse_button", "editors/3d/navigation/emulate_3_button_mouse" }));
 }
 
 void EditorSettings::_load_default_visual_shader_editor_theme() {
@@ -1212,6 +1220,29 @@ String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path)
 	}
 
 	return new_exec_flags;
+}
+
+void EditorSettings::_update_linked_settings(const StringName &p_name, const Variant &p_value) {
+	const String &name_string = p_name;
+	if (p_name == SNAME("text_editor/external/exec_path")) {
+		const StringName exec_args_name = "text_editor/external/exec_flags";
+		const String exec_args_value = _guess_exec_args_for_extenal_editor(p_value);
+		if (!exec_args_value.is_empty() && _set_only(exec_args_name, exec_args_value)) {
+			changed_settings.insert(exec_args_name);
+		}
+	}
+
+	// Set theme presets to Custom when controlled settings change.
+	for (const Pair<String, PackedStringArray> &pair : preset_settings) {
+		for (const String &setting : pair.second) {
+			if (name_string.begins_with(setting)) {
+				if (_set_only(pair.first, get_preset_custom_value(pair.first))) {
+					changed_settings.insert(p_name);
+				}
+				return;
+			}
+		}
+	}
 }
 
 const String EditorSettings::_get_project_metadata_path() const {
@@ -1502,7 +1533,9 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 	props[p_setting].initial = p_value;
 	props[p_setting].has_default_value = true;
 	if (p_update_current) {
-		set(p_setting, p_value);
+		if (_set_only(p_setting, p_value) && initialized) {
+			changed_settings.insert(p_setting);
+		}
 	}
 }
 
@@ -1724,6 +1757,18 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 		}
 	}
 	FileDialog::set_recent_list(recent_dirs);
+}
+
+Vector<Pair<String, PackedStringArray>> EditorSettings::get_preset_settings() const {
+	return preset_settings;
+}
+
+Variant EditorSettings::get_preset_custom_value(const String &p_property_name) const {
+	if (p_property_name == "editors/3d/navigation/navigation_scheme") {
+		return (int)Node3DEditorViewport::NAVIGATION_CUSTOM;
+	} else {
+		return "Custom";
+	}
 }
 
 HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
