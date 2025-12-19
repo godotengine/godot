@@ -1161,6 +1161,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		albedo_images[i]->save_png("res://0_albedo_" + itos(i) + ".png");
 		emission_images[i]->save_png("res://0_emission_" + itos(i) + ".png");
 	}
+	if (area_light_atlas.mipmap_count > 1) {
+		int64_t mip0size = 4 * area_light_atlas.size.width * area_light_atlas.size.height;
+		int64_t start = 0;
+		int64_t end = mip0size;
+		for (int m = 0; m < area_light_atlas.mipmap_count; m++) {
+			Ref<Image> img = Image::create_from_data(area_light_atlas.size.width / pow(2, m), area_light_atlas.size.height / pow(2, m), false, Image::FORMAT_RGBA8, area_light_atlas.atlas_data.slice(start, end));
+			img->save_png("res://0_area_light_atlas_m" + itos(m) + ".png");
+			start += mip0size / pow(4, m);
+			end += mip0size / pow(4, m + 1);
+		}
+	}
 #endif
 
 	// Attempt to create a local device by requesting it from rendering server first.
