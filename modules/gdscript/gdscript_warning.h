@@ -157,6 +157,7 @@ public:
 
 	Code code = WARNING_MAX;
 	int start_line = -1, end_line = -1;
+	int start_column = -1, end_column = -1;
 	Vector<String> symbols;
 
 	String get_name() const;
