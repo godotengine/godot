@@ -99,6 +99,22 @@ bool RenderingContextDriver::window_get_hdr_output_enabled(DisplayServer::Window
 	}
 }
 
+void RenderingContextDriver::window_set_hdr_enforce_gamma(DisplayServer::WindowID p_window, bool p_enabled) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		surface_set_hdr_enforce_gamma(surface, p_enabled);
+	}
+}
+
+bool RenderingContextDriver::window_get_hdr_enforce_gamma(DisplayServer::WindowID p_window) const {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		return surface_get_hdr_enforce_gamma(surface);
+	} else {
+		return false;
+	}
+}
+
 void RenderingContextDriver::window_set_hdr_output_reference_luminance(DisplayServer::WindowID p_window, float p_reference_luminance) {
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {

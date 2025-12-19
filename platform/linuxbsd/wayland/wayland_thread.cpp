@@ -2546,6 +2546,10 @@ void WaylandThread::_wp_color_manager_on_done(void *data, struct wp_color_manage
 }
 
 void WaylandThread::_wp_color_management_surface_feedback_on_preferred_changed(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity) {
+	_wp_color_management_surface_feedback_on_preferred_changed2(data, wp_color_management_surface_feedback_v1, 0, identity);
+}
+
+void WaylandThread::_wp_color_management_surface_feedback_on_preferred_changed2(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity_hi, uint32_t identity_lo) {
 	struct wp_image_description_v1 *image_description = wp_color_management_surface_feedback_v1_get_preferred_parametric(wp_color_management_surface_feedback_v1);
 
 	wp_image_description_v1_add_listener(image_description, &wp_image_description_listener, data);
@@ -2556,6 +2560,10 @@ void WaylandThread::_wp_image_description_on_failed(void *data, struct wp_image_
 }
 
 void WaylandThread::_wp_image_description_on_ready(void *data, struct wp_image_description_v1 *image_descriptor, uint32_t identity) {
+	_wp_image_description_on_ready2(data, image_descriptor, 0, identity);
+}
+
+void WaylandThread::_wp_image_description_on_ready2(void *data, struct wp_image_description_v1 *image_descriptor, uint32_t identity_hi, uint32_t identity_lo) {
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
@@ -4646,11 +4654,6 @@ void WaylandThread::window_set_color_profile(DisplayServer::WindowID p_window_id
 		return;
 	}
 
-	if (p_profile.named_transfer_function == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22) {
-		wp_color_management_surface_v1_unset_image_description(ws.wp_color_management_surface);
-		return;
-	}
-
 	ColorManagementState *cms = wp_color_manager_get_state(registry.wp_color_manager);
 
 	struct wp_image_description_creator_params_v1 *builder = wp_color_manager_v1_create_parametric_creator(registry.wp_color_manager);
@@ -4658,8 +4661,12 @@ void WaylandThread::window_set_color_profile(DisplayServer::WindowID p_window_id
 	wp_image_description_creator_params_v1_set_tf_named(builder, p_profile.named_transfer_function);
 
 	if ((cms->supported_render_feature & WP_COLOR_MANAGER_V1_FEATURE_SET_LUMINANCES) > 0) {
-		uint32_t min_luminance = static_cast<uint32_t>(p_profile.target_min_luminance * 10000);
-		wp_image_description_creator_params_v1_set_luminances(builder, min_luminance, p_profile.target_max_luminance, p_profile.reference_luminance);
+		if (p_profile.named_transfer_function == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR) {
+			uint32_t min_luminance = static_cast<uint32_t>(p_profile.target_min_luminance * 10000);
+			wp_image_description_creator_params_v1_set_luminances(builder, min_luminance, p_profile.target_max_luminance, p_profile.reference_luminance);
+		} else {
+			wp_image_description_creator_params_v1_set_luminances(builder, 0.05, 80, 80);
+		}
 	}
 
 	struct wp_image_description_v1 *image_desc = wp_image_description_creator_params_v1_create(builder);
@@ -5317,6 +5324,15 @@ bool WaylandThread::supports_hdr() const {
 	// We require the compositor to support extended linear sRGB.
 	// sRGB primaries support is assumed.
 	return color_state->supported_transfer_function & (1 << WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR);
+}
+
+bool WaylandThread::supports_compound_2_4() const {
+	ColorManagementState *color_state = wp_color_manager_get_state(registry.wp_color_manager);
+	if (!color_state) {
+		return false;
+	}
+
+	return color_state->supported_transfer_function & (1 << WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_COMPOUND_POWER_2_4);
 }
 
 void WaylandThread::commit_surfaces() {

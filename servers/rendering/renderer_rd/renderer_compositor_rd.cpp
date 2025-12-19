@@ -49,6 +49,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 	ERR_FAIL_COND(draw_list == RD::INVALID_ID);
 
 	const RD::ColorSpace color_space = RD::get_singleton()->screen_get_color_space(p_screen);
+	const bool enforce_gamma = RD::get_singleton()->get_context_driver()->window_get_hdr_enforce_gamma(p_screen);
 	const float reference_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_reference_luminance(p_screen);
 	const float linear_luminance_scale = RD::get_singleton()->get_context_driver()->window_get_hdr_output_linear_luminance_scale(p_screen);
 	const float output_max_value = RD::get_singleton()->get_context_driver()->window_get_output_max_linear_value(p_screen);
@@ -105,6 +106,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		blit.push_constant.upscale = p_render_targets[i].lens_distortion.upscale;
 		blit.push_constant.aspect_ratio = p_render_targets[i].lens_distortion.aspect_ratio;
 		blit.push_constant.source_is_srgb = !texture_storage->render_target_is_using_hdr(p_render_targets[i].render_target);
+		blit.push_constant.enforce_gamma = enforce_gamma;
 		blit.push_constant.use_debanding = texture_storage->render_target_is_using_debanding(p_render_targets[i].render_target);
 		blit.push_constant.target_color_space = color_space;
 		blit.push_constant.reference_multiplier = reference_multiplier;

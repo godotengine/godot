@@ -140,6 +140,8 @@ public:
 	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
 	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) override;
 	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_enforce_gamma(SurfaceID p_surface, bool p_enabled) override;
+	virtual bool surface_get_hdr_enforce_gamma(SurfaceID p_surface) const override;
 	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) override;
 	virtual float surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const override;
 	virtual void surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) override;
@@ -164,6 +166,7 @@ public:
 		bool needs_resize = false;
 
 		bool hdr_output = false;
+		bool enforce_gamma = false;
 		// BT.2408 recommendation of 203 nits for HDR Reference White, rounded to 200
 		// to be a more pleasant player-facing value.
 		float hdr_reference_luminance = 200.0f;

@@ -53,6 +53,8 @@ public:
 	DisplayServer::VSyncMode window_get_vsync_mode(DisplayServer::WindowID p_window) const;
 	void window_set_hdr_output_enabled(DisplayServer::WindowID p_window, bool p_enabled);
 	bool window_get_hdr_output_enabled(DisplayServer::WindowID p_window) const;
+	void window_set_hdr_enforce_gamma(DisplayServer::WindowID p_window, bool p_enabled);
+	bool window_get_hdr_enforce_gamma(DisplayServer::WindowID p_window) const;
 	void window_set_hdr_output_reference_luminance(DisplayServer::WindowID p_window, float p_reference_luminance);
 	float window_get_hdr_output_reference_luminance(DisplayServer::WindowID p_window) const;
 	void window_set_hdr_output_max_luminance(DisplayServer::WindowID p_window, float p_max_luminance);
@@ -112,6 +114,8 @@ public:
 	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const = 0;
 	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) = 0;
 	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const = 0;
+	virtual void surface_set_hdr_enforce_gamma(SurfaceID p_surface, bool p_enabled) = 0;
+	virtual bool surface_get_hdr_enforce_gamma(SurfaceID p_surface) const = 0;
 	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) = 0;
 	virtual float surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const = 0;
 	virtual void surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) = 0;

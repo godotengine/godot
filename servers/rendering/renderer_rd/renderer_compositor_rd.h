@@ -82,12 +82,13 @@ protected:
 
 		uint32_t layer; // 4 - 68
 		uint32_t source_is_srgb; // 4 - 72
-		uint32_t use_debanding; // 4 - 76
-		uint32_t target_color_space; // 4 - 80
+		uint32_t enforce_gamma; // 4 - 76
+		uint32_t use_debanding; // 4 - 80
+		uint32_t target_color_space; // 4 - 84
 
-		float reference_multiplier; // 4 - 84
-		float output_max_value; // 4 - 88
-		uint32_t pad[2]; // 8 - 96 (padding to reach 16-byte boundary)
+		float reference_multiplier; // 4 - 88
+		float output_max_value; // 4 - 92
+		uint32_t pad[1]; // 8 - 96 (padding to reach 16-byte boundary)
 	};
 
 	struct BlitPipelines {

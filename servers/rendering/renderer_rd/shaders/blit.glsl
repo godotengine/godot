@@ -19,12 +19,13 @@ layout(push_constant, std430) uniform Pos {
 
 	uint layer;
 	bool source_is_srgb;
+	bool enforce_gamma;
 	bool use_debanding;
 	uint target_color_space;
 
 	float reference_multiplier;
 	float output_max_value;
-	uint pad[2];
+	uint pad[1];
 }
 data;
 
@@ -64,12 +65,13 @@ layout(push_constant, std430) uniform Pos {
 
 	uint layer;
 	bool source_is_srgb;
+	bool enforce_gamma;
 	bool use_debanding;
 	uint target_color_space;
 
 	float reference_multiplier;
 	float output_max_value;
-	uint pad[2];
+	uint pad[1];
 }
 data;
 
@@ -86,6 +88,10 @@ layout(binding = 0) uniform sampler2D src_rt;
 // Keep in sync with RenderingDeviceCommons::ColorSpace
 #define COLOR_SPACE_REC709_LINEAR 0
 #define COLOR_SPACE_REC709_NONLINEAR_SRGB 1
+
+vec3 gamma_to_linear(vec3 color) {
+	return pow(color.rgb, vec3(2.2f));
+}
 
 vec3 srgb_to_linear(vec3 color) {
 	return mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), lessThan(color.rgb, vec3(0.04045)));
@@ -154,6 +160,11 @@ void main() {
 		if (data.source_is_srgb == true) {
 			// sRGB -> linear conversion
 			color.rgb = srgb_to_linear(color.rgb);
+		}
+
+		if (data.enforce_gamma) {
+			color.rgb = linear_to_srgb(color.rgb);
+			color.rgb = gamma_to_linear(color.rgb);
 		}
 
 		// Negative values may be interpreted as scRGB colors,

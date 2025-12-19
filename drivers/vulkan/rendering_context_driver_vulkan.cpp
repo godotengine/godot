@@ -1005,6 +1005,17 @@ bool RenderingContextDriverVulkan::surface_get_hdr_output_enabled(SurfaceID p_su
 	return surface->hdr_output;
 }
 
+void RenderingContextDriverVulkan::surface_set_hdr_enforce_gamma(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->enforce_gamma = p_enabled;
+	surface->needs_resize = true;
+}
+
+bool RenderingContextDriverVulkan::surface_get_hdr_enforce_gamma(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->enforce_gamma;
+}
+
 void RenderingContextDriverVulkan::surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) {
 	Surface *surface = (Surface *)(p_surface);
 	surface->hdr_reference_luminance = p_reference_luminance;

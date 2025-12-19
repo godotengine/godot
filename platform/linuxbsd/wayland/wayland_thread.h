@@ -765,9 +765,11 @@ private:
 	static void _wp_color_manager_on_done(void *data, struct wp_color_manager_v1 *wp_color_manager_v1);
 
 	static void _wp_color_management_surface_feedback_on_preferred_changed(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity);
+	static void _wp_color_management_surface_feedback_on_preferred_changed2(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity_hi, uint32_t identity_lo);
 
 	static void _wp_image_description_on_failed(void *data, struct wp_image_description_v1 *wp_image_description_v1, uint32_t cause, const char *msg);
 	static void _wp_image_description_on_ready(void *data, struct wp_image_description_v1 *wp_image_description_v1, uint32_t identity);
+	static void _wp_image_description_on_ready2(void *data, struct wp_image_description_v1 *wp_image_description_v1, uint32_t identity_hi, uint32_t identity_lo);
 
 	static void _wp_image_description_info_on_done(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1);
 	static void _wp_image_description_info_on_icc_file(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t icc, uint32_t icc_size);
@@ -959,11 +961,13 @@ private:
 
 	static constexpr struct wp_color_management_surface_feedback_v1_listener wp_color_management_surface_feedback_listener = {
 		.preferred_changed = _wp_color_management_surface_feedback_on_preferred_changed,
+		.preferred_changed2 = _wp_color_management_surface_feedback_on_preferred_changed2,
 	};
 
 	static constexpr struct wp_image_description_v1_listener wp_image_description_listener = {
 		.failed = _wp_image_description_on_failed,
 		.ready = _wp_image_description_on_ready,
+		.ready2 = _wp_image_description_on_ready2,
 	};
 
 	static constexpr struct wp_image_description_info_v1_listener wp_image_description_info_listener = {
@@ -1259,6 +1263,7 @@ public:
 	void primary_set_text(const String &p_text);
 
 	bool supports_hdr() const;
+	bool supports_compound_2_4() const;
 
 	void commit_surfaces();
 
