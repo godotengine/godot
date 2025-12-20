@@ -83,6 +83,7 @@ func _init():
 	Ref<RefCounted> ref_counted = memnew(RefCounted);
 	ref_counted->set_script(gdscript);
 	CHECK_MESSAGE(int(ref_counted->get_meta("result")) == 42, "The script should assign object metadata successfully.");
+	GDScriptLanguage::get_singleton()->finish();
 }
 
 TEST_CASE("[Modules][GDScript] Loading keeps ResourceCache and GDScriptCache in sync") {
