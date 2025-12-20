@@ -5969,7 +5969,7 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
 
-	RDD::BufferID src_buffer = driver->buffer_create(p_nal_unit.size() + 4, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
+	RDD::BufferID src_buffer = driver->buffer_create(p_nal_unit.size() + 4, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
 	uint8_t *write_ptr = driver->buffer_map(src_buffer);
 
 	uint8_t start_code[4] = { 0, 0, 0, 1 };
