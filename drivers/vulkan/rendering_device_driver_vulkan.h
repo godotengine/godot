@@ -721,6 +721,7 @@ public:
 		Vector<TextureInfo *> dpb_views;
 
 		Vector<void *> std_reference_infos;
+		uint64_t active_reference_pictures;
 	};
 
 	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);

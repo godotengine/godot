@@ -72,7 +72,12 @@ private:
 	Vector<RID> dst_yuv_pool;
 	Vector<RID> dst_rgba_pool;
 
-	size_t counter;
+	size_t image_index = 0;
+	size_t cluster_index = 0;
+	size_t block_index = 0;
+	double block_position = 0.0;
+	double playback_position = 0.0;
+	double block_duration = 0.0;
 	Ref<ImageTexture> image_texture;
 
 	bool playing = false;

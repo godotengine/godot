@@ -6821,6 +6821,9 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	video_session_info->dpb_views = dpb_textures;
 
 	video_session_info->std_reference_infos.reserve(session_info.maxDpbSlots);
+	for (size_t i = 0; i < session_info.maxDpbSlots; i++) {
+		video_session_info->std_reference_infos.push_back(nullptr);
+	}
 
 	return RDD::VideoSessionID(video_session_info);
 }
@@ -7215,43 +7218,19 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 
 	VkExtent2D extent = video_session_info->vk_session_create_info.maxCodedExtent;
 
-	// Rebuild previous references
 	TightLocalVector<VkVideoReferenceSlotInfoKHR> reference_slot_infos = {};
 	TightLocalVector<VkVideoPictureResourceInfoKHR> reference_slot_pictures = {};
 	TightLocalVector<VkVideoDecodeH264DpbSlotInfoKHR> h264_dpb_slots = {};
 
-	reference_slot_infos.resize(video_session_info->std_reference_infos.size() + 1);
-	reference_slot_pictures.resize(video_session_info->std_reference_infos.size() + 1);
-	h264_dpb_slots.resize(video_session_info->std_reference_infos.size() + 1);
+	reference_slot_infos.resize(video_session_info->dpb_views.size());
+	reference_slot_pictures.resize(video_session_info->dpb_views.size());
+	h264_dpb_slots.resize(video_session_info->dpb_views.size());
 
-	for (uint32_t i = 0; i < video_session_info->std_reference_infos.size(); i++) {
-		VkVideoReferenceSlotInfoKHR &reference_slot_info = reference_slot_infos[i];
-		VkVideoPictureResourceInfoKHR &reference_slot_picture = reference_slot_pictures[i];
-		VkVideoDecodeH264DpbSlotInfoKHR &h264_dpb_slot = h264_dpb_slots[i];
-
-		h264_dpb_slot.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
-		h264_dpb_slot.pNext = nullptr;
-		h264_dpb_slot.pStdReferenceInfo = (StdVideoDecodeH264ReferenceInfo *)video_session_info->std_reference_infos[i];
-
-		reference_slot_picture.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
-		reference_slot_picture.pNext = nullptr;
-		reference_slot_picture.codedOffset.x = 0;
-		reference_slot_picture.codedOffset.y = 0;
-		reference_slot_picture.codedExtent = extent;
-		reference_slot_picture.baseArrayLayer = 0;
-		reference_slot_picture.imageViewBinding = video_session_info->dpb_views[i]->vk_view;
-
-		reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
-		reference_slot_info.pNext = &h264_dpb_slot;
-		reference_slot_info.slotIndex = i;
-		reference_slot_info.pPictureResource = &reference_slot_picture;
-	}
-
-	// Insert next reference
-	uint64_t dpb_index = video_session_info->current_dpb_index;
-	VkVideoReferenceSlotInfoKHR &reference_slot_info = reference_slot_infos[dpb_index];
-	VkVideoPictureResourceInfoKHR &reference_slot_picture = reference_slot_pictures[dpb_index];
-	VkVideoDecodeH264DpbSlotInfoKHR &h264_dpb_slot = h264_dpb_slots[dpb_index];
+	// Insert target DPB slot + video reference.
+	size_t target_dpb_slot = video_session_info->current_dpb_index;
+	VkVideoReferenceSlotInfoKHR &reference_slot_info = reference_slot_infos[0];
+	VkVideoPictureResourceInfoKHR &reference_slot_picture = reference_slot_pictures[0];
+	VkVideoDecodeH264DpbSlotInfoKHR &h264_dpb_slot = h264_dpb_slots[0];
 	StdVideoDecodeH264ReferenceInfo *h264_reference_slot = (StdVideoDecodeH264ReferenceInfo *)malloc(sizeof(StdVideoDecodeH264ReferenceInfo));
 
 	h264_reference_slot->flags.bottom_field_flag = 0;
@@ -7272,12 +7251,47 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	reference_slot_picture.codedOffset.y = 0;
 	reference_slot_picture.codedExtent = extent;
 	reference_slot_picture.baseArrayLayer = 0;
-	reference_slot_picture.imageViewBinding = video_session_info->dpb_views[dpb_index]->vk_view;
+	reference_slot_picture.imageViewBinding = video_session_info->dpb_views[target_dpb_slot]->vk_view;
 
 	reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 	reference_slot_info.pNext = &h264_dpb_slot;
 	reference_slot_info.slotIndex = -1;
 	reference_slot_info.pPictureResource = &reference_slot_picture;
+
+	// Rebuild previous references
+	for (size_t i = 0; i < video_session_info->active_reference_pictures; i++) {
+		VkVideoReferenceSlotInfoKHR &reference_slot_info = reference_slot_infos[i + 1];
+		VkVideoPictureResourceInfoKHR &reference_slot_picture = reference_slot_pictures[i + 1];
+		VkVideoDecodeH264DpbSlotInfoKHR &h264_dpb_slot = h264_dpb_slots[i + 1];
+
+		size_t index = (target_dpb_slot + 1 + i) % (video_session_info->active_reference_pictures + 1);
+		if (video_session_info->std_reference_infos[index] != nullptr) {
+			// Insert existing DPB slot + video reference.
+			h264_dpb_slot.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
+			h264_dpb_slot.pNext = nullptr;
+			h264_dpb_slot.pStdReferenceInfo = (StdVideoDecodeH264ReferenceInfo *)video_session_info->std_reference_infos[index];
+
+			reference_slot_picture.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+			reference_slot_picture.pNext = nullptr;
+			reference_slot_picture.codedOffset.x = 0;
+			reference_slot_picture.codedOffset.y = 0;
+			reference_slot_picture.codedExtent = extent;
+			reference_slot_picture.baseArrayLayer = 0;
+			reference_slot_picture.imageViewBinding = video_session_info->dpb_views[index]->vk_view;
+
+			reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
+			reference_slot_info.pNext = &h264_dpb_slot;
+			reference_slot_info.slotIndex = index;
+			reference_slot_info.pPictureResource = &reference_slot_picture;
+		} else {
+			// Insert invalid slot (for padding)
+			print_line("Adding padding");
+			reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
+			reference_slot_info.pNext = nullptr;
+			reference_slot_info.slotIndex = -1;
+			reference_slot_info.pPictureResource = nullptr;
+		}
+	}
 
 	VkVideoBeginCodingInfoKHR begin_cmd = {};
 	begin_cmd.sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR;
@@ -7285,7 +7299,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	begin_cmd.flags = 0;
 	begin_cmd.videoSession = video_session_info->vk_session;
 	begin_cmd.videoSessionParameters = video_session_info->vk_session_parameters;
-	begin_cmd.referenceSlotCount = reference_slot_infos.size();
+	begin_cmd.referenceSlotCount = video_session_info->active_reference_pictures + 1;
 	begin_cmd.pReferenceSlots = reference_slot_infos.ptr();
 
 	vkCmdBeginVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &begin_cmd);
@@ -7341,15 +7355,9 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	VkVideoReferenceSlotInfoKHR target_reference_slot_info = {};
 	target_reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 	target_reference_slot_info.pNext = &h264_dpb_slot;
-	target_reference_slot_info.slotIndex = video_session_info->current_dpb_index;
+	target_reference_slot_info.slotIndex = target_dpb_slot;
 	target_reference_slot_info.pPictureResource = &reference_slot_picture;
 
-	if (p_std_h264_info.is_reference) {
-		video_session_info->std_reference_infos.push_back(h264_reference_slot);
-		video_session_info->current_dpb_index++;
-	}
-
-	// TODO reference slots
 	VkVideoDecodeInfoKHR decode_info = {};
 	decode_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
 	decode_info.pNext = &h264_picture_info;
@@ -7359,10 +7367,23 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	decode_info.srcBufferRange = src_buffer_info->size;
 	decode_info.dstPictureResource = picture_info;
 	decode_info.pSetupReferenceSlot = &target_reference_slot_info;
-	decode_info.referenceSlotCount = reference_slot_infos.size() - 1;
-	decode_info.pReferenceSlots = reference_slot_infos.ptr();
+	decode_info.referenceSlotCount = video_session_info->active_reference_pictures;
+	decode_info.pReferenceSlots = reference_slot_infos.ptr() + 1;
 
 	vkCmdDecodeVideoKHR(cmd_buffer_info->vk_command_buffer, &decode_info);
+
+	if (p_std_h264_info.is_reference) {
+		if (video_session_info->std_reference_infos[target_dpb_slot] != nullptr) {
+			void *std_reference = video_session_info->std_reference_infos[target_dpb_slot];
+			free(std_reference);
+		} else {
+			video_session_info->active_reference_pictures += 1;
+			video_session_info->active_reference_pictures = MIN(video_session_info->active_reference_pictures, 16);
+		}
+
+		video_session_info->std_reference_infos.set(target_dpb_slot, h264_reference_slot);
+		video_session_info->current_dpb_index = (target_dpb_slot + 1) % video_session_info->dpb_views.size();
+	}
 
 	// End video coding
 	VkVideoEndCodingInfoKHR end_coding;
