@@ -846,6 +846,7 @@ public:
 
 	enum StorageBufferUsage {
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = (1 << 0),
+		STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC = (1 << 1),
 	};
 
 	RID vertex_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<BufferCreationBits> p_creation_bits = 0);
@@ -1474,9 +1475,6 @@ private:
 	RDD::CommandBufferID decode_buffer;
 
 public:
-	void video_profile_get_capabilities(const VideoProfile &p_profile);
-	void video_profile_get_format_properties(const VideoProfile &p_profile);
-
 	RID video_session_create(const VideoProfile &p_profile, uint32_t p_width, uint32_t p_height);
 	void video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets);
 	void video_session_add_av1_parameters(RID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header);

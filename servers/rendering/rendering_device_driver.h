@@ -188,7 +188,6 @@ public:
 	 * @return the buffer.
 	 */
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) = 0;
-	virtual BufferID buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) = 0;
 	// Only for a buffer with BUFFER_USAGE_TEXEL_BIT.
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) = 0;
 	virtual void buffer_free(BufferID p_buffer) = 0;
@@ -781,9 +780,6 @@ public:
 	/**** VIDEO CODING ****/
 	/**********************/
 	DEFINE_ID(VideoSession);
-
-	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) = 0;
-	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) = 0;
 
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) = 0;
 	virtual void video_session_add_query_pool(VideoSessionID p_video_session, QueryPoolID p_query_pool) = 0;

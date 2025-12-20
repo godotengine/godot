@@ -650,9 +650,6 @@ void VideoStreamH264::set_rendering_device(RenderingDevice *p_local_device) {
 }
 
 RID VideoStreamH264::create_video_session(uint32_t p_width, uint32_t p_height) {
-	coding_device->video_profile_get_capabilities(video_profile);
-	coding_device->video_profile_get_format_properties(video_profile);
-
 	video_session = coding_device->video_session_create(video_profile, p_width, p_height);
 	coding_device->video_session_add_h264_parameters(video_session, sps_sets, pps_sets);
 	return video_session;

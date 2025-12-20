@@ -92,6 +92,25 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 		bool storage_input_output_16 = false;
 	};
 
+	// TODO: allow other formats/operations than decode H.264
+	struct VideoCapabilities {
+		// Video properties.
+		VkVideoCapabilityFlagsKHR video_capability_flags;
+		uint32_t min_bitstream_buffer_offset_alignment;
+		uint32_t min_bitstream_buffer_size_alignment;
+		VkExtent2D picture_access_granularity;
+		VkExtent2D min_coded_extent;
+		VkExtent2D max_coded_extent;
+		uint32_t max_dpb_slots;
+		uint32_t max_active_reference_pictures;
+		VkExtensionProperties std_header_version;
+		// Video Decode properties.
+		VkVideoDecodeFlagsKHR video_decode_capability_flags;
+		// H.264 Decode properties.
+		StdVideoH264LevelIdc max_level_idc;
+		VkOffset2D field_offset_granularity;
+	};
+
 	struct DeviceFunctions {
 		PFN_vkCreateSwapchainKHR CreateSwapchainKHR = nullptr;
 		PFN_vkDestroySwapchainKHR DestroySwapchainKHR = nullptr;
@@ -132,6 +151,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	FragmentDensityMapCapabilities fdm_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
+	VideoCapabilities video_capabilities;
 	RenderingShaderContainerFormatVulkan shader_container_format;
 	bool buffer_device_address_support = false;
 	bool vulkan_memory_model_support = false;
@@ -227,7 +247,6 @@ public:
 	};
 
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) override final;
-	virtual BufferID buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
@@ -725,9 +744,6 @@ public:
 	};
 
 	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);
-
-	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) override final;
-	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) override final;
 
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) override final;
 	virtual void video_session_add_query_pool(VideoSessionID p_video_session, QueryPoolID p_query_pool) override final;

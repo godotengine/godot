@@ -919,6 +919,12 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 		_skip_id(id);
 	}
 
+	//TODO: error if there's no compatible audio/video tracks
+}
+
+void VideoStreamPlaybackMatroska::play() {
+	playing = true;
+
 	if (video_stream_encoding.is_null()) {
 		return;
 	}
@@ -975,14 +981,6 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	yuv_shader = local_device->shader_create_placeholder();
 	yuv_shader = local_device->shader_create_from_bytecode_with_samplers(yuv_bytecode, yuv_shader, uniforms);
 	yuv_pipeline = local_device->compute_pipeline_create(yuv_shader);
-}
-
-void VideoStreamPlaybackMatroska::play() {
-	playing = true;
-
-	if (video_stream_encoding.is_null()) {
-		return;
-	}
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
@@ -1059,8 +1057,7 @@ double VideoStreamPlaybackMatroska::get_length() const {
 }
 
 double VideoStreamPlaybackMatroska::get_playback_position() const {
-	// TODO
-	return 0.0;
+	return playback_position;
 }
 
 void VideoStreamPlaybackMatroska::seek(double p_time) {

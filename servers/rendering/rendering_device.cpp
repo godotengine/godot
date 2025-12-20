@@ -840,6 +840,15 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
 	}
+
+	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC)) {
+		//TODO: this seems a strange way to go about this
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
+		buffer.usage.clear_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
+		buffer.usage.clear_flag(RDD::BUFFER_USAGE_TRANSFER_TO_BIT);
+		buffer.usage.clear_flag(RDD::BUFFER_USAGE_STORAGE_BIT);
+	}
+
 	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
@@ -5836,12 +5845,6 @@ void RenderingDevice::compute_list_end() {
 	compute_list = ComputeList();
 }
 
-void RenderingDevice::video_profile_get_capabilities(const VideoProfile &p_profile) {
-}
-
-void RenderingDevice::video_profile_get_format_properties(const VideoProfile &p_profile) {
-}
-
 // TODO manage DPB directly from rendering device
 // TODO validate everything is alright
 RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_t p_width, uint32_t p_height) {
@@ -5962,14 +5965,11 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
 	ERR_FAIL_NULL(video_session);
 
-	uint64_t buffer_size = p_nal_unit.size() + 4;
-	buffer_size += 128 - (buffer_size % 128);
-
 	BitField<RDD::BufferUsageBits> buffer_usage = {};
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
 
-	RDD::BufferID src_buffer = driver->buffer_create_video_session(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, video_session->video_profile);
+	RDD::BufferID src_buffer = driver->buffer_create(p_nal_unit.size() + 4, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
 	uint8_t *write_ptr = driver->buffer_map(src_buffer);
 
 	uint8_t start_code[4] = { 0, 0, 0, 1 };
@@ -5982,7 +5982,7 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 
 	RDD::BufferBarrier bb = {};
 	bb.buffer = src_buffer;
-	bb.size = buffer_size;
+	bb.size = p_nal_unit.size() + 4;
 	bb.offset = 0;
 	bb.src_access = RDD::BARRIER_ACCESS_NONE;
 	bb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_READ;
@@ -6049,7 +6049,7 @@ void RenderingDevice::video_session_decode_av1(RID p_video_session, Span<uint8_t
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
 
-	RDD::BufferID src_buffer = driver->buffer_create_video_session(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, video_session->video_profile);
+	RDD::BufferID src_buffer = driver->buffer_create(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
 
 	uint8_t *write_ptr = driver->buffer_map(src_buffer);
 	memcpy(write_ptr, p_obu.begin(), p_obu.size());

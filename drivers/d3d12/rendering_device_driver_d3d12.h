@@ -285,7 +285,6 @@ private:
 
 public:
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) override final;
-	virtual BufferID buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
@@ -892,9 +891,6 @@ public:
 	/**********************/
 	/**** VIDEO CODING ****/
 	/**********************/
-	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) override final;
-	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) override final;
-
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) override final;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) override final;

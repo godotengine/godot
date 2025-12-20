@@ -876,6 +876,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		if (enabled_device_extension_names.has(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
 			pipeline_cache_control_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES;
 			pipeline_cache_control_features.pNext = next_features;
+			// TODO: this was disabled because of synchronization2
 			//next_features = &pipeline_cache_control_features;
 		}
 
@@ -1108,6 +1109,54 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		if (subgroup_capabilities.quad_operations_in_all_stages) {
 			print_verbose("  quad operations in all stages");
 		}
+	}
+
+	if (enabled_device_extension_names.has(VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME)) {
+		// Use a common profile to get H.264 properties.
+		// TODO: is there any value in configuring this profile?
+		VkVideoProfileInfoKHR standard_profile = {};
+		standard_profile.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR;
+		standard_profile.videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR;
+		standard_profile.chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR;
+		standard_profile.chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+		standard_profile.lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+
+		VkVideoDecodeH264ProfileInfoKHR h264_profile = {};
+		h264_profile.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR;
+		h264_profile.stdProfileIdc = STD_VIDEO_H264_PROFILE_IDC_HIGH;
+		h264_profile.pictureLayout = VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_PROGRESSIVE_KHR;
+		standard_profile.pNext = &h264_profile;
+
+		VkVideoCapabilitiesKHR vk_video_capabilities = {};
+		vk_video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
+
+		VkVideoDecodeCapabilitiesKHR vk_decode_capabilities = {};
+		vk_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+		vk_video_capabilities.pNext = &vk_decode_capabilities;
+
+		VkVideoDecodeH264CapabilitiesKHR vk_h264_capabilities = {};
+		vk_h264_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
+		vk_decode_capabilities.pNext = &vk_h264_capabilities;
+
+		vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &standard_profile, &vk_video_capabilities);
+
+		// Video capabilities.
+		video_capabilities.video_capability_flags = vk_video_capabilities.flags;
+		video_capabilities.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
+		video_capabilities.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
+		video_capabilities.picture_access_granularity = vk_video_capabilities.pictureAccessGranularity;
+		video_capabilities.min_coded_extent = vk_video_capabilities.minCodedExtent;
+		video_capabilities.max_coded_extent = vk_video_capabilities.maxCodedExtent;
+		video_capabilities.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
+		video_capabilities.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
+		video_capabilities.std_header_version = vk_video_capabilities.stdHeaderVersion;
+
+		// Video Decode capabilities.
+		video_capabilities.video_decode_capability_flags = vk_decode_capabilities.flags;
+
+		// H.264 Decode capabilities.
+		video_capabilities.max_level_idc = vk_h264_capabilities.maxLevelIdc;
+		video_capabilities.field_offset_granularity = vk_h264_capabilities.fieldOffsetGranularity;
 	}
 
 	return OK;
@@ -1775,6 +1824,10 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 		// This shouldn't be a problem since it's often <= 16 bytes. But do it just in case.
 		alignment = MAX(alignment, physical_device_properties.limits.minStorageBufferOffsetAlignment);
 	}
+	if (p_usage.has_flag(BUFFER_USAGE_VIDEO_DECODE_SRC_BIT)) {
+		// Video alignments are typically quite large (128 bytes).
+		alignment = MAX(alignment, video_capabilities.min_bitstream_buffer_size_alignment);
+	}
 	// Align the size. This is specially important for BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT buffers.
 	// For the rest, it should work thanks to VMA taking care of the details. But still align just in case.
 	p_size = STEPIFY(p_size, alignment);
@@ -1788,6 +1841,11 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	create_info.size = p_size;
 	create_info.usage = p_usage & ~BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT;
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (p_usage.has_flag(BUFFER_USAGE_VIDEO_DECODE_SRC_BIT)) {
+		// TODO: determine if there are any performance benefits from using an explicit profile
+		create_info.flags |= VK_BUFFER_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR;
+	}
 
 	VmaMemoryUsage vma_usage = VMA_MEMORY_USAGE_UNKNOWN;
 	uint32_t vma_flags_to_remove = 0;
@@ -1869,90 +1927,6 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	buf_info->allocation.handle = allocation;
 	buf_info->allocation.size = alloc_info.size;
 	buf_info->size = original_size;
-
-	return BufferID(buf_info);
-}
-
-RDD::BufferID RenderingDeviceDriverVulkan::buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) {
-	VkBufferCreateInfo create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	create_info.size = p_size;
-	create_info.usage = p_usage;
-	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	VmaMemoryUsage vma_usage = VMA_MEMORY_USAGE_UNKNOWN;
-	uint32_t vma_flags_to_remove = 0;
-
-	VmaAllocationCreateInfo alloc_create_info = {};
-	switch (p_allocation_type) {
-		case MEMORY_ALLOCATION_TYPE_CPU: {
-			bool is_src = p_usage.has_flag(BUFFER_USAGE_TRANSFER_FROM_BIT);
-			bool is_dst = p_usage.has_flag(BUFFER_USAGE_TRANSFER_TO_BIT);
-			if (is_src && !is_dst) {
-				// Looks like a staging buffer: CPU maps, writes sequentially, then GPU copies to VRAM.
-				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
-				alloc_create_info.preferredFlags |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-				vma_flags_to_remove |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-			}
-			if (is_dst && !is_src) {
-				// Looks like a readback buffer: GPU copies from VRAM, then CPU maps and reads.
-				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
-				alloc_create_info.preferredFlags |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
-				vma_flags_to_remove |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
-			}
-			vma_usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
-			alloc_create_info.requiredFlags = (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		} break;
-		case MEMORY_ALLOCATION_TYPE_GPU: {
-			vma_usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
-			if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
-				// We must set it right now or else vmaFindMemoryTypeIndexForBufferInfo will use wrong parameters.
-				alloc_create_info.usage = vma_usage;
-			}
-			alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-			if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
-				uint32_t mem_type_index = 0;
-				vmaFindMemoryTypeIndexForBufferInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
-				alloc_create_info.pool = _find_or_create_small_allocs_pool(mem_type_index);
-			}
-		} break;
-	}
-
-	VkVideoProfileInfoKHR video_profile;
-	vk_video_profile_from_state(p_profile, &video_profile);
-
-	VkVideoProfileListInfoKHR video_profile_list;
-	video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
-	video_profile_list.pNext = nullptr;
-	video_profile_list.profileCount = 1;
-	video_profile_list.pProfiles = &video_profile;
-
-	create_info.pNext = &video_profile_list;
-
-	VkBuffer vk_buffer = VK_NULL_HANDLE;
-	VmaAllocation allocation = nullptr;
-	VmaAllocationInfo alloc_info = {};
-
-	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
-		alloc_create_info.preferredFlags &= ~vma_flags_to_remove;
-		alloc_create_info.usage = vma_usage;
-		VkResult err = vmaCreateBuffer(allocator, &create_info, &alloc_create_info, &vk_buffer, &allocation, &alloc_info);
-		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
-	} else {
-		VkResult err = vkCreateBuffer(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER), &vk_buffer);
-		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
-		err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
-		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
-		err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, nullptr);
-		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
-	}
-
-	// Bookkeep.
-	BufferInfo *buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
-	buf_info->vk_buffer = vk_buffer;
-	buf_info->allocation.handle = allocation;
-	buf_info->allocation.size = alloc_info.size;
-	buf_info->size = p_size;
 
 	return BufferID(buf_info);
 }
@@ -6606,97 +6580,6 @@ Error RenderingDeviceDriverVulkan::vk_video_profile_from_state(const VideoProfil
 	return OK;
 }
 
-void RenderingDeviceDriverVulkan::video_profile_get_capabilities(const VideoProfile &p_profile) {
-	VkVideoProfileInfoKHR video_profile = {};
-	vk_video_profile_from_state(p_profile, &video_profile);
-
-	VkVideoCapabilitiesKHR video_capabilities = {};
-	video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
-
-	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
-		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
-		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
-		video_capabilities.pNext = &decode_capabilities;
-
-		VkVideoDecodeH264CapabilitiesKHR h264_decode_capabilities = {};
-		h264_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
-		decode_capabilities.pNext = &h264_decode_capabilities;
-	} else if (p_profile.operation == VIDEO_OPERATION_DECODE_AV1) {
-		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
-		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
-		video_capabilities.pNext = &decode_capabilities;
-
-		VkVideoDecodeAV1CapabilitiesKHR av1_decode_capabilities = {};
-		av1_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
-		decode_capabilities.pNext = &av1_decode_capabilities;
-	}
-
-	//TODO expose capabilities
-	VkResult result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &video_profile, &video_capabilities);
-	if (result != VK_SUCCESS) {
-		ERR_FAIL_MSG("Video profile is not supported");
-	}
-}
-
-void RenderingDeviceDriverVulkan::video_profile_get_format_properties(const VideoProfile &p_profile) {
-	VkVideoProfileInfoKHR video_profile = {};
-	vk_video_profile_from_state(p_profile, &video_profile);
-
-	VkVideoProfileListInfoKHR video_profile_list;
-	video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
-	video_profile_list.pNext = nullptr;
-	video_profile_list.profileCount = 1;
-	video_profile_list.pProfiles = &video_profile;
-
-	//TODO: expose src format capabilities
-	VkPhysicalDeviceVideoFormatInfoKHR video_src_format_info;
-	video_src_format_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR;
-	video_src_format_info.pNext = &video_profile_list;
-	video_src_format_info.imageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR;
-
-	uint32_t video_src_formats_count = 0;
-	VkResult err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_src_format_info, &video_src_formats_count, nullptr);
-	if (err != VK_SUCCESS) {
-		ERR_FAIL_MSG("Video profile is not supported");
-	}
-
-	TightLocalVector<VkVideoFormatPropertiesKHR> video_src_formats;
-	video_src_formats.resize(video_src_formats_count);
-	for (uint8_t i = 0; i < video_src_formats_count; i++) {
-		video_src_formats[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
-		video_src_formats[i].pNext = nullptr;
-	}
-
-	err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_src_format_info, &video_src_formats_count, video_src_formats.ptr());
-	if (err != VK_SUCCESS) {
-		ERR_FAIL_MSG("Video profile is not supported");
-	}
-
-	//TODO: expose dst format capabilities
-	VkPhysicalDeviceVideoFormatInfoKHR video_dst_format_info;
-	video_dst_format_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR;
-	video_dst_format_info.pNext = &video_profile_list;
-	video_dst_format_info.imageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
-
-	uint32_t video_dst_formats_count = 0;
-	err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_dst_format_info, &video_dst_formats_count, nullptr);
-	if (err != VK_SUCCESS) {
-		ERR_FAIL_MSG("Video profile is not supported");
-	}
-
-	TightLocalVector<VkVideoFormatPropertiesKHR> video_dst_formats;
-	video_dst_formats.resize(video_dst_formats_count);
-	for (uint8_t i = 0; i < video_dst_formats_count; i++) {
-		video_dst_formats[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
-		video_dst_formats[i].pNext = nullptr;
-	}
-
-	err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_dst_format_info, &video_dst_formats_count, video_dst_formats.ptr());
-	if (err != VK_SUCCESS) {
-		ERR_FAIL_MSG("Video profile is not supported");
-	}
-}
-
 RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) {
 	VkVideoProfileInfoKHR video_profile = {};
 	vk_video_profile_from_state(p_profile, &video_profile);
@@ -6710,33 +6593,6 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	CommandQueueFamilyID command_queue_family = command_queue_family_get(COMMAND_QUEUE_FAMILY_DECODE_BIT);
 	uint32_t command_queue_family_index = command_queue_family.id - 1;
 
-	// TODO use video_profile_get_capabilities
-	VkVideoCapabilitiesKHR video_capabilities = {};
-	video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
-
-	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
-		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
-		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
-		video_capabilities.pNext = &decode_capabilities;
-
-		VkVideoDecodeH264CapabilitiesKHR h264_decode_capabilities = {};
-		h264_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
-		decode_capabilities.pNext = &h264_decode_capabilities;
-	} else if (p_profile.operation == VIDEO_OPERATION_DECODE_AV1) {
-		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
-		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
-		video_capabilities.pNext = &decode_capabilities;
-
-		VkVideoDecodeAV1CapabilitiesKHR av1_decode_capabilities = {};
-		av1_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_CAPABILITIES_KHR;
-		decode_capabilities.pNext = &av1_decode_capabilities;
-	}
-
-	VkResult result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &video_profile, &video_capabilities);
-	if (result != VK_SUCCESS) {
-		ERR_FAIL_V_MSG(RDD::VideoSessionID(), "Video profile is not supported");
-	}
-
 	VkVideoSessionCreateInfoKHR session_info = {};
 	session_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR;
 	session_info.pNext = nullptr;
@@ -6749,10 +6605,10 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	session_info.referencePictureFormat = dpb_textures[0]->vk_create_info.format;
 	session_info.maxDpbSlots = dpb_textures.size();
 	session_info.maxActiveReferencePictures = dpb_textures.size() - 1;
-	session_info.pStdHeaderVersion = &video_capabilities.stdHeaderVersion;
+	session_info.pStdHeaderVersion = &video_capabilities.std_header_version;
 
 	VkVideoSessionKHR video_session;
-	result = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
+	VkResult result = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
 	if (result != VK_SUCCESS) {
 		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
 	}

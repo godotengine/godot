@@ -998,10 +998,6 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	return BufferID(buf_info);
 }
 
-RDD::BufferID RenderingDeviceDriverD3D12::buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) {
-	return RDD::BufferID();
-}
-
 bool RenderingDeviceDriverD3D12::buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
 	buf_info->texel_format = p_format;
@@ -5588,12 +5584,6 @@ void RenderingDeviceDriverD3D12::end_segment() {
 /**********************/
 /**** VIDEO CODING ****/
 /**********************/
-
-void RenderingDeviceDriverD3D12::video_profile_get_capabilities(const VideoProfile &p_profile) {
-}
-
-void RenderingDeviceDriverD3D12::video_profile_get_format_properties(const VideoProfile &p_profile) {
-}
 
 RDD::VideoSessionID RenderingDeviceDriverD3D12::video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) {
 	return RDD::VideoSessionID();

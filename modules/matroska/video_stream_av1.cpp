@@ -873,9 +873,6 @@ void VideoStreamAV1::set_rendering_device(RenderingDevice *p_local_device) {
 }
 
 RID VideoStreamAV1::create_video_session(uint32_t p_width, uint32_t p_height) {
-	local_device->video_profile_get_capabilities(video_profile);
-	local_device->video_profile_get_format_properties(video_profile);
-
 	video_session = local_device->video_session_create(video_profile, p_width, p_height);
 	local_device->video_session_add_av1_parameters(video_session, av1_sequence_header);
 	return video_session;
