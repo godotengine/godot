@@ -1,0 +1,9 @@
+{
+    strategy: "additive"
+    featureFilters: {
+        misc: include
+        normalization: include
+        uemoji: include
+        uprops: include
+    }
+}

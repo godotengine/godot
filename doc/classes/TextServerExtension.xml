@@ -1092,6 +1092,7 @@
 		</method>
 		<method name="_get_support_data" qualifiers="virtual const">
 			<return type="PackedByteArray" />
+			<param index="0" name="config" type="String" />
 			<description>
 				Returns default TextServer database (e.g. ICU break iterators and dictionaries).
 			</description>
@@ -1206,6 +1207,7 @@
 		<method name="_save_support_data" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="filename" type="String" />
+			<param index="1" name="config" type="String" />
 			<description>
 				Saves optional TextServer database (e.g. ICU break iterators and dictionaries) to the file.
 			</description>

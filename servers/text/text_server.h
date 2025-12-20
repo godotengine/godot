@@ -238,6 +238,8 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	bool _save_support_data_bind_compat_XXXX(const String &p_filename) const;
+	PackedByteArray _get_support_data_bind_compat_XXXX() const;
 	void _font_draw_glyph_bind_compat_104872(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const;
 	void _font_draw_glyph_outline_bind_compat_104872(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const;
 	void _shaped_text_draw_bind_compat_104872(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
@@ -259,8 +261,8 @@ public:
 
 	virtual String get_support_data_filename() const = 0;
 	virtual String get_support_data_info() const = 0;
-	virtual bool save_support_data(const String &p_filename) const = 0;
-	virtual PackedByteArray get_support_data() const = 0;
+	virtual bool save_support_data(const String &p_filename, const String &p_config) const = 0;
+	virtual PackedByteArray get_support_data(const String &p_config) const = 0;
 	virtual bool is_locale_using_support_data(const String &p_locale) const { return false; }
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;

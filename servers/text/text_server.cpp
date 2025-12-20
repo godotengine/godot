@@ -203,8 +203,8 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_support_data_filename"), &TextServer::get_support_data_filename);
 	ClassDB::bind_method(D_METHOD("get_support_data_info"), &TextServer::get_support_data_info);
-	ClassDB::bind_method(D_METHOD("save_support_data", "filename"), &TextServer::save_support_data);
-	ClassDB::bind_method(D_METHOD("get_support_data"), &TextServer::get_support_data);
+	ClassDB::bind_method(D_METHOD("save_support_data", "filename", "config"), &TextServer::save_support_data, DEFVAL(String("full")));
+	ClassDB::bind_method(D_METHOD("get_support_data", "config"), &TextServer::get_support_data, DEFVAL(String("full")));
 	ClassDB::bind_method(D_METHOD("is_locale_using_support_data", "locale"), &TextServer::is_locale_using_support_data);
 
 	ClassDB::bind_method(D_METHOD("is_locale_right_to_left", "locale"), &TextServer::is_locale_right_to_left);
@@ -2386,7 +2386,7 @@ TextServer::TextServer() {
 	GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/theme/lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"), 1);
-	GLOBAL_DEF_BASIC("internationalization/locale/include_text_server_data", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "internationalization/locale/include_text_server_break_iterator_data", PROPERTY_HINT_ENUM, "Always,Auto,Never"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "internationalization/locale/line_breaking_strictness", PROPERTY_HINT_ENUM, "Auto,Loose,Normal,Strict"), 0);
 
 	_init_diacritics_map();

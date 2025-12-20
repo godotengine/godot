@@ -61,12 +61,16 @@ public:
 
 	virtual String get_support_data_filename() const override;
 	virtual String get_support_data_info() const override;
-	virtual bool save_support_data(const String &p_filename) const override;
-	virtual PackedByteArray get_support_data() const override;
+	virtual bool save_support_data(const String &p_filename, const String &p_config) const override;
+	virtual PackedByteArray get_support_data(const String &p_config) const override;
 	GDVIRTUAL0RC(String, _get_support_data_filename);
 	GDVIRTUAL0RC(String, _get_support_data_info);
-	GDVIRTUAL1RC(bool, _save_support_data, const String &);
-	GDVIRTUAL0RC(PackedByteArray, _get_support_data);
+	GDVIRTUAL2RC(bool, _save_support_data, const String &, const String &);
+	GDVIRTUAL1RC(PackedByteArray, _get_support_data, const String &);
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL1RC_COMPAT(_save_support_data_bind_compat_XXXX, bool, _save_support_data, const String &);
+	GDVIRTUAL0RC_COMPAT(_get_support_data_bind_compat_XXXX, PackedByteArray, _get_support_data);
+#endif
 	virtual bool is_locale_using_support_data(const String &p_locale) const override;
 	GDVIRTUAL1RC(bool, _is_locale_using_support_data, const String &);
 
