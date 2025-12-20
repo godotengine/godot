@@ -5898,8 +5898,11 @@ RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_
 	RDD::QueryPoolID query_pool = driver->video_query_pool_create(1, p_profile);
 	driver->video_session_add_query_pool(video_session.driver_id, query_pool);
 
-	RID rid = video_session_owner.make_rid(video_session);
-	return rid;
+	RID id = video_session_owner.make_rid(video_session);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
 }
 
 // TODO validate everything is alright
@@ -6729,6 +6732,9 @@ void RenderingDevice::set_resource_name(RID p_id, const String &p_name) {
 	} else if (compute_pipeline_owner.owns(p_id)) {
 		ComputePipeline *pipeline = compute_pipeline_owner.get_or_null(p_id);
 		driver->set_object_name(RDD::OBJECT_TYPE_PIPELINE, pipeline->driver_id, p_name);
+	} else if (video_session_owner.owns(p_id)) {
+		VideoSession *video_session = video_session_owner.get_or_null(p_id);
+		driver->set_object_name(RDD::OBJECT_TYPE_VIDEO_SESSION, video_session->driver_id, p_name);
 	} else {
 		ERR_PRINT("Attempted to name invalid ID: " + itos(p_id.get_id()));
 		return;

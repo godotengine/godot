@@ -1154,6 +1154,32 @@ VideoStreamPlaybackMatroska::VideoStreamPlaybackMatroska() {
 
 VideoStreamPlaybackMatroska::~VideoStreamPlaybackMatroska() {
 	if (local_device) {
+		if (yuv_shader.is_valid()) {
+			local_device->free_rid(yuv_shader);
+		}
+
+		if (yuv_sampler.is_valid()) {
+			local_device->free_rid(yuv_sampler);
+		}
+
+		for (RID yuv_texture : dst_yuv_pool) {
+			if (yuv_texture.is_valid()) {
+				local_device->free_rid(yuv_texture);
+			}
+		}
+
+		for (RID rgba_texture : dst_rgba_pool) {
+			if (rgba_texture.is_valid()) {
+				local_device->free_rid(rgba_texture);
+			}
+		}
+
+		// The video session is not valid because it wasn't created from here.
+		// TODO: find a way to free the video session from the container
+		if (video_session.is_valid()) {
+			local_device->free_rid(video_session);
+		}
+
 		memdelete(local_device);
 	}
 }

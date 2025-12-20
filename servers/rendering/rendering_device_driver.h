@@ -803,6 +803,7 @@ public:
 		OBJECT_TYPE_SHADER,
 		OBJECT_TYPE_UNIFORM_SET,
 		OBJECT_TYPE_PIPELINE,
+		OBJECT_TYPE_VIDEO_SESSION,
 	};
 
 	struct MultiviewCapabilities {

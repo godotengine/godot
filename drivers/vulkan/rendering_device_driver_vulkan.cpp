@@ -7376,6 +7376,10 @@ void RenderingDeviceDriverVulkan::set_object_name(ObjectType p_type, ID p_driver
 		case OBJECT_TYPE_PIPELINE: {
 			_set_object_name(VK_OBJECT_TYPE_PIPELINE, (uint64_t)p_driver_id.id, p_name);
 		} break;
+		case OBJECT_TYPE_VIDEO_SESSION: {
+			const VideoCodingSessionInfo *video_session = (const VideoCodingSessionInfo *)p_driver_id.id;
+			_set_object_name(VK_OBJECT_TYPE_VIDEO_SESSION_KHR, (uint64_t)video_session->vk_session, p_name + " Video Session");
+		} break;
 		default: {
 			DEV_ASSERT(false);
 		}
