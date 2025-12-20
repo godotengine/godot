@@ -121,11 +121,7 @@ bool SpringBoneSimulator3D::_set(const StringName &p_path, const Variant &p_valu
 		} else if (what == "joints") {
 			int idx = path.get_slicec('/', 3).to_int();
 			String prop = path.get_slicec('/', 4);
-			if (prop == "bone_name") {
-				set_joint_bone_name(which, idx, p_value);
-			} else if (prop == "bone") {
-				set_joint_bone(which, idx, p_value);
-			} else if (prop == "rotation_axis") {
+			if (prop == "rotation_axis") {
 				set_joint_rotation_axis(which, idx, static_cast<RotationAxis>((int)p_value));
 			} else if (prop == "rotation_axis_vector") {
 				set_joint_rotation_axis_vector(which, idx, p_value);
@@ -321,7 +317,7 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 		for (uint32_t j = 0; j < settings[i]->joints.size(); j++) {
 			String joint_path = path + "joints/" + itos(j) + "/";
 			props.push_back(PropertyInfo(Variant::STRING, joint_path + "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
-			props.push_back(PropertyInfo(Variant::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
+			props.push_back(PropertyInfo(Variant::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
 			props.push_back(PropertyInfo(Variant::INT, joint_path + "rotation_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_rotation_axis()));
 			props.push_back(PropertyInfo(Variant::VECTOR3, joint_path + "rotation_axis_vector"));
 			props.push_back(PropertyInfo(Variant::FLOAT, joint_path + "radius", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
@@ -883,18 +879,6 @@ bool SpringBoneSimulator3D::is_config_individual(int p_index) const {
 	return settings[p_index]->individual_config;
 }
 
-void SpringBoneSimulator3D::set_joint_bone_name(int p_index, int p_joint, const String &p_bone_name) {
-	// Exists only for indicate bone name on the inspector, no needs to make dirty joint array.
-	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	const LocalVector<SpringBone3DJointSetting *> &joints = settings[p_index]->joints;
-	ERR_FAIL_INDEX(p_joint, (int)joints.size());
-	joints[p_joint]->bone_name = p_bone_name;
-	Skeleton3D *sk = get_skeleton();
-	if (sk) {
-		set_joint_bone(p_index, p_joint, sk->find_bone(joints[p_joint]->bone_name));
-	}
-}
-
 String SpringBoneSimulator3D::get_joint_bone_name(int p_index, int p_joint) const {
 	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), String());
 	const LocalVector<SpringBone3DJointSetting *> &joints = settings[p_index]->joints;
@@ -902,7 +886,7 @@ String SpringBoneSimulator3D::get_joint_bone_name(int p_index, int p_joint) cons
 	return joints[p_joint]->bone_name;
 }
 
-void SpringBoneSimulator3D::set_joint_bone(int p_index, int p_joint, int p_bone) {
+void SpringBoneSimulator3D::_set_joint_bone(int p_index, int p_joint, int p_bone) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	const LocalVector<SpringBone3DJointSetting *> &joints = settings[p_index]->joints;
 	ERR_FAIL_INDEX(p_joint, (int)joints.size());
@@ -1570,7 +1554,7 @@ void SpringBoneSimulator3D::_update_joint_array(int p_index) {
 
 	set_joint_count(p_index, new_joints.size());
 	for (uint32_t i = 0; i < new_joints.size(); i++) {
-		set_joint_bone(p_index, i, new_joints[i]);
+		_set_joint_bone(p_index, i, new_joints[i]);
 	}
 }
 
