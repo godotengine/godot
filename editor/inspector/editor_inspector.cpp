@@ -3823,7 +3823,7 @@ void EditorInspector::_add_section_in_tree(EditorInspectorSection *p_section, VB
 	}
 	if (!container) {
 		container = memnew(VBoxContainer);
-		container->set_theme_type_variation(SNAME("EditorInspectorContainer"));
+		container->set_theme_type_variation(SNAME("EditorSectionContainer"));
 		p_current_vbox->add_child(container);
 	}
 	container->add_child(p_section);
