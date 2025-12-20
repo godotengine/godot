@@ -116,7 +116,7 @@ void EditorDock::open() {
 }
 
 void EditorDock::make_visible() {
-	EditorDockManager::get_singleton()->focus_dock(this);
+	EditorDockManager::get_singleton()->open_dock(this, true);
 }
 
 void EditorDock::close() {
