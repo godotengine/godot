@@ -2411,8 +2411,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	scene_state.data.emissive_exposure_normalization = -1.0; // Use default exposure normalization.
 
-	bool enough_vertex_attribs_for_motion_blue = GLES3::Config::get_singleton()->max_vertex_attribs >= 22;
-	if (rt && rt->overridden.velocity_fbo != 0 && enough_vertex_attribs_for_motion_blue) {
+	bool enough_vertex_attribs_for_motion_vectors = GLES3::Config::get_singleton()->max_vertex_attribs >= 22;
+	if (rt && rt->overridden.velocity_fbo != 0 && enough_vertex_attribs_for_motion_vectors) {
 		// First frame we render motion vectors? Use our current data!
 		if (scene_state.prev_data_state == 0) {
 			scene_state.prev_data_state = 1;
@@ -2534,7 +2534,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.reset_gl_state();
 
 	GLuint motion_vectors_fbo = rt ? rt->overridden.velocity_fbo : 0;
-	if (motion_vectors_fbo != 0 && enough_vertex_attribs_for_motion_blue) {
+	if (motion_vectors_fbo != 0 && enough_vertex_attribs_for_motion_vectors) {
 		RENDER_TIMESTAMP("Motion Vectors Pass");
 		glBindFramebuffer(GL_FRAMEBUFFER, motion_vectors_fbo);
 
