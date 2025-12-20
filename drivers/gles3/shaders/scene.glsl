@@ -231,7 +231,10 @@ layout(std140) uniform SceneDataBlock { // ubo:2
 scene_data_block;
 
 #ifdef RENDER_MOTION_VECTORS
-layout(std140) uniform SceneData prev_scene_data; // ubo:12
+layout(std140) uniform PrevSceneDataBlock { // ubo:12
+	SceneData data;
+}
+prev_scene_data_block;
 #endif
 
 #ifndef RENDER_MOTION_VECTORS
@@ -464,7 +467,10 @@ layout(std140) uniform MultiviewDataBlock { // ubo:8
 multiview_data_block;
 
 #ifdef RENDER_MOTION_VECTORS
-layout(std140) uniform MultiviewData prev_multiview_data; // ubo:13
+layout(std140) uniform PrevMultiviewDataBlock { // ubo:13
+	MultiviewData data;
+}
+prev_multiview_data_block;
 #endif // RENDER_MOTION_VECTORS
 
 #endif // USE_MULTIVIEW
@@ -909,7 +915,7 @@ void main() {
 			compressed_aabb_position,
 			prev_world_transform,
 			model_flags,
-			prev_scene_data.data,
+			prev_scene_data_block.data,
 #ifdef USE_INSTANCING
 			input_instance_xform0, input_instance_xform1, input_instance_xform2,
 			input_instance_color_custom_data,
@@ -927,9 +933,9 @@ void main() {
 			uv2_attrib,
 #endif
 #ifdef USE_MULTIVIEW
-			prev_multiview_data.projection_matrix_view[ViewIndex],
-			prev_multiview_data.inv_projection_matrix_view[ViewIndex],
-			prev_multiview_data.eye_offset[ViewIndex].xyz,
+			prev_multiview_data_block.data.projection_matrix_view[ViewIndex],
+			prev_multiview_data_block.data.inv_projection_matrix_view[ViewIndex],
+			prev_multiview_data_block.data.eye_offset[ViewIndex].xyz,
 #endif
 			uv_scale,
 			prev_clip_position);
