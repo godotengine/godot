@@ -165,7 +165,6 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	void make_visible_no_focus();
 	ObjectID get_edited_tileset() const;
 
 	TileSetEditorPlugin();
