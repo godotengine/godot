@@ -408,6 +408,12 @@
 				Returns [code]true[/code] if the system native menu is supported and currently used by this [PopupMenu].
 			</description>
 		</method>
+		<method name="is_search_bar_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if search bar is currently enabled.
+			</description>
+		</method>
 		<method name="is_system_menu" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -669,6 +675,10 @@
 			If [code]true[/code], [MenuBar] will use native menu when supported.
 			[b]Note:[/b] If [PopupMenu] is linked to [StatusIndicator], [MenuBar], or another [PopupMenu] item it can use native menu regardless of this property, use [method is_native_menu] to check it.
 		</member>
+		<member name="search_bar_enabled_on_item_count" type="int" setter="set_search_bar_enabled_on_item_count" getter="get_search_bar_enabled_on_item_count" default="0">
+			Enables the [PopupMenu] search bar if the item count is greater than [code]0[/code].
+			[b]Note:[/b] When enabled, [member allow_search] is ignored.
+		</member>
 		<member name="shrink_height" type="bool" setter="set_shrink_height" getter="get_shrink_height" default="true">
 			If [code]true[/code], shrinks [PopupMenu] to minimum height when it's shown.
 		</member>
@@ -790,6 +800,9 @@
 		</theme_item>
 		<theme_item name="radio_unchecked_disabled" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the unchecked radio button items when they are disabled.
+		</theme_item>
+		<theme_item name="search" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the search bar's search icon.
 		</theme_item>
 		<theme_item name="submenu" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the submenu arrow (for left-to-right layouts).

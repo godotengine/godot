@@ -38,6 +38,8 @@
 #include "servers/display/native_menu.h"
 
 class PanelContainer;
+class VBoxContainer;
+class LineEdit;
 class Timer;
 
 class PopupMenu : public Popup {
@@ -62,6 +64,7 @@ class PopupMenu : public Popup {
 		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 		bool checked = false;
+		bool visible = true;
 		enum {
 			CHECKABLE_TYPE_NONE,
 			CHECKABLE_TYPE_CHECK_BOX,
@@ -137,7 +140,7 @@ class PopupMenu : public Popup {
 	Point2 last_submenu_mouse_position;
 	int submenu_mouse_exited_ticks_msec = -1;
 	bool mouse_movement_was_tested = false;
-	Point2 panel_offset_start;
+	Point2 scroll_container_offset_start;
 	float submenu_timer_popup_delay = 0.2;
 	const float CLOSE_SUSPENDED_TIMER_DELAY = 0.5;
 	String _get_accel_text(const Item &p_item) const;
@@ -176,7 +179,10 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec = 0;
 	String search_string = "";
 
+	int search_bar_enabled_on_item_count = 0;
 	PanelContainer *panel = nullptr;
+	VBoxContainer *vbox_container = nullptr;
+	LineEdit *search_bar = nullptr;
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
 
@@ -210,6 +216,7 @@ class PopupMenu : public Popup {
 		Ref<Texture2D> radio_unchecked;
 		Ref<Texture2D> radio_unchecked_disabled;
 
+		Ref<Texture2D> search;
 		Ref<Texture2D> submenu;
 		Ref<Texture2D> submenu_mirrored;
 
@@ -231,6 +238,9 @@ class PopupMenu : public Popup {
 	} theme_cache;
 
 	void _draw_items();
+	void _search_bar_input(const Ref<InputEvent> &p_event);
+	void _search_bar_text_changed(const String &p_new_text);
+	void _filter_items(const String &p_query);
 
 	void _close_pressed();
 	void _menu_changed();
@@ -373,6 +383,11 @@ public:
 
 	void set_prefer_native_menu(bool p_enabled);
 	bool is_prefer_native_menu() const;
+
+	bool is_search_bar_enabled() const;
+
+	void set_search_bar_enabled_on_item_count(int p_count);
+	int get_search_bar_enabled_on_item_count() const;
 
 	bool is_native_menu() const;
 

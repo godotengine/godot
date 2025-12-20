@@ -140,6 +140,12 @@
 				Returns [code]true[/code] if the item at index [param idx] is marked as a separator.
 			</description>
 		</method>
+		<method name="is_search_bar_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the search bar is enabled.
+			</description>
+		</method>
 		<method name="remove_item">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
@@ -232,6 +238,9 @@
 		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" overrides="Button" enum="HorizontalAlignment" default="0" />
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
 			If [code]true[/code], the currently selected item can be selected again.
+		</member>
+		<member name="enable_search_bar_on_item_count" type="int" setter="set_search_bar_enabled_on_item_count" getter="get_search_bar_enabled_on_item_count" default="0">
+			Enables the [PopupMenu] search bar if the item count is greater than [code]0[/code].
 		</member>
 		<member name="fit_to_longest_item" type="bool" setter="set_fit_to_longest_item" getter="is_fit_to_longest_item" default="true">
 			If [code]true[/code], minimum size will be determined by the longest item's text, instead of the currently selected one's.
