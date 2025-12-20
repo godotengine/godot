@@ -107,6 +107,8 @@ public:
 	void set_item_disabled(int p_idx, bool p_disabled);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
 	void set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode);
+	void set_search_bar_enabled(bool p_enabled);
+	void set_search_bar_enabled_on_item_count(int p_count);
 
 	String get_item_text(int p_idx) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
@@ -117,6 +119,8 @@ public:
 	bool is_item_separator(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
 	AutoTranslateMode get_item_auto_translate_mode(int p_idx) const;
+	bool is_search_bar_enabled() const;
+	int get_search_bar_enabled_on_item_count() const;
 
 	bool has_selectable_items() const;
 	int get_selectable_item(bool p_from_last = false) const;

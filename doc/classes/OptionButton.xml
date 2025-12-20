@@ -100,6 +100,12 @@
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
+		<method name="get_search_bar_enabled_on_item_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns item count required for enabling search bar.
+			</description>
+		</method>
 		<method name="get_selectable_item" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="from_last" type="bool" default="false" />
@@ -138,6 +144,12 @@
 			<param index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the item at index [param idx] is marked as a separator.
+			</description>
+		</method>
+		<method name="is_search_bar_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if search bar is enabled.
 			</description>
 		</method>
 		<method name="remove_item">
@@ -218,6 +230,20 @@
 			<param index="1" name="tooltip" type="String" />
 			<description>
 				Sets the tooltip of the item at index [param idx].
+			</description>
+		</method>
+		<method name="set_search_bar_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Sets whether search bar is enabled.
+			</description>
+		</method>
+		<method name="set_search_bar_enabled_on_item_count">
+			<return type="void" />
+			<param index="0" name="counts" type="int" />
+			<description>
+				Sets item count required for enabling search bar.
 			</description>
 		</method>
 		<method name="show_popup">
