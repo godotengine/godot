@@ -58,7 +58,7 @@ private:
 	uint64_t prev_frame_num;
 
 	VideoProfile video_profile = {};
-	RID video_session;
+	RID video_session = RID();
 
 	RenderingDevice *coding_device;
 	RID texture_sampler;

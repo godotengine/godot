@@ -735,9 +735,10 @@ public:
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) override final;
 	virtual void video_session_free(VideoSessionID p_video_session) override final;
 
-	virtual void command_video_session_reset(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session) override final;
+	virtual void command_video_session_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, bool p_reset, Vector<VideoDecodeH264SliceHeader> p_frame_slices) override final;
 	virtual void command_video_session_decode_h264(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture) override final;
 	virtual void command_video_session_decode_av1(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeAV1Frame p_std_av1_info, TextureID p_dst_texture) override final;
+	virtual void command_video_session_submit(CommandBufferID p_cmd_buffer) override final;
 
 	/**************/
 	/**** MISC ****/

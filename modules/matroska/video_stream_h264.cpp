@@ -703,7 +703,7 @@ void VideoStreamH264::parse_container_block(Vector<uint8_t> p_buffer, RID p_dst_
 			seen_pps = true;
 		}
 
-		if (seen_sps && seen_pps) {
+		if (seen_sps && seen_pps && !video_session.is_valid()) {
 			create_video_session(1920, 1088);
 			coding_device->video_session_begin();
 			seen_sps = false;

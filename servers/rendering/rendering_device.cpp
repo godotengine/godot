@@ -5921,7 +5921,8 @@ void RenderingDevice::video_session_add_h264_parameters(RID p_video_session, Vec
 	driver->command_pool_reset(decode_pool);
 	driver->command_buffer_begin(decode_buffer);
 	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, {}, tb);
-	driver->command_video_session_reset(decode_buffer, video_session->driver_id);
+	driver->command_video_session_begin(decode_buffer, video_session->driver_id, true, Vector<VideoDecodeH264SliceHeader>());
+	driver->command_video_session_submit(decode_buffer);
 	driver->command_buffer_end(decode_buffer);
 	driver->command_queue_execute(decode_queue, decode_buffer, fence);
 
@@ -5940,7 +5941,7 @@ void RenderingDevice::video_session_add_av1_parameters(RID p_video_session, Vide
 
 	driver->command_pool_reset(decode_pool);
 	driver->command_buffer_begin(decode_buffer);
-	driver->command_video_session_reset(decode_buffer, video_session->driver_id);
+	//driver->command_video_session_reset(decode_buffer, video_session->driver_id);
 	driver->command_buffer_end(decode_buffer);
 	driver->command_queue_execute(decode_queue, decode_buffer, fence);
 
@@ -5996,8 +5997,13 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	decode_tb.subresources.mipmap_count = 1;
 	decode_tb.subresources.layer_count = 1;
 
+	Vector<VideoDecodeH264SliceHeader> slices;
+	slices.push_back(p_std_h264_info);
+
 	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, bb, decode_tb);
+	driver->command_video_session_begin(decode_buffer, video_session->driver_id, p_std_h264_info.is_intra, slices);
 	driver->command_video_session_decode_h264(decode_buffer, video_session->driver_id, src_buffer, p_std_h264_info, dst_texture->driver_id);
+	driver->command_video_session_submit(decode_buffer);
 
 	Vector<RDD::TextureBarrier> texture_barriers;
 
