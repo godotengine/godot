@@ -2014,6 +2014,10 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_type_variation("EditorInspectorContainer", "VBoxContainer");
 		p_theme->set_constant("separation", "EditorInspectorContainer", 0);
 
+		// Vertical separation between inspector sections.
+		p_theme->set_type_variation("EditorSectionContainer", "VBoxContainer");
+		p_theme->set_constant("separation", "EditorSectionContainer", 0);
+
 		// Vertical separation between inspector properties.
 		p_theme->set_type_variation("EditorPropertyContainer", "VBoxContainer");
 		p_theme->set_constant("separation", "EditorPropertyContainer", p_config.increased_margin * EDSCALE);
