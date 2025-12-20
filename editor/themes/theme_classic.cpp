@@ -2009,6 +2009,19 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_stylebox(SceneStringName(panel), "TabContainerOdd", style_content_panel_odd);
 		}
 
+		// TreeLineEdit.
+		{
+			Ref<StyleBoxFlat> tree_line_edit_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();
+			tree_line_edit_style->set_corner_radius_all(0);
+
+			Ref<StyleBoxFlat> tree_line_edit_style_focus = p_theme->get_stylebox("focus", SNAME("LineEdit"))->duplicate();
+			tree_line_edit_style_focus->set_corner_radius_all(0);
+
+			p_theme->set_type_variation("TreeLineEdit", "LineEdit");
+			p_theme->set_stylebox(CoreStringName(normal), "TreeLineEdit", tree_line_edit_style);
+			p_theme->set_stylebox("focus", "TreeLineEdit", tree_line_edit_style_focus);
+		}
+
 		// EditorValidationPanel.
 		p_theme->set_stylebox(SceneStringName(panel), "EditorValidationPanel", p_config.tree_panel_style);
 

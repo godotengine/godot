@@ -6889,6 +6889,7 @@ Tree::Tree() {
 	popup_editor->add_child(popup_editor_vb);
 
 	line_editor = memnew(LineEdit);
+	line_editor->set_theme_type_variation("TreeLineEdit");
 	line_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	line_editor->hide();
 	popup_editor_vb->add_child(line_editor);

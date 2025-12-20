@@ -1989,6 +1989,19 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox("tabbar_background", "TabContainerOdd", p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
 		}
 
+		// TreeLineEdit.
+		{
+			Ref<StyleBoxFlat> tree_line_edit_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();
+			tree_line_edit_style->set_corner_radius_all(0);
+
+			Ref<StyleBoxFlat> tree_line_edit_style_focus = p_theme->get_stylebox("focus", SNAME("LineEdit"))->duplicate();
+			tree_line_edit_style_focus->set_corner_radius_all(0);
+
+			p_theme->set_type_variation("TreeLineEdit", "LineEdit");
+			p_theme->set_stylebox(CoreStringName(normal), "TreeLineEdit", tree_line_edit_style);
+			p_theme->set_stylebox("focus", "TreeLineEdit", tree_line_edit_style_focus);
+		}
+
 		// EditorValidationPanel.
 		Ref<StyleBoxFlat> editor_validation_panel = p_config.base_style->duplicate();
 		editor_validation_panel->set_bg_color(p_config.surface_low_color);
