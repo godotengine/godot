@@ -31,7 +31,7 @@
 #import "os_macos.h"
 
 #import "dir_access_macos.h"
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 #import "display_server_embedded.h"
 #endif
 #import "display_server_macos.h"
@@ -1076,7 +1076,7 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 // MARK: - OS_MacOS_NSApp
 
 void OS_MacOS_NSApp::run() {
-	[NSApp run];
+	[NSApp run]; // Note: this call will never return. Use `OS_MacOS_NSApp::cleanup()` for cleanup.
 }
 
 static bool sig_received = false;
@@ -1088,8 +1088,6 @@ static void handle_interrupt(int sig) {
 }
 
 void OS_MacOS_NSApp::start_main() {
-	godot_init_profiler();
-
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);
@@ -1154,6 +1152,7 @@ void OS_MacOS_NSApp::start_main() {
 }
 
 void OS_MacOS_NSApp::terminate() {
+	// Note: This method only sends app termination request. Use `OS_MacOS_NSApp::cleanup()` for cleanup.
 	if (pre_wait_observer) {
 		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
 		CFRelease(pre_wait_observer);
@@ -1173,6 +1172,7 @@ void OS_MacOS_NSApp::cleanup() {
 			Main::cleanup();
 		}
 	}
+	godot_cleanup_profiler();
 }
 
 OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv) :
@@ -1256,7 +1256,7 @@ OS_MacOS_Headless::OS_MacOS_Headless(const char *p_execpath, int p_argc, char **
 
 // MARK: - OS_MacOS_Embedded
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 
 void OS_MacOS_Embedded::run() {
 	CFRunLoopGetCurrent();

@@ -622,7 +622,7 @@ void CameraAndroid::set_monitoring_feeds(bool p_monitoring_feeds) {
 	}
 }
 
-void CameraAndroid::handle_pause() {
+void CameraAndroid::handle_application_pause() {
 	for (int i = 0; i < feeds.size(); i++) {
 		Ref<CameraFeedAndroid> feed = feeds[i];
 		if (feed.is_valid()) {
@@ -631,7 +631,7 @@ void CameraAndroid::handle_pause() {
 	}
 }
 
-void CameraAndroid::handle_resume() {
+void CameraAndroid::handle_application_resume() {
 	for (int i = 0; i < feeds.size(); i++) {
 		Ref<CameraFeedAndroid> feed = feeds[i];
 		if (feed.is_valid()) {
@@ -640,7 +640,7 @@ void CameraAndroid::handle_resume() {
 	}
 }
 
-void CameraAndroid::handle_rotation_change() {
+void CameraAndroid::handle_display_rotation_change(int) {
 	for (int i = 0; i < feeds.size(); i++) {
 		Ref<CameraFeedAndroid> feed = feeds[i];
 		if (feed.is_valid()) {

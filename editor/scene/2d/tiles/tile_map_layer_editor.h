@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "scene/gui/margin_container.h"
 #include "tile_atlas_view.h"
 
 #include "core/os/thread.h"
@@ -49,6 +50,19 @@
 class TileMapLayer;
 class TileMapLayerEditor;
 class TileSetSourceItemList;
+class GridContainer;
+
+class SwitchSeparator : public MarginContainer {
+	GDCLASS(SwitchSeparator, MarginContainer);
+
+	HSeparator *h_separator = nullptr;
+	VSeparator *v_separator = nullptr;
+
+public:
+	void set_vertical(bool p_vertical);
+
+	SwitchSeparator();
+};
 
 class TileMapLayerSubEditorPlugin : public Object {
 	GDSOFTCLASS(TileMapLayerSubEditorPlugin, Object);
@@ -60,7 +74,8 @@ protected:
 
 public:
 	struct TabData {
-		Control *toolbar = nullptr;
+		Vector<Control *> toolbar;
+		Control *wide_toolbar;
 		Control *panel = nullptr;
 	};
 
@@ -73,6 +88,7 @@ public:
 	virtual void tile_set_changed() {}
 	virtual void edit(ObjectID p_tile_map_layer_id) {}
 	virtual void draw_tile_coords_over_viewport(Control *p_overlay, const TileMapLayer *p_edited_layer, Ref<TileSet> p_tile_set, bool p_show_rectangle_size, const Vector2i &p_rectangle_origin);
+	virtual void update_layout(EditorDock::DockLayout p_layout) {}
 };
 
 class TileMapLayerEditorTilesPlugin : public TileMapLayerSubEditorPlugin {
@@ -88,8 +104,9 @@ public:
 
 private:
 	///// Toolbar /////
-	HBoxContainer *toolbar = nullptr;
+	HBoxContainer *wide_toolbar = nullptr;
 
+	BoxContainer *tilemap_tiles_tools_buttons = nullptr;
 	Ref<ButtonGroup> tool_buttons_group;
 	Button *select_tool_button = nullptr;
 	Button *paint_tool_button = nullptr;
@@ -97,23 +114,23 @@ private:
 	Button *rect_tool_button = nullptr;
 	Button *bucket_tool_button = nullptr;
 
-	HBoxContainer *tools_settings = nullptr;
+	BoxContainer *tools_settings = nullptr;
 
-	VSeparator *tools_settings_vsep = nullptr;
+	SwitchSeparator *tools_settings_vsep = nullptr;
 	Button *picker_button = nullptr;
 	Button *erase_button = nullptr;
 
-	HBoxContainer *transform_toolbar = nullptr;
+	BoxContainer *transform_toolbar = nullptr;
 	Button *transform_button_rotate_left = nullptr;
 	Button *transform_button_rotate_right = nullptr;
 	Button *transform_button_flip_h = nullptr;
 	Button *transform_button_flip_v = nullptr;
+	SwitchSeparator *transform_separator = nullptr;
 
-	VSeparator *tools_settings_vsep_2 = nullptr;
 	CheckBox *bucket_contiguous_checkbox = nullptr;
 	Button *random_tile_toggle = nullptr;
 
-	HBoxContainer *scatter_controls_container = nullptr;
+	BoxContainer *scatter_controls_container = nullptr;
 	float scattering = 0.0;
 	Label *scatter_label = nullptr;
 	SpinBox *scatter_spinbox = nullptr;
@@ -174,6 +191,8 @@ private:
 	void patterns_item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 
 	///// Bottom panel common ////
+	BoxContainer *split_container_left_side = nullptr;
+
 	void _tab_changed();
 
 	///// Bottom panel tiles ////
@@ -192,7 +211,7 @@ private:
 	// Atlas sources.
 	TileMapCell hovered_tile;
 	TileAtlasView *tile_atlas_view = nullptr;
-	HSplitContainer *atlas_sources_split_container = nullptr;
+	SplitContainer *atlas_sources_split_container = nullptr;
 
 	bool tile_set_dragging_selection = false;
 	Vector2i tile_set_drag_start_mouse_pos;
@@ -241,6 +260,7 @@ public:
 	virtual Vector<TabData> get_tabs() const override;
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
 
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
@@ -252,26 +272,27 @@ class TileMapLayerEditorTerrainsPlugin : public TileMapLayerSubEditorPlugin {
 
 private:
 	// Toolbar.
-	HBoxContainer *toolbar = nullptr;
+	HBoxContainer *wide_toolbar = nullptr;
 
+	BoxContainer *tilemap_tiles_tools_buttons = nullptr;
 	Ref<ButtonGroup> tool_buttons_group;
 	Button *paint_tool_button = nullptr;
 	Button *line_tool_button = nullptr;
 	Button *rect_tool_button = nullptr;
 	Button *bucket_tool_button = nullptr;
 
-	HBoxContainer *tools_settings = nullptr;
+	BoxContainer *tools_settings = nullptr;
 
-	VSeparator *tools_settings_vsep = nullptr;
+	SwitchSeparator *tools_settings_vsep = nullptr;
 	Button *picker_button = nullptr;
 	Button *erase_button = nullptr;
 
-	VSeparator *tools_settings_vsep_2 = nullptr;
 	CheckBox *bucket_contiguous_checkbox = nullptr;
 	void _update_toolbar();
 
 	// Main vbox.
-	VBoxContainer *main_vbox_container = nullptr;
+	BoxContainer *main_box_container = nullptr;
+	SplitContainer *tilemap_tab_terrains = nullptr;
 
 	// TileMap editing.
 	bool has_mouse = false;
@@ -332,6 +353,7 @@ public:
 	virtual Vector<TabData> get_tabs() const override;
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
 
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
@@ -360,11 +382,15 @@ private:
 	Vector<TileMapLayerSubEditorPlugin *> tile_map_editor_plugins;
 
 	// Toolbar.
-	HFlowContainer *tile_map_toolbar = nullptr;
+	GridContainer *main_box_container = nullptr;
+	VBoxContainer *tile_map_wide_toolbar = nullptr;
+	FlowContainer *tile_map_toolbar = nullptr;
+	Control *padding_control = nullptr;
+	SwitchSeparator *layer_selector_separator = nullptr;
 
 	bool show_layers_selector = false;
 
-	HBoxContainer *layer_selection_hbox = nullptr;
+	BoxContainer *layer_selection_hbox = nullptr;
 	Button *select_previous_layer = nullptr;
 	void _select_previous_layer_pressed();
 	Button *select_next_layer = nullptr;
@@ -414,6 +440,7 @@ private:
 protected:
 	void _notification(int p_what);
 	void _draw_shape(Control *p_control, Rect2 p_region, TileSet::TileShape p_shape, TileSet::TileOffsetAxis p_offset_axis, Color p_color);
+	virtual void update_layout(DockLayout p_layout) override;
 
 public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);

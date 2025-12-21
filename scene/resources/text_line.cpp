@@ -155,6 +155,7 @@ Ref<TextLine> TextLine::duplicate() const {
 	Ref<TextLine> copy;
 	copy.instantiate();
 	if (rid.is_valid()) {
+		TS->free_rid(copy->rid);
 		copy->rid = TS->shaped_text_duplicate(rid);
 	}
 	copy->dirty = true;

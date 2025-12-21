@@ -1,0 +1,32 @@
+GH-104872
+---------
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_char/arguments': size changed value in new API, from 5 to 6.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_char_outline/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_multiline_string/arguments': size changed value in new API, from 12 to 13.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_multiline_string_outline/arguments': size changed value in new API, from 13 to 14.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_string/arguments': size changed value in new API, from 10 to 11.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_string_outline/arguments': size changed value in new API, from 11 to 12.
+Validate extension JSON: Error: Field 'classes/Font/methods/draw_char/arguments': size changed value in new API, from 5 to 6.
+Validate extension JSON: Error: Field 'classes/Font/methods/draw_char_outline/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Field 'classes/Font/methods/draw_multiline_string/arguments': size changed value in new API, from 12 to 13.
+Validate extension JSON: Error: Field 'classes/Font/methods/draw_multiline_string_outline/arguments': size changed value in new API, from 13 to 14.
+Validate extension JSON: Error: Field 'classes/Font/methods/draw_string/arguments': size changed value in new API, from 10 to 11.
+Validate extension JSON: Error: Field 'classes/Font/methods/draw_string_outline/arguments': size changed value in new API, from 11 to 12.
+Validate extension JSON: Error: Field 'classes/TextLine/methods/draw/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/TextLine/methods/draw_outline/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/TextParagraph/methods/draw/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/TextParagraph/methods/draw_dropcap/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/TextParagraph/methods/draw_dropcap_outline/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/TextParagraph/methods/draw_line/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/TextParagraph/methods/draw_line_outline/arguments': size changed value in new API, from 5 to 6.
+Validate extension JSON: Error: Field 'classes/TextParagraph/methods/draw_outline/arguments': size changed value in new API, from 5 to 6.
+Validate extension JSON: Error: Field 'classes/TextServer/methods/font_draw_glyph/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Field 'classes/TextServer/methods/font_draw_glyph_outline/arguments': size changed value in new API, from 7 to 8.
+Validate extension JSON: Error: Field 'classes/TextServer/methods/shaped_text_draw/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Field 'classes/TextServer/methods/shaped_text_draw_outline/arguments': size changed value in new API, from 7 to 8.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_font_draw_glyph/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_font_draw_glyph_outline/arguments': size changed value in new API, from 7 to 8.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_draw/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_draw_outline/arguments': size changed value in new API, from 7 to 8.
+
+Optional "oversmpling" argument added. Compatibility methods registered.

@@ -42,6 +42,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #if !(defined SUPPORT_VALGRIND)
 
 #if ((defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86) \
+     || (defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64) \
      || (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X) \
      || (defined SLJIT_CONFIG_LOONGARCH_64 && SLJIT_CONFIG_LOONGARCH_64))
 
@@ -100,7 +101,7 @@ return CMP(SLJIT_NOT_EQUAL, reg, 0, SLJIT_IMM, 0xdc00);
 }
 #endif
 
-#endif /* SLJIT_CONFIG_X86 || SLJIT_CONFIG_S390X */
+#endif /* SLJIT_CONFIG_X86 || SLJIT_CONFIG_ARM_64 || SLJIT_CONFIG_S390X || SLJIT_CONFIG_LOONGARCH_64 */
 
 #if (defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86)
 
@@ -228,7 +229,14 @@ switch (step)
   }
 }
 
+/* The AVX2 code path is currently disabled.
 #define JIT_HAS_FAST_FORWARD_CHAR_SIMD (sljit_has_cpu_feature(SLJIT_HAS_SIMD))
+*/
+#if defined(SLJIT_CONFIG_X86_64) && SLJIT_CONFIG_X86_64
+#define JIT_HAS_FAST_FORWARD_CHAR_SIMD 1
+#else
+#define JIT_HAS_FAST_FORWARD_CHAR_SIMD (sljit_has_cpu_feature(SLJIT_HAS_FPU))
+#endif
 
 static void fast_forward_char_simd(compiler_common *common, PCRE2_UCHAR char1, PCRE2_UCHAR char2, sljit_s32 offset)
 {
@@ -246,10 +254,10 @@ struct sljit_jump *quit;
 struct sljit_jump *partial_quit[2];
 vector_compare_type compare_type = vector_compare_match1;
 sljit_s32 tmp1_reg_ind = sljit_get_register_index(SLJIT_GP_REGISTER, TMP1);
-sljit_s32 data_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR0);
-sljit_s32 cmp1_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR1);
-sljit_s32 cmp2_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR2);
-sljit_s32 tmp_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR3);
+sljit_s32 data_ind = sljit_get_register_index(reg_type, SLJIT_VR0);
+sljit_s32 cmp1_ind = sljit_get_register_index(reg_type, SLJIT_VR1);
+sljit_s32 cmp2_ind = sljit_get_register_index(reg_type, SLJIT_VR2);
+sljit_s32 tmp_ind = sljit_get_register_index(reg_type, SLJIT_VR3);
 sljit_u32 bit = 0;
 int i;
 
@@ -365,7 +373,14 @@ if (common->utf && offset > 0)
 #endif
 }
 
+/* The AVX2 code path is currently disabled.
 #define JIT_HAS_FAST_REQUESTED_CHAR_SIMD (sljit_has_cpu_feature(SLJIT_HAS_SIMD))
+*/
+#if defined(SLJIT_CONFIG_X86_64) && SLJIT_CONFIG_X86_64
+#define JIT_HAS_FAST_REQUESTED_CHAR_SIMD 1
+#else
+#define JIT_HAS_FAST_REQUESTED_CHAR_SIMD (sljit_has_cpu_feature(SLJIT_HAS_FPU))
+#endif
 
 static jump_list *fast_requested_char_simd(compiler_common *common, PCRE2_UCHAR char1, PCRE2_UCHAR char2)
 {
@@ -380,10 +395,10 @@ struct sljit_jump *quit;
 jump_list *not_found = NULL;
 vector_compare_type compare_type = vector_compare_match1;
 sljit_s32 tmp1_reg_ind = sljit_get_register_index(SLJIT_GP_REGISTER, TMP1);
-sljit_s32 data_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR0);
-sljit_s32 cmp1_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR1);
-sljit_s32 cmp2_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR2);
-sljit_s32 tmp_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR3);
+sljit_s32 data_ind = sljit_get_register_index(reg_type, SLJIT_VR0);
+sljit_s32 cmp1_ind = sljit_get_register_index(reg_type, SLJIT_VR1);
+sljit_s32 cmp2_ind = sljit_get_register_index(reg_type, SLJIT_VR2);
+sljit_s32 tmp_ind = sljit_get_register_index(reg_type, SLJIT_VR3);
 sljit_u32 bit = 0;
 int i;
 
@@ -471,7 +486,14 @@ return not_found;
 
 #ifndef _WIN64
 
+/* The AVX2 code path is currently disabled.
 #define JIT_HAS_FAST_FORWARD_CHAR_PAIR_SIMD (sljit_has_cpu_feature(SLJIT_HAS_SIMD))
+*/
+#if defined(SLJIT_CONFIG_X86_64) && SLJIT_CONFIG_X86_64
+#define JIT_HAS_FAST_FORWARD_CHAR_PAIR_SIMD 1
+#else
+#define JIT_HAS_FAST_FORWARD_CHAR_PAIR_SIMD (sljit_has_cpu_feature(SLJIT_HAS_FPU))
+#endif
 
 static void fast_forward_char_pair_simd(compiler_common *common, sljit_s32 offs1,
   PCRE2_UCHAR char1a, PCRE2_UCHAR char1b, sljit_s32 offs2, PCRE2_UCHAR char2a, PCRE2_UCHAR char2b)
@@ -488,14 +510,14 @@ sljit_u32 bit1 = 0;
 sljit_u32 bit2 = 0;
 sljit_u32 diff = IN_UCHARS(offs1 - offs2);
 sljit_s32 tmp1_reg_ind = sljit_get_register_index(SLJIT_GP_REGISTER, TMP1);
-sljit_s32 data1_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR0);
-sljit_s32 data2_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR1);
-sljit_s32 cmp1a_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR2);
-sljit_s32 cmp2a_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR3);
-sljit_s32 cmp1b_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR4);
-sljit_s32 cmp2b_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR5);
-sljit_s32 tmp1_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR6);
-sljit_s32 tmp2_ind = sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_TMP_DEST_VREG);
+sljit_s32 data1_ind = sljit_get_register_index(reg_type, SLJIT_VR0);
+sljit_s32 data2_ind = sljit_get_register_index(reg_type, SLJIT_VR1);
+sljit_s32 cmp1a_ind = sljit_get_register_index(reg_type, SLJIT_VR2);
+sljit_s32 cmp2a_ind = sljit_get_register_index(reg_type, SLJIT_VR3);
+sljit_s32 cmp1b_ind = sljit_get_register_index(reg_type, SLJIT_VR4);
+sljit_s32 cmp2b_ind = sljit_get_register_index(reg_type, SLJIT_VR5);
+sljit_s32 tmp1_ind = sljit_get_register_index(reg_type, SLJIT_VR6);
+sljit_s32 tmp2_ind = sljit_get_register_index(reg_type, SLJIT_TMP_DEST_VREG);
 struct sljit_label *start;
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
 struct sljit_label *restart;
@@ -692,8 +714,8 @@ sljit_emit_simd_mov(compiler, reg_type, SLJIT_VR1, SLJIT_MEM1(STR_PTR), -(sljit_
 
 for (i = 0; i < 4; i++)
   {
-  fast_forward_char_pair_sse2_compare(compiler, compare1_type, reg_type, i, data1_ind, cmp1a_ind, cmp1b_ind, tmp2_ind);
-  fast_forward_char_pair_sse2_compare(compiler, compare2_type, reg_type, i, data2_ind, cmp2a_ind, cmp2b_ind, tmp1_ind);
+  fast_forward_char_pair_sse2_compare(compiler, compare1_type, reg_type, i, data1_ind, cmp1a_ind, cmp1b_ind, tmp1_ind);
+  fast_forward_char_pair_sse2_compare(compiler, compare2_type, reg_type, i, data2_ind, cmp2a_ind, cmp2b_ind, tmp2_ind);
   }
 
 sljit_emit_simd_op2(compiler, SLJIT_SIMD_OP2_AND | reg_type, SLJIT_VR0, SLJIT_VR0, SLJIT_VR1, 0);
@@ -744,286 +766,284 @@ if (common->match_end_ptr != 0)
 
 #if (defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64 && (defined __ARM_NEON || defined __ARM_NEON__))
 
-#include <arm_neon.h>
-
-typedef union {
-  unsigned int x;
-  struct { unsigned char c1, c2, c3, c4; } c;
-} int_char;
-
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-static SLJIT_INLINE int utf_continue(PCRE2_SPTR s)
-{
 #if PCRE2_CODE_UNIT_WIDTH == 8
-return (*s & 0xc0) == 0x80;
+#define PCRE2_REPLICATE_TYPE (SLJIT_SIMD_REG_128 | SLJIT_SIMD_ELEM_8)
 #elif PCRE2_CODE_UNIT_WIDTH == 16
-return (*s & 0xfc00) == 0xdc00;
+#define PCRE2_REPLICATE_TYPE (SLJIT_SIMD_REG_128 | SLJIT_SIMD_ELEM_16)
+#elif PCRE2_CODE_UNIT_WIDTH == 32
+#define PCRE2_REPLICATE_TYPE (SLJIT_SIMD_REG_128 | SLJIT_SIMD_ELEM_32)
 #else
-#error "Unknown code width"
+#error "Unsupported unit width"
 #endif
-}
-#endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32 */
-
-#if PCRE2_CODE_UNIT_WIDTH == 8
-# define VECTOR_FACTOR 16
-# define vect_t uint8x16_t
-# define VLD1Q(X) vld1q_u8((sljit_u8 *)(X))
-# define VCEQQ vceqq_u8
-# define VORRQ vorrq_u8
-# define VST1Q vst1q_u8
-# define VDUPQ vdupq_n_u8
-# define VEXTQ vextq_u8
-# define VANDQ vandq_u8
-typedef union {
-       uint8_t mem[16];
-       uint64_t dw[2];
-} quad_word;
-#elif PCRE2_CODE_UNIT_WIDTH == 16
-# define VECTOR_FACTOR 8
-# define vect_t uint16x8_t
-# define VLD1Q(X) vld1q_u16((sljit_u16 *)(X))
-# define VCEQQ vceqq_u16
-# define VORRQ vorrq_u16
-# define VST1Q vst1q_u16
-# define VDUPQ vdupq_n_u16
-# define VEXTQ vextq_u16
-# define VANDQ vandq_u16
-typedef union {
-       uint16_t mem[8];
-       uint64_t dw[2];
-} quad_word;
-#else
-# define VECTOR_FACTOR 4
-# define vect_t uint32x4_t
-# define VLD1Q(X) vld1q_u32((sljit_u32 *)(X))
-# define VCEQQ vceqq_u32
-# define VORRQ vorrq_u32
-# define VST1Q vst1q_u32
-# define VDUPQ vdupq_n_u32
-# define VEXTQ vextq_u32
-# define VANDQ vandq_u32
-typedef union {
-       uint32_t mem[4];
-       uint64_t dw[2];
-} quad_word;
-#endif
-
-#define FFCS
-#include "pcre2_jit_neon_inc.h"
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-# define FF_UTF
-# include "pcre2_jit_neon_inc.h"
-# undef FF_UTF
-#endif
-#undef FFCS
-
-#define FFCS_2
-#include "pcre2_jit_neon_inc.h"
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-# define FF_UTF
-# include "pcre2_jit_neon_inc.h"
-# undef FF_UTF
-#endif
-#undef FFCS_2
-
-#define FFCS_MASK
-#include "pcre2_jit_neon_inc.h"
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-# define FF_UTF
-# include "pcre2_jit_neon_inc.h"
-# undef FF_UTF
-#endif
-#undef FFCS_MASK
 
 #define JIT_HAS_FAST_FORWARD_CHAR_SIMD 1
+
+static void fast_forward_char_pair_sse2_compare(struct sljit_compiler *compiler, vector_compare_type compare_type,
+  int step, sljit_u32 dst_ind, sljit_u32 cmp1_ind, sljit_u32 cmp2_ind, sljit_u32 tmp_ind)
+{
+sljit_u32 instruction;
+#if PCRE2_CODE_UNIT_WIDTH == 8
+sljit_u32 size = 0 << 22;
+#elif PCRE2_CODE_UNIT_WIDTH == 16
+sljit_u32 size = 1 << 22;
+#elif PCRE2_CODE_UNIT_WIDTH == 32
+sljit_u32 size = 2 << 22;
+#else
+#error "Unsupported unit width"
+#endif
+
+SLJIT_ASSERT(step >= 0 && step <= 2);
+
+if (step == 1)
+  {
+  /* CMEQ */
+  instruction = 0x6e208c00 | size | (cmp1_ind << 16) | (dst_ind << 5) | dst_ind;
+  sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+  return;
+  }
+
+if (compare_type != vector_compare_match2)
+  {
+  if (step == 0 && compare_type == vector_compare_match1i)
+    {
+    /* ORR */
+    instruction = 0x4ea01c00 | (cmp2_ind << 16) | (dst_ind << 5) | dst_ind;
+    sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+    }
+  return;
+  }
+
+switch (step)
+  {
+  case 0:
+  /* CMEQ */
+  instruction = 0x6e208c00 | size | (cmp2_ind << 16) | (dst_ind << 5) | tmp_ind;
+  sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+  return;
+
+  case 2:
+  /* ORR */
+  instruction = 0x4ea01c00 | (tmp_ind << 16) | (dst_ind << 5) | dst_ind;
+  sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+  return;
+  }
+}
 
 static void fast_forward_char_simd(compiler_common *common, PCRE2_UCHAR char1, PCRE2_UCHAR char2, sljit_s32 offset)
 {
 DEFINE_COMPILER;
-int_char ic;
-struct sljit_jump *partial_quit, *quit;
-/* Save temporary registers. */
-SLJIT_ASSERT(common->locals_size >= 2 * (int)sizeof(sljit_sw));
-OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), LOCAL0, STR_PTR, 0);
-OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), LOCAL1, TMP3, 0);
+sljit_u32 instruction;
+struct sljit_label *start;
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+struct sljit_label *restart;
+#endif
+struct sljit_jump *quit;
+struct sljit_jump *partial_quit[2];
+vector_compare_type compare_type = vector_compare_match1;
+sljit_u32 data_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR0);
+sljit_u32 cmp1_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR1);
+sljit_u32 cmp2_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR2);
+sljit_u32 tmp_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR3);
+sljit_u32 bit = 0;
+int i;
 
-/* Prepare function arguments */
-OP1(SLJIT_MOV, SLJIT_R0, 0, STR_END, 0);
-GET_LOCAL_BASE(SLJIT_R1, 0, LOCAL0);
-OP1(SLJIT_MOV, SLJIT_R2, 0, SLJIT_IMM, offset);
+SLJIT_UNUSED_ARG(offset);
 
-if (char1 == char2)
+if (char1 != char2)
   {
-    ic.c.c1 = char1;
-    ic.c.c2 = char2;
-    OP1(SLJIT_MOV, SLJIT_R4, 0, SLJIT_IMM, ic.x);
+  bit = char1 ^ char2;
+  compare_type = vector_compare_match1i;
 
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-  if (common->utf && offset > 0)
-    sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                     SLJIT_IMM, SLJIT_FUNC_ADDR(ffcs_utf));
-  else
-    sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                     SLJIT_IMM, SLJIT_FUNC_ADDR(ffcs));
-#else
-  sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                   SLJIT_IMM, SLJIT_FUNC_ADDR(ffcs));
-#endif
-  }
-else
-  {
-  PCRE2_UCHAR mask = char1 ^ char2;
-  if (is_powerof2(mask))
+  if (!is_powerof2(bit))
     {
-    ic.c.c1 = char1 | mask;
-    ic.c.c2 = mask;
-    OP1(SLJIT_MOV, SLJIT_R4, 0, SLJIT_IMM, ic.x);
-
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-    if (common->utf && offset > 0)
-      sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                       SLJIT_IMM, SLJIT_FUNC_ADDR(ffcs_mask_utf));
-    else
-      sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                       SLJIT_IMM, SLJIT_FUNC_ADDR(ffcs_mask));
-#else
-    sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                     SLJIT_IMM, SLJIT_FUNC_ADDR(ffcs_mask));
-#endif
-    }
-  else
-    {
-      ic.c.c1 = char1;
-      ic.c.c2 = char2;
-      OP1(SLJIT_MOV, SLJIT_R4, 0, SLJIT_IMM, ic.x);
-
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-    if (common->utf && offset > 0)
-      sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                       SLJIT_IMM, SLJIT_FUNC_ADDR(ffcs_2_utf));
-    else
-      sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                       SLJIT_IMM, SLJIT_FUNC_ADDR(ffcs_2));
-#else
-    sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                     SLJIT_IMM, SLJIT_FUNC_ADDR(ffcs_2));
-#endif
+    bit = 0;
+    compare_type = vector_compare_match2;
     }
   }
-/* Restore registers. */
-OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_MEM1(SLJIT_SP), LOCAL0);
-OP1(SLJIT_MOV, TMP3, 0, SLJIT_MEM1(SLJIT_SP), LOCAL1);
 
-/* Check return value. */
-partial_quit = CMP(SLJIT_EQUAL, SLJIT_RETURN_REG, 0, SLJIT_IMM, 0);
+partial_quit[0] = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
 if (common->mode == PCRE2_JIT_COMPLETE)
-  add_jump(compiler, &common->failed_match, partial_quit);
+  add_jump(compiler, &common->failed_match, partial_quit[0]);
 
-/* Fast forward STR_PTR to the result of memchr. */
-OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_RETURN_REG, 0);
+/* First part (unaligned start) */
+if (char1 != char2)
+  sljit_emit_op1(compiler, SLJIT_MOV, TMP2, 0, SLJIT_IMM, bit != 0 ? bit : char2);
+sljit_emit_op1(compiler, SLJIT_MOV, TMP1, 0, SLJIT_IMM, char1 | bit);
+
+if (char1 != char2)
+  sljit_emit_simd_replicate(compiler, PCRE2_REPLICATE_TYPE, SLJIT_VR2, TMP2, 0);
+sljit_emit_simd_replicate(compiler, PCRE2_REPLICATE_TYPE, SLJIT_VR1, TMP1, 0);
+
+OP1(SLJIT_MOV, TMP2, 0, STR_PTR, 0);
+
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+restart = LABEL();
+#endif
+
+OP2(SLJIT_AND, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, ~(sljit_sw)0xf);
+OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xf);
+
+sljit_emit_simd_mov(compiler, SLJIT_SIMD_REG_128 | SLJIT_SIMD_MEM_ALIGNED_128, SLJIT_VR0, SLJIT_MEM1(STR_PTR), 0);
+
+for (i = 0; i < 3; i++)
+  fast_forward_char_pair_sse2_compare(compiler, compare_type, i, data_ind, cmp1_ind, cmp2_ind, tmp_ind);
+
+/* SHRN */
+instruction = 0x0f0c8400 | (data_ind << 5) | data_ind;
+sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+
+sljit_emit_simd_lane_mov(compiler, SLJIT_SIMD_STORE | SLJIT_SIMD_REG_128 | SLJIT_SIMD_ELEM_64, SLJIT_VR0, 0, TMP1, 0);
+
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 2);
+OP2(SLJIT_LSHR, TMP1, 0, TMP1, 0, TMP2, 0);
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, TMP2, 0);
+
+quit = CMP(SLJIT_NOT_ZERO, TMP1, 0, SLJIT_IMM, 0);
+
+/* Second part (aligned) */
+start = LABEL();
+
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, 16);
+
+partial_quit[1] = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+if (common->mode == PCRE2_JIT_COMPLETE)
+  add_jump(compiler, &common->failed_match, partial_quit[1]);
+
+sljit_emit_simd_mov(compiler, SLJIT_SIMD_REG_128 | SLJIT_SIMD_MEM_ALIGNED_128, SLJIT_VR0, SLJIT_MEM1(STR_PTR), 0);
+for (i = 0; i < 3; i++)
+  fast_forward_char_pair_sse2_compare(compiler, compare_type, i, data_ind, cmp1_ind, cmp2_ind, tmp_ind);
+
+/* SHRN */
+instruction = 0x0f0c8400 | (data_ind << 5) | data_ind;
+sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+
+sljit_emit_simd_lane_mov(compiler, SLJIT_SIMD_STORE | SLJIT_SIMD_REG_128 | SLJIT_SIMD_ELEM_64, SLJIT_VR0, 0, TMP1, 0);
+CMPTO(SLJIT_ZERO, TMP1, 0, SLJIT_IMM, 0, start);
+
+JUMPHERE(quit);
+
+sljit_emit_op1(compiler, SLJIT_CTZ, TMP1, 0, TMP1, 0);
+OP2(SLJIT_LSHR, TMP1, 0, TMP1, 0, SLJIT_IMM, 2);
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP1, 0);
+
 if (common->mode != PCRE2_JIT_COMPLETE)
   {
-  quit = CMP(SLJIT_NOT_ZERO, SLJIT_RETURN_REG, 0, SLJIT_IMM, 0);
-  JUMPHERE(partial_quit);
+  JUMPHERE(partial_quit[0]);
+  JUMPHERE(partial_quit[1]);
   OP2U(SLJIT_SUB | SLJIT_SET_GREATER, STR_PTR, 0, STR_END, 0);
   SELECT(SLJIT_GREATER, STR_PTR, STR_END, 0, STR_PTR);
+  }
+else
+  add_jump(compiler, &common->failed_match, CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0));
+
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+if (common->utf && offset > 0)
+  {
+  SLJIT_ASSERT(common->mode == PCRE2_JIT_COMPLETE);
+
+  OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-offset));
+
+  quit = jump_if_utf_char_start(compiler, TMP1);
+
+  OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+  add_jump(compiler, &common->failed_match, CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0));
+  OP1(SLJIT_MOV, TMP2, 0, STR_PTR, 0);
+  JUMPTO(SLJIT_JUMP, restart);
+
   JUMPHERE(quit);
   }
+#endif
 }
 
-typedef enum {
-  compare_match1,
-  compare_match1i,
-  compare_match2,
-} compare_type;
+#define JIT_HAS_FAST_REQUESTED_CHAR_SIMD 1
 
-static inline vect_t fast_forward_char_pair_compare(compare_type ctype, vect_t dst, vect_t cmp1, vect_t cmp2)
+static jump_list *fast_requested_char_simd(compiler_common *common, PCRE2_UCHAR char1, PCRE2_UCHAR char2)
 {
-if (ctype == compare_match2)
+DEFINE_COMPILER;
+sljit_u32 instruction;
+struct sljit_label *start;
+struct sljit_jump *quit;
+jump_list *not_found = NULL;
+vector_compare_type compare_type = vector_compare_match1;
+sljit_u32 data_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR0);
+sljit_u32 cmp1_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR1);
+sljit_u32 cmp2_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR2);
+sljit_u32 tmp_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR3);
+sljit_u32 bit = 0;
+int i;
+
+if (char1 != char2)
   {
-  vect_t tmp = dst;
-  dst = VCEQQ(dst, cmp1);
-  tmp = VCEQQ(tmp, cmp2);
-  dst = VORRQ(dst, tmp);
-  return dst;
+  bit = char1 ^ char2;
+  compare_type = vector_compare_match1i;
+
+  if (!is_powerof2(bit))
+    {
+    bit = 0;
+    compare_type = vector_compare_match2;
+    }
   }
 
-if (ctype == compare_match1i)
-  dst = VORRQ(dst, cmp2);
-dst = VCEQQ(dst, cmp1);
-return dst;
+add_jump(compiler, &not_found, CMP(SLJIT_GREATER_EQUAL, TMP1, 0, STR_END, 0));
+
+/* First part (unaligned start) */
+
+if (char1 != char2)
+  sljit_emit_op1(compiler, SLJIT_MOV, TMP3, 0, SLJIT_IMM, bit != 0 ? bit : char2);
+sljit_emit_op1(compiler, SLJIT_MOV, TMP2, 0, SLJIT_IMM, char1 | bit);
+
+if (char1 != char2)
+  sljit_emit_simd_replicate(compiler, PCRE2_REPLICATE_TYPE, SLJIT_VR2, TMP3, 0);
+sljit_emit_simd_replicate(compiler, PCRE2_REPLICATE_TYPE, SLJIT_VR1, TMP2, 0);
+
+OP2(SLJIT_AND, TMP3, 0, TMP1, 0, SLJIT_IMM, ~(sljit_sw)0xf);
+OP2(SLJIT_AND, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xf);
+
+sljit_emit_simd_mov(compiler, SLJIT_SIMD_REG_128 | SLJIT_SIMD_MEM_ALIGNED_128, SLJIT_VR0, SLJIT_MEM1(TMP3), 0);
+
+for (i = 0; i < 3; i++)
+  fast_forward_char_pair_sse2_compare(compiler, compare_type, i, data_ind, cmp1_ind, cmp2_ind, tmp_ind);
+
+/* SHRN */
+instruction = 0x0f0c8400 | (data_ind << 5) | data_ind;
+sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+
+sljit_emit_simd_lane_mov(compiler, SLJIT_SIMD_STORE | SLJIT_SIMD_REG_128 | SLJIT_SIMD_ELEM_64, SLJIT_VR0, 0, TMP1, 0);
+
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 2);
+OP2(SLJIT_LSHR, TMP1, 0, TMP1, 0, TMP2, 0);
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, TMP2, 0);
+
+quit = CMP(SLJIT_NOT_ZERO, TMP1, 0, SLJIT_IMM, 0);
+
+/* Second part (aligned) */
+start = LABEL();
+
+OP2(SLJIT_ADD, TMP3, 0, TMP3, 0, SLJIT_IMM, 16);
+
+add_jump(compiler, &not_found, CMP(SLJIT_GREATER_EQUAL, TMP3, 0, STR_END, 0));
+
+sljit_emit_simd_mov(compiler, SLJIT_SIMD_REG_128 | SLJIT_SIMD_MEM_ALIGNED_128, SLJIT_VR0, SLJIT_MEM1(TMP3), 0);
+
+for (i = 0; i < 3; i++)
+  fast_forward_char_pair_sse2_compare(compiler, compare_type, i, data_ind, cmp1_ind, cmp2_ind, tmp_ind);
+
+/* SHRN */
+instruction = 0x0f0c8400 | (data_ind << 5) | data_ind;
+sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+
+sljit_emit_simd_lane_mov(compiler, SLJIT_SIMD_STORE | SLJIT_SIMD_REG_128 | SLJIT_SIMD_ELEM_64, SLJIT_VR0, 0, TMP1, 0);
+CMPTO(SLJIT_ZERO, TMP1, 0, SLJIT_IMM, 0, start);
+
+JUMPHERE(quit);
+
+sljit_emit_op1(compiler, SLJIT_CTZ, TMP1, 0, TMP1, 0);
+OP2(SLJIT_LSHR, TMP1, 0, TMP1, 0, SLJIT_IMM, 2);
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP3, 0);
+add_jump(compiler, &not_found, CMP(SLJIT_GREATER_EQUAL, TMP1, 0, STR_END, 0));
+
+return not_found;
 }
-
-static SLJIT_INLINE sljit_u32 max_fast_forward_char_pair_offset(void)
-{
-#if PCRE2_CODE_UNIT_WIDTH == 8
-return 15;
-#elif PCRE2_CODE_UNIT_WIDTH == 16
-return 7;
-#elif PCRE2_CODE_UNIT_WIDTH == 32
-return 3;
-#else
-#error "Unsupported unit width"
-#endif
-}
-
-/* ARM doesn't have a shift left across lanes. */
-static SLJIT_INLINE vect_t shift_left_n_lanes(vect_t a, sljit_u8 n)
-{
-vect_t zero = VDUPQ(0);
-SLJIT_ASSERT(0 < n && n < VECTOR_FACTOR);
-/* VEXTQ takes an immediate as last argument. */
-#define C(X) case X: return VEXTQ(zero, a, VECTOR_FACTOR - X);
-switch (n)
-  {
-  C(1); C(2); C(3);
-#if PCRE2_CODE_UNIT_WIDTH != 32
-  C(4); C(5); C(6); C(7);
-# if PCRE2_CODE_UNIT_WIDTH != 16
-  C(8); C(9); C(10); C(11); C(12); C(13); C(14); C(15);
-# endif
-#endif
-  default:
-    /* Based on the ASSERT(0 < n && n < VECTOR_FACTOR) above, this won't
-       happen. The return is still here for compilers to not warn. */
-    return a;
-  }
-}
-
-#define FFCPS
-#define FFCPS_DIFF1
-#define FFCPS_CHAR1A2A
-
-#define FFCPS_0
-#include "pcre2_jit_neon_inc.h"
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-# define FF_UTF
-# include "pcre2_jit_neon_inc.h"
-# undef FF_UTF
-#endif
-#undef FFCPS_0
-
-#undef FFCPS_CHAR1A2A
-
-#define FFCPS_1
-#include "pcre2_jit_neon_inc.h"
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-# define FF_UTF
-# include "pcre2_jit_neon_inc.h"
-# undef FF_UTF
-#endif
-#undef FFCPS_1
-
-#undef FFCPS_DIFF1
-
-#define FFCPS_DEFAULT
-#include "pcre2_jit_neon_inc.h"
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-# define FF_UTF
-# include "pcre2_jit_neon_inc.h"
-# undef FF_UTF
-#endif
-#undef FFCPS
 
 #define JIT_HAS_FAST_FORWARD_CHAR_PAIR_SIMD 1
 
@@ -1031,80 +1051,213 @@ static void fast_forward_char_pair_simd(compiler_common *common, sljit_s32 offs1
   PCRE2_UCHAR char1a, PCRE2_UCHAR char1b, sljit_s32 offs2, PCRE2_UCHAR char2a, PCRE2_UCHAR char2b)
 {
 DEFINE_COMPILER;
+sljit_u32 instruction;
+vector_compare_type compare1_type = vector_compare_match1;
+vector_compare_type compare2_type = vector_compare_match1;
+sljit_u32 bit1 = 0;
+sljit_u32 bit2 = 0;
 sljit_u32 diff = IN_UCHARS(offs1 - offs2);
-struct sljit_jump *partial_quit;
-int_char ic;
-SLJIT_ASSERT(common->mode == PCRE2_JIT_COMPLETE && offs1 > offs2);
-SLJIT_ASSERT(diff <= IN_UCHARS(max_fast_forward_char_pair_offset()));
-SLJIT_ASSERT(compiler->scratches == 5);
+sljit_u32 data1_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR0);
+sljit_u32 data2_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR1);
+sljit_u32 cmp1a_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR2);
+sljit_u32 cmp2a_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR3);
+sljit_u32 cmp1b_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR4);
+sljit_u32 cmp2b_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR5);
+sljit_u32 tmp1_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR6);
+sljit_u32 tmp2_ind = (sljit_u32)sljit_get_register_index(SLJIT_SIMD_REG_128, SLJIT_VR7);
+struct sljit_label *start;
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+struct sljit_label *restart;
+#endif
+struct sljit_jump *jump[2];
+int i;
 
-/* Save temporary register STR_PTR. */
-OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), LOCAL0, STR_PTR, 0);
+SLJIT_ASSERT(common->mode == PCRE2_JIT_COMPLETE && offs1 > offs2 && offs2 >= 0);
+SLJIT_ASSERT(diff <= (unsigned)IN_UCHARS(max_fast_forward_char_pair_offset()));
 
-/* Prepare arguments for the function call. */
-if (common->match_end_ptr == 0)
-   OP1(SLJIT_MOV, SLJIT_R0, 0, STR_END, 0);
+if (char1a != char1b)
+  {
+  bit1 = char1a ^ char1b;
+  compare1_type = vector_compare_match1i;
+
+  if (!is_powerof2(bit1))
+    {
+    bit1 = 0;
+    compare1_type = vector_compare_match2;
+    }
+  }
+
+if (char2a != char2b)
+  {
+  bit2 = char2a ^ char2b;
+  compare2_type = vector_compare_match1i;
+
+  if (!is_powerof2(bit2))
+    {
+    bit2 = 0;
+    compare2_type = vector_compare_match2;
+    }
+  }
+
+/* Initialize. */
+if (common->match_end_ptr != 0)
+  {
+  OP1(SLJIT_MOV, TMP1, 0, SLJIT_MEM1(SLJIT_SP), common->match_end_ptr);
+  OP1(SLJIT_MOV, TMP3, 0, STR_END, 0);
+  OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, IN_UCHARS(offs1 + 1));
+
+  OP2U(SLJIT_SUB | SLJIT_SET_LESS, TMP1, 0, STR_END, 0);
+  SELECT(SLJIT_LESS, STR_END, TMP1, 0, STR_END);
+  }
+
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(offs1));
+add_jump(compiler, &common->failed_match, CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0));
+
+sljit_emit_op1(compiler, SLJIT_MOV, TMP1, 0, SLJIT_IMM, char1a | bit1);
+sljit_emit_op1(compiler, SLJIT_MOV, TMP2, 0, SLJIT_IMM, char2a | bit2);
+sljit_emit_simd_replicate(compiler, PCRE2_REPLICATE_TYPE, SLJIT_VR2, TMP1, 0);
+sljit_emit_simd_replicate(compiler, PCRE2_REPLICATE_TYPE, SLJIT_VR3, TMP2, 0);
+
+if (char1a != char1b)
+  sljit_emit_op1(compiler, SLJIT_MOV, TMP1, 0, SLJIT_IMM, bit1 != 0 ? bit1 : char1b);
+
+if (char2a != char2b)
+  sljit_emit_op1(compiler, SLJIT_MOV, TMP2, 0, SLJIT_IMM, bit2 != 0 ? bit2 : char2b);
+
+if (char1a != char1b)
+  sljit_emit_simd_replicate(compiler, PCRE2_REPLICATE_TYPE, SLJIT_VR4, TMP1, 0);
+
+if (char2a != char2b)
+  sljit_emit_simd_replicate(compiler, PCRE2_REPLICATE_TYPE, SLJIT_VR5, TMP2, 0);
+
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+restart = LABEL();
+#endif
+
+OP2(SLJIT_SUB, TMP1, 0, STR_PTR, 0, SLJIT_IMM, diff);
+OP1(SLJIT_MOV, TMP2, 0, STR_PTR, 0);
+OP2(SLJIT_AND, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, ~(sljit_sw)0xf);
+
+sljit_emit_simd_mov(compiler, SLJIT_SIMD_REG_128 | SLJIT_SIMD_MEM_ALIGNED_128, SLJIT_VR0, SLJIT_MEM1(STR_PTR), 0);
+
+jump[0] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, STR_PTR, 0);
+
+sljit_emit_simd_mov(compiler, SLJIT_SIMD_REG_128, SLJIT_VR1, SLJIT_MEM1(STR_PTR), -(sljit_sw)diff);
+jump[1] = JUMP(SLJIT_JUMP);
+
+JUMPHERE(jump[0]);
+
+if (diff >= 8)
+  {
+  /* MOV (element) */
+  instruction = 0x6e180400 | (data1_ind << 5) | data2_ind;
+  sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+
+  if (diff > 8)
+    {
+    /* SHL */
+    instruction = 0x4f405400 | ((diff - 8) << 19) | (data2_ind << 5) | data2_ind;
+    sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+    }
+  }
 else
   {
-  OP1(SLJIT_MOV, SLJIT_R0, 0, SLJIT_MEM1(SLJIT_SP), common->match_end_ptr);
-  OP2(SLJIT_ADD, SLJIT_R0, 0, SLJIT_R0, 0, SLJIT_IMM, IN_UCHARS(offs1 + 1));
+  /* MOV (element) */
+  instruction = 0x6e180400 | (data1_ind << 5) | tmp1_ind;
+  sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
 
-  OP2U(SLJIT_SUB | SLJIT_SET_LESS, STR_END, 0, SLJIT_R0, 0);
-  SELECT(SLJIT_LESS, SLJIT_R0, STR_END, 0, SLJIT_R0);
+  /* SHL */
+  instruction = 0x4f405400 | (diff << 19) | (data1_ind << 5) | data2_ind;
+  sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+
+  /* USHR */
+  instruction = 0x6f400400 | (diff << 19) | (tmp1_ind << 5) | tmp1_ind;
+  sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+
+  sljit_emit_simd_op2(compiler, SLJIT_SIMD_OP2_OR | SLJIT_SIMD_REG_128, SLJIT_VR1, SLJIT_VR1, SLJIT_VR6, 0);
   }
 
-GET_LOCAL_BASE(SLJIT_R1, 0, LOCAL0);
-OP1(SLJIT_MOV_S32, SLJIT_R2, 0, SLJIT_IMM, offs1);
-OP1(SLJIT_MOV_S32, SLJIT_R3, 0, SLJIT_IMM, offs2);
-ic.c.c1 = char1a;
-ic.c.c2 = char1b;
-ic.c.c3 = char2a;
-ic.c.c4 = char2b;
-OP1(SLJIT_MOV_U32, SLJIT_R4, 0, SLJIT_IMM, ic.x);
+JUMPHERE(jump[1]);
 
-if (diff == 1) {
-  if (char1a == char1b && char2a == char2b) {
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-    if (common->utf)
-      sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                       SLJIT_IMM, SLJIT_FUNC_ADDR(ffcps_0_utf));
-    else
-#endif
-      sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                       SLJIT_IMM, SLJIT_FUNC_ADDR(ffcps_0));
-  } else {
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-    if (common->utf)
-      sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                       SLJIT_IMM, SLJIT_FUNC_ADDR(ffcps_1_utf));
-    else
-#endif
-      sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                       SLJIT_IMM, SLJIT_FUNC_ADDR(ffcps_1));
+OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xf);
+
+for (i = 0; i < 3; i++)
+  {
+  fast_forward_char_pair_sse2_compare(compiler, compare1_type, i, data1_ind, cmp1a_ind, cmp1b_ind, tmp1_ind);
+  fast_forward_char_pair_sse2_compare(compiler, compare2_type, i, data2_ind, cmp2a_ind, cmp2b_ind, tmp2_ind);
   }
-} else {
+
+sljit_emit_simd_op2(compiler, SLJIT_SIMD_OP2_AND | SLJIT_SIMD_REG_128, SLJIT_VR0, SLJIT_VR0, SLJIT_VR1, 0);
+
+/* SHRN */
+instruction = 0x0f0c8400 | (data1_ind << 5) | data1_ind;
+sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+
+sljit_emit_simd_lane_mov(compiler, SLJIT_SIMD_STORE | SLJIT_SIMD_REG_128 | SLJIT_SIMD_ELEM_64, SLJIT_VR0, 0, TMP1, 0);
+
+/* Ignore matches before the first STR_PTR. */
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 2);
+OP2(SLJIT_LSHR, TMP1, 0, TMP1, 0, TMP2, 0);
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, TMP2, 0);
+
+jump[0] = CMP(SLJIT_NOT_ZERO, TMP1, 0, SLJIT_IMM, 0);
+
+/* Main loop. */
+start = LABEL();
+
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, 16);
+add_jump(compiler, &common->failed_match, CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0));
+
+sljit_emit_simd_mov(compiler, SLJIT_SIMD_REG_128 | SLJIT_SIMD_MEM_ALIGNED_128, SLJIT_VR0, SLJIT_MEM1(STR_PTR), 0);
+sljit_emit_simd_mov(compiler, SLJIT_SIMD_REG_128, SLJIT_VR1, SLJIT_MEM1(STR_PTR), -(sljit_sw)diff);
+
+for (i = 0; i < 3; i++)
+  {
+  fast_forward_char_pair_sse2_compare(compiler, compare1_type, i, data1_ind, cmp1a_ind, cmp1b_ind, tmp1_ind);
+  fast_forward_char_pair_sse2_compare(compiler, compare2_type, i, data2_ind, cmp2a_ind, cmp2b_ind, tmp2_ind);
+  }
+
+sljit_emit_simd_op2(compiler, SLJIT_SIMD_OP2_AND | SLJIT_SIMD_REG_128, SLJIT_VR0, SLJIT_VR0, SLJIT_VR1, 0);
+
+/* SHRN */
+instruction = 0x0f0c8400 | (data1_ind << 5) | data1_ind;
+sljit_emit_op_custom(compiler, &instruction, sizeof(sljit_u32));
+
+sljit_emit_simd_lane_mov(compiler, SLJIT_SIMD_STORE | SLJIT_SIMD_REG_128 | SLJIT_SIMD_ELEM_64, SLJIT_VR0, 0, TMP1, 0);
+
+CMPTO(SLJIT_ZERO, TMP1, 0, SLJIT_IMM, 0, start);
+
+JUMPHERE(jump[0]);
+
+sljit_emit_op1(compiler, SLJIT_CTZ, TMP1, 0, TMP1, 0);
+OP2(SLJIT_LSHR, TMP1, 0, TMP1, 0, SLJIT_IMM, 2);
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP1, 0);
+
+add_jump(compiler, &common->failed_match, CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0));
+
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-  if (common->utf)
-    sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                     SLJIT_IMM, SLJIT_FUNC_ADDR(ffcps_default_utf));
-  else
+if (common->utf)
+  {
+  OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-offs1));
+
+  jump[0] = jump_if_utf_char_start(compiler, TMP1);
+
+  OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+  CMPTO(SLJIT_LESS, STR_PTR, 0, STR_END, 0, restart);
+
+  add_jump(compiler, &common->failed_match, JUMP(SLJIT_JUMP));
+
+  JUMPHERE(jump[0]);
+  }
 #endif
-    sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_ARGS4(W, W, W, W, W),
-                     SLJIT_IMM, SLJIT_FUNC_ADDR(ffcps_default));
+
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(offs1));
+
+if (common->match_end_ptr != 0)
+  OP1(SLJIT_MOV, STR_END, 0, TMP3, 0);
 }
 
-/* Restore STR_PTR register. */
-OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_MEM1(SLJIT_SP), LOCAL0);
-
-/* Check return value. */
-partial_quit = CMP(SLJIT_EQUAL, SLJIT_RETURN_REG, 0, SLJIT_IMM, 0);
-add_jump(compiler, &common->failed_match, partial_quit);
-
-/* Fast forward STR_PTR to the result of memchr. */
-OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_RETURN_REG, 0);
-
-JUMPHERE(partial_quit);
-}
+#undef PCRE2_REPLICATE_TYPE
 
 #endif /* SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64 */
 
@@ -1289,7 +1442,7 @@ if (char1 != char2)
 
 #else /* PCRE2_CODE_UNIT_WIDTH == 32 */
 
-for (int i = 0; i < 2; i++)
+for (i = 0; i < 2; i++)
   {
   replicate_imm_vector(compiler, i, cmp1_ind, char1 | bit, TMP1);
 
@@ -1483,7 +1636,7 @@ if (char1 != char2)
 
 #else /* PCRE2_CODE_UNIT_WIDTH == 32 */
 
-for (int i = 0; i < 2; i++)
+for (i = 0; i < 2; i++)
   {
   replicate_imm_vector(compiler, i, cmp1_ind, char1 | bit, TMP3);
 
@@ -1699,7 +1852,7 @@ if (char2a != char2b)
 
 #else /* PCRE2_CODE_UNIT_WIDTH == 32 */
 
-for (int i = 0; i < 2; i++)
+for (i = 0; i < 2; i++)
   {
   replicate_imm_vector(compiler, i, cmp1a_ind, char1a | bit1, TMP1);
 
@@ -1865,21 +2018,18 @@ typedef sljit_ins sljit_u32;
 #define IMM_UI2(imm)    (((sljit_ins)(imm) << 10) & UI2_IMM_MASK)
 
 // LSX OPCODES:
-#define VLD           0x2c000000
-#define VOR_V         0x71268000
-#define VAND_V        0x71260000
 #define VBSLL_V       0x728e0000
 #define VMSKLTZ_B     0x729c4000
 #define VPICKVE2GR_WU 0x72f3e000
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
-#define VREPLGR2VR  0x729f0000
+#define VREPLGR2VR_X  0x729f0000
 #define VSEQ        0x70000000
 #elif PCRE2_CODE_UNIT_WIDTH == 16
-#define VREPLGR2VR  0x729f0400
+#define VREPLGR2VR_X  0x729f0400
 #define VSEQ        0x70008000
 #else
-#define VREPLGR2VR  0x729f0800
+#define VREPLGR2VR_X  0x729f0800
 #define VSEQ        0x70010000
 #endif
 
@@ -1956,14 +2106,14 @@ if (common->mode == PCRE2_JIT_COMPLETE)
 OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, char1 | bit);
 
 /* VREPLGR2VR.B/H/W vd, rj */
-push_inst(compiler, VREPLGR2VR | VD(cmp1_ind) | RJ_V(tmp1_reg_ind));
+push_inst(compiler, VREPLGR2VR_X | VD(cmp1_ind) | RJ_V(tmp1_reg_ind));
 
 if (char1 != char2)
   {
   OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, bit != 0 ? bit : char2);
 
   /* VREPLGR2VR.B/H/W vd, rj */
-  push_inst(compiler, VREPLGR2VR | VD(cmp2_ind) | RJ_V(tmp1_reg_ind));
+  push_inst(compiler, VREPLGR2VR_X | VD(cmp2_ind) | RJ_V(tmp1_reg_ind));
   }
 
 OP1(SLJIT_MOV, TMP2, 0, STR_PTR, 0);
@@ -2086,14 +2236,14 @@ OP1(SLJIT_MOV, TMP3, 0, STR_PTR, 0);
 
 OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, char1 | bit);
 
-/* VREPLGR2VR vd, rj */
-push_inst(compiler, VREPLGR2VR | VD(cmp1_ind) | RJ_V(tmp1_reg_ind));
+/* VREPLGR2VR.B/H/W vd, rj */
+push_inst(compiler, VREPLGR2VR_X | VD(cmp1_ind) | RJ_V(tmp1_reg_ind));
 
 if (char1 != char2)
   {
   OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, bit != 0 ? bit : char2);
-  /* VREPLGR2VR vd, rj */
-  push_inst(compiler, VREPLGR2VR | VD(cmp2_ind) | RJ_V(tmp1_reg_ind));
+  /* VREPLGR2VR.B/H/W vd, rj */
+  push_inst(compiler, VREPLGR2VR_X | VD(cmp2_ind) | RJ_V(tmp1_reg_ind));
   }
 
 OP1(SLJIT_MOV, STR_PTR, 0, TMP2, 0);
@@ -2213,13 +2363,13 @@ else
     }
   }
 
-/* VREPLGR2VR vd, rj */
-push_inst(compiler, VREPLGR2VR | VD(cmp1a_ind) | RJ_V(tmp1_reg_ind));
+/* VREPLGR2VR.B/H/W vd, rj */
+push_inst(compiler, VREPLGR2VR_X | VD(cmp1a_ind) | RJ_V(tmp1_reg_ind));
 
 if (char1a != char1b)
   {
-  /* VREPLGR2VR vd, rj */
-  push_inst(compiler, VREPLGR2VR | VD(cmp1b_ind) | RJ_V(tmp2_reg_ind));
+  /* VREPLGR2VR.B/H/W vd, rj */
+  push_inst(compiler, VREPLGR2VR_X | VD(cmp1b_ind) | RJ_V(tmp2_reg_ind));
   }
 
 if (char2a == char2b)
@@ -2242,13 +2392,13 @@ else
     }
   }
 
-/* VREPLGR2VR vd, rj */
-push_inst(compiler, VREPLGR2VR | VD(cmp2a_ind) | RJ_V(tmp1_reg_ind));
+/* VREPLGR2VR.B/H/W vd, rj */
+push_inst(compiler, VREPLGR2VR_X | VD(cmp2a_ind) | RJ_V(tmp1_reg_ind));
 
 if (char2a != char2b)
   {
-  /* VREPLGR2VR vd, rj */
-  push_inst(compiler, VREPLGR2VR | VD(cmp2b_ind) | RJ_V(tmp2_reg_ind));
+  /* VREPLGR2VR.B/H/W vd, rj */
+  push_inst(compiler, VREPLGR2VR_X | VD(cmp2b_ind) | RJ_V(tmp2_reg_ind));
   }
 
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32

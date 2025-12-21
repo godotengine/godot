@@ -466,6 +466,13 @@ public:
 		DROP_MODE_INBETWEEN = 2
 	};
 
+	enum ScrollHintMode {
+		SCROLL_HINT_MODE_DISABLED,
+		SCROLL_HINT_MODE_BOTH,
+		SCROLL_HINT_MODE_TOP,
+		SCROLL_HINT_MODE_BOTTOM,
+	};
+
 private:
 	friend class TreeItem;
 
@@ -622,6 +629,7 @@ private:
 		Ref<Texture2D> arrow_collapsed_mirrored;
 		Ref<Texture2D> select_arrow;
 		Ref<Texture2D> updown;
+		Ref<Texture2D> scroll_hint;
 
 		Color font_color;
 		Color font_hovered_color;
@@ -737,6 +745,9 @@ private:
 	bool click_handled = false;
 	bool allow_rmb_select = false;
 	bool scrolling = false;
+
+	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
+	bool tile_scroll_hint = false;
 
 	bool allow_reselect = false;
 	bool allow_search = true;
@@ -893,6 +904,12 @@ public:
 	void set_v_scroll_enabled(bool p_enable);
 	bool is_v_scroll_enabled() const;
 
+	void set_scroll_hint_mode(ScrollHintMode p_mode);
+	ScrollHintMode get_scroll_hint_mode() const;
+
+	void set_tile_scroll_hint(bool p_enable);
+	bool is_scroll_hint_tiled();
+
 	void set_cursor_can_exit_tree(bool p_enable);
 
 	VScrollBar *get_vscroll_bar() { return v_scroll; }
@@ -932,3 +949,4 @@ public:
 
 VARIANT_ENUM_CAST(Tree::SelectMode);
 VARIANT_ENUM_CAST(Tree::DropModeFlags);
+VARIANT_ENUM_CAST(Tree::ScrollHintMode);

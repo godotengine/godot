@@ -1074,6 +1074,19 @@ void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
 }
 
+void GDScript::set_path_cache(const String &p_path) {
+	if (is_root_script()) {
+		Script::set_path_cache(p_path);
+	}
+
+	path = p_path;
+	path_valid = true;
+
+	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
+		kv.value->set_path_cache(p_path);
+	}
+}
+
 void GDScript::set_path(const String &p_path, bool p_take_over) {
 	if (is_root_script()) {
 		Script::set_path(p_path, p_take_over);
@@ -2813,6 +2826,17 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 }
 
 String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool) const {
+	LocalVector<String> r_vec;
+	return _get_global_class_name(p_path, r_base_type, r_icon_path, r_is_abstract, r_is_tool, r_vec);
+}
+
+String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, LocalVector<String> &r_visited) const {
+	if (r_visited.has(p_path)) {
+		return String();
+	}
+
+	r_visited.push_back(p_path);
+
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
@@ -2852,7 +2876,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 				if (!subclass->extends_path.is_empty()) {
 					if (subclass->extends.is_empty()) {
 						// We only care about the referenced class_name.
-						_ALLOW_DISCARD_ get_global_class_name(subclass->extends_path, r_base_type);
+						_ALLOW_DISCARD_ _get_global_class_name(subclass->extends_path, r_base_type, nullptr, nullptr, nullptr, r_visited);
 						subclass = nullptr;
 						break;
 					} else {

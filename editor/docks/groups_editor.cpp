@@ -911,16 +911,21 @@ GroupsEditor::GroupsEditor() {
 	filter->connect(SceneStringName(text_changed), callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
 	hbc->add_child(filter);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	holder->add_child(mc);
+
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
 	tree->set_select_mode(Tree::SelectMode::SELECT_SINGLE);
+	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+	mc->add_child(tree);
 	tree->connect("button_clicked", callable_mp(this, &GroupsEditor::_modify_group));
 	tree->connect("item_mouse_selected", callable_mp(this, &GroupsEditor::_item_mouse_selected));
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &GroupsEditor::_groups_gui_input));
-	holder->add_child(tree);
 
 	menu = memnew(PopupMenu);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GroupsEditor::_menu_id_pressed));

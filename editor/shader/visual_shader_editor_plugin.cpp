@@ -1564,11 +1564,10 @@ void VisualShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 	}
 }
 
-void VisualShaderEditor::use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) {
+void VisualShaderEditor::use_menu_bar(MenuButton *p_file_menu) {
 	p_file_menu->set_switch_on_hover(false);
 	toolbar_hflow->add_child(p_file_menu);
 	toolbar_hflow->move_child(p_file_menu, 2); // Toggle Files Panel button + separator.
-	toolbar_hflow->add_child(p_make_floating);
 }
 
 void VisualShaderEditor::apply_shaders() {
@@ -3848,6 +3847,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 		position /= EDSCALE;
 	}
 	position /= graph->get_zoom();
+	position /= cached_theme_base_scale;
 	saved_node_pos_dirty = false;
 
 	int id_to_use = visual_shader->get_valid_node_id(type);
@@ -5248,10 +5248,6 @@ void VisualShaderEditor::_help_open() {
 
 void VisualShaderEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_POSTINITIALIZE: {
-			_update_options_menu();
-		} break;
-
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
 				graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
@@ -5354,6 +5350,7 @@ void VisualShaderEditor::_notification(int p_what) {
 				theme_dirty = true;
 			}
 			update_toggle_files_button();
+			_update_options_menu();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -6024,7 +6021,7 @@ void VisualShaderEditor::_varying_validate() {
 		if (has_error) {
 			error += "\n";
 		}
-		error += vformat(TTR("Boolean type cannot be used with `%s` varying mode."), "Vertex -> [Fragment, Light]");
+		error += vformat(TTR("Boolean type cannot be used with `%s` varying mode."), U"Vertex → [Fragment, Light]");
 		has_error = true;
 	}
 
@@ -6735,7 +6732,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	site_search->set_text(TTR("Online Docs"));
 	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
 	toolbar_hflow->add_child(site_search);
-	toolbar_hflow->add_child(memnew(VSeparator));
 
 	VSeparator *separator = memnew(VSeparator);
 	toolbar_hflow->add_child(separator);
@@ -6992,8 +6988,8 @@ VisualShaderEditor::VisualShaderEditor() {
 
 		varying_mode = memnew(OptionButton);
 		hb->add_child(varying_mode);
-		varying_mode->add_item("Vertex -> [Fragment, Light]");
-		varying_mode->add_item("Fragment -> Light");
+		varying_mode->add_item(U"Vertex → [Fragment, Light]");
+		varying_mode->add_item(U"Fragment → Light");
 		varying_mode->set_accessibility_name(TTRC("Varying Mode"));
 		varying_mode->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_varying_mode_changed));
 

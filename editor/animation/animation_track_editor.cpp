@@ -1483,7 +1483,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			}
 			[[fallthrough]];
 		}
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
@@ -2155,7 +2155,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (animation.is_null()) {
+			if (animation.is_null() || animation->get_track_count() == 0) {
 				return;
 			}
 			ERR_FAIL_INDEX(track, animation->get_track_count());
@@ -2335,36 +2335,37 @@ void AnimationTrackEdit::_notification(int p_what) {
 			{
 				float scale = timeline->get_zoom_scale();
 
+				// Pre-calculate the actual order of the keys. This is needed as a move might be happening
+				// which might cause the keys to be in a different order than their current indices.
+				Vector<Pair<float, int>> sorted_keys;
+
 				for (int i = 0; i < animation->track_get_key_count(track); i++) {
-					float offset = animation->track_get_key_time(track, i) - timeline->get_value();
+					float time_offset = animation->track_get_key_time(track, i) - timeline->get_value();
 					if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-						offset = offset + editor->get_moving_selection_offset();
-					}
-					offset = offset * scale + limit;
-					if (i < animation->track_get_key_count(track) - 1) {
-						float offset_n = animation->track_get_key_time(track, i + 1) - timeline->get_value();
-						if (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) {
-							offset_n = offset_n + editor->get_moving_selection_offset();
-						}
-						offset_n = offset_n * scale + limit;
-						float offset_last = limit_end;
-						if (i < animation->track_get_key_count(track) - 2) {
-							offset_last = animation->track_get_key_time(track, i + 2) - timeline->get_value();
-							if (editor->is_key_selected(track, i + 2) && editor->is_moving_selection()) {
-								offset_last = offset_last + editor->get_moving_selection_offset();
-							}
-							offset_last = offset_last * scale + limit;
-						}
-						int limit_string = (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) ? int(offset_last) : int(offset_n);
-						if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-							limit_string = int(MAX(limit_end, offset_last));
-						}
-						draw_key_link(i, scale, int(offset), int(offset_n), limit, limit_end);
-						draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_string);
-						continue;
+						time_offset += editor->get_moving_selection_offset();
 					}
 
-					draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_end);
+					float screen_pos = time_offset * scale + limit;
+					sorted_keys.push_back(Pair<float, int>(screen_pos, i));
+				}
+
+				sorted_keys.sort();
+
+				for (int i = 0; i < sorted_keys.size(); i++) {
+					float offset = sorted_keys[i].first;
+					int original_index = sorted_keys[i].second;
+					bool selected = editor->is_key_selected(track, original_index);
+
+					if (i < sorted_keys.size() - 1) {
+						float offset_n = sorted_keys[i + 1].first;
+
+						int next_original_index = sorted_keys[i + 1].second;
+
+						draw_key_link(original_index, next_original_index, scale, int(offset), int(offset_n), limit, limit_end);
+						draw_key(original_index, scale, int(offset), selected, limit, MIN(offset_n, limit_end));
+					} else {
+						draw_key(original_index, scale, int(offset), selected, limit, limit_end);
+					}
 				}
 			}
 
@@ -2591,7 +2592,7 @@ bool AnimationTrackEdit::is_key_selectable_by_distance() const {
 	return true;
 }
 
-void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
+void AnimationTrackEdit::draw_key_link(int p_index_from, int p_index_to, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	if (p_next_x < p_clip_left) {
 		return;
 	}
@@ -2599,8 +2600,8 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 		return;
 	}
 
-	Variant current = animation->track_get_key_value(get_track(), p_index);
-	Variant next = animation->track_get_key_value(get_track(), p_index + 1);
+	Variant current = animation->track_get_key_value(get_track(), p_index_from);
+	Variant next = animation->track_get_key_value(get_track(), p_index_to);
 	if (current != next || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_METHOD) {
 		return;
 	}
@@ -2666,7 +2667,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		}
 		text += ")";
 
-		int limit = ((p_selected && editor->is_moving_selection()) || editor->is_function_name_pressed()) ? 0 : MAX(0, p_clip_right - p_x - icon_to_draw->get_width() * 2);
+		int limit = editor->is_function_name_pressed() ? 0 : MAX(0, p_clip_right - p_x - icon_to_draw->get_width() * 2);
 
 		if (limit > 0) {
 			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
@@ -4049,7 +4050,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 	marker_edit->set_animation(p_anim, read_only);
 	marker_edit->set_play_position(timeline->get_play_position());
 
-	_cancel_bezier_edit();
+	_check_bezier_exist();
 	_update_tracks();
 
 	if (animation.is_valid()) {
@@ -4078,7 +4079,14 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 			}
 		}
 
-		_check_bezier_exist();
+		if (bezier_edit->is_visible()) {
+			for (int i = 0; i < animation->get_track_count(); ++i) {
+				if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
+					_bezier_edit(i);
+					break;
+				}
+			}
+		}
 	} else {
 		hscroll->hide();
 		edit->set_disabled(true);
@@ -4099,10 +4107,12 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 
 void AnimationTrackEditor::_check_bezier_exist() {
 	bool is_exist = false;
-	for (int i = 0; i < animation->get_track_count(); i++) {
-		if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
-			is_exist = true;
-			break;
+	if (animation.is_valid()) {
+		for (int i = 0; i < animation->get_track_count(); i++) {
+			if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
+				is_exist = true;
+				break;
+			}
 		}
 	}
 	if (is_exist) {
@@ -5520,12 +5530,11 @@ void AnimationTrackEditor::_notification(int p_what) {
 			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
 				break;
 			}
-			[[fallthrough]];
-		}
-		case NOTIFICATION_ENTER_TREE: {
+
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			add_animation_player->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			zoom_icon->set_texture(get_editor_theme_icon(SNAME("Zoom")));
@@ -5568,6 +5577,9 @@ void AnimationTrackEditor::_notification(int p_what) {
 
 			EditorNode::get_singleton()->connect("scene_changed", callable_mp(this, &AnimationTrackEditor::_scene_changed));
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &AnimationTrackEditor::_selection_changed));
+
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -7868,6 +7880,16 @@ float AnimationTrackEditor::get_snap_unit() {
 	return snap_unit;
 }
 
+void AnimationTrackEditor::_update_timeline_rtl_spacer() {
+	if (scroll->get_v_scroll_bar()->is_visible() && is_layout_rtl()) {
+		int spacer_width = scroll->get_v_scroll_bar()->get_minimum_size().width;
+		timeline_rtl_spacer->set_custom_minimum_size(Size2(spacer_width, 0));
+		timeline_rtl_spacer->show();
+	} else {
+		timeline_rtl_spacer->hide();
+	}
+}
+
 void AnimationTrackEditor::_add_animation_player() {
 	EditorData &editor_data = EditorNode::get_editor_data();
 	Node *scene = editor_data.get_edited_scene_root();
@@ -8005,10 +8027,14 @@ void AnimationTrackEditor::popup_read_only_dialog() {
 }
 
 AnimationTrackEditor::AnimationTrackEditor() {
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderAnimation");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	main_panel = memnew(PanelContainer);
 	main_panel->set_focus_mode(FOCUS_ALL); // Allow panel to have focus so that shortcuts work as expected.
-	add_child(main_panel);
-	main_panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->add_child(main_panel);
 	HBoxContainer *timeline_scroll = memnew(HBoxContainer);
 	main_panel->add_child(timeline_scroll);
 	timeline_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -8041,8 +8067,13 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_animation_player->set_h_size_flags(SIZE_SHRINK_CENTER);
 	add_animation_player->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_add_animation_player));
 
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	hbox->add_theme_constant_override(SNAME("separation"), 0);
+	timeline_vbox->add_child(hbox);
+
 	timeline = memnew(AnimationTimelineEdit);
-	timeline_vbox->add_child(timeline);
+	timeline->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbox->add_child(timeline);
 	timeline->set_editor(this);
 	timeline->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
 	timeline->connect("name_limit_changed", callable_mp(this, &AnimationTrackEditor::_name_limit_changed));
@@ -8050,6 +8081,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_timeline_value_changed));
 	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
 	timeline->connect("filter_changed", callable_mp(this, &AnimationTrackEditor::_update_tracks));
+
+	// If the animation editor is changed to take right-to-left into account, this won't be needed anymore.
+	timeline_rtl_spacer = memnew(Control);
+	timeline_rtl_spacer->hide();
+	hbox->add_child(timeline_rtl_spacer);
 
 	panner.instantiate();
 	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN);
@@ -8074,21 +8110,23 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	marker_edit->set_timeline(timeline);
 	marker_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	marker_edit->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
+	marker_edit->set_z_index(1); // Ensure marker appears over the animation track editor.
 	marker_edit->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_redraw_groups));
 	marker_edit->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_redraw_tracks));
 	marker_edit->connect(SceneStringName(draw), callable_mp((CanvasItem *)bezier_edit, &CanvasItem::queue_redraw));
 
 	scroll = memnew(ScrollContainer);
+	scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	box_selection_container->add_child(scroll);
 	scroll->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
-	VScrollBar *sb = scroll->get_v_scroll_bar();
-	scroll->remove_child(sb);
-	timeline_scroll->add_child(sb); // Move here so timeline and tracks are always aligned.
 	scroll->set_focus_mode(FOCUS_CLICK);
 	scroll->connect(SceneStringName(gui_input), callable_mp(this, &AnimationTrackEditor::_scroll_input));
 	scroll->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
+	// Must be updated from here, so it guarantees that the scrollbar theme has already changed.
+	scroll->connect(SceneStringName(theme_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_rtl_spacer), CONNECT_DEFERRED);
+	scroll->get_v_scroll_bar()->connect(SceneStringName(visibility_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_rtl_spacer));
 	scroll->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_v_scroll_changed));
 	scroll->get_h_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_h_scroll_changed));
 

@@ -43,6 +43,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/doc/editor_help_search.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/signals_dock.h"
@@ -52,7 +53,6 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/code_editor.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/window_wrapper.h"
@@ -676,7 +676,6 @@ void ScriptEditor::_save_history() {
 void ScriptEditor::_save_previous_state(Dictionary p_state) {
 	if (lock_history) {
 		// Done as a result of a deferred call triggered by set_edit_state().
-		lock_history = false;
 		return;
 	}
 
@@ -1119,14 +1118,14 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 		}
 
 		Ref<Resource> edited_res = se->get_edited_resource();
-
 		if (!edited_res->is_built_in()) {
 			continue; // External script, who cares.
 		}
 
-		if (edited_res->get_path().get_slice("::", 0) == p_parent_path) {
-			se->tag_saved_version();
+		if (edited_res->get_path().get_slice("::", 0) != p_parent_path) {
+			continue; // Wrong scene.
 		}
+		se->tag_saved_version();
 
 		Ref<Script> scr = edited_res;
 		if (scr.is_valid()) {
@@ -1766,6 +1765,7 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_ALL), tab_container->get_tab_count() < 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
+	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_TABS_BELOW), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_CLOSE_DOCS), !_has_docs_tab());
 
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_RUN), res.is_null());
@@ -3853,6 +3853,10 @@ void ScriptEditor::_update_selected_editor_menu() {
 	}
 }
 
+void ScriptEditor::_unlock_history() {
+	lock_history = false;
+}
+
 void ScriptEditor::_update_history_pos(int p_new_pos) {
 	Node *n = tab_container->get_current_tab_control();
 
@@ -3872,12 +3876,18 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 	if (seb) {
 		lock_history = true;
 		seb->set_edit_state(history[history_pos].state);
+		// `set_edit_state()` can modify the caret position which might trigger a
+		// request to save the history. Since `TextEdit::caret_changed` is emitted
+		// deferred, we need to defer unlocking of the history as well.
+		callable_mp(this, &ScriptEditor::_unlock_history).call_deferred();
 		seb->ensure_focus();
 
 		Ref<Script> scr = seb->get_edited_resource();
 		if (scr.is_valid()) {
 			notify_script_changed(scr);
 		}
+
+		seb->validate();
 	}
 
 	EditorHelp *eh = Object::cast_to<EditorHelp>(n);
@@ -4033,69 +4043,44 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 			}
 			return;
 		} else if (fpath.get_extension() == "tscn") {
-			Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
-			bool is_script_found = false;
+			const PackedStringArray lines = FileAccess::get_file_as_string(fpath).split("\n");
+			if (line_number > lines.size()) {
+				return;
+			}
 
-			// Starting from top of the tscn file.
-			int scr_start_line = 1;
+			const char *scr_header = "[sub_resource type=\"GDScript\" id=\"";
+			const char *source_header = "script/source = \"";
+			String script_id;
 
-			String scr_header = "[sub_resource type=\"GDScript\" id=\"";
-			String scr_id = "";
-			String line = "";
-
-			int l = 0;
-
-			while (!f->eof_reached()) {
-				line = f->get_line();
-				l++;
-
-				if (!line.begins_with(scr_header)) {
-					continue;
+			// Search the scene backwards from the found line.
+			int scan_line = line_number - 1;
+			while (scan_line >= 0) {
+				const String &line = lines[scan_line];
+				if (line.begins_with(source_header)) {
+					// Adjust line relative to the script beginning.
+					line_number -= scan_line + 1;
+				} else if (line.begins_with(scr_header)) {
+					script_id = line.trim_prefix(scr_header).get_slicec('"', 0);
+					break;
 				}
-
-				// Found the end of the script.
-				scr_id = line.get_slice(scr_header, 1);
-				scr_id = scr_id.get_slicec('"', 0);
-
-				scr_start_line = l + 1;
-				int scr_line_count = 0;
-
-				do {
-					line = f->get_line();
-					l++;
-					String strline = line.strip_edges();
-
-					if (strline.ends_with("\"") && !strline.ends_with("\\\"")) {
-						// Found the end of script.
-						break;
-					}
-					scr_line_count++;
-
-				} while (!f->eof_reached());
-
-				if (line_number > scr_start_line + scr_line_count) {
-					// Find in another built-in GDScript.
-					continue;
-				}
-
-				// Real line number of the built-in script.
-				line_number = line_number - scr_start_line;
-
-				is_script_found = true;
-				break;
+				scan_line--;
 			}
 
 			EditorNode::get_singleton()->load_scene(fpath);
-
-			if (is_script_found && !scr_id.is_empty()) {
-				Ref<Script> scr = ResourceLoader::load(fpath + "::" + scr_id, "Script");
+			if (!script_id.is_empty()) {
+				Ref<Script> scr = ResourceLoader::load(fpath + "::" + script_id, "Script");
 				if (scr.is_valid()) {
 					edit(scr);
 					ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
 
 					if (ste) {
-						EditorInterface::get_singleton()->set_main_screen_editor("Script");
-						ste->goto_line_selection(line_number, begin, end);
+						callable_mp(EditorInterface::get_singleton(), &EditorInterface::set_main_screen_editor).call_deferred("Script");
+						if (line_number == 0) {
+							const int source_len = strlen(source_header);
+							ste->goto_line_selection(line_number, begin - source_len, end - source_len);
+						} else {
+							ste->goto_line_selection(line_number, begin, end);
+						}
 					}
 				}
 			}
@@ -4146,9 +4131,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	panel->set_replace_text(find_in_files_dialog->get_replace_text());
 	panel->start_search();
 
-	EditorNode::get_bottom_panel()->move_item_to_end(find_in_files);
-	find_in_files_button->show();
-	EditorNode::get_bottom_panel()->make_item_visible(find_in_files);
+	find_in_files->make_visible();
 }
 
 void ScriptEditor::_on_find_in_files_modified_files(const PackedStringArray &paths) {
@@ -4168,11 +4151,6 @@ void ScriptEditor::_update_code_editor_zoom_factor(CodeTextEditor *p_code_text_e
 	if (p_code_text_editor && p_code_text_editor->is_visible_in_tree() && zoom_factor != p_code_text_editor->get_zoom_factor()) {
 		p_code_text_editor->set_zoom_factor(zoom_factor);
 	}
-}
-
-void ScriptEditor::_on_find_in_files_close_button_clicked() {
-	EditorNode::get_bottom_panel()->hide_bottom_panel();
-	find_in_files_button->hide();
 }
 
 void ScriptEditor::_window_changed(bool p_visible) {
@@ -4549,13 +4527,12 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(false));
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(true));
 	add_child(find_in_files_dialog);
+
 	find_in_files = memnew(FindInFilesContainer);
-	find_in_files_button = EditorNode::get_bottom_panel()->add_item(TTRC("Search Results"), find_in_files, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_search_results_bottom_panel", TTRC("Toggle Search Results Bottom Panel")));
-	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
+	EditorDockManager::get_singleton()->add_dock(find_in_files);
+	find_in_files->close();
 	find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
-	find_in_files->connect("close_button_clicked", callable_mp(this, &ScriptEditor::_on_find_in_files_close_button_clicked));
-	find_in_files_button->hide();
 
 	history_pos = -1;
 
@@ -4823,7 +4800,7 @@ void ScriptEditorPlugin::edited_scene_changed() {
 ScriptEditorPlugin::ScriptEditorPlugin() {
 	ED_SHORTCUT("script_editor/reopen_closed_script", TTRC("Reopen Closed Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::T);
 	ED_SHORTCUT("script_editor/clear_recent", TTRC("Clear Recent Scripts"));
-	ED_SHORTCUT("script_editor/replace_in_files", TTRC("Replace in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
+	ED_SHORTCUT("script_editor/replace_in_files", TTRC("Replace in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 
 	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTRC("Uppercase"), KeyModifierMask::SHIFT | Key::F4);
 	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTRC("Lowercase"), KeyModifierMask::SHIFT | Key::F5);

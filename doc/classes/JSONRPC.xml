@@ -75,8 +75,8 @@
 			<param index="1" name="callback" type="Callable" />
 			<description>
 				Registers a callback for the given method name.
-				- [param name] The name that clients can use to access the callback.
-				- [param callback] The callback which will handle the specific method.
+				- [param name]: The name that clients can use to access the callback.
+				- [param callback]: The callback which will handle the specified method.
 			</description>
 		</method>
 	</methods>

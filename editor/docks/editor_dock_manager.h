@@ -86,7 +86,7 @@ private:
 
 	// To access splits easily by index.
 	Vector<DockSplitContainer *> vsplits;
-	Vector<DockSplitContainer *> hsplits;
+	DockSplitContainer *main_hsplit = nullptr;
 
 	struct DockSlot {
 		TabContainer *container = nullptr;
@@ -97,6 +97,7 @@ private:
 	DockSlot dock_slots[DockConstants::DOCK_SLOT_MAX];
 	Vector<WindowWrapper *> dock_windows;
 	LocalVector<EditorDock *> all_docks;
+	HashSet<EditorDock *> dirty_docks;
 
 	EditorDock *dock_tab_dragged = nullptr;
 	bool docks_visible = true;
@@ -123,6 +124,8 @@ private:
 	void _move_dock_tab_index(EditorDock *p_dock, int p_tab_index, bool p_set_current);
 	void _move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
 
+	void _queue_update_tab_style(EditorDock *p_dock);
+	void _update_dirty_dock_tabs();
 	void _update_tab_style(EditorDock *p_dock);
 
 public:
@@ -133,9 +136,8 @@ public:
 	void set_tab_icon_max_width(int p_max_width);
 
 	void add_vsplit(DockSplitContainer *p_split);
-	void add_hsplit(DockSplitContainer *p_split);
+	void set_hsplit(DockSplitContainer *p_split);
 	void register_dock_slot(DockConstants::DockSlot p_dock_slot, TabContainer *p_tab_container, DockConstants::DockLayout p_layout);
-	int get_hsplit_count() const;
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 
@@ -146,6 +148,7 @@ public:
 	void close_dock(EditorDock *p_dock);
 	void open_dock(EditorDock *p_dock, bool p_set_current = true);
 	void focus_dock(EditorDock *p_dock);
+	void make_dock_floating(EditorDock *p_dock);
 
 	TabContainer *get_dock_tab_container(Control *p_dock) const;
 

@@ -39,7 +39,7 @@
 	</methods>
 	<members>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The layers against which the collision check shall be done. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			The layers against which the collision check will be done. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.01">
 			When the collision check is made, a candidate length for the SpringArm3D is given.

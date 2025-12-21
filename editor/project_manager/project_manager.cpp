@@ -43,6 +43,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_version_button.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
@@ -1068,7 +1069,7 @@ void ProjectManager::_apply_project_tags() {
 
 void ProjectManager::_set_new_tag_name(const String p_name) {
 	create_tag_dialog->get_ok_button()->set_disabled(true);
-	if (p_name.is_empty()) {
+	if (p_name.strip_edges().is_empty()) {
 		tag_error->set_text(TTRC("Tag name can't be empty."));
 		return;
 	}
@@ -1366,11 +1367,11 @@ ProjectManager::ProjectManager() {
 				EditorScale::set_scale(EDITOR_GET("interface/editor/custom_display_scale"));
 				break;
 		}
-		EditorFileDialog::get_icon_func = &ProjectManager::_file_dialog_get_icon;
-		EditorFileDialog::get_thumbnail_func = &ProjectManager::_file_dialog_get_thumbnail;
+		FileDialog::set_get_icon_callback(callable_mp_static(ProjectManager::_file_dialog_get_icon));
+		FileDialog::set_get_thumbnail_callback(callable_mp_static(ProjectManager::_file_dialog_get_thumbnail));
 
-		EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-		EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+		FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+		FileDialog::set_default_display_mode((FileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 		int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
 		if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
@@ -1735,7 +1736,6 @@ ProjectManager::ProjectManager() {
 		quick_settings_dialog->connect("restart_required", callable_mp(this, &ProjectManager::_restart_confirmed));
 
 		scan_dir = memnew(EditorFileDialog);
-		scan_dir->set_previews_enabled(false);
 		scan_dir->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 		scan_dir->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		scan_dir->set_title(TTRC("Select a Folder to Scan")); // Must be after mode or it's overridden.
@@ -1945,6 +1945,7 @@ ProjectManager::ProjectManager() {
 
 ProjectManager::~ProjectManager() {
 	singleton = nullptr;
+	EditorInspector::cleanup_plugins();
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}

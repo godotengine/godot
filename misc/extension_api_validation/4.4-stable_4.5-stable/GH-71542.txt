@@ -1,0 +1,5 @@
+GH-71542
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorExportPlatform/methods/get_forced_export_files': arguments
+
+Optional argument added. Compatibility methods registered.

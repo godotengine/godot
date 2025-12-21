@@ -72,7 +72,9 @@ HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extension
 void OpenXRCompositionLayerExtension::on_instance_created(const XrInstance p_instance) {
 #ifdef ANDROID_ENABLED
 	EXT_INIT_XR_FUNC(xrDestroySwapchain);
-	EXT_INIT_XR_FUNC(xrCreateSwapchainAndroidSurfaceKHR);
+	if (android_surface_ext_available) {
+		EXT_INIT_XR_FUNC(xrCreateSwapchainAndroidSurfaceKHR);
+	}
 #endif
 }
 

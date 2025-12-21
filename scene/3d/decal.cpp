@@ -170,7 +170,7 @@ PackedStringArray Decal::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
-		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile renderers."));
+		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile renderer."));
 		return warnings;
 	}
 

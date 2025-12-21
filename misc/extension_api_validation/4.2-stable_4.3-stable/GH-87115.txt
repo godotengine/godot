@@ -1,0 +1,6 @@
+GH-87115
+--------
+Validate extension JSON: Error: Field 'classes/TileMap/methods/get_collision_visibility_mode': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/TileMap/methods/get_navigation_visibility_mode': is_const changed value in new API, from false to true.
+
+Two TileMap getters were made const. No adjustments should be necessary.

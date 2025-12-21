@@ -761,12 +761,14 @@ class Godot private constructor(val context: Context) {
 		val newDarkMode = newConfig.uiMode.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 		if (darkMode != newDarkMode) {
 			darkMode = newDarkMode
-			GodotLib.onNightModeChanged()
+			runOnRenderThread {
+				GodotLib.onNightModeChanged()
+			}
 		}
 
 		if (currentConfig.orientation != newConfig.orientation) {
 			runOnRenderThread {
-				GodotLib.onScreenRotationChange()
+				GodotLib.onScreenRotationChange(newConfig.orientation)
 			}
 		}
 		currentConfig = newConfig
@@ -780,7 +782,9 @@ class Godot private constructor(val context: Context) {
 			plugin.onMainActivityResult(requestCode, resultCode, data)
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			FilePicker.handleActivityResult(context, requestCode, resultCode, data)
+			runOnRenderThread {
+				FilePicker.handleActivityResult(context, requestCode, resultCode, data)
+			}
 		}
 	}
 
@@ -795,11 +799,13 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainRequestPermissionsResult(requestCode, permissions, grantResults)
 		}
-		for (i in permissions.indices) {
-			GodotLib.requestPermissionResult(
-				permissions[i],
-				grantResults[i] == PackageManager.PERMISSION_GRANTED
-			)
+		runOnRenderThread {
+			for (i in permissions.indices) {
+				GodotLib.requestPermissionResult(
+					permissions[i],
+					grantResults[i] == PackageManager.PERMISSION_GRANTED
+				)
+			}
 		}
 	}
 
@@ -1108,7 +1114,7 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainBackPressed()
 		}
-		renderView?.queueOnRenderThread { GodotLib.back() }
+		runOnRenderThread { GodotLib.back() }
 	}
 
 	/**

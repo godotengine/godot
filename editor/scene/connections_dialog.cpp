@@ -884,6 +884,7 @@ ConnectDialog::ConnectDialog() {
 
 	bind_editor = memnew(EditorInspector);
 	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments:"));
+	bind_editor->set_theme_type_variation("ScrollContainerSecondary");
 	bind_controls.push_back(bind_editor);
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
@@ -1719,16 +1720,21 @@ ConnectionsDock::ConnectionsDock() {
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &ConnectionsDock::_filter_changed));
 	holder->add_child(search_box);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	holder->add_child(mc);
+
 	tree = memnew(ConnectionsDockTree);
 	tree->set_accessibility_name(TTRC("Connections"));
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(1);
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
-	tree->set_column_clip_content(0, true);
-	holder->add_child(tree);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
+	tree->set_column_clip_content(0, true);
+	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	mc->add_child(tree);
 
 	connect_button = memnew(Button);
 	connect_button->set_accessibility_name(TTRC("Connect"));

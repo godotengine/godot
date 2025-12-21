@@ -478,9 +478,9 @@ RID RendererCanvasRenderRD::_get_pipeline_specialization_or_ubershader(CanvasSha
 			RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 			uint64_t input_mask = p_shader_data->get_vertex_input_mask(r_pipeline_key.variant, r_pipeline_key.ubershader);
 			if (p_mesh_instance.is_valid()) {
-				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(p_mesh_instance, p_surface_index, input_mask, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
+				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(p_mesh_instance, p_surface_index, input_mask, false, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
 			} else {
-				mesh_storage->mesh_surface_get_vertex_arrays_and_format(p_surface, input_mask, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
+				mesh_storage->mesh_surface_get_vertex_arrays_and_format(p_surface, input_mask, false, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
 			}
 		}
 
@@ -2541,6 +2541,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					r_current_batch->shader_variant = SHADER_VARIANT_NINEPATCH;
 					r_current_batch->render_primitive = RD::RENDER_PRIMITIVE_TRIANGLES;
 					r_current_batch->flags = 0;
+					r_current_batch->use_msdf = false;
 				}
 
 				TextureState tex_state(np->texture, texture_filter, texture_repeat, false, use_linear_colors);
@@ -2616,6 +2617,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch->has_blend = false;
 				r_current_batch->command = c;
 				r_current_batch->flags = 0;
+				r_current_batch->use_msdf = false;
 
 				TextureState tex_state(polygon->texture, texture_filter, texture_repeat, false, use_linear_colors);
 				TextureInfo *tex_info = texture_info_map.getptr(tex_state);
@@ -2742,6 +2744,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch->command_type = c->type;
 				r_current_batch->has_blend = false;
 				r_current_batch->flags = 0;
+				r_current_batch->use_msdf = false;
 
 				InstanceData *instance_data = nullptr;
 

@@ -1020,7 +1020,7 @@ void Node3D::set_disable_gizmos(bool p_enabled) {
 #endif
 }
 
-void Node3D::reparent(Node *p_parent, bool p_keep_global_transform) {
+void Node3D::reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD;
 	if (p_keep_global_transform) {
 		Transform3D temp = get_global_transform();

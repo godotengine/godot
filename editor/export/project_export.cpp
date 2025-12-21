@@ -433,7 +433,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		script_key_error->hide();
 	}
 
-	int script_export_mode = current->get_script_export_mode();
+	int script_export_mode = int(current->get_script_export_mode());
 	script_mode->select(script_export_mode);
 
 	updating = false;
@@ -703,7 +703,7 @@ bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
 	return is_valid;
 }
 
-void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
+void ProjectExportDialog::_script_export_mode_changed(EditorExportPreset::ScriptExportMode p_mode) {
 	if (updating) {
 		return;
 	}
@@ -1401,27 +1401,6 @@ void ProjectExportDialog::_open_export_template_manager() {
 	EditorNode::get_singleton()->open_export_template_manager();
 }
 
-void ProjectExportDialog::_validate_export_path(const String &p_path) {
-	// Disable export via OK button or Enter key if LineEdit has an empty filename
-	bool invalid_path = (p_path.get_file().get_basename().is_empty());
-
-	// Check if state change before needlessly messing with signals
-	if (invalid_path && export_project->get_ok_button()->is_disabled()) {
-		return;
-	}
-	if (!invalid_path && !export_project->get_ok_button()->is_disabled()) {
-		return;
-	}
-
-	if (invalid_path) {
-		export_project->get_ok_button()->set_disabled(true);
-		export_project->get_line_edit()->disconnect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
-	} else {
-		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
-	}
-}
-
 void ProjectExportDialog::_export_project() {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
@@ -1446,16 +1425,6 @@ void ProjectExportDialog::_export_project() {
 			export_project->set_current_file(default_filename);
 		}
 	}
-
-	// Ensure that signal is connected if previous attempt left it disconnected
-	// with _validate_export_path.
-	// FIXME: This is a hack, we should instead change EditorFileDialog to allow
-	// disabling validation by the "text_submitted" signal.
-	if (!export_project->get_line_edit()->is_connected(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted))) {
-		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
-	}
-
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	export_project->popup_file_dialog();
 }
@@ -1623,10 +1592,18 @@ ProjectExportDialog::ProjectExportDialog() {
 	top_settings->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	panel->add_child(top_settings);
 
+	HBoxContainer *name_hbox = memnew(HBoxContainer);
+	Label *name_label = memnew(Label);
+	name_label->set_theme_type_variation("HeaderSmall");
+	name_label->set_text(TTR("Name:"));
+	name_hbox->add_child(name_label);
 	name = memnew(LineEdit);
-	top_settings->add_margin_child(TTR("Name:"), name);
+	name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectExportDialog::_name_changed));
 	name->connect(SceneStringName(focus_exited), callable_mp(this, &ProjectExportDialog::_name_editing_finished));
+	name_hbox->add_child(name);
+
+	top_settings->add_child(name_hbox);
 
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
@@ -1755,9 +1732,15 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	// Patching.
 
+	ScrollContainer *patch_scroll_container = memnew(ScrollContainer);
+	patch_scroll_container->set_name(TTRC("Patching"));
+	patch_scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	sections->add_child(patch_scroll_container);
+
 	VBoxContainer *patch_vb = memnew(VBoxContainer);
-	sections->add_child(patch_vb);
-	patch_vb->set_name(TTRC("Patching"));
+	patch_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	patch_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patch_scroll_container->add_child(patch_vb);
 
 	patch_delta_encoding = memnew(CheckButton);
 	patch_delta_encoding->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_patch_delta_encoding_changed));
@@ -2041,7 +2024,6 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(export_project);
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
-	export_project->get_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_validate_export_path));
 
 	export_project->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
 	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));

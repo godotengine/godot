@@ -298,12 +298,9 @@ private:
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
 	// Split containers.
-	DockSplitContainer *left_l_hsplit = nullptr;
 	DockSplitContainer *left_l_vsplit = nullptr;
-	DockSplitContainer *left_r_hsplit = nullptr;
 	DockSplitContainer *left_r_vsplit = nullptr;
 	DockSplitContainer *main_hsplit = nullptr;
-	DockSplitContainer *right_hsplit = nullptr;
 	DockSplitContainer *right_l_vsplit = nullptr;
 	DockSplitContainer *right_r_vsplit = nullptr;
 	DockSplitContainer *center_split = nullptr;
@@ -481,7 +478,6 @@ private:
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
-	HashSet<EditorFileDialog *> editor_file_dialogs;
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
@@ -521,8 +517,6 @@ private:
 
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
-	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
-	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
 	static void _file_access_close_error_notify(const String &p_str);
 	static void _file_access_close_error_notify_impl(const String &p_str);
@@ -715,6 +709,20 @@ private:
 	void _execute_upgrades();
 
 	bool _is_project_data_missing();
+
+	enum MenuType {
+		MENU_TYPE_NONE,
+		MENU_TYPE_GLOBAL,
+		MENU_TYPE_COMPACT,
+		MENU_TYPE_FULL,
+	};
+	MenuType menu_type = MENU_TYPE_NONE;
+	Vector<PopupMenu *> main_menu_items;
+
+	void _build_file_menu();
+	void _build_project_menu();
+	void _build_settings_menu();
+	void _build_help_menu();
 
 	void _update_main_menu_type();
 	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);

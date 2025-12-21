@@ -243,7 +243,8 @@ void TextEdit::Text::update_accessibility(int p_line, RID p_root) {
 	Line &l = text.write[p_line];
 	if (l.accessibility_text_root_element.is_empty()) {
 		for (int i = 0; i < l.data_buf->get_line_count(); i++) {
-			RID rid = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(p_root, l.data_buf->get_line_rid(i), max_line_height, p_line);
+			bool is_last_line = (p_line == text.size() - 1) && (i == l.data_buf->get_line_count() - 1);
+			RID rid = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(p_root, l.data_buf->get_line_rid(i), max_line_height, p_line, is_last_line);
 			l.accessibility_text_root_element.push_back(rid);
 		}
 	}
@@ -738,7 +739,6 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE:
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
 			text.clear_accessibility();
-			accessibility_text_root_element_nl = RID();
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -806,9 +806,6 @@ void TextEdit::_notification(int p_what) {
 					DisplayServer::get_singleton()->accessibility_update_add_action(text_aes[j], DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &TextEdit::_accessibility_action_scroll_into_view).bind(i, j));
 				}
 				lines_drawn += ac_buf->get_line_count();
-			}
-			if (accessibility_text_root_element_nl.is_null()) {
-				accessibility_text_root_element_nl = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(ae, RID(), get_line_height());
 			}
 
 			// Selection.
@@ -6587,7 +6584,7 @@ void TextEdit::set_line_as_last_visible(int p_line, int p_wrap_index) {
 		set_v_scroll(0);
 		return;
 	}
-	set_v_scroll(Math::round(get_scroll_pos_for_line(first_line, next_line.y) + _get_visible_lines_offset()));
+	set_v_scroll(get_scroll_pos_for_line(first_line, next_line.y) + _get_visible_lines_offset());
 }
 
 int TextEdit::get_last_full_visible_line() const {
@@ -8616,9 +8613,12 @@ void TextEdit::_update_scrollbars() {
 	updating_scrolls = true;
 
 	if (!fit_content_height && total_rows > visible_rows) {
+		double visible_rows_exact = (double)_get_control_height() / (double)get_line_height();
+		double fractional_visible_rows = visible_rows_exact - (double)visible_rows;
+		fractional_visible_rows = CLAMP(fractional_visible_rows, 0.0, 1.0);
 		v_scroll->show();
-		v_scroll->set_max(total_rows + _get_visible_lines_offset());
-		v_scroll->set_page(visible_rows + _get_visible_lines_offset());
+		v_scroll->set_max(total_rows);
+		v_scroll->set_page(visible_rows + fractional_visible_rows);
 		set_v_scroll(get_v_scroll());
 	} else {
 		first_visible_line = 0;

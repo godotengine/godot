@@ -5850,6 +5850,7 @@ void TileSetScenesCollectionSource::set_scene_tile_display_placeholder(int p_id,
 }
 
 bool TileSetScenesCollectionSource::get_scene_tile_display_placeholder(int p_id) const {
+	p_id = TileSetAtlasSource::alternative_no_transform(p_id);
 	ERR_FAIL_COND_V(!scenes.has(p_id), false);
 	return scenes[p_id].display_placeholder;
 }

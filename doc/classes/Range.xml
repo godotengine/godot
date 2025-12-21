@@ -64,7 +64,7 @@
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="0" />
 		<member name="step" type="float" setter="set_step" getter="get_step" default="0.01">
-			If greater than 0, [member value] will always be rounded to a multiple of this property's value above [member min_value]. For example, if [member min_value] is [code]0.1[/code] and step is 0.2, then [member value] is limited to [code]0.1[/code], [code]0.3[/code], [code]0.5[/code], and so on. If [member rounded] is also [code]true[/code], [member value] will first be rounded to a multiple of this property's value, then rounded to the nearest integer.
+			If greater than [code]0.0[/code], [member value] will always be rounded to a multiple of this property's value above [member min_value]. For example, if [member min_value] is [code]0.1[/code] and step is [code]0.2[/code], then [member value] is limited to [code]0.1[/code], [code]0.3[/code], [code]0.5[/code], and so on. If [member rounded] is also [code]true[/code], [member value] will first be rounded to a multiple of this property's value, then rounded to the nearest integer.
 		</member>
 		<member name="value" type="float" setter="set_value" getter="get_value" default="0.0">
 			Range's current value. Changing this property (even via code) will trigger [signal value_changed] signal. Use [method set_value_no_signal] if you want to avoid it.

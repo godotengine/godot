@@ -30,6 +30,7 @@
 
 #include "asset_library_editor_plugin.h"
 
+#include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
@@ -90,12 +91,14 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 				author->add_theme_color_override("font_hover_color", Color(0.5, 0.5, 0.5));
 			}
 
-			calculate_misc_links_ratio();
+			_calculate_misc_links_size();
 		} break;
 
-		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_calculate_misc_links_size();
+		} break;
+
+		case NOTIFICATION_RESIZED: {
 			calculate_misc_links_ratio();
 		} break;
 	}
@@ -112,6 +115,8 @@ void EditorAssetLibraryItem::_calculate_misc_links_size() {
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	text_buf->add_string(price->get_text(), font, font_size);
 	price_width = text_buf->get_line_width();
+
+	calculate_misc_links_ratio();
 }
 
 void EditorAssetLibraryItem::calculate_misc_links_ratio() {
@@ -288,6 +293,10 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			previews_bg->add_theme_style_override(SceneStringName(panel), previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
+		} break;
+
+		case NOTIFICATION_POST_POPUP: {
+			callable_mp(item, &EditorAssetLibraryItem::calculate_misc_links_ratio).call_deferred();
 		} break;
 	}
 }

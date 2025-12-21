@@ -30,6 +30,8 @@
 
 #include "openxr_render_model.h"
 
+#ifdef MODULE_GLTF_ENABLED
+
 #include "../extensions/openxr_render_model_extension.h"
 #include "core/config/project_settings.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -166,3 +168,4 @@ void OpenXRRenderModel::set_render_model(RID p_render_model) {
 		_load_render_model_scene();
 	}
 }
+#endif // MODULE_GLTF_ENABLED

@@ -153,6 +153,8 @@ private:
 	VBoxContainer *scanning_vb = nullptr;
 	ProgressBar *scanning_progress = nullptr;
 	SplitContainer *split_box = nullptr;
+	MarginContainer *tree_mc = nullptr;
+	MarginContainer *files_mc = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
 
 	int split_box_offset_h = 0;
@@ -177,7 +179,6 @@ private:
 	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
-	TextureRect *search_icon = nullptr;
 	HBoxContainer *path_hb = nullptr;
 
 	FileListDisplayMode file_list_display_mode;

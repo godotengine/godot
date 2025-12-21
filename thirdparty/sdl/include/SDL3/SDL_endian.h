@@ -46,7 +46,7 @@
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
 /* As of Clang 11, '_m_prefetchw' is conflicting with the winnt.h's version,
    so we define the needed '_m_prefetch' here as a pseudo-header, until the issue is fixed. */
-#ifdef __clang__
+#if defined(__clang__) &&  !SDL_HAS_BUILTIN(_m_prefetch)
 #ifndef __PRFCHWINTRIN_H
 #define __PRFCHWINTRIN_H
 static __inline__ void __attribute__((__always_inline__, __nodebug__))
@@ -128,7 +128,7 @@ _m_prefetch(void *__P)
  * \sa SDL_BIG_ENDIAN
  */
 #define SDL_BYTEORDER   SDL_LIL_ENDIAN___or_maybe___SDL_BIG_ENDIAN
-#elif defined(SDL_PLATFORM_LINUX)
+#elif defined(SDL_PLATFORM_LINUX) || defined(__GLIBC__)
 #include <endian.h>
 #define SDL_BYTEORDER  __BYTE_ORDER
 #elif defined(SDL_PLATFORM_SOLARIS)
@@ -486,7 +486,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
  *
  * \since This function is available since SDL 3.2.0.
  */
-SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
+SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
 
 /**
  * Swap a 16-bit value from littleendian to native byte order.

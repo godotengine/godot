@@ -664,6 +664,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	focus_style->set_border_color(style_focus_color);
 	theme->set_stylebox("focus", "ScrollContainer", focus_style);
 
+	theme->set_icon("scroll_hint_vertical", "ScrollContainer", icons["scroll_hint_vertical"]);
+	theme->set_icon("scroll_hint_horizontal", "ScrollContainer", icons["scroll_hint_horizontal"]);
+
 	// Window
 
 	theme->set_stylebox("embedded_border", "Window", sb_expand(make_flat_stylebox(style_popup_color, 10, 28, 10, 8), 8, 32, 8, 6));
@@ -883,6 +886,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("arrow", "Tree", icons["arrow_down"]);
 	theme->set_icon("arrow_collapsed", "Tree", icons["arrow_right"]);
 	theme->set_icon("arrow_collapsed_mirrored", "Tree", icons["arrow_left"]);
+	theme->set_icon("scroll_hint", "Tree", icons["scroll_hint_vertical"]);
 
 	theme->set_font("title_button_font", "Tree", Ref<Font>());
 	theme->set_font(SceneStringName(font), "Tree", Ref<Font>());
@@ -955,6 +959,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("selected_focus", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "ItemList", focus);
 	theme->set_stylebox("cursor_unfocused", "ItemList", focus);
+	theme->set_icon("scroll_hint", "ItemList", icons["scroll_hint_vertical"]);
 
 	theme->set_constant("outline_size", "ItemList", 0);
 

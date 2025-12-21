@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "../oct_inc.glsl"
+
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #define MAX_CASCADES 8
@@ -40,10 +42,10 @@ layout(rgba32i, set = 0, binding = 13) uniform restrict iimage2D lightprobe_aver
 
 layout(rgba16f, set = 0, binding = 14) uniform restrict writeonly image2DArray lightprobe_ambient_texture;
 
-#ifdef USE_CUBEMAP_ARRAY
-layout(set = 1, binding = 0) uniform textureCubeArray sky_irradiance;
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+layout(set = 1, binding = 0) uniform texture2DArray sky_irradiance;
 #else
-layout(set = 1, binding = 0) uniform textureCube sky_irradiance;
+layout(set = 1, binding = 0) uniform texture2D sky_irradiance;
 #endif
 layout(set = 1, binding = 1) uniform sampler linear_sampler_mipmaps;
 
@@ -75,8 +77,9 @@ layout(push_constant, std430) uniform Params {
 	vec3 sky_color_or_orientation;
 	float y_mult;
 
+	vec2 sky_irradiance_border_size;
 	bool store_ambient_texture;
-	uint pad[3];
+	uint pad;
 }
 params;
 
@@ -271,10 +274,10 @@ void main() {
 			vec4 sky_quat = vec4(params.sky_color_or_orientation, sky_sign * sqrt(1.0 - dot(params.sky_color_or_orientation, params.sky_color_or_orientation)));
 			vec3 sky_dir = cross(sky_quat.xyz, ray_dir);
 			sky_dir = ray_dir + ((sky_dir * sky_quat.w) + cross(sky_quat.xyz, sky_dir)) * 2.0;
-#ifdef USE_CUBEMAP_ARRAY
-			light.rgb = textureLod(samplerCubeArray(sky_irradiance, linear_sampler_mipmaps), vec4(sky_dir, 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+			light.rgb = textureLod(sampler2DArray(sky_irradiance, linear_sampler_mipmaps), vec3(vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
 #else
-			light.rgb = textureLod(samplerCube(sky_irradiance, linear_sampler_mipmaps), sky_dir, 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
+			light.rgb = textureLod(sampler2D(sky_irradiance, linear_sampler_mipmaps), vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
 #endif
 			light.rgb *= params.sky_energy;
 			light.a = 0.0;

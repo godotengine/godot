@@ -383,6 +383,9 @@
 		<member name="hide_root" type="bool" setter="set_hide_root" getter="is_root_hidden" default="false">
 			If [code]true[/code], the tree's root is hidden.
 		</member>
+		<member name="scroll_hint_mode" type="int" setter="set_scroll_hint_mode" getter="get_scroll_hint_mode" enum="Tree.ScrollHintMode" default="0">
+			The way which scroll hints (indicators that show that the content can still be scrolled in a certain direction) will be shown.
+		</member>
 		<member name="scroll_horizontal_enabled" type="bool" setter="set_h_scroll_enabled" getter="is_h_scroll_enabled" default="true">
 			If [code]true[/code], enables horizontal scrolling.
 		</member>
@@ -391,6 +394,9 @@
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="Tree.SelectMode" default="0">
 			Allows single or multiple selection. See the [enum SelectMode] constants.
+		</member>
+		<member name="tile_scroll_hint" type="bool" setter="set_tile_scroll_hint" getter="is_scroll_hint_tiled" default="false">
+			If [code]true[/code], the scroll hint texture will be tiled instead of stretched. See [member scroll_hint_mode].
 		</member>
 	</members>
 	<signals>
@@ -513,6 +519,18 @@
 		<constant name="DROP_MODE_INBETWEEN" value="2" enum="DropModeFlags">
 			Enables "above item" and "below item" drop sections. The "above item" drop section covers the top half of the item, and the "below item" drop section covers the bottom half.
 			When combined with [constant DROP_MODE_ON_ITEM], these drop sections halves the height and stays on top / bottom accordingly.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_DISABLED" value="0" enum="ScrollHintMode">
+			Scroll hints will never be shown.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_BOTH" value="1" enum="ScrollHintMode">
+			Scroll hints will be shown at the top and bottom.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_TOP" value="2" enum="ScrollHintMode">
+			Only the top scroll hint will be shown.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_BOTTOM" value="3" enum="ScrollHintMode">
+			Only the bottom scroll hint will be shown.
 		</constant>
 	</constants>
 	<theme_items>
@@ -666,6 +684,9 @@
 		</theme_item>
 		<theme_item name="indeterminate_disabled" data_type="icon" type="Texture2D">
 			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate and non-editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="scroll_hint" data_type="icon" type="Texture2D">
+			The indicator that will be shown when the content can still be scrolled. See [member scroll_hint_mode].
 		</theme_item>
 		<theme_item name="select_arrow" data_type="icon" type="Texture2D">
 			The arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
