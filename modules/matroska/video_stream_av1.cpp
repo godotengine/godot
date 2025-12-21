@@ -809,13 +809,13 @@ VideoDecodeAV1Frame VideoStreamAV1::parse_frame() {
 void VideoStreamAV1::parse_tile_info(VideoCodingAV1TileInfo *r_tile_info) {
 }
 
-void VideoStreamAV1::parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) {
+Error VideoStreamAV1::parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) {
 	src = p_stream;
 	shift = 0;
 
 	read_bits(1); // marker.
 	uint8_t version = read_bits(7);
-	ERR_FAIL_COND(version != 1);
+	ERR_FAIL_COND_V(version != 1, OK);
 
 	uint8_t seq_profile = read_bits(3);
 	uint8_t seq_level_idx_0 = read_bits(5);
@@ -866,6 +866,28 @@ void VideoStreamAV1::parse_container_metadata(const uint8_t *p_stream, uint64_t 
 	while (src < p_stream + p_size) {
 		parse_open_bitstream_unit(0);
 	}
+
+	return OK;
+}
+
+Error VideoStreamAV1::parse_container_block(const uint8_t *p_stream, size_t p_size, size_t *r_size, size_t *r_offset) {
+	src = p_stream;
+	shift = 0;
+
+	while (src < p_stream + p_size) {
+		VideoDecodeAV1Frame av1_frame_header = {};
+
+		const uint8_t *obu_start = src;
+		bool is_frame = parse_open_bitstream_unit(&av1_frame_header);
+		uint64_t obu_size = src - obu_start;
+
+		if (is_frame) {
+			Span<uint8_t> frame_span = Span(obu_start, obu_size);
+			//local_device->video_session_decode_av1(video_session, frame_span, av1_frame_header, p_dst_texture);
+		}
+	}
+
+	return OK;
 }
 
 void VideoStreamAV1::set_rendering_device(RenderingDevice *p_local_device) {
@@ -897,24 +919,7 @@ RID VideoStreamAV1::create_texture(RD::TextureFormat &p_texture_template) {
 	return local_device->texture_create(p_texture_template, texture_view);
 }
 
-void VideoStreamAV1::parse_container_block(Vector<uint8_t> p_block, RID p_dst_texture) {
-	print_line(vformat("-----------Decoding block [%d]-----------", p_block.size()));
-
-	src = p_block.ptr();
-	shift = 0;
-
-	while (src < p_block.ptr() + p_block.size()) {
-		VideoDecodeAV1Frame av1_frame_header = {};
-
-		const uint8_t *obu_start = src;
-		bool is_frame = parse_open_bitstream_unit(&av1_frame_header);
-		uint64_t obu_size = src - obu_start;
-
-		if (is_frame) {
-			Span<uint8_t> frame_span = Span(obu_start, obu_size);
-			local_device->video_session_decode_av1(video_session, frame_span, av1_frame_header, p_dst_texture);
-		}
-	}
+void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) {
 }
 
 VideoStreamAV1::VideoStreamAV1() {

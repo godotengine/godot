@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/string/ustring.h"
-#include "core/templates/hash_map.h"
+#include "core/templates/rb_map.h"
 
 #include <cstddef>
 
@@ -433,17 +433,18 @@ struct Cluster {
 	uint64_t position;
 	uint64_t target_track;
 
-	HashMap<uint64_t, uint8_t> time_to_layer;
-
 	struct Block {
 		uint64_t position;
 		uint64_t size;
+		uint16_t cluster_time;
+		size_t present_order;
 		bool key;
 		bool invisible;
 		bool discardable;
 	};
 
 	Vector<Block> blocks;
+	RBMap<uint64_t, size_t> present_order;
 };
 
 struct Segment {

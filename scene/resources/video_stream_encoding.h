@@ -37,15 +37,14 @@ class VideoStreamEncoding : public Resource {
 	GDCLASS(VideoStreamEncoding, Resource);
 
 public:
-	// Video Metadata.
-	virtual void parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) = 0;
+	// Stream Parsing.
+	virtual Error parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) = 0;
+	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, size_t *r_size, size_t *r_offset) = 0;
 
 	// Rendering Device API.
 	virtual void set_rendering_device(RenderingDevice *p_coding_device) = 0;
 	virtual RID create_video_session(uint32_t p_width, uint32_t p_height) = 0;
 	virtual RID create_texture_sampler(RD::SamplerState &p_sampler_template) = 0;
 	virtual RID create_texture(RD::TextureFormat &p_texture_template) = 0;
-
-	// Block decoding.
-	virtual void parse_container_block(Vector<uint8_t> p_block, RID p_dst_texture) = 0;
+	virtual void decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) = 0;
 };

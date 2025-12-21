@@ -67,20 +67,20 @@ private:
 	uint64_t read_ue();
 	int64_t read_se();
 
-	VideoCodingH264NalUnitType parse_nal_unit(uint64_t p_size, VideoDecodeH264SliceHeader *r_h264_slice_header);
+	VideoCodingH264NalUnitType parse_nal_unit(uint64_t p_size);
 	VideoCodingH264SequenceParameterSet parse_sequence_parameter_set(uint64_t p_size);
 	VideoCodingH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
 	VideoDecodeH264SliceHeader parse_slice_header(uint64_t p_size, bool p_is_reference, bool p_is_idr);
 
 public:
-	virtual void parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
+	virtual Error parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
+	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, size_t *r_size, size_t *r_offset) final override;
 
 	virtual void set_rendering_device(RenderingDevice *p_coding_device) final override;
 	virtual RID create_video_session(uint32_t p_width, uint32_t p_height) final override;
 	virtual RID create_texture_sampler(RD::SamplerState &p_sampler_template) final override;
 	virtual RID create_texture(RD::TextureFormat &p_texture_template) final override;
-
-	virtual void parse_container_block(Vector<uint8_t> p_block, RID p_dst_texture) final override;
+	virtual void decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) final override;
 
 	VideoStreamH264();
 };

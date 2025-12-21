@@ -72,9 +72,23 @@ private:
 	Vector<RID> dst_yuv_pool;
 	Vector<RID> dst_rgba_pool;
 
-	size_t image_index = 0;
+	const size_t yuv_pool_size = 5;
+	const size_t rgb_pool_size = 9;
+	const size_t buffered_frames = 4;
+
+	// The cluster frame in present order
+	size_t cluster_frame_index = 0;
+	// The next rgb texture to present
+	size_t present_frame_index = 0;
+
+	// The current cluster + block index
 	size_t cluster_index = 0;
 	size_t block_index = 0;
+	// The next yuv texture to use as a decode target
+	size_t decode_texture_index = 0;
+	// The next rgb texture to use as a decode target
+	size_t present_texture_index = 0;
+
 	double block_position = 0.0;
 	double playback_position = 0.0;
 	double block_duration = 0.0;
@@ -103,6 +117,9 @@ private:
 	Error parse_cues();
 	Error parse_attachments();
 	Error parse_tags();
+
+	void decode_frame();
+	void present_frame();
 
 public:
 	void set_file(const String &p_file);

@@ -533,7 +533,7 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 				if (inner_id == MATROSKA_ID_TRACK_TYPE) {
 					uint64_t track_type = read_uint();
 					if (track_type != 1 && track_type != 2) {
-						print_line(vformat("Unknown track type %d", track_type));
+						WARN_PRINT(vformat("Unknown track type %d", track_type));
 					}
 					continue;
 				}
@@ -586,13 +586,11 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 				if (inner_id == MATROSKA_ID_TRACK_DEFAULT_DURATION) {
 					track.default_duration = read_uint();
 					block_duration = double(track.default_duration) / 1.0e9;
-					print_line("default_duration", track.default_duration);
 					continue;
 				}
 
 				if (inner_id == MATROSKA_ID_TRACK_DEFAULT_DECODED_FIELD_DURATION) {
 					track.default_decoded_field_duration = read_uint();
-					print_line("default_decoded_field_duration", track.default_decoded_field_duration);
 					continue;
 				}
 
@@ -633,7 +631,6 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 
 				if (inner_id == MATROSKA_ID_TRACK_CODEC_ID) {
 					track.codec_id = read_string();
-					print_line(vformat("Track #%d (%s)", track.track_number, track.codec_id));
 					if (track.codec_id == "V_MPEG4/ISO/AVC") {
 						video_stream_encoding = memnew(VideoStreamH264);
 					} else if (track.codec_id == "V_AV1") {
@@ -743,7 +740,6 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 	int64_t cluster_size = read_size();
 	const uint8_t *cluster_start = src;
 
-	Vector<Cluster::Block> blocks;
 	while (src < cluster_start + cluster_size) {
 		uint64_t id = read_id();
 
@@ -766,12 +762,8 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 
 			uint64_t target_track = read_size();
 
-			uint16_t timestamp = (src[0] << 8) | src[1];
+			block.cluster_time = (src[0] << 8) | src[1];
 			src += 2;
-
-			if (target_track == 1) {
-				r_cluster->time_to_layer.insert(timestamp, r_cluster->time_to_layer.size());
-			}
 
 			uint8_t flags = src[0];
 			block.key = (flags & 0x80) > 0;
@@ -784,9 +776,14 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 				ERR_PRINT("UNUSABLE LACING");
 			}
 
-			if (target_track == 1) {
-				block.position = src - origin;
-				block.size = block_size - 4;
+			if (target_track == 1 && video_stream_encoding.is_valid()) {
+				size_t frame_size = 0;
+				size_t frame_offset = 0;
+				video_stream_encoding->parse_container_block(src, block_size - 4, &frame_size, &frame_offset);
+				block.size = frame_size;
+				block.position = (size_t)(src - origin) + frame_offset;
+
+				r_cluster->present_order.insert(block.cluster_time, r_cluster->blocks.size());
 				r_cluster->blocks.append(block);
 			}
 
@@ -801,6 +798,12 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 		}
 
 		_skip_id(id);
+	}
+
+	Cluster::Block *blocks = r_cluster->blocks.ptrw();
+	for (KeyValue<uint64_t, size_t> node : r_cluster->present_order) {
+		blocks->present_order = node.value;
+		blocks++;
 	}
 
 	src = cluster_start + cluster_size;
@@ -890,6 +893,80 @@ Error VideoStreamPlaybackMatroska::parse_tags() {
 	return OK;
 }
 
+void VideoStreamPlaybackMatroska::decode_frame() {
+	// 1. get next cluster/block/frame data
+	Cluster cluster = segment.clusters[cluster_index];
+	Cluster::Block block = cluster.blocks[block_index];
+
+	block_index += 1;
+	if (block_index == cluster.blocks.size()) {
+		cluster_frame_index = 0;
+		block_index = 0;
+		cluster_index += 1;
+	}
+
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
+
+	// TODO: read file directly into vulkan buffer ("zero" copy)
+	file->seek(block.position);
+	Vector<uint8_t> frame_data = file->get_buffer(block.size);
+
+	// 2. decode block into yuv frame
+	RID dst_yuv = dst_yuv_pool[decode_texture_index];
+	video_stream_encoding->decode_frame(frame_data, dst_yuv);
+	decode_texture_index = (decode_texture_index + 1) % dst_yuv_pool.size();
+
+	// 3. decode yuv frame into present order
+	Vector<RD::Uniform> uniforms;
+	RD::Uniform src_texture = {};
+	src_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+	src_texture.binding = 0;
+	src_texture.append_id(yuv_sampler);
+	src_texture.append_id(dst_yuv);
+	uniforms.push_back(src_texture);
+
+	size_t target_offset = block.present_order - cluster_frame_index;
+	size_t target_texture = (target_offset + present_texture_index) % dst_rgba_pool.size();
+	present_texture_index = (present_texture_index + 1) % dst_rgba_pool.size();
+	cluster_frame_index += 1;
+
+	RD::Uniform dst_texture = {};
+	dst_texture.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+	dst_texture.binding = 1;
+	dst_texture.append_id(dst_rgba_pool[target_texture]);
+	uniforms.push_back(dst_texture);
+
+	RID uniform_set = local_device->uniform_set_create(uniforms, yuv_shader, 0);
+
+	// Bind things
+	// TODO: use work groups better
+	RD::ComputeListID compute_list = local_device->compute_list_begin();
+	local_device->compute_list_bind_compute_pipeline(compute_list, yuv_pipeline);
+	local_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+	local_device->compute_list_dispatch(compute_list, 1920, 1080, 1);
+	local_device->compute_list_end();
+
+	// Execute
+	local_device->submit();
+	local_device->sync();
+
+	local_device->free_rid(uniform_set);
+}
+
+void VideoStreamPlaybackMatroska::present_frame() {
+	RID src_rgba = dst_rgba_pool[present_frame_index];
+	Vector<uint8_t> data = local_device->texture_get_data(src_rgba, 0);
+	present_frame_index = (present_frame_index + 1) % dst_rgba_pool.size();
+	block_position += block_duration;
+
+	Ref<Image> frame;
+	frame.instantiate();
+	frame->set_data(width, height, false, Image::FORMAT_RGBA8, data);
+
+	image_texture->set_image(frame);
+}
+
 void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	path = p_file;
 	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_file);
@@ -931,6 +1008,7 @@ void VideoStreamPlaybackMatroska::play() {
 
 	// All Matroska metadata is done, now create the yuv sampler, yuv image pool and dst image
 	video_stream_encoding->set_rendering_device(local_device);
+	video_session = video_stream_encoding->create_video_session(1920, 1088);
 
 	// Decode stage objects
 	//TODO: be more precise with ycbcr sampler
@@ -946,7 +1024,7 @@ void VideoStreamPlaybackMatroska::play() {
 	dst_yuv_format.depth = 1;
 	dst_yuv_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
-	for (size_t i = 0; i < 2; i++) {
+	for (size_t i = 0; i < yuv_pool_size; i++) {
 		dst_yuv_pool.push_back(video_stream_encoding->create_texture(dst_yuv_format));
 	}
 
@@ -958,7 +1036,7 @@ void VideoStreamPlaybackMatroska::play() {
 	dst_rgba_format.depth = 1;
 	dst_rgba_format.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
-	for (size_t i = 0; i < 2; i++) {
+	for (size_t i = 0; i < rgb_pool_size; i++) {
 		dst_rgba_pool.push_back(local_device->texture_create(dst_rgba_format, RD::TextureView()));
 	}
 
@@ -982,56 +1060,11 @@ void VideoStreamPlaybackMatroska::play() {
 	yuv_shader = local_device->shader_create_from_bytecode_with_samplers(yuv_bytecode, yuv_shader, uniforms);
 	yuv_pipeline = local_device->compute_pipeline_create(yuv_shader);
 
-	Error err;
-	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
-
-	Cluster cluster = segment.clusters[cluster_index];
-	print_line(vformat("------------Begin Matroska Cluster [%d]------------", cluster.blocks.size()));
-
-	for (size_t i = 0; i < 2; i++) {
-		RID dst_yuv = dst_yuv_pool[i];
-		Cluster::Block block = cluster.blocks[i];
-		block_index += 1;
-
-		file->seek(block.position);
-		Vector<uint8_t> frame = file->get_buffer(block.size);
-
-		video_stream_encoding->parse_container_block(frame, dst_yuv);
+	for (size_t i = 0; i < buffered_frames; i++) {
+		decode_frame();
 	}
 
-	local_device->video_session_end();
-	print_line("------------End Matroska Cluster------------");
-
-	for (size_t i = 0; i < 2; i++) {
-		Vector<RD::Uniform> uniforms;
-		RD::Uniform src_texture = {};
-		src_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-		src_texture.binding = 0;
-		src_texture.append_id(yuv_sampler);
-		src_texture.append_id(dst_yuv_pool[i]);
-		uniforms.push_back(src_texture);
-
-		RD::Uniform dst_texture = {};
-		dst_texture.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-		dst_texture.binding = 1;
-		dst_texture.append_id(dst_rgba_pool[i]);
-		uniforms.push_back(dst_texture);
-
-		RID uniform_set = local_device->uniform_set_create(uniforms, yuv_shader, 0);
-
-		// Bind things
-		RD::ComputeListID compute_list = local_device->compute_list_begin();
-		local_device->compute_list_bind_compute_pipeline(compute_list, yuv_pipeline);
-		local_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-		local_device->compute_list_dispatch(compute_list, 1920, 1080, 1);
-		local_device->compute_list_end();
-
-		// Execute
-		local_device->submit();
-		local_device->sync();
-
-		local_device->free_rid(uniform_set);
-	}
+	present_frame();
 }
 
 void VideoStreamPlaybackMatroska::stop() {
@@ -1075,62 +1108,9 @@ void VideoStreamPlaybackMatroska::update(double p_delta) {
 		return;
 	}
 
-	// Decode next frame
-	Cluster cluster = segment.clusters[cluster_index];
-	RID dst_yuv = dst_yuv_pool[image_index];
-	Cluster::Block block = cluster.blocks[block_index];
-
-	block_index += 1;
-	if (block_index == cluster.blocks.size()) {
-		block_index = 0;
-		cluster_index += 1;
-	}
-
-	Error err;
-	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
-	file->seek(block.position);
-	Vector<uint8_t> buffer = file->get_buffer(block.size);
-
-	video_stream_encoding->parse_container_block(buffer, dst_yuv);
-
-	Vector<RD::Uniform> uniforms;
-	RD::Uniform src_texture = {};
-	src_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-	src_texture.binding = 0;
-	src_texture.append_id(yuv_sampler);
-	src_texture.append_id(dst_yuv_pool[image_index]);
-	uniforms.push_back(src_texture);
-
-	RD::Uniform dst_texture = {};
-	dst_texture.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-	dst_texture.binding = 1;
-	dst_texture.append_id(dst_rgba_pool[image_index]);
-	uniforms.push_back(dst_texture);
-
-	RID uniform_set = local_device->uniform_set_create(uniforms, yuv_shader, 0);
-
-	// Bind things
-	RD::ComputeListID compute_list = local_device->compute_list_begin();
-	local_device->compute_list_bind_compute_pipeline(compute_list, yuv_pipeline);
-	local_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-	local_device->compute_list_dispatch(compute_list, 1920, 1080, 1);
-	local_device->compute_list_end();
-
-	image_index = (image_index + 1) % 2;
-	block_position += block_duration;
-
-	RID src_rgba = dst_rgba_pool[0];
-	Vector<uint8_t> data = local_device->texture_get_data(src_rgba, 0);
-
-	Ref<Image> frame;
-	frame.instantiate();
-	frame->set_data(width, height, false, Image::FORMAT_RGBA8, data);
-
-	image_texture->set_image(frame);
-
-	local_device->submit();
-	local_device->sync();
-	local_device->free_rid(uniform_set);
+	// TODO: audio
+	present_frame();
+	decode_frame();
 }
 
 int VideoStreamPlaybackMatroska::get_channels() const {
@@ -1174,8 +1154,6 @@ VideoStreamPlaybackMatroska::~VideoStreamPlaybackMatroska() {
 			}
 		}
 
-		// The video session is not valid because it wasn't created from here.
-		// TODO: find a way to free the video session from the container
 		if (video_session.is_valid()) {
 			local_device->free_rid(video_session);
 		}
