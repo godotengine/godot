@@ -81,6 +81,9 @@ Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
 	if (idx == -1) {
 		return nullptr;
 	}
+	if (p_text.is_empty()) {
+		return nullptr;
+	}
 	return FileSystemDock::get_singleton()->create_tooltip_for_path(get_item_metadata(idx));
 }
 
