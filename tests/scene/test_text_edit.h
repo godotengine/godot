@@ -976,7 +976,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_text() == "remove line at\nlines\n\ntest");
 			CHECK(text_edit->get_caret_count() == 2);
 			CHECK(text_edit->get_caret_line(0) == 0);
-			CHECK(text_edit->get_caret_column(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 3); // In the default font, this is the same position.
 			CHECK(text_edit->get_caret_line(1) == 3);
 			CHECK(text_edit->get_caret_column(1) == 4);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
@@ -1013,7 +1013,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "remove line at\nlines");
 			CHECK(text_edit->get_caret_line(0) == 1);
-			CHECK(text_edit->get_caret_column(0) == 5);
+			CHECK(text_edit->get_caret_column(0) == 3); // In the default font, this is the same position.
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK("text_changed", empty_signal_args);
@@ -3022,7 +3022,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column(1) == 3); // In the default font, this is the same position.
 			CHECK_FALSE(text_edit->has_selection(2));
 			CHECK(text_edit->get_caret_line(2) == 0);
-			CHECK(text_edit->get_caret_column(2) == 4);
+			CHECK(text_edit->get_caret_column(2) == 0);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
@@ -3069,7 +3069,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("text_changed");
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
-			lines_edited_args = { { 1, 0 }, { 3, 2 }, { 2, 1 } };
+			lines_edited_args = { { 1, 0 }, { 3, 1 } };
 
 			text_edit->cut();
 			MessageQueue::get_singleton()->flush();

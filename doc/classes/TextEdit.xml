@@ -939,7 +939,7 @@
 			<param index="1" name="move_carets_down" type="bool" default="true" />
 			<description>
 				Removes the line of text at [param line]. Carets on this line will attempt to match their previous visual x position.
-				If [param move_carets_down] is [code]true[/code] carets will move to the next line down, otherwise carets will move up.
+				If [param move_carets_down] is [code]true[/code], carets on the line will prefer to move down to the next line, otherwise they will prefer move up to the previous line.
 			</description>
 		</method>
 		<method name="remove_secondary_carets">
