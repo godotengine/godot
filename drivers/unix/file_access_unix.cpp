@@ -442,7 +442,7 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, BitField<FileA
 }
 
 bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__APPLE__)
 	String file = fix_path(p_file);
 
 	struct stat st = {};
@@ -456,7 +456,7 @@ bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
 }
 
 Error FileAccessUnix::_set_hidden_attribute(const String &p_file, bool p_hidden) {
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__APPLE__)
 	String file = fix_path(p_file);
 
 	struct stat st = {};

@@ -1825,7 +1825,11 @@ void (*XkbUpdateKeyTypeVirtualMods_dylibloader_wrapper_xlib)(XkbDescPtr, XkbKeyT
 int initialize_xlib(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  handle = dlopen("libX11.so", RTLD_LAZY);
+#else
   handle = dlopen("libX11.so.6", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

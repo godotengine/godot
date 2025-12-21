@@ -23,7 +23,11 @@ void (*wl_egl_window_get_attached_size_dylibloader_wrapper_wayland_egl)(struct w
 int initialize_wayland_egl(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD)
+  handle = dlopen("libwayland-egl.so", RTLD_LAZY);
+#else
   handle = dlopen("libwayland-egl.so.1", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

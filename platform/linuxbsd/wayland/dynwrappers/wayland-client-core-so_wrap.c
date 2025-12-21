@@ -171,7 +171,11 @@ void (*wl_log_set_handler_client_dylibloader_wrapper_wayland_client)( wl_log_fun
 int initialize_wayland_client(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD)
+  handle = dlopen("libwayland-client.so", RTLD_LAZY);
+#else
   handle = dlopen("libwayland-client.so.0", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

@@ -3824,7 +3824,11 @@ long (*snd_midi_event_decode_dylibloader_wrapper_asound)( snd_midi_event_t*, uns
 int initialize_asound(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined( __NetBSD__)
+  handle = dlopen("libasound.so", RTLD_LAZY);
+#else
   handle = dlopen("libasound.so.2", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

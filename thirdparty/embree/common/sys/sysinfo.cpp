@@ -39,6 +39,14 @@ namespace embree
     return "FreeBSD (32bit)";
 #elif defined(__FREEBSD__) && defined(__64BIT__)
     return "FreeBSD (64bit)";
+#elif defined(__OPENBSD__) && !defined(__64BIT__)
+    return "OpenBSD (32bit)";
+#elif defined(__OPENBSD__) && defined(__64BIT__)
+    return "OpenBSD (64bit)";
+#elif defined(__NETBSD__) && !defined(__64BIT__)
+    return "NetBSD (32bit)";
+#elif defined(__NETBSD__) && defined(__64BIT__)
+    return "NetBSD (64bit)";
 #elif defined(__CYGWIN__) && !defined(__64BIT__)
     return "Cygwin (32bit)";
 #elif defined(__CYGWIN__) && defined(__64BIT__)
@@ -617,6 +625,56 @@ namespace embree
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+/// OpenBSD Platform
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined (__OPENBSD__)
+
+namespace embree
+{
+  std::string getExecutableFileName()
+  {
+    // Only possible using argv[0]
+    return "";
+  }
+
+  size_t getVirtualMemoryBytes() {
+    return 0;
+  }
+
+  size_t getResidentMemoryBytes() {
+    return 0;
+  }
+}
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+/// NetBSD Platform
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined (__NETBSD__)
+
+namespace embree
+{
+  std::string getExecutableFileName()
+  {
+    // Haven't looked into it.
+    return "";
+  }
+
+  size_t getVirtualMemoryBytes() {
+    return 0;
+  }
+
+  size_t getResidentMemoryBytes() {
+    return 0;
+  }
+}
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
 /// Mac OS X Platform
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -672,7 +730,7 @@ namespace embree
     static int nThreads = -1;
     if (nThreads != -1) return nThreads;
 
-#if defined(__MACOSX__) || defined(__ANDROID__)
+#if defined(__MACOSX__) || defined(__ANDROID__) || defined(__OPENBSD__) || defined(__NETBSD__)
     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
     assert(nThreads);
 #elif defined(__EMSCRIPTEN__)

@@ -283,7 +283,11 @@ xkb_keysym_t (*xkb_compose_state_get_one_sym_dylibloader_wrapper_xkbcommon)(stru
 int initialize_xkbcommon(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  handle = dlopen("libxkbcommon.so", RTLD_LAZY);
+#else
   handle = dlopen("libxkbcommon.so.0", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

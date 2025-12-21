@@ -28,8 +28,13 @@ elif env["platform"] == "linuxbsd":
         env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_EGL", "XRDEPENDENCIES_USE_GLAD"])
         env_openxr.Prepend(CPPPATH=["#thirdparty/glad"])
 
-    # FreeBSD uses non-standard getenv functions.
-    if not sys.platform.startswith("freebsd"):
+    # BSDs use non-standard getenv functions.
+    if not (
+        sys.platform.startswith("dragonfly")
+        or sys.platform.startswith("freebsd")
+        or sys.platform.startswith("netbsd")
+        or sys.platform.startswith("openbsd")
+    ):
         env_openxr.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
 elif env["platform"] == "windows":
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_WINDOWS", "NOMINMAX", "XR_USE_PLATFORM_WIN32"])

@@ -725,7 +725,11 @@ dbus_bool_t (*dbus_threads_init_default_dylibloader_wrapper_dbus)( void);
 int initialize_dbus(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  handle = dlopen("libdbus-1.so", RTLD_LAZY);
+#else
   handle = dlopen("libdbus-1.so.3", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

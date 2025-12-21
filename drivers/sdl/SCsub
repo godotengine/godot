@@ -3,6 +3,8 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+import sys
+
 env_sdl = env.Clone()
 
 # Thirdparty source files
@@ -119,8 +121,18 @@ if env["builtin_sdl"]:
     # Platform specific sources.
 
     if env["platform"] == "linuxbsd":
-        # TODO: Check support for BSD systems.
-        env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_LINUX"])
+        if sys.platform.startswith("linux"):
+            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_LINUX"])
+
+        elif sys.platform.startswith("freebsd") or sys.platform.startswith("dragonfly"):
+            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_FREEBSD"])
+
+        elif sys.platform.startswith("openbsd"):
+            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_OPENBSD"])
+
+        elif sys.platform.startswith("netbsd"):
+            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_NETBSD"])
+
         thirdparty_sources += [
             "core/linux/SDL_dbus.c",
             "core/linux/SDL_evdev.c",
@@ -132,6 +144,7 @@ if env["builtin_sdl"]:
             "core/unix/SDL_poll.c",
             "haptic/linux/SDL_syshaptic.c",
             "joystick/linux/SDL_sysjoystick.c",
+            "joystick/bsd/SDL_bsdjoystick.c",
             "loadso/dlopen/SDL_sysloadso.c",
             "thread/pthread/SDL_syscond.c",
             "thread/pthread/SDL_sysmutex.c",

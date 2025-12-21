@@ -36,11 +36,10 @@
 
 #include <sys/stat.h>
 
+#include "thirdparty/linuxbsd_headers/input-event-codes/input-event-codes.h"
+
 #ifdef __FreeBSD__
-#include <dev/evdev/input-event-codes.h>
-#else
-// Assume Linux.
-#include <linux/input-event-codes.h>
+#include <sys/ucred.h>
 #endif
 
 #include "core/os/os.h"
@@ -684,7 +683,13 @@ Error WaylandEmbedder::send_raw_message(int p_socket, std::initializer_list<stru
 	if (!p_fds.is_empty()) {
 		size_t data_size = p_fds.size() * sizeof(int);
 
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
+		msg.msg_control = Memory::alloc_aligned_static(CMSG_SPACE(data_size), _ALIGN(1));
+#elif defined(__NetBSD__)
+		msg.msg_control = Memory::alloc_aligned_static(CMSG_SPACE(data_size), __CMSG_ALIGN(1));
+#else
 		msg.msg_control = Memory::alloc_aligned_static(CMSG_SPACE(data_size), CMSG_ALIGN(1));
+#endif
 		msg.msg_controllen = CMSG_SPACE(data_size);
 
 		struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
@@ -2639,7 +2644,7 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 			ERR_FAIL_V_MSG(FAILED, vformat("Can't read message header: %s", strerror(errno)));
 		}
 
-		ERR_FAIL_COND_V_MSG(((size_t)head_rec) != vec.iov_len, ERR_CONNECTION_ERROR, vformat("Should've received %d bytes, instead got %d bytes", vec.iov_len, head_rec));
+		ERR_FAIL_COND_V_MSG(((size_t)head_rec) != vec.iov_len, ERR_CONNECTION_ERROR, vformat("Should've received %d bytes, instead got %d bytes", (uint64_t)vec.iov_len, (uint64_t)head_rec));
 
 		// Header is two 32-bit words: first is ID, second has size in most significant
 		// half and opcode in the other half.
@@ -2867,15 +2872,34 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 		int new_fd = accept(proxy_socket, nullptr, nullptr);
 		ERR_FAIL_COND_MSG(new_fd == -1, "Failed to accept client.");
 
+		pid_t cred_pid;
+#ifdef __FreeBSD__
+		struct xucred cred = {};
+		socklen_t cred_size = sizeof cred;
+		getsockopt(new_fd, SOL_LOCAL, LOCAL_PEERCRED, &cred, &cred_size);
+		cred_pid = cred.cr_pid;
+#elif defined(__NetBSD__)
+		struct sockcred cred = {};
+		socklen_t cred_size = sizeof cred;
+		getsockopt(new_fd, SOL_LOCAL, LOCAL_PEEREID, &cred, &cred_size);
+		cred_pid = cred.sc_pid;
+#else
+
+#ifdef __OpenBSD__
+		struct sockpeercred cred = {};
+#else
 		struct ucred cred = {};
+#endif
 		socklen_t cred_size = sizeof cred;
 		getsockopt(new_fd, SOL_SOCKET, SO_PEERCRED, &cred, &cred_size);
+		cred_pid = cred.pid;
+#endif //__FreeBSD__
 
 		Client &client = clients.insert_new(new_fd, {})->value;
 
 		client.embedder = this;
 		client.socket = new_fd;
-		client.pid = cred.pid;
+		client.pid = cred_pid;
 
 		client.global_ids[DISPLAY_ID] = Client::GlobalIdInfo(DISPLAY_ID, nullptr);
 		client.local_ids[DISPLAY_ID] = DISPLAY_ID;
@@ -2898,11 +2922,11 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 				main_client->new_fake_object(new_local_id, &godot_embedded_client_interface, 1, eclient_data);
 
 				// godot_embedding_compositor::client(nu)
-				send_wayland_message(main_client->socket, local_id, 0, { new_local_id, (uint32_t)cred.pid });
+				send_wayland_message(main_client->socket, local_id, 0, { new_local_id, (uint32_t)cred_pid });
 			}
 		}
 
-		DEBUG_LOG_WAYLAND_EMBED(vformat("New client %d (pid %d) initialized.", client.socket, cred.pid));
+		DEBUG_LOG_WAYLAND_EMBED(vformat("New client %d (pid %d) initialized.", client.socket, cred_pid));
 		return;
 	}
 

@@ -34,12 +34,7 @@
 
 #ifdef WAYLAND_ENABLED
 
-#ifdef __FreeBSD__
-#include <dev/evdev/input-event-codes.h>
-#else
-// Assume Linux.
-#include <linux/input-event-codes.h>
-#endif
+#include "thirdparty/linuxbsd_headers/input-event-codes/input-event-codes.h"
 
 // For the actual polling thread.
 #include <poll.h>
@@ -95,7 +90,7 @@ Vector<uint8_t> WaylandThread::_read_fd(int fd) {
 			break;
 		}
 
-		DEBUG_LOG_WAYLAND_THREAD(vformat("Read chunk of %d bytes.", last_bytes_read));
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Read chunk of %d bytes.", (uint64_t)last_bytes_read));
 
 		bytes_read += last_bytes_read;
 
@@ -1197,7 +1192,7 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.\n", (size_t)wl_output));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.\n", (uint64_t)wl_output));
 
 	ws->wl_outputs.insert(wl_output);
 
@@ -1248,7 +1243,7 @@ void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surfa
 
 	ws->wl_outputs.erase(wl_output);
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Window left output %x.\n", (size_t)wl_output));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Window left output %x.\n", (uint64_t)wl_output));
 }
 
 // TODO: Add support to this event.
@@ -1310,7 +1305,7 @@ void WaylandThread::_wl_output_on_done(void *data, struct wl_output *wl_output) 
 
 	ss->wayland_thread->_update_scale(ss->data.scale);
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Output %x done.", (size_t)wl_output));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Output %x done.", (uint64_t)wl_output));
 }
 
 void WaylandThread::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
@@ -1319,7 +1314,7 @@ void WaylandThread::_wl_output_on_scale(void *data, struct wl_output *wl_output,
 
 	ss->pending_data.scale = factor;
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Output %x scale %d", (size_t)wl_output, factor));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Output %x scale %d", (uint64_t)wl_output, factor));
 }
 
 void WaylandThread::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
@@ -2453,7 +2448,7 @@ void WaylandThread::_wl_data_source_on_send(void *data, struct wl_data_source *w
 		}
 
 		if (written_bytes > 0) {
-			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", (uint64_t)written_bytes));
 		} else if (written_bytes == 0) {
 			DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
 		} else {
@@ -2641,7 +2636,7 @@ void WaylandThread::_wp_primary_selection_source_on_send(void *data, struct zwp_
 		}
 
 		if (written_bytes > 0) {
-			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", (uint64_t)written_bytes));
 		} else if (written_bytes == 0) {
 			DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
 		} else {

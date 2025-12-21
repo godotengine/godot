@@ -188,7 +188,11 @@ XcursorBool (*XcursorSetThemeCore_dylibloader_wrapper_xcursor)(Display *, Xcurso
 int initialize_xcursor(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  handle = dlopen("libXcursor.so", RTLD_LAZY);
+#else
   handle = dlopen("libXcursor.so.1", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
