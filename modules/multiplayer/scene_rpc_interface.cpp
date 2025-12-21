@@ -84,6 +84,7 @@ void SceneRPCInterface::_parse_rpc_config(const Variant &p_config, bool p_for_no
 		ERR_CONTINUE(config[name].get_type() != Variant::DICTIONARY);
 		ERR_CONTINUE(!config[name].operator Dictionary().has("rpc_mode"));
 		Dictionary dict = config[name];
+		// Default values should match GDScript `@rpc` annotation registration and `rpc_annotation()`.
 		RPCConfig cfg;
 		cfg.name = name;
 		cfg.rpc_mode = ((MultiplayerAPI::RPCMode)dict.get("rpc_mode", MultiplayerAPI::RPC_MODE_AUTHORITY).operator int());
