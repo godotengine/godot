@@ -2068,7 +2068,11 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Vertical separation between inspector areas.
 		p_theme->set_type_variation("EditorInspectorContainer", "VBoxContainer");
-		p_theme->set_constant("separation", "EditorInspectorContainer", Math::ceil(p_config.base_margin * 0.5 * EDSCALE));
+		p_theme->set_constant("separation", "EditorInspectorContainer", Math::ceil(p_config.base_margin * EDSCALE));
+
+		// Vertical separation between inspector sections.
+		p_theme->set_type_variation("EditorSectionContainer", "VBoxContainer");
+		p_theme->set_constant("separation", "EditorSectionContainer", p_config.base_margin * 0.5 * EDSCALE);
 
 		// Vertical separation between inspector properties.
 		p_theme->set_type_variation("EditorPropertyContainer", "VBoxContainer");
