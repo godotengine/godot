@@ -77,7 +77,7 @@ Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
 }
 
 Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
-	int idx = get_item_at_position(get_local_mouse_position());
+	int idx = get_item_at_position(get_local_mouse_position(), true);
 	if (idx == -1) {
 		return nullptr;
 	}
