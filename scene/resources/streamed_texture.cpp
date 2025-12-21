@@ -67,7 +67,8 @@ void StreamedTexture2D::texture_reload(uint32_t p_resolution) {
 		return;
 	}
 
-	_current_resolution = p_resolution;
+	// Limit to minimum 4 to avoid too small textures.
+	_current_resolution = MAX(4u, p_resolution);
 
 	{
 		StreamedTexture2DLoadData load_data;
