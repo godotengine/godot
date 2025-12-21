@@ -140,6 +140,7 @@ void EditorLog::_editor_settings_changed() {
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			set_process(true);
 			_update_theme();
 			_load_state();
 		} break;
@@ -147,6 +148,27 @@ void EditorLog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 			_rebuild_log();
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			if (pending_messages.is_empty()) {
+				return;
+			}
+
+			if (log->is_updating() || flush_pending) {
+				return;
+			}
+
+			flush_pending = true;
+
+			Vector<LogMessage> to_flush = pending_messages;
+			to_flush.clear();
+
+			for (LogMessage &msg : to_flush) {
+				_add_log_line(msg, false);
+			}
+
+			flush_pending = false;
 		} break;
 	}
 }
@@ -388,6 +410,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 
 	if (unlikely(log->is_updating())) {
 		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
+		pending_messages.push_back(p_message);
 		return;
 	}
 
