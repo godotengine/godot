@@ -497,6 +497,7 @@ void ChainIK3D::_update_mutable_info() {
 		for (uint32_t i = 0; i < settings.size(); i++) {
 			chain_settings[i]->root_global_rest = Transform3D();
 		}
+		return;
 	}
 	bool changed = false;
 	for (uint32_t i = 0; i < settings.size(); i++) {
