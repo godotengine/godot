@@ -978,67 +978,57 @@ void Viewport::_process_picking() {
 			}
 		}
 
-		if (pos == last_pos) {
-			if (last_id.is_valid()) {
-				if (ObjectDB::get_instance(last_id) && last_object) {
-					// Good, exists.
-					_collision_object_3d_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
-					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-						physics_object_capture = last_id;
+		if ((is_mouse || pos != last_pos) && camera_3d) {
+			Vector3 from = camera_3d->project_ray_origin(pos);
+			Vector3 dir = camera_3d->project_ray_normal(pos);
+			real_t depth_far = camera_3d->get_far();
+
+			PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
+			if (space) {
+				PhysicsDirectSpaceState3D::RayParameters ray_params;
+				ray_params.from = from;
+				ray_params.to = from + dir * depth_far;
+				ray_params.collide_with_areas = true;
+				ray_params.pick_ray = true;
+
+				bool col = space->intersect_ray(ray_params, result);
+				ObjectID new_collider;
+				CollisionObject3D *co = col ? Object::cast_to<CollisionObject3D>(result.collider) : nullptr;
+				if (co && co->can_process()) {
+					new_collider = result.collider_id;
+					if (!capture_object) {
+						last_object = co;
+						last_id = result.collider_id;
+						if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+							physics_object_capture = last_id;
+						}
 					}
+				}
+
+				if (is_mouse && new_collider != physics_object_over) {
+					if (physics_object_over.is_valid()) {
+						ObjectDB::get_instance<CollisionObject3D>(physics_object_over)->_mouse_exit();
+					}
+					if (new_collider.is_valid()) {
+						co->_mouse_enter();
+					}
+					physics_object_over = new_collider;
+				}
+
+				if (capture_object) {
+					_collision_object_3d_input_event(capture_object, camera_3d, ev, result.position, result.normal, result.shape);
+				} else if (new_collider.is_valid()) {
+					_collision_object_3d_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
 				}
 			}
-		} else {
-			if (camera_3d) {
-				Vector3 from = camera_3d->project_ray_origin(pos);
-				Vector3 dir = camera_3d->project_ray_normal(pos);
-				real_t depth_far = camera_3d->get_far();
 
-				PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
-				if (space) {
-					PhysicsDirectSpaceState3D::RayParameters ray_params;
-					ray_params.from = from;
-					ray_params.to = from + dir * depth_far;
-					ray_params.collide_with_areas = true;
-					ray_params.pick_ray = true;
-
-					bool col = space->intersect_ray(ray_params, result);
-					ObjectID new_collider;
-					CollisionObject3D *co = col ? Object::cast_to<CollisionObject3D>(result.collider) : nullptr;
-					if (co && co->can_process()) {
-						new_collider = result.collider_id;
-						if (!capture_object) {
-							last_object = co;
-							last_id = result.collider_id;
-							if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-								physics_object_capture = last_id;
-							}
-						}
-					}
-
-					if (is_mouse && new_collider != physics_object_over) {
-						if (physics_object_over.is_valid()) {
-							CollisionObject3D *previous_co = ObjectDB::get_instance<CollisionObject3D>(physics_object_over);
-							if (previous_co) {
-								previous_co->_mouse_exit();
-							}
-						}
-
-						if (new_collider.is_valid()) {
-							DEV_ASSERT(co);
-							co->_mouse_enter();
-						}
-
-						physics_object_over = new_collider;
-					}
-					if (capture_object) {
-						_collision_object_3d_input_event(capture_object, camera_3d, ev, result.position, result.normal, result.shape);
-					} else if (new_collider.is_valid()) {
-						_collision_object_3d_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
-					}
-				}
-
+			if (pos != last_pos) {
 				last_pos = pos;
+			}
+		} else if (last_id.is_valid() && camera_3d && ObjectDB::get_instance(last_id) && last_object) {
+			_collision_object_3d_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
+			if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+				physics_object_capture = last_id;
 			}
 		}
 #endif // PHYSICS_3D_DISABLED
