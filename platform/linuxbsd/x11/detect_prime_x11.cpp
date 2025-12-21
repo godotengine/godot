@@ -47,6 +47,11 @@
 #include <X11/Xutil.h>
 #endif
 
+#ifdef __OpenBSD__
+// quick_exit not available
+#define quick_exit _exit
+#endif
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>

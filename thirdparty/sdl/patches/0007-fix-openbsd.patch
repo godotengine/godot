@@ -1,0 +1,19 @@
+diff --git a/thirdparty/sdl/joystick/bsd/SDL_bsdjoystick.c b/thirdparty/sdl/joystick/bsd/SDL_bsdjoystick.c
+index b3fd3e9ca3..e4a17990f3 100644
+--- a/thirdparty/sdl/joystick/bsd/SDL_bsdjoystick.c
++++ b/thirdparty/sdl/joystick/bsd/SDL_bsdjoystick.c
+@@ -710,10 +710,10 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
+                     //default:
+                         // no-op
+                     }
+-                    SDL_PrivateJoystickHat(joy, 0, (dpad[0] * HAT_UP) |
+-                                                   (dpad[1] * HAT_DOWN) |
+-                                                   (dpad[2] * HAT_RIGHT) |
+-                                                   (dpad[3] * HAT_LEFT) );
++                    SDL_SendJoystickHat(timestamp, joy, 0, (dpad[0] * HAT_UP) |
++                                                           (dpad[1] * HAT_DOWN) |
++                                                           (dpad[2] * HAT_RIGHT) |
++                                                           (dpad[3] * HAT_LEFT) );
+ #endif
+                     break;
+                 }
