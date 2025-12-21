@@ -504,7 +504,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	uint64_t sused = 0;
 	int count = swapctl(SWAP_NSWAP, 0, 0);
 	if (count > 0) {
-		swapent swap_info[count];
+		swapent *swap_info = (swapent *)memalloc(count * sizeof(swapent));
 		count = swapctl(SWAP_STATS, swap_info, count);
 
 		for (int i = 0; i < count; i++) {
@@ -513,6 +513,7 @@ Dictionary OS_Unix::get_memory_info() const {
 				stotal += swap_info[i].se_nblks;
 			}
 		}
+		memfree(swap_info);
 	}
 
 	if (uvmexp_info.npages * pagesize != 0) {

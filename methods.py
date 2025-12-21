@@ -812,7 +812,10 @@ def using_gcc(env):
 
 
 def using_clang(env):
-    return "clang" in os.path.basename(env["CC"])
+    return "clang" in os.path.basename(env["CC"]) or (
+        (sys.platform.startswith("freebsd") or sys.platform.startswith("openbsd"))
+        and os.path.basename(env["CC"]) == "cc"
+    )
 
 
 def using_emcc(env):
@@ -1099,7 +1102,6 @@ def generate_vs_project(env, original_args, project_name="godot"):
     host_platform = "windows"
     if (
         sys.platform.startswith("linux")
-        or sys.platform.startswith("dragonfly")
         or sys.platform.startswith("freebsd")
         or sys.platform.startswith("netbsd")
         or sys.platform.startswith("openbsd")
