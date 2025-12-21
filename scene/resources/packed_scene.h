@@ -94,8 +94,8 @@ class SceneState : public RefCounted {
 
 	Vector<ConnectionData> connections;
 
-	void _parse_dict(Dictionary &out_dict, Node *p_node, Dictionary orig_dict);
-	void _parse_array(Array &out_array, Node *p_node, Array orig_array);
+	void _parse_dict(Dictionary &r_out_dict, Node *p_node, const Dictionary &p_orig_dict);
+	void _parse_array(Array &r_out_array, Node *p_node, const Array &p_orig_array);
 	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, HashSet<int32_t> &ids_saved);
 	Error _parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
 

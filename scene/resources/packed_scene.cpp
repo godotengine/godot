@@ -791,29 +791,32 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int> &vari
 	return idx;
 }
 
-
 // Recursively parses arrays, mostly to look for Nodes to turn into NodePaths
-void SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array) {
-	for (int i = 0; i < orig_array.size(); i++) {
-		Variant elem = orig_array[i];
+void SceneState::_parse_array(Array &r_out_array, Node *p_node, const Array &p_orig_array) {
+	for (int i = 0; i < p_orig_array.size(); i++) {
+		Variant elem = p_orig_array[i];
 
 		if (elem.get_type() == Variant::OBJECT) {
 			if (Node *n = Object::cast_to<Node>(elem)) {
-				out_array.push_back(p_node->get_path_to(n));
+				r_out_array.push_back(p_node->get_path_to(n));
 			}
+		} else if (elem.get_type() == Variant::DICTIONARY) {
+			Dictionary new_dict;
+			_parse_dict(new_dict, p_node, elem);
+			r_out_array.push_back(new_dict);
 		} else if (elem.get_type() == Variant::ARRAY) {
 			Array new_array;
 			_parse_array(new_array, p_node, elem);
-			out_array.push_back(new_array);
+			r_out_array.push_back(new_array);
 		} else {
-			out_array.push_back(elem);
+			r_out_array.push_back(elem);
 		}
 	}
 }
 
 // Recursively parses dictionaries, mostly to look for Nodes to turn into NodePaths
-void SceneState::_parse_dict(Dictionary &out_dict, Node *p_node, Dictionary orig_dict) {
-	Array keys = orig_dict.keys();
+void SceneState::_parse_dict(Dictionary &r_out_dict, Node *p_node, const Dictionary &p_orig_dict) {
+	Array keys = p_orig_dict.keys();
 
 	for (int i = 0; i < keys.size(); i++) {
 		Variant key = keys[i];
@@ -822,21 +825,29 @@ void SceneState::_parse_dict(Dictionary &out_dict, Node *p_node, Dictionary orig
 			Dictionary key_dict;
 			_parse_dict(key_dict, p_node, key);
 			key = key_dict;
+		} else if (key.get_type() == Variant::ARRAY) {
+			Array key_arr;
+			_parse_array(key_arr, p_node, key);
+			key = key_arr;
 		} else if (Node *key_n = Object::cast_to<Node>(key)) {
 			key = p_node->get_path_to(key_n);
 		}
 
-		Variant value = orig_dict.get(keys[i], Variant::NIL);
+		Variant value = p_orig_dict.get(keys[i], Variant::NIL);
 
 		if (value.get_type() == Variant::DICTIONARY) {
 			Dictionary value_dict;
 			_parse_dict(value_dict, p_node, value);
 			value = value_dict;
+		} else if (value.get_type() == Variant::ARRAY) {
+			Array value_arr;
+			_parse_array(value_arr, p_node, value);
+			value = value_arr;
 		} else if (Node *value_n = Object::cast_to<Node>(value)) {
 			value = p_node->get_path_to(value_n);
 		}
 
-		out_dict.set(key, value);
+		r_out_dict.set(key, value);
 	}
 }
 
