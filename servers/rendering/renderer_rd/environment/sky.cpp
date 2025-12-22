@@ -1008,6 +1008,48 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 			RenderingServerDefault::redraw_request();
 		}
 
+		if (RendererSceneRenderRD::get_singleton()->environment_get_fog_aerial_perspective(p_render_data->environment) != sky->prev_fog_aerial_perspective) {
+			sky->prev_fog_aerial_perspective = RendererSceneRenderRD::get_singleton()->environment_get_fog_aerial_perspective(p_render_data->environment);
+			sky->reflection.dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (RendererSceneRenderRD::get_singleton()->environment_get_fog_light_color(p_render_data->environment) != sky->prev_fog_light_color) {
+			sky->prev_fog_light_color = RendererSceneRenderRD::get_singleton()->environment_get_fog_light_color(p_render_data->environment);
+			sky->reflection.dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_render_data->environment) != sky->prev_fog_sun_scatter) {
+			sky->prev_fog_sun_scatter = RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_render_data->environment);
+			sky->reflection.dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_render_data->environment) != sky->prev_fog_enabled) {
+			sky->prev_fog_enabled = RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_render_data->environment);
+			sky->reflection.dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (RendererSceneRenderRD::get_singleton()->environment_get_fog_density(p_render_data->environment) != sky->prev_fog_density) {
+			sky->prev_fog_density = RendererSceneRenderRD::get_singleton()->environment_get_fog_density(p_render_data->environment);
+			sky->reflection.dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (RendererSceneRenderRD::get_singleton()->environment_get_fog_sky_affect(p_render_data->environment) != sky->prev_fog_sky_affect) {
+			sky->prev_fog_sky_affect = RendererSceneRenderRD::get_singleton()->environment_get_fog_sky_affect(p_render_data->environment);
+			sky->reflection.dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (RendererSceneRenderRD::get_singleton()->environment_get_fog_light_energy(p_render_data->environment) != sky->prev_fog_light_energy) {
+			sky->prev_fog_light_energy = RendererSceneRenderRD::get_singleton()->environment_get_fog_light_energy(p_render_data->environment);
+			sky->reflection.dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
 		if (material != sky->prev_material) {
 			sky->prev_material = material;
 			sky->reflection.dirty = true;

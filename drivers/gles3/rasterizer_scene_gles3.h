@@ -827,6 +827,13 @@ protected:
 		GLES3::SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position = Vector3(0.0, 0.0, 0.0);
 		float prev_time = 0.0f;
+		float prev_fog_aerial_perspective = 0.0;
+		Color prev_fog_light_color;
+		float prev_fog_sun_scatter = 0.0;
+		bool prev_fog_enabled = false;
+		float prev_fog_density = 0.0;
+		float prev_fog_sky_affect = 0.0;
+		float prev_fog_light_energy = 0.0;
 	};
 
 	Sky *dirty_sky_list = nullptr;

@@ -667,6 +667,48 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			RenderingServerDefault::redraw_request();
 		}
 
+		if (environment_get_fog_aerial_perspective(p_render_data->environment) != sky->prev_fog_aerial_perspective) {
+			sky->prev_fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_light_color(p_render_data->environment) != sky->prev_fog_light_color) {
+			sky->prev_fog_light_color = environment_get_fog_light_color(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_sun_scatter(p_render_data->environment) != sky->prev_fog_sun_scatter) {
+			sky->prev_fog_sun_scatter = environment_get_fog_sun_scatter(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_enabled(p_render_data->environment) != sky->prev_fog_enabled) {
+			sky->prev_fog_enabled = environment_get_fog_enabled(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_density(p_render_data->environment) != sky->prev_fog_density) {
+			sky->prev_fog_density = environment_get_fog_density(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_sky_affect(p_render_data->environment) != sky->prev_fog_sky_affect) {
+			sky->prev_fog_sky_affect = environment_get_fog_sky_affect(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_light_energy(p_render_data->environment) != sky->prev_fog_light_energy) {
+			sky->prev_fog_light_energy = environment_get_fog_light_energy(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
 		if (material != sky->prev_material) {
 			sky->prev_material = material;
 			sky->reflection_dirty = true;
@@ -984,6 +1026,15 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, cm.columns[2][0], cm.columns[0][0], cm.columns[2][1], cm.columns[1][1], shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::SKY_ENERGY_MULTIPLIER, p_sky_energy_multiplier, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::LUMINANCE_MULTIPLIER, 1.0, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+
+		Color fog_color = environment_get_fog_light_color(p_env).srgb_to_linear() * environment_get_fog_light_energy(p_env);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_ENABLED, environment_get_fog_enabled(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_AERIAL_PERSPECTIVE, environment_get_fog_aerial_perspective(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_LIGHT_COLOR, fog_color, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_SUN_SCATTER, environment_get_fog_sun_scatter(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_DENSITY, environment_get_fog_density(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_SKY_AFFECT, environment_get_fog_sky_affect(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::DIRECTIONAL_LIGHT_COUNT, sky_globals.directional_light_count, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 
 		glBindVertexArray(sky_globals.screen_triangle_array);
 
