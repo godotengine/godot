@@ -36,6 +36,7 @@ class RectangleShape2D : public Shape2D {
 	GDCLASS(RectangleShape2D, Shape2D);
 
 	Size2 size;
+	Size2 halfsize;
 	void _update_shape();
 
 protected:
@@ -52,6 +53,7 @@ public:
 	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
 	virtual Rect2 get_rect() const override;
 	virtual real_t get_enclosing_radius() const override;
+	virtual bool contains_point(const Vector2 &p_point) const override;
 
 	RectangleShape2D();
 };
