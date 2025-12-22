@@ -407,6 +407,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
 	{ "ui_colorpicker_delete_preset",                  TTRC("ColorPicker: Delete Preset") },
 	{ "ui_accessibility_drag_and_drop",                TTRC("Accessibility: Keyboard Drag and Drop") },
+	{ "ui_toggle_fullscreen",                          TTRC("Toggle Fullscreen") },
 	{ "",                                              ""}
 	/* clang-format on */
 };
@@ -851,6 +852,11 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::X));
 	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
 	default_builtin_cache.insert("ui_colorpicker_delete_preset", inputs);
+
+	// ///// Miscellaneous Shortcuts /////
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::ENTER | KeyModifierMask::ALT));
+	default_builtin_cache.insert("ui_toggle_fullscreen", inputs);
 
 	return default_builtin_cache;
 }
