@@ -269,98 +269,121 @@ void Slider::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
-			Size2i size = get_size();
-			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
+			const Size2i size = get_size();
+			const double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
 
 			Ref<StyleBox> style = theme_cache.slider_style;
 			Ref<Texture2D> tick = theme_cache.tick_icon;
 
-			bool highlighted = editable && (mouse_inside || has_focus(true));
 			Ref<Texture2D> grabber;
-			if (editable) {
-				if (highlighted) {
-					grabber = theme_cache.grabber_hl_icon;
-				} else {
-					grabber = theme_cache.grabber_icon;
-				}
-			} else {
-				grabber = theme_cache.grabber_disabled_icon;
-			}
-
 			Ref<StyleBox> grabber_area;
-			if (highlighted) {
+
+			if (editable && (mouse_inside || has_focus())) {
+				grabber = theme_cache.grabber_hl_icon;
 				grabber_area = theme_cache.grabber_area_hl_style;
 			} else {
+				grabber = editable ? theme_cache.grabber_icon : theme_cache.grabber_disabled_icon;
 				grabber_area = theme_cache.grabber_area_style;
 			}
 
 			if (orientation == VERTICAL) {
-				int widget_width = style->get_minimum_size().width;
-				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
-				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
+				const int widget_width = style->get_minimum_size().width;
+				const double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
+				const int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift)), Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift))));
+
+				if (symmetric_fill && get_min() < -CMP_EPSILON && get_max() > CMP_EPSILON) {
+					const double zero_ratio = get_min() / (get_min() - get_max());
+					int initial_pos = Math::round(areasize * (1 - zero_ratio) + grabber->get_height() / 2 - grabber_shift);
+					int grabber_pos = Math::round(areasize * (1 - ratio) + grabber->get_height() / 2 - grabber_shift);
+
+					if (grabber_pos < initial_pos) {
+						SWAP(grabber_pos, initial_pos);
+					}
+
+					grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, initial_pos), Size2i(widget_width, grabber_pos - initial_pos)));
+				} else {
+					int grabber_pos = Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift);
+
+					grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - grabber_pos), Size2i(widget_width, grabber_pos)));
+				}
 
 				if (ticks > 1) {
-					int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
+					const int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
 					for (int i = 0; i < ticks; i++) {
 						if (!ticks_on_borders && (i == 0 || i + 1 == ticks)) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset - grabber_shift;
 
-						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
-							tick->draw(ci, Point2i(widget_width + (size.width - widget_width) / 2 + theme_cache.tick_offset, ofs));
-						}
-
-						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
-							Point2i pos = Point2i((size.width - widget_width) / 2 - tick->get_width() - theme_cache.tick_offset, ofs);
-							tick->draw_rect(ci, Rect2i(pos, Size2i(-tick->get_width(), tick->get_height())));
-						}
-
 						if (ticks_position == TICK_POSITION_CENTER) {
 							tick->draw(ci, Point2i((size.width - tick->get_width()) / 2 + theme_cache.tick_offset, ofs));
+						} else {
+							if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
+								tick->draw(ci, Point2i(widget_width + (size.width - widget_width) / 2 + theme_cache.tick_offset, ofs));
+							}
+
+							if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
+								Point2i pos = Point2i((size.width - widget_width) / 2 - tick->get_width() - theme_cache.tick_offset, ofs);
+								tick->draw_rect(ci, Rect2i(pos, Size2i(-tick->get_width(), tick->get_height())));
+							}
 						}
 					}
 				}
-				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber->get_height() + grabber_shift));
+				if (grabber.is_valid()) {
+					grabber->draw(ci, Point2i(size.width / 2 - grabber->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber->get_height() + grabber_shift));
+				}
 			} else {
-				int widget_height = style->get_minimum_size().height;
-				double areasize = size.width - (theme_cache.center_grabber ? 0 : grabber->get_size().width);
-				int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
-				bool rtl = is_layout_rtl();
+				const int widget_height = style->get_minimum_size().height;
+				const double areasize = size.width - (theme_cache.center_grabber ? 0 : grabber->get_width());
+				const int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
+				const bool rtl = is_layout_rtl();
+				int grabber_pos = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
-				int p = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
-				if (rtl) {
-					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
+
+				if (symmetric_fill && get_min() < -CMP_EPSILON && get_max() > CMP_EPSILON) {
+					const double zero_ratio = get_min() / (get_min() - get_max());
+					int initial_pos = areasize * (rtl ? 1 - zero_ratio : zero_ratio) + grabber->get_width() / 2 + grabber_shift;
+
+					if (grabber_pos < initial_pos) {
+						SWAP(initial_pos, grabber_pos);
+					}
+
+					grabber_area->draw(ci, Rect2(initial_pos, (size.height - widget_height) / 2, grabber_pos - initial_pos, widget_height));
 				} else {
-					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
+					if (rtl) {
+						grabber_area->draw(ci, Rect2i(Point2i(grabber_pos, (size.height - widget_height) / 2), Size2i(size.width - grabber_pos, widget_height)));
+					} else {
+						grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(grabber_pos, widget_height)));
+					}
 				}
 
 				if (ticks > 1) {
-					int grabber_offset = (grabber->get_width() / 2 - tick->get_width() / 2);
+					const int grabber_offset = (grabber->get_width() / 2 - tick->get_width() / 2);
 					for (int i = 0; i < ticks; i++) {
 						if ((!ticks_on_borders) && ((i == 0) || ((i + 1) == ticks))) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset + grabber_shift;
 
-						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
-							tick->draw(ci, Point2i(ofs, widget_height + (size.height - widget_height) / 2 + theme_cache.tick_offset));
-						}
-
-						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
-							Point2i pos = Point2i(ofs, (size.height - widget_height) / 2 - tick->get_height() - theme_cache.tick_offset);
-							tick->draw_rect(ci, Rect2i(pos, Size2i(tick->get_width(), -tick->get_height())));
-						}
-
 						if (ticks_position == TICK_POSITION_CENTER) {
 							tick->draw(ci, Point2i(ofs, (size.height - tick->get_height()) / 2 + theme_cache.tick_offset));
+						} else {
+							if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
+								tick->draw(ci, Point2i(ofs, widget_height + (size.height - widget_height) / 2 + theme_cache.tick_offset));
+							}
+
+							if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
+								Point2i pos = Point2i(ofs, (size.height - widget_height) / 2 - tick->get_height() - theme_cache.tick_offset);
+								tick->draw_rect(ci, Rect2i(pos, Size2i(tick->get_width(), -tick->get_height())));
+							}
 						}
 					}
 				}
-				grabber->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
+				if (grabber.is_valid()) {
+					grabber->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
+				}
 			}
 		} break;
 	}
@@ -444,6 +467,34 @@ bool Slider::is_scrollable() const {
 	return scrollable;
 }
 
+void Slider::set_symmetric_fill(bool p_symmetric_fill) {
+	if (symmetric_fill == p_symmetric_fill) {
+		return;
+	}
+	symmetric_fill = p_symmetric_fill;
+	update_configuration_warnings();
+	queue_redraw();
+}
+
+bool Slider::is_symmetric_fill() const {
+	return symmetric_fill;
+}
+
+PackedStringArray Slider::get_configuration_warnings() const {
+	PackedStringArray warnings = Range::get_configuration_warnings();
+
+	if (symmetric_fill) {
+		if (get_min() >= 0.0) {
+			warnings.push_back(RTR("If \"Symmetric Fill\" is enabled, \"Min Value\" must be smaller than 0."));
+		}
+		if (get_max() <= 0.0) {
+			warnings.push_back(RTR("If \"Symmetric Fill\" is enabled, \"Max Value\" must be greater than 0."));
+		}
+	}
+
+	return warnings;
+}
+
 void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ticks", "count"), &Slider::set_ticks);
 	ClassDB::bind_method(D_METHOD("get_ticks"), &Slider::get_ticks);
@@ -456,14 +507,19 @@ void Slider::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &Slider::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
+
 	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
 	ClassDB::bind_method(D_METHOD("is_scrollable"), &Slider::is_scrollable);
+
+	ClassDB::bind_method(D_METHOD("set_symmetric_fill", "symmetric_fill"), &Slider::set_symmetric_fill);
+	ClassDB::bind_method(D_METHOD("is_symmetric_fill"), &Slider::is_symmetric_fill);
 
 	ADD_SIGNAL(MethodInfo("drag_started"));
 	ADD_SIGNAL(MethodInfo("drag_ended", PropertyInfo(Variant::BOOL, "value_changed")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symmetric_fill"), "set_symmetric_fill", "is_symmetric_fill");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ticks_position", PROPERTY_HINT_ENUM), "set_ticks_position", "get_ticks_position");
