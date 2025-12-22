@@ -182,6 +182,9 @@ private:
 		RID process_material;
 		uint32_t frame_counter = 0;
 		RS::ParticlesTransformAlign transform_align = RS::PARTICLES_TRANSFORM_ALIGN_DISABLED;
+		RS::ParticlesAlignCustomSrc transform_align_src = RS::PARTICLES_ALIGN_CUSTOM_SRC_X;
+		RS::ParticlesAlignRotationAxis rotation_axis = RS::ParticlesAlignRotationAxis::PARTICLES_ALIGN_AXIS_Y;
+		uint32_t align_flags;
 
 		RS::ParticlesDrawOrder draw_order = RS::PARTICLES_DRAW_ORDER_INDEX;
 
@@ -315,7 +318,12 @@ private:
 				uint32_t copy_mode_2d : 1;
 			};
 
-			float inv_emission_transform[16];
+			float inv_emission_transform[12];
+			
+			uint32_t transform_align_src;
+			uint32_t subtype;
+			uint32_t align_flags;
+			uint32_t pad1;
 		};
 
 		enum {
@@ -459,6 +467,9 @@ public:
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
+	virtual void particles_set_transform_align_custom_src(RID p_particles, RS::ParticlesAlignCustomSrc p_transform_align_custom_src) override;
+	virtual void particles_set_transform_align_rotation_axis(RID p_particles, RS::ParticlesAlignRotationAxis p_rotation_axis) override;
+	virtual void particles_set_transform_align_flags(RID p_particles, uint32_t p_flags) override;
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) override;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) override;
