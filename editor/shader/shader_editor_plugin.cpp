@@ -832,6 +832,7 @@ void ShaderEditorPlugin::_notification(int p_what) {
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ShaderEditorPlugin::_close_builtin_shaders_from_scene));
 			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ShaderEditorPlugin::_file_removed));
 			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ShaderEditorPlugin::_res_saved_callback));
+			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ShaderEditorPlugin::_update_shader_list));
 		} break;
 	}
 }
