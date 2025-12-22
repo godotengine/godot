@@ -696,6 +696,7 @@ private:
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
 	void _immediate_dialog_confirmed();
+	void _color_picker_popup_created(ColorPickerButton *p_button);
 
 	void _begin_first_scan();
 
@@ -944,6 +945,7 @@ public:
 	bool is_multi_window_enabled() const;
 
 	void setup_color_picker(ColorPicker *p_picker);
+	void setup_color_picker(ColorPickerButton *p_button);
 
 	void request_instantiate_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);

@@ -9687,8 +9687,9 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	marker_insert_vbox->add_child(_create_hbox_labeled_control(TTR("Marker Name"), marker_insert_new_name));
 	marker_insert_color = memnew(ColorPickerButton);
 	marker_insert_color->set_edit_alpha(false);
-	marker_insert_color->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(marker_insert_color->get_picker()));
 	marker_insert_vbox->add_child(_create_hbox_labeled_control(TTR("Marker Color"), marker_insert_color));
+	EditorNode::get_singleton()->setup_color_picker(marker_insert_color);
+
 	marker_insert_error_dialog = memnew(AcceptDialog);
 	marker_insert_error_dialog->set_ok_button_text(TTR("Close"));
 	marker_insert_error_dialog->set_title(TTR("Error!"));
