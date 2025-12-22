@@ -732,8 +732,11 @@ StringName EditorProperty::get_edited_property() const {
 Variant EditorProperty::get_edited_property_display_value() const {
 	ERR_FAIL_NULL_V(object, Variant());
 	Control *control = Object::cast_to<Control>(object);
+	Window *wnd = Object::cast_to<Window>(object);
 	if (checkable && !checked && control && String(property).begins_with("theme_override_")) {
 		return control->get_used_theme_item(property);
+	} else if (checkable && !checked && wnd && String(property).begins_with("theme_override_")) {
+		return wnd->get_used_theme_item(property);
 	} else {
 		return get_edited_property_value();
 	}

@@ -683,7 +683,7 @@ void SpinBox::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, field_and_buttons_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_width);
 #ifndef DISABLE_DEPRECATED
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, set_min_buttons_width_from_icons);
+	BIND_THEME_ITEM_CONSTANT_WITH_HINT(SpinBox, set_min_buttons_width_from_icons, PROPERTY_HINT_ENUM, "Disabled,Enabled");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SpinBox, updown_icon, "updown");
 #endif

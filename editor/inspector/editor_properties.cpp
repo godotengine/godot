@@ -918,7 +918,7 @@ void EditorPropertyEnum::_option_selected(int p_which) {
 }
 
 void EditorPropertyEnum::update_property() {
-	Variant current = get_edited_property_value();
+	Variant current = get_edited_property_display_value();
 	if (current.get_type() == Variant::NIL) {
 		options->select(-1);
 		options->set_text("<null>");
