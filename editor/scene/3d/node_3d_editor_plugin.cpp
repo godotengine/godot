@@ -1892,6 +1892,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						// Restore.
 						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
+						break;
 					}
 
 					if (_edit.mode == TRANSFORM_NONE) {
