@@ -497,6 +497,8 @@ void GameView::_stop_pressed() {
 	_detach_script_debugger();
 	paused = false;
 
+	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+
 	EditorNode::get_singleton()->set_unfocused_low_processor_usage_mode_enabled(true);
 	embedded_process->reset();
 	_update_ui();

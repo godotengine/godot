@@ -328,6 +328,7 @@ void EditorDebuggerNode::stop(bool p_force) {
 	_break_state_changed();
 	breakpoints.clear();
 	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::REMOTE_HISTORY, false);
+	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 	set_process(false);
 }
 
