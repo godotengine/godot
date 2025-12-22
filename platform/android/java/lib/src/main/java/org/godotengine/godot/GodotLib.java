@@ -302,6 +302,11 @@ public class GodotLib {
 	static native void onScreenRotationChange(int orientation);
 
 	/**
+	 * Invoked when the display HDR/SDR ratio changes.
+	 */
+	public static native void onHdrSdrRatioChanged(float ratio);
+
+	/**
 	 * @return true if input must be dispatched from the render thread. If false, input is
 	 * dispatched from the UI thread.
 	 */

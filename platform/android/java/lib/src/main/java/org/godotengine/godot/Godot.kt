@@ -45,6 +45,7 @@ import android.os.*
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
+import android.view.Display
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
@@ -86,6 +87,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
 
 
 /**
@@ -134,6 +136,8 @@ class Godot private constructor(val context: Context) {
 
 	private val gyroscopeEnabled = AtomicBoolean(false)
 	private val mGyroscope: Sensor? by lazy { mSensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
+
+	private var hdrSdrRatioListener: Consumer<Display>? = null
 
 	val tts = GodotTTS(context)
 	val directoryAccessHandler = DirectoryAccessHandler(context)
@@ -691,6 +695,7 @@ class Godot private constructor(val context: Context) {
 
 		renderView?.onActivityResumed()
 		registerSensorsIfNeeded()
+		registerHdrSdrRatioListenerIfNeeded()
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainResume()
 		}
@@ -715,6 +720,53 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
+	private fun registerHdrSdrRatioListenerIfNeeded() {
+		if (!resumed || !godotMainLoopStarted.get()) {
+			return
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			val activity = getActivity()
+			var display: Display?
+			if (activity != null) {
+				display = activity.display
+			} else {
+				display = context.display
+			}
+
+			if (display != null && display.isHdrSdrRatioAvailable) {
+				if (hdrSdrRatioListener == null) {
+					hdrSdrRatioListener = Consumer<Display> { changedDisplay ->
+						onHdrSdrRatioChanged(changedDisplay.hdrSdrRatio)
+					}
+				}
+				display.registerHdrSdrRatioChangedListener(
+					{ runnable -> runOnHostThread(runnable) },
+					hdrSdrRatioListener!!
+				)
+			}
+		}
+	}
+
+	private fun unregisterHdrSdrRatioListenerIfNeeded() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && hdrSdrRatioListener != null) {
+			val activity = getActivity()
+			var display: Display?
+			if (activity != null) {
+				display = activity.display
+			} else {
+				display = context.display
+			}
+
+			display?.unregisterHdrSdrRatioChangedListener(hdrSdrRatioListener!!)
+		}
+	}
+
+	private fun onHdrSdrRatioChanged(ratio: Float) {
+		Log.v(TAG, "HDR/SDR ratio changed to: $ratio")
+		GodotLib.onHdrSdrRatioChanged(ratio)
+	}
+
 	fun onPause(host: GodotHost) {
 		Log.v(TAG, "OnPause: $host")
 		resumed = false
@@ -724,6 +776,7 @@ class Godot private constructor(val context: Context) {
 
 		renderView?.onActivityPaused()
 		mSensorManager?.unregisterListener(godotInputHandler)
+		unregisterHdrSdrRatioListenerIfNeeded()
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainPause()
 		}
@@ -856,6 +909,7 @@ class Godot private constructor(val context: Context) {
 
 		runOnHostThread {
 			registerSensorsIfNeeded()
+			registerHdrSdrRatioListenerIfNeeded()
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
@@ -1371,4 +1425,39 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
+
+	@Keep
+	fun getHdrCapabilities(): FloatArray {
+		val activity = getActivity()
+
+		var display: Display? = null
+		if (activity != null) {
+			display = activity.display
+		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			display = context.display
+		}
+
+		// The size and order of this array is critical, make sure it matches with java_godot_wrapper!
+		val result = FloatArray(5)
+		if (display != null) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				result[0] = if (display.isHdr) 1.0f else 0.0f
+			} else {
+				result[0] = 0.0f
+			}
+
+			val capabilities = display.hdrCapabilities
+			result[1] = capabilities.desiredMinLuminance
+			result[2] = capabilities.desiredMaxLuminance
+			result[3] = capabilities.desiredMaxAverageLuminance
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && display.isHdrSdrRatioAvailable) {
+				result[4] = display.hdrSdrRatio
+			} else {
+				result[4] = -1.0f
+			}
+		}
+
+		return result
+	}
 }

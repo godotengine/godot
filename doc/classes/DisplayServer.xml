@@ -2146,6 +2146,36 @@
 				Returns the current value of the given window's [param flag].
 			</description>
 		</method>
+		<method name="window_get_hdr_output_current_max_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				When [method window_is_hdr_output_enabled] returns [code]true[/code], this returns the current maximum luminance in nits (cd/m²) for HDR output by the window specified by [param window_id]. If the maximum luminance is being automatically adjusted based on the display's capabilities, this method will return that value. Otherwise, it will return the value set by [method window_set_hdr_output_max_luminance]. This maximum luminance value is used when calculating [method window_get_output_max_linear_value].
+				[b]Note:[/b] This maximum luminance may not match the physical behavior of the display, but will always be proportionally correct relative to [method window_get_hdr_output_current_reference_luminance].
+			</description>
+		</method>
+		<method name="window_get_hdr_output_current_reference_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				When [method window_is_hdr_output_enabled] returns [code]true[/code], this returns the current reference white luminance in nits (cd/m²) for HDR output by the window specified by [param window_id]. If the reference luminance is being automatically adjusted to match the operating system brightness, this will return that value. Otherwise, it will return the value set by [method window_set_hdr_output_reference_luminance]. This reference luminance value is used when calculating [method window_get_output_max_linear_value].
+				[b]Note:[/b] This reference white luminance may not match the physical behavior of the display, but will always be proportionally correct relative to [method window_get_hdr_output_current_max_luminance].
+			</description>
+		</method>
+		<method name="window_get_hdr_output_max_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the maximum luminance in nits (cd/m²) set for HDR output by the window specified by [param window_id]. Negative values indicate that the value is being automatically adjusted based on the display's capabilities. See also [method window_get_hdr_output_current_max_luminance].
+			</description>
+		</method>
+		<method name="window_get_hdr_output_reference_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the reference white luminance in nits (cd/m²) set for HDR output by the window specified by [param window_id]. Negative values indicate that the value is being automatically adjusted to match the operating system brightness. See also [method window_get_hdr_output_current_reference_luminance].
+			</description>
+		</method>
 		<method name="window_get_max_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -2174,6 +2204,13 @@
 			<description>
 				Returns internal structure pointers for use in plugins.
 				[b]Note:[/b] This method is implemented on Android, Linux (X11/Wayland), macOS, and Windows.
+			</description>
+		</method>
+		<method name="window_get_output_max_linear_value" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the maximum value for linear color components that can be displayed for the window specified by [param window_id], regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. When HDR output is enabled, this is calculated based on [method window_get_hdr_output_current_reference_luminance] and [method window_get_hdr_output_current_max_luminance]. This value is used by tonemapping and glow effects to ensure that bright colors are presented in the range that can be displayed by this window. Corresponds to [method Window.get_output_max_linear_value].
 			</description>
 		</method>
 		<method name="window_get_popup_safe_rect" qualifiers="const">
@@ -2241,6 +2278,27 @@
 				Returns [code]true[/code] if the window specified by [param window_id] is focused.
 			</description>
 		</method>
+		<method name="window_is_hdr_output_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns [code]true[/code] if HDR output is currently enabled for the window specified by [param window_id]. The returned value may change dynamically based on system settings, display capabilities, and which display the window is currently on.
+			</description>
+		</method>
+		<method name="window_is_hdr_output_requested" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns [code]true[/code] if HDR output is requested for the window specified by [param window_id]. Corresponds to [member Window.hdr_output_requested].
+			</description>
+		</method>
+		<method name="window_is_hdr_output_supported" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns [code]true[/code] if the window specified by [param window_id] supports HDR output. This depends on the platform, display capabilities, system settings, and the display the window is currently on.
+			</description>
+		</method>
 		<method name="window_is_maximize_allowed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -2274,6 +2332,14 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Makes the window specified by [param window_id] request attention, which is materialized by the window title and taskbar entry blinking until the window is focused. This usually has no visible effect if the window is currently focused. The exact behavior varies depending on the operating system.
+			</description>
+		</method>
+		<method name="window_request_hdr_output">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				If [param enable] is [code]true[/code], HDR output is requested for the window specified by [param window_id]. The window will automatically switch between HDR and SDR if it is moved between displays, display capabilities change, or system settings are modified. This will internally force [member Viewport.use_hdr_2d] to be enabled on the main [Viewport]. All other [SubViewport] of the [Window] must have their [member Viewport.use_hdr_2d] property enabled to produce HDR output. Corresponds to [member Window.hdr_output_requested].
 			</description>
 		</method>
 		<method name="window_set_color">
@@ -2321,6 +2387,22 @@
 			<param index="2" name="window_id" type="int" default="0" />
 			<description>
 				Enables or disables the given window's given [param flag].
+			</description>
+		</method>
+		<method name="window_set_hdr_output_max_luminance">
+			<return type="void" />
+			<param index="0" name="max_luminance" type="float" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the maximum luminance in nits (cd/m²) for HDR output by the window specified by [param window_id]. If [param max_luminance] is negative, the window uses the display's maximum luminance that is reported by the operating system. By default, this luminance is set to [code]-1.0[/code] for every window. Typically this property should be left at this default value, but may optionally be exposed through in-game settings to allow the player to correct an inaccurate maximum luminance reported by the operating system. See also [method window_get_hdr_output_current_max_luminance] and [method window_get_hdr_output_max_luminance].
+			</description>
+		</method>
+		<method name="window_set_hdr_output_reference_luminance">
+			<return type="void" />
+			<param index="0" name="reference_luminance" type="float" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the reference white luminance in nits (cd/m²) for HDR output by the window specified by [param window_id]. If [param reference_luminance] is negative, the window automatically adjusts to the brightness set by the operating system. By default, this luminance is set to [code]-1.0[/code] for every window. Typically this property should be left at this default value, but may optionally be exposed as an "HDR Brightness" in-game setting to allow the player to adjust the brightness of their game, independently of their device settings. See also [method window_get_hdr_output_current_reference_luminance] and [method window_get_hdr_output_reference_luminance].
 			</description>
 		</method>
 		<method name="window_set_ime_active">
@@ -2635,6 +2717,9 @@
 		</constant>
 		<constant name="FEATURE_ACCESSIBILITY_SCREEN_READER" value="34" enum="Feature">
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
+		</constant>
+		<constant name="FEATURE_HDR_OUTPUT" value="35" enum="Feature">
+			Display server supports HDR output. [b]Windows[/b]
 		</constant>
 		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole">
 			Unknown or custom role.
