@@ -742,7 +742,7 @@ void XROrigin3D::_set_current(bool p_enabled, bool p_update_others) {
 
 	// Notify us of any transform changes
 	set_notify_local_transform(current);
-	set_notify_transform(current);
+	set_notify_global_transform(current);
 
 	// update XRServer with our current position
 	if (current) {
@@ -825,7 +825,7 @@ void XROrigin3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (current && !Engine::get_singleton()->is_editor_hint() && !is_physics_interpolated_and_enabled()) {
 				xr_server->set_world_origin(get_global_transform());
 			}

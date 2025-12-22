@@ -86,7 +86,7 @@ void AudioListener3D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			_request_listener_update();
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				velocity_tracker->update_position(get_global_transform().origin);
@@ -185,7 +185,7 @@ Vector3 AudioListener3D::get_doppler_tracked_velocity() const {
 }
 
 AudioListener3D::AudioListener3D() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	velocity_tracker.instantiate();
 }
 
