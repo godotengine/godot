@@ -70,6 +70,17 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
+#ifdef TOOLS_ENABLED
+String ProjectSettings::get_editor_resource_path() {
+	ERR_FAIL_COND_V_MSG(editor_resource_path.is_empty(), get_resource_path(), "Editor resource path is only available in the editor. Returning project resource path instead.");
+	return editor_resource_path;
+}
+
+void ProjectSettings::set_editor_resource_path(const String &p_path) {
+	editor_resource_path = p_path;
+}
+#endif // TOOLS_ENABLED
+
 // This returns paths like "res://.godot/imported".
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().path_join("imported");
