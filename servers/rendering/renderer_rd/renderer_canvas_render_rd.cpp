@@ -3064,8 +3064,8 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 			}
 
 			RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(push_constant));
-			FixedVector<RID, 1> vb = { p_batch->instance_buffer };
-			FixedVector<uint64_t, 1> vo = { uint64_t(p_batch->start) * sizeof(InstanceData) };
+			RID vb[1] = { p_batch->instance_buffer };
+			uint64_t vo[1] = { uint64_t(p_batch->start) * sizeof(InstanceData) };
 			RD::get_singleton()->draw_list_bind_vertex_buffers_format(p_draw_list, shader.quad_vertex_format_id, 1, vb, vo);
 			RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);
 			RD::get_singleton()->draw_list_draw(p_draw_list, true, p_batch->instance_count);
@@ -3115,8 +3115,8 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 			RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
 
 			RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(push_constant));
-			FixedVector<RID, 1> vb = { p_batch->instance_buffer };
-			FixedVector<uint64_t, 1> vo = { uint64_t(p_batch->start) * sizeof(InstanceData) };
+			RID vb[1] = { p_batch->instance_buffer };
+			uint64_t vo[1] = { uint64_t(p_batch->start) * sizeof(InstanceData) };
 			RD::get_singleton()->draw_list_bind_vertex_buffers_format(p_draw_list, shader.primitive_vertex_format_id, 1, vb, vo);
 			RD::get_singleton()->draw_list_bind_index_array(p_draw_list, primitive_arrays.index_array[MIN(3u, primitive->point_count) - 1]);
 			uint32_t instance_count = p_batch->instance_count;
