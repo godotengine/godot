@@ -101,6 +101,11 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 				r_type = "Object"; // "GDScriptNativeClass" refers to a blank page.
 				return;
 			}
+			if (p_gdtype.native_type == WeakRef::get_class_static() && p_gdtype.has_container_element_type(0)) {
+				_doctype_from_gdtype(p_gdtype.get_container_element_type(0), r_type, r_enum);
+				r_type = "WeakRef[" + r_type + "]";
+				return;
+			}
 			r_type = p_gdtype.native_type;
 			return;
 		case GDType::SCRIPT:
