@@ -3879,7 +3879,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 						err_text = "Assertion failed: " + message_str;
 					}
-					OPCODE_BREAK;
+					print_error(err_text, p_instance, script, line, last_opcode);
+					GDScriptLanguage::get_singleton()->debug_break(err_text, true);
 				}
 
 #endif
@@ -3950,27 +3951,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_OUT;
 		}
 		//error
-		// function, file, line, error, explanation
-		String err_file;
-		bool instance_valid_with_script = p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid();
-		if (instance_valid_with_script && !get_script()->path.is_empty()) {
-			err_file = get_script()->path;
-		} else if (script) {
-			err_file = script->path;
-		}
-		if (err_file.is_empty()) {
-			err_file = "<built-in>";
-		}
-		String err_func = name;
-		if (instance_valid_with_script && p_instance->script->local_name != StringName()) {
-			err_func = p_instance->script->local_name.operator String() + "." + err_func;
-		}
-		int err_line = line;
-		if (err_text.is_empty()) {
-			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " (please report).";
-		}
-
-		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		print_error(err_text, p_instance, script, line, last_opcode);
 		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 
 		// Get a default return type in case of failure
@@ -4025,4 +4006,29 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	}
 
 	return retvalue;
+}
+
+void GDScriptFunction::print_error(const String &p_err_text, const GDScriptInstance *p_instance, const GDScript *p_script, const int p_line, const int p_last_opcode) {
+	// function, file, line, error, explanation
+	String err_file;
+	bool instance_valid_with_script = p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid();
+	if (instance_valid_with_script && !get_script()->path.is_empty()) {
+		err_file = get_script()->path;
+	} else if (p_script) {
+		err_file = p_script->path;
+	}
+	if (err_file.is_empty()) {
+		err_file = "<built-in>";
+	}
+	String err_func = name;
+	if (instance_valid_with_script && p_instance->script->local_name != StringName()) {
+		err_func = p_instance->script->local_name.operator String() + "." + err_func;
+	}
+	int err_line = p_line;
+	String err_text = p_err_text;
+	if (err_text.is_empty()) {
+		err_text = "Internal script error! Opcode: " + itos(p_last_opcode) + " (please report).";
+	}
+
+	_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 }
