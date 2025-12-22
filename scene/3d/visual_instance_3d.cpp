@@ -493,14 +493,48 @@ GeometryInstance3D::GIMode GeometryInstance3D::get_gi_mode() const {
 	return gi_mode;
 }
 
+void GeometryInstance3D::set_culling_mode(CullingMode p_mode) {
+	if (p_mode == culling_mode) {
+		return;
+	}
+
+	culling_mode = p_mode;
+
+	switch (p_mode) {
+		case CULLING_MODE_NORMAL: {
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, false);
+			RS::get_singleton()->instance_set_ignore_culling(get_instance(), false);
+		} break;
+		case CULLING_MODE_IGNORE_OCCLUSION_CULLING: {
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+			RS::get_singleton()->instance_set_ignore_culling(get_instance(), false);
+		} break;
+		case CULLING_MODE_IGNORE_OCCLUSION_AND_FRUSTUM_CULLING: {
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+			RS::get_singleton()->instance_set_ignore_culling(get_instance(), true);
+		} break;
+		case CULLING_MODE_MAX:
+			break; // Internal value, skip.
+	}
+}
+
+GeometryInstance3D::CullingMode GeometryInstance3D::get_culling_mode() const {
+	return culling_mode;
+}
+
+#ifndef DISABLE_DEPRECATED
 void GeometryInstance3D::set_ignore_occlusion_culling(bool p_enabled) {
-	ignore_occlusion_culling = p_enabled;
-	RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, ignore_occlusion_culling);
+	if (p_enabled) {
+		set_culling_mode(CULLING_MODE_IGNORE_OCCLUSION_CULLING);
+	} else {
+		set_culling_mode(CULLING_MODE_NORMAL);
+	}
 }
 
 bool GeometryInstance3D::is_ignoring_occlusion_culling() {
-	return ignore_occlusion_culling;
+	return culling_mode >= CULLING_MODE_IGNORE_OCCLUSION_CULLING;
 }
+#endif // DISABLE_DEPRECATED
 
 Ref<TriangleMesh> GeometryInstance3D::generate_triangle_mesh() const {
 	return Ref<TriangleMesh>();
@@ -586,8 +620,13 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gi_mode", "mode"), &GeometryInstance3D::set_gi_mode);
 	ClassDB::bind_method(D_METHOD("get_gi_mode"), &GeometryInstance3D::get_gi_mode);
 
+	ClassDB::bind_method(D_METHOD("set_culling_mode", "mode"), &GeometryInstance3D::set_culling_mode);
+	ClassDB::bind_method(D_METHOD("get_culling_mode"), &GeometryInstance3D::get_culling_mode);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_ignore_occlusion_culling", "ignore_culling"), &GeometryInstance3D::set_ignore_occlusion_culling);
 	ClassDB::bind_method(D_METHOD("is_ignoring_occlusion_culling"), &GeometryInstance3D::is_ignoring_occlusion_culling);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &GeometryInstance3D::get_custom_aabb);
@@ -602,7 +641,10 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01,suffix:m"), "set_extra_cull_margin", "get_extra_cull_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling"), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "culling_mode", PROPERTY_HINT_ENUM, "Normal,Ignore Occlusion Culling,Ignore Occlusion and Frustum Culling"), "set_culling_mode", "get_culling_mode");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
+#endif // DISABLE_DEPRECATED
 
 	ADD_GROUP("Global Illumination", "gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static,Dynamic"), "set_gi_mode", "get_gi_mode");
@@ -626,6 +668,10 @@ void GeometryInstance3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(GI_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(GI_MODE_STATIC);
 	BIND_ENUM_CONSTANT(GI_MODE_DYNAMIC);
+
+	BIND_ENUM_CONSTANT(CULLING_MODE_NORMAL);
+	BIND_ENUM_CONSTANT(CULLING_MODE_IGNORE_OCCLUSION_CULLING);
+	BIND_ENUM_CONSTANT(CULLING_MODE_IGNORE_OCCLUSION_AND_FRUSTUM_CULLING);
 
 	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_1X);
 	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_2X);
