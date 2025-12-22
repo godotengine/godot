@@ -1223,6 +1223,10 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 
 bool ResourceLoader::should_create_uid_file(const String &p_path) {
 	const String local_path = _validate_local_path(p_path);
+	if (local_path.begins_with("res://addons/")) {
+		return false;
+	}
+
 	if (FileAccess::exists(local_path + ".uid")) {
 		return false;
 	}
