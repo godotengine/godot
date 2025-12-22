@@ -114,14 +114,14 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 
 	// Check for available disk space and warn the user if needed.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	String path = p_base_path.get_base_dir();
+	String path = p_base_path;
 	if (path.is_relative_path()) {
 		path = "res://" + path;
 	}
 	dir->open(path);
 	if (dir->get_space_left() < 10 * Math::pow(1024.0, 3.0)) {
 		// Less than 10 GiB available.
-		WARN_PRINT(vformat("Current available space on disk is low (%s). MovieWriter will fail during movie recording if the disk runs out of available space.", String::humanize_size(dir->get_space_left())));
+		WARN_PRINT(vformat("%s: Current available space on disk is low (%s). MovieWriter will fail during movie recording if the disk runs out of space.", path, String::humanize_size(dir->get_space_left())));
 	}
 
 	cpu_time = 0.0f;
