@@ -440,6 +440,7 @@ public:
 	void convert_rgba8_to_bgra8();
 
 	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC) const;
+	void optimize_from_channels(UsedChannels p_channels);
 	void optimize_channels();
 
 	Color get_pixelv(const Point2i &p_point) const;

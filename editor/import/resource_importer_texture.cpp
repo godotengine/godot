@@ -327,13 +327,15 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 
 		} break;
 		case COMPRESS_VRAM_UNCOMPRESSED: {
-			f->store_32(CompressedTexture2D::DATA_FORMAT_IMAGE);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
-			f->store_buffer(p_image->get_data());
+			Ref<Image> image = p_image->duplicate();
+			image->optimize_from_channels(p_channels);
 
+			f->store_32(CompressedTexture2D::DATA_FORMAT_IMAGE);
+			f->store_16(image->get_width());
+			f->store_16(image->get_height());
+			f->store_32(image->get_mipmap_count());
+			f->store_32(image->get_format());
+			f->store_buffer(image->get_data());
 		} break;
 		case COMPRESS_BASIS_UNIVERSAL: {
 			f->store_32(CompressedTexture2D::DATA_FORMAT_BASIS_UNIVERSAL);
@@ -420,7 +422,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	// Optimization: Only check for color channels when compressing as BasisU or VRAM.
 	Image::UsedChannels used_channels = Image::USED_CHANNELS_RGBA;
 
-	if (p_compress_mode == COMPRESS_BASIS_UNIVERSAL || p_compress_mode == COMPRESS_VRAM_COMPRESSED) {
+	if (p_compress_mode == COMPRESS_BASIS_UNIVERSAL || p_compress_mode == COMPRESS_VRAM_COMPRESSED || p_compress_mode == COMPRESS_VRAM_UNCOMPRESSED) {
 		Image::CompressSource comp_source = Image::COMPRESS_SOURCE_GENERIC;
 		if (p_force_normal) {
 			comp_source = Image::COMPRESS_SOURCE_NORMAL;
