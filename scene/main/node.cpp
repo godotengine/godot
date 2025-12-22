@@ -4016,9 +4016,9 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_FRONT);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_BACK);
 
-	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_INHERIT);
-	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_ALWAYS);
-	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_DISABLED);
+	BIND_NAMED_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_INHERIT, "Inherit");
+	BIND_NAMED_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_ALWAYS, "Always");
+	BIND_NAMED_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_DISABLED, "Disabled");
 
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
@@ -4053,7 +4053,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,On,Off"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
 
 	ADD_GROUP("Auto Translate", "auto_translate_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "*AutoTranslateMode"), "set_auto_translate_mode", "get_auto_translate_mode");
 
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
