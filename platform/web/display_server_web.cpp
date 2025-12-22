@@ -265,7 +265,7 @@ int DisplayServerWeb::_mouse_button_callback(int p_pressed, int p_button, double
 		uint64_t diff = (OS::get_singleton()->get_ticks_usec() / 1000) - ds->last_click_ms;
 
 		if (ev->get_button_index() == ds->last_click_button_index) {
-			if (diff < 400 && Point2(ds->last_click_pos).distance_to(ev->get_position()) < 5) {
+			if (diff < 400 && Point2(ds->last_click_pos).distance_to(ev->get_position()) < 5.0f) {
 				ds->last_click_ms = 0;
 				ds->last_click_pos = Point2(-100, -100);
 				ds->last_click_button_index = MouseButton::NONE;
