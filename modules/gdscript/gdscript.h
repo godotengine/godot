@@ -423,11 +423,12 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	bool finishing = false;
 
+	// Globals that can't be removed. Access path might be optimized using just the stable index.
 	Variant *_global_array = nullptr;
 	Vector<Variant> global_array;
 	HashMap<StringName, int> globals;
+	// Globals which can be removed. Used primarily in editor for autoloads and extensions.
 	HashMap<StringName, Variant> named_globals;
-	Vector<int> global_array_empty_indexes;
 
 	struct CallLevel {
 		Variant *stack = nullptr;
@@ -452,7 +453,6 @@ class GDScriptLanguage : public ScriptLanguage {
 	static CallLevel *_get_stack_level(uint32_t p_level);
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
-	void _remove_global(const StringName &p_name);
 
 	String _get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, LocalVector<String> &r_visited) const;
 
