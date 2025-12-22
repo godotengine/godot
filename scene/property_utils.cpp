@@ -80,7 +80,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 	// This function obeys the way property values are set when an object is instantiated,
 	// which is the following (the latter wins):
 	// 1. Default value from builtin class
-	// 2. Default value from script exported variable (from the topmost script)
+	// 2. Default value from script exported variable
 	// 3. Value overrides from the instantiation/inheritance stack
 
 	if (r_is_class_default) {
@@ -99,8 +99,6 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		}
 		return ct_scr;
 	}
-
-	Ref<Script> topmost_script;
 
 	if (const Node *node = Object::cast_to<Node>(p_object)) {
 		// Check inheritance/instantiation ancestors
@@ -136,30 +134,19 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 				}
 				return value_in_ancestor;
 			}
-			// Save script for later
-			bool has_script = false;
-			Variant script = ia.state->get_property_value(ia.node, SNAME("script"), has_script, node_deferred);
-			if (has_script) {
-				Ref<Script> scr = script;
-				if (scr.is_valid()) {
-					topmost_script = scr;
-				}
-			}
 		}
 	}
 
-	// Let's see what default is set by the topmost script having a default, if any
-	if (topmost_script.is_null()) {
-		topmost_script = p_object->get_script();
-	}
-	if (topmost_script.is_valid()) {
+	Ref<Script> script = p_object->get_script();
+
+	if (script.is_valid()) {
 		// Should be called in the editor only and not at runtime,
 		// otherwise it can cause problems because of missing instance state support
 		if (p_update_exports && Engine::get_singleton()->is_editor_hint()) {
-			topmost_script->update_exports();
+			script->update_exports();
 		}
 		Variant default_value;
-		if (topmost_script->get_property_default_value(p_property, default_value)) {
+		if (script->get_property_default_value(p_property, default_value)) {
 			if (r_is_valid) {
 				*r_is_valid = true;
 			}
