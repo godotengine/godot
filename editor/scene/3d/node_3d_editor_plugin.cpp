@@ -2796,7 +2796,7 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 	const NavigationScheme nav_scheme = (NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 	const real_t translation_sensitivity = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
 
-	real_t pan_speed = translation_sensitivity / 150.0;
+	real_t pan_speed = translation_sensitivity;
 	if (p_event.is_valid() && nav_scheme == NAVIGATION_MAYA && p_event->is_shift_pressed()) {
 		pan_speed *= 10;
 	}
@@ -2809,10 +2809,18 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 	const bool invert_x_axis = EDITOR_GET("editors/3d/navigation/invert_x_axis");
 	const bool invert_y_axis = EDITOR_GET("editors/3d/navigation/invert_y_axis");
 	Vector3 translation(
-			(invert_x_axis ? -1 : 1) * -p_relative.x * pan_speed,
-			(invert_y_axis ? -1 : 1) * p_relative.y * pan_speed,
+			(invert_x_axis ? -1 : 1) * -p_relative.x,
+			(invert_y_axis ? -1 : 1) * p_relative.y,
 			0);
-	translation *= cursor.distance / DISTANCE_DEFAULT;
+
+	if (camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
+		const real_t units = camera->get_size() / get_size().y;
+		translation *= units * pan_speed;
+	} else {
+		const real_t scale = cursor.distance / DISTANCE_DEFAULT;
+		translation *= scale * (pan_speed / 150.0);
+	}
+
 	camera_transform.translate_local(translation);
 	cursor.pos = camera_transform.origin;
 }
