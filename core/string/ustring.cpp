@@ -41,6 +41,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "core/string/string_buffer.h"
 #include "core/string/string_name.h"
 #include "core/string/translation_server.h"
 #include "core/string/ucaps.h"
@@ -5206,12 +5207,12 @@ String String::lpad(int min_length, const String &character) const {
 //   "fish %s %d pie" % ["frog", 12]
 // In case of an error, the string returned is the error description and "error" is true.
 String String::sprintf(const Span<Variant> &values, bool *error) const {
-	static const String ZERO("0");
-	static const String SPACE(" ");
-	static const String MINUS("-");
-	static const String PLUS("+");
+	constexpr char32_t ZERO = '0';
+	constexpr char32_t SPACE = ' ';
+	constexpr char32_t MINUS = '-';
+	constexpr char32_t PLUS = '+';
 
-	String formatted;
+	StringBuffer formatted;
 	char32_t *self = (char32_t *)get_data();
 	bool in_format = false;
 	uint64_t value_index = 0;
@@ -5265,7 +5266,9 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 							capitalize = true;
 							break;
 					}
-					// Get basic number.
+
+					bool negative = value < 0 && !as_unsigned;
+
 					String str;
 					if (!as_unsigned) {
 						if (value == INT64_MIN) { // INT64_MIN can't be represented as positive value.
@@ -5281,30 +5284,38 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 						}
 						str = String::num_uint64(uvalue, base, capitalize);
 					}
-					int number_len = str.length();
 
-					bool negative = value < 0 && !as_unsigned;
+					int pad_chars_count = ((negative || show_sign) ? min_chars - 1 : min_chars) - str.length();
+					const char32_t pad_char = pad_with_zeros ? ZERO : SPACE;
 
-					// Padding.
-					int pad_chars_count = (negative || show_sign) ? min_chars - 1 : min_chars;
-					const String &pad_char = pad_with_zeros ? ZERO : SPACE;
-					if (left_justified) {
-						str = str.rpad(pad_chars_count, pad_char);
-					} else {
-						str = str.lpad(pad_chars_count, pad_char);
+					// Left pad with spaces.
+					if (!pad_with_zeros && !left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += pad_char;
+						}
 					}
 
 					// Sign.
 					if (show_sign || negative) {
-						const String &sign_char = negative ? MINUS : PLUS;
-						if (left_justified) {
-							str = str.insert(0, sign_char);
-						} else {
-							str = str.insert(pad_with_zeros ? 0 : str.length() - number_len, sign_char);
+						formatted += negative ? MINUS : PLUS;
+					}
+
+					// Left pad with zeroes.
+					if (pad_with_zeros && !left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += pad_char;
 						}
 					}
 
 					formatted += str;
+
+					// Right pad.
+					if (left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += pad_char;
+						}
+					}
+
 					++value_index;
 					in_format = false;
 
@@ -5321,36 +5332,45 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 
 					double value = values[value_index];
 					bool is_negative = std::signbit(value);
-					String str = String::num(Math::abs(value), min_decimals);
 					const bool is_finite = Math::is_finite(value);
 
+					String str = String::num(Math::abs(value), min_decimals);
 					// Pad decimals out.
 					if (is_finite) {
 						str = str.pad_decimals(min_decimals);
 					}
 
-					int initial_len = str.length();
+					int pad_chars_count = ((is_negative || show_sign) ? min_chars - 1 : min_chars) - str.length();
+					const char32_t pad_char = (pad_with_zeros && is_finite) ? ZERO : SPACE; // Never pad NaN or inf with zeros
 
-					// Padding. Leave room for sign later if required.
-					int pad_chars_count = (is_negative || show_sign) ? min_chars - 1 : min_chars;
-					const String &pad_char = (pad_with_zeros && is_finite) ? ZERO : SPACE; // Never pad NaN or inf with zeros
-					if (left_justified) {
-						str = str.rpad(pad_chars_count, pad_char);
-					} else {
-						str = str.lpad(pad_chars_count, pad_char);
+					// Left pad with spaces.
+					if (!pad_with_zeros && !left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += pad_char;
+						}
 					}
 
 					// Add sign if needed.
 					if (show_sign || is_negative) {
-						const String &sign_char = is_negative ? MINUS : PLUS;
-						if (left_justified) {
-							str = str.insert(0, sign_char);
-						} else {
-							str = str.insert(pad_with_zeros ? 0 : str.length() - initial_len, sign_char);
+						formatted += is_negative ? MINUS : PLUS;
+					}
+
+					// Left pad with zeroes.
+					if (pad_with_zeros && !left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += pad_char;
 						}
 					}
 
 					formatted += str;
+
+					// Right pad.
+					if (left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += pad_char;
+						}
+					}
+
 					++value_index;
 					in_format = false;
 					break;
@@ -5380,47 +5400,55 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					Vector4 vec = values[value_index];
-					String str = "(";
+					formatted += '(';
 					for (int i = 0; i < count; i++) {
 						double val = vec[i];
-						String number_str = String::num(Math::abs(val), min_decimals);
 						const bool is_finite = Math::is_finite(val);
+						String str = String::num(Math::abs(val), min_decimals);
 
 						// Pad decimals out.
 						if (is_finite) {
-							number_str = number_str.pad_decimals(min_decimals);
+							str = str.pad_decimals(min_decimals);
 						}
 
-						int initial_len = number_str.length();
+						int pad_chars_count = (val < 0 ? min_chars - 1 : min_chars) - str.length();
+						const char32_t pad_char = (pad_with_zeros && is_finite) ? ZERO : SPACE; // Never pad NaN or inf with zeros
 
-						// Padding. Leave room for sign later if required.
-						int pad_chars_count = val < 0 ? min_chars - 1 : min_chars;
-						const String &pad_char = (pad_with_zeros && is_finite) ? ZERO : SPACE; // Never pad NaN or inf with zeros
-						if (left_justified) {
-							number_str = number_str.rpad(pad_chars_count, pad_char);
-						} else {
-							number_str = number_str.lpad(pad_chars_count, pad_char);
+						// Left pad with spaces.
+						if (!pad_with_zeros && !left_justified) {
+							for (int j = 0; j < pad_chars_count; j++) {
+								formatted += pad_char;
+							}
 						}
 
 						// Add sign if needed.
 						if (val < 0) {
-							if (left_justified) {
-								number_str = number_str.insert(0, MINUS);
-							} else {
-								number_str = number_str.insert(pad_with_zeros ? 0 : number_str.length() - initial_len, MINUS);
+							formatted += MINUS;
+						}
+
+						// Left pad with zeroes.
+						if (pad_with_zeros && !left_justified) {
+							for (int j = 0; j < pad_chars_count; j++) {
+								formatted += pad_char;
 							}
 						}
 
 						// Add number to combined string
-						str += number_str;
+						formatted += str;
+
+						// Right pad.
+						if (left_justified) {
+							for (int j = 0; j < pad_chars_count; j++) {
+								formatted += pad_char;
+							}
+						}
 
 						if (i < count - 1) {
-							str += ", ";
+							formatted += ", ";
 						}
 					}
-					str += ")";
+					formatted += ')';
 
-					formatted += str;
 					++value_index;
 					in_format = false;
 					break;
@@ -5431,14 +5459,25 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					String str = values[value_index];
-					// Padding.
-					if (left_justified) {
-						str = str.rpad(min_chars);
-					} else {
-						str = str.lpad(min_chars);
+
+					int pad_chars_count = min_chars - str.length();
+
+					// Left pad.
+					if (!left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += ' ';
+						}
 					}
 
 					formatted += str;
+
+					// Right pad.
+					if (left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += ' ';
+						}
+					}
+
 					++value_index;
 					in_format = false;
 					break;
@@ -5469,14 +5508,24 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 						return "%c requires number or single-character string";
 					}
 
-					// Padding.
-					if (left_justified) {
-						str = str.rpad(min_chars);
-					} else {
-						str = str.lpad(min_chars);
+					int pad_chars_count = min_chars - str.length();
+
+					// Left pad.
+					if (!left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += ' ';
+						}
 					}
 
 					formatted += str;
+
+					// Right pad.
+					if (left_justified) {
+						for (int i = 0; i < pad_chars_count; i++) {
+							formatted += ' ';
+						}
+					}
+
 					++value_index;
 					in_format = false;
 					break;
