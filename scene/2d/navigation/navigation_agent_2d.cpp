@@ -231,8 +231,11 @@ void NavigationAgent2D::_notification(int p_what) {
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 
-			if (agent_parent && avoidance_enabled) {
-				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+			if (agent_parent) {
+				previous_origin = agent_parent->get_global_position();
+				if (avoidance_enabled) {
+					NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+				}
 			}
 
 #ifdef DEBUG_ENABLED
@@ -808,6 +811,8 @@ void NavigationAgent2D::_update_navigation() {
 			_transition_to_navigation_finished();
 		}
 	}
+
+	previous_origin = origin;
 }
 
 void NavigationAgent2D::_advance_waypoints(const Vector2 &p_origin) {
@@ -845,11 +850,14 @@ void NavigationAgent2D::_move_to_next_waypoint() {
 
 bool NavigationAgent2D::_is_within_waypoint_distance(const Vector2 &p_origin) const {
 	const Vector<Vector2> &navigation_path = navigation_result->get_path();
-	return p_origin.distance_to(navigation_path[navigation_path_index]) < path_desired_distance;
+	Vector2 waypoint = navigation_path[navigation_path_index];
+	return p_origin.distance_to(waypoint) < path_desired_distance ||
+			waypoint.distance_squared_to(Geometry2D::get_closest_point_to_segment(waypoint, previous_origin, p_origin)) < path_desired_distance * path_desired_distance;
 }
 
 bool NavigationAgent2D::_is_within_target_distance(const Vector2 &p_origin) const {
-	return p_origin.distance_to(target_position) < target_desired_distance;
+	return p_origin.distance_to(target_position) < target_desired_distance ||
+			target_position.distance_squared_to(Geometry2D::get_closest_point_to_segment(target_position, previous_origin, p_origin)) < target_desired_distance * target_desired_distance;
 }
 
 void NavigationAgent2D::_trigger_waypoint_reached() {
