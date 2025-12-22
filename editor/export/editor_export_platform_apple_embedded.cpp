@@ -2800,10 +2800,10 @@ void EditorExportPlatformAppleEmbedded::_initialize(const char *p_platform_logo_
 	Ref<Image> img = memnew(Image);
 	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-	ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, false);
+	ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, HashMap<Color, Color>());
 	logo = ImageTexture::create_from_image(img);
 
-	ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, false);
+	ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, HashMap<Color, Color>());
 	run_icon = ImageTexture::create_from_image(img);
 
 	plugins_changed.set();
