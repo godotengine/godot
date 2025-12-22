@@ -977,6 +977,29 @@ TypedArray<PackedVector2Array> Geometry2D::decompose_polygon_in_convex(const Vec
 	return ret;
 }
 
+TypedArray<PackedVector2Array> Geometry2D::decompose_many_polygons_in_convex(const TypedArray<PackedVector2Array> &p_polygons_and_holes) {
+	Vector<Vector<Point2>> polygons;
+	Vector<Vector<Point2>> holes;
+
+	for (int i = 0; i < p_polygons_and_holes.size(); i++) {
+		Vector<Point2> polygon_or_hole = p_polygons_and_holes[i];
+		if (is_polygon_clockwise(polygon_or_hole)) {
+			holes.push_back(polygon_or_hole);
+		} else {
+			polygons.push_back(polygon_or_hole);
+		}
+	}
+
+	Vector<Vector<Vector2>> decomp = ::Geometry2D::decompose_many_polygons_in_convex(polygons, holes);
+
+	TypedArray<PackedVector2Array> ret;
+
+	for (int i = 0; i < decomp.size(); ++i) {
+		ret.push_back(decomp[i]);
+	}
+	return ret;
+}
+
 TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::merge_polygons(p_polygon_a, p_polygon_b);
 
@@ -985,6 +1008,29 @@ TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> 
 	for (int i = 0; i < polys.size(); ++i) {
 		ret.push_back(polys[i]);
 	}
+	return ret;
+}
+
+TypedArray<PackedVector2Array> Geometry2D::merge_many_polygons(const TypedArray<PackedVector2Array> &p_polygons) {
+	Vector<PackedVector2Array> polygons;
+
+	for (int i = 0; i < p_polygons.size(); i++) {
+		polygons.push_back(p_polygons[i]);
+	}
+
+	Vector<Vector<Point2>> polys, holes;
+
+	::Geometry2D::merge_many_polygons(polygons, polys, holes);
+
+	TypedArray<PackedVector2Array> ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	for (int i = 0; i < holes.size(); ++i) {
+		ret.push_back(holes[i]);
+	}
+
 	return ret;
 }
 
@@ -1122,8 +1168,10 @@ void Geometry2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("triangulate_delaunay", "points"), &Geometry2D::triangulate_delaunay);
 	ClassDB::bind_method(D_METHOD("convex_hull", "points"), &Geometry2D::convex_hull);
 	ClassDB::bind_method(D_METHOD("decompose_polygon_in_convex", "polygon"), &Geometry2D::decompose_polygon_in_convex);
+	ClassDB::bind_method(D_METHOD("decompose_many_polygons_in_convex", "polygons_and_holes"), &Geometry2D::decompose_many_polygons_in_convex);
 
 	ClassDB::bind_method(D_METHOD("merge_polygons", "polygon_a", "polygon_b"), &Geometry2D::merge_polygons);
+	ClassDB::bind_method(D_METHOD("merge_many_polygons", "polygons"), &Geometry2D::merge_many_polygons);
 	ClassDB::bind_method(D_METHOD("clip_polygons", "polygon_a", "polygon_b"), &Geometry2D::clip_polygons);
 	ClassDB::bind_method(D_METHOD("intersect_polygons", "polygon_a", "polygon_b"), &Geometry2D::intersect_polygons);
 	ClassDB::bind_method(D_METHOD("exclude_polygons", "polygon_a", "polygon_b"), &Geometry2D::exclude_polygons);

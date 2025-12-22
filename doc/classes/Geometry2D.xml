@@ -29,7 +29,7 @@
 			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
 				Clips [param polygon_a] against [param polygon_b] and returns an array of clipped polygons. This performs [constant OPERATION_DIFFERENCE] between polygons. Returns an empty array if [param polygon_b] completely overlaps [param polygon_a].
-				If [param polygon_b] is enclosed by [param polygon_a], returns an outer polygon (boundary) and inner polygon (hole) which could be distinguished by calling [method is_polygon_clockwise].
+				If [param polygon_b] is enclosed by [param polygon_a], returns an outer polygon (boundary, counter-clockwise) and inner polygon (hole, clockwise) which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="clip_polyline_with_polygon">
@@ -45,6 +45,14 @@
 			<param index="0" name="points" type="PackedVector2Array" />
 			<description>
 				Given an array of [Vector2]s, returns the convex hull as a list of points in counterclockwise order. The last point is the same as the first one.
+			</description>
+		</method>
+		<method name="decompose_many_polygons_in_convex">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygons_and_holes" type="PackedVector2Array[]" />
+			<description>
+				Decomposes the [param polygons_and_holes] into multiple convex hulls and returns an array of [PackedVector2Array].
+				Polygons with clockwise winding (see [method is_polygon_clockwise]) are treated as "holes", which subtract from other polygons in the array.
 			</description>
 		</method>
 		<method name="decompose_polygon_in_convex">
@@ -177,13 +185,21 @@
 				Given an array of [Vector2]s representing tiles, builds an atlas. The returned dictionary has two keys: [code]points[/code] is a [PackedVector2Array] that specifies the positions of each tile, [code]size[/code] contains the overall size of the whole atlas as [Vector2i].
 			</description>
 		</method>
+		<method name="merge_many_polygons">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygons" type="PackedVector2Array[]" />
+			<description>
+				Merges (combines) [param polygons] and returns an array of merged polygons. On an array of 2 polygons, this is equivalent to calling [method merge_polygons].
+				The operation may result in multiple outer polygons (boundary, counter-clockwise) and multiple inner polygons (holes, clockwise) produced which could be distinguished by calling [method is_polygon_clockwise].
+			</description>
+		</method>
 		<method name="merge_polygons">
 			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon_a" type="PackedVector2Array" />
 			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
 				Merges (combines) [param polygon_a] and [param polygon_b] and returns an array of merged polygons. This performs [constant OPERATION_UNION] between polygons.
-				The operation may result in an outer polygon (boundary) and multiple inner polygons (holes) produced which could be distinguished by calling [method is_polygon_clockwise].
+				The operation may result in an outer polygon (boundary, counter-clockwise) and multiple inner polygons (holes, clockwise) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="offset_polygon">
