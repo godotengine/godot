@@ -544,7 +544,7 @@ static _FORCE_INLINE_ signed char natural_cmp_common(const char32_t *&r_this_str
 	return 0;
 }
 
-static _FORCE_INLINE_ signed char naturalcasecmp_to_base(const char32_t *p_this_str, const char32_t *p_that_str) {
+static _FORCE_INLINE_ signed char naturalcasecmp_to_base(const char32_t *p_this_str, const char32_t *p_that_str, bool p_file) {
 	if (p_this_str && p_that_str) {
 		while (*p_this_str == '.' || *p_that_str == '.') {
 			if (*p_this_str++ != '.') {
@@ -564,6 +564,15 @@ static _FORCE_INLINE_ signed char naturalcasecmp_to_base(const char32_t *p_this_
 		while (*p_this_str) {
 			if (!*p_that_str) {
 				return 1;
+			} else if (p_file && (*p_this_str == '.' || *p_that_str == '.')) {
+				if (*p_this_str != '.') {
+					return 1;
+				}
+				if (*p_that_str != '.') {
+					return -1;
+				}
+				p_this_str++;
+				p_that_str++;
 			} else if (is_digit(*p_this_str)) {
 				if (!is_digit(*p_that_str)) {
 					return -1;
@@ -598,10 +607,10 @@ signed char String::naturalcasecmp_to(const String &p_str) const {
 	const char32_t *this_str = get_data();
 	const char32_t *that_str = p_str.get_data();
 
-	return naturalcasecmp_to_base(this_str, that_str);
+	return naturalcasecmp_to_base(this_str, that_str, false);
 }
 
-static _FORCE_INLINE_ signed char naturalnocasecmp_to_base(const char32_t *p_this_str, const char32_t *p_that_str) {
+static _FORCE_INLINE_ signed char naturalnocasecmp_to_base(const char32_t *p_this_str, const char32_t *p_that_str, bool p_file) {
 	if (p_this_str && p_that_str) {
 		while (*p_this_str == '.' || *p_that_str == '.') {
 			if (*p_this_str++ != '.') {
@@ -621,6 +630,15 @@ static _FORCE_INLINE_ signed char naturalnocasecmp_to_base(const char32_t *p_thi
 		while (*p_this_str) {
 			if (!*p_that_str) {
 				return 1;
+			} else if (p_file && (*p_this_str == '.' || *p_that_str == '.')) {
+				if (*p_this_str != '.') {
+					return 1;
+				}
+				if (*p_that_str != '.') {
+					return -1;
+				}
+				p_this_str++;
+				p_that_str++;
 			} else if (is_digit(*p_this_str)) {
 				if (!is_digit(*p_that_str)) {
 					return -1;
@@ -655,7 +673,7 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 	const char32_t *this_str = get_data();
 	const char32_t *that_str = p_str.get_data();
 
-	return naturalnocasecmp_to_base(this_str, that_str);
+	return naturalnocasecmp_to_base(this_str, that_str, false);
 }
 
 static _FORCE_INLINE_ signed char file_cmp_common(const char32_t *&r_this_str, const char32_t *&r_that_str) {
@@ -683,7 +701,7 @@ signed char String::filecasecmp_to(const String &p_str) const {
 		return ret;
 	}
 
-	return naturalcasecmp_to_base(this_str, that_str);
+	return naturalcasecmp_to_base(this_str, that_str, true);
 }
 
 signed char String::filenocasecmp_to(const String &p_str) const {
@@ -695,7 +713,7 @@ signed char String::filenocasecmp_to(const String &p_str) const {
 		return ret;
 	}
 
-	return naturalnocasecmp_to_base(this_str, that_str);
+	return naturalnocasecmp_to_base(this_str, that_str, true);
 }
 
 String String::_separate_compound_words() const {
