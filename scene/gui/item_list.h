@@ -175,6 +175,8 @@ protected:
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
+		Color font_disabled_color;
+		Color font_disabled_hovered_color;
 
 		int line_separation = 0;
 		int icon_margin = 0;
@@ -185,6 +187,8 @@ protected:
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
 		Ref<StyleBox> cursor_focus_style;
+		Ref<StyleBox> disabled_style;
+		Ref<StyleBox> disabled_hovered_style;
 		Color guide_color;
 
 		Ref<Texture2D> scroll_hint;
