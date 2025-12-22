@@ -43,8 +43,8 @@ public:
 
 	// Rendering Device API.
 	virtual void set_rendering_device(RenderingDevice *p_coding_device) = 0;
-	virtual RID create_video_session(uint32_t p_width, uint32_t p_height) = 0;
-	virtual RID create_texture_sampler(RD::SamplerState &p_sampler_template) = 0;
-	virtual RID create_texture(RD::TextureFormat &p_texture_template) = 0;
+	virtual RID create_video_session(RD::VideoSessionInfo p_session_template) = 0;
+	virtual RID create_texture_sampler(RD::SamplerState p_sampler_template) = 0;
+	virtual RID create_texture(RD::TextureFormat p_texture_template) = 0;
 	virtual void decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) = 0;
 };

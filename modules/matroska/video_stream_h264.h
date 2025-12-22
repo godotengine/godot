@@ -43,6 +43,7 @@ private:
 	uint8_t shift = 0;
 
 	uint8_t length_size;
+	bool prevent_emulation = true;
 
 	VideoCodingH264ProfileIdc target_profile_idc = VIDEO_CODING_H264_PROFILE_IDC_HIGH;
 	VideoCodingH264ProfileIdc minimum_profile_idc;
@@ -77,9 +78,9 @@ public:
 	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, size_t *r_size, size_t *r_offset) final override;
 
 	virtual void set_rendering_device(RenderingDevice *p_coding_device) final override;
-	virtual RID create_video_session(uint32_t p_width, uint32_t p_height) final override;
-	virtual RID create_texture_sampler(RD::SamplerState &p_sampler_template) final override;
-	virtual RID create_texture(RD::TextureFormat &p_texture_template) final override;
+	virtual RID create_video_session(RD::VideoSessionInfo p_session_template) final override;
+	virtual RID create_texture_sampler(RD::SamplerState p_sampler_template) final override;
+	virtual RID create_texture(RD::TextureFormat p_texture_template) final override;
 	virtual void decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) final override;
 
 	VideoStreamH264();

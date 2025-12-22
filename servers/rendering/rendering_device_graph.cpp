@@ -84,6 +84,8 @@ String RenderingDeviceGraph::_usage_to_string(ResourceUsage p_usage) {
 			return "Attachment Color Read Write";
 		case RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE:
 			return "Attachment Depth Stencil Read Write";
+		case RESOURCE_USAGE_VIDEO_DECODE_DST:
+			return "Video Decode Dst";
 		case RESOURCE_USAGE_GENERAL:
 			return "General";
 		default:
@@ -113,6 +115,7 @@ bool RenderingDeviceGraph::_is_write_usage(ResourceUsage p_usage) {
 		case RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE:
 		case RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE:
 		case RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE:
+		case RESOURCE_USAGE_VIDEO_DECODE_DST:
 		case RESOURCE_USAGE_GENERAL:
 			return true;
 		default:
@@ -144,6 +147,8 @@ RDD::TextureLayout RenderingDeviceGraph::_usage_to_image_layout(ResourceUsage p_
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL;
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL;
+		case RESOURCE_USAGE_VIDEO_DECODE_DST:
+			return RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
 		case RESOURCE_USAGE_GENERAL:
 			return RDD::TEXTURE_LAYOUT_GENERAL;
 		case RESOURCE_USAGE_NONE:
@@ -194,6 +199,8 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 			return RDD::BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT;
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
 			return RDD::BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT;
+		case RESOURCE_USAGE_VIDEO_DECODE_DST:
+			return RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
 		case RESOURCE_USAGE_GENERAL:
 			return RDD::BarrierAccessBits(RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT);
 		default:

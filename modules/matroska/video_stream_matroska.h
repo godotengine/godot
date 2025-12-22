@@ -73,8 +73,8 @@ private:
 	Vector<RID> dst_rgba_pool;
 
 	const size_t yuv_pool_size = 5;
-	const size_t rgb_pool_size = 9;
-	const size_t buffered_frames = 4;
+	const size_t rgb_pool_size = 120;
+	const size_t buffered_frames = 10;
 
 	// The cluster frame in present order
 	size_t cluster_frame_index = 0;
@@ -122,7 +122,7 @@ private:
 	void present_frame();
 
 public:
-	void set_file(const String &p_file);
+	Error set_file(const String &p_file);
 
 	virtual void play() override;
 	virtual void stop() override;

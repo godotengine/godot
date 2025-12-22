@@ -5847,14 +5847,15 @@ void RenderingDevice::compute_list_end() {
 
 // TODO manage DPB directly from rendering device
 // TODO validate everything is alright
-RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_t p_width, uint32_t p_height) {
+RID RenderingDevice::video_session_create(const VideoSessionInfo &p_session_info) {
 	Vector<VideoProfile> video_profiles;
-	video_profiles.push_back(p_profile);
+	video_profiles.push_back(p_session_info.profile);
 
 	RD::TextureFormat dpb_format;
-	dpb_format.width = p_width;
-	dpb_format.height = p_height;
+	dpb_format.width = p_session_info.width;
+	dpb_format.height = p_session_info.height;
 	dpb_format.depth = 1;
+	dpb_format.array_layers = p_session_info.max_active_reference_pictures + 1;
 	dpb_format.mipmaps = 1;
 	dpb_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 	dpb_format.samples = RD::TEXTURE_SAMPLES_1;
@@ -5867,14 +5868,6 @@ RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_
 	// TODO: Determine with driver capabilities
 	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 
-	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
-		dpb_format.array_layers = 17;
-	} else if (p_profile.operation == VIDEO_OPERATION_DECODE_AV1) {
-		dpb_format.array_layers = 10;
-	} else {
-		dpb_format.array_layers = 999999;
-	}
-
 	RDD::TextureView dpb_view_format = {};
 	dpb_view_format.format = dpb_format.format;
 	dpb_view_format.swizzle_a = TEXTURE_SWIZZLE_IDENTITY;
@@ -5883,7 +5876,7 @@ RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_
 	dpb_view_format.swizzle_b = TEXTURE_SWIZZLE_IDENTITY;
 
 	VideoSession video_session;
-	video_session.video_profile = p_profile;
+	video_session.video_profile = p_session_info.profile;
 	video_session.dpb_id = driver->texture_create(dpb_format, dpb_view_format);
 
 	Vector<RDD::TextureID> dpb_views;
@@ -5893,10 +5886,80 @@ RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_
 		dpb_views.push_back(dpb_view);
 	}
 
-	video_session.driver_id = driver->video_session_create(p_profile, dpb_views);
+	video_session.driver_id = driver->video_session_create(p_session_info.profile, dpb_views);
 
-	RDD::QueryPoolID query_pool = driver->video_query_pool_create(1, p_profile);
+	video_session.last_cmd_buffer = 0;
+	video_session.decode_pool = driver->command_pool_create(decode_queue_family, RDD::COMMAND_BUFFER_TYPE_PRIMARY);
+
+	// Choose a reasonable number
+	// TODO: be smarter about this
+	for (uint32_t i = 0; i < 20; i++) {
+		RDD::CommandBufferID cmd_buffer = driver->command_buffer_create(video_session.decode_pool);
+		video_session.cmd_buffers.push_back(cmd_buffer);
+	}
+
+	video_session.semaphore_index = 0;
+	video_session.decode_wait_semaphore = RDD::SemaphoreID(nullptr);
+	video_session.compute_wait_semaphore = RDD::SemaphoreID(nullptr);
+	for (uint32_t i = 0; i < 20; i++) {
+		video_session.decode_signal_semaphores.push_back(driver->semaphore_create());
+		video_session.compute_signal_semaphores.push_back(driver->semaphore_create());
+	}
+
+	// TODO: do this different
+	// TODO: also timeline queries
+	RDD::QueryPoolID query_pool = driver->video_query_pool_create(1, p_session_info.profile);
 	driver->video_session_add_query_pool(video_session.driver_id, query_pool);
+
+	// Transition all textures into the correct layout
+	// TODO: do all of this within the draw graph
+	Vector<RDD::TextureBarrier> texture_barriers;
+
+	RDD::TextureBarrier dpb_tb;
+	dpb_tb.texture = video_session.dpb_id;
+	dpb_tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
+	dpb_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
+	dpb_tb.src_access = RDD::BARRIER_ACCESS_NONE;
+	dpb_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	dpb_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	dpb_tb.subresources.mipmap_count = 1;
+	dpb_tb.subresources.layer_count = p_session_info.max_active_reference_pictures + 1;
+	texture_barriers.push_back(dpb_tb);
+
+	for (RID dst_texture_rid : p_session_info.dst_yuv_textures) {
+		Texture *dst_texture = texture_owner.get_or_null(dst_texture_rid);
+		if (dst_texture == nullptr) {
+			// TODO: do a stronger error?
+			continue;
+		}
+
+		// The dst images are going to cycle very fast between decode dst and shader read
+		dst_texture->draw_tracker = RDG::resource_tracker_create();
+		dst_texture->draw_tracker->texture_driver_id = dst_texture->driver_id;
+		dst_texture->draw_tracker->texture_size = Size2i(dst_texture->width, dst_texture->height);
+		dst_texture->draw_tracker->texture_subresources = dst_texture->barrier_range();
+		dst_texture->draw_tracker->usage = RDG::RESOURCE_USAGE_VIDEO_DECODE_DST;
+		dst_texture->draw_tracker->texture_usage = dst_texture->usage_flags;
+		dst_texture->draw_tracker->is_discardable = dst_texture->is_discardable;
+		dst_texture->draw_tracker->reference_count = 1;
+
+		RDD::TextureBarrier dst_barrier;
+		dst_barrier.texture = dst_texture->driver_id;
+		dst_barrier.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
+		dst_barrier.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
+		dst_barrier.src_access = RDD::BARRIER_ACCESS_NONE;
+		dst_barrier.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+		dst_barrier.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+		dst_barrier.subresources.mipmap_count = 1;
+		dst_barrier.subresources.layer_count = 1;
+		texture_barriers.push_back(dst_barrier);
+	}
+
+	RDD::CommandBufferID cmd_buffer = video_session.cmd_buffers[video_session.last_cmd_buffer];
+
+	driver->command_pool_reset(video_session.decode_pool);
+	driver->command_buffer_begin(cmd_buffer);
+	driver->command_pipeline_barrier(cmd_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE_BIT, {}, {}, texture_barriers);
 
 	RID id = video_session_owner.make_rid(video_session);
 #ifdef DEV_ENABLED
@@ -5911,29 +5974,6 @@ void RenderingDevice::video_session_add_h264_parameters(RID p_video_session, Vec
 	ERR_FAIL_NULL(video_session);
 
 	driver->video_session_add_h264_parameters(video_session->driver_id, p_sps_sets, p_pps_sets);
-
-	RDD::FenceID fence = driver->fence_create();
-
-	RDD::TextureBarrier tb;
-	tb.texture = video_session->dpb_id;
-	tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
-	tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
-	tb.src_access = RDD::BARRIER_ACCESS_NONE;
-	tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
-	tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-	tb.subresources.mipmap_count = 1;
-	tb.subresources.layer_count = 17;
-
-	driver->command_pool_reset(decode_pool);
-	driver->command_buffer_begin(decode_buffer);
-	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, {}, tb);
-	driver->command_video_session_begin(decode_buffer, video_session->driver_id, true, Vector<VideoDecodeH264SliceHeader>());
-	driver->command_video_session_submit(decode_buffer);
-	driver->command_buffer_end(decode_buffer);
-	driver->command_queue_execute(decode_queue, decode_buffer, fence);
-
-	driver->fence_wait(fence);
-	driver->fence_free(fence);
 }
 
 // TODO validate everything is alright
@@ -5942,32 +5982,27 @@ void RenderingDevice::video_session_add_av1_parameters(RID p_video_session, Vide
 	ERR_FAIL_NULL(video_session);
 
 	driver->video_session_add_av1_parameters(video_session->driver_id, p_sequence_header);
-
-	RDD::FenceID fence = driver->fence_create();
-
-	driver->command_pool_reset(decode_pool);
-	driver->command_buffer_begin(decode_buffer);
-	//driver->command_video_session_reset(decode_buffer, video_session->driver_id);
-	driver->command_buffer_end(decode_buffer);
-	driver->command_queue_execute(decode_queue, decode_buffer, fence);
-
-	driver->fence_wait(fence);
-	driver->fence_free(fence);
 }
 
-void RenderingDevice::video_session_begin() {
-	return;
-	driver->command_pool_reset(decode_pool);
-	driver->command_buffer_begin(decode_buffer);
-}
-
-void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_t> p_nal_unit, VideoDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture) {
-	driver->command_pool_reset(decode_pool);
-	driver->command_buffer_begin(decode_buffer);
-
+void RenderingDevice::video_session_begin(RID p_video_session) {
 	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
 	ERR_FAIL_NULL(video_session);
 
+	video_session->last_cmd_buffer = 0;
+	driver->command_pool_reset(video_session->decode_pool);
+}
+
+void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_t> p_nal_unit, VideoDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
+
+	//TODO: manage running out of cmd buffers
+	RDD::CommandBufferID cmd_buffer = video_session->cmd_buffers[video_session->last_cmd_buffer];
+	if (video_session->decode_wait_semaphore) {
+		driver->command_buffer_begin(cmd_buffer);
+	}
+
+	// TODO: replace with externally created storage buffer
 	BitField<RDD::BufferUsageBits> buffer_usage = {};
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
@@ -5983,63 +6018,58 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
 	ERR_FAIL_NULL(dst_texture);
 
-	RDD::BufferBarrier bb = {};
-	bb.buffer = src_buffer;
-	bb.size = p_nal_unit.size() + 4;
-	bb.offset = 0;
-	bb.src_access = RDD::BARRIER_ACCESS_NONE;
-	bb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_READ;
-
-	RDD::TextureBarrier decode_tb = {};
-	decode_tb.texture = dst_texture->driver_id;
-	decode_tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
-	decode_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
-	decode_tb.src_access = RDD::BARRIER_ACCESS_NONE;
-	decode_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
-	decode_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-	decode_tb.subresources.mipmap_count = 1;
-	decode_tb.subresources.layer_count = 1;
+	// TODO: manage implicitly in draw graph
+	// Vulkan validation doesn't complain about this, is there any performance reason to do this?
+	RDD::TextureBarrier dst_decode_tb = {};
+	dst_decode_tb.texture = dst_texture->driver_id;
+	dst_decode_tb.prev_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	dst_decode_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
+	dst_decode_tb.src_access = RDD::BARRIER_ACCESS_NONE;
+	dst_decode_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	dst_decode_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	dst_decode_tb.subresources.mipmap_count = 1;
+	dst_decode_tb.subresources.layer_count = 1;
+	///driver->command_pipeline_barrier(cmd_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE_BIT, {}, {}, dst_decode_tb);
 
 	Vector<VideoDecodeH264SliceHeader> slices;
 	slices.push_back(p_std_h264_info);
 
-	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, bb, decode_tb);
-	driver->command_video_session_begin(decode_buffer, video_session->driver_id, p_std_h264_info.is_intra, slices);
-	driver->command_video_session_decode_h264(decode_buffer, video_session->driver_id, src_buffer, p_std_h264_info, dst_texture->driver_id);
-	driver->command_video_session_submit(decode_buffer);
+	// TODO: timeline queries
+	// TODO: status resuly queries
+	driver->command_video_session_begin(cmd_buffer, video_session->driver_id, p_std_h264_info.is_intra, slices);
+	driver->command_video_session_decode_h264(cmd_buffer, video_session->driver_id, src_buffer, p_std_h264_info, dst_texture->driver_id);
+	driver->command_video_session_submit(cmd_buffer);
+	driver->command_buffer_end(cmd_buffer);
 
-	Vector<RDD::TextureBarrier> texture_barriers;
+	if (video_session->final_fence) {
+		//TODO: don't leak fences
+		//driver->fence_free(video_session->final_fence);
+	}
 
-	RDD::TextureBarrier dpb_read_tb = {};
-	dpb_read_tb.texture = video_session->dpb_id;
-	dpb_read_tb.prev_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
-	dpb_read_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
-	dpb_read_tb.src_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
-	dpb_read_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_READ;
-	dpb_read_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-	dpb_read_tb.subresources.mipmap_count = 1;
-	dpb_read_tb.subresources.layer_count = 1;
-	texture_barriers.push_back(dpb_read_tb);
+	video_session->final_fence = driver->fence_create();
 
-	RDD::TextureBarrier dst_transfer_tb = {};
-	dst_transfer_tb.texture = dst_texture->driver_id;
-	dst_transfer_tb.prev_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
-	dst_transfer_tb.next_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	dst_transfer_tb.src_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
-	dst_transfer_tb.dst_access = RDD::BARRIER_ACCESS_NONE;
-	dst_transfer_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-	dst_transfer_tb.subresources.mipmap_count = 1;
-	dst_transfer_tb.subresources.layer_count = 1;
-	texture_barriers.push_back(dst_transfer_tb);
+	Vector<RDD::SemaphoreID> signal_semaphores;
+	signal_semaphores.push_back(video_session->decode_signal_semaphores[video_session->semaphore_index]);
+	signal_semaphores.push_back(video_session->compute_signal_semaphores[video_session->semaphore_index]);
 
-	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_VIDEO_DECODE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, {}, texture_barriers);
+	Vector<RDD::SemaphoreID> wait_semaphores;
+	if (video_session->decode_wait_semaphore) {
+		wait_semaphores.push_back(video_session->decode_wait_semaphore);
+	}
 
-	RDD::FenceID fence = driver->fence_create();
-	driver->command_buffer_end(decode_buffer);
-	driver->command_queue_execute(decode_queue, decode_buffer, fence);
+	if (video_session->compute_wait_semaphore) {
+		wait_semaphores.push_back(video_session->compute_wait_semaphore);
+	}
 
-	driver->fence_wait(fence);
-	driver->fence_free(fence);
+	driver->command_queue_execute_and_present(decode_queue, wait_semaphores, cmd_buffer, signal_semaphores, video_session->final_fence, {});
+
+	// TODO: can we truly not use pipeline barriers for decode queue sync?
+	// TODO: is there a way to not stall the entire frame when we just want to execute a compute list?
+	video_session->decode_wait_semaphore = video_session->decode_signal_semaphores[video_session->semaphore_index];
+	frames[frame].semaphores_to_wait_on.push_back(video_session->compute_signal_semaphores[video_session->semaphore_index]);
+
+	video_session->last_cmd_buffer += 1;
+	video_session->semaphore_index = (video_session->semaphore_index + 1) % video_session->decode_signal_semaphores.size();
 }
 
 void RenderingDevice::video_session_decode_av1(RID p_video_session, Span<uint8_t> p_obu, VideoDecodeAV1Frame p_std_av1_info, RID p_dst_texture) {
@@ -6061,18 +6091,17 @@ void RenderingDevice::video_session_decode_av1(RID p_video_session, Span<uint8_t
 	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
 	ERR_FAIL_NULL(dst_texture);
 
-	driver->command_video_session_decode_av1(decode_buffer, video_session->driver_id, src_buffer, p_std_av1_info, dst_texture->driver_id);
+	RDD::CommandBufferID cmd_buffer = video_session->cmd_buffers[video_session->last_cmd_buffer];
+	driver->command_video_session_decode_av1(cmd_buffer, video_session->driver_id, src_buffer, p_std_av1_info, dst_texture->driver_id);
 	driver->buffer_free(src_buffer);
 }
 
-void RenderingDevice::video_session_end() {
-	return;
-	RDD::FenceID fence = driver->fence_create();
-	driver->command_buffer_end(decode_buffer);
-	driver->command_queue_execute(decode_queue, decode_buffer, fence);
+void RenderingDevice::video_session_end(RID p_video_session) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
 
-	driver->fence_wait(fence);
-	driver->fence_free(fence);
+	// TODO: use query pools to measure performance
+	driver->fence_wait(video_session->final_fence);
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -7318,8 +7347,6 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	decode_queue_family = driver->command_queue_family_get(RDD::COMMAND_QUEUE_FAMILY_DECODE_BIT);
 	if (decode_queue_family) {
 		decode_queue = driver->command_queue_create(decode_queue_family);
-		decode_pool = driver->command_pool_create(decode_queue_family, RDD::COMMAND_BUFFER_TYPE_PRIMARY);
-		decode_buffer = driver->command_buffer_create(decode_pool);
 	}
 
 	// Use the processor count as the max amount of transfer workers that can be created.
@@ -7867,10 +7894,6 @@ void RenderingDevice::finalize() {
 		if (decode_queue) {
 			driver->command_queue_free(decode_queue);
 			decode_queue = RDD::CommandQueueID();
-		}
-
-		if (decode_pool) {
-			driver->command_pool_free(decode_pool);
 		}
 	}
 
@@ -9028,5 +9051,6 @@ static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_IMAGE_READ,
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE, RDG::RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE, RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE, RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE));
+static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_VIDEO_DECODE_DST, RDG::RESOURCE_USAGE_VIDEO_DECODE_DST));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_GENERAL, RDG::RESOURCE_USAGE_GENERAL));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_MAX, RDG::RESOURCE_USAGE_MAX));

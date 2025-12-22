@@ -47,9 +47,13 @@ uint64_t VideoStreamH264::read_bits(uint8_t p_amount) {
 		encoded = (encoded << 8) | src[i];
 
 		if ((encoded & emulation_prevention_mask) == 3) {
-			encoded = encoded >> 8;
-			src += 1;
-			i--;
+			if (prevent_emulation) {
+				encoded = encoded >> 8;
+				src += 1;
+				i--;
+			} else {
+				//print_line("not preventing emulation");
+			}
 		}
 	}
 
@@ -107,9 +111,9 @@ int64_t VideoStreamH264::read_se() {
 VideoCodingH264NalUnitType VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 	const uint8_t *nal_start = src;
 
-	uint8_t header = read_bits(8);
-	uint8_t nal_ref_idc = (header & 0b1100000) >> 5;
-	VideoCodingH264NalUnitType nal_unit_type = VideoCodingH264NalUnitType(header & 0b11111);
+	read_bits(1); // forbidden_zero_bit
+	read_bits(2); // nal_ref_idc
+	VideoCodingH264NalUnitType nal_unit_type = (VideoCodingH264NalUnitType)read_bits(5);
 
 	switch (nal_unit_type) {
 		// Skip parsing slice headers from here
@@ -586,10 +590,6 @@ Error VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_
 		}
 	}
 
-	// For some reason, the SPS and PPS sets stored here are invalid.
-	sps_sets.clear();
-	pps_sets.clear();
-
 	return OK;
 }
 
@@ -598,9 +598,12 @@ Error VideoStreamH264::parse_container_block(const uint8_t *p_stream, size_t p_s
 	shift = 0;
 
 	while (src < p_stream + p_size) {
+		prevent_emulation = false;
 		uint64_t nal_size = read_bits(length_size * 8);
 		const uint8_t *nal_start = src;
+		prevent_emulation = true;
 
+		//print_line(vformat("Decoding Block [%d/%d]", nal_size, p_size));
 		VideoCodingH264NalUnitType nal_unit_type = parse_nal_unit(nal_size);
 		if (nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE || nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR) {
 			*r_size = nal_size;
@@ -615,27 +618,30 @@ void VideoStreamH264::set_rendering_device(RenderingDevice *p_local_device) {
 	coding_device = p_local_device;
 }
 
-RID VideoStreamH264::create_video_session(uint32_t p_width, uint32_t p_height) {
-	video_session = coding_device->video_session_create(video_profile, p_width, p_height);
+RID VideoStreamH264::create_video_session(RD::VideoSessionInfo p_session_template) {
+	p_session_template.profile = video_profile;
+	p_session_template.width += 0; // TODO: cropping
+	p_session_template.height += 0; // TODO: cropping / how do we know this?
+	p_session_template.max_active_reference_pictures = 16; // sps.max_num_ref_frames
+
+	video_session = coding_device->video_session_create(p_session_template);
 	coding_device->video_session_add_h264_parameters(video_session, sps_sets, pps_sets);
 	return video_session;
 }
 
-RID VideoStreamH264::create_texture_sampler(RD::SamplerState &p_sampler_template) {
+RID VideoStreamH264::create_texture_sampler(RD::SamplerState p_sampler_template) {
 	// TODO override parameters
 	texture_sampler = coding_device->sampler_create(p_sampler_template);
 	return texture_sampler;
 }
 
-RID VideoStreamH264::create_texture(RD::TextureFormat &p_texture_template) {
-	// TODO override parameters
+RID VideoStreamH264::create_texture(RD::TextureFormat p_texture_template) {
 	Vector<VideoProfile> video_profiles;
 	video_profiles.push_back(video_profile);
 
 	p_texture_template.video_profiles = video_profiles;
-
-	// TODO: how do we know this?
-	//p_texture_template.height += 8;
+	p_texture_template.width += 0;
+	p_texture_template.height += 0; // TODO: how do we know this?
 
 	RD::TextureView texture_view;
 	texture_view.ycbcr_sampler = texture_sampler;
@@ -647,9 +653,9 @@ void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture
 	src = p_frame_data.ptr();
 	shift = 0;
 
-	uint8_t header = read_bits(8);
-	uint8_t nal_ref_idc = (header & 0b1100000) >> 5;
-	VideoCodingH264NalUnitType nal_unit_type = VideoCodingH264NalUnitType(header & 0b11111);
+	read_bits(1); // forbidden_zero_bit
+	uint8_t nal_ref_idc = read_bits(2);
+	VideoCodingH264NalUnitType nal_unit_type = (VideoCodingH264NalUnitType)read_bits(5);
 
 	bool is_reference = nal_ref_idc != 0;
 	bool is_idr = nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR;

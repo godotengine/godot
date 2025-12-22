@@ -894,19 +894,17 @@ void VideoStreamAV1::set_rendering_device(RenderingDevice *p_local_device) {
 	local_device = p_local_device;
 }
 
-RID VideoStreamAV1::create_video_session(uint32_t p_width, uint32_t p_height) {
-	video_session = local_device->video_session_create(video_profile, p_width, p_height);
-	local_device->video_session_add_av1_parameters(video_session, av1_sequence_header);
-	return video_session;
+RID VideoStreamAV1::create_video_session(RD::VideoSessionInfo p_session_template) {
+	return RID();
 }
 
-RID VideoStreamAV1::create_texture_sampler(RD::SamplerState &p_sampler_template) {
+RID VideoStreamAV1::create_texture_sampler(RD::SamplerState p_sampler_template) {
 	// TODO override parameters
 	texture_sampler = local_device->sampler_create(p_sampler_template);
 	return texture_sampler;
 }
 
-RID VideoStreamAV1::create_texture(RD::TextureFormat &p_texture_template) {
+RID VideoStreamAV1::create_texture(RD::TextureFormat p_texture_template) {
 	// TODO override parameters
 	Vector<VideoProfile> video_profiles;
 	video_profiles.push_back(video_profile);

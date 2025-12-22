@@ -57,7 +57,12 @@ Ref<VideoStreamPlayback> VideoStreamMatroska::instantiate_playback() {
 	Ref<VideoStreamPlaybackMatroska> stream_playback;
 	stream_playback.instantiate();
 	stream_playback->set_audio_track(audio_track);
-	stream_playback->set_file(file);
+
+	Error err = stream_playback->set_file(file);
+	if (err != OK) {
+		return nullptr;
+	}
+
 	return stream_playback;
 }
 
@@ -631,6 +636,7 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 
 				if (inner_id == MATROSKA_ID_TRACK_CODEC_ID) {
 					track.codec_id = read_string();
+					print_line(track.codec_id);
 					if (track.codec_id == "V_MPEG4/ISO/AVC") {
 						video_stream_encoding = memnew(VideoStreamH264);
 					} else if (track.codec_id == "V_AV1") {
@@ -751,6 +757,7 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 
 		if (id == MATROSKA_ID_CLUSTER_TIMESTAMP) {
 			r_cluster->time = read_uint();
+			print_line(vformat("-------Cluster Time [%d]-------", r_cluster->time));
 			continue;
 		}
 
@@ -802,6 +809,7 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 
 	Cluster::Block *blocks = r_cluster->blocks.ptrw();
 	for (KeyValue<uint64_t, size_t> node : r_cluster->present_order) {
+		print_line(vformat("[%d] (%d)", node.value, r_cluster->time + node.key));
 		blocks->present_order = node.value;
 		blocks++;
 	}
@@ -898,13 +906,6 @@ void VideoStreamPlaybackMatroska::decode_frame() {
 	Cluster cluster = segment.clusters[cluster_index];
 	Cluster::Block block = cluster.blocks[block_index];
 
-	block_index += 1;
-	if (block_index == cluster.blocks.size()) {
-		cluster_frame_index = 0;
-		block_index = 0;
-		cluster_index += 1;
-	}
-
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
 
@@ -926,10 +927,17 @@ void VideoStreamPlaybackMatroska::decode_frame() {
 	src_texture.append_id(dst_yuv);
 	uniforms.push_back(src_texture);
 
-	size_t target_offset = block.present_order - cluster_frame_index;
-	size_t target_texture = (target_offset + present_texture_index) % dst_rgba_pool.size();
+	// TODO: find a way to get reordering to work
+	size_t relative_order = block.present_order - block_index;
+	size_t target_texture = (relative_order + present_texture_index) % dst_rgba_pool.size();
 	present_texture_index = (present_texture_index + 1) % dst_rgba_pool.size();
-	cluster_frame_index += 1;
+
+	block_index += 1;
+	if (block_index == cluster.blocks.size()) {
+		print_line("CLUSTER SWITCH");
+		block_index = 0;
+		cluster_index += 1;
+	}
 
 	RD::Uniform dst_texture = {};
 	dst_texture.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -967,7 +975,7 @@ void VideoStreamPlaybackMatroska::present_frame() {
 	image_texture->set_image(frame);
 }
 
-void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
+Error VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	path = p_file;
 	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_file);
 
@@ -996,7 +1004,10 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 		_skip_id(id);
 	}
 
-	//TODO: error if there's no compatible audio/video tracks
+	//TODO: error if there's no compatible audio
+	ERR_FAIL_COND_V_MSG(video_stream_encoding.is_null(), FAILED, "No compatible video format found");
+
+	return OK;
 }
 
 void VideoStreamPlaybackMatroska::play() {
@@ -1007,8 +1018,11 @@ void VideoStreamPlaybackMatroska::play() {
 	}
 
 	// All Matroska metadata is done, now create the yuv sampler, yuv image pool and dst image
+	RD::VideoSessionInfo video_session_info = {};
+	video_session_info.width = width;
+	video_session_info.height = height;
+
 	video_stream_encoding->set_rendering_device(local_device);
-	video_session = video_stream_encoding->create_video_session(1920, 1088);
 
 	// Decode stage objects
 	//TODO: be more precise with ycbcr sampler
@@ -1020,13 +1034,16 @@ void VideoStreamPlaybackMatroska::play() {
 	RD::TextureFormat dst_yuv_format;
 	dst_yuv_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 	dst_yuv_format.width = width;
-	dst_yuv_format.height = height + 8; //TODO: stream encoding uses a mutable reference not a copy
+	dst_yuv_format.height = height;
 	dst_yuv_format.depth = 1;
 	dst_yuv_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
 	for (size_t i = 0; i < yuv_pool_size; i++) {
 		dst_yuv_pool.push_back(video_stream_encoding->create_texture(dst_yuv_format));
 	}
+
+	video_session_info.dst_yuv_textures = dst_yuv_pool;
+	video_session = video_stream_encoding->create_video_session(video_session_info);
 
 	// Compute Shader objects
 	RD::TextureFormat dst_rgba_format;
@@ -1060,9 +1077,11 @@ void VideoStreamPlaybackMatroska::play() {
 	yuv_shader = local_device->shader_create_from_bytecode_with_samplers(yuv_bytecode, yuv_shader, uniforms);
 	yuv_pipeline = local_device->compute_pipeline_create(yuv_shader);
 
+	// When the video session is created it is implicitly begun
 	for (size_t i = 0; i < buffered_frames; i++) {
 		decode_frame();
 	}
+	local_device->video_session_end(video_session);
 
 	present_frame();
 }
@@ -1110,7 +1129,10 @@ void VideoStreamPlaybackMatroska::update(double p_delta) {
 
 	// TODO: audio
 	present_frame();
+
+	local_device->video_session_begin(video_session);
 	decode_frame();
+	local_device->video_session_end(video_session);
 }
 
 int VideoStreamPlaybackMatroska::get_channels() const {

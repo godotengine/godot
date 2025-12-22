@@ -290,6 +290,7 @@ public:
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE,
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
+		CALLBACK_RESOURCE_USAGE_VIDEO_DECODE_DST,
 		CALLBACK_RESOURCE_USAGE_GENERAL,
 		CALLBACK_RESOURCE_USAGE_MAX
 	};
@@ -1463,26 +1464,46 @@ private:
 	/**********************/
 	/**** VIDEO CODING ****/
 	/**********************/
+	// TODO: dispose of everything the video session creates
 	struct VideoSession {
 		VideoProfile video_profile;
 		RDD::VideoSessionID driver_id;
 		RDD::TextureID dpb_id;
+		// Clear
+		RDD::CommandPoolID decode_pool;
+		uint32_t last_cmd_buffer;
+		Vector<RDD::CommandBufferID> cmd_buffers;
+		// The decode queue must wait for previous DPB to be written.
+		// The compute queue must wait for DST image to be written.
+		// TODO: use different indices for DPB and dst semaphores
+		uint32_t semaphore_index;
+		Vector<RDD::SemaphoreID> decode_signal_semaphores;
+		Vector<RDD::SemaphoreID> compute_signal_semaphores;
+		RDD::SemaphoreID decode_wait_semaphore;
+		RDD::SemaphoreID compute_wait_semaphore;
+		// CPU
+		RDD::FenceID final_fence;
 	};
 
 	RID_Owner<VideoSession, true> video_session_owner;
 
-	RDD::CommandPoolID decode_pool;
-	RDD::CommandBufferID decode_buffer;
-
 public:
-	RID video_session_create(const VideoProfile &p_profile, uint32_t p_width, uint32_t p_height);
+	struct VideoSessionInfo {
+		VideoProfile profile;
+		uint32_t width;
+		uint32_t height;
+		uint32_t max_active_reference_pictures;
+		Vector<RID> dst_yuv_textures;
+	};
+
+	RID video_session_create(const VideoSessionInfo &p_session_info);
 	void video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets);
 	void video_session_add_av1_parameters(RID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header);
 
-	void video_session_begin();
+	void video_session_begin(RID p_video_session);
 	void video_session_decode_h264(RID p_video_session, Span<uint8_t> p_nal_unit, VideoDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture);
 	void video_session_decode_av1(RID p_video_session, Span<uint8_t> p_obu, VideoDecodeAV1Frame p_std_av1_info, RID p_dst_texture);
-	void video_session_end();
+	void video_session_end(RID p_video_session);
 
 private:
 	/*************************/
