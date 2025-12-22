@@ -177,6 +177,139 @@ static String fix_doc_description(const String &p_bbcode) {
 			.strip_edges();
 }
 
+void BindingsGenerator::bbcode_type_to_text(const String &p_type, StringBuilder &p_output) {
+	if (p_type == "Array" || p_type == "Dictionary") {
+		p_output.append("'" BINDINGS_NAMESPACE_COLLECTIONS ".");
+		p_output.append(p_type);
+		p_output.append("'");
+	} else if (p_type == "bool" || p_type == "int") {
+		p_output.append(p_type);
+	} else if (p_type == "float") {
+		p_output.append(
+#ifdef REAL_T_IS_DOUBLE
+				"double"
+#else
+				"float"
+#endif
+		);
+	} else if (p_type == "Variant") {
+		p_output.append("'Godot.Variant'");
+	} else if (p_type == "String") {
+		p_output.append("string");
+	} else if (p_type == "Nil") {
+		p_output.append("null");
+	} else if (p_type.begins_with("@")) {
+		// @GlobalScope, @GDScript, etc.
+		p_output.append("'" + p_type + "'");
+	} else if (p_type == "PackedByteArray") {
+		p_output.append("byte[]");
+	} else if (p_type == "PackedInt32Array") {
+		p_output.append("int[]");
+	} else if (p_type == "PackedInt64Array") {
+		p_output.append("long[]");
+	} else if (p_type == "PackedFloat32Array") {
+		p_output.append("float[]");
+	} else if (p_type == "PackedFloat64Array") {
+		p_output.append("double[]");
+	} else if (p_type == "PackedStringArray") {
+		p_output.append("string[]");
+	} else if (p_type == "PackedVector2Array") {
+		p_output.append("'" BINDINGS_NAMESPACE ".Vector2[]'");
+	} else if (p_type == "PackedVector3Array") {
+		p_output.append("'" BINDINGS_NAMESPACE ".Vector3[]'");
+	} else if (p_type == "PackedColorArray") {
+		p_output.append("'" BINDINGS_NAMESPACE ".Color[]'");
+	} else if (p_type == "PackedVector4Array") {
+		p_output.append("'" BINDINGS_NAMESPACE ".Vector4[]'");
+	} else {
+		const TypeInterface *target_itype = _get_type_or_null(TypeReference(p_type));
+
+		if (!target_itype) {
+			target_itype = _get_type_or_null(TypeReference("_" + p_type));
+		}
+
+		if (target_itype) {
+			p_output.append("'" + target_itype->proxy_name + "'");
+		} else {
+			ERR_PRINT("Cannot resolve type reference in documentation: '" + p_type + "'.");
+			p_output.append("'" + p_type + "'");
+		}
+	}
+}
+
+void BindingsGenerator::bbcode_type_to_xml(const String &p_type, StringBuilder &p_xml_output, const TypeInterface *p_itype) {
+	if (p_type == "Array" || p_type == "Dictionary") {
+		p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE_COLLECTIONS ".");
+		p_xml_output.append(p_type);
+		p_xml_output.append("\"/>");
+	} else if (p_type == "bool" || p_type == "int") {
+		p_xml_output.append("<see cref=\"");
+		p_xml_output.append(p_type);
+		p_xml_output.append("\"/>");
+	} else if (p_type == "float") {
+		p_xml_output.append("<see cref=\""
+#ifdef REAL_T_IS_DOUBLE
+							"double"
+#else
+							"float"
+#endif
+							"\"/>");
+	} else if (p_type == "Variant") {
+		p_xml_output.append("<see cref=\"Godot.Variant\"/>");
+	} else if (p_type == "String") {
+		p_xml_output.append("<see cref=\"string\"/>");
+	} else if (p_type == "Nil") {
+		p_xml_output.append("<see langword=\"null\"/>");
+	} else if (p_type.begins_with("@")) {
+		// @GlobalScope, @GDScript, etc.
+		p_xml_output.append("<c>");
+		p_xml_output.append(p_type);
+		p_xml_output.append("</c>");
+	} else if (p_type == "PackedByteArray") {
+		p_xml_output.append("<see cref=\"byte\"/>[]");
+	} else if (p_type == "PackedInt32Array") {
+		p_xml_output.append("<see cref=\"int\"/>[]");
+	} else if (p_type == "PackedInt64Array") {
+		p_xml_output.append("<see cref=\"long\"/>[]");
+	} else if (p_type == "PackedFloat32Array") {
+		p_xml_output.append("<see cref=\"float\"/>[]");
+	} else if (p_type == "PackedFloat64Array") {
+		p_xml_output.append("<see cref=\"double\"/>[]");
+	} else if (p_type == "PackedStringArray") {
+		p_xml_output.append("<see cref=\"string\"/>[]");
+	} else if (p_type == "PackedVector2Array") {
+		p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector2\"/>[]");
+	} else if (p_type == "PackedVector3Array") {
+		p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector3\"/>[]");
+	} else if (p_type == "PackedColorArray") {
+		p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Color\"/>[]");
+	} else if (p_type == "PackedVector4Array") {
+		p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector4\"/>[]");
+	} else {
+		const TypeInterface *target_itype = _get_type_or_null(TypeReference(p_type));
+
+		if (!target_itype) {
+			target_itype = _get_type_or_null(TypeReference("_" + p_type));
+		}
+
+		if (target_itype) {
+			if (!_validate_api_type(target_itype, p_itype)) {
+				_append_xml_undeclared(p_xml_output, target_itype->proxy_name);
+			} else {
+				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+				p_xml_output.append(target_itype->proxy_name);
+				p_xml_output.append("\"/>");
+			}
+		} else {
+			ERR_PRINT("Cannot resolve type reference in documentation: '" + p_type + "'.");
+
+			p_xml_output.append("<c>");
+			p_xml_output.append(p_type);
+			p_xml_output.append("</c>");
+		}
+	}
+}
+
 String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype) {
 	// Based on the version in EditorHelp.
 
@@ -300,66 +433,55 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			}
 
 			pos = brk_end + 1;
-		} else if (doc->class_list.has(tag)) {
-			if (tag == "Array" || tag == "Dictionary") {
-				output.append("'" BINDINGS_NAMESPACE_COLLECTIONS ".");
-				output.append(tag);
-				output.append("'");
-			} else if (tag == "bool" || tag == "int") {
-				output.append(tag);
-			} else if (tag == "float") {
-				output.append(
-#ifdef REAL_T_IS_DOUBLE
-						"double"
-#else
-						"float"
-#endif
-				);
-			} else if (tag == "Variant") {
-				output.append("'Godot.Variant'");
-			} else if (tag == "String") {
-				output.append("string");
-			} else if (tag == "Nil") {
-				output.append("null");
-			} else if (tag.begins_with("@")) {
-				// @GlobalScope, @GDScript, etc.
-				output.append("'" + tag + "'");
-			} else if (tag == "PackedByteArray") {
-				output.append("byte[]");
-			} else if (tag == "PackedInt32Array") {
-				output.append("int[]");
-			} else if (tag == "PackedInt64Array") {
-				output.append("long[]");
-			} else if (tag == "PackedFloat32Array") {
-				output.append("float[]");
-			} else if (tag == "PackedFloat64Array") {
-				output.append("double[]");
-			} else if (tag == "PackedStringArray") {
-				output.append("string[]");
-			} else if (tag == "PackedVector2Array") {
-				output.append("'" BINDINGS_NAMESPACE ".Vector2[]'");
-			} else if (tag == "PackedVector3Array") {
-				output.append("'" BINDINGS_NAMESPACE ".Vector3[]'");
-			} else if (tag == "PackedColorArray") {
-				output.append("'" BINDINGS_NAMESPACE ".Color[]'");
-			} else if (tag == "PackedVector4Array") {
-				output.append("'" BINDINGS_NAMESPACE ".Vector4[]'");
-			} else {
-				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
-
-				if (!target_itype) {
-					target_itype = _get_type_or_null(TypeReference("_" + tag));
-				}
-
-				if (target_itype) {
-					output.append("'" + target_itype->proxy_name + "'");
-				} else {
-					ERR_PRINT("Cannot resolve type reference in documentation: '" + tag + "'.");
-					output.append("'" + tag + "'");
-				}
-			}
-
+		} else if (doc->class_list.has(p_itype->name + "." + tag)) {
+			bbcode_type_to_text(p_itype->name + "." + tag, output);
 			pos = brk_end + 1;
+		} else if (doc->class_list.has(tag)) {
+			bbcode_type_to_text(tag, output);
+			pos = brk_end + 1;
+		} else if (tag.begins_with("Array[")) {
+			if (brk_end + 1 < bbcode.length() && bbcode[brk_end + 1] == ']') {
+				String elem_type = tag.substr(6); // len("Array[") == 6
+				if (elem_type.is_empty()) {
+					elem_type = "Variant";
+				}
+
+				bbcode_type_to_text("Array", output);
+				output.append("<");
+				bbcode_type_to_text(elem_type, output);
+				output.append(">");
+
+				pos = brk_end + 2;
+			} else {
+				output.append("["); // Ignore.
+				pos = brk_pos + 1;
+			}
+		} else if (tag.begins_with("Dictionary[")) {
+			if (brk_end + 1 < bbcode.length() && bbcode[brk_end + 1] == ']') {
+				const Vector<String> types = tag.substr(11).split(",", true, 1); // len("Dictionary[") == 11
+
+				String key_type = types[0].strip_edges(); // Safe since `types` cannot be empty.
+				if (key_type.is_empty()) {
+					key_type = "Variant";
+				}
+
+				String value_type = (types.size() > 1) ? types[1].strip_edges() : String();
+				if (value_type.is_empty()) {
+					value_type = "Variant";
+				}
+
+				bbcode_type_to_text("Dictionary", output);
+				output.append("<");
+				bbcode_type_to_text(key_type, output);
+				output.append(", ");
+				bbcode_type_to_text(value_type, output);
+				output.append(">");
+
+				pos = brk_end + 2;
+			} else {
+				output.append("["); // Ignore.
+				pos = brk_pos + 1;
+			}
 		} else if (tag == "b") {
 			// Bold is not supported.
 			pos = brk_end + 1;
@@ -617,79 +739,55 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			}
 
 			pos = brk_end + 1;
-		} else if (doc->class_list.has(tag)) {
-			if (tag == "Array" || tag == "Dictionary") {
-				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE_COLLECTIONS ".");
-				xml_output.append(tag);
-				xml_output.append("\"/>");
-			} else if (tag == "bool" || tag == "int") {
-				xml_output.append("<see cref=\"");
-				xml_output.append(tag);
-				xml_output.append("\"/>");
-			} else if (tag == "float") {
-				xml_output.append("<see cref=\""
-#ifdef REAL_T_IS_DOUBLE
-								  "double"
-#else
-								  "float"
-#endif
-								  "\"/>");
-			} else if (tag == "Variant") {
-				xml_output.append("<see cref=\"Godot.Variant\"/>");
-			} else if (tag == "String") {
-				xml_output.append("<see cref=\"string\"/>");
-			} else if (tag == "Nil") {
-				xml_output.append("<see langword=\"null\"/>");
-			} else if (tag.begins_with("@")) {
-				// @GlobalScope, @GDScript, etc.
-				xml_output.append("<c>");
-				xml_output.append(tag);
-				xml_output.append("</c>");
-			} else if (tag == "PackedByteArray") {
-				xml_output.append("<see cref=\"byte\"/>[]");
-			} else if (tag == "PackedInt32Array") {
-				xml_output.append("<see cref=\"int\"/>[]");
-			} else if (tag == "PackedInt64Array") {
-				xml_output.append("<see cref=\"long\"/>[]");
-			} else if (tag == "PackedFloat32Array") {
-				xml_output.append("<see cref=\"float\"/>[]");
-			} else if (tag == "PackedFloat64Array") {
-				xml_output.append("<see cref=\"double\"/>[]");
-			} else if (tag == "PackedStringArray") {
-				xml_output.append("<see cref=\"string\"/>[]");
-			} else if (tag == "PackedVector2Array") {
-				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector2\"/>[]");
-			} else if (tag == "PackedVector3Array") {
-				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector3\"/>[]");
-			} else if (tag == "PackedColorArray") {
-				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Color\"/>[]");
-			} else if (tag == "PackedVector4Array") {
-				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector4\"/>[]");
-			} else {
-				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
-
-				if (!target_itype) {
-					target_itype = _get_type_or_null(TypeReference("_" + tag));
-				}
-
-				if (target_itype) {
-					if (!_validate_api_type(target_itype, p_itype)) {
-						_append_xml_undeclared(xml_output, target_itype->proxy_name);
-					} else {
-						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-						xml_output.append(target_itype->proxy_name);
-						xml_output.append("\"/>");
-					}
-				} else {
-					ERR_PRINT("Cannot resolve type reference in documentation: '" + tag + "'.");
-
-					xml_output.append("<c>");
-					xml_output.append(tag);
-					xml_output.append("</c>");
-				}
-			}
-
+		} else if (doc->class_list.has(p_itype->name + "." + tag)) {
+			bbcode_type_to_xml(p_itype->name + "." + tag, xml_output, p_itype);
 			pos = brk_end + 1;
+		} else if (doc->class_list.has(tag)) {
+			bbcode_type_to_xml(tag, xml_output, p_itype);
+			pos = brk_end + 1;
+		} else if (tag.begins_with("Array[")) {
+			if (brk_end + 1 < bbcode.length() && bbcode[brk_end + 1] == ']') {
+				String elem_type = tag.substr(6); // len("Array[") == 6
+				if (elem_type.is_empty()) {
+					elem_type = "Variant";
+				}
+
+				bbcode_type_to_xml("Array", xml_output, p_itype);
+				xml_output.append("&lt;");
+				bbcode_type_to_xml(elem_type, xml_output, p_itype);
+				xml_output.append("&gt;");
+
+				pos = brk_end + 2;
+			} else {
+				xml_output.append("["); // Ignore.
+				pos = brk_pos + 1;
+			}
+		} else if (tag.begins_with("Dictionary[")) {
+			if (brk_end + 1 < bbcode.length() && bbcode[brk_end + 1] == ']') {
+				const Vector<String> types = tag.substr(11).split(",", true, 1); // len("Dictionary[") == 11
+
+				String key_type = types[0].strip_edges(); // Safe since `types` cannot be empty.
+				if (key_type.is_empty()) {
+					key_type = "Variant";
+				}
+
+				String value_type = (types.size() > 1) ? types[1].strip_edges() : String();
+				if (value_type.is_empty()) {
+					value_type = "Variant";
+				}
+
+				bbcode_type_to_xml("Dictionary", xml_output, p_itype);
+				xml_output.append("&lt;");
+				bbcode_type_to_xml(key_type, xml_output, p_itype);
+				xml_output.append(", ");
+				bbcode_type_to_xml(value_type, xml_output, p_itype);
+				xml_output.append("&gt;");
+
+				pos = brk_end + 2;
+			} else {
+				xml_output.append("["); // Ignore.
+				pos = brk_pos + 1;
+			}
 		} else if (tag == "b") {
 			xml_output.append("<b>");
 

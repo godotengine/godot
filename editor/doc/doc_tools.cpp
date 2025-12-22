@@ -679,6 +679,14 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				c.signals.sort_custom<MethodCompare>();
 			}
 
+			List<StringName> enum_list;
+			ClassDB::get_enum_list(name, &enum_list, true);
+
+			for (const StringName &E : enum_list) {
+				DocData::EnumDoc enum_doc;
+				c.enums[E] = enum_doc;
+			}
+
 			List<String> constant_list;
 			ClassDB::get_integer_constant_list(name, &constant_list, true);
 
