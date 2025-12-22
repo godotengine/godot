@@ -2977,6 +2977,19 @@ Ref<Resource> ScriptEditor::open_file(const String &p_file) {
 	return Ref<Resource>();
 }
 
+void ScriptEditor::close_file(const String &p_file) {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (!se) {
+			continue;
+		}
+		if (se->get_edited_resource()->get_path() == p_file) {
+			_close_tab(i, false, false);
+			break;
+		}
+	}
+}
+
 void ScriptEditor::_editor_stop() {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -4183,6 +4196,8 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("goto_help", "topic"), &ScriptEditor::goto_help);
 	ClassDB::bind_method(D_METHOD("update_docs_from_script", "script"), &ScriptEditor::update_docs_from_script);
 	ClassDB::bind_method(D_METHOD("clear_docs_from_script", "script"), &ScriptEditor::clear_docs_from_script);
+
+	ClassDB::bind_method(D_METHOD("close_file", "path"), &ScriptEditor::close_file);
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
