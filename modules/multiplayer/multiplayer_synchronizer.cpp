@@ -427,6 +427,8 @@ List<Variant> MultiplayerSynchronizer::get_delta_state(uint64_t p_cur_usec, uint
 		if (w.last_change_usec <= p_last_usec) {
 			continue;
 		}
+
+		ERR_BREAK_MSG(i >= static_cast<int>(sizeof(uint64_t) * 8), "Cannot process more replicated properties.");
 		out.push_back(w.value);
 		r_indexes |= 1ULL << i;
 	}
@@ -439,6 +441,7 @@ List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes)
 	const List<NodePath> watch_props = replication_config->get_watch_properties();
 	int idx = 0;
 	for (const NodePath &prop : watch_props) {
+		ERR_BREAK_MSG(idx >= static_cast<int>(sizeof(uint64_t) * 8), "Cannot process more replicated properties.");
 		if ((p_indexes & (1ULL << idx++)) == 0) {
 			continue;
 		}

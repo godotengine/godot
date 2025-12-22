@@ -239,6 +239,7 @@ void SceneReplicationConfig::_update() {
 				sync_props.push_back(prop.name);
 				break;
 			case REPLICATION_MODE_ON_CHANGE:
+				ERR_BREAK_MSG(watch_props.size() >= static_cast<int>(sizeof(uint64_t) * 8), "Reached limit of 64 properties with 'REPLICATION_MODE_ON_CHANGE' mode per single object. Ignoring this property.");
 				watch_props.push_back(prop.name);
 				break;
 			default:
