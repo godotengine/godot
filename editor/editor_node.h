@@ -64,6 +64,7 @@ class Window;
 
 class AudioStreamImportSettingsDialog;
 class AudioStreamPreviewGenerator;
+class AssetLibraryEditorPlugin;
 class BackgroundProgress;
 class DependencyErrorDialog;
 class DockSplitContainer;
@@ -274,6 +275,8 @@ private:
 
 	ProjectExportDialog *project_export = nullptr;
 	ProjectSettingsEditor *project_settings_editor = nullptr;
+
+	AssetLibraryEditorPlugin *asset_library_plugin = nullptr;
 
 	FBXImporterManager *fbx_importer_manager = nullptr;
 
@@ -804,6 +807,8 @@ public:
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings_editor; }
 
+	AssetLibraryEditorPlugin *get_asset_library() { return asset_library_plugin; }
+
 	void trigger_menu_option(int p_option, bool p_confirmed);
 	bool has_previous_closed_scenes() const;
 
@@ -991,6 +996,7 @@ public:
 	void save_editor_layout_delayed();
 	void save_default_environment();
 
+	void open_export_dialog();
 	void open_export_template_manager();
 
 	void reload_scene(const String &p_path);

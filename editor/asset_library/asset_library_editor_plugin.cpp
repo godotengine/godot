@@ -1626,6 +1626,25 @@ void EditorAssetLibrary::disable_community_support() {
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, false);
 }
 
+void EditorAssetLibrary::search(const String &p_filter_str) {
+	ERR_FAIL_COND(!is_visible());
+
+	// If Asset Library hasn't been opened yet, we must wait for the initial request to complete.
+	if (!filter->is_editable()) {
+		request->connect("request_completed", callable_mp(this, &EditorAssetLibrary::_on_request_completed).bind(p_filter_str), CONNECT_ONE_SHOT);
+	} else {
+		filter->set_text(p_filter_str);
+		filter->emit_signal(SceneStringName(text_changed), filter->get_text());
+	}
+}
+
+void EditorAssetLibrary::_on_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body, const String &p_filter_str) {
+	ERR_FAIL_COND_MSG(p_response_code != 200, vformat("Asset Library HTTPRequest returned with response code %d.", p_response_code));
+
+	filter->set_text(p_filter_str);
+	filter->emit_signal(SceneStringName(text_changed), filter->get_text());
+}
+
 void EditorAssetLibrary::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
@@ -1844,6 +1863,11 @@ void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		addon_library->hide();
 	}
+}
+
+void AssetLibraryEditorPlugin::search_assset_library(const String &p_filter) {
+	ERR_FAIL_COND_MSG(!is_available(), "Asset Library not available on the current platform.");
+	addon_library->search(p_filter);
 }
 
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
