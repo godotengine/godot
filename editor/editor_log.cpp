@@ -149,28 +149,6 @@ void EditorLog::_notification(int p_what) {
 			_update_theme();
 			_rebuild_log();
 		} break;
-
-		case NOTIFICATION_PROCESS: {
-			if (pending_messages.is_empty()) {
-				set_process(false);
-				return;
-			}
-
-			if (log->is_updating() || flush_pending) {
-				return;
-			}
-
-			flush_pending = true;
-
-			Vector<LogMessage> to_flush = pending_messages;
-			to_flush.clear();
-
-			for (LogMessage &msg : to_flush) {
-				_add_log_line(msg, false);
-			}
-
-			flush_pending = false;
-		} break;
 	}
 }
 
@@ -409,10 +387,10 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
-	if (unlikely(log->is_updating())) {
+	if (unlikely(log->is_updating()) || flushing) {
 		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
+		try_flush();
 		pending_messages.push_back(p_message);
-		set_process(true);
 		return;
 	}
 
@@ -485,6 +463,25 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	while (log->get_paragraph_count() > line_limit + 1) {
 		log->remove_paragraph(0, true);
 	}
+
+	try_flush();
+}
+
+void EditorLog::try_flush() {
+	if (log->is_updating() || flushing || pending_messages.is_empty()) {
+		return;
+	}
+
+	flushing = true;
+
+	Vector<LogMessage> to_flush = pending_messages;
+	pending_messages.clear();
+
+	for (LogMessage &msg : to_flush) {
+		_add_log_line(msg, false);
+	}
+
+	flushing = false;
 }
 
 void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
