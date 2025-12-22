@@ -152,6 +152,7 @@ void EditorLog::_notification(int p_what) {
 
 		case NOTIFICATION_PROCESS: {
 			if (pending_messages.is_empty()) {
+				set_process(false);
 				return;
 			}
 
@@ -411,6 +412,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (unlikely(log->is_updating())) {
 		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
 		pending_messages.push_back(p_message);
+		set_process(true);
 		return;
 	}
 
