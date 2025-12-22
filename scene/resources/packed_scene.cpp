@@ -796,8 +796,13 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	// given the complexity of this process, an attempt will be made to properly
 	// document it. if you fail to understand something, please ask!
 
-	//discard nodes that do not belong to be processed
-	if (p_node != p_owner && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
+	// discard nodes that are not owned by scene owner
+	if (p_node != p_owner && p_node->get_owner() != p_owner) {
+		return OK;
+	}
+
+	// discard nodes that belong to non-editable subscenes
+	if (p_node != p_owner && p_node->get_owner() && p_owner->is_ancestor_of(p_node->get_owner()) && !p_owner->is_editable_instance(p_node->get_owner())) {
 		return OK;
 	}
 
@@ -1140,7 +1145,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 
 Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map) {
 	// Ignore nodes that are within a scene instance.
-	if (p_node != p_owner && p_node->get_owner() && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
+	if (p_node != p_owner && p_node->get_owner() && p_node->get_owner() != p_owner && p_owner->is_ancestor_of(p_node->get_owner()) && !p_owner->is_editable_instance(p_node->get_owner())) {
 		return OK;
 	}
 
