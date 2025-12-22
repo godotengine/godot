@@ -116,6 +116,7 @@ protected:
 	uint32_t attrib_stride = 0;
 	uint32_t skin_stride = 0;
 	uint32_t mesh_surface_format = 0;
+	double oversampling = 1.0;
 
 	void _queue_redraw();
 
@@ -200,6 +201,9 @@ public:
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
 
+	void set_oversampling(float p_oversampling);
+	float get_oversampling() const;
+
 	void set_region_enabled(bool p_region);
 	bool is_region_enabled() const;
 
@@ -221,7 +225,7 @@ public:
 	virtual Rect2 get_item_rect() const override;
 
 	Sprite3D();
-	//~Sprite3D();
+	~Sprite3D();
 };
 
 class AnimatedSprite3D : public SpriteBase3D {
