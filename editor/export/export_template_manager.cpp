@@ -919,7 +919,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 	ProgressDialog::get_singleton()->end_task("uncompress_src");
 	unzClose(pkg);
-	EditorFileSystem::get_singleton()->scan_changes();
+	EditorFileSystem::get_singleton()->pending_scan_fs_changes(parent_dir, true);
 	return OK;
 }
 

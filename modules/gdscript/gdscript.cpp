@@ -2379,6 +2379,13 @@ void GDScriptLanguage::finish() {
 	script_list.clear();
 	function_list.clear();
 
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		GDExtensionManager::get_singleton()->disconnect("extension_loaded", callable_mp(this, &GDScriptLanguage::_extension_loaded));
+		GDExtensionManager::get_singleton()->disconnect("extension_unloading", callable_mp(this, &GDScriptLanguage::_extension_unloading));
+	}
+#endif // TOOLS_ENABLED
+
 	finishing = false;
 }
 
