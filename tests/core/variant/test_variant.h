@@ -1816,13 +1816,14 @@ TEST_CASE("[Variant] Writer recursive array") {
 	a2.clear();
 }
 
-TEST_CASE("[Variant] Writer and parser dictionary") {
+TEST_CASE("[Variant] Writer and parser dictionary, non-pretty") {
 	// d = {{1: 2}: 3, 4: "hello", 5: {null: []}}
 	Dictionary d = { { Dictionary({ { 1, 2 } }), 3 }, { 4, String("hello") }, { 5, Dictionary({ { Variant(), Array() } }) } };
 	String d_str;
-	VariantWriter::write_to_string(d, d_str);
+	VariantWriter::write_to_string(d, d_str, false);
 
-	CHECK_EQ(d_str, "{\n4: \"hello\",\n5: {\nnull: []\n},\n{\n1: 2\n}: 3\n}");
+	const String expected = "{4: \"hello\", 5: {null: []}, {1: 2}: 3}";
+	CHECK_EQ(d_str, expected);
 
 	VariantParser::StreamString ss;
 	String errs;
@@ -1832,15 +1833,47 @@ TEST_CASE("[Variant] Writer and parser dictionary") {
 	ss.s = d_str;
 	VariantParser::parse(&ss, d_parsed, errs, line);
 
-	CHECK_MESSAGE(d_parsed == Variant(d), "Should parse back.");
+	CHECK_MESSAGE(d_parsed == Variant(d), "Should parse what it writes.");
+	CHECK_EQ(d_parsed.get_type(), Variant::DICTIONARY);
+
+	// Must be able to write the same string it parsed.
+	String d_parsed_str;
+	VariantWriter::write_to_string(d_parsed, d_parsed_str, false);
+	CHECK_EQ(d_parsed_str, expected);
+}
+
+TEST_CASE("[Variant] Writer and parser dictionary, pretty printed") {
+	// d = {{1: 2}: 3, 4: "hello", 5: {null: []}}
+	Dictionary d = { { Dictionary({ { 1, 2 } }), 3 }, { 4, String("hello") }, { 5, Dictionary({ { Variant(), Array() } }) } };
+	String d_str;
+	VariantWriter::write_to_string(d, d_str, true);
+
+	const String expected = "{\n\t4: \"hello\",\n\t5: {\n\t\tnull: [],\n\t},\n\t{\n\t\t1: 2,\n\t}: 3,\n}";
+	CHECK_EQ(d_str, expected);
+
+	VariantParser::StreamString ss;
+	String errs;
+	int line;
+	Variant d_parsed;
+
+	ss.s = d_str;
+	VariantParser::parse(&ss, d_parsed, errs, line);
+
+	CHECK_MESSAGE(d_parsed == Variant(d), "Should parse what it writes.");
+	CHECK_EQ(d_parsed.get_type(), Variant::DICTIONARY);
+
+	// Must be able to write the same string it parsed.
+	String d_parsed_str;
+	VariantWriter::write_to_string(d_parsed, d_parsed_str, true);
+	CHECK_EQ(d_parsed_str, expected);
 }
 
 TEST_CASE("[Variant] Writer key sorting") {
 	Dictionary d = { { StringName("C"), 3 }, { "A", 1 }, { StringName("B"), 2 }, { "D", 4 } };
 	String d_str;
-	VariantWriter::write_to_string(d, d_str);
+	VariantWriter::write_to_string(d, d_str, false);
 
-	CHECK_EQ(d_str, "{\n\"A\": 1,\n&\"B\": 2,\n&\"C\": 3,\n\"D\": 4\n}");
+	CHECK_EQ(d_str, "{\"A\": 1, &\"B\": 2, &\"C\": 3, \"D\": 4}");
 }
 
 TEST_CASE("[Variant] Writer recursive dictionary") {
@@ -1908,6 +1941,60 @@ TEST_CASE("[Variant] Writer recursive dictionary on keys") {
 	d2.clear();
 }
 #endif
+
+TEST_CASE("[Variant] Object pretty prints with correct spacing and tabbing") {
+	Object *o1 = memnew(Object);
+	Variant v1 = o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str, true);
+
+	// encode newlines and tabs for readable exception messages
+	String o_str_enc = o_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	String expected_str = "Object(Object,\n\t\"script\": null,\n)";
+	String expected_str_enc = expected_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	CHECK(o_str == expected_str);
+	CHECK(o_str_enc == expected_str_enc);
+
+	memdelete(o1);
+}
+
+TEST_CASE("[Variant] Nested Objects pretty print with correct spacing and tabbing") {
+	Object *o1 = memnew(Object);
+	Object *o2 = memnew(Object);
+	Object *o3 = memnew(Object);
+
+	o1->set_meta("o2", o2);
+	o2->set_meta("o3", o3);
+
+	Variant v1 = o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str, true);
+
+	// Encode newlines and tabs for readable test failure messages.
+	String o_str_enc = o_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	String expected_str = "Object(Object,\n"
+						  "\t\"script\": null,\n"
+						  "\t\"metadata/o2\": Object(Object,\n"
+						  "\t\t\"script\": null,\n"
+						  "\t\t\"metadata/o3\": Object(Object,\n"
+						  "\t\t\t\"script\": null,\n"
+						  "\t\t),\n"
+						  "\t),\n"
+						  ")";
+	String expected_str_enc = expected_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	CHECK(o_str == expected_str);
+	CHECK(o_str_enc == expected_str_enc);
+
+	memdelete(o1);
+	memdelete(o2);
+	memdelete(o3);
+}
 
 TEST_CASE("[Variant] Basic comparison") {
 	CHECK_EQ(Variant(1), Variant(1));

@@ -532,7 +532,7 @@
 		<member name="auto_brace_completion_highlight_matching" type="bool" setter="set_highlight_matching_braces_enabled" getter="is_highlight_matching_braces_enabled" default="false">
 			If [code]true[/code], highlights brace pairs when the caret is on either one, using [member auto_brace_completion_pairs]. If matching, the pairs will be underlined. If a brace is unmatched, it is colored with [theme_item brace_mismatch_color].
 		</member>
-		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{ &quot;\&quot;&quot;: &quot;\&quot;&quot;, &quot;&apos;&quot;: &quot;&apos;&quot;, &quot;(&quot;: &quot;)&quot;, &quot;[&quot;: &quot;]&quot;, &quot;{&quot;: &quot;}&quot; }">
+		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{&quot;\&quot;&quot;: &quot;\&quot;&quot;, &quot;&apos;&quot;: &quot;&apos;&quot;, &quot;(&quot;: &quot;)&quot;, &quot;[&quot;: &quot;]&quot;, &quot;{&quot;: &quot;}&quot;}">
 			Sets the brace pairs to be autocompleted. For each entry in the dictionary, the key is the opening brace and the value is the closing brace that matches it. A brace is a [String] made of symbols. See [member auto_brace_completion_enabled] and [member auto_brace_completion_highlight_matching].
 		</member>
 		<member name="code_completion_enabled" type="bool" setter="set_code_completion_enabled" getter="is_code_completion_enabled" default="false">
