@@ -62,6 +62,9 @@ String DisplayServerMacOSBase::clipboard_get() const {
 	}
 
 	NSArray *objectsToPaste = [pasteboard readObjectsForClasses:classArray options:options];
+	if (!objectsToPaste || [objectsToPaste count] < 1) {
+		return "";
+	}
 	NSString *string = [objectsToPaste objectAtIndex:0];
 
 	String ret;
@@ -128,7 +131,7 @@ TypedArray<Dictionary> DisplayServerMacOSBase::tts_get_voices() const {
 	return [tts getVoices];
 }
 
-void DisplayServerMacOSBase::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServerMacOSBase::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	if (unlikely(!tts)) {
 		initialize_tts();
 	}
@@ -301,7 +304,100 @@ void DisplayServerMacOSBase::show_emoji_and_symbol_picker() const {
 	[[NSApplication sharedApplication] orderFrontCharacterPalette:nil];
 }
 
+bool DisplayServerMacOSBase::is_dark_mode_supported() const {
+	if (@available(macOS 10.14, *)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool DisplayServerMacOSBase::is_dark_mode() const {
+	if (@available(macOS 10.14, *)) {
+		if (![[NSUserDefaults standardUserDefaults] objectForKey:@"AppleInterfaceStyle"]) {
+			return false;
+		} else {
+			return ([[[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"] isEqual:@"Dark"]);
+		}
+	} else {
+		return false;
+	}
+}
+
+Color DisplayServerMacOSBase::get_accent_color() const {
+	if (@available(macOS 10.14, *)) {
+		__block NSColor *color = nullptr;
+		if (@available(macOS 11.0, *)) {
+			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+				color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			}];
+			if (!color) {
+				color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			}
+		} else {
+			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
+			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
+			color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			[NSAppearance setCurrentAppearance:saved_appearance];
+		}
+		if (color) {
+			CGFloat components[4];
+			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
+			return Color(components[0], components[1], components[2], components[3]);
+		} else {
+			return Color(0, 0, 0, 0);
+		}
+	} else {
+		return Color(0, 0, 0, 0);
+	}
+}
+
+Color DisplayServerMacOSBase::get_base_color() const {
+	if (@available(macOS 10.14, *)) {
+		__block NSColor *color = nullptr;
+		if (@available(macOS 11.0, *)) {
+			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+				color = [[NSColor windowBackgroundColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			}];
+			if (!color) {
+				color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			}
+		} else {
+			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
+			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
+			color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			[NSAppearance setCurrentAppearance:saved_appearance];
+		}
+		if (color) {
+			CGFloat components[4];
+			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
+			return Color(components[0], components[1], components[2], components[3]);
+		} else {
+			return Color(0, 0, 0, 0);
+		}
+	} else {
+		return Color(0, 0, 0, 0);
+	}
+}
+
+void DisplayServerMacOSBase::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
+}
+
+void DisplayServerMacOSBase::emit_system_theme_changed() {
+	if (system_theme_changed.is_valid()) {
+		Variant ret;
+		Callable::CallError ce;
+		system_theme_changed.callp(nullptr, 0, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute system theme changed callback: %s.", Variant::get_callable_error_text(system_theme_changed, nullptr, 0, ce)));
+		}
+	}
+}
+
 DisplayServerMacOSBase::DisplayServerMacOSBase() {
+	KeyMappingMacOS::initialize();
+
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {

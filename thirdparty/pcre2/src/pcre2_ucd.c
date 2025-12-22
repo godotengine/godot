@@ -42,6 +42,7 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+
 /* This file contains tables of Unicode properties that are extracted from
 Unicode data files. See the comments at the start of maint/GenerateUcd.py for
 details.
@@ -52,12 +53,12 @@ _pcre2_xxx to xxxx, thereby avoiding name clashes with the library. At present,
 just one of these tables is actually needed. When compiling the library, some
 headers are needed. */
 
+
 #ifndef PCRE2_PCRE2TEST
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "pcre2_internal.h"
 #endif /* PCRE2_PCRE2TEST */
+
+
 
 /* The tables herein are needed only when UCP support is built, and in PCRE2
 that happens automatically with UTF support. This module should not be

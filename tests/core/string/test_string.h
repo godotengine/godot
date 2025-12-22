@@ -396,6 +396,8 @@ TEST_CASE("[String] Find") {
 	MULTICHECK_STRING_EQ(s, find, "tty", 3);
 	MULTICHECK_STRING_EQ(s, find, "Revenge of the Monster Truck", -1);
 	MULTICHECK_STRING_INT_EQ(s, find, "Wo", 9, 13);
+	MULTICHECK_STRING_INT_EQ(s, find, "Wo", 1000, -1);
+	MULTICHECK_STRING_INT_EQ(s, find, "Wo", -1, -1);
 	MULTICHECK_STRING_EQ(s, find, "", -1);
 	MULTICHECK_STRING_EQ(s, find, "Pretty Woman Woman", 0);
 	MULTICHECK_STRING_EQ(s, find, "WOMAN", -1);
@@ -407,6 +409,8 @@ TEST_CASE("[String] Find") {
 	MULTICHECK_STRING_EQ(s, rfind, "man", 15);
 	MULTICHECK_STRING_EQ(s, rfind, "WOMAN", -1);
 	MULTICHECK_STRING_INT_EQ(s, rfind, "", 15, -1);
+	MULTICHECK_STRING_INT_EQ(s, rfind, "Wo", 1000, -1);
+	MULTICHECK_STRING_INT_EQ(s, rfind, "Wo", -1, 13);
 }
 
 TEST_CASE("[String] Find character") {
@@ -426,6 +430,8 @@ TEST_CASE("[String] Find case insensitive") {
 	String s = "Pretty Whale Whale";
 	MULTICHECK_STRING_EQ(s, findn, "WHA", 7);
 	MULTICHECK_STRING_INT_EQ(s, findn, "WHA", 9, 13);
+	MULTICHECK_STRING_INT_EQ(s, findn, "WHA", 1000, -1);
+	MULTICHECK_STRING_INT_EQ(s, findn, "WHA", -1, -1);
 	MULTICHECK_STRING_EQ(s, findn, "Revenge of the Monster SawFish", -1);
 	MULTICHECK_STRING_EQ(s, findn, "", -1);
 	MULTICHECK_STRING_EQ(s, findn, "wha", 7);
@@ -437,6 +443,8 @@ TEST_CASE("[String] Find case insensitive") {
 	MULTICHECK_STRING_EQ(s, rfindn, "wha", 13);
 	MULTICHECK_STRING_EQ(s, rfindn, "Wha", 13);
 	MULTICHECK_STRING_INT_EQ(s, rfindn, "", 13, -1);
+	MULTICHECK_STRING_INT_EQ(s, rfindn, "WHA", 1000, -1);
+	MULTICHECK_STRING_INT_EQ(s, rfindn, "WHA", -1, 13);
 }
 
 TEST_CASE("[String] Find MK") {
@@ -453,6 +461,9 @@ TEST_CASE("[String] Find MK") {
 
 	CHECK(s.findmk(keys, 5, &key) == 9);
 	CHECK(key == 2);
+
+	CHECK(s.findmk(keys, -1, &key) == -1);
+	CHECK(s.findmk(keys, 1000, &key) == -1);
 }
 
 TEST_CASE("[String] Find and replace") {
@@ -980,6 +991,38 @@ TEST_CASE("[String] sprintf") {
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish 143 frog"));
+
+	// INT64_MIN
+	format = "fish %d frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -9223372036854775808 frog"));
+
+	// INT64_MIN hex (lower)
+	format = "fish %x frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -8000000000000000 frog"));
+
+	// INT64_MIN hex (upper)
+	format = "fish %X frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -8000000000000000 frog"));
+
+	// INT64_MIN octal
+	format = "fish %o frog";
+	args.clear();
+	args.push_back(INT64_MIN);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish -1000000000000000000000 frog"));
 
 	///// Reals
 
@@ -1783,6 +1826,13 @@ TEST_CASE("[String] Path functions") {
 		CHECK(String(path[i]).simplify_path().get_base_dir().path_join(file[i]) == String(path[i]).simplify_path());
 	}
 
+	CHECK(String("res://test.png").has_extension("png"));
+	CHECK(String("res://test.PNG").has_extension("png"));
+	CHECK_FALSE(String("res://test.png").has_extension("jpg"));
+	CHECK_FALSE(String("res://test.png/README").has_extension("png"));
+	CHECK_FALSE(String("res://test.").has_extension("png"));
+	CHECK_FALSE(String("res://test").has_extension("png"));
+
 	static const char *file_name[3] = { "test.tscn", "test://.xscn", "?tes*t.scn" };
 	static const bool valid[3] = { true, false, false };
 	for (int i = 0; i < 3; i++) {
@@ -2184,23 +2234,5 @@ TEST_CASE("[String][URL] Parse URL") {
 	CHECK_URL("https://godotengine.org:88888", "https://", "godotengine.org", 88888, "", "", Error::ERR_INVALID_PARAMETER);
 
 #undef CHECK_URL
-}
-
-TEST_CASE("[Stress][String] Empty via ' == String()'") {
-	for (int i = 0; i < 100000; ++i) {
-		String str = "Hello World!";
-		if (str == String()) {
-			continue;
-		}
-	}
-}
-
-TEST_CASE("[Stress][String] Empty via `is_empty()`") {
-	for (int i = 0; i < 100000; ++i) {
-		String str = "Hello World!";
-		if (str.is_empty()) {
-			continue;
-		}
-	}
 }
 } // namespace TestString

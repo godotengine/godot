@@ -30,6 +30,7 @@
 
 #include "progress_bar.h"
 
+#include "core/string/translation_server.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 
@@ -164,11 +165,11 @@ void ProgressBar::_notification(int p_what) {
 					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
 				}
 
-				String txt = itos(int(ratio * 100));
+				String txt = itos(int(Math::round(ratio * 100)));
 
 				if (is_localizing_numeral_system()) {
 					const String &lang = _get_locale();
-					txt = TS->format_number(txt, lang) + TS->percent_sign(lang);
+					txt = TranslationServer::get_singleton()->format_number(txt, lang) + TranslationServer::get_singleton()->get_percent_sign(lang);
 				} else {
 					txt += String("%");
 				}

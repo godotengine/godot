@@ -243,7 +243,8 @@ void TextEdit::Text::update_accessibility(int p_line, RID p_root) {
 	Line &l = text.write[p_line];
 	if (l.accessibility_text_root_element.is_empty()) {
 		for (int i = 0; i < l.data_buf->get_line_count(); i++) {
-			RID rid = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(p_root, l.data_buf->get_line_rid(i), max_line_height, p_line);
+			bool is_last_line = (p_line == text.size() - 1) && (i == l.data_buf->get_line_count() - 1);
+			RID rid = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(p_root, l.data_buf->get_line_rid(i), max_line_height, p_line, is_last_line);
 			l.accessibility_text_root_element.push_back(rid);
 		}
 	}
@@ -738,7 +739,6 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE:
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
 			text.clear_accessibility();
-			accessibility_text_root_element_nl = RID();
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -771,9 +771,6 @@ void TextEdit::_notification(int p_what) {
 			Size2 size = get_size();
 			bool rtl = is_layout_rtl();
 			int lines_drawn = 0;
-
-			RID selection_start;
-			RID selection_end;
 
 			for (int i = 0; i < text.size(); i++) {
 				text.update_accessibility(i, ae);
@@ -809,9 +806,6 @@ void TextEdit::_notification(int p_what) {
 					DisplayServer::get_singleton()->accessibility_update_add_action(text_aes[j], DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &TextEdit::_accessibility_action_scroll_into_view).bind(i, j));
 				}
 				lines_drawn += ac_buf->get_line_count();
-			}
-			if (accessibility_text_root_element_nl.is_null()) {
-				accessibility_text_root_element_nl = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(ae, RID(), get_line_height());
 			}
 
 			// Selection.
@@ -877,6 +871,7 @@ void TextEdit::_notification(int p_what) {
 			window_has_focus = false;
 			draw_caret = false;
 			queue_redraw();
+			set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -956,9 +951,11 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_line_count() + 1;
 
+#ifndef DISABLE_DEPRECATED
 			if (theme_cache.background_color.a > 0.01) {
 				RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2i(), get_size()), theme_cache.background_color);
 			}
+#endif // DISABLE_DEPRECATED
 
 			Vector<BraceMatchingData> brace_matching;
 			if (highlight_matching_braces_enabled) {
@@ -2482,6 +2479,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				dragging_minimap = false;
 				dragging_selection = false;
 				can_drag_minimap = false;
+				set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
 				click_select_held->stop();
 				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
@@ -3891,7 +3889,6 @@ void TextEdit::show_emoji_and_symbol_picker() {
 void TextEdit::set_emoji_menu_enabled(bool p_enabled) {
 	if (emoji_menu_enabled != p_enabled) {
 		emoji_menu_enabled = p_enabled;
-		_update_context_menu();
 	}
 }
 
@@ -6587,7 +6584,7 @@ void TextEdit::set_line_as_last_visible(int p_line, int p_wrap_index) {
 		set_v_scroll(0);
 		return;
 	}
-	set_v_scroll(Math::round(get_scroll_pos_for_line(first_line, next_line.y) + _get_visible_lines_offset()));
+	set_v_scroll(get_scroll_pos_for_line(first_line, next_line.y) + _get_visible_lines_offset());
 }
 
 int TextEdit::get_last_full_visible_line() const {
@@ -7650,7 +7647,10 @@ void TextEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, line_spacing);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, wrap_offset);
 
+#ifndef DISABLE_DEPRECATED
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, background_color);
+#endif // DISABLE_DEPRECATED
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, current_line_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, word_highlighted_color);
 
@@ -8409,7 +8409,10 @@ void TextEdit::_update_selection_mode_pointer(bool p_initial) {
 		carets.write[caret_index].selection.word_begin_column = column;
 		carets.write[caret_index].selection.word_end_column = column;
 	} else {
-		select(get_selection_origin_line(caret_index), get_selection_origin_column(caret_index), line, column, caret_index);
+		int origin_line = get_selection_origin_line(caret_index);
+		bool is_new_selection_dir_right = line > origin_line || (line == origin_line && column >= carets[caret_index].selection.word_begin_column);
+		int origin_col = is_new_selection_dir_right ? carets[caret_index].selection.word_begin_column : carets[caret_index].selection.word_end_column;
+		select(origin_line, origin_col, line, column, caret_index);
 	}
 	adjust_viewport_to_caret(caret_index);
 
@@ -8476,7 +8479,7 @@ void TextEdit::_update_selection_mode_line(bool p_initial) {
 	int line = pos.y;
 	int caret_index = get_caret_count() - 1;
 
-	int origin_line = p_initial && !has_selection(caret_index) ? line : get_selection_origin_line();
+	int origin_line = p_initial && !has_selection(caret_index) ? line : get_selection_origin_line(caret_index);
 	bool line_below = line >= origin_line;
 	int origin_col = line_below ? 0 : get_line(origin_line).length();
 	int caret_line = line_below ? line + 1 : line;
@@ -8610,9 +8613,12 @@ void TextEdit::_update_scrollbars() {
 	updating_scrolls = true;
 
 	if (!fit_content_height && total_rows > visible_rows) {
+		double visible_rows_exact = (double)_get_control_height() / (double)get_line_height();
+		double fractional_visible_rows = visible_rows_exact - (double)visible_rows;
+		fractional_visible_rows = CLAMP(fractional_visible_rows, 0.0, 1.0);
 		v_scroll->show();
-		v_scroll->set_max(total_rows + _get_visible_lines_offset());
-		v_scroll->set_page(visible_rows + _get_visible_lines_offset());
+		v_scroll->set_max(total_rows);
+		v_scroll->set_page(visible_rows + fractional_visible_rows);
 		set_v_scroll(get_v_scroll());
 	} else {
 		first_visible_line = 0;

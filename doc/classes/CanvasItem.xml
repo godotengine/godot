@@ -520,7 +520,7 @@
 			<return type="Transform2D" />
 			<description>
 				Returns the transform of this [CanvasItem] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
-				Equals to [method get_global_transform] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
+				Equivalent to [method get_global_transform_with_canvas] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
@@ -633,7 +633,7 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever global transform changes.
+				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever its global transform changes.
 				[b]Note:[/b] Many canvas items such as [Camera2D] or [Light2D] automatically enable this in order to function correctly.
 			</description>
 		</method>
@@ -689,6 +689,7 @@
 		</member>
 		<member name="visibility_layer" type="int" setter="set_visibility_layer" getter="get_visibility_layer" default="1">
 			The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask.
+			[b]Note:[/b] A [CanvasItem] does not inherit its parents' visibility layers. This means that if a parent [CanvasItem] does not have all the same layers as its child, the child may not be visible even if both the parent and child have [member visible] set to [code]true[/code]. For example, if a parent has layer 1 and a child has layer 2, the child will not be visible in a [Viewport] with the canvas cull mask set to layer 1 or 2 (see [member Viewport.canvas_cull_mask]). To ensure that both the parent and child are visible, the parent must have both layers 1 and 2, or the child must have [member top_level] set to [code]true[/code].
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
 			If [code]true[/code], this [CanvasItem] may be drawn. Whether this [CanvasItem] is actually drawn depends on the visibility of all of its [CanvasItem] ancestors. In other words: this [CanvasItem] will be drawn when [method is_visible_in_tree] returns [code]true[/code] and all [CanvasItem] ancestors share at least one [member visibility_layer] with this [CanvasItem].
@@ -753,6 +754,7 @@
 		</constant>
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			The [CanvasItem] has exited the canvas.
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
 			Notification received when this [CanvasItem] is registered to a new [World2D] (see [method get_world_2d]).

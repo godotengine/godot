@@ -986,6 +986,10 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	return true;
 }
 
+bool LightStorage::reflection_probe_instance_end_render(RID p_instance, RID p_reflection_atlas) {
+	return true;
+}
+
 Ref<RenderSceneBuffers> LightStorage::reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) {
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_reflection_atlas);
 	ERR_FAIL_NULL_V(atlas, Ref<RenderSceneBuffersGLES3>());

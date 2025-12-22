@@ -183,13 +183,13 @@ void AudioStreamInteractiveTransitionEditor::_update_transitions() {
 			if (!exists) {
 				if (audio_stream_interactive->has_transition(AudioStreamInteractive::CLIP_ANY, to)) {
 					from = AudioStreamInteractive::CLIP_ANY;
-					tooltip = vformat(TTR("Using Any Clip -> %s."), audio_stream_interactive->get_clip_name(to));
+					tooltip = vformat(TTR(U"Using any clip → %s."), audio_stream_interactive->get_clip_name(to));
 				} else if (audio_stream_interactive->has_transition(from, AudioStreamInteractive::CLIP_ANY)) {
 					to = AudioStreamInteractive::CLIP_ANY;
-					tooltip = vformat(TTR("Using %s -> Any Clip."), audio_stream_interactive->get_clip_name(from));
+					tooltip = vformat(TTR(U"Using %s → Any clip."), audio_stream_interactive->get_clip_name(from));
 				} else if (audio_stream_interactive->has_transition(AudioStreamInteractive::CLIP_ANY, AudioStreamInteractive::CLIP_ANY)) {
 					from = to = AudioStreamInteractive::CLIP_ANY;
-					tooltip = TTR("Using All Clips -> Any Clip.");
+					tooltip = TTR(U"Using all clips → Any clip.");
 				} else {
 					tooltip = TTR("No transition available.");
 				}

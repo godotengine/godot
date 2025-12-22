@@ -129,7 +129,7 @@ void OpenXRFutureExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cancel_future", "future"), &OpenXRFutureExtension::_cancel_future);
 }
 
-HashMap<String, bool *> OpenXRFutureExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRFutureExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_EXT_FUTURE_EXTENSION_NAME] = &future_ext;

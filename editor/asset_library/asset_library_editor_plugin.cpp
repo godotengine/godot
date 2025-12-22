@@ -30,6 +30,7 @@
 
 #include "asset_library_editor_plugin.h"
 
+#include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
@@ -65,20 +66,8 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 	author->set_text(p_author);
 	author_id = p_author_id;
 	price->set_text(p_cost);
-}
 
-// TODO: Refactor this method to use the TextServer.
-void EditorAssetLibraryItem::clamp_width(int p_max_width) {
-	int text_pixel_width = title->get_button_font()->get_string_size(title_text).x * EDSCALE;
-
-	if (text_pixel_width > p_max_width) {
-		// Truncate title text to within the current column width.
-		int max_length = p_max_width / (text_pixel_width / title_text.length());
-		String truncated_text = title_text.left(max_length - 3) + "...";
-		title->set_text(truncated_text);
-	} else {
-		title->set_text(title_text);
-	}
+	_calculate_misc_links_size();
 }
 
 void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Texture2D> &p_image) {
@@ -101,8 +90,55 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 				author->add_theme_color_override("font_pressed_color", Color(0.5, 0.5, 0.5));
 				author->add_theme_color_override("font_hover_color", Color(0.5, 0.5, 0.5));
 			}
+
+			_calculate_misc_links_size();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_calculate_misc_links_size();
+		} break;
+
+		case NOTIFICATION_RESIZED: {
+			calculate_misc_links_ratio();
 		} break;
 	}
+}
+
+void EditorAssetLibraryItem::_calculate_misc_links_size() {
+	Ref<TextLine> text_buf;
+	text_buf.instantiate();
+	text_buf->add_string(author->get_text(), author->get_button_font(), author->get_button_font_size());
+	author_width = text_buf->get_line_width();
+
+	text_buf->clear();
+	const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	text_buf->add_string(price->get_text(), font, font_size);
+	price_width = text_buf->get_line_width();
+
+	calculate_misc_links_ratio();
+}
+
+void EditorAssetLibraryItem::calculate_misc_links_ratio() {
+	const int separators_width = 15 * EDSCALE;
+	const float total_width = author_price_hbox->get_size().width - (separator->get_size().width + separators_width);
+	if (total_width <= 0) {
+		return;
+	}
+
+	float ratio_left = 1;
+	// Make the ratios a fraction bigger, to avoid unnecessary trimming.
+	const float extra_ratio = 4.0 / total_width;
+
+	const float author_ratio = MIN(1, author_width / total_width);
+	author->set_stretch_ratio(author_ratio + extra_ratio);
+	ratio_left -= author_ratio;
+
+	const float price_ratio = MIN(1, price_width / total_width);
+	price->set_stretch_ratio(price_ratio + extra_ratio);
+	ratio_left -= price_ratio;
+
+	spacer->set_stretch_ratio(ratio_left);
 }
 
 void EditorAssetLibraryItem::_asset_clicked() {
@@ -148,24 +184,29 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	title = memnew(LinkButton);
 	title->set_accessibility_name(TTRC("Title"));
 	title->set_auto_translate_mode(AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
+	title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(title);
 
 	category = memnew(LinkButton);
 	category->set_accessibility_name(TTRC("Category"));
+	category->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(category);
 
-	HBoxContainer *author_price_hbox = memnew(HBoxContainer);
+	author_price_hbox = memnew(HBoxContainer);
 	author_price_hbox->add_theme_constant_override("separation", 5 * EDSCALE);
 	vb->add_child(author_price_hbox);
 
 	author = memnew(LinkButton);
 	author->set_tooltip_text(TTRC("Author"));
+	author->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	author->set_accessibility_name(TTRC("Author"));
+	author->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	author_price_hbox->add_child(author);
 
-	author_price_hbox->add_child(memnew(HSeparator));
+	separator = memnew(HSeparator);
+	author_price_hbox->add_child(separator);
 
 	if (p_clickable) {
 		author->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
@@ -189,10 +230,15 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	price->set_focus_mode(FOCUS_ACCESSIBILITY);
 	price->add_theme_style_override(CoreStringName(normal), label_margin);
 	price->set_tooltip_text(TTRC("License"));
+	price->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	price->set_accessibility_name(TTRC("License"));
+	price->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	price->set_mouse_filter(MOUSE_FILTER_PASS);
-
 	author_price_hbox->add_child(price);
+
+	spacer = memnew(Control);
+	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	author_price_hbox->add_child(spacer);
 
 	set_custom_minimum_size(Size2(250, 80) * EDSCALE);
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -247,6 +293,10 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			previews_bg->add_theme_style_override(SceneStringName(panel), previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
+		} break;
+
+		case NOTIFICATION_POST_POPUP: {
+			callable_mp(item, &EditorAssetLibraryItem::calculate_misc_links_ratio).call_deferred();
 		} break;
 	}
 }
@@ -652,8 +702,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			error_tr->set_texture(get_editor_theme_icon(SNAME("Error")));
 			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			library_scroll_bg->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			downloads_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			library_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			downloads_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("downloads"), SNAME("AssetLib")));
 			error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
@@ -685,6 +735,9 @@ void EditorAssetLibrary::_notification(int p_what) {
 			const bool no_downloads = downloads_hb->get_child_count() == 0;
 			if (no_downloads == downloads_scroll->is_visible()) {
 				downloads_scroll->set_visible(!no_downloads);
+
+				library_mc->set_theme_type_variation(no_downloads ? "NoBorderHorizontalBottom" : "NoBorderHorizontal");
+				library_scroll->set_scroll_hint_mode(no_downloads ? ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT : ScrollContainer::SCROLL_HINT_MODE_ALL);
 			}
 
 		} break;
@@ -1397,8 +1450,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem(true));
 				asset_items->add_child(item);
+				asset_items->connect(SceneStringName(sort_children), callable_mp(item, &EditorAssetLibraryItem::calculate_misc_links_ratio));
 				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"]);
-				item->clamp_width(asset_items_column_width);
 				item->connect("asset_selected", callable_mp(this, &EditorAssetLibrary::_select_asset));
 				item->connect("author_selected", callable_mp(this, &EditorAssetLibrary::_select_author));
 				item->connect("category_selected", callable_mp(this, &EditorAssetLibrary::_select_category));
@@ -1533,16 +1586,6 @@ void EditorAssetLibrary::_update_asset_items_columns() {
 
 	if (new_columns != asset_items->get_columns()) {
 		asset_items->set_columns(new_columns);
-	}
-
-	asset_items_column_width = (get_size().x / new_columns) - (120 * EDSCALE);
-
-	for (int i = 0; i < asset_items->get_child_count(); i++) {
-		EditorAssetLibraryItem *item = Object::cast_to<EditorAssetLibraryItem>(asset_items->get_child(i));
-		if (!item || !item->is_visible()) {
-			continue;
-		}
-		item->clamp_width(asset_items_column_width);
 	}
 }
 
@@ -1691,14 +1734,15 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	/////////
 
-	library_scroll_bg = memnew(PanelContainer);
-	library_main->add_child(library_scroll_bg);
-	library_scroll_bg->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	library_mc = memnew(MarginContainer);
+	library_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	library_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	library_main->add_child(library_mc);
 
 	library_scroll = memnew(ScrollContainer);
+	library_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
 	library_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-
-	library_scroll_bg->add_child(library_scroll);
+	library_mc->add_child(library_scroll);
 
 	Ref<StyleBoxEmpty> border2;
 	border2.instantiate();
@@ -1766,6 +1810,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	downloads_scroll->set_theme_type_variation("ScrollContainerSecondary");
 	library_main->add_child(downloads_scroll);
 	downloads_hb = memnew(HBoxContainer);
 	downloads_scroll->add_child(downloads_hb);

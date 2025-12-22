@@ -123,6 +123,7 @@ GotoLinePopup::GotoLinePopup() {
 	vbc->add_child(l);
 
 	line_input = memnew(LineEdit);
+	line_input->set_emoji_menu_enabled(false);
 	line_input->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	line_input->set_select_all_on_focus(true);
 	line_input->connect(SceneStringName(text_changed), callable_mp(this, &GotoLinePopup::_goto_line).unbind(1));
@@ -1671,6 +1672,7 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 void CodeTextEditor::_toggle_files_pressed() {
 	ERR_FAIL_NULL(toggle_files_list);
 	toggle_files_list->set_visible(!toggle_files_list->is_visible());
+	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", toggle_files_list->is_visible());
 	update_toggle_files_button();
 }
 
@@ -1700,9 +1702,9 @@ void CodeTextEditor::_notification(int p_what) {
 			update_toggle_files_button();
 
 			zoom_button->set_tooltip_text(
-					TTR("Zoom factor") + "\n" +
+					TTR("Zoom Factor") + "\n" +
 					// TRANSLATORS: The placeholders are keyboard shortcuts. The first one is in the form of "Ctrl+"/"Cmd+".
-					vformat(TTR("%sMouse wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
+					vformat(TTR("%s+Mouse Wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
 
 			[[fallthrough]];
 		}
@@ -2013,6 +2015,4 @@ CodeTextEditor::CodeTextEditor() {
 	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 
 	code_complete_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));
-
-	add_theme_constant_override("separation", 4 * EDSCALE);
 }

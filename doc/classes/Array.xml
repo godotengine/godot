@@ -348,7 +348,7 @@
 			<return type="Array" />
 			<param index="0" name="deep_subresources_mode" type="int" default="1" />
 			<description>
-				Duplicates this array, deeply, like [method duplicate][code](true)[/code], with extra control over how subresources are handled.
+				Duplicates this array, deeply, like [method duplicate] when passing [code]true[/code], with extra control over how subresources are handled.
 				[param deep_subresources_mode] must be one of the values from [enum Resource.DeepDuplicateMode]. By default, only internal resources will be duplicated (recursively).
 			</description>
 		</method>
@@ -443,7 +443,7 @@
 			<return type="Variant" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the element at the given [param index] in the array. If [param index] out-of-bounds or negative, this method fails and returns [code]null[/code].
+				Returns the element at the given [param index] in the array. If [param index] is out-of-bounds or negative, this method fails and returns [code]null[/code].
 				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>
@@ -498,7 +498,7 @@
 			<return type="int" />
 			<description>
 				Returns a hashed 32-bit integer value representing the array and its contents.
-				[b]Note:[/b] Arrays with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, arrays with different hash values are guaranteed to be different.
+				[b]Note:[/b] Arrays with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the contrary, arrays with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="insert">

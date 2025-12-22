@@ -39,14 +39,17 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
 class CreateDialog;
+class DependencyEditor;
+class DependencyEditorOwners;
+class DependencyRemoveDialog;
 class EditorDirDialog;
 class HBoxContainer;
-class ItemList;
 class LineEdit;
 class ProgressBar;
 class SceneCreateDialog;
@@ -150,14 +153,14 @@ private:
 	VBoxContainer *scanning_vb = nullptr;
 	ProgressBar *scanning_progress = nullptr;
 	SplitContainer *split_box = nullptr;
+	MarginContainer *tree_mc = nullptr;
+	MarginContainer *files_mc = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
 
 	int split_box_offset_h = 0;
 	int split_box_offset_v = 0;
 
 	HashSet<String> favorites;
-
-	Button *button_dock_placement = nullptr;
 
 	Button *button_toggle_display_mode = nullptr;
 	Button *button_file_list_display_mode = nullptr;
@@ -176,7 +179,6 @@ private:
 	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
-	TextureRect *search_icon = nullptr;
 	HBoxContainer *path_hb = nullptr;
 
 	FileListDisplayMode file_list_display_mode;
@@ -202,16 +204,20 @@ private:
 	Label *overwrite_dialog_file_list = nullptr;
 
 	ConfirmationDialog *conversion_dialog = nullptr;
+	ConfirmationDialog *move_confirm_dialog = nullptr;
 
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
 	ShaderCreateDialog *make_shader_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;
 
+	String confirm_move_to_dir;
+	bool confirm_to_copy = false;
+
 	bool always_show_folders = false;
 	int thumbnail_size_setting = 0;
 
-	bool editor_is_dark_theme = false;
+	bool editor_is_dark_icon_and_font = false;
 
 	class FileOrFolder {
 	public:
@@ -238,6 +244,7 @@ private:
 
 	String current_path = "res://";
 	String select_after_scan;
+	String main_scene_path;
 
 	bool updating_tree = false;
 	int tree_update_id;
@@ -306,9 +313,11 @@ private:
 	void _folder_removed(const String &p_folder);
 
 	void _resource_created();
+	void _script_or_shader_created(const Ref<Resource> &p_resource);
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm(const String &p_path);
+	void _move_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
 	void _convert_dialog_action();
 	Vector<String> _check_existing();
@@ -368,8 +377,6 @@ private:
 	void _feature_profile_changed();
 	void _project_settings_changed();
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
-
-	void _change_bottom_dock_placement();
 
 private:
 	inline static FileSystemDock *singleton = nullptr;

@@ -131,6 +131,7 @@ public:
 	bool is_multi_window_enabled() const;
 
 	float get_editor_scale() const;
+	String get_editor_language() const;
 
 	bool is_node_3d_snap_enabled() const;
 	real_t get_node_3d_translate_snap() const;
@@ -173,6 +174,9 @@ public:
 	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
 	void open_scene_from_path(const String &scene_path, bool p_set_inherited = false);
 	void reload_scene_from_path(const String &scene_path);
+
+	void set_object_edited(Object *p_object, bool p_edited);
+	bool is_object_edited(Object *p_object) const;
 
 	PackedStringArray get_open_scenes() const;
 	TypedArray<Node> get_open_scene_roots() const;

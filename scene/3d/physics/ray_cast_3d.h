@@ -127,9 +127,9 @@ public:
 	int get_collision_face_index() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(const CollisionObject3D *p_node);
+	void add_exception(RequiredParam<const CollisionObject3D> rp_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(const CollisionObject3D *p_node);
+	void remove_exception(RequiredParam<const CollisionObject3D> rp_node);
 	void clear_exceptions();
 
 	RayCast3D();

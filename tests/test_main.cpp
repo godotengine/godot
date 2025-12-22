@@ -122,6 +122,7 @@
 #include "tests/core/variant/test_variant_utility.h"
 #include "tests/scene/test_animation.h"
 #include "tests/scene/test_animation_blend_tree.h"
+#include "tests/scene/test_animation_player.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_button.h"
@@ -174,7 +175,10 @@
 #include "tests/scene/test_camera_3d.h"
 #include "tests/scene/test_convert_transform_modifier_3d.h"
 #include "tests/scene/test_copy_transform_modifier_3d.h"
+#include "tests/scene/test_decal.h"
+#ifdef MODULE_GLTF_ENABLED
 #include "tests/scene/test_gltf_document.h"
+#endif
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
@@ -368,10 +372,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			ERR_PRINT_OFF;
 #ifndef NAVIGATION_3D_DISABLED
-			navigation_server_3d = NavigationServer3DManager::new_default_server();
+			navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
 #endif // NAVIGATION_3D_DISABLED
 #ifndef NAVIGATION_2D_DISABLED
-			navigation_server_2d = NavigationServer2DManager::new_default_server();
+			navigation_server_2d = NavigationServer2DManager::get_singleton()->new_default_server();
 #endif // NAVIGATION_2D_DISABLED
 			ERR_PRINT_ON;
 
@@ -407,7 +411,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #ifndef NAVIGATION_3D_DISABLED
 		if (suite_name.contains("[Navigation3D]") && navigation_server_3d == nullptr) {
 			ERR_PRINT_OFF;
-			navigation_server_3d = NavigationServer3DManager::new_default_server();
+			navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
 			ERR_PRINT_ON;
 			return;
 		}
@@ -416,7 +420,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #ifndef NAVIGATION_2D_DISABLED
 		if (suite_name.contains("[Navigation2D]") && navigation_server_2d == nullptr) {
 			ERR_PRINT_OFF;
-			navigation_server_2d = NavigationServer2DManager::new_default_server();
+			navigation_server_2d = NavigationServer2DManager::get_singleton()->new_default_server();
 			ERR_PRINT_ON;
 			return;
 		}

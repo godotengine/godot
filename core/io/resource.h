@@ -94,6 +94,7 @@ private:
 
 	using DuplicateRemapCacheT = HashMap<Ref<Resource>, Ref<Resource>>;
 	static thread_local inline DuplicateRemapCacheT *thread_duplicate_remap_cache = nullptr;
+	static thread_local inline bool thread_duplicate_remap_cache_needs_deallocation = true;
 
 	Variant _duplicate_recursive(const Variant &p_variant, const DuplicateParams &p_params, uint32_t p_usage = 0) const;
 	void _find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found);

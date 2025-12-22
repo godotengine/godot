@@ -174,13 +174,16 @@ String Variant::get_type_name(Variant::Type p_type) {
 	return "";
 }
 
-Variant::Type Variant::get_type_by_name(const String &p_type_name) {
-	static HashMap<String, Type> type_names;
-	if (unlikely(type_names.is_empty())) {
-		for (int i = 0; i < VARIANT_MAX; i++) {
-			type_names[get_type_name((Type)i)] = (Type)i;
-		}
+static HashMap<String, Variant::Type> _init_type_name_map() {
+	HashMap<String, Variant::Type> type_names;
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		type_names[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
 	}
+	return type_names;
+}
+
+Variant::Type Variant::get_type_by_name(const String &p_type_name) {
+	static HashMap<String, Type> type_names = _init_type_name_map();
 
 	const Type *ptr = type_names.getptr(p_type_name);
 	return (ptr == nullptr) ? VARIANT_MAX : *ptr;

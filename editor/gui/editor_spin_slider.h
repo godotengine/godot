@@ -41,7 +41,6 @@ class EditorSpinSlider : public Range {
 	String suffix;
 	int updown_offset = -1;
 	bool hover_updown = false;
-	bool mouse_hover = false;
 
 	TextureRect *grabber = nullptr;
 	int grabber_range = 1;
@@ -67,6 +66,7 @@ class EditorSpinSlider : public Range {
 	LineEdit *value_input = nullptr;
 	uint64_t value_input_closed_frame = 0;
 	bool value_input_dirty = false;
+	bool value_input_focus_visible = false;
 
 public:
 	enum ControlState {
@@ -111,6 +111,8 @@ protected:
 public:
 	String get_tooltip(const Point2 &p_pos) const override;
 
+	virtual Size2 get_minimum_size() const override;
+
 	String get_text_value() const;
 	void set_label(const String &p_label);
 	String get_label() const;
@@ -140,7 +142,6 @@ public:
 	void setup_and_show() { _focus_entered(); }
 	LineEdit *get_line_edit();
 
-	virtual Size2 get_minimum_size() const override;
 	EditorSpinSlider();
 };
 

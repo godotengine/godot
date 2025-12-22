@@ -244,6 +244,7 @@ EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
+	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(options);
 	add_focusable(options);
 	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyAnchorsPreset::_option_selected));
@@ -426,6 +427,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	flag_presets = memnew(OptionButton);
 	flag_presets->set_clip_text(true);
 	flag_presets->set_flat(true);
+	flag_presets->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	vb->add_child(flag_presets);
 	add_focusable(flag_presets);
 	set_label_reference(flag_presets);
@@ -924,8 +926,8 @@ bool ControlEditorToolbar::_is_node_locked(const Node *p_node) {
 
 List<Control *> ControlEditorToolbar::_get_edited_controls() {
 	List<Control *> selection;
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Control *control = Object::cast_to<Control>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Control *control = ObjectDB::get_instance<Control>(E.key);
 		if (control && control->is_visible_in_tree() && control->get_viewport() == EditorNode::get_singleton()->get_scene_root() && !_is_node_locked(control)) {
 			selection.push_back(control);
 		}
@@ -956,8 +958,8 @@ void ControlEditorToolbar::_selection_changed() {
 		SIZE_EXPAND,
 	};
 
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Control *control = Object::cast_to<Control>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Control *control = ObjectDB::get_instance<Control>(E.key);
 		if (!control) {
 			continue;
 		}

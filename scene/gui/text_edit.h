@@ -642,9 +642,12 @@ private:
 		int line_spacing = 1;
 		int wrap_offset = 10;
 
-		Color background_color = Color(1, 1, 1);
 		Color current_line_color = Color(1, 1, 1);
 		Color word_highlighted_color = Color(1, 1, 1);
+
+#ifndef DISABLE_DEPRECATED
+		Color background_color = Color(1, 1, 1);
+#endif // DISABLE_DEPRECATED
 	} theme_cache;
 
 	bool window_has_focus = true;
@@ -655,8 +658,6 @@ private:
 	bool draw_control_chars = false;
 	bool draw_tabs = false;
 	bool draw_spaces = false;
-
-	RID accessibility_text_root_element_nl;
 
 	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
 	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;

@@ -64,14 +64,18 @@
 @class GodotContentView;
 @class GodotWindowDelegate;
 @class GodotButtonView;
+#ifdef TOOLS_ENABLED
 @class GodotEmbeddedView;
 @class CALayerHost;
+#endif
 
 #undef BitMap
 #undef CursorShape
 #undef FontVariation
 
+#ifdef TOOLS_ENABLED
 class EmbeddedProcessMacOS;
+#endif
 
 class DisplayServerMacOS : public DisplayServerMacOSBase {
 	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);
@@ -221,8 +225,6 @@ private:
 	};
 	List<MenuCall> deferred_menu_calls;
 
-	Callable system_theme_changed;
-
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd, WindowID p_window);
 
@@ -239,18 +241,18 @@ private:
 
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
 
+#ifdef TOOLS_ENABLED
 	struct EmbeddedProcessData {
-		EmbeddedProcessMacOS *process;
+		EmbeddedProcessMacOS *process = nullptr;
 		WindowData *wd = nullptr;
 		CALayer *layer_host = nil;
 	};
 	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
+#endif
 	void _window_update_display_id(WindowData *p_wd);
 
 public:
 	void menu_callback(id p_sender);
-
-	void emit_system_theme_changed();
 
 	bool has_window(WindowID p_window) const;
 	WindowData &get_window(WindowID p_window);
@@ -298,12 +300,6 @@ public:
 	virtual void help_set_search_callbacks(const Callable &p_search_callback = Callable(), const Callable &p_action_callback = Callable()) override;
 	Callable _help_get_search_callback() const;
 	Callable _help_get_action_callback() const;
-
-	virtual bool is_dark_mode_supported() const override;
-	virtual bool is_dark_mode() const override;
-	virtual Color get_accent_color() const override;
-	virtual Color get_base_color() const override;
-	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
@@ -440,9 +436,9 @@ public:
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 #ifdef TOOLS_ENABLED
 	Error embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process);
-#endif
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
 	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
+#endif
 
 	void _process_events(bool p_pump);
 	virtual void process_events() override;

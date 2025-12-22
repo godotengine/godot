@@ -54,6 +54,7 @@ private:
 	};
 
 	void _license_tree_selected();
+	void _credits_visibility_changed();
 	void _item_activated(int p_idx, ItemList *p_il);
 	void _item_list_resized(ItemList *p_il);
 	Label *_create_section(Control *p_parent, const String &p_name, const char *const *p_src, BitField<SectionFlags> p_flags = 0);

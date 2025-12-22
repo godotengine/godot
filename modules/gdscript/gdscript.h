@@ -93,7 +93,6 @@ class GDScript : public Script {
 
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
-	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
 	// Members are just indices to the instantiated script.
@@ -175,7 +174,6 @@ private:
 	Error _static_init();
 	void _static_default_init(); // Initialize static variables with default values based on their types.
 
-	int subclass_count = 0;
 	RBSet<Object *> instances;
 	bool destructing = false;
 	bool clearing = false;
@@ -312,6 +310,7 @@ public:
 
 	virtual Error reload(bool p_keep_state = false) override;
 
+	virtual void set_path_cache(const String &p_path) override;
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	String get_script_path() const;
 	Error load_source_code(const String &p_path);
@@ -454,6 +453,8 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
 	void _remove_global(const StringName &p_name);
+
+	String _get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, LocalVector<String> &r_visited) const;
 
 	friend class GDScriptInstance;
 

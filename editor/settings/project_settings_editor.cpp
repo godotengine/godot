@@ -306,7 +306,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
-		if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+		if (ED_IS_SHORTCUT("filesystem_dock/focus_path", p_event)) {
 			_focus_current_path_box();
 			handled = true;
 		}
@@ -685,6 +685,7 @@ void ProjectSettingsEditor::_bind_methods() {
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	singleton = this;
 	set_title(TTRC("Project Settings (project.godot)"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
 
 	ps = ProjectSettings::get_singleton();

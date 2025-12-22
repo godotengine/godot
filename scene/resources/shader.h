@@ -41,6 +41,7 @@ class Shader : public Resource {
 	OBJ_SAVE_TYPE(Shader);
 
 public:
+	// Must be kept in sync with the List<String> of shader types in `servers/rendering/shader_types.cpp`.
 	enum Mode {
 		MODE_SPATIAL,
 		MODE_CANVAS_ITEM,

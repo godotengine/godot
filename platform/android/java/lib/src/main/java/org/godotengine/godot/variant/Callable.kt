@@ -71,7 +71,7 @@ class Callable private constructor(private val nativeCallablePointer: Long) {
 	/**
 	 * Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
 	 */
-	internal fun call(vararg params: Any): Any? {
+	fun call(vararg params: Any): Any? {
 		if (nativeCallablePointer == 0L) {
 			return null
 		}

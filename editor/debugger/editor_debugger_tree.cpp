@@ -73,7 +73,7 @@ void EditorDebuggerTree::_notification(int p_what) {
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			update_icon_max_width();
 		} break;
 	}
@@ -258,7 +258,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		} else {
 			item->set_tooltip_text(0, node.name + "\n" + TTR("Instance:") + " " + node.scene_file_path + "\n" + TTR("Type:") + " " + node.type_name);
 		}
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(node.type_name, "");
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(node.type_name);
 		if (icon.is_valid()) {
 			item->set_icon(0, icon);
 		}

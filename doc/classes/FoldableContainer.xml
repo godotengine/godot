@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FoldableContainer" inherits="Container" keywords="expandable, collapsible, collapse" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FoldableContainer" inherits="Container" keywords="expandable, collapsible, collapse, accordion, details" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container that can be expanded/collapsed.
 	</brief_description>
 	<description>
-		A container that can be expanded/collapsed, with a title that can be filled with controls, such as buttons.
-		The title can be positioned at the top or bottom of the container.
-		The container can be expanded or collapsed by clicking the title or by pressing [code]ui_accept[/code] when focused.
-		Child control nodes are hidden when the container is collapsed. Ignores non-control children.
-		Can allow grouping with other FoldableContainers, check [member foldable_group] and [FoldableGroup].
+		A container that can be expanded/collapsed, with a title that can be filled with controls, such as buttons. This is also called an accordion.
+		The title can be positioned at the top or bottom of the container. The container can be expanded or collapsed by clicking the title or by pressing [code]ui_accept[/code] when focused. Child control nodes are hidden when the container is collapsed. Ignores non-control children.
+		A FoldableContainer can be grouped with other FoldableContainers so that only one of them can be opened at a time; see [member foldable_group] and [FoldableGroup].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -50,7 +48,7 @@
 			If [code]true[/code], the container will becomes folded and will hide all its children.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for text shaping algorithms. If left empty, current locale is used instead.
+			Language code used for text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">

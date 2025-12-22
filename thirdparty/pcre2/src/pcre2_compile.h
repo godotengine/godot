@@ -51,18 +51,18 @@ pcre2.h.in must be updated - their values are exactly 100 greater than these
 values. */
 
 enum { ERR0 = COMPILE_ERROR_BASE,
-       ERR1,  ERR2,  ERR3,  ERR4,  ERR5,  ERR6,  ERR7,  ERR8,  ERR9,  ERR10,
-       ERR11, ERR12, ERR13, ERR14, ERR15, ERR16, ERR17, ERR18, ERR19, ERR20,
-       ERR21, ERR22, ERR23, ERR24, ERR25, ERR26, ERR27, ERR28, ERR29, ERR30,
-       ERR31, ERR32, ERR33, ERR34, ERR35, ERR36, ERR37, ERR38, ERR39, ERR40,
-       ERR41, ERR42, ERR43, ERR44, ERR45, ERR46, ERR47, ERR48, ERR49, ERR50,
-       ERR51, ERR52, ERR53, ERR54, ERR55, ERR56, ERR57, ERR58, ERR59, ERR60,
-       ERR61, ERR62, ERR63, ERR64, ERR65, ERR66, ERR67, ERR68, ERR69, ERR70,
-       ERR71, ERR72, ERR73, ERR74, ERR75, ERR76, ERR77, ERR78, ERR79, ERR80,
-       ERR81, ERR82, ERR83, ERR84, ERR85, ERR86, ERR87, ERR88, ERR89, ERR90,
-       ERR91, ERR92, ERR93, ERR94, ERR95, ERR96, ERR97, ERR98, ERR99, ERR100,
-       ERR101,ERR102,ERR103,ERR104,ERR105,ERR106,ERR107,ERR108,ERR109,ERR110,
-       ERR111,ERR112,ERR113,ERR114,ERR115,ERR116 };
+       ERR1,   ERR2,   ERR3,   ERR4,   ERR5,   ERR6,   ERR7,   ERR8,   ERR9,   ERR10,
+       ERR11,  ERR12,  ERR13,  ERR14,  ERR15,  ERR16,  ERR17,  ERR18,  ERR19,  ERR20,
+       ERR21,  ERR22,  ERR23,  ERR24,  ERR25,  ERR26,  ERR27,  ERR28,  ERR29,  ERR30,
+       ERR31,  ERR32,  ERR33,  ERR34,  ERR35,  ERR36,  ERR37,  ERR38,  ERR39,  ERR40,
+       ERR41,  ERR42,  ERR43,  ERR44,  ERR45,  ERR46,  ERR47,  ERR48,  ERR49,  ERR50,
+       ERR51,  ERR52,  ERR53,  ERR54,  ERR55,  ERR56,  ERR57,  ERR58,  ERR59,  ERR60,
+       ERR61,  ERR62,  ERR63,  ERR64,  ERR65,  ERR66,  ERR67,  ERR68,  ERR69,  ERR70,
+       ERR71,  ERR72,  ERR73,  ERR74,  ERR75,  ERR76,  ERR77,  ERR78,  ERR79,  ERR80,
+       ERR81,  ERR82,  ERR83,  ERR84,  ERR85,  ERR86,  ERR87,  ERR88,  ERR89,  ERR90,
+       ERR91,  ERR92,  ERR93,  ERR94,  ERR95,  ERR96,  ERR97,  ERR98,  ERR99,  ERR100,
+       ERR101, ERR102, ERR103, ERR104, ERR105, ERR106, ERR107, ERR108, ERR109, ERR110,
+       ERR111, ERR112, ERR113, ERR114, ERR115, ERR116, ERR117, ERR118, ERR119, ERR120 };
 
 /* Code values for parsed patterns, which are stored in a vector of 32-bit
 unsigned ints. Values less than META_END are literal data values. The coding
@@ -96,11 +96,11 @@ code (meta_extra_lengths) must be updated to remain in step. */
 #define META_COND_RNAME       0x80130000u  /* (?(R&name)... */
 #define META_COND_RNUMBER     0x80140000u  /* (?(Rdigits)... */
 #define META_COND_VERSION     0x80150000u  /* (?(VERSION<op>x.y)... */
-#define META_OFFSET           0x80160000u  /* Setting offset for various
-                                              META codes (e.g. META_SCS_NAME) */
+#define META_OFFSET           0x80160000u  /* Setting offset for various META
+                                              codes (e.g. META_CAPTURE_NAME) */
 #define META_SCS              0x80170000u  /* (*scan_substring:... */
-#define META_SCS_NAME         0x80180000u  /* Next <name> of scan_substring */
-#define META_SCS_NUMBER       0x80190000u  /* Next digits of scan_substring */
+#define META_CAPTURE_NAME     0x80180000u  /* Next <name> in capture lists */
+#define META_CAPTURE_NUMBER   0x80190000u  /* Next digits in capture lists */
 #define META_DOLLAR           0x801a0000u  /* $ metacharacter */
 #define META_DOT              0x801b0000u  /* . metacharacter */
 #define META_ESCAPE           0x801c0000u  /* \d and friends */
@@ -186,6 +186,36 @@ therefore no need for it to have a length entry, so use a high value. */
 #define META_DATA(x)   (x & 0x0000ffffu)
 #define META_DIFF(x,y) ((x-y)>>16)
 
+/* Macros to store and retrieve a PCRE2_SIZE value in the parsed pattern, which
+consists of uint32_t elements. Assume that if uint32_t can't hold it, two of
+them will be able to (i.e. assume a 64-bit world). */
+
+#if PCRE2_SIZE_MAX <= UINT32_MAX
+#define PUTOFFSET(s,p) *p++ = s
+#define GETOFFSET(s,p) s = *p++
+#define GETPLUSOFFSET(s,p) s = *(++p)
+#define READPLUSOFFSET(s,p) s = p[1]
+#define SKIPOFFSET(p) p++
+#define SIZEOFFSET 1
+#else
+#define PUTOFFSET(s,p) \
+  { *p++ = (uint32_t)(s >> 32); *p++ = (uint32_t)(s & 0xffffffff); }
+#define GETOFFSET(s,p) \
+  { s = ((PCRE2_SIZE)p[0] << 32) | (PCRE2_SIZE)p[1]; p += 2; }
+#define GETPLUSOFFSET(s,p) \
+  { s = ((PCRE2_SIZE)p[1] << 32) | (PCRE2_SIZE)p[2]; p += 2; }
+#define READPLUSOFFSET(s,p) \
+  { s = ((PCRE2_SIZE)p[1] << 32) | (PCRE2_SIZE)p[2]; }
+#define SKIPOFFSET(p) p += 2
+#define SIZEOFFSET 2
+#endif
+
+#ifdef PCRE2_DEBUG
+/* Compile data types. */
+#define CDATA_RECURSE_ARGS       0 /* Argument list for recurse */
+#define CDATA_CRANGE             1 /* Character range list */
+#endif
+
 /* Extended class management flags. */
 
 #define CLASS_IS_ECLASS 0x1
@@ -236,10 +266,16 @@ typedef struct {
 
 /* Macros for the definitions below, to prevent name collisions. */
 
-#define _pcre2_posix_class_maps          PCRE2_SUFFIX(_pcre2_posix_class_maps)
-#define _pcre2_update_classbits          PCRE2_SUFFIX(_pcre2_update_classbits_)
-#define _pcre2_compile_class_nested      PCRE2_SUFFIX(_pcre2_compile_class_nested_)
-#define _pcre2_compile_class_not_nested  PCRE2_SUFFIX(_pcre2_compile_class_not_nested_)
+#define _pcre2_posix_class_maps                PCRE2_SUFFIX(_pcre2_posix_class_maps)
+#define _pcre2_update_classbits                PCRE2_SUFFIX(_pcre2_update_classbits_)
+#define _pcre2_compile_class_nested            PCRE2_SUFFIX(_pcre2_compile_class_nested_)
+#define _pcre2_compile_class_not_nested        PCRE2_SUFFIX(_pcre2_compile_class_not_nested_)
+#define _pcre2_compile_get_hash_from_name      PCRE2_SUFFIX(_pcre2_compile_get_hash_from_name)
+#define _pcre2_compile_find_named_group        PCRE2_SUFFIX(_pcre2_compile_find_named_group)
+#define _pcre2_compile_find_dupname_details    PCRE2_SUFFIX(_pcre2_compile_find_dupname_details)
+#define _pcre2_compile_add_name_to_table       PCRE2_SUFFIX(_pcre2_compile_add_name_to_table)
+#define _pcre2_compile_parse_scan_substr_args  PCRE2_SUFFIX(_pcre2_compile_parse_scan_substr_args)
+#define _pcre2_compile_parse_recurse_args      PCRE2_SUFFIX(_pcre2_compile_parse_recurse_args)
 
 
 /* Indices of the POSIX classes in posix_names, posix_name_lengths,
@@ -253,6 +289,14 @@ posix_class_maps, and posix_substitutes. They must be kept in sync. */
 
 extern const int PRIV(posix_class_maps)[];
 
+/* Defines for hash_dup member in named_group structure. */
+
+#define NAMED_GROUP_HASH_MASK      ((uint16_t)0x7fff)
+#define NAMED_GROUP_IS_DUPNAME     ((uint16_t)0x8000)
+
+#define NAMED_GROUP_GET_HASH(ng)   ((ng)->hash_dup & NAMED_GROUP_HASH_MASK)
+
+/* Exported functions from pcre2_compile_class.c file: */
 
 /* Set bits in classbits according to the property type */
 
@@ -274,6 +318,38 @@ The pptr will be left pointing at the matching META_CLASS_END. */
 BOOL PRIV(compile_class_nested)(uint32_t options, uint32_t xoptions,
   uint32_t **pptr, PCRE2_UCHAR **pcode, int *errorcodeptr,
   compile_block *cb, PCRE2_SIZE *lengthptr);
+
+/* Exported functions from pcre2_compile_cgroup.c file: */
+
+/* Compute hash from a capture name. */
+
+uint16_t PRIV(compile_get_hash_from_name)(PCRE2_SPTR name, uint32_t length);
+
+/* Get the descriptor of a known named capture. */
+
+named_group *PRIV(compile_find_named_group)(PCRE2_SPTR name,
+  uint32_t length, compile_block *cb);
+
+/* Add entires to name table in alphabetical order. */
+
+uint32_t PRIV(compile_add_name_to_table)(compile_block *cb,
+  named_group *ng, uint32_t tablecount);
+
+/* Searches the properties of duplicated names, and returns them
+in indexptr and countptr. */
+
+BOOL PRIV(compile_find_dupname_details)(PCRE2_SPTR name, uint32_t length,
+  int *indexptr, int *countptr, int *errorcodeptr, compile_block *cb);
+
+/* Parse the arguments of recurse operations. */
+
+uint32_t * PRIV(compile_parse_scan_substr_args)(uint32_t *pptr,
+  int *errorcodeptr, compile_block *cb, PCRE2_SIZE *lengthptr);
+
+/* Parse the arguments of recurse operations. */
+
+BOOL PRIV(compile_parse_recurse_args)(uint32_t *pptr_start,
+  PCRE2_SIZE offset, int *errorcodeptr, compile_block *cb);
 
 #endif  /* PCRE2_COMPILE_H_IDEMPOTENT_GUARD */
 

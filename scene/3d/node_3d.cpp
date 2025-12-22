@@ -357,7 +357,7 @@ void Node3D::set_global_basis(const Basis &p_basis) {
 
 Vector3 Node3D::get_global_rotation() const {
 	ERR_READ_THREAD_GUARD_V(Vector3());
-	return get_global_transform().get_basis().get_euler();
+	return get_global_transform().get_basis().get_euler_normalized();
 }
 
 Vector3 Node3D::get_global_rotation_degrees() const {
@@ -1020,7 +1020,7 @@ void Node3D::set_disable_gizmos(bool p_enabled) {
 #endif
 }
 
-void Node3D::reparent(Node *p_parent, bool p_keep_global_transform) {
+void Node3D::reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD;
 	if (p_keep_global_transform) {
 		Transform3D temp = get_global_transform();

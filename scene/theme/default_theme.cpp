@@ -460,7 +460,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font(SceneStringName(font), "TextEdit", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "TextEdit", -1);
 
+#ifndef DISABLE_DEPRECATED
 	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
+#endif // DISABLE_DEPRECATED
 	theme->set_color(SceneStringName(font_color), "TextEdit", control_font_color);
 	theme->set_color("font_selected_color", "TextEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_readonly_color", "TextEdit", control_font_disabled_color);
@@ -501,7 +503,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font(SceneStringName(font), "CodeEdit", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "CodeEdit", -1);
 
+#ifndef DISABLE_DEPRECATED
 	theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0));
+#endif // DISABLE_DEPRECATED
 	theme->set_color("completion_background_color", "CodeEdit", Color(0.17, 0.16, 0.2));
 	theme->set_color("completion_selected_color", "CodeEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
@@ -660,6 +664,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	focus_style->set_border_color(style_focus_color);
 	theme->set_stylebox("focus", "ScrollContainer", focus_style);
 
+	theme->set_icon("scroll_hint_vertical", "ScrollContainer", icons["scroll_hint_vertical"]);
+	theme->set_icon("scroll_hint_horizontal", "ScrollContainer", icons["scroll_hint_horizontal"]);
+
 	// Window
 
 	theme->set_stylebox("embedded_border", "Window", sb_expand(make_flat_stylebox(style_popup_color, 10, 28, 10, 8), 8, 32, 8, 6));
@@ -773,6 +780,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("item_start_padding", "PopupMenu", Math::round(2 * scale));
 	theme->set_constant("item_end_padding", "PopupMenu", Math::round(2 * scale));
 	theme->set_constant("icon_max_width", "PopupMenu", 0);
+	theme->set_constant("gutter_compact", "PopupMenu", 1);
 
 	// GraphNode
 
@@ -878,6 +886,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("arrow", "Tree", icons["arrow_down"]);
 	theme->set_icon("arrow_collapsed", "Tree", icons["arrow_right"]);
 	theme->set_icon("arrow_collapsed_mirrored", "Tree", icons["arrow_left"]);
+	theme->set_icon("scroll_hint", "Tree", icons["scroll_hint_vertical"]);
 
 	theme->set_font("title_button_font", "Tree", Ref<Font>());
 	theme->set_font(SceneStringName(font), "Tree", Ref<Font>());
@@ -950,6 +959,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("selected_focus", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "ItemList", focus);
 	theme->set_stylebox("cursor_unfocused", "ItemList", focus);
+	theme->set_icon("scroll_hint", "ItemList", icons["scroll_hint_vertical"]);
 
 	theme->set_constant("outline_size", "ItemList", 0);
 

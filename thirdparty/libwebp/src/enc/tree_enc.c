@@ -11,7 +11,12 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include <string.h>
+
+#include "src/dec/common_dec.h"
+#include "src/webp/types.h"
 #include "src/enc/vp8i_enc.h"
+#include "src/utils/bit_writer_utils.h"
 
 //------------------------------------------------------------------------------
 // Default probabilities
@@ -154,13 +159,13 @@ const uint8_t
 };
 
 void VP8DefaultProbas(VP8Encoder* const enc) {
-  VP8EncProba* const probas = &enc->proba_;
-  probas->use_skip_proba_ = 0;
-  memset(probas->segments_, 255u, sizeof(probas->segments_));
-  memcpy(probas->coeffs_, VP8CoeffsProba0, sizeof(VP8CoeffsProba0));
-  // Note: we could hard-code the level_costs_ corresponding to VP8CoeffsProba0,
+  VP8EncProba* const probas = &enc->proba;
+  probas->use_skip_proba = 0;
+  memset(probas->segments, 255u, sizeof(probas->segments));
+  memcpy(probas->coeffs, VP8CoeffsProba0, sizeof(VP8CoeffsProba0));
+  // Note: we could hard-code the level_costs corresponding to VP8CoeffsProba0,
   // but that's ~11k of static data. Better call VP8CalculateLevelCosts() later.
-  probas->dirty_ = 1;
+  probas->dirty = 1;
 }
 
 // Paragraph 11.5.  900bytes.
@@ -311,22 +316,22 @@ static void PutSegment(VP8BitWriter* const bw, int s, const uint8_t* p) {
 }
 
 void VP8CodeIntraModes(VP8Encoder* const enc) {
-  VP8BitWriter* const bw = &enc->bw_;
+  VP8BitWriter* const bw = &enc->bw;
   VP8EncIterator it;
   VP8IteratorInit(enc, &it);
   do {
-    const VP8MBInfo* const mb = it.mb_;
-    const uint8_t* preds = it.preds_;
-    if (enc->segment_hdr_.update_map_) {
-      PutSegment(bw, mb->segment_, enc->proba_.segments_);
+    const VP8MBInfo* const mb = it.mb;
+    const uint8_t* preds = it.preds;
+    if (enc->segment_hdr.update_map) {
+      PutSegment(bw, mb->segment, enc->proba.segments);
     }
-    if (enc->proba_.use_skip_proba_) {
-      VP8PutBit(bw, mb->skip_, enc->proba_.skip_proba_);
+    if (enc->proba.use_skip_proba) {
+      VP8PutBit(bw, mb->skip, enc->proba.skip_proba);
     }
-    if (VP8PutBit(bw, (mb->type_ != 0), 145)) {  // i16x16
+    if (VP8PutBit(bw, (mb->type != 0), 145)) {  // i16x16
       PutI16Mode(bw, preds[0]);
     } else {
-      const int preds_w = enc->preds_w_;
+      const int preds_w = enc->preds_w;
       const uint8_t* top_pred = preds - preds_w;
       int x, y;
       for (y = 0; y < 4; ++y) {
@@ -339,7 +344,7 @@ void VP8CodeIntraModes(VP8Encoder* const enc) {
         preds += preds_w;
       }
     }
-    PutUVMode(bw, mb->uv_mode_);
+    PutUVMode(bw, mb->uv_mode);
   } while (VP8IteratorNext(&it));
 }
 
@@ -488,7 +493,7 @@ void VP8WriteProbas(VP8BitWriter* const bw, const VP8EncProba* const probas) {
     for (b = 0; b < NUM_BANDS; ++b) {
       for (c = 0; c < NUM_CTX; ++c) {
         for (p = 0; p < NUM_PROBAS; ++p) {
-          const uint8_t p0 = probas->coeffs_[t][b][c][p];
+          const uint8_t p0 = probas->coeffs[t][b][c][p];
           const int update = (p0 != VP8CoeffsProba0[t][b][c][p]);
           if (VP8PutBit(bw, update, VP8CoeffsUpdateProba[t][b][c][p])) {
             VP8PutBits(bw, p0, 8);
@@ -497,8 +502,7 @@ void VP8WriteProbas(VP8BitWriter* const bw, const VP8EncProba* const probas) {
       }
     }
   }
-  if (VP8PutBitUniform(bw, probas->use_skip_proba_)) {
-    VP8PutBits(bw, probas->skip_proba_, 8);
+  if (VP8PutBitUniform(bw, probas->use_skip_proba)) {
+    VP8PutBits(bw, probas->skip_proba, 8);
   }
 }
-

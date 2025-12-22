@@ -109,28 +109,33 @@ static void decodeFilterOct(T* data, size_t count)
 
 static void decodeFilterQuat(short* data, size_t count)
 {
-	const float scale = 1.f / sqrtf(2.f);
+	const float scale = 32767.f / sqrtf(2.f);
 
 	for (size_t i = 0; i < count; ++i)
 	{
 		// recover scale from the high byte of the component
 		int sf = data[i * 4 + 3] | 3;
-		float ss = scale / float(sf);
+		float s = float(sf);
 
-		// convert x/y/z to [-1..1] (scaled...)
-		float x = float(data[i * 4 + 0]) * ss;
-		float y = float(data[i * 4 + 1]) * ss;
-		float z = float(data[i * 4 + 2]) * ss;
+		// convert x/y/z to floating point (unscaled! implied scale of 1/sqrt(2.f) * 1/sf)
+		float x = float(data[i * 4 + 0]);
+		float y = float(data[i * 4 + 1]);
+		float z = float(data[i * 4 + 2]);
 
-		// reconstruct w as a square root; we clamp to 0.f to avoid NaN due to precision errors
-		float ww = 1.f - x * x - y * y - z * z;
+		// reconstruct w as a square root (unscaled); we clamp to 0.f to avoid NaN due to precision errors
+		float ws = s * s;
+		float ww = ws * 2.f - x * x - y * y - z * z;
 		float w = sqrtf(ww >= 0.f ? ww : 0.f);
 
+		// compute final scale; note that all computations above are unscaled
+		// we need to divide by sf to get out of fixed point, divide by sqrt(2) to renormalize and multiply by 32767 to get to int16 range
+		float ss = scale / s;
+
 		// rounded signed float->int
-		int xf = int(x * 32767.f + (x >= 0.f ? 0.5f : -0.5f));
-		int yf = int(y * 32767.f + (y >= 0.f ? 0.5f : -0.5f));
-		int zf = int(z * 32767.f + (z >= 0.f ? 0.5f : -0.5f));
-		int wf = int(w * 32767.f + 0.5f);
+		int xf = int(x * ss + (x >= 0.f ? 0.5f : -0.5f));
+		int yf = int(y * ss + (y >= 0.f ? 0.5f : -0.5f));
+		int zf = int(z * ss + (z >= 0.f ? 0.5f : -0.5f));
+		int wf = int(w * ss + 0.5f);
 
 		int qc = data[i * 4 + 3] & 3;
 
@@ -347,7 +352,7 @@ static void decodeFilterOctSimd16(short* data, size_t count)
 
 static void decodeFilterQuatSimd(short* data, size_t count)
 {
-	const float scale = 1.f / sqrtf(2.f);
+	const float scale = 32767.f / sqrtf(2.f);
 
 	for (size_t i = 0; i < count; i += 4)
 	{
@@ -366,24 +371,27 @@ static void decodeFilterQuatSimd(short* data, size_t count)
 
 		// get a floating-point scaler using zc with bottom 2 bits set to 1 (which represents 1.f)
 		__m128i sf = _mm_or_si128(cf, _mm_set1_epi32(3));
-		__m128 ss = _mm_div_ps(_mm_set1_ps(scale), _mm_cvtepi32_ps(sf));
+		__m128 s = _mm_cvtepi32_ps(sf);
 
-		// convert x/y/z to [-1..1] (scaled...)
-		__m128 x = _mm_mul_ps(_mm_cvtepi32_ps(xf), ss);
-		__m128 y = _mm_mul_ps(_mm_cvtepi32_ps(yf), ss);
-		__m128 z = _mm_mul_ps(_mm_cvtepi32_ps(zf), ss);
+		// convert x/y/z to floating point (unscaled! implied scale of 1/sqrt(2.f) * 1/sf)
+		__m128 x = _mm_cvtepi32_ps(xf);
+		__m128 y = _mm_cvtepi32_ps(yf);
+		__m128 z = _mm_cvtepi32_ps(zf);
 
-		// reconstruct w as a square root; we clamp to 0.f to avoid NaN due to precision errors
-		__m128 ww = _mm_sub_ps(_mm_set1_ps(1.f), _mm_add_ps(_mm_mul_ps(x, x), _mm_add_ps(_mm_mul_ps(y, y), _mm_mul_ps(z, z))));
+		// reconstruct w as a square root (unscaled); we clamp to 0.f to avoid NaN due to precision errors
+		__m128 ws = _mm_mul_ps(s, _mm_add_ps(s, s)); // s*2s instead of 2*(s*s) to work around clang bug with integer multiplication
+		__m128 ww = _mm_sub_ps(ws, _mm_add_ps(_mm_mul_ps(x, x), _mm_add_ps(_mm_mul_ps(y, y), _mm_mul_ps(z, z))));
 		__m128 w = _mm_sqrt_ps(_mm_max_ps(ww, _mm_setzero_ps()));
 
-		__m128 s = _mm_set1_ps(32767.f);
+		// compute final scale; note that all computations above are unscaled
+		// we need to divide by sf to get out of fixed point, divide by sqrt(2) to renormalize and multiply by 32767 to get to int16 range
+		__m128 ss = _mm_div_ps(_mm_set1_ps(scale), s);
 
 		// rounded signed float->int
-		__m128i xr = _mm_cvtps_epi32(_mm_mul_ps(x, s));
-		__m128i yr = _mm_cvtps_epi32(_mm_mul_ps(y, s));
-		__m128i zr = _mm_cvtps_epi32(_mm_mul_ps(z, s));
-		__m128i wr = _mm_cvtps_epi32(_mm_mul_ps(w, s));
+		__m128i xr = _mm_cvtps_epi32(_mm_mul_ps(x, ss));
+		__m128i yr = _mm_cvtps_epi32(_mm_mul_ps(y, ss));
+		__m128i zr = _mm_cvtps_epi32(_mm_mul_ps(z, ss));
+		__m128i wr = _mm_cvtps_epi32(_mm_mul_ps(w, ss));
 
 		// mix x/z and w/y to make 16-bit unpack easier
 		__m128i xzr = _mm_or_si128(_mm_and_si128(xr, _mm_set1_epi32(0xffff)), _mm_slli_epi32(zr, 16));
@@ -542,6 +550,13 @@ inline float32x4_t vdivq_f32(float32x4_t x, float32x4_t y)
 	r = vmulq_f32(r, vrecpsq_f32(y, r)); // refine rcp estimate
 	return vmulq_f32(x, r);
 }
+
+#ifndef __ARM_FEATURE_FMA
+inline float32x4_t vfmaq_f32(float32x4_t x, float32x4_t y, float32x4_t z)
+{
+	return vaddq_f32(x, vmulq_f32(y, z));
+}
+#endif
 #endif
 
 #ifdef SIMD_NEON
@@ -572,23 +587,21 @@ static void decodeFilterOctSimd8(signed char* data, size_t count)
 		y = vaddq_f32(y, vreinterpretq_f32_s32(veorq_s32(vreinterpretq_s32_f32(t), vandq_s32(vreinterpretq_s32_f32(y), sign))));
 
 		// compute normal length & scale
-		float32x4_t ll = vaddq_f32(vmulq_f32(x, x), vaddq_f32(vmulq_f32(y, y), vmulq_f32(z, z)));
+		float32x4_t ll = vfmaq_f32(vfmaq_f32(vmulq_f32(x, x), y, y), z, z);
 		float32x4_t rl = vrsqrteq_f32(ll);
 		float32x4_t s = vmulq_f32(vdupq_n_f32(127.f), rl);
 
 		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
-		// note: the result is offset by 0x4B40_0000, but we only need the low 16 bits so we can omit the subtraction
+		// note: the result is offset by 0x4B40_0000, but we only need the low 8 bits so we can omit the subtraction
 		const float32x4_t fsnap = vdupq_n_f32(3 << 22);
 
-		int32x4_t xr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(x, s), fsnap));
-		int32x4_t yr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(y, s), fsnap));
-		int32x4_t zr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(z, s), fsnap));
+		int32x4_t xr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, x, s));
+		int32x4_t yr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, y, s));
+		int32x4_t zr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, z, s));
 
 		// combine xr/yr/zr into final value
-		int32x4_t res = vandq_s32(n4, vdupq_n_s32(0xff000000));
-		res = vorrq_s32(res, vandq_s32(xr, vdupq_n_s32(0xff)));
-		res = vorrq_s32(res, vshlq_n_s32(vandq_s32(yr, vdupq_n_s32(0xff)), 8));
-		res = vorrq_s32(res, vshlq_n_s32(vandq_s32(zr, vdupq_n_s32(0xff)), 16));
+		int32x4_t res = vsliq_n_s32(xr, vsliq_n_s32(yr, zr, 8), 8);
+		res = vbslq_s32(vdupq_n_u32(0xff000000), n4, res);
 
 		vst1q_s32(reinterpret_cast<int32_t*>(&data[i * 4]), res);
 	}
@@ -626,21 +639,25 @@ static void decodeFilterOctSimd16(short* data, size_t count)
 		y = vaddq_f32(y, vreinterpretq_f32_s32(veorq_s32(vreinterpretq_s32_f32(t), vandq_s32(vreinterpretq_s32_f32(y), sign))));
 
 		// compute normal length & scale
-		float32x4_t ll = vaddq_f32(vmulq_f32(x, x), vaddq_f32(vmulq_f32(y, y), vmulq_f32(z, z)));
+		float32x4_t ll = vfmaq_f32(vfmaq_f32(vmulq_f32(x, x), y, y), z, z);
+#if !defined(__aarch64__) && !defined(_M_ARM64)
 		float32x4_t rl = vrsqrteq_f32(ll);
 		rl = vmulq_f32(rl, vrsqrtsq_f32(vmulq_f32(rl, ll), rl)); // refine rsqrt estimate
 		float32x4_t s = vmulq_f32(vdupq_n_f32(32767.f), rl);
+#else
+		float32x4_t s = vdivq_f32(vdupq_n_f32(32767.f), vsqrtq_f32(ll));
+#endif
 
 		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
 		// note: the result is offset by 0x4B40_0000, but we only need the low 16 bits so we can omit the subtraction
 		const float32x4_t fsnap = vdupq_n_f32(3 << 22);
 
-		int32x4_t xr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(x, s), fsnap));
-		int32x4_t yr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(y, s), fsnap));
-		int32x4_t zr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(z, s), fsnap));
+		int32x4_t xr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, x, s));
+		int32x4_t yr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, y, s));
+		int32x4_t zr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, z, s));
 
 		// mix x/z and y/0 to make 16-bit unpack easier
-		int32x4_t xzr = vorrq_s32(vandq_s32(xr, vdupq_n_s32(0xffff)), vshlq_n_s32(zr, 16));
+		int32x4_t xzr = vsliq_n_s32(xr, zr, 16);
 		int32x4_t y0r = vandq_s32(yr, vdupq_n_s32(0xffff));
 
 		// pack x/y/z using 16-bit unpacks; note that this has 0 where we should have .w
@@ -658,7 +675,7 @@ static void decodeFilterOctSimd16(short* data, size_t count)
 
 static void decodeFilterQuatSimd(short* data, size_t count)
 {
-	const float scale = 1.f / sqrtf(2.f);
+	const float scale = 32767.f / sqrtf(2.f);
 
 	for (size_t i = 0; i < count; i += 4)
 	{
@@ -677,43 +694,52 @@ static void decodeFilterQuatSimd(short* data, size_t count)
 
 		// get a floating-point scaler using zc with bottom 2 bits set to 1 (which represents 1.f)
 		int32x4_t sf = vorrq_s32(cf, vdupq_n_s32(3));
-		float32x4_t ss = vdivq_f32(vdupq_n_f32(scale), vcvtq_f32_s32(sf));
+		float32x4_t s = vcvtq_f32_s32(sf);
 
-		// convert x/y/z to [-1..1] (scaled...)
-		float32x4_t x = vmulq_f32(vcvtq_f32_s32(xf), ss);
-		float32x4_t y = vmulq_f32(vcvtq_f32_s32(yf), ss);
-		float32x4_t z = vmulq_f32(vcvtq_f32_s32(zf), ss);
+		// convert x/y/z to floating point (unscaled! implied scale of 1/sqrt(2.f) * 1/sf)
+		float32x4_t x = vcvtq_f32_s32(xf);
+		float32x4_t y = vcvtq_f32_s32(yf);
+		float32x4_t z = vcvtq_f32_s32(zf);
 
-		// reconstruct w as a square root; we clamp to 0.f to avoid NaN due to precision errors
-		float32x4_t ww = vsubq_f32(vdupq_n_f32(1.f), vaddq_f32(vmulq_f32(x, x), vaddq_f32(vmulq_f32(y, y), vmulq_f32(z, z))));
+		// reconstruct w as a square root (unscaled); we clamp to 0.f to avoid NaN due to precision errors
+		float32x4_t ws = vmulq_f32(s, s);
+		float32x4_t ww = vsubq_f32(vaddq_f32(ws, ws), vfmaq_f32(vfmaq_f32(vmulq_f32(x, x), y, y), z, z));
 		float32x4_t w = vsqrtq_f32(vmaxq_f32(ww, vdupq_n_f32(0.f)));
 
-		float32x4_t s = vdupq_n_f32(32767.f);
+		// compute final scale; note that all computations above are unscaled
+		// we need to divide by sf to get out of fixed point, divide by sqrt(2) to renormalize and multiply by 32767 to get to int16 range
+		float32x4_t ss = vdivq_f32(vdupq_n_f32(scale), s);
 
 		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
 		// note: the result is offset by 0x4B40_0000, but we only need the low 16 bits so we can omit the subtraction
 		const float32x4_t fsnap = vdupq_n_f32(3 << 22);
 
-		int32x4_t xr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(x, s), fsnap));
-		int32x4_t yr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(y, s), fsnap));
-		int32x4_t zr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(z, s), fsnap));
-		int32x4_t wr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(w, s), fsnap));
+		int32x4_t xr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, x, ss));
+		int32x4_t yr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, y, ss));
+		int32x4_t zr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, z, ss));
+		int32x4_t wr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, w, ss));
 
 		// mix x/z and w/y to make 16-bit unpack easier
-		int32x4_t xzr = vorrq_s32(vandq_s32(xr, vdupq_n_s32(0xffff)), vshlq_n_s32(zr, 16));
-		int32x4_t wyr = vorrq_s32(vandq_s32(wr, vdupq_n_s32(0xffff)), vshlq_n_s32(yr, 16));
+		int32x4_t xzr = vsliq_n_s32(xr, zr, 16);
+		int32x4_t wyr = vsliq_n_s32(wr, yr, 16);
 
 		// pack x/y/z/w using 16-bit unpacks; we pack wxyz by default (for qc=0)
-		int32x4_t res_0 = vreinterpretq_s32_s16(vzipq_s16(vreinterpretq_s16_s32(wyr), vreinterpretq_s16_s32(xzr)).val[0]);
-		int32x4_t res_1 = vreinterpretq_s32_s16(vzipq_s16(vreinterpretq_s16_s32(wyr), vreinterpretq_s16_s32(xzr)).val[1]);
+		uint64x2_t res_0 = vreinterpretq_u64_s16(vzipq_s16(vreinterpretq_s16_s32(wyr), vreinterpretq_s16_s32(xzr)).val[0]);
+		uint64x2_t res_1 = vreinterpretq_u64_s16(vzipq_s16(vreinterpretq_s16_s32(wyr), vreinterpretq_s16_s32(xzr)).val[1]);
+
+		// store results to stack so that we can rotate using scalar instructions
+		// TODO: volatile works around LLVM mis-optimizing code; https://github.com/llvm/llvm-project/issues/166808
+		volatile uint64_t res[4];
+		vst1q_u64(const_cast<uint64_t*>(&res[0]), res_0);
+		vst1q_u64(const_cast<uint64_t*>(&res[2]), res_1);
 
 		// rotate and store
-		uint64_t* out = (uint64_t*)&data[i * 4];
+		uint64_t* out = reinterpret_cast<uint64_t*>(&data[i * 4]);
 
-		out[0] = rotateleft64(vgetq_lane_u64(vreinterpretq_u64_s32(res_0), 0), vgetq_lane_s32(cf, 0) << 4);
-		out[1] = rotateleft64(vgetq_lane_u64(vreinterpretq_u64_s32(res_0), 1), vgetq_lane_s32(cf, 1) << 4);
-		out[2] = rotateleft64(vgetq_lane_u64(vreinterpretq_u64_s32(res_1), 0), vgetq_lane_s32(cf, 2) << 4);
-		out[3] = rotateleft64(vgetq_lane_u64(vreinterpretq_u64_s32(res_1), 1), vgetq_lane_s32(cf, 3) << 4);
+		out[0] = rotateleft64(res[0], data[(i + 0) * 4 + 3] << 4);
+		out[1] = rotateleft64(res[1], data[(i + 1) * 4 + 3] << 4);
+		out[2] = rotateleft64(res[2], data[(i + 2) * 4 + 3] << 4);
+		out[3] = rotateleft64(res[3], data[(i + 3) * 4 + 3] << 4);
 	}
 }
 
@@ -767,19 +793,16 @@ static void decodeFilterColorSimd8(unsigned char* data, size_t count)
 		int32x4_t bf = vsubq_s32(yf, vaddq_s32(cof, cgf));
 
 		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
-		// note: the result is offset by 0x4B40_0000, but we only need the low 16 bits so we can omit the subtraction
+		// note: the result is offset by 0x4B40_0000, but we only need the low 8 bits so we can omit the subtraction
 		const float32x4_t fsnap = vdupq_n_f32(3 << 22);
 
-		int32x4_t rr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(rf), ss), fsnap));
-		int32x4_t gr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(gf), ss), fsnap));
-		int32x4_t br = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(bf), ss), fsnap));
-		int32x4_t ar = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(af), ss), fsnap));
+		int32x4_t rr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, vcvtq_f32_s32(rf), ss));
+		int32x4_t gr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, vcvtq_f32_s32(gf), ss));
+		int32x4_t br = vreinterpretq_s32_f32(vfmaq_f32(fsnap, vcvtq_f32_s32(bf), ss));
+		int32x4_t ar = vreinterpretq_s32_f32(vfmaq_f32(fsnap, vcvtq_f32_s32(af), ss));
 
 		// repack rgba into final value
-		int32x4_t res = vandq_s32(rr, vdupq_n_s32(0xff));
-		res = vorrq_s32(res, vshlq_n_s32(vandq_s32(gr, vdupq_n_s32(0xff)), 8));
-		res = vorrq_s32(res, vshlq_n_s32(vandq_s32(br, vdupq_n_s32(0xff)), 16));
-		res = vorrq_s32(res, vshlq_n_s32(ar, 24));
+		int32x4_t res = vsliq_n_s32(rr, vsliq_n_s32(gr, vsliq_n_s32(br, ar, 8), 8), 8);
 
 		vst1q_s32(reinterpret_cast<int32_t*>(&data[i * 4]), res);
 	}
@@ -824,14 +847,14 @@ static void decodeFilterColorSimd16(unsigned short* data, size_t count)
 		// note: the result is offset by 0x4B40_0000, but we only need the low 16 bits so we can omit the subtraction
 		const float32x4_t fsnap = vdupq_n_f32(3 << 22);
 
-		int32x4_t rr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(rf), ss), fsnap));
-		int32x4_t gr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(gf), ss), fsnap));
-		int32x4_t br = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(bf), ss), fsnap));
-		int32x4_t ar = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(af), ss), fsnap));
+		int32x4_t rr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, vcvtq_f32_s32(rf), ss));
+		int32x4_t gr = vreinterpretq_s32_f32(vfmaq_f32(fsnap, vcvtq_f32_s32(gf), ss));
+		int32x4_t br = vreinterpretq_s32_f32(vfmaq_f32(fsnap, vcvtq_f32_s32(bf), ss));
+		int32x4_t ar = vreinterpretq_s32_f32(vfmaq_f32(fsnap, vcvtq_f32_s32(af), ss));
 
 		// mix r/b and g/a to make 16-bit unpack easier
-		int32x4_t rbr = vorrq_s32(vandq_s32(rr, vdupq_n_s32(0xffff)), vshlq_n_s32(br, 16));
-		int32x4_t gar = vorrq_s32(vandq_s32(gr, vdupq_n_s32(0xffff)), vshlq_n_s32(ar, 16));
+		int32x4_t rbr = vsliq_n_s32(rr, br, 16);
+		int32x4_t gar = vsliq_n_s32(gr, ar, 16);
 
 		// pack r/g/b/a using 16-bit unpacks
 		int32x4_t res_0 = vreinterpretq_s32_s16(vzipq_s16(vreinterpretq_s16_s32(rbr), vreinterpretq_s16_s32(gar)).val[0]);
@@ -958,7 +981,7 @@ static void decodeFilterOctSimd16(short* data, size_t count)
 
 static void decodeFilterQuatSimd(short* data, size_t count)
 {
-	const float scale = 1.f / sqrtf(2.f);
+	const float scale = 32767.f / sqrtf(2.f);
 
 	for (size_t i = 0; i < count; i += 4)
 	{
@@ -977,28 +1000,31 @@ static void decodeFilterQuatSimd(short* data, size_t count)
 
 		// get a floating-point scaler using zc with bottom 2 bits set to 1 (which represents 1.f)
 		v128_t sf = wasm_v128_or(cf, wasm_i32x4_splat(3));
-		v128_t ss = wasm_f32x4_div(wasm_f32x4_splat(scale), wasm_f32x4_convert_i32x4(sf));
+		v128_t s = wasm_f32x4_convert_i32x4(sf);
 
-		// convert x/y/z to [-1..1] (scaled...)
-		v128_t x = wasm_f32x4_mul(wasm_f32x4_convert_i32x4(xf), ss);
-		v128_t y = wasm_f32x4_mul(wasm_f32x4_convert_i32x4(yf), ss);
-		v128_t z = wasm_f32x4_mul(wasm_f32x4_convert_i32x4(zf), ss);
+		// convert x/y/z to floating point (unscaled! implied scale of 1/sqrt(2.f) * 1/sf)
+		v128_t x = wasm_f32x4_convert_i32x4(xf);
+		v128_t y = wasm_f32x4_convert_i32x4(yf);
+		v128_t z = wasm_f32x4_convert_i32x4(zf);
 
-		// reconstruct w as a square root; we clamp to 0.f to avoid NaN due to precision errors
+		// reconstruct w as a square root (unscaled); we clamp to 0.f to avoid NaN due to precision errors
 		// note: i32x4_max with 0 is equivalent to f32x4_max
-		v128_t ww = wasm_f32x4_sub(wasm_f32x4_splat(1.f), wasm_f32x4_add(wasm_f32x4_mul(x, x), wasm_f32x4_add(wasm_f32x4_mul(y, y), wasm_f32x4_mul(z, z))));
+		v128_t ws = wasm_f32x4_mul(s, s);
+		v128_t ww = wasm_f32x4_sub(wasm_f32x4_add(ws, ws), wasm_f32x4_add(wasm_f32x4_mul(x, x), wasm_f32x4_add(wasm_f32x4_mul(y, y), wasm_f32x4_mul(z, z))));
 		v128_t w = wasm_f32x4_sqrt(wasm_i32x4_max(ww, wasm_i32x4_splat(0)));
 
-		v128_t s = wasm_f32x4_splat(32767.f);
+		// compute final scale; note that all computations above are unscaled
+		// we need to divide by sf to get out of fixed point, divide by sqrt(2) to renormalize and multiply by 32767 to get to int16 range
+		v128_t ss = wasm_f32x4_div(wasm_f32x4_splat(scale), s);
 
 		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
 		// note: the result is offset by 0x4B40_0000, but we only need the low 16 bits so we can omit the subtraction
 		const v128_t fsnap = wasm_f32x4_splat(3 << 22);
 
-		v128_t xr = wasm_f32x4_add(wasm_f32x4_mul(x, s), fsnap);
-		v128_t yr = wasm_f32x4_add(wasm_f32x4_mul(y, s), fsnap);
-		v128_t zr = wasm_f32x4_add(wasm_f32x4_mul(z, s), fsnap);
-		v128_t wr = wasm_f32x4_add(wasm_f32x4_mul(w, s), fsnap);
+		v128_t xr = wasm_f32x4_add(wasm_f32x4_mul(x, ss), fsnap);
+		v128_t yr = wasm_f32x4_add(wasm_f32x4_mul(y, ss), fsnap);
+		v128_t zr = wasm_f32x4_add(wasm_f32x4_mul(z, ss), fsnap);
+		v128_t wr = wasm_f32x4_add(wasm_f32x4_mul(w, ss), fsnap);
 
 		// mix x/z and w/y to make 16-bit unpack easier
 		v128_t xzr = wasm_v128_or(wasm_v128_and(xr, wasm_i32x4_splat(0xffff)), wasm_i32x4_shl(zr, 16));
@@ -1131,7 +1157,7 @@ static void decodeFilterColorSimd16(unsigned short* data, size_t count)
 		v128_t bf = wasm_i32x4_sub(yf, wasm_i32x4_add(cof, cgf));
 
 		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
-		// note: the result is offset by 0x4B40_0000, but we only need the low 8 bits so we can omit the subtraction
+		// note: the result is offset by 0x4B40_0000, but we only need the low 16 bits so we can omit the subtraction
 		const v128_t fsnap = wasm_f32x4_splat(3 << 22);
 
 		v128_t rr = wasm_f32x4_add(wasm_f32x4_mul(wasm_f32x4_convert_i32x4(rf), ss), fsnap);
@@ -1250,7 +1276,7 @@ void meshopt_decodeFilterColor(void* buffer, size_t count, size_t stride)
 void meshopt_encodeFilterOct(void* destination, size_t count, size_t stride, int bits, const float* data)
 {
 	assert(stride == 4 || stride == 8);
-	assert(bits >= 1 && bits <= 16);
+	assert(bits >= 2 && bits <= 16);
 
 	signed char* d8 = static_cast<signed char*>(destination);
 	short* d16 = static_cast<short*>(destination);

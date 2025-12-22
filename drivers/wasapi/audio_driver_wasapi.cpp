@@ -542,6 +542,10 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 }
 
 Error AudioDriverWASAPI::init_input_device(bool p_reinit) {
+	if (audio_input.active.is_set()) {
+		return ERR_ALREADY_IN_USE;
+	}
+
 	Error err = audio_device_init(&audio_input, true, p_reinit);
 	if (err != OK) {
 		// We've tried to init the device, but have failed. Time to clean up.
@@ -1023,11 +1027,9 @@ Error AudioDriverWASAPI::input_stop() {
 	if (audio_input.active.is_set()) {
 		audio_input.audio_client->Stop();
 		audio_input.active.clear();
-
-		return OK;
 	}
 
-	return FAILED;
+	return OK;
 }
 
 PackedStringArray AudioDriverWASAPI::get_input_device_list() {

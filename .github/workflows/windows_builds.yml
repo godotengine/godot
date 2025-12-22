@@ -1,6 +1,7 @@
 name: 🏁 Windows Builds
 on:
   workflow_call:
+  workflow_dispatch:
 
 # Global Settings
 env:
@@ -8,9 +9,8 @@ env:
     dev_mode=yes
     module_text_server_fb_enabled=yes
     debug_symbols=no
-    d3d12=yes
     "angle_libs=${{ github.workspace }}/"
-    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.17.0/"
+    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.18.0/"
   SCONS_CACHE_MSVC_CONFIG: true
   PYTHONIOENCODING: utf8
 
@@ -73,7 +73,16 @@ jobs:
         uses: ./.github/actions/godot-deps
 
       - name: Download Direct3D 12 SDK components
-        run: python ./misc/scripts/install_d3d12_sdk_windows.py
+        shell: sh
+        id: d3d12-sdk
+        run: |
+          if python ./misc/scripts/install_d3d12_sdk_windows.py; then
+            echo "D3D12_ENABLED=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Windows: Direct3D 12 SDK installation failed, building without Direct3D 12 support."
+            echo "D3D12_ENABLED=no" >> "$GITHUB_OUTPUT"
+          fi
+        continue-on-error: true
 
       - name: Download pre-built ANGLE static libraries
         uses: dsaltares/fetch-gh-release-asset@1.1.2
@@ -90,17 +99,17 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@1.1.2
         with:
           repo: AccessKit/accesskit-c
-          version: tags/0.17.0
-          file: accesskit-c-0.17.0.zip
-          target: accesskit-c-0.17.0/accesskit_c.zip
+          version: tags/0.18.0
+          file: accesskit-c-0.18.0.zip
+          target: accesskit-c-0.18.0/accesskit_c.zip
 
       - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.17.0/accesskit_c.zip
+        run: unzip -o accesskit-c-0.18.0/accesskit_c.zip
 
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} d3d12=${{ steps.d3d12-sdk.outputs.D3D12_ENABLED }}
           platform: windows
           target: ${{ matrix.target }}
 

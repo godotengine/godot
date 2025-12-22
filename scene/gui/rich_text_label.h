@@ -166,6 +166,7 @@ private:
 		Color prefix_outline_color = Color(0, 0, 0, 0);
 		float prefix_width = 0;
 		Ref<TextParagraph> text_buf;
+		Ref<TextParagraph> text_buf_disp;
 
 		RID accessibility_line_element;
 		RID accessibility_text_element;
@@ -192,7 +193,7 @@ private:
 		}
 
 		_FORCE_INLINE_ float get_height(float p_line_separation, float p_paragraph_separation) const {
-			return offset.y + text_buf->get_size().y + (text_buf->get_line_count() - 1) * p_line_separation + p_paragraph_separation;
+			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * p_line_separation + p_paragraph_separation;
 		}
 	};
 
@@ -590,6 +591,8 @@ private:
 	void _update_follow_vc();
 	void _invalidate_accessibility();
 	void _invalidate_current_line(ItemFrame *p_frame);
+
+	void _prepare_scroll_anchor();
 
 	void _thread_function(void *p_userdata);
 	void _thread_end();

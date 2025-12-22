@@ -183,6 +183,10 @@ PackedByteArray TextServerFallback::_get_support_data() const {
 	return PackedByteArray(); // No extra data used.
 }
 
+bool TextServerFallback::_is_locale_using_support_data(const String &p_locale) const {
+	return false; // No data support.
+}
+
 bool TextServerFallback::_is_locale_right_to_left(const String &p_locale) const {
 	return false; // No RTL support.
 }
@@ -651,8 +655,22 @@ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i
 
 	HashMap<int32_t, FontGlyph>::Iterator E = fd->glyph_map.find(p_glyph);
 	if (E) {
-		r_glyph = E->value;
-		return E->value.found;
+		bool tx_valid = true;
+		if (E->value.texture_idx >= 0) {
+			if (E->value.texture_idx < fd->textures.size()) {
+				tx_valid = fd->textures[E->value.texture_idx].image.is_valid();
+			} else {
+				tx_valid = false;
+			}
+		}
+		if (tx_valid) {
+			r_glyph = E->value;
+			return E->value.found;
+#ifdef DEBUG_ENABLED
+		} else {
+			WARN_PRINT(vformat("Invalid texture cache for glyph %x in font %s, glyph will be re-rendered. Re-import this font to regenerate textures.", glyph_index, p_font_data->font_name));
+#endif
+		}
 	}
 
 	if (glyph_index == 0) { // Non graphical or invalid glyph, do not render.
@@ -3131,6 +3149,9 @@ bool TextServerFallback::_font_is_language_supported(const RID &p_font_rid, cons
 	if (fd->language_support_overrides.has(p_language)) {
 		return fd->language_support_overrides[p_language];
 	} else {
+		if (fd->language_support_overrides.has("*")) {
+			return fd->language_support_overrides["*"];
+		}
 		return true;
 	}
 }
@@ -3179,6 +3200,9 @@ bool TextServerFallback::_font_is_script_supported(const RID &p_font_rid, const 
 	if (fd->script_support_overrides.has(p_script)) {
 		return fd->script_support_overrides[p_script];
 	} else {
+		if (fd->script_support_overrides.has("*")) {
+			return fd->script_support_overrides["*"];
+		}
 		return true;
 	}
 }
@@ -3285,7 +3309,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 		}
 	}
 
-	for (int i = p_shaped->first_span; i <= p_shaped->last_span; i++) {
+	for (int i = MAX(0, p_shaped->first_span); i <= MIN(p_shaped->last_span, parent->spans.size() - 1); i++) {
 		ShapedTextDataFallback::Span span = parent->spans[i];
 		span.start = MAX(p_shaped->start, span.start);
 		span.end = MIN(p_shaped->end, span.end);
@@ -3322,6 +3346,46 @@ void TextServerFallback::_shaped_text_clear(const RID &p_shaped) {
 	sd->last_span = 0;
 	sd->objects.clear();
 	invalidate(sd);
+}
+
+RID TextServerFallback::_shaped_text_duplicate(const RID &p_shaped) {
+	_THREAD_SAFE_METHOD_
+
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, RID());
+
+	MutexLock lock(sd->mutex);
+
+	ShapedTextDataFallback *new_sd = memnew(ShapedTextDataFallback);
+	new_sd->parent = p_shaped;
+	new_sd->start = sd->start;
+	new_sd->end = sd->end;
+	new_sd->first_span = sd->first_span;
+	new_sd->last_span = sd->last_span;
+	new_sd->text = sd->text;
+	new_sd->orientation = sd->orientation;
+	new_sd->direction = sd->direction;
+	new_sd->custom_punct = sd->custom_punct;
+	new_sd->para_direction = sd->para_direction;
+	new_sd->line_breaks_valid = sd->line_breaks_valid;
+	new_sd->justification_ops_valid = sd->justification_ops_valid;
+	new_sd->sort_valid = false;
+	new_sd->upos = sd->upos;
+	new_sd->uthk = sd->uthk;
+	new_sd->runs.clear();
+	new_sd->runs_dirty = true;
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		new_sd->extra_spacing[i] = sd->extra_spacing[i];
+	}
+	for (const KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : sd->objects) {
+		new_sd->objects[E.key] = E.value;
+	}
+	for (int i = 0; i < sd->spans.size(); i++) {
+		new_sd->spans.push_back(sd->spans[i]);
+	}
+	new_sd->valid.clear();
+
+	return shaped_owner.make_rid(new_sd);
 }
 
 void TextServerFallback::_shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
@@ -3832,6 +3896,14 @@ String TextServerFallback::_shaped_get_text(const RID &p_shaped) const {
 	return sd->text;
 }
 
+bool TextServerFallback::_shaped_text_has_object(const RID &p_shaped, const Variant &p_key) const {
+	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, false);
+
+	MutexLock lock(sd->mutex);
+	return sd->objects.has(p_key);
+}
+
 bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, double p_baseline) {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_NULL_V(sd, false);
@@ -4075,6 +4147,10 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 							new_sd->ascent = MAX(new_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 							new_sd->descent = MAX(new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 						}
+					}
+					if (new_sd->glyphs.is_empty() && gl.x_off < 0.0) {
+						gl.advance += -gl.x_off;
+						gl.x_off = 0.0;
 					}
 					new_sd->width += gl.advance * gl.repeat;
 				}
@@ -4541,6 +4617,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	bool add_ellipsis = p_trim_flags.has_flag(OVERRUN_ADD_ELLIPSIS);
 	bool cut_per_word = p_trim_flags.has_flag(OVERRUN_TRIM_WORD_ONLY);
 	bool enforce_ellipsis = p_trim_flags.has_flag(OVERRUN_ENFORCE_ELLIPSIS);
+	bool short_string_ellipsis = p_trim_flags.has_flag(OVERRUN_SHORT_STRING_ELLIPSIS);
 	bool justification_aware = p_trim_flags.has_flag(OVERRUN_JUSTIFICATION_AWARE);
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
@@ -4573,7 +4650,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	// Find usable fonts, if fonts from the last glyph do not have required chars.
 	RID dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
-	if (add_ellipsis || enforce_ellipsis) {
+	if (add_ellipsis || enforce_ellipsis || short_string_ellipsis) {
 		if (!_font_has_char(dot_gl_font_rid, sd->el_char)) {
 			const Array &fonts = spans[span_size - 1].fonts;
 			for (int i = 0; i < fonts.size(); i++) {
@@ -4626,8 +4703,8 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 		}
 	}
 
-	int32_t dot_gl_idx = ((add_ellipsis || enforce_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, (found_el_char ? sd->el_char : '.'), 0) : -1;
-	Vector2 dot_adv = ((add_ellipsis || enforce_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
+	int32_t dot_gl_idx = ((add_ellipsis || enforce_ellipsis || short_string_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, (found_el_char ? sd->el_char : '.'), 0) : -1;
+	Vector2 dot_adv = ((add_ellipsis || enforce_ellipsis || short_string_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
 	int32_t whitespace_gl_idx = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_index(whitespace_gl_font_rid, last_gl_font_size, ' ', 0) : -1;
 	Vector2 whitespace_adv = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_advance(whitespace_gl_font_rid, last_gl_font_size, whitespace_gl_idx) : Vector2();
 
@@ -4641,12 +4718,12 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	double width_without_el = width;
 
 	int trim_pos = 0;
-	int ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
+	int ellipsis_pos = (enforce_ellipsis || short_string_ellipsis) ? 0 : -1;
 
 	int last_valid_cut = -1;
 	int last_valid_cut_witout_el = -1;
 
-	if (enforce_ellipsis && (width + ellipsis_width <= p_width)) {
+	if ((enforce_ellipsis || short_string_ellipsis) && (width + ellipsis_width <= p_width)) {
 		trim_pos = -1;
 		ellipsis_pos = sd_size;
 	} else {
@@ -4661,7 +4738,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 					width = width_without_el;
 					break;
 				}
-				if (!enforce_ellipsis && width <= p_width && last_valid_cut_witout_el == -1) {
+				if (!(enforce_ellipsis || short_string_ellipsis) && width <= p_width && last_valid_cut_witout_el == -1) {
 					if (cut_per_word && above_min_char_threshold) {
 						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 							last_valid_cut_witout_el = i;
@@ -4672,7 +4749,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 						width_without_el = width;
 					}
 				}
-				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
+				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis || short_string_ellipsis) ? ellipsis_width : 0) <= p_width) {
 					if (cut_per_word && above_min_char_threshold) {
 						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 							last_valid_cut = i;
@@ -4683,7 +4760,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 					if (last_valid_cut != -1) {
 						trim_pos = last_valid_cut;
 
-						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
+						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis || short_string_ellipsis) && width - ellipsis_width <= p_width) {
 							ellipsis_pos = trim_pos;
 						}
 						break;
@@ -4695,12 +4772,12 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	sd->overrun_trim_data.trim_pos = trim_pos;
 	sd->overrun_trim_data.ellipsis_pos = ellipsis_pos;
-	if (trim_pos == 0 && enforce_ellipsis && add_ellipsis) {
+	if (trim_pos == 0 && (enforce_ellipsis || short_string_ellipsis) && add_ellipsis) {
 		sd->overrun_trim_data.ellipsis_pos = 0;
 	}
 
-	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis) {
-		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis)) {
+	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis || short_string_ellipsis) {
+		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis || short_string_ellipsis)) {
 			// Insert an additional space when cutting word bound for aesthetics.
 			if (cut_per_word && (ellipsis_pos > 0)) {
 				Glyph gl;

@@ -238,6 +238,47 @@ RID NativeMenuMacOS::get_system_menu(SystemMenus p_menu_id) const {
 	}
 }
 
+String NativeMenuMacOS::get_system_menu_text(SystemMenus p_menu_id) const {
+	NSMenu *menu = nullptr;
+	switch (p_menu_id) {
+		case WINDOW_MENU_ID: {
+			menu = window_menu_ns;
+		} break;
+		case HELP_MENU_ID: {
+			menu = help_menu_ns;
+		} break;
+		default:
+			return String();
+	}
+	if (!menu) {
+		return String();
+	}
+	return String::utf8([[menu title] UTF8String]);
+}
+
+void NativeMenuMacOS::set_system_menu_text(SystemMenus p_menu_id, const String &p_name) {
+	NSMenu *menu = nullptr;
+	switch (p_menu_id) {
+		case WINDOW_MENU_ID: {
+			menu = window_menu_ns;
+		} break;
+		case HELP_MENU_ID: {
+			menu = help_menu_ns;
+		} break;
+		default:
+			return;
+	}
+	if (!menu || !main_menu_ns) {
+		return;
+	}
+	[menu setTitle:[NSString stringWithUTF8String:p_name.utf8().get_data()]];
+	int idx = [main_menu_ns indexOfItemWithSubmenu:(NSMenu *)menu];
+	NSMenuItem *menu_item = [main_menu_ns itemAtIndex:idx];
+	if (menu_item) {
+		[menu_item setTitle:[NSString stringWithUTF8String:p_name.utf8().get_data()]];
+	}
+}
+
 RID NativeMenuMacOS::create_menu() {
 	MenuData *md = memnew(MenuData);
 	md->menu = [[NSMenu alloc] initWithTitle:@""];
@@ -1163,6 +1204,8 @@ void NativeMenuMacOS::set_item_disabled(const RID &p_rid, int p_idx, bool p_disa
 	ERR_FAIL_COND(p_idx >= item_start + item_count);
 	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
 	if (menu_item) {
+		GodotMenuItem *obj = [menu_item representedObject];
+		obj->enabled = !p_disabled;
 		[menu_item setEnabled:(!p_disabled)];
 	}
 }

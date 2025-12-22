@@ -31,6 +31,7 @@
 #include "editor_visual_profiler.h"
 
 #include "core/io/image.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/settings/editor_settings.h"
@@ -123,12 +124,14 @@ void EditorVisualProfiler::clear() {
 }
 
 String EditorVisualProfiler::_get_time_as_text(float p_time) {
+	const String &lang = _get_locale();
+
 	int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
-		return TS->format_number(String::num(p_time, 2)) + " " + TTR("ms");
+		return TranslationServer::get_singleton()->format_number(String::num(p_time, 2), lang) + " " + TTR("ms");
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
-		return TS->format_number(String::num(p_time * 100 / graph_limit, 2)) + " " + TS->percent_sign();
+		return TranslationServer::get_singleton()->format_number(String::num(p_time * 100 / graph_limit, 2), lang) + " " + TranslationServer::get_singleton()->get_percent_sign(lang);
 	}
 
 	return "err";
@@ -419,12 +422,12 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 void EditorVisualProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
 		activate->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
-		activate->set_text(TTR("Stop"));
+		activate->set_text(TTRC("Stop"));
 		_clear_pressed(); //always clear on start
 		clear_button->set_disabled(false);
 	} else {
 		activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
-		activate->set_text(TTR("Start"));
+		activate->set_text(TTRC("Start"));
 	}
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
@@ -442,9 +445,14 @@ void EditorVisualProfiler::_autostart_toggled(bool p_toggled_on) {
 
 void EditorVisualProfiler::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_ready()) {
+				_update_frame();
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 		} break;
@@ -665,10 +673,10 @@ void EditorVisualProfiler::_bind_methods() {
 void EditorVisualProfiler::_update_button_text() {
 	if (activate->is_pressed()) {
 		activate->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
-		activate->set_text(TTR("Stop"));
+		activate->set_text(TTRC("Stop"));
 	} else {
 		activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
-		activate->set_text(TTR("Start"));
+		activate->set_text(TTRC("Start"));
 	}
 }
 
@@ -754,18 +762,18 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
 	activate->set_disabled(true);
-	activate->set_text(TTR("Start"));
+	activate->set_text(TTRC("Start"));
 	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_activate_pressed));
 	container->add_child(activate);
 
 	clear_button = memnew(Button);
-	clear_button->set_text(TTR("Clear"));
+	clear_button->set_text(TTRC("Clear"));
 	clear_button->set_disabled(true);
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_clear_pressed));
 	container->add_child(clear_button);
 
 	CheckBox *autostart_checkbox = memnew(CheckBox);
-	autostart_checkbox->set_text(TTR("Autostart"));
+	autostart_checkbox->set_text(TTRC("Autostart"));
 	autostart_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false));
 	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorVisualProfiler::_autostart_toggled));
 	container->add_child(autostart_checkbox);
@@ -774,21 +782,21 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	hb_measure->add_theme_constant_override(SNAME("separation"), 2 * EDSCALE);
 	container->add_child(hb_measure);
 
-	hb_measure->add_child(memnew(Label(TTR("Measure:"))));
+	hb_measure->add_child(memnew(Label(TTRC("Measure:"))));
 
 	display_mode = memnew(OptionButton);
 	display_mode->set_accessibility_name(TTRC("Measure:"));
-	display_mode->add_item(TTR("Frame Time (ms)"));
-	display_mode->add_item(TTR("Frame %"));
+	display_mode->add_item(TTRC("Frame Time (ms)"));
+	display_mode->add_item(TTRC("Frame %"));
 	display_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorVisualProfiler::_combo_changed));
 
 	hb_measure->add_child(display_mode);
 
-	frame_relative = memnew(CheckBox(TTR("Fit to Frame")));
+	frame_relative = memnew(CheckBox(TTRC("Fit to Frame")));
 	frame_relative->set_pressed(true);
 	container->add_child(frame_relative);
 	frame_relative->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
-	linked = memnew(CheckBox(TTR("Linked")));
+	linked = memnew(CheckBox(TTRC("Linked")));
 	linked->set_pressed(true);
 	container->add_child(linked);
 	linked->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
@@ -798,7 +806,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	hb_frame->set_v_size_flags(SIZE_SHRINK_BEGIN);
 	hb->add_child(hb_frame);
 
-	hb_frame->add_child(memnew(Label(TTR("Frame #:"))));
+	hb_frame->add_child(memnew(Label(TTRC("Frame #:"))));
 
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_accessibility_name(TTRC("Frame #:"));
@@ -817,15 +825,15 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	variables->set_hide_root(true);
 	variables->set_columns(3);
 	variables->set_column_titles_visible(true);
-	variables->set_column_title(0, TTR("Name"));
+	variables->set_column_title(0, TTRC("Name"));
 	variables->set_column_expand(0, true);
 	variables->set_column_clip_content(0, true);
 	variables->set_column_custom_minimum_width(0, 60);
-	variables->set_column_title(1, TTR("CPU"));
+	variables->set_column_title(1, TTRC("CPU"));
 	variables->set_column_expand(1, false);
 	variables->set_column_clip_content(1, true);
 	variables->set_column_custom_minimum_width(1, 75 * EDSCALE);
-	variables->set_column_title(2, TTR("GPU"));
+	variables->set_column_title(2, TTRC("GPU"));
 	variables->set_column_expand(2, false);
 	variables->set_column_clip_content(2, true);
 	variables->set_column_custom_minimum_width(2, 75 * EDSCALE);

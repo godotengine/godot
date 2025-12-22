@@ -83,7 +83,7 @@ public:
 		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
-	static Error save(const Ref<Resource> &p_resource, const String &p_path = "", uint32_t p_flags = (uint32_t)FLAG_NONE);
+	static Error save(RequiredParam<Resource> rp_resource, const String &p_path = "", uint32_t p_flags = (uint32_t)FLAG_NONE);
 	static void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions);
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);

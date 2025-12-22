@@ -30,13 +30,15 @@
 
 #pragma once
 
+#import "metal_device_profile.h"
 #import "metal_objects.h"
-#import "rendering_shader_container_metal.h"
 
 #include "servers/rendering/rendering_device_driver.h"
 
 #import <Metal/Metal.h>
 #import <variant>
+
+class RenderingShaderContainerFormatMetal;
 
 #ifdef DEBUG_ENABLED
 #ifndef _DEBUG
@@ -59,11 +61,11 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	RenderingContextDriver::Device context_device;
 	id<MTLDevice> device = nil;
 
-	uint32_t frame_count = 1;
+	uint32_t _frame_count = 1;
 	/// frame_index is a cyclic counter derived from the current frame number modulo frame_count,
 	/// cycling through values from 0 to frame_count - 1
-	uint32_t frame_index = 0;
-	uint32_t frames_drawn = 0;
+	uint32_t _frame_index = 0;
+	uint32_t _frames_drawn = 0;
 
 	MetalDeviceProperties *device_properties = nullptr;
 	MetalDeviceProfile device_profile;
@@ -128,6 +130,7 @@ public:
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) override final;
+	virtual uint64_t buffer_get_dynamic_offsets(Span<BufferID> p_buffers) override final;
 	virtual void buffer_flush(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
@@ -146,8 +149,6 @@ public:
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) override final;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) override final;
 	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) override final;
-	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
-	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
 	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
@@ -162,7 +163,7 @@ public:
 
 private:
 public:
-	virtual VertexFormatID vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) override final;
+	virtual VertexFormatID vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) override final;
 	virtual void vertex_format_free(VertexFormatID p_vertex_format) override final;
 
 #pragma mark - Barriers
@@ -179,9 +180,64 @@ public:
 
 private:
 	struct Fence {
+		virtual void signal(id<MTLCommandBuffer> p_cmd_buffer) = 0;
+		virtual Error wait(uint32_t p_timeout_ms) = 0;
+		virtual ~Fence() = default;
+	};
+
+	struct FenceEvent : public Fence {
+		id<MTLSharedEvent> event;
+		uint64_t value;
+		FenceEvent(id<MTLSharedEvent> p_event) :
+				event(p_event),
+				value(0) {}
+
+		virtual void signal(id<MTLCommandBuffer> p_cb) override {
+			if (p_cb) {
+				value++;
+				[p_cb encodeSignalEvent:event value:value];
+			}
+		}
+
+		virtual Error wait(uint32_t p_timeout_ms) override {
+			GODOT_CLANG_WARNING_PUSH
+			GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
+			BOOL signaled = [event waitUntilSignaledValue:value timeoutMS:p_timeout_ms];
+			GODOT_CLANG_WARNING_POP
+			if (!signaled) {
+#ifdef DEBUG_ENABLED
+				ERR_PRINT("timeout waiting for fence");
+#endif
+				return ERR_TIMEOUT;
+			}
+
+			return OK;
+		}
+	};
+
+	struct FenceSemaphore : public Fence {
 		dispatch_semaphore_t semaphore;
-		Fence() :
+		FenceSemaphore() :
 				semaphore(dispatch_semaphore_create(0)) {}
+
+		virtual void signal(id<MTLCommandBuffer> p_cb) override {
+			if (p_cb) {
+				[p_cb addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+					dispatch_semaphore_signal(semaphore);
+				}];
+			} else {
+				dispatch_semaphore_signal(semaphore);
+			}
+		}
+
+		virtual Error wait(uint32_t p_timeout_ms) override {
+			dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(p_timeout_ms) * 1000000);
+			long result = dispatch_semaphore_wait(semaphore, timeout);
+			if (result != 0) {
+				return ERR_TIMEOUT;
+			}
+			return OK;
+		}
 	};
 
 public:
@@ -283,17 +339,6 @@ public:
 
 #pragma mark Transfer
 
-private:
-	enum class CopySource {
-		Buffer,
-		Texture,
-	};
-	void _copy_texture_buffer(CommandBufferID p_cmd_buffer,
-			CopySource p_source,
-			TextureID p_texture,
-			BufferID p_buffer,
-			VectorView<BufferTextureCopyRegion> p_regions);
-
 public:
 	virtual void command_clear_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, uint64_t p_offset, uint64_t p_size) override final;
 	virtual void command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_dst_buffer, VectorView<BufferCopyRegion> p_regions) override final;
@@ -357,7 +402,7 @@ public:
 	virtual void command_render_draw_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) override final;
 
 	// Buffer binding.
-	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) override final;
+	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) override final;
 	virtual void command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) override final;
 
 	// Dynamic state.
@@ -454,6 +499,10 @@ public:
 
 	size_t get_texel_buffer_alignment_for_format(RDD::DataFormat p_format) const;
 	size_t get_texel_buffer_alignment_for_format(MTLPixelFormat p_format) const;
+
+	_FORCE_INLINE_ uint32_t frame_count() const { return _frame_count; }
+	_FORCE_INLINE_ uint32_t frame_index() const { return _frame_index; }
+	_FORCE_INLINE_ uint32_t frames_drawn() const { return _frames_drawn; }
 
 	/******************/
 	RenderingDeviceDriverMetal(RenderingContextDriverMetal *p_context_driver);

@@ -4,7 +4,7 @@
  *
  *   FreeType PFR glyph loader (body).
  *
- * Copyright (C) 2002-2024 by
+ * Copyright (C) 2002-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -388,7 +388,7 @@
           break;
 
         case 2:                                      /* horizontal line to */
-          FT_TRACE6(( "- horizontal line to cx.%d", format_low ));
+          FT_TRACE6(( "- horizontal line to cx.%u", format_low ));
           if ( format_low >= x_count )
             goto Failure;
           pos[0].x   = glyph->x_control[format_low];
@@ -398,7 +398,7 @@
           break;
 
         case 3:                                        /* vertical line to */
-          FT_TRACE6(( "- vertical line to cy.%d", format_low ));
+          FT_TRACE6(( "- vertical line to cy.%u", format_low ));
           if ( format_low >= y_count )
             goto Failure;
           pos[0].x   = pos[3].x;
@@ -444,7 +444,7 @@
             if ( idx >= x_count )
               goto Failure;
             cur->x = glyph->x_control[idx];
-            FT_TRACE7(( " cx#%d", idx ));
+            FT_TRACE7(( " cx#%u", idx ));
             break;
 
           case 1:                           /* 16-bit absolute value */
@@ -474,7 +474,7 @@
             if ( idx >= y_count )
               goto Failure;
             cur->y = glyph->y_control[idx];
-            FT_TRACE7(( " cy#%d", idx ));
+            FT_TRACE7(( " cy#%u", idx ));
             break;
 
           case 1:                           /* 16-bit absolute value */
@@ -754,7 +754,7 @@
 
       count = glyph->num_subs - old_count;
 
-      FT_TRACE4(( "compound glyph with %d element%s (offset %lu):\n",
+      FT_TRACE4(( "compound glyph with %u element%s (offset %lu):\n",
                   count,
                   count == 1 ? "" : "s",
                   offset ));
@@ -766,7 +766,7 @@
         PFR_SubGlyph  subglyph;
 
 
-        FT_TRACE4(( "  subglyph %d:\n", n ));
+        FT_TRACE4(( "  subglyph %u:\n", n ));
 
         subglyph   = glyph->subs + old_count + n;
         old_points = base->n_points;
@@ -810,7 +810,7 @@
         /* proceed to next sub-glyph */
       }
 
-      FT_TRACE4(( "end compound glyph with %d element%s\n",
+      FT_TRACE4(( "end compound glyph with %u element%s\n",
                   count,
                   count == 1 ? "" : "s" ));
     }

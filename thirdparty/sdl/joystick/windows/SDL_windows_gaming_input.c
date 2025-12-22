@@ -69,6 +69,7 @@ typedef PCWSTR(WINAPI *WindowsGetStringRawBuffer_t)(HSTRING string, UINT32 *leng
 
 static struct
 {
+    bool ro_initialized;
     CoIncrementMTAUsage_t CoIncrementMTAUsage;
     RoGetActivationFactory_t RoGetActivationFactory;
     WindowsCreateStringReference_t WindowsCreateStringReference;
@@ -585,13 +586,14 @@ static bool WGI_JoystickInit(void)
 {
     HRESULT hr;
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, true)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, false)) {
         return true;
     }
 
     if (FAILED(WIN_RoInitialize())) {
         return SDL_SetError("RoInitialize() failed");
     }
+    wgi.ro_initialized = true;
 
 #define RESOLVE(x) wgi.x = (x##_t)WIN_LoadComBaseFunction(#x); if (!wgi.x) return WIN_SetError("GetProcAddress failed for " #x);
     RESOLVE(CoIncrementMTAUsage);
@@ -1002,7 +1004,9 @@ static void WGI_JoystickQuit(void)
         __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_Release(wgi.controller_statics);
     }
 
-    WIN_RoUninitialize();
+    if (wgi.ro_initialized) {
+        WIN_RoUninitialize();
+    }
 
     SDL_zero(wgi);
 }

@@ -30,6 +30,7 @@
 
 #import "os_visionos.h"
 
+#include "core/profiling/profiling.h"
 #import "drivers/apple_embedded/godot_app_delegate.h"
 #import "drivers/apple_embedded/main_utilities.h"
 #include "main/main.h"
@@ -50,6 +51,8 @@ int apple_embedded_main(int argc, char **argv) {
 	char *fargv[64];
 	argc = process_args(argc, argv, fargv);
 
+	godot_init_profiler();
+
 	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
 
 	if (err != OK) {
@@ -66,5 +69,6 @@ int apple_embedded_main(int argc, char **argv) {
 
 void apple_embedded_finish() {
 	Main::cleanup();
+	godot_cleanup_profiler();
 	delete os;
 }

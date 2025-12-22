@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -37,7 +38,6 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/image_texture.h"
@@ -57,8 +57,20 @@ public:
 	Vector<Frame> frames;
 };
 
-class SpriteFramesEditor : public HSplitContainer {
-	GDCLASS(SpriteFramesEditor, HSplitContainer);
+class ClipboardAnimation : public Resource {
+	GDCLASS(ClipboardAnimation, Resource);
+
+public:
+	String name;
+	Vector<ClipboardSpriteFrames::Frame> frames;
+	float speed = 1.0f;
+	bool loop = false;
+
+	static Ref<ClipboardAnimation> from_sprite_frames(const Ref<SpriteFrames> &p_frames, const String &p_anim);
+};
+
+class SpriteFramesEditor : public EditorDock {
+	GDCLASS(SpriteFramesEditor, EditorDock);
 
 	Ref<SpriteFrames> frames;
 	Node *animated_sprite = nullptr;
@@ -125,6 +137,9 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	Button *add_anim = nullptr;
 	Button *duplicate_anim = nullptr;
+	Button *cut_anim = nullptr;
+	Button *copy_anim = nullptr;
+	Button *paste_anim = nullptr;
 	Button *delete_anim = nullptr;
 	SpinBox *anim_speed = nullptr;
 	Button *anim_loop = nullptr;
@@ -163,6 +178,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *split_sheet_zoom_out = nullptr;
 	Button *split_sheet_zoom_reset = nullptr;
 	Button *split_sheet_zoom_in = nullptr;
+	Button *split_sheet_zoom_fit = nullptr;
 	Button *toggle_settings_button = nullptr;
 	OptionButton *split_sheet_order = nullptr;
 	EditorFileDialog *file_split_sheet = nullptr;
@@ -217,12 +233,19 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_name_edited();
 	void _animation_add();
 	void _animation_duplicate();
+	void _animation_cut();
+	void _animation_copy();
+	void _animation_paste();
 	void _animation_remove();
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
 	void _animation_loop_changed();
 	void _animation_speed_resized();
 	void _animation_speed_changed(double p_value);
+	void _animation_remove_undo_redo(const StringName &p_action_name, const Vector<ClipboardSpriteFrames::Frame> *p_frames = nullptr);
+
+	StringName _find_next_animation();
+	String _generate_unique_animation_name(const String &p_base_name) const;
 
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
 	void _frame_list_item_selected(int p_index, bool p_selected);
@@ -254,10 +277,12 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_scroll_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
+	void _sheet_update_zoom_label();
 	void _sheet_zoom_on_position(float p_zoom, const Vector2 &p_position);
 	void _sheet_zoom_in();
 	void _sheet_zoom_out();
 	void _sheet_zoom_reset();
+	void _sheet_zoom_fit();
 	void _sheet_order_selected(int p_option);
 	void _sheet_select_all_frames();
 	void _sheet_clear_all_frames();
@@ -291,7 +316,6 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 	GDCLASS(SpriteFramesEditorPlugin, EditorPlugin);
 
 	SpriteFramesEditor *frames_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "SpriteFrames"; }

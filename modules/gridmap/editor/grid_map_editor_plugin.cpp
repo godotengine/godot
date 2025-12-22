@@ -30,6 +30,7 @@
 
 #include "grid_map_editor_plugin.h"
 
+#include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -44,6 +45,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
 #include "scene/main/window.h"
@@ -149,33 +151,38 @@ void GridMapEditor::_menu_option(int p_option) {
 			options->get_popup()->set_item_checked(idx, !options->get_popup()->is_item_checked(idx));
 		} break;
 
-		case MENU_OPTION_SELECTION_DUPLICATE:
-		case MENU_OPTION_SELECTION_CUT: {
+		case MENU_OPTION_SELECTION_DUPLICATE: {
 			if (!(selection.active && input_action == INPUT_NONE)) {
 				break;
 			}
 
 			_set_clipboard_data();
+			clipboard_is_move = false;
 
-			if (p_option == MENU_OPTION_SELECTION_CUT) {
-				_delete_selection();
+			if (!clipboard_items.is_empty()) {
+				_setup_paste_mode();
+			}
+		} break;
+
+		case MENU_OPTION_SELECTION_MOVE: {
+			if (!(selection.active && input_action == INPUT_NONE)) {
+				break;
 			}
 
-			input_action = INPUT_PASTE;
-			paste_indicator.click = selection.click;
-			paste_indicator.current = cursor_gridpos;
-			paste_indicator.begin = selection.begin;
-			paste_indicator.end = selection.end;
-			paste_indicator.distance_from_cursor = cursor_gridpos - paste_indicator.begin;
-			paste_indicator.orientation = 0;
-			_update_paste_indicator();
+			_set_clipboard_data();
+			clipboard_is_move = true;
+
+			if (!clipboard_items.is_empty()) {
+				_delete_selection();
+				_setup_paste_mode();
+			}
 		} break;
 		case MENU_OPTION_SELECTION_CLEAR: {
 			if (!selection.active) {
 				break;
 			}
 
-			_delete_selection();
+			_delete_selection_with_undo();
 
 		} break;
 		case MENU_OPTION_SELECTION_FILL: {
@@ -435,32 +442,87 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 		return true;
 	}
 
-	if (input_action == INPUT_PAINT) {
-		SetItem si;
-		si.position = cursor_gridpos;
-		si.new_value = selected_palette;
-		si.new_orientation = cursor_rot;
-		si.old_value = node->get_cell_item(cursor_gridpos);
-		si.old_orientation = node->get_cell_item_orientation(cursor_gridpos);
-		set_items.push_back(si);
-		node->set_cell_item(cursor_gridpos, selected_palette, cursor_rot);
-		return true;
-	} else if (input_action == INPUT_ERASE) {
-		SetItem si;
-		si.position = cursor_gridpos;
-		si.new_value = -1;
-		si.new_orientation = 0;
-		si.old_value = node->get_cell_item(cursor_gridpos);
-		si.old_orientation = node->get_cell_item_orientation(cursor_gridpos);
-		set_items.push_back(si);
-		node->set_cell_item(cursor_gridpos, -1);
-		return true;
+	if (input_action == INPUT_PAINT || input_action == INPUT_ERASE) {
+		LocalVector<Vector3i> cells;
+		if (!set_items.is_empty()) {
+			Vector3i last_si = (--set_items.end())->position;
+			// Manipulate Vector3i into Point2i by ignoring the edit_axis.
+			int i = edit_axis == 0 ? 1 : 0;
+			int j = edit_axis == 2 ? 1 : 2;
+			Point2i from_cell = Point2i(last_si[i], last_si[j]);
+			Point2i to_cell = Point2i(cursor_gridpos[i], cursor_gridpos[j]);
+
+			Vector<Point2i> cells_2d = Geometry2D::bresenham_line(from_cell, to_cell);
+
+			switch (edit_axis) {
+				case 0:
+					for (const Point2i &cell_2d : cells_2d) {
+						cells.push_back(Vector3i(edit_floor[0], cell_2d[0], cell_2d[1]));
+					}
+					break;
+				case 1:
+					for (const Point2i &cell_2d : cells_2d) {
+						cells.push_back(Vector3i(cell_2d[0], edit_floor[1], cell_2d[1]));
+					}
+					break;
+				case 2:
+					for (const Point2i &cell_2d : cells_2d) {
+						cells.push_back(Vector3i(cell_2d[0], cell_2d[1], edit_floor[2]));
+					}
+					break;
+				default:
+					break;
+			}
+		} else {
+			cells.push_back(cursor_gridpos);
+		}
+
+		if (input_action == INPUT_PAINT) {
+			for (const Vector3i &cell_v : cells) {
+				SetItem si;
+				si.position = cell_v;
+				si.new_value = selected_palette;
+				si.new_orientation = cursor_rot;
+				si.old_value = node->get_cell_item(cell_v);
+				si.old_orientation = node->get_cell_item_orientation(cell_v);
+				set_items.push_back(si);
+				node->set_cell_item(cell_v, selected_palette, cursor_rot);
+			}
+			return true;
+		} else if (input_action == INPUT_ERASE) {
+			for (const Vector3i &cell_v : cells) {
+				SetItem si;
+				si.position = cell_v;
+				si.new_value = -1;
+				si.new_orientation = 0;
+				si.old_value = node->get_cell_item(cell_v);
+				si.old_orientation = node->get_cell_item_orientation(cell_v);
+				set_items.push_back(si);
+				node->set_cell_item(cell_v, -1);
+			}
+			return true;
+		}
 	}
 
 	return false;
 }
 
 void GridMapEditor::_delete_selection() {
+	if (!selection.active) {
+		return;
+	}
+
+	for (int i = selection.begin.x; i <= selection.end.x; i++) {
+		for (int j = selection.begin.y; j <= selection.end.y; j++) {
+			for (int k = selection.begin.z; k <= selection.end.z; k++) {
+				Vector3i selected = Vector3i(i, j, k);
+				node->set_cell_item(selected, GridMap::INVALID_CELL_ITEM);
+			}
+		}
+	}
+}
+
+void GridMapEditor::_delete_selection_with_undo() {
 	if (!selection.active) {
 		return;
 	}
@@ -479,6 +541,17 @@ void GridMapEditor::_delete_selection() {
 	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
 	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 	undo_redo->commit_action();
+}
+
+void GridMapEditor::_setup_paste_mode() {
+	input_action = INPUT_PASTE;
+	paste_indicator.click = selection.click;
+	paste_indicator.current = cursor_gridpos;
+	paste_indicator.begin = selection.begin;
+	paste_indicator.end = selection.end;
+	paste_indicator.distance_from_cursor = cursor_gridpos - paste_indicator.begin;
+	paste_indicator.orientation = 0;
+	_update_paste_indicator();
 }
 
 void GridMapEditor::_fill_selection() {
@@ -511,6 +584,7 @@ void GridMapEditor::_clear_clipboard_data() {
 	}
 
 	clipboard_items.clear();
+	clipboard_is_move = false;
 }
 
 void GridMapEditor::_set_clipboard_data() {
@@ -583,6 +657,20 @@ void GridMapEditor::_update_paste_indicator() {
 	}
 }
 
+void GridMapEditor::_cancel_pending_move() {
+	if (input_action == INPUT_PASTE) {
+		if (clipboard_is_move) {
+			for (const ClipboardItem &item : clipboard_items) {
+				Vector3 original_position = paste_indicator.begin + item.grid_offset;
+				node->set_cell_item(Vector3i(original_position), item.cell_item, item.orientation);
+			}
+		}
+		_clear_clipboard_data();
+		input_action = INPUT_NONE;
+		_update_paste_indicator();
+	}
+}
+
 void GridMapEditor::_do_paste() {
 	int idx = options->get_popup()->get_item_index(MENU_OPTION_PASTE_SELECTS);
 	bool reselect = options->get_popup()->is_item_checked(idx);
@@ -591,7 +679,18 @@ void GridMapEditor::_do_paste() {
 	rot = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("GridMap Paste Selection"));
+
+	if (clipboard_is_move) {
+		undo_redo->create_action(TTR("GridMap Move Selection"));
+
+		for (const ClipboardItem &item : clipboard_items) {
+			Vector3 original_position = paste_indicator.begin + item.grid_offset;
+			undo_redo->add_undo_method(node, "set_cell_item", original_position, item.cell_item, item.orientation);
+			undo_redo->add_do_method(node, "set_cell_item", original_position, GridMap::INVALID_CELL_ITEM);
+		}
+	} else {
+		undo_redo->create_action(TTR("GridMap Paste Selection"));
+	}
 
 	for (const ClipboardItem &item : clipboard_items) {
 		Vector3 position = rot.xform(item.grid_offset) + paste_indicator.current - paste_indicator.distance_from_cursor;
@@ -674,9 +773,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 		// Hard key actions:
 		if (k->get_keycode() == Key::ESCAPE) {
 			if (input_action == INPUT_PASTE) {
-				_clear_clipboard_data();
-				input_action = INPUT_NONE;
-				_update_paste_indicator();
+				_cancel_pending_move();
 				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			} else if (selection.active) {
 				_set_selection(false);
@@ -1017,6 +1114,8 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 		}
 	}
 
+	_cancel_pending_move();
+
 	node = p_gridmap;
 
 	input_action = INPUT_NONE;
@@ -1143,8 +1242,6 @@ void GridMapEditor::_update_theme() {
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
-
 			const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
 
 			for (int i = 0; i < 3; i++) {
@@ -1169,6 +1266,7 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			_cancel_pending_move();
 			_clear_clipboard_data();
 
 			for (int i = 0; i < 3; i++) {
@@ -1262,9 +1360,10 @@ void GridMapEditor::_update_cursor_instance() {
 		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	}
 
-	// Make the cursor translucent so that it can be distinguished from already-placed tiles.
-	RenderingServer::get_singleton()->instance_geometry_set_transparency(cursor_instance, 0.5);
-
+	if (cursor_instance.is_valid()) {
+		// Make the cursor translucent so that it can be distinguished from already-placed tiles.
+		RenderingServer::get_singleton()->instance_geometry_set_transparency(cursor_instance, 0.5);
+	}
 	_update_cursor_transform();
 }
 
@@ -1427,7 +1526,7 @@ GridMapEditor::GridMapEditor() {
 	move_action_button->set_shortcut(ED_SHORTCUT("grid_map/move_tool", TTRC("Move"), Key::X, true));
 	fill_action_button->set_accessibility_name(TTRC("Move"));
 	move_action_button->connect(SceneStringName(pressed),
-			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_CUT));
+			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_MOVE));
 	action_buttons->add_child(move_action_button);
 	viewport_shortcut_buttons.push_back(move_action_button);
 
@@ -1539,11 +1638,17 @@ GridMapEditor::GridMapEditor() {
 
 	toolbar->add_child(options);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderBottomPanel");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	mesh_library_palette = memnew(ItemList);
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	add_child(mesh_library_palette);
-	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
+	mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
+	mc->add_child(mesh_library_palette);
 	mesh_library_palette->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
+	mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 
 	info_message = memnew(Label);
 	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -1803,6 +1908,7 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 		EditorNode::get_bottom_panel()->make_item_visible(grid_map_editor);
 		grid_map_editor->set_process(true);
 	} else {
+		grid_map_editor->_cancel_pending_move();
 		grid_map_editor->_show_viewports_transform_gizmo(true);
 		panel_button->hide();
 		if (grid_map_editor->is_visible_in_tree()) {

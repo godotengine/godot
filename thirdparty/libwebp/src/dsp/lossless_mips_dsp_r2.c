@@ -299,9 +299,9 @@ static void TransformColorInverse_MIPSdspR2(const VP8LMultipliers* const m,
                                             uint32_t* dst) {
   int temp0, temp1, temp2, temp3, temp4, temp5;
   uint32_t argb, argb1, new_red;
-  const uint32_t G_to_R = m->green_to_red_;
-  const uint32_t G_to_B = m->green_to_blue_;
-  const uint32_t R_to_B = m->red_to_blue_;
+  const uint32_t G_to_R = m->green_to_red;
+  const uint32_t G_to_B = m->green_to_blue;
+  const uint32_t R_to_B = m->red_to_blue;
   const uint32_t* const p_loop_end = src + (num_pixels & ~1);
   __asm__ volatile (
     ".set            push                                    \n\t"

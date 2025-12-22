@@ -702,7 +702,12 @@ png_read_end(png_structrp png_ptr, png_inforp info_ptr)
       png_uint_32 chunk_name = png_ptr->chunk_name;
 
       if (chunk_name != png_IDAT)
-         png_ptr->mode |= PNG_HAVE_CHUNK_AFTER_IDAT;
+      {
+         /* These flags must be set consistently for all non-IDAT chunks,
+          * including the unknown chunks.
+          */
+         png_ptr->mode |= PNG_HAVE_CHUNK_AFTER_IDAT | PNG_AFTER_IDAT;
+      }
 
       if (chunk_name == png_IEND)
          png_handle_chunk(png_ptr, info_ptr, length);
@@ -809,7 +814,8 @@ png_read_destroy(png_structrp png_ptr)
 #endif
 
 #if defined(PNG_READ_EXPAND_SUPPORTED) && \
-    defined(PNG_ARM_NEON_IMPLEMENTATION)
+    (defined(PNG_ARM_NEON_IMPLEMENTATION) || \
+     defined(PNG_RISCV_RVV_IMPLEMENTATION))
    png_free(png_ptr, png_ptr->riffled_palette);
    png_ptr->riffled_palette = NULL;
 #endif
@@ -3123,6 +3129,54 @@ png_image_read_colormapped(png_voidp argument)
    }
 }
 
+/* Row reading for interlaced 16-to-8 bit depth conversion with local buffer. */
+static int
+png_image_read_direct_scaled(png_voidp argument)
+{
+   png_image_read_control *display = png_voidcast(png_image_read_control*,
+       argument);
+   png_imagep image = display->image;
+   png_structrp png_ptr = image->opaque->png_ptr;
+   png_bytep local_row = png_voidcast(png_bytep, display->local_row);
+   png_bytep first_row = png_voidcast(png_bytep, display->first_row);
+   ptrdiff_t row_bytes = display->row_bytes;
+   int passes;
+
+   /* Handle interlacing. */
+   switch (png_ptr->interlaced)
+   {
+      case PNG_INTERLACE_NONE:
+         passes = 1;
+         break;
+
+      case PNG_INTERLACE_ADAM7:
+         passes = PNG_INTERLACE_ADAM7_PASSES;
+         break;
+
+      default:
+         png_error(png_ptr, "unknown interlace type");
+   }
+
+   /* Read each pass using local_row as intermediate buffer. */
+   while (--passes >= 0)
+   {
+      png_uint_32 y = image->height;
+      png_bytep output_row = first_row;
+
+      for (; y > 0; --y)
+      {
+         /* Read into local_row (gets transformed 8-bit data). */
+         png_read_row(png_ptr, local_row, NULL);
+
+         /* Copy from local_row to user buffer. */
+         memcpy(output_row, local_row, (size_t)row_bytes);
+         output_row += row_bytes;
+      }
+   }
+
+   return 1;
+}
+
 /* Just the row reading part of png_image_read. */
 static int
 png_image_read_composite(png_voidp argument)
@@ -3153,6 +3207,7 @@ png_image_read_composite(png_voidp argument)
       ptrdiff_t    step_row = display->row_bytes;
       unsigned int channels =
           (image->format & PNG_FORMAT_FLAG_COLOR) != 0 ? 3 : 1;
+      int optimize_alpha = (png_ptr->flags & PNG_FLAG_OPTIMIZE_ALPHA) != 0;
       int pass;
 
       for (pass = 0; pass < passes; ++pass)
@@ -3209,20 +3264,44 @@ png_image_read_composite(png_voidp argument)
 
                      if (alpha < 255) /* else just use component */
                      {
-                        /* This is PNG_OPTIMIZED_ALPHA, the component value
-                         * is a linear 8-bit value.  Combine this with the
-                         * current outrow[c] value which is sRGB encoded.
-                         * Arithmetic here is 16-bits to preserve the output
-                         * values correctly.
-                         */
-                        component *= 257*255; /* =65535 */
-                        component += (255-alpha)*png_sRGB_table[outrow[c]];
+                        if (optimize_alpha != 0)
+                        {
+                           /* This is PNG_OPTIMIZED_ALPHA, the component value
+                            * is a linear 8-bit value.  Combine this with the
+                            * current outrow[c] value which is sRGB encoded.
+                            * Arithmetic here is 16-bits to preserve the output
+                            * values correctly.
+                            */
+                           component *= 257*255; /* =65535 */
+                           component += (255-alpha)*png_sRGB_table[outrow[c]];
 
-                        /* So 'component' is scaled by 255*65535 and is
-                         * therefore appropriate for the sRGB to linear
-                         * conversion table.
-                         */
-                        component = PNG_sRGB_FROM_LINEAR(component);
+                           /* Clamp to the valid range to defend against
+                            * unforeseen cases where the data might be sRGB
+                            * instead of linear premultiplied.
+                            * (Belt-and-suspenders for CVE-2025-66293.)
+                            */
+                           if (component > 255*65535)
+                              component = 255*65535;
+
+                           /* So 'component' is scaled by 255*65535 and is
+                            * therefore appropriate for the sRGB-to-linear
+                            * conversion table.
+                            */
+                           component = PNG_sRGB_FROM_LINEAR(component);
+                        }
+                        else
+                        {
+                           /* Compositing was already done on the palette
+                            * entries.  The data is sRGB premultiplied on black.
+                            * Composite with the background in sRGB space.
+                            * This is not gamma-correct, but matches what was
+                            * done to the palette.
+                            */
+                           png_uint_32 background = outrow[c];
+                           component += ((255-alpha) * background + 127) / 255;
+                           if (component > 255)
+                              component = 255;
+                        }
                      }
 
                      outrow[c] = (png_byte)component;
@@ -3541,6 +3620,7 @@ png_image_read_direct(png_voidp argument)
    int linear = (format & PNG_FORMAT_FLAG_LINEAR) != 0;
    int do_local_compose = 0;
    int do_local_background = 0; /* to avoid double gamma correction bug */
+   int do_local_scale = 0; /* for interlaced 16-to-8 bit conversion */
    int passes = 0;
 
    /* Add transforms to ensure the correct output format is produced then check
@@ -3674,7 +3754,15 @@ png_image_read_direct(png_voidp argument)
             png_set_expand_16(png_ptr);
 
          else /* 8-bit output */
+         {
             png_set_scale_16(png_ptr);
+
+            /* For interlaced images, use local_row buffer to avoid overflow
+             * in png_combine_row() which writes using IHDR bit-depth.
+             */
+            if (png_ptr->interlaced != 0)
+               do_local_scale = 1;
+         }
 
          change &= ~PNG_FORMAT_FLAG_LINEAR;
       }
@@ -3945,6 +4033,24 @@ png_image_read_direct(png_voidp argument)
 
       display->local_row = row;
       result = png_safe_execute(image, png_image_read_background, display);
+      display->local_row = NULL;
+      png_free(png_ptr, row);
+
+      return result;
+   }
+
+   else if (do_local_scale != 0)
+   {
+      /* For interlaced 16-to-8 conversion, use an intermediate row buffer
+       * to avoid buffer overflows in png_combine_row. The local_row is sized
+       * for the transformed (8-bit) output, preventing the overflow that would
+       * occur if png_combine_row wrote 16-bit data directly to the user buffer.
+       */
+      int result;
+      png_voidp row = png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
+
+      display->local_row = row;
+      result = png_safe_execute(image, png_image_read_direct_scaled, display);
       display->local_row = NULL;
       png_free(png_ptr, row);
 

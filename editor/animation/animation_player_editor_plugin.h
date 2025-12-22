@@ -32,6 +32,7 @@
 
 #include "editor/animation/animation_library_editor.h"
 #include "editor/animation/animation_track_editor.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/dialogs.h"
@@ -43,8 +44,8 @@
 class AnimationPlayerEditorPlugin;
 class ImageTexture;
 
-class AnimationPlayerEditor : public VBoxContainer {
-	GDCLASS(AnimationPlayerEditor, VBoxContainer);
+class AnimationPlayerEditor : public EditorDock {
+	GDCLASS(AnimationPlayerEditor, EditorDock);
 
 	friend AnimationPlayerEditorPlugin;
 
@@ -179,7 +180,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _select_anim_by_name(const String &p_anim);
 	float _get_editor_step() const;
-	void _go_to_nearest_keyframe(bool p_backward);
 	void _play_pressed();
 	void _play_from_pressed();
 	void _play_bw_pressed();
@@ -212,6 +212,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _set_controls_disabled(bool p_disabled);
 	void _update_animation_list_icons();
 	void _update_name_dialog_library_dropdown();
+	void _update_playback_tooltips();
 	void _blend_edited();
 
 	void _animation_player_changed(Object *p_pl);
@@ -271,6 +272,7 @@ public:
 	void clear();
 
 	void ensure_visibility();
+	void go_to_nearest_keyframe(bool p_backward);
 
 	void edit(AnimationMixer *p_node, AnimationPlayer *p_player, bool p_is_dummy);
 	void forward_force_draw_over_viewport(Control *p_overlay);

@@ -137,6 +137,7 @@ public:
 		OVERRUN_ADD_ELLIPSIS = 1 << 2,
 		OVERRUN_ENFORCE_ELLIPSIS = 1 << 3,
 		OVERRUN_JUSTIFICATION_AWARE = 1 << 4,
+		OVERRUN_SHORT_STRING_ELLIPSIS = 1 << 5,
 	};
 
 	enum GraphemeFlag {
@@ -229,7 +230,7 @@ public:
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
-	double vp_oversampling = 0.0;
+	static double vp_oversampling;
 	HashMap<char32_t, char32_t> diacritics_map;
 	void _diacritics_map_add(const String &p_from, char32_t p_to);
 	void _init_diacritics_map();
@@ -260,6 +261,7 @@ public:
 	virtual String get_support_data_info() const = 0;
 	virtual bool save_support_data(const String &p_filename) const = 0;
 	virtual PackedByteArray get_support_data() const = 0;
+	virtual bool is_locale_using_support_data(const String &p_locale) const { return false; }
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 
@@ -463,6 +465,7 @@ public:
 	virtual RID create_shaped_text(Direction p_direction = DIRECTION_AUTO, Orientation p_orientation = ORIENTATION_HORIZONTAL) = 0;
 
 	virtual void shaped_text_clear(const RID &p_shaped) = 0;
+	virtual RID shaped_text_duplicate(const RID &p_shaped) = 0;
 
 	virtual void shaped_text_set_direction(const RID &p_shaped, Direction p_direction = DIRECTION_AUTO) = 0;
 	virtual Direction shaped_text_get_direction(const RID &p_shaped) const = 0;
@@ -491,6 +494,7 @@ public:
 	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) = 0;
 	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1, double p_baseline = 0.0) = 0;
 	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, double p_baseline = 0.0) = 0;
+	virtual bool shaped_text_has_object(const RID &p_shaped, const Variant &p_key) const = 0;
 	virtual String shaped_get_text(const RID &p_shaped) const = 0;
 
 	virtual int64_t shaped_get_span_count(const RID &p_shaped) const = 0;
@@ -582,10 +586,12 @@ public:
 	void shaped_text_debug_print(const RID &p_shaped) const;
 #endif
 
+#ifndef DISABLE_DEPRECATED
 	// Number conversion.
-	virtual String format_number(const String &p_string, const String &p_language = "") const = 0;
-	virtual String parse_number(const String &p_string, const String &p_language = "") const = 0;
-	virtual String percent_sign(const String &p_language = "") const = 0;
+	virtual String format_number(const String &p_string, const String &p_language = "") const;
+	virtual String parse_number(const String &p_string, const String &p_language = "") const;
+	virtual String percent_sign(const String &p_language = "") const;
+#endif // DISABLE_DEPRECATED
 
 	// String functions.
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int64_t p_chars_per_line = 0) const = 0;
@@ -605,7 +611,8 @@ public:
 
 	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
-	virtual void set_current_drawn_item_oversampling(double p_vp_oversampling) { vp_oversampling = p_vp_oversampling; }
+	static void set_current_drawn_item_oversampling(double p_vp_oversampling) { vp_oversampling = p_vp_oversampling; }
+	static double get_current_drawn_item_oversampling() { return vp_oversampling; }
 
 	virtual void cleanup() {}
 

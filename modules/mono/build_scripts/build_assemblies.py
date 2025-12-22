@@ -1,11 +1,12 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+
+from __future__ import annotations
 
 import os
 import os.path
 import shlex
 import subprocess
 from dataclasses import dataclass
-from typing import List, Optional
 
 
 def find_dotnet_cli():
@@ -151,7 +152,7 @@ def find_any_msbuild_tool(mono_prefix):
     return None
 
 
-def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: Optional[List[str]] = None):
+def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: list[str] | None = None):
     using_msbuild_mono = False
 
     # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild

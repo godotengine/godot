@@ -217,7 +217,7 @@ void SkeletonModification2DTwoBoneIK::_setup_modification(SkeletonModificationSt
 }
 
 void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
-	if (!enabled || !is_setup) {
+	if (!enabled || !is_setup || joint_one_bone_idx < 0) {
 		return;
 	}
 

@@ -38,6 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+
 /* This module contains an internal function that is used to match a Unicode
 extended grapheme sequence. It is used by both pcre2_match() and
 pcre2_dfa_match(). However, it is called only when Unicode support is being
@@ -45,12 +46,8 @@ compiled. Nevertheless, we provide a dummy function when there is no Unicode
 support, because some compilers do not like functionless source files. */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-
 #include "pcre2_internal.h"
+
 
 
 /* Dummy function */

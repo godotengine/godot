@@ -272,6 +272,7 @@ if env["builtin_icu4c"]:
         "common/errorcode.cpp",
         "common/filteredbrk.cpp",
         "common/filterednormalizer2.cpp",
+        "common/fixedstring.cpp",
         "common/icudataver.cpp",
         "common/icuplug.cpp",
         "common/loadednormalizer2impl.cpp",

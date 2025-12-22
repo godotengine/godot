@@ -50,6 +50,7 @@ class DisplayServer : public Object {
 	mutable HashMap<String, RID> menu_names;
 
 	RID _get_rid_from_name(NativeMenu *p_nmenu, const String &p_menu_root) const;
+	RID _accessibility_create_sub_text_edit_elements_bind_compat_113459(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1);
 #endif
 
 	LocalVector<ObjectID> additional_outputs;
@@ -240,7 +241,7 @@ public:
 		int volume = 50;
 		float pitch = 1.f;
 		float rate = 1.f;
-		int id = 0;
+		int64_t id = 0;
 	};
 
 	enum TTSUtteranceEvent {
@@ -260,13 +261,13 @@ public:
 	virtual TypedArray<Dictionary> tts_get_voices() const;
 	virtual PackedStringArray tts_get_voices_for_language(const String &p_language) const;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false);
 	virtual void tts_pause();
 	virtual void tts_resume();
 	virtual void tts_stop();
 
 	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
-	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
+	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int64_t p_id, int p_pos = 0);
 
 	virtual bool is_dark_mode_supported() const { return false; }
 	virtual bool is_dark_mode() const { return false; }
@@ -492,6 +493,11 @@ public:
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
+	virtual float window_get_scale(WindowID p_window = MAIN_WINDOW_ID) const {
+		int screen = window_get_current_screen(p_window);
+		return screen_get_scale(screen);
+	}
+
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
@@ -678,7 +684,7 @@ public:
 
 	virtual RID accessibility_create_element(WindowID p_window_id, DisplayServer::AccessibilityRole p_role);
 	virtual RID accessibility_create_sub_element(const RID &p_parent_rid, DisplayServer::AccessibilityRole p_role, int p_insert_pos = -1);
-	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1);
+	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false);
 	virtual bool accessibility_has_element(const RID &p_id) const;
 	virtual void accessibility_free_element(const RID &p_id);
 
@@ -910,7 +916,7 @@ public:
 
 	virtual RID accessibility_create_element(DisplayServer::WindowID p_window_id, DisplayServer::AccessibilityRole p_role) = 0;
 	virtual RID accessibility_create_sub_element(const RID &p_parent_rid, DisplayServer::AccessibilityRole p_role, int p_insert_pos = -1) = 0;
-	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1) = 0;
+	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false) = 0;
 	virtual bool accessibility_has_element(const RID &p_id) const = 0;
 	virtual void accessibility_free_element(const RID &p_id) = 0;
 

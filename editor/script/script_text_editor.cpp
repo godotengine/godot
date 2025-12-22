@@ -51,7 +51,6 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/split_container.h"
 
 void ConnectionInfoDialog::ok_pressed() {
@@ -75,7 +74,7 @@ void ConnectionInfoDialog::popup_connections(const String &p_method, const Vecto
 			TreeItem *node_item = tree->create_item(root);
 
 			node_item->set_text(0, Object::cast_to<Node>(connection.signal.get_object())->get_name());
-			node_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(connection.signal.get_object(), "Node"));
+			node_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(connection.signal.get_object()));
 			node_item->set_selectable(0, false);
 			node_item->set_editable(0, false);
 
@@ -86,7 +85,7 @@ void ConnectionInfoDialog::popup_connections(const String &p_method, const Vecto
 			node_item->set_editable(1, false);
 
 			node_item->set_text(2, Object::cast_to<Node>(connection.callable.get_object())->get_name());
-			node_item->set_icon(2, EditorNode::get_singleton()->get_object_icon(connection.callable.get_object(), "Node"));
+			node_item->set_icon(2, EditorNode::get_singleton()->get_object_icon(connection.callable.get_object()));
 			node_item->set_selectable(2, false);
 			node_item->set_editable(2, false);
 		}
@@ -840,6 +839,18 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 		}
 	}
 
+	Ref<Texture2D> extension_language_icon = EditorNode::get_editor_data().extension_class_get_icon(script->get_class());
+	Ref<Texture2D> extension_language_alt_icon;
+	if (script->is_built_in()) {
+		extension_language_alt_icon = EditorNode::get_editor_data().extension_class_get_icon(script->get_class() + "Internal");
+	}
+
+	if (extension_language_alt_icon.is_valid()) {
+		return extension_language_alt_icon;
+	} else if (extension_language_icon.is_valid()) {
+		return extension_language_icon;
+	}
+
 	return Ref<Texture2D>();
 }
 
@@ -1242,7 +1253,9 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 }
 
 void ScriptTextEditor::_breakpoint_toggled(int p_row) {
-	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_breakpointed(p_row));
+	const CodeEdit *ce = code_editor->get_text_editor();
+	bool enabled = p_row < ce->get_line_count() && ce->is_line_breakpointed(p_row);
+	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, enabled);
 }
 
 void ScriptTextEditor::_on_caret_moved() {
@@ -1408,7 +1421,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 	}
 
 	if (p_symbol.begins_with("res://") || p_symbol.begins_with("uid://")) {
-		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		memdelete(tmp);
 		return;
 	}
 
@@ -1518,7 +1532,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 	}
 
 	if (!doc_symbol.is_empty() || !debug_value.is_empty()) {
-		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true);
+		memdelete(tmp);
 	}
 }
 
@@ -2261,9 +2276,6 @@ String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Reso
 	}
 
 	variable_name = variable_name.to_snake_case().validate_unicode_identifier();
-	for (ObjectID obj_id : p_script_instance_obj_ids) {
-		pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, p_resource });
-	}
 
 	StringName class_name = p_resource->get_class();
 	Ref<Script> resource_script = p_resource->get_script();
@@ -2273,6 +2285,10 @@ String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Reso
 		if (!global_resource_script_name.is_empty()) {
 			class_name = global_resource_script_name;
 		}
+	}
+
+	for (ObjectID obj_id : p_script_instance_obj_ids) {
+		pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, p_resource, class_name });
 	}
 
 	return vformat("@export var %s: %s", variable_name, class_name);
@@ -2466,7 +2482,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 				text_to_drop += vformat("@export var %s: %s\n", variable_name, class_name);
 				for (ObjectID obj_id : obj_ids) {
-					pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, node });
+					pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, node, class_name });
 				}
 			}
 		} else {
@@ -2574,30 +2590,54 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 	ERR_FAIL_COND(pending_dragged_exports.is_empty());
 
 	bool export_variable_set = false;
-	for (const DraggedExport &dragged_export : pending_dragged_exports) {
+
+	for (int i = pending_dragged_exports.size() - 1; i >= 0; i--) {
+		const DraggedExport &dragged_export = pending_dragged_exports[i];
 		Object *obj = ObjectDB::get_instance(dragged_export.obj_id);
 		if (!obj) {
 			WARN_PRINT("Object not found, can't assign export variable.");
+			pending_dragged_exports.remove_at(i);
 			continue;
 		}
 
 		ScriptInstance *si = obj->get_script_instance();
 		if (!si) {
 			WARN_PRINT("Script on " + obj->to_string() + " does not exist anymore, can't assign export variable.");
+			pending_dragged_exports.remove_at(i);
 			continue;
 		}
 
-		bool success = si->set(dragged_export.variable_name, dragged_export.value);
-		if (success) {
-			export_variable_set = true;
+		bool script_has_errors = false;
+		String scr_path = si->get_script()->get_path();
+
+		for (const ScriptLanguage::ScriptError &error : errors) {
+			if (error.path == scr_path) {
+				script_has_errors = true;
+				break;
+			}
+		}
+
+		if (!script_has_errors) {
+			bool success = false;
+			List<PropertyInfo> properties;
+			si->get_property_list(&properties);
+			for (const PropertyInfo &pi : properties) {
+				if (pi.name == dragged_export.variable_name && pi.hint_string == dragged_export.class_name) {
+					success = si->set(dragged_export.variable_name, dragged_export.value);
+					break;
+				}
+			}
+
+			if (success) {
+				export_variable_set = true;
+			}
+			pending_dragged_exports.remove_at(i);
 		}
 	}
 
 	if (export_variable_set) {
 		EditorInterface::get_singleton()->mark_scene_as_unsaved();
 	}
-
-	pending_dragged_exports.clear();
 }
 
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
@@ -2846,17 +2886,9 @@ void ScriptTextEditor::_enable_code_editor() {
 	_update_gutter_indexes();
 
 	editor_box->add_child(warnings_panel);
-	warnings_panel->add_theme_font_override(
-			"normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
-	warnings_panel->add_theme_font_size_override(
-			"normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	warnings_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_warning_clicked));
 
 	editor_box->add_child(errors_panel);
-	errors_panel->add_theme_font_override(
-			"normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
-	errors_panel->add_theme_font_size_override(
-			"normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
 
 	add_child(context_menu);
@@ -2977,7 +3009,6 @@ void ScriptTextEditor::_enable_code_editor() {
 ScriptTextEditor::ScriptTextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	code_editor->set_toggle_list_control(ScriptEditor::get_singleton()->get_left_list_split());
-	code_editor->add_theme_constant_override("separation", 2);
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);

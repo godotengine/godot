@@ -32,11 +32,11 @@
 
 GDType::GDType(const GDType *p_super_type, StringName p_name) :
 		super_type(p_super_type), name(std::move(p_name)) {
-	name_hierarchy.push_back(StringName(name, true));
+	name_hierarchy.push_back(name);
 
 	if (super_type) {
 		for (const StringName &ancestor_name : super_type->name_hierarchy) {
-			name_hierarchy.push_back(StringName(ancestor_name, true));
+			name_hierarchy.push_back(ancestor_name);
 		}
 	}
 }

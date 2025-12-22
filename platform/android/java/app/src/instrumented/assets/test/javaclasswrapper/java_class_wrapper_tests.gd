@@ -16,6 +16,10 @@ func run_tests():
 
 	__exec_test(test_variant_conversion_safe_from_stack_overflow)
 
+	__exec_test(test_big_integers)
+
+	__exec_test(test_callable)
+
 	print("JavaClassWrapper tests finished.")
 	print("Tests started: " + str(_test_started))
 	print("Tests completed: " + str(_test_completed))
@@ -134,3 +138,20 @@ func test_variant_conversion_safe_from_stack_overflow():
 	arr.append(dict)
 	# The following line will crash with stack overflow if not handled property:
 	TestClass.testDictionary(dict)
+
+func test_big_integers():
+	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
+	assert_equal(TestClass.testArgLong(4242424242), "4242424242")
+	assert_equal(TestClass.testArgLong(-4242424242), "-4242424242")
+	assert_equal(TestClass.testDictionary({a = 4242424242, b = -4242424242}), "{a=4242424242, b=-4242424242}")
+
+func test_callable():
+	var android_runtime = Engine.get_singleton("AndroidRuntime")
+	assert_true(android_runtime != null)
+
+	var cb1_data := {called = false}
+	var cb1 = func():
+		cb1_data['called'] = true
+		return null
+	android_runtime.createRunnableFromGodotCallable(cb1).run()
+	assert_equal(cb1_data['called'], true)

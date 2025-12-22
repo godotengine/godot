@@ -115,14 +115,6 @@ protected:
 	void _post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data);
 	void _disable_clear_request(const RenderDataRD *p_render_data);
 
-	_FORCE_INLINE_ bool _is_8bit_data_format(RD::DataFormat p_data_format) {
-		return p_data_format >= RD::DATA_FORMAT_R8_UNORM && p_data_format <= RD::DATA_FORMAT_A8B8G8R8_SRGB_PACK32;
-	}
-
-	_FORCE_INLINE_ bool _is_10bit_data_format(RD::DataFormat p_data_format) {
-		return p_data_format >= RD::DATA_FORMAT_A2R10G10B10_UNORM_PACK32 && p_data_format <= RD::DATA_FORMAT_A2B10G10R10_SINT_PACK32;
-	}
-
 	// needed for a single argument calls (material and uv2)
 	PagedArrayPool<RenderGeometryInstance *> cull_argument_pool;
 	PagedArray<RenderGeometryInstance *> cull_argument; //need this to exist
@@ -333,7 +325,7 @@ public:
 	}
 
 	int get_roughness_layers() const;
-	bool is_using_radiance_cubemap_array() const;
+	bool is_using_radiance_octmap_array() const;
 
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) override;
 

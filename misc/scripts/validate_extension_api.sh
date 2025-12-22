@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 set -o pipefail
 
 if [ ! -f "version.py" ]; then
@@ -36,27 +37,36 @@ make_annotation()
 get_expected_output()
 {
   local parts=()
-  IFS='_' read -ra parts <<< "$(basename -s .expected "$1")"
+  IFS='_' read -ra parts <<< "$(basename "$1")"
 
   if [[ "${#parts[@]}" == "2" ]]; then
-    cat "$1" >> "$expected_errors"
-    get_expected_output "$(find "$api_validation_dir" -name "${parts[1]}*.expected")"
+    while read -r file; do
+      cat "$file" >> "$expected_errors"
+    done <<< "$(find "$1" -type f -name "*.txt")"
+
+    next="$(find "$api_validation_dir" -type d -name "${parts[1]}*")"
+    if [[ "$next" != "" ]]; then
+      get_expected_output "$next"
+    fi
     reference_tag="${parts[0]}"
     warn_extra=0
   else
-    cat "$1" >> "$expected_errors"
+    while read -r file; do
+      cat "$file" >> "$expected_errors"
+    done <<< "$(find "$1" -type f -name "*.txt")"
+
     reference_tag="${parts[0]}"
     warn_extra=1
   fi
 }
 
-while read -r file; do
+while read -r dir; do
     reference_file="$(mktemp)"
     validate="$(mktemp)"
     validation_output="$(mktemp)"
     allowed_errors="$(mktemp)"
     expected_errors="$(mktemp)"
-    get_expected_output "$file"
+    get_expected_output "$dir"
 
     # Download the reference extension_api.json
     wget -nv --retry-on-http-error=503 --tries=5 --timeout=60 -cO "$reference_file" "https://raw.githubusercontent.com/godotengine/godot-cpp/godot-$reference_tag/gdextension/extension_api.json" || has_problems=1
@@ -81,6 +91,6 @@ while read -r file; do
     fi
 
     rm -f "$reference_file" "$validate" "$validation_output" "$allowed_errors" "$expected_errors"
-done <<< "$(find "$api_validation_dir" -name "*.expected")"
+done <<< "$(find "$api_validation_dir" -type d -mindepth 1 -maxdepth 1)"
 
 exit $has_problems

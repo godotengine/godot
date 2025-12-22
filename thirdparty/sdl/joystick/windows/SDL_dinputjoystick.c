@@ -42,7 +42,6 @@
 // external variables referenced.
 extern HWND SDL_HelperWindow;
 
-
 // local variables
 static bool coinitialized = false;
 static LPDIRECTINPUT8 dinput = NULL;

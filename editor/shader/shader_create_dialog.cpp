@@ -31,72 +31,59 @@
 #include "shader_create_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/shader/editor_shader_language_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/shader_include.h"
-#include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
-
-enum ShaderType {
-	SHADER_TYPE_TEXT,
-	SHADER_TYPE_VISUAL,
-	SHADER_TYPE_INC,
-	SHADER_TYPE_MAX,
-};
 
 void ShaderCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
-			if (!last_lang.is_empty()) {
-				for (int i = 0; i < type_menu->get_item_count(); i++) {
-					if (type_menu->get_item_text(i) == last_lang) {
-						type_menu->select(i);
-						current_type = i;
-						break;
-					}
-				}
-			} else {
-				type_menu->select(default_type);
-			}
-
 			current_mode = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_mode", 0);
 			mode_menu->select(current_mode);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			static const char *shader_types[3] = { "Shader", "VisualShader", "TextFile" };
-			for (int i = 0; i < 3; i++) {
-				Ref<Texture2D> icon = get_editor_theme_icon(shader_types[i]);
-				if (icon.is_valid()) {
-					type_menu->set_item_icon(i, icon);
-				}
-			}
-
 			path_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
+			// Note that some of the theme logic happens in `config()` when opening the dialog.
 		} break;
+	}
+}
+
+void ShaderCreateDialog::_refresh_type_icons() {
+	for (int i = 0; i < type_menu->get_item_count(); i++) {
+		const String item_name = type_menu->get_item_text(i);
+		Ref<Texture2D> icon = get_editor_theme_icon(item_name);
+		if (icon.is_valid()) {
+			type_menu->set_item_icon(i, icon);
+		} else {
+			icon = get_editor_theme_icon("TextFile");
+			if (icon.is_valid()) {
+				type_menu->set_item_icon(i, icon);
+			}
+		}
 	}
 }
 
 void ShaderCreateDialog::_update_language_info() {
 	type_data.clear();
 
-	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
+	for (int i = 0; i < EditorShaderLanguagePlugin::get_shader_language_variation_count(); i++) {
 		ShaderTypeData shader_type_data;
-		if (i == int(SHADER_TYPE_TEXT)) {
+		if (i == 0) {
+			// HACK: The ShaderCreateDialog class currently only shows templates for text shaders. Generalize this later.
 			shader_type_data.use_templates = true;
-			shader_type_data.extensions.push_back("gdshader");
-			shader_type_data.default_extension = "gdshader";
-		} else if (i == int(SHADER_TYPE_INC)) {
-			shader_type_data.extensions.push_back("gdshaderinc");
-			shader_type_data.default_extension = "gdshaderinc";
-		} else {
-			shader_type_data.default_extension = "tres";
+		}
+		shader_type_data.default_extension = EditorShaderLanguagePlugin::get_file_extension_for_index(i);
+		shader_type_data.extensions.push_back(shader_type_data.default_extension);
+		if (shader_type_data.default_extension != "tres") {
+			shader_type_data.extensions.push_back("tres");
 		}
 		shader_type_data.extensions.push_back("res");
-		shader_type_data.extensions.push_back("tres");
 		type_data.push_back(shader_type_data);
 	}
 }
@@ -146,93 +133,14 @@ void ShaderCreateDialog::_create_new() {
 	Ref<Resource> shader;
 	Ref<Resource> shader_inc;
 
-	switch (type_menu->get_selected()) {
-		case SHADER_TYPE_TEXT: {
-			Ref<Shader> text_shader;
-			text_shader.instantiate();
-			shader = text_shader;
-
-			StringBuilder code;
-			code += vformat("shader_type %s;\n", mode_menu->get_text().to_snake_case());
-
-			if (current_template == 0) { // Default template.
-				switch (current_mode) {
-					case Shader::MODE_SPATIAL:
-						code += R"(
-void vertex() {
-	// Called for every vertex the material is visible on.
-}
-
-void fragment() {
-	// Called for every pixel the material is visible on.
-}
-
-//void light() {
-//	// Called for every pixel for every light affecting the material.
-//	// Uncomment to replace the default light processing function with this one.
-//}
-)";
-						break;
-					case Shader::MODE_CANVAS_ITEM:
-						code += R"(
-void vertex() {
-	// Called for every vertex the material is visible on.
-}
-
-void fragment() {
-	// Called for every pixel the material is visible on.
-}
-
-//void light() {
-//	// Called for every pixel for every light affecting the CanvasItem.
-//	// Uncomment to replace the default light processing function with this one.
-//}
-)";
-						break;
-					case Shader::MODE_PARTICLES:
-						code += R"(
-void start() {
-	// Called when a particle is spawned.
-}
-
-void process() {
-	// Called every frame on existing particles (according to the Fixed FPS property).
-}
-)";
-						break;
-					case Shader::MODE_SKY:
-						code += R"(
-void sky() {
-	// Called for every visible pixel in the sky background, as well as all pixels
-	// in the radiance cubemap.
-}
-)";
-						break;
-					case Shader::MODE_FOG:
-						code += R"(
-void fog() {
-	// Called once for every froxel that is touched by an axis-aligned bounding box
-	// of the associated FogVolume. This means that froxels that just barely touch
-	// a given FogVolume will still be used.
-}
-)";
-				}
-			}
-			text_shader->set_code(code.as_string());
-		} break;
-		case SHADER_TYPE_VISUAL: {
-			Ref<VisualShader> visual_shader;
-			visual_shader.instantiate();
-			shader = visual_shader;
-			visual_shader->set_mode(Shader::Mode(current_mode));
-		} break;
-		case SHADER_TYPE_INC: {
-			Ref<ShaderInclude> include;
-			include.instantiate();
-			shader_inc = include;
-		} break;
-		default: {
-		} break;
+	const int type_index = type_menu->get_selected();
+	Ref<EditorShaderLanguagePlugin> shader_lang = EditorShaderLanguagePlugin::get_shader_language_for_index(type_index);
+	// A bit of an unfortunate hack because Shader and ShaderInclude do not share a common base class.
+	// We need duplicate code paths for includes vs non-includes, so just check for the string "Include".
+	if (type_menu->get_item_text(type_index).contains("Include")) {
+		shader_inc = shader_lang->create_new_shader_include();
+	} else {
+		shader = shader_lang->create_new_shader(0, Shader::Mode(current_mode), current_template);
 	}
 
 	if (shader.is_null()) {
@@ -308,8 +216,18 @@ void ShaderCreateDialog::_type_changed(int p_language) {
 	_path_changed(path);
 	file_path->set_text(path);
 
-	type_menu->set_item_disabled(int(SHADER_TYPE_INC), load_enabled);
-	mode_menu->set_disabled(p_language == SHADER_TYPE_INC);
+	mode_menu->set_disabled(false);
+	for (int i = 0; i < type_menu->get_item_count(); i++) {
+		const String item_name = type_menu->get_item_text(i);
+		if (item_name.contains("Include")) {
+			type_menu->set_item_disabled(i, load_enabled);
+			if (i == p_language) {
+				mode_menu->set_disabled(true);
+			}
+		} else {
+			type_menu->set_item_disabled(i, false);
+		}
+	}
 	template_menu->set_disabled(!shader_type_data.use_templates);
 	template_menu->clear();
 
@@ -344,7 +262,7 @@ void ShaderCreateDialog::_browse_path() {
 	file_browse->set_title(TTR("Open Shader / Choose Location"));
 	file_browse->set_ok_button_text(TTR("Open"));
 
-	file_browse->set_disable_overwrite_warning(true);
+	file_browse->set_customization_flag_enabled(FileDialog::CUSTOMIZATION_OVERWRITE_WARNING, false);
 	file_browse->clear_filters();
 
 	List<String> extensions = type_data.get(type_menu->get_selected()).extensions;
@@ -399,7 +317,43 @@ void ShaderCreateDialog::_path_submitted(const String &p_path) {
 	}
 }
 
-void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_type, int p_preferred_mode) {
+void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, const String &p_preferred_type, int p_preferred_mode) {
+	_update_language_info();
+	type_menu->clear();
+	const Vector<Ref<EditorShaderLanguagePlugin>> shader_langs = EditorShaderLanguagePlugin::get_shader_languages_read_only();
+	ERR_FAIL_COND_MSG(shader_langs.is_empty(), "ShaderCreateDialog: Unable to load any shader languages!");
+	for (Ref<EditorShaderLanguagePlugin> shader_lang : shader_langs) {
+		const PackedStringArray variations = shader_lang->get_language_variations();
+		for (const String &variation : variations) {
+			type_menu->add_item(variation);
+		}
+	}
+	_refresh_type_icons();
+
+	int preferred_type = -1;
+	// Select preferred type if specified.
+	for (int i = 0; i < type_menu->get_item_count(); i++) {
+		if (type_menu->get_item_text(i) == p_preferred_type) {
+			preferred_type = i;
+			break;
+		}
+	}
+	if (preferred_type < 0 || preferred_type >= type_menu->get_item_count()) {
+		preferred_type = 0;
+		// Select the last selected language if possible, otherwise default to the first language.
+		String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
+		if (!last_lang.is_empty()) {
+			for (int i = 0; i < type_menu->get_item_count(); i++) {
+				if (type_menu->get_item_text(i) == last_lang) {
+					preferred_type = i;
+					break;
+				}
+			}
+		}
+	}
+	type_menu->select(preferred_type);
+	current_type = 0;
+
 	if (!p_base_path.is_empty()) {
 		initial_base_path = p_base_path.get_basename();
 		file_path->set_text(initial_base_path + "." + type_data.get(type_menu->get_selected()).default_extension);
@@ -417,11 +371,6 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 		internal->set_pressed(EditorSettings::get_singleton()->get_project_metadata("shader_setup", "create_built_in_shader", false));
 	}
 
-	if (p_preferred_type > -1) {
-		type_menu->select(p_preferred_type);
-		_type_changed(p_preferred_type);
-	}
-
 	if (p_preferred_mode > -1) {
 		mode_menu->select(p_preferred_mode);
 		_mode_changed(p_preferred_mode);
@@ -432,66 +381,41 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 }
 
 String ShaderCreateDialog::_validate_path(const String &p_path) {
-	String p = p_path.strip_edges();
+	ERR_FAIL_COND_V(current_type >= type_data.size(), TTR("Invalid shader type selected."));
+	String stripped_file_path = p_path.strip_edges();
 
-	if (p.is_empty()) {
+	if (stripped_file_path.is_empty()) {
 		return TTR("Path is empty.");
 	}
-	if (p.get_file().get_basename().is_empty()) {
+	if (stripped_file_path.get_file().get_basename().is_empty()) {
 		return TTR("Filename is empty.");
 	}
 
-	p = ProjectSettings::get_singleton()->localize_path(p);
-	if (!p.begins_with("res://")) {
+	stripped_file_path = ProjectSettings::get_singleton()->localize_path(stripped_file_path);
+	if (!stripped_file_path.begins_with("res://")) {
 		return TTR("Path is not local.");
 	}
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (d->change_dir(p.get_base_dir()) != OK) {
+	if (d->change_dir(stripped_file_path.get_base_dir()) != OK) {
 		return TTR("Invalid base path.");
 	}
 
 	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (f->dir_exists(p)) {
+	if (f->dir_exists(stripped_file_path)) {
 		return TTR("A directory with the same name exists.");
 	}
 
-	String extension = p.get_extension();
-	HashSet<String> extensions;
+	const ShaderCreateDialog::ShaderTypeData &current_type_data = type_data.get(current_type);
+	const String file_extension = stripped_file_path.get_extension();
 
-	List<ShaderCreateDialog::ShaderTypeData>::ConstIterator itr = type_data.begin();
-	for (int i = 0; i < SHADER_TYPE_MAX; ++itr, ++i) {
-		for (const String &ext : itr->extensions) {
-			if (!extensions.has(ext)) {
-				extensions.insert(ext);
-			}
+	for (const String &type_ext : current_type_data.extensions) {
+		if (type_ext.nocasecmp_to(file_extension) == 0) {
+			return "";
 		}
 	}
 
-	bool found = false;
-	bool match = false;
-
-	for (const String &ext : extensions) {
-		if (ext.nocasecmp_to(extension) == 0) {
-			found = true;
-			for (const String &type_ext : type_data.get(current_type).extensions) {
-				if (type_ext.nocasecmp_to(extension) == 0) {
-					match = true;
-					break;
-				}
-			}
-			break;
-		}
-	}
-
-	if (!found) {
-		return TTR("Invalid extension.");
-	}
-	if (!match) {
-		return TTR("Wrong extension chosen.");
-	}
-
-	return "";
+	return TTR("Invalid extension for selected shader type.");
 }
 
 void ShaderCreateDialog::_update_dialog() {
@@ -587,36 +511,6 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	gc->add_child(memnew(Label(TTR("Type:"))));
 	gc->add_child(type_menu);
 
-	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
-		String type;
-		bool invalid = false;
-		switch (i) {
-			case SHADER_TYPE_TEXT:
-				type = "Shader";
-				default_type = i;
-				break;
-			case SHADER_TYPE_VISUAL:
-				type = "VisualShader";
-				break;
-			case SHADER_TYPE_INC:
-				type = "ShaderInclude";
-				break;
-			case SHADER_TYPE_MAX:
-				invalid = true;
-				break;
-			default:
-				invalid = true;
-				break;
-		}
-		if (invalid) {
-			continue;
-		}
-		type_menu->add_item(type);
-	}
-	if (default_type >= 0) {
-		type_menu->select(default_type);
-	}
-	current_type = default_type;
 	type_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_type_changed));
 
 	// Modes.

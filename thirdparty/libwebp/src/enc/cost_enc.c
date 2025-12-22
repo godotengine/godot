@@ -11,7 +11,13 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include <stdlib.h>
+
+#include "src/dec/common_dec.h"
+#include "src/webp/types.h"
+#include "src/dsp/dsp.h"
 #include "src/enc/cost_enc.h"
+#include "src/enc/vp8i_enc.h"
 
 //------------------------------------------------------------------------------
 // Level cost tables
@@ -60,14 +66,14 @@ static int VariableLevelCost(int level, const uint8_t probas[NUM_PROBAS]) {
 void VP8CalculateLevelCosts(VP8EncProba* const proba) {
   int ctype, band, ctx;
 
-  if (!proba->dirty_) return;  // nothing to do.
+  if (!proba->dirty) return;  // nothing to do.
 
   for (ctype = 0; ctype < NUM_TYPES; ++ctype) {
     int n;
     for (band = 0; band < NUM_BANDS; ++band) {
       for (ctx = 0; ctx < NUM_CTX; ++ctx) {
-        const uint8_t* const p = proba->coeffs_[ctype][band][ctx];
-        uint16_t* const table = proba->level_cost_[ctype][band][ctx];
+        const uint8_t* const p = proba->coeffs[ctype][band][ctx];
+        uint16_t* const table = proba->level_cost[ctype][band][ctx];
         const int cost0 = (ctx > 0) ? VP8BitCost(1, p[0]) : 0;
         const int cost_base = VP8BitCost(1, p[1]) + cost0;
         int v;
@@ -81,12 +87,12 @@ void VP8CalculateLevelCosts(VP8EncProba* const proba) {
     }
     for (n = 0; n < 16; ++n) {    // replicate bands. We don't need to sentinel.
       for (ctx = 0; ctx < NUM_CTX; ++ctx) {
-        proba->remapped_costs_[ctype][n][ctx] =
-            proba->level_cost_[ctype][VP8EncBands[n]][ctx];
+        proba->remapped_costs[ctype][n][ctx] =
+            proba->level_cost[ctype][VP8EncBands[n]][ctx];
       }
     }
   }
-  proba->dirty_ = 0;
+  proba->dirty = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -206,9 +212,9 @@ const uint16_t VP8FixedCostsI4[NUM_BMODES][NUM_BMODES][NUM_BMODES] = {
 void VP8InitResidual(int first, int coeff_type,
                      VP8Encoder* const enc, VP8Residual* const res) {
   res->coeff_type = coeff_type;
-  res->prob  = enc->proba_.coeffs_[coeff_type];
-  res->stats = enc->proba_.stats_[coeff_type];
-  res->costs = enc->proba_.remapped_costs_[coeff_type];
+  res->prob  = enc->proba.coeffs[coeff_type];
+  res->stats = enc->proba.stats[coeff_type];
+  res->costs = enc->proba.remapped_costs[coeff_type];
   res->first = first;
 }
 
@@ -216,14 +222,14 @@ void VP8InitResidual(int first, int coeff_type,
 // Mode costs
 
 int VP8GetCostLuma4(VP8EncIterator* const it, const int16_t levels[16]) {
-  const int x = (it->i4_ & 3), y = (it->i4_ >> 2);
+  const int x = (it->i4 & 3), y = (it->i4 >> 2);
   VP8Residual res;
-  VP8Encoder* const enc = it->enc_;
+  VP8Encoder* const enc = it->enc;
   int R = 0;
   int ctx;
 
   VP8InitResidual(0, 3, enc, &res);
-  ctx = it->top_nz_[x] + it->left_nz_[y];
+  ctx = it->top_nz[x] + it->left_nz[y];
   VP8SetResidualCoeffs(levels, &res);
   R += VP8GetResidualCost(ctx, &res);
   return R;
@@ -231,7 +237,7 @@ int VP8GetCostLuma4(VP8EncIterator* const it, const int16_t levels[16]) {
 
 int VP8GetCostLuma16(VP8EncIterator* const it, const VP8ModeScore* const rd) {
   VP8Residual res;
-  VP8Encoder* const enc = it->enc_;
+  VP8Encoder* const enc = it->enc;
   int x, y;
   int R = 0;
 
@@ -240,16 +246,16 @@ int VP8GetCostLuma16(VP8EncIterator* const it, const VP8ModeScore* const rd) {
   // DC
   VP8InitResidual(0, 1, enc, &res);
   VP8SetResidualCoeffs(rd->y_dc_levels, &res);
-  R += VP8GetResidualCost(it->top_nz_[8] + it->left_nz_[8], &res);
+  R += VP8GetResidualCost(it->top_nz[8] + it->left_nz[8], &res);
 
   // AC
   VP8InitResidual(1, 0, enc, &res);
   for (y = 0; y < 4; ++y) {
     for (x = 0; x < 4; ++x) {
-      const int ctx = it->top_nz_[x] + it->left_nz_[y];
+      const int ctx = it->top_nz[x] + it->left_nz[y];
       VP8SetResidualCoeffs(rd->y_ac_levels[x + y * 4], &res);
       R += VP8GetResidualCost(ctx, &res);
-      it->top_nz_[x] = it->left_nz_[y] = (res.last >= 0);
+      it->top_nz[x] = it->left_nz[y] = (res.last >= 0);
     }
   }
   return R;
@@ -257,7 +263,7 @@ int VP8GetCostLuma16(VP8EncIterator* const it, const VP8ModeScore* const rd) {
 
 int VP8GetCostUV(VP8EncIterator* const it, const VP8ModeScore* const rd) {
   VP8Residual res;
-  VP8Encoder* const enc = it->enc_;
+  VP8Encoder* const enc = it->enc;
   int ch, x, y;
   int R = 0;
 
@@ -267,10 +273,10 @@ int VP8GetCostUV(VP8EncIterator* const it, const VP8ModeScore* const rd) {
   for (ch = 0; ch <= 2; ch += 2) {
     for (y = 0; y < 2; ++y) {
       for (x = 0; x < 2; ++x) {
-        const int ctx = it->top_nz_[4 + ch + x] + it->left_nz_[4 + ch + y];
+        const int ctx = it->top_nz[4 + ch + x] + it->left_nz[4 + ch + y];
         VP8SetResidualCoeffs(rd->uv_levels[ch * 2 + x + y * 2], &res);
         R += VP8GetResidualCost(ctx, &res);
-        it->top_nz_[4 + ch + x] = it->left_nz_[4 + ch + y] = (res.last >= 0);
+        it->top_nz[4 + ch + x] = it->left_nz[4 + ch + y] = (res.last >= 0);
       }
     }
   }

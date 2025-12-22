@@ -36,39 +36,55 @@
 
 namespace TestTranslationServer {
 TEST_CASE("[TranslationServer] Translation operations") {
+	Ref<TranslationDomain> td = TranslationServer::get_singleton()->get_or_add_domain("godot.test");
+	CHECK(td->get_translations().is_empty());
+
 	Ref<Translation> t1 = memnew(Translation);
-	t1->set_locale("uk");
+	t1->set_locale("uk"); // Ukrainian.
 	t1->add_message("Good Morning", String(U"Добрий ранок"));
+	td->add_translation(t1);
+	CHECK(td->get_translations().size() == 1);
+	CHECK(td->has_translation_for_locale("uk", true));
+	CHECK(td->has_translation_for_locale("uk", false));
+	CHECK_FALSE(td->has_translation_for_locale("uk_UA", true));
+	CHECK(td->has_translation_for_locale("uk_UA", false));
+	CHECK(td->find_translations("uk", false).size() == 1);
+	CHECK(td->find_translations("uk", true).size() == 1);
+	CHECK(td->find_translations("uk_UA", false).size() == 1);
+	CHECK(td->find_translations("uk_UA", true).size() == 0);
 
 	Ref<Translation> t2 = memnew(Translation);
-	t2->set_locale("uk");
-	t2->add_message("Hello Godot", String(U"你好戈多"));
+	t2->set_locale("uk_UA"); // Ukrainian in Ukraine.
+	t2->add_message("Hello Godot", String(U"Привіт, Годо."));
+	td->add_translation(t2);
+	CHECK(td->get_translations().size() == 2);
+	CHECK(td->has_translation_for_locale("uk", true));
+	CHECK(td->has_translation_for_locale("uk", false));
+	CHECK(td->has_translation_for_locale("uk_UA", true));
+	CHECK(td->has_translation_for_locale("uk_UA", false));
+	CHECK(td->find_translations("uk", false).size() == 2);
+	CHECK(td->find_translations("uk", true).size() == 1);
+	CHECK(td->find_translations("uk_UA", false).size() == 2);
+	CHECK(td->find_translations("uk_UA", true).size() == 1);
 
-	TranslationServer *ts = TranslationServer::get_singleton();
+	td->set_locale_override("uk");
+	CHECK(td->translate("Good Morning", StringName()) == String::utf8("Добрий ранок"));
 
-	// Adds translation for UK locale for the first time.
-	int l_count_before = ts->get_loaded_locales().size();
-	ts->add_translation(t1);
-	int l_count_after = ts->get_loaded_locales().size();
-	CHECK(l_count_after > l_count_before);
+	td->remove_translation(t1);
+	CHECK(td->get_translations().size() == 1);
+	CHECK_FALSE(td->has_translation_for_locale("uk", true));
+	CHECK(td->has_translation_for_locale("uk", false));
+	CHECK(td->has_translation_for_locale("uk_UA", true));
+	CHECK(td->has_translation_for_locale("uk_UA", false));
+	CHECK(td->find_translations("uk", true).size() == 0);
+	CHECK(td->find_translations("uk", false).size() == 1);
+	CHECK(td->find_translations("uk_UA", true).size() == 1);
+	CHECK(td->find_translations("uk_UA", false).size() == 1);
 
-	// Adds translation for UK locale again.
-	ts->add_translation(t2);
-	CHECK_EQ(ts->get_loaded_locales().size(), l_count_after);
-
-	// Removing that translation.
-	ts->remove_translation(t2);
-	CHECK_EQ(ts->get_loaded_locales().size(), l_count_after);
-
-	CHECK(ts->get_translation_object("uk").is_valid());
-
-	ts->set_locale("uk");
-	CHECK(ts->translate("Good Morning") == String::utf8("Добрий ранок"));
-
-	ts->remove_translation(t1);
-	CHECK(ts->get_translation_object("uk").is_null());
 	// If no suitable Translation object has been found - the original message should be returned.
-	CHECK(ts->translate("Good Morning") == "Good Morning");
+	CHECK(td->translate("Good Morning", StringName()) == "Good Morning");
+
+	TranslationServer::get_singleton()->remove_domain("godot.test");
 }
 
 TEST_CASE("[TranslationServer] Locale operations") {

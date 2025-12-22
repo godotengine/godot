@@ -1167,6 +1167,15 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindow(const char *title, int
  * Popup windows implicitly do not have a border/decorations and do not appear
  * on the taskbar/dock or in lists of windows such as alt-tab menus.
  *
+ * By default, popup window positions will automatically be constrained to keep
+ * the entire window within display bounds. This can be overridden with the
+ * `SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN` property.
+ *
+ * By default, popup menus will automatically grab keyboard focus from the parent
+ * when shown. This behavior can be overridden by setting the `SDL_WINDOW_NOT_FOCUSABLE`
+ * flag, setting the `SDL_PROP_WINDOW_CREATE_FOCUSABLE_BOOLEAN` property to false, or
+ * toggling it after creation via the `SDL_SetWindowFocusable()` function.
+ *
  * If a parent window is hidden or destroyed, any child popup windows will be
  * recursively hidden or destroyed as well. Child popup windows not explicitly
  * hidden will be restored when the parent is shown.
@@ -1207,6 +1216,9 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   be always on top
  * - `SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN`: true if the window has no
  *   window decoration
+ * - `SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN`: true if the "tooltip" and
+ *   "menu" window types should be automatically constrained to be entirely within
+ *   display bounds (default), false if no constraints on the position are desired.
  * - `SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN`: true if the
  *   window will be used with an externally managed graphics context.
  * - `SDL_PROP_WINDOW_CREATE_FOCUSABLE_BOOLEAN`: true if the window should
@@ -1321,6 +1333,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 
 #define SDL_PROP_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN               "SDL.window.create.always_on_top"
 #define SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN                  "SDL.window.create.borderless"
+#define SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN             "SDL.window.create.constrain_popup"
 #define SDL_PROP_WINDOW_CREATE_FOCUSABLE_BOOLEAN                   "SDL.window.create.focusable"
 #define SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN   "SDL.window.create.external_graphics_context"
 #define SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER                        "SDL.window.create.flags"
@@ -1460,7 +1473,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_COCOA_WINDOW_POINTER`: the `(__unsafe_unretained)`
  *   NSWindow associated with the window
  * - `SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER`: the NSInteger tag
- *   assocated with metal views on the window
+ *   associated with metal views on the window
  *
  * On OpenVR:
  *
