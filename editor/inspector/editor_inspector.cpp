@@ -5178,12 +5178,47 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		} else {
 			_edit_request_change(object, p_name);
 		}
-
 		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<MultiNodeEdit>(object)) {
-		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
-		_edit_request_change(object, p_name);
-		emit_signal(_prop_edited, p_name);
+		if (!separate_resource_copy && p_value.get_type() == Variant::OBJECT && p_value.get_validated_object() != nullptr && EditorNode::get_singleton()->is_resource_internal_to_scene(p_value)) {
+			List<Ref<Resource>> internal_resources = { p_value };
+			EditorNode::get_singleton()->gather_resources(p_value, internal_resources, true);
+
+			for (Ref<Resource> R : internal_resources) {
+				if (Object::cast_to<MultiNodeEdit>(object)->get(p_name).get_validated_object() != nullptr && EditorNode::get_singleton()->get_resource_count(R) == 0) {
+					separate_resource_copy = true;
+					selected_nodes_for_duplication = EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list();
+					undo_redo->create_action(vformat(TTR("Set %s on %d nodes"), p_name, selected_nodes_for_duplication.size()), UndoRedo::MERGE_ENDS);
+					break;
+				}
+			}
+		}
+		if (separate_resource_copy) {
+			Node *current = selected_nodes_for_duplication.front()->get();
+			Variant old_value = current->get(p_name);
+			Variant::Type type = old_value.get_type();
+
+			undo_redo->add_do_property(current, p_name, p_value);
+			undo_redo->add_undo_property(current, p_name, current->get(p_name));
+
+			if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && old_value != p_value) {
+				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", old_value, current, true);
+				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, current, false);
+				// Perhaps an inefficient way of updating the resource count.
+				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
+				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, current, true);
+				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", old_value, current, false);
+			}
+			selected_nodes_for_duplication.pop_front();
+			if (selected_nodes_for_duplication.is_empty()) {
+				separate_resource_copy = false;
+				undo_redo->commit_action();
+			}
+		} else {
+			Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
+			_edit_request_change(object, p_name);
+			emit_signal(_prop_edited, p_name);
+		}
 	} else if (Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
 		Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, p_value, p_changed_field);
 		_edit_request_change(object, p_name);
