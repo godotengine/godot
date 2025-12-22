@@ -500,14 +500,14 @@ bool EditorInspectorPluginControl::parse_property(Object *p_object, const Varian
 // Toolbars controls.
 
 Size2 ControlEditorPopupButton::get_minimum_size() const {
-	Vector2 base_size = Vector2(26, 26) * EDSCALE;
+	Size2 base_size = Button::get_minimum_size();
 
 	if (arrow_icon.is_null()) {
 		return base_size;
 	}
 
-	Vector2 final_size;
-	final_size.x = base_size.x + arrow_icon->get_width();
+	Size2 final_size;
+	final_size.x = base_size.x + arrow_icon->get_width() - (2 * EDSCALE);
 	final_size.y = MAX(base_size.y, arrow_icon->get_height());
 
 	return final_size;
@@ -543,7 +543,7 @@ void ControlEditorPopupButton::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			if (arrow_icon.is_valid()) {
-				Vector2 arrow_pos = Point2(26, 0) * EDSCALE;
+				Vector2 arrow_pos = Point2(get_size().x - arrow_icon->get_width() - (get_theme_stylebox(CoreStringName(normal))->get_margin(SIDE_RIGHT) * 0.5) + (2 * EDSCALE), 0);
 				if (is_layout_rtl()) {
 					arrow_pos.x = get_size().x - arrow_pos.x - arrow_icon->get_width();
 				}
