@@ -1588,8 +1588,6 @@ void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p
 	ERR_FAIL_NULL(texture);
 	ERR_FAIL_COND(texture->is_render_target);
 
-	ERR_FAIL_COND(p_width <= 0 || p_width > 16384);
-	ERR_FAIL_COND(p_height <= 0 || p_height > 16384);
 	//real texture size is in alloc width and height
 	texture->width = p_width;
 	texture->height = p_height;
