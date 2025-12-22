@@ -444,6 +444,7 @@ void MenuBar::_draw_menu_item(int p_index) {
 	Ref<StyleBox> style;
 	Rect2 item_rect = _get_menu_item_rect(p_index);
 
+	StyleBox::begin_animation_group(StringName(itos(p_index)));
 	if (menu_cache[p_index].disabled) {
 		if (rtl && has_theme_stylebox(SNAME("disabled_mirrored"))) {
 			style = theme_cache.disabled_mirrored;
@@ -506,6 +507,7 @@ void MenuBar::_draw_menu_item(int p_index) {
 			color = theme_cache.font_color;
 		}
 	}
+	StyleBox::end_animation_group();
 
 	Point2 text_ofs = item_rect.position + Point2(style->get_margin(SIDE_LEFT), style->get_margin(SIDE_TOP));
 

@@ -1602,6 +1602,7 @@ public:
 	virtual void canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture = RID()) = 0;
 	virtual void canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture) = 0;
 	virtual void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) = 0;
+	virtual void canvas_item_add_set_modulate(RID p_item, const Color &p_modulate) = 0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore) = 0;
 	virtual void canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) = 0;
 
