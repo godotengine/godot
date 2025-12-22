@@ -3150,6 +3150,11 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 		result.type_source = left_type.type_source;
 		result.kind = GDScriptParser::DataType::BUILTIN;
 		result.builtin_type = Variant::STRING;
+	} else if (p_binary_op->variant_op == Variant::OP_AND || p_binary_op->variant_op == Variant::OP_OR) {
+		// The operators "and" and "or" operate on all types and always return a boolean.
+		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+		result.kind = GDScriptParser::DataType::BUILTIN;
+		result.builtin_type = Variant::BOOL;
 	} else if (left_type.is_variant() || right_type.is_variant()) {
 		// Cannot infer type because one operand can be anything.
 		result.kind = GDScriptParser::DataType::VARIANT;
@@ -5250,8 +5255,20 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 	}
 
 	if (operand_type.is_variant()) {
-		result.kind = GDScriptParser::DataType::VARIANT;
-		mark_node_unsafe(p_unary_op);
+		switch (p_unary_op->operation) {
+			case GDScriptParser::UnaryOpNode::OP_LOGIC_NOT:
+				// Logical NOT accepts values of any type and always returns a boolean.
+				result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+				result.kind = GDScriptParser::DataType::BUILTIN;
+				result.builtin_type = Variant::BOOL;
+				break;
+			case GDScriptParser::UnaryOpNode::OP_POSITIVE:
+			case GDScriptParser::UnaryOpNode::OP_NEGATIVE:
+			case GDScriptParser::UnaryOpNode::OP_COMPLEMENT:
+				result.kind = GDScriptParser::DataType::VARIANT;
+				mark_node_unsafe(p_unary_op);
+				break;
+		}
 	} else {
 		bool valid = false;
 		result = get_operation_type(p_unary_op->variant_op, operand_type, valid, p_unary_op);
