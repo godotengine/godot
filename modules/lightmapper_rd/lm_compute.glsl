@@ -704,6 +704,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		attenuation *= max(0.0, dot(p_normal, r_light_dir));
 		soft_shadowing_disk_size = light_data.size;
 	} else if (light_data.type == LIGHT_TYPE_AREA) {
+		r_light_dir = vec3(0.0); // has to be initialized!
 		if (dot(light_data.direction, p_position - light_data.position) <= 0) {
 			return;
 		}
