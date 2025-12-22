@@ -133,30 +133,6 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
 };
 
-#define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
-#define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, StringName(m_setter), StringName(m_getter))
-#define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ::ClassDB::add_property(get_class_static(), m_property, StringName(m_setter), StringName(m_getter), m_index)
-#define ADD_PROPERTY_DEFAULT(m_property, m_default) ::ClassDB::set_property_default_value(get_class_static(), m_property, m_default)
-#define ADD_GROUP(m_name, m_prefix) ::ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
-#define ADD_GROUP_INDENT(m_name, m_prefix, m_depth) ::ClassDB::add_property_group(get_class_static(), m_name, m_prefix, m_depth)
-#define ADD_SUBGROUP(m_name, m_prefix) ::ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix)
-#define ADD_SUBGROUP_INDENT(m_name, m_prefix, m_depth) ::ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix, m_depth)
-#define ADD_LINKED_PROPERTY(m_property, m_linked_property) ::ClassDB::add_linked_property(get_class_static(), m_property, m_linked_property)
-
-#ifdef TOOLS_ENABLED
-#define ADD_CLASS_DEPENDENCY(m_class) ::ClassDB::add_class_dependency(get_class_static(), m_class)
-#else
-#define ADD_CLASS_DEPENDENCY(m_class)
-#endif
-
-#define ADD_ARRAY_COUNT(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, StringName(m_count_property_setter), StringName(m_count_property_getter), m_prefix)
-#define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, StringName(m_count_property_setter), StringName(m_count_property_getter), m_prefix, m_property_usage_flags)
-#define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
-
-// Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
-// PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
-#define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
-
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
 	String name;
@@ -379,18 +355,6 @@ struct ObjectGDExtension {
 
 	~ObjectGDExtension();
 };
-
-#define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
-#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
-
-#ifdef DEBUG_ENABLED
-#define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__));
-#else
-#define GDVIRTUAL_BIND(m_name, ...)
-#endif // DEBUG_ENABLED
-#define GDVIRTUAL_BIND_COMPAT(m_alias, ...) ::ClassDB::add_virtual_compatibility_method(get_class_static(), _gdvirtual_##m_alias##_get_method_info(), true, sarray(__VA_ARGS__));
-#define GDVIRTUAL_IS_OVERRIDDEN(m_name) _gdvirtual_##m_name##_overridden()
-#define GDVIRTUAL_IS_OVERRIDDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overridden()
 
 /*
  * The following is an incomprehensible blob of hacks and workarounds to
