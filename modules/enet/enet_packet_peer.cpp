@@ -181,10 +181,22 @@ int ENetPacketPeer::get_packet_flags() const {
 }
 
 void ENetPacketPeer::_on_disconnect() {
+	free_packet();
 	if (peer) {
 		peer->data = nullptr;
 	}
 	peer = nullptr;
+}
+
+void ENetPacketPeer::free_packet() {
+	for (ENetPacket *p : packet_queue) {
+		enet_packet_destroy(p);
+	}
+	packet_queue.clear();
+	if (last_packet) {
+		enet_packet_destroy(last_packet);
+		last_packet = nullptr;
+	}
 }
 
 void ENetPacketPeer::_queue_packet(ENetPacket *p_packet) {
