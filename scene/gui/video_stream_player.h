@@ -74,6 +74,7 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_notification);
 	void _validate_property(PropertyInfo &p_property) const;
+	bool _stop();
 
 public:
 	Size2 get_minimum_size() const override;
