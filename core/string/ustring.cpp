@@ -5242,11 +5242,11 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				case 'x': // Hexadecimal (lowercase)
 				case 'X': { // Hexadecimal (uppercase)
 					if (value_index >= values.size()) {
-						return "not enough arguments for format string";
+						return vformat("[%%%c] Not enough arguments for string formatting (%d provided, but more were expected). Check for extraneous %% placeholders or missing arguments.", c, value_index);
 					}
 
 					if (!values[value_index].is_num()) {
-						return "a number is required";
+						return vformat("[%%%c] A number (int/float) is required, but a %s was provided.", c, Variant().get_type_name(values[value_index].get_type()));
 					}
 
 					int64_t value = values[value_index];
@@ -5312,11 +5312,11 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 				case 'f': { // Float
 					if (value_index >= values.size()) {
-						return "not enough arguments for format string";
+						return vformat("[%%f] Not enough arguments for string formatting (%d provided, but more were expected). Check for extraneous %% placeholders or missing arguments.", value_index);
 					}
 
 					if (!values[value_index].is_num()) {
-						return "a number is required";
+						return vformat("[%%f] A number (int/float) is required, but a %s was provided.", Variant().get_type_name(values[value_index].get_type()));
 					}
 
 					double value = values[value_index];
@@ -5357,7 +5357,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 				case 'v': { // Vector2/3/4/2i/3i/4i
 					if (value_index >= values.size()) {
-						return "not enough arguments for format string";
+						return vformat("[%%v] Not enough arguments for string formatting (%d provided, but more were expected). Check for extraneous %% placeholders or missing arguments.", value_index);
 					}
 
 					int count;
@@ -5375,7 +5375,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 							count = 4;
 						} break;
 						default: {
-							return "%v requires a vector type (Vector2/3/4/2i/3i/4i)";
+							return vformat("[%%v]: A vector is required (Vector2/3/4/2i/3i/4i), but a %s was provided.", Variant().get_type_name(values[value_index].get_type()));
 						}
 					}
 
@@ -5427,7 +5427,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 				case 's': { // String
 					if (value_index >= values.size()) {
-						return "not enough arguments for format string";
+						return vformat("[%%s] Not enough arguments for string formatting (%d provided, but more were expected). Check for extraneous %% placeholders or missing arguments.", value_index);
 					}
 
 					String str = values[value_index];
@@ -5445,7 +5445,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 				case 'c': {
 					if (value_index >= values.size()) {
-						return "not enough arguments for format string";
+						return vformat("[%%c] Not enough arguments for string formatting (%d provided, but more were expected). Check for extraneous %% placeholders or missing arguments.", value_index);
 					}
 
 					// Convert to character.
@@ -5453,20 +5453,20 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					if (values[value_index].is_num()) {
 						int value = values[value_index];
 						if (value < 0) {
-							return "unsigned integer is lower than minimum";
+							return vformat("[%%c]: Unsigned integer (-0x%x) is lower than the minimum allowed value (0).", Math::abs(value));
 						} else if (value >= 0xd800 && value <= 0xdfff) {
-							return "unsigned integer is invalid Unicode character";
+							return vformat("[%%c]: Unsigned integer (0x%x) is an invalid Unicode character.", value);
 						} else if (value > 0x10ffff) {
-							return "unsigned integer is greater than maximum";
+							return vformat("[%%c]: Unsigned integer (0x%x) is greater than the maximum allowed value (0x10ffff).", value);
 						}
 						str = chr(values[value_index]);
 					} else if (values[value_index].get_type() == Variant::STRING) {
 						str = values[value_index];
 						if (str.length() != 1) {
-							return "%c requires number or single-character string";
+							return vformat("[%%c]: A number or a single-character string is required, but a string of %d characters was provided.", str.length());
 						}
 					} else {
-						return "%c requires number or single-character string";
+						return vformat("[%%c]: A number or a single-character string is required, but a %s was provided.", Variant().get_type_name(values[value_index].get_type()));
 					}
 
 					// Padding.
@@ -5510,7 +5510,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					} else {
 						if (c == '0' && min_chars == 0) {
 							if (left_justified) {
-								WARN_PRINT("'0' flag ignored with '-' flag in string format");
+								WARN_PRINT("[%%0]: The \"0\" flag is ignored with \"-\" flag in string formatting.");
 							} else {
 								pad_with_zeros = true;
 							}
@@ -5523,7 +5523,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 				case '.': { // Float/Vector separator.
 					if (in_decimals) {
-						return "too many decimal points in format";
+						return "[%.]: Too many decimal points in format (only 1 point is allowed).";
 					}
 					in_decimals = true;
 					min_decimals = 0; // We want to add the value manually.
@@ -5532,7 +5532,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 
 				case '*': { // Dynamic width, based on value.
 					if (value_index >= values.size()) {
-						return "not enough arguments for format string";
+						return vformat("[%%*]: Not enough arguments for string formatting (%d provided, but more were expected). Check for extraneous %% placeholders or missing arguments.", value_index);
 					}
 
 					Variant::Type value_type = values[value_index].get_type();
@@ -5540,7 +5540,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 							value_type != Variant::VECTOR2 && value_type != Variant::VECTOR2I &&
 							value_type != Variant::VECTOR3 && value_type != Variant::VECTOR3I &&
 							value_type != Variant::VECTOR4 && value_type != Variant::VECTOR4I) {
-						return "* wants number or vector";
+						return vformat("[%%*]: A number (int/float) or a vector type (Vector2/3/4/2i/3i/4i) is required, but a %s was provided.", Variant::get_type_name(value_type));
 					}
 
 					int size = values[value_index];
@@ -5556,7 +5556,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 
 				default: {
-					return "unsupported format character";
+					return vformat("Unsupported format character \"%%%c\".", c);
 				}
 			}
 		} else { // Not in format string.
@@ -5578,11 +5578,11 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 	}
 
 	if (in_format) {
-		return "incomplete format";
+		return "Incomplete format string. Check that all % placeholders use the correct syntax and are terminated correctly.";
 	}
 
 	if (value_index != values.size()) {
-		return "not all arguments converted during string formatting";
+		return vformat("Not all arguments were converted during string formatting (%d provided, but %d were expected). Check for missing %% placeholders or extraneous arguments.", values.size(), value_index);
 	}
 
 	if (error) {
