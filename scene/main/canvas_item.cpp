@@ -31,7 +31,9 @@
 #include "canvas_item.h"
 #include "canvas_item.compat.inc"
 
+#ifndef _2D_DISABLED
 #include "scene/2d/canvas_group.h"
+#endif // _2D_DISABLED
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/atlas_texture.h"
@@ -1310,11 +1312,13 @@ PackedStringArray CanvasItem::get_configuration_warnings() const {
 				warned_about_ancestor_clipping = true;
 			}
 
+#ifndef _2D_DISABLED
 			CanvasGroup *as_canvas_group = Object::cast_to<CanvasGroup>(n);
 			if (!warned_about_canvasgroup_ancestor && as_canvas_group) {
 				warnings.push_back(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its children."), as_canvas_group->get_name()));
 				warned_about_canvasgroup_ancestor = true;
 			}
+#endif // _2D_DISABLED
 
 			// Only break out early once both warnings have been triggered, so
 			// that the user is aware of both possible reasons for clipping not working.
@@ -1739,10 +1743,12 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 
 	update_configuration_warnings();
 
+#ifndef _2D_DISABLED
 	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
 		//avoid accidental bugs, make this not work on CanvasGroup
 		return;
 	}
+#endif // _2D_DISABLED
 
 	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode));
 }

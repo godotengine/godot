@@ -119,8 +119,10 @@ private:
 	static Error _msg_runtime_node_select_set_prefer_group(const Array &p_args);
 	static Error _msg_rq_screenshot(const Array &p_args);
 
+#ifndef _2D_DISABLED
 	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
 	static Error _msg_transform_camera_2d(const Array &p_args);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	static Error _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
 	static Error _msg_transform_camera_3d(const Array &p_args);
@@ -412,8 +414,10 @@ private:
 	void _find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+#ifndef _2D_DISABLED
 	void _reset_camera_2d();
 	void _update_view_2d();
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 	void _find_3d_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items);
