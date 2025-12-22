@@ -102,6 +102,7 @@ void OS_Android::initialize_core() {
 
 #ifdef TOOLS_ENABLED
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
+	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_EDITOR_RESOURCES);
 #else
 	if (use_apk_expansion) {
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
@@ -114,6 +115,7 @@ void OS_Android::initialize_core() {
 
 #ifdef TOOLS_ENABLED
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
+	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_EDITOR_RESOURCES);
 #else
 	if (use_apk_expansion) {
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);

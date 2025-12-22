@@ -2997,7 +2997,7 @@ GDScriptLanguage::GDScriptLanguage() {
 					   "debug/gdscript/warnings/directory_rules",
 					   PROPERTY_HINT_TYPE_STRING,
 					   vformat("%d/%d:;%d/%d:Exclude,Include", Variant::STRING, PROPERTY_HINT_DIR, Variant::INT, PROPERTY_HINT_ENUM)),
-			Dictionary({ { "res://addons", GDScriptParser::WarningDirectoryRule::DECISION_EXCLUDE } }));
+			Dictionary({ { "res://addons", GDScriptParser::WarningDirectoryRule::DECISION_EXCLUDE }, { "editor://", GDScriptParser::WarningDirectoryRule::DECISION_EXCLUDE } }));
 
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		const GDScriptWarning::Code code = (GDScriptWarning::Code)i;

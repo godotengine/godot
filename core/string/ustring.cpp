@@ -4191,7 +4191,7 @@ String String::simplify_path() const {
 	Vector<String> dirs = s.split("/", false);
 	bool absolute_path = is_absolute_path();
 
-	absolute_path = absolute_path && !begins_with("res://"); // FIXME: Some code (GLTF importer) rely on accessing files up from `res://`, this probably should be disabled in the future.
+	absolute_path = absolute_path && !begins_with("res://") && !begins_with("editor://"); // FIXME: Some code (GLTF importer) rely on accessing files up from `res://`, this probably should be disabled in the future.
 
 	for (int i = 0; i < dirs.size(); i++) {
 		String d = dirs[i];
@@ -4855,7 +4855,9 @@ String String::path_to(const String &p_path) const {
 	} else if (src.begins_with("user://") && dst.begins_with("user://")) {
 		src = src.replace("user://", "/");
 		dst = dst.replace("user://", "/");
-
+	} else if (src.begins_with("editor://") && dst.begins_with("editor://")) {
+		src = src.replace("editor://", "/");
+		dst = dst.replace("editor://", "/");
 	} else if (src.begins_with("/") && dst.begins_with("/")) {
 		//nothing
 	} else {
@@ -4980,7 +4982,7 @@ bool String::is_valid_ip_address() const {
 }
 
 bool String::is_resource_file() const {
-	return begins_with("res://") && find("::") == -1;
+	return (begins_with("res://") || begins_with("editor://")) && find("::") == -1;
 }
 
 bool String::is_relative_path() const {
