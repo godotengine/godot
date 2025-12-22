@@ -3765,6 +3765,39 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 	}
 }
 
+void SceneTreeDock::_class_dropped(const StringName &p_class_name, NodePath p_to) {
+	Node *old_node = get_node(p_to);
+	ERR_FAIL_NULL(old_node);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+		Object *new_instance = ClassDB::instantiate(p_class_name);
+		ERR_FAIL_NULL_MSG(new_instance, vformat("Could not instantiate class '%s'.", p_class_name));
+
+		Node *new_node = Object::cast_to<Node>(new_instance);
+		ERR_FAIL_NULL_MSG(new_node, vformat("Class '%s' does not inherit from Node.", p_class_name));
+		new_node->set_name(Node::adjust_name_casing(p_class_name));
+
+		undo_redo->create_action(TTR("Instantiate Class"));
+		undo_redo->add_do_method(old_node, "add_child", new_node, true);
+		undo_redo->add_do_method(new_node, "set_owner", edited_scene);
+		undo_redo->add_do_method(editor_selection, "clear");
+		undo_redo->add_do_method(editor_selection, "add_node", new_node);
+		undo_redo->add_do_reference(new_node);
+		undo_redo->add_undo_method(old_node, "remove_child", new_node);
+		undo_redo->commit_action();
+	} else {
+		Object *new_instance = ClassDB::instantiate(p_class_name);
+		ERR_FAIL_NULL_MSG(new_instance, vformat("Could not instantiate class '%s'.", p_class_name));
+
+		Node *new_node = static_cast<Node *>(new_instance);
+		ERR_FAIL_NULL_MSG(new_node, vformat("Class '%s' does not inherit from Node.", p_class_name));
+		new_node->set_name(old_node->get_name());
+
+		replace_node(old_node, new_node);
+	}
+}
+
 void SceneTreeDock::_nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type) {
 	if (!_validate_no_foreign()) {
 		return;
@@ -4930,6 +4963,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("nodes_rearranged", callable_mp(this, &SceneTreeDock::_nodes_dragged));
 	scene_tree->connect("files_dropped", callable_mp(this, &SceneTreeDock::_files_dropped));
 	scene_tree->connect("script_dropped", callable_mp(this, &SceneTreeDock::_script_dropped));
+	scene_tree->connect("class_dropped", callable_mp(this, &SceneTreeDock::_class_dropped));
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
 	scene_tree->get_scene_tree()->get_vscroll_bar()->connect("value_changed", callable_mp(this, &SceneTreeDock::_reset_hovering_timer).unbind(1));
 

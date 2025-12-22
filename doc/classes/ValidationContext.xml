@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ValidationContext" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_validation">
+			<return type="void" />
+			<param index="0" name="severity" type="int" enum="ValidationContext.ValidationSeverity" />
+			<param index="1" name="message" type="String" />
+			<description>
+				Report a validation issue with the given [param message] at the specified [param severity] level. If any of the messages are reported at the error level, the validation context will be marked as invalid.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="VALIDATION_SEVERITY_INFO" value="0" enum="ValidationSeverity">
+			The message contains informational content that needs to be displayed to the user but does not indicate a problem.
+		</constant>
+		<constant name="VALIDATION_SEVERITY_WARNING" value="1" enum="ValidationSeverity">
+			The message contains a warning about a potential issue that should be looked at, but is not necessarily an error.
+		</constant>
+		<constant name="VALIDATION_SEVERITY_ERROR" value="2" enum="ValidationSeverity">
+			The message indicates an error that needs to be addressed.
+		</constant>
+	</constants>
+</class>

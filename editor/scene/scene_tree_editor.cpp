@@ -34,11 +34,13 @@
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/docks/groups_dock.h"
 #include "editor/docks/signals_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/extension/extension_source_code_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/script/script_editor_plugin.h"
@@ -109,6 +111,23 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			}
 		} else {
 			emit_signal(SNAME("open"), n->get_scene_file_path());
+		}
+	} else if (p_id == BUTTON_EXTENSION_CLASS) {
+		const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_object(n);
+		if (source_code_plugin.is_valid()) {
+			const StringName extension_class_name = n->get_extension_class_name();
+			String source_path = source_code_plugin->get_source_path(extension_class_name);
+			if (source_code_plugin->overrides_external_editor()) {
+				Error err = source_code_plugin->open_in_external_editor(source_path, 0, 0);
+				ERR_FAIL_COND_MSG(err != OK, "Unable to open external editor for: " + source_path);
+			} else {
+				// Fallback to the built-in script editor.
+				Ref<Resource> res = ScriptEditor::get_singleton()->open_file(source_path);
+				ERR_FAIL_COND_MSG(res.is_null(), "Unable to open source file: " + source_path);
+				InspectorDock::get_singleton()->edit_resource(res);
+			}
+		} else {
+			ERR_FAIL_MSG("Class has no associated source code.");
 		}
 	} else if (p_id == BUTTON_SCRIPT) {
 		Ref<Script> script_typed = n->get_script();
@@ -433,6 +452,12 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 				p_item->set_button_disabled(0, p_item->get_button_count(0) - 1, true);
 			}
 		}
+
+		// And for all source-available GDExtension classes.
+		const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_object(p_node);
+		if (source_code_plugin.is_valid()) {
+			p_item->add_button(0, get_editor_theme_icon(SNAME("ExtensionClass")), BUTTON_EXTENSION_CLASS);
+		}
 	}
 
 	if (connect_to_script_mode) {
@@ -441,10 +466,13 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		Ref<Script> scr = p_node->get_script();
 		bool has_custom_script = scr.is_valid() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr;
 		if (scr.is_null() || has_custom_script) {
-			_set_item_custom_color(p_item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
-			p_item->set_selectable(0, false);
+			const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_object(p_node);
+			if (source_code_plugin.is_null()) {
+				_set_item_custom_color(p_item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+				p_item->set_selectable(0, false);
 
-			accent.a *= 0.7;
+				accent.a *= 0.7;
+			}
 		}
 
 		if (marked.has(p_node)) {
@@ -576,6 +604,22 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 
 	// Show buttons only when necessary (SceneTreeDock) to avoid crashes.
 	if (can_open_instance && is_scene_tree_dock) {
+		const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_object(p_node);
+		if (source_code_plugin.is_valid()) {
+			String additional_notes;
+			Color button_color = Color(1, 1, 1);
+
+			if (!p_node->is_extension_placeholder()) {
+				additional_notes += "\n" + TTR("This extension class is currently running in the editor.");
+				button_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			}
+
+			const StringName extension_class_name = p_node->get_extension_class_name();
+			String source_path = source_code_plugin->get_source_path(extension_class_name);
+			p_item->add_button(0, get_editor_theme_icon(SNAME("ExtensionClass")), BUTTON_EXTENSION_CLASS, false, TTR("Open Source Code:") + " " + source_path + additional_notes);
+			p_item->set_button_color(0, p_item->get_button_count(0) - 1, button_color);
+		}
+
 		Ref<Script> scr = p_node->get_script();
 		if (scr.is_valid()) {
 			String additional_notes;
@@ -1938,6 +1982,12 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 			return true;
 		}
 
+		const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_file(files[0]);
+		if (source_code_plugin.is_valid()) {
+			tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+			return true;
+		}
+
 		bool scene_drop = true;
 		bool audio_drop = true;
 		for (int i = 0; i < files.size(); i++) {
@@ -2034,7 +2084,15 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 		if (_is_script_type(ftype)) {
 			emit_signal(SNAME("script_dropped"), files[0], np);
 		} else {
-			emit_signal(SNAME("files_dropped"), files, np, section);
+			const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_file(files[0]);
+			if (source_code_plugin.is_valid()) {
+				const StringName &class_name = source_code_plugin->get_class_name_from_source_path(files[0]);
+				if (!class_name.is_empty()) {
+					emit_signal(SNAME("class_dropped"), class_name, np);
+				}
+			} else {
+				emit_signal(SNAME("files_dropped"), files, np, section);
+			}
 		}
 	}
 
@@ -2134,6 +2192,7 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("nodes_rearranged", PropertyInfo(Variant::ARRAY, "paths"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("script_dropped", PropertyInfo(Variant::STRING, "file"), PropertyInfo(Variant::NODE_PATH, "to_path")));
+	ADD_SIGNAL(MethodInfo("class_dropped", PropertyInfo(Variant::STRING_NAME, "class_name"), PropertyInfo(Variant::NODE_PATH, "to_path")));
 	ADD_SIGNAL(MethodInfo("rmb_pressed", PropertyInfo(Variant::VECTOR2, "position")));
 
 	ADD_SIGNAL(MethodInfo("open"));

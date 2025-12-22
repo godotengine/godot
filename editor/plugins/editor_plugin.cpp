@@ -42,6 +42,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/extension/extension_source_code_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_title_bar.h"
@@ -519,6 +520,16 @@ void EditorPlugin::remove_context_menu_plugin(const Ref<EditorContextMenuPlugin>
 	EditorContextMenuPluginManager::get_singleton()->remove_plugin(p_plugin);
 }
 
+void EditorPlugin::add_extension_source_code_plugin(const Ref<EditorExtensionSourceCodePlugin> &p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	ExtensionSourceCodeManager::get_singleton()->add_plugin(p_plugin);
+}
+
+void EditorPlugin::remove_extension_source_code_plugin(const Ref<EditorExtensionSourceCodePlugin> &p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	ExtensionSourceCodeManager::get_singleton()->remove_plugin(p_plugin);
+}
+
 int find(const PackedStringArray &a, const String &v) {
 	const String *r = a.ptr();
 	for (int j = 0; j < a.size(); ++j) {
@@ -672,6 +683,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
 	ClassDB::bind_method(D_METHOD("add_context_menu_plugin", "slot", "plugin"), &EditorPlugin::add_context_menu_plugin);
 	ClassDB::bind_method(D_METHOD("remove_context_menu_plugin", "plugin"), &EditorPlugin::remove_context_menu_plugin);
+	ClassDB::bind_method(D_METHOD("add_extension_source_code_plugin", "plugin"), &EditorPlugin::add_extension_source_code_plugin);
+	ClassDB::bind_method(D_METHOD("remove_extension_source_code_plugin", "plugin"), &EditorPlugin::remove_extension_source_code_plugin);
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
