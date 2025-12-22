@@ -4326,11 +4326,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	GDScriptParser::CompletionContext context = parser.get_completion_context();
 	context.base = p_owner;
 
-	// Allows class functions with the names like built-ins to be handled properly.
 	if (context.type != GDScriptParser::COMPLETION_ATTRIBUTE) {
-		// Need special checks for `assert` and `preload` as they are technically
-		// keywords, so are not registered in `GDScriptUtilityFunctions`.
-		if (GDScriptUtilityFunctions::function_exists(p_symbol) || p_symbol == "assert" || p_symbol == "preload") {
+		// Need special checks for `assert` and `preload` as they are reserved keywords.
+		if (p_symbol == "assert" || p_symbol == "preload") {
 			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
 			r_result.class_name = "@GDScript";
 			r_result.class_member = p_symbol;
@@ -4414,6 +4412,10 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		case GDScriptParser::COMPLETION_IDENTIFIER:
 		case GDScriptParser::COMPLETION_PROPERTY_METHOD:
 		case GDScriptParser::COMPLETION_SUBSCRIPT: {
+			// TODO: In a lambda declaration,
+			//       context.type is COMPLETION_IDENTIFIER instead of COMPLETION_NONE,
+			//       which returns an incorrect r_result if the lambda is named.
+
 			GDScriptParser::DataType base_type;
 			if (context.current_class) {
 				if (context.type != GDScriptParser::COMPLETION_SUPER_METHOD) {
@@ -4474,10 +4476,6 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					}
 					suite = suite->parent_block;
 				}
-			}
-
-			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
-				return OK;
 			}
 
 			if (!is_function) {
@@ -4553,6 +4551,17 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					r_result.class_member = p_symbol;
 					return OK;
 				}
+
+				if (GDScriptUtilityFunctions::function_exists(p_symbol)) {
+					r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
+					r_result.class_name = "@GDScript";
+					r_result.class_member = p_symbol;
+					return OK;
+				}
+			}
+
+			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
+				return OK;
 			}
 		} break;
 		case GDScriptParser::COMPLETION_ATTRIBUTE_METHOD:
@@ -4606,6 +4615,20 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			GDScriptParser::DataType base_type = context.current_class->base_type;
 
 			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
+				return OK;
+			}
+
+			if (Variant::has_utility_function(p_symbol)) {
+				r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
+				r_result.class_name = "@GlobalScope";
+				r_result.class_member = p_symbol;
+				return OK;
+			}
+
+			if (GDScriptUtilityFunctions::function_exists(p_symbol)) {
+				r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
+				r_result.class_name = "@GDScript";
+				r_result.class_member = p_symbol;
 				return OK;
 			}
 		} break;
