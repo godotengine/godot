@@ -2524,6 +2524,9 @@ void main() {
 	emission_output_buffer.a = 0.0;
 #else // !RENDER_MATERIAL
 #ifdef BASE_PASS
+
+#ifndef COMPOSE_CODE_USED
+
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
 #else
@@ -2542,6 +2545,26 @@ void main() {
 
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 #endif // !FOG_DISABLED
+
+#else //COMPOSE_CODE_USED
+	{
+#ifndef FOG_DISABLED
+		fog.xy = unpackHalf2x16(fog_rg);
+		fog.zw = unpackHalf2x16(fog_ba);
+#else
+		vec4 fog = vec4(0.0);
+#endif
+		// output variables, init to 0 when using compose()
+		vec3 diffuse_color = vec3(0.0);
+		vec3 specular_color = vec3(0.0);
+		// dummy variable
+		vec3 indirect_specular_light = vec3(0.0);
+
+#CODE : COMPOSE
+
+		frag_color = vec4(diffuse_color + specular_color, alpha);
+	}
+#endif //COMPOSE_CODE_USED
 
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	frag_color.rgb *= exposure;
