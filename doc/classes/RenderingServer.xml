@@ -3278,6 +3278,13 @@
 				[b]Note:[/b] The equivalent node is [ReflectionProbe].
 			</description>
 		</method>
+		<method name="reflection_probe_queue_update">
+			<return type="void" />
+			<param index="0" name="probe" type="RID" />
+			<description>
+				Queues the given reflection probe for an update. Equivalent to [method ReflectionProbe.queue_update].
+			</description>
+		</method>
 		<method name="reflection_probe_set_ambient_color">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
