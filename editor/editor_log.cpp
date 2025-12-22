@@ -389,7 +389,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 
 	if (unlikely(log->is_updating()) || flushing) {
 		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
-		try_flush();
+		_try_flush();
 		pending_messages.push_back(p_message);
 		return;
 	}
@@ -464,10 +464,10 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->remove_paragraph(0, true);
 	}
 
-	try_flush();
+	_try_flush();
 }
 
-void EditorLog::try_flush() {
+void EditorLog::_try_flush() {
 	if (log->is_updating() || flushing || pending_messages.is_empty()) {
 		return;
 	}

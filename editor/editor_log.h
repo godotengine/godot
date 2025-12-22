@@ -161,6 +161,7 @@ private:
 
 	void _rebuild_log();
 	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
+	void _try_flush();
 	bool _check_display_message(LogMessage &p_message);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
