@@ -522,6 +522,16 @@ void Array::set(int p_idx, const Variant &p_value) {
 	_p->array.write[p_idx] = std::move(value);
 }
 
+Error Array::set_safe(int p_idx, const Variant &p_value) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
+	Variant value = p_value;
+	ERR_FAIL_COND_V(!_p->typed.validate(value, "set"), ERR_INVALID_PARAMETER);
+
+	ERR_FAIL_INDEX_V(p_idx, size(), ERR_PARAMETER_RANGE_ERROR);
+	_p->array.write[p_idx] = std::move(value);
+	return OK;
+}
+
 const Variant &Array::get(int p_idx) const {
 	return operator[](p_idx);
 }
