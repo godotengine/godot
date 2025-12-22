@@ -796,7 +796,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			if (subscript->is_attribute) {
 				if (subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
 					GDScriptParser::IdentifierNode *identifier = subscript->attribute;
-					HashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(identifier->name);
+					AHashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(identifier->name);
 
 #ifdef DEBUG_ENABLED
 					if (MI && MI->value.getter == codegen.function_name) {
@@ -987,7 +987,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				const GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(assignment->assignee);
 #ifdef DEBUG_ENABLED
 				if (subscript->is_attribute && subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
-					HashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(subscript->attribute->name);
+					AHashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(subscript->attribute->name);
 					if (MI && MI->value.setter == codegen.function_name) {
 						String n = subscript->attribute->name;
 						_set_error("Must use '" + n + "' instead of 'self." + n + "' in setter.", subscript);
