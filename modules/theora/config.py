@@ -12,6 +12,7 @@ def configure(env):
 def get_doc_classes():
     return [
         "VideoStreamTheora",
+        "ResourceImporterVideo",
     ]
 
 
