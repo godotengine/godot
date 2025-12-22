@@ -283,6 +283,8 @@ public:
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
 	virtual ScriptNameCasing preferred_file_name_casing() const { return SCRIPT_NAME_CASING_SNAKE_CASE; }
+	virtual Array parse_color(const String &p_text) const { return Array(); }
+	virtual PackedStringArray get_color_string_options(const Color &p_color) const { return PackedStringArray(); }
 
 	// Keep enums in sync with:
 	// scene/gui/code_edit.h - CodeEdit::CodeCompletionKind
