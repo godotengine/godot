@@ -650,9 +650,6 @@ void WSLPeer::_wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct w
 		if (len > 2 /* first 2 bytes = close code */) {
 			peer->close_reason.append_utf8((char *)arg->msg + 2, len - 2);
 		}
-		if (peer->ready_state == STATE_OPEN) {
-			peer->ready_state = STATE_CLOSING;
-		}
 		return;
 	}
 
@@ -741,6 +738,13 @@ void WSLPeer::poll() {
 			wslay_event_context_free(wsl_ctx);
 			wsl_ctx = nullptr;
 			close(-1);
+			return;
+		}
+		if (ready_state == STATE_OPEN && in_buffer.packets_left() == 0 && wslay_event_get_close_received(wsl_ctx)) {
+			// Transition to the CLOSING state if there are no inbound packets available and a close frame was received.
+			ready_state = STATE_CLOSED;
+		}
+		if (in_buffer.packets_left() > 0 || wslay_event_get_queued_msg_count(wsl_ctx) > 0) {
 			return;
 		}
 		if (wslay_event_get_close_sent(wsl_ctx)) {
