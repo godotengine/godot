@@ -108,6 +108,20 @@
 				[b]Note:[/b] Relative paths will be prefixed with [code]"res://"[/code] before loading, to avoid unexpected results make sure your paths are absolute.
 			</description>
 		</method>
+		<method name="load_threaded">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="type_hint" type="String" default="&quot;&quot;" />
+			<param index="3" name="use_sub_threads" type="bool" default="false" />
+			<param index="4" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
+			<description>
+				Loads the resource using threads. All parameters are the same as in [method load_threaded_request], except for [param callback].
+				[param callback] is a callable that will automatically be invoked with the status and resource as arguments once loading finishes.
+				If loading succeeds, the arguments will be [constant THREAD_LOAD_LOADED] and the loaded resource (as returned by [method load_threaded_get]); otherwise, they will be [constant THREAD_LOAD_FAILED] and [code]null[/code].
+				[b]Note:[/b] This method automatically decrements the request count (as [method load_threaded_get] would) before calling the [param callback].
+			</description>
+		</method>
 		<method name="load_threaded_get">
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
@@ -121,7 +135,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="progress" type="Array" default="[]" />
 			<description>
-				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [param path].
+				Returns the status of a threaded loading operation started with [method load_threaded_request] or [method load_threaded] for the resource at [param path].
 				An array variable can optionally be passed via [param progress], and will return a one-element array containing the ratio of completion of the threaded loading (between [code]0.0[/code] and [code]1.0[/code]).
 				[b]Note:[/b] The recommended way of using this method is to call it during different frames (e.g., in [method Node._process], instead of a loop).
 			</description>
