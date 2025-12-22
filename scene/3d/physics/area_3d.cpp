@@ -198,10 +198,6 @@ void Area3D::_body_enter_tree(ObjectID p_id) {
 	ERR_FAIL_COND(E->value.in_tree);
 
 	E->value.in_tree = true;
-	emit_signal(SceneStringName(body_entered), node);
-	for (int i = 0; i < E->value.shapes.size(); i++) {
-		emit_signal(SceneStringName(body_shape_entered), E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].area_shape);
-	}
 }
 
 void Area3D::_body_exit_tree(ObjectID p_id) {
@@ -211,11 +207,11 @@ void Area3D::_body_exit_tree(ObjectID p_id) {
 	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->value.in_tree);
-	E->value.in_tree = false;
-	emit_signal(SceneStringName(body_exited), node);
-	for (int i = 0; i < E->value.shapes.size(); i++) {
-		emit_signal(SceneStringName(body_shape_exited), E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].area_shape);
+	if (E->value.rc > 0) {
+		reparenting_bodies.insert(p_id);
+		call_deferred("_clear_reparenting_body", p_id);
 	}
+	E->value.in_tree = false;
 }
 
 void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_area_shape) {
@@ -236,6 +232,7 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 		unlock_callback();
 		return;
 	}
+	bool is_reparenting = reparenting_bodies.has(objid);
 
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
@@ -269,7 +266,9 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 		}
 
 		if (!node || E->value.in_tree) {
-			emit_signal(SceneStringName(body_shape_entered), p_body, node, p_body_shape, p_area_shape);
+			if (!is_reparenting) {
+				emit_signal(SceneStringName(body_shape_entered), p_body, node, p_body_shape, p_area_shape);
+			}
 		}
 
 	} else {
@@ -291,7 +290,9 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 			}
 		}
 		if (!node || in_tree) {
-			emit_signal(SceneStringName(body_shape_exited), p_body, obj, p_body_shape, p_area_shape);
+			if (!is_reparenting) {
+				emit_signal(SceneStringName(body_shape_entered), p_body, node, p_body_shape, p_area_shape);
+			}
 		}
 	}
 
@@ -503,6 +504,10 @@ void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 
 	locked = false;
 	unlock_callback();
+}
+
+void Area3D::_clear_reparenting_body(ObjectID p_id) {
+	reparenting_bodies.erase(p_id);
 }
 
 bool Area3D::is_monitoring() const {
