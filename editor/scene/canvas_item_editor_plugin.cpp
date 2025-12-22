@@ -70,6 +70,7 @@
 #include "scene/resources/style_box_texture.h"
 
 #define DRAG_THRESHOLD (8 * EDSCALE)
+#define PAN_THRESHOLD (8 * EDSCALE)
 constexpr real_t SCALE_HANDLE_DISTANCE = 25;
 constexpr real_t MOVE_HANDLE_DISTANCE = 25;
 
@@ -2464,43 +2465,48 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
-			add_node_menu->clear();
-			add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("Add")), TTRC("Add Node Here..."), ADD_NODE);
-			add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTRC("Instantiate Scene Here..."), ADD_INSTANCE);
-			for (Node *node : SceneTreeDock::get_singleton()->get_node_clipboard()) {
-				if (Object::cast_to<CanvasItem>(node)) {
-					add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTRC("Paste Node(s) Here"), ADD_PASTE);
-					break;
+		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT) {
+			if (b->is_pressed()) {
+				right_click_origin = b->get_position();
+				return true;
+			} else if (b->get_position().distance_to(right_click_origin) <= PAN_THRESHOLD) {
+				add_node_menu->clear();
+				add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("Add")), TTRC("Add Node Here..."), ADD_NODE);
+				add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTRC("Instantiate Scene Here..."), ADD_INSTANCE);
+				for (Node *node : SceneTreeDock::get_singleton()->get_node_clipboard()) {
+					if (Object::cast_to<CanvasItem>(node)) {
+						add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTRC("Paste Node(s) Here"), ADD_PASTE);
+						break;
+					}
 				}
-			}
-			for (Node *node : EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list()) {
-				if (Object::cast_to<CanvasItem>(node)) {
-					add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("ToolMove")), TTRC("Move Node(s) Here"), ADD_MOVE);
-					break;
+				for (Node *node : EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list()) {
+					if (Object::cast_to<CanvasItem>(node)) {
+						add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("ToolMove")), TTRC("Move Node(s) Here"), ADD_MOVE);
+						break;
+					}
 				}
-			}
 
-			// Context menu plugin receives paths of nodes under cursor. It's a complex operation, so perform it only when necessary.
-			if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR)) {
-				selection_results.clear();
-				_get_canvas_items_at_pos(transform.affine_inverse().xform(viewport->get_local_mouse_position()), selection_results, true);
+				// Context menu plugin receives paths of nodes under cursor. It's a complex operation, so perform it only when necessary.
+				if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR)) {
+					selection_results.clear();
+					_get_canvas_items_at_pos(transform.affine_inverse().xform(viewport->get_local_mouse_position()), selection_results, true);
 
-				PackedStringArray paths;
-				paths.resize(selection_results.size());
-				String *paths_write = paths.ptrw();
+					PackedStringArray paths;
+					paths.resize(selection_results.size());
+					String *paths_write = paths.ptrw();
 
-				for (int i = 0; i < paths.size(); i++) {
-					paths_write[i] = String(selection_results[i].item->get_path());
+					for (int i = 0; i < paths.size(); i++) {
+						paths_write[i] = String(selection_results[i].item->get_path());
+					}
+					EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, paths);
 				}
-				EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, paths);
-			}
 
-			add_node_menu->reset_size();
-			add_node_menu->set_position(viewport->get_screen_transform().xform(b->get_position()));
-			add_node_menu->popup();
-			node_create_position = transform.affine_inverse().xform(b->get_position());
-			return true;
+				add_node_menu->reset_size();
+				add_node_menu->set_position(viewport->get_screen_transform().xform(b->get_position()));
+				add_node_menu->popup();
+				node_create_position = transform.affine_inverse().xform(b->get_position());
+				return true;
+			}
 		}
 
 		Point2 click;
@@ -5641,6 +5647,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
+	panner->set_enable_rmb(true);
 
 	viewport = memnew(CanvasItemEditorViewport(this));
 	viewport_scrollable->add_child(viewport);
