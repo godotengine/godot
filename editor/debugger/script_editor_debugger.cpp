@@ -753,7 +753,6 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 		stack_trace->set_text(1, frame_txt);
 	}
 
-	error->set_tooltip_text(0, tooltip);
 	error->set_tooltip_text(1, tooltip);
 
 	if (warning_count == 0 && error_count == 0) {
@@ -2248,7 +2247,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_columns(2);
 
 		error_tree->set_column_expand(0, false);
-		error_tree->set_column_custom_minimum_width(0, 140);
+		error_tree->set_column_custom_minimum_width(0, 180);
 		error_tree->set_column_clip_content(0, true);
 
 		error_tree->set_column_expand(1, true);
