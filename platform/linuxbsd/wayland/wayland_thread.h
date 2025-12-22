@@ -257,6 +257,10 @@ public:
 		bool can_maximize = false;
 		bool can_fullscreen = false;
 
+		xdg_toplevel_icon_v1 *xdg_icon = nullptr;
+		wl_buffer *icon_buffer = nullptr;
+		bool icon_set = false;
+
 		HashSet<struct wl_output *> wl_outputs;
 
 		// NOTE: If for whatever reason this callback is destroyed _while_ the event
@@ -1090,11 +1094,12 @@ public:
 
 	void beep() const;
 
-	void set_icon(const Ref<Image> &p_icon);
+	void set_icon(const Ref<Image> &p_icon, DisplayServer::WindowID p_window_id);
+	void set_default_icon(const Ref<Image> &p_icon);
 
 	void window_create(DisplayServer::WindowID p_window_id, const Size2i &p_size, DisplayServer::WindowID p_parent_id = DisplayServer::INVALID_WINDOW_ID);
 	void window_create_popup(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id, Rect2i p_rect);
-	void window_destroy(DisplayServer::WindowID p_window_Id);
+	void window_destroy(DisplayServer::WindowID p_window_id);
 
 	void window_set_parent(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id);
 

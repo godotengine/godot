@@ -349,6 +349,10 @@ class DisplayServerWindows : public DisplayServer {
 		Point2 last_pos;
 
 		ObjectID instance_id;
+		Ref<Image> icon;
+		bool icon_set = false;
+		HICON icon_handle = nullptr;
+		Vector<uint8_t> icon_data;
 
 		// IME
 		HIMC im_himc;
@@ -387,7 +391,6 @@ class DisplayServerWindows : public DisplayServer {
 	HHOOK mouse_monitor = nullptr;
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
-	Ref<Image> icon;
 
 	Error _create_window(WindowID p_window_id, WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
 	void _destroy_window(WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
@@ -413,6 +416,8 @@ class DisplayServerWindows : public DisplayServer {
 	struct IndicatorData {
 		RID menu_rid;
 		Callable callback;
+		HICON icon_handle = nullptr;
+		Vector<uint8_t> icon_data;
 	};
 
 	IndicatorID indicator_id_counter = 0;
@@ -450,6 +455,13 @@ class DisplayServerWindows : public DisplayServer {
 	};
 	List<FileDialogCallback> pending_cbs;
 	void process_file_dialog_callbacks();
+
+	Ref<Image> icon;
+	HICON icon_big = nullptr;
+	Vector<uint8_t> data_big;
+	HICON icon_small = nullptr;
+	Vector<uint8_t> data_small;
+	void _update_window_icon(WindowData &p_wd);
 
 	static void _thread_fd_monitor(void *p_ud);
 
@@ -648,6 +660,8 @@ public:
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_icon(const Ref<Image> &p_icon, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const override;
 

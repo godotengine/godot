@@ -513,6 +513,8 @@ public:
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
+	virtual void window_set_icon(const Ref<Image> &p_icon, WindowID p_window = MAIN_WINDOW_ID) {}
+
 	virtual WindowID get_focused_window() const;
 
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) {}
