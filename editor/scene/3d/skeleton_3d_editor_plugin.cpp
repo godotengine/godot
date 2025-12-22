@@ -222,15 +222,33 @@ void BonePropertiesEditor::_add_meta_confirm() {
 	undo_redo->commit_action();
 }
 
-BonePropertiesEditor::BonePropertiesEditor(Skeleton3D *p_skeleton) :
-		skeleton(p_skeleton) {
+BonePropertiesEditor::BonePropertiesEditor(Skeleton3D *p_skeleton) {
 	create_editors();
+	set_skeleton(p_skeleton);
 }
 
 void BonePropertiesEditor::set_keyable(const bool p_keyable) {
 	position_property->set_keying(p_keyable);
 	rotation_property->set_keying(p_keyable);
 	scale_property->set_keying(p_keyable);
+}
+
+void BonePropertiesEditor::set_skeleton(Skeleton3D *p_skeleton) {
+	skeleton = p_skeleton;
+
+	if (skeleton) {
+		return;
+	}
+
+	enabled_checkbox->set_object_and_property(nullptr, String());
+	position_property->set_object_and_property(nullptr, String());
+	rotation_property->set_object_and_property(nullptr, String());
+	scale_property->set_object_and_property(nullptr, String());
+	rest_matrix->set_object_and_property(nullptr, String());
+
+	for (KeyValue<StringName, EditorProperty *> &E : meta_editors) {
+		E.value->set_object_and_property(nullptr, String());
+	}
 }
 
 void BonePropertiesEditor::set_target(const String &p_prop) {
@@ -1195,7 +1213,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			skeleton->connect(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
 			skeleton->connect(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
 
-			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONE_SHOT);
+			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed));
 		} break;
 		case NOTIFICATION_READY: {
 			// Will trigger NOTIFICATION_THEME_CHANGED, but won't cause any loops if called here.
@@ -1218,10 +1236,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 		case NOTIFICATION_PREDELETE: {
 			if (skeleton) {
 				select_bone(-1); // Requires that the joint_tree has not been deleted.
-				skeleton->disconnect(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
-				skeleton->disconnect(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
-				skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
-				skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties));
+				_disconnect_from_skeleton();
 				skeleton->set_transform_gizmo_visible(true);
 
 				if (handles_mesh_instance->get_parent()) {
@@ -1235,11 +1250,36 @@ void Skeleton3DEditor::_notification(int p_what) {
 
 void Skeleton3DEditor::_node_removed(Node *p_node) {
 	if (skeleton && p_node == skeleton) {
+		_disconnect_from_skeleton();
+		if (pose_editor) {
+			pose_editor->set_skeleton(nullptr);
+			pose_editor->set_visible(false);
+		}
+		edit_mode = false;
 		skeleton = nullptr;
 		skeleton_options->hide();
 	}
 
 	_update_properties();
+}
+
+void Skeleton3DEditor::_disconnect_from_skeleton() {
+	if (!skeleton) {
+		return;
+	}
+
+	if (skeleton->is_connected(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible))) {
+		skeleton->disconnect(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
+	}
+	if (skeleton->is_connected(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed))) {
+		skeleton->disconnect(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
+	}
+	if (skeleton->is_connected(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo))) {
+		skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
+	}
+	if (skeleton->is_connected(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties))) {
+		skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties));
+	}
 }
 
 void Skeleton3DEditor::edit_mode_toggled(const bool pressed) {
@@ -1502,6 +1542,10 @@ void Skeleton3DEditor::_bone_enabled_changed(const int p_bone_id) {
 }
 
 void Skeleton3DEditor::_update_gizmo_visible() {
+	if (!skeleton) {
+		return;
+	}
+
 	_subgizmo_selection_change();
 	if (edit_mode) {
 		if (selected_bone == -1) {
