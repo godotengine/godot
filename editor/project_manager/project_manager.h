@@ -250,6 +250,12 @@ class ProjectManager : public Control {
 	Button *full_convert_button = nullptr;
 	Button *migration_guide_button = nullptr;
 
+	enum MenuOptions {
+		EDITOR_OPEN_SETTINGS,
+	};
+
+	void _menu_option(int p_option);
+
 	String version_convert_feature;
 	bool open_in_recovery_mode = false;
 	bool open_in_verbose_mode = false;

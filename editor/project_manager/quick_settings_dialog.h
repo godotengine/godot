@@ -83,8 +83,6 @@ class QuickSettingsDialog : public AcceptDialog {
 	void _check_for_update_selected(int p_id);
 	void _directory_naming_convention_selected(int p_id);
 	void _set_setting_value(const String &p_setting, const Variant &p_value, bool p_restart_required = false);
-	void _show_full_settings();
-
 	Label *restart_required_label = nullptr;
 	Button *restart_required_button = nullptr;
 
@@ -95,6 +93,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void _show_full_settings();
+
 	void update_size_limits(const Size2 &p_max_popup_size);
 
 	QuickSettingsDialog();
