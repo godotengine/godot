@@ -98,6 +98,16 @@
 				If [param use_space] is [code]true[/code], the date and time bits are separated by an empty space character instead of the letter T.
 			</description>
 		</method>
+		<method name="get_duration_dict_from_duration" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="duration_seconds" type="float" />
+			<param index="1" name="components" type="int" enum="DurationComponent" />
+			<description>
+				Converts the given [param duration_seconds] into a dictionary with the time duration components provided in the bitfield [param components] as whole numbers.
+				For each component specified, the Dictionary will have a key ([code]years[/code], [code]days[/code], [code]hours[/code], [code]minutes[/code], [code]seconds[/code], and [code]milliseconds[/code]) and the corresponding value will be the whole number of that component that fits into the provided duration.
+				After isolating the specified time components from the duration, the remaining seconds are provided as the value for the key [code]remaining_seconds[/code].
+			</description>
+		</method>
 		<method name="get_offset_string_from_offset_minutes" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="offset_minutes" type="int" />
@@ -242,6 +252,24 @@
 		</constant>
 		<constant name="WEEKDAY_SATURDAY" value="6" enum="Weekday">
 			The day of the week Saturday, represented numerically as [code]6[/code].
+		</constant>
+		<constant name="DURATION_MILLISECONDS" value="1" enum="DurationComponent">
+			A duration unit used for [method get_duration_dict_from_duration], considered to be 0.001 seconds.
+		</constant>
+		<constant name="DURATION_SECONDS" value="2" enum="DurationComponent">
+			A duration unit used for [method get_duration_dict_from_duration], considered to be 1 second.
+		</constant>
+		<constant name="DURATION_MINUTES" value="4" enum="DurationComponent">
+			A duration unit used for [method get_duration_dict_from_duration], considered to be 60 seconds.
+		</constant>
+		<constant name="DURATION_HOURS" value="8" enum="DurationComponent">
+			A duration unit used for [method get_duration_dict_from_duration], considered to be 3,600 seconds.
+		</constant>
+		<constant name="DURATION_DAYS" value="16" enum="DurationComponent">
+			A duration unit used for [method get_duration_dict_from_duration], considered to be 86,400 seconds.
+		</constant>
+		<constant name="DURATION_YEARS" value="32" enum="DurationComponent">
+			A duration unit used for [method get_duration_dict_from_duration], considered to be 31,556,952 seconds.
 		</constant>
 	</constants>
 </class>
