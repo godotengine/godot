@@ -1267,6 +1267,10 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				return true;
 			}
 
+			if (op->should_short_circuit(a, r_ret)) {
+				return false;
+			}
+
 			Variant b;
 
 			if (op->nodes[1]) {
@@ -1526,4 +1530,16 @@ Expression::~Expression() {
 	if (nodes) {
 		memdelete(nodes);
 	}
+}
+
+bool Expression::OperatorNode::should_short_circuit(const Variant &p_first_value, Variant &r_ret) const {
+	if (op == Variant::Operator::OP_AND && !p_first_value.booleanize()) {
+		r_ret = false;
+		return true;
+	} else if (op == Variant::Operator::OP_OR && p_first_value.booleanize()) {
+		r_ret = true;
+		return true;
+	}
+
+	return false;
 }
