@@ -692,6 +692,8 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--export-debug <preset> <path>", "Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-pack <preset> <path>", "Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-patch <preset> <path>", "Export pack with changed files only. See --export-pack description for other considerations.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--export-release-all", "Export the project in release mode using every existing preset in sequence, all preset must have a valid export path, all parameters are read from the presets\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--export-debug-all", "Export the project in debug mode using every existing preset in sequence, all preset must have a valid export path, all parameters are read from the presets\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--patches <paths>", "List of patches to use with --export-patch. The list is comma-separated.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--install-android-build-template", "Install the Android build template. Used in conjunction with --export-release or --export-debug.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #ifndef DISABLE_DEPRECATED
@@ -1625,7 +1627,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			wait_for_import = true;
 			quit_after = 1;
 		} else if (arg == "--export-release" || arg == "--export-debug" ||
-				arg == "--export-pack" || arg == "--export-patch") { // Export project
+				arg == "--export-pack" || arg == "--export-patch" ||
+				arg == "--export-release-all" || arg == "--export-debug-all") { // Export project
 			// Actually handling is done in start().
 			editor = true;
 			cmdline_tool = true;
@@ -3897,6 +3900,7 @@ int Main::start() {
 	Vector<String> patches;
 	bool export_debug = false;
 	bool export_pack_only = false;
+	bool export_all = false;
 	bool install_android_build_template = false;
 	bool export_patch = false;
 #ifdef MODULE_GDSCRIPT_ENABLED
@@ -4007,6 +4011,15 @@ int Main::start() {
 				editor = true; //needs editor
 				_export_preset = E->next()->get();
 				export_debug = true;
+			} else if (E->get() == "--export-release-all") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
+				editor = true; //needs editor
+				export_all = true;
+			} else if (E->get() == "--export-debug-all") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
+				editor = true; //needs editor
+				export_debug = true;
+				export_all = true;
 			} else if (E->get() == "--export-pack") {
 				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true;
@@ -4476,8 +4489,8 @@ int Main::start() {
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
-			if (!_export_preset.is_empty()) {
-				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template, export_patch, patches);
+			if (!_export_preset.is_empty() || export_all) {
+				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template, export_patch, patches, export_all);
 				game_path = ""; // Do not load anything.
 			}
 

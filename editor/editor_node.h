@@ -250,6 +250,7 @@ private:
 		bool android_build_template = false;
 		bool patch = false;
 		Vector<String> patches;
+		bool export_all = false;
 	} export_defer;
 
 	static EditorNode *singleton;
@@ -971,7 +972,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch, const Vector<String> &p_patches);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch, const Vector<String> &p_patches, bool p_export_all);
 	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }
