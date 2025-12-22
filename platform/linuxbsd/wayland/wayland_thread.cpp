@@ -1585,10 +1585,10 @@ void WaylandThread::libdecor_frame_on_dismiss_popup(struct libdecor_frame *frame
 
 void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
 	SeatState *ss = (SeatState *)data;
-
 	ERR_FAIL_NULL(ss);
 
-	// TODO: Handle touch.
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
 	// Pointer handling.
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
@@ -1693,6 +1693,31 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 		if (ss->wl_keyboard) {
 			wl_keyboard_destroy(ss->wl_keyboard);
 			ss->wl_keyboard = nullptr;
+		}
+	}
+
+	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
+		if (!ss->wl_touch) {
+			ss->wl_touch = wl_seat_get_touch(wl_seat);
+			wl_touch_add_listener(ss->wl_touch, &wl_touch_listener, ss);
+		}
+
+		wayland_thread->has_touch = true;
+	} else {
+		if (ss->wl_touch) {
+			wl_touch_destroy(ss->wl_touch);
+			ss->wl_touch = nullptr;
+		}
+
+		wayland_thread->has_touch = false;
+		for (struct wl_seat *i : wayland_thread->registry.wl_seats) {
+			SeatState *i_ss = wl_seat_get_seat_state(i);
+			ERR_CONTINUE(i_ss == nullptr);
+
+			if (i_ss->wl_touch != nullptr) {
+				wayland_thread->has_touch = true;
+				break;
+			}
 		}
 	}
 }
@@ -2321,6 +2346,214 @@ void WaylandThread::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *
 
 	ss->repeat_key_delay_msec = rate ? 1000 / rate : 0;
 	ss->repeat_start_delay_msec = delay;
+}
+
+void WaylandThread::_wl_touch_on_down(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, struct wl_surface *surface, int32_t id, wl_fixed_t x, wl_fixed_t y) {
+	WindowState *ws = wl_surface_get_window_state(surface);
+	if (!ws) {
+		return;
+	}
+
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->last_touch_id = id;
+
+	TouchPoint &tp = ss->touch_points_buffer[id];
+
+	tp.down_time = time;
+
+	tp.touched_id = ws->id;
+
+	tp.position.x = wl_fixed_to_double(x);
+	tp.position.y = wl_fixed_to_double(y);
+}
+
+void WaylandThread::_wl_touch_on_up(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, int32_t id) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	if (!ss->touch_points_buffer.has(id)) {
+		return;
+	}
+
+	TouchPoint &tp = ss->touch_points_buffer[id];
+
+	tp.touched_id = DisplayServer::INVALID_WINDOW_ID;
+	ss->touch_points_buffer.erase(id);
+}
+
+void WaylandThread::_wl_touch_on_motion(void *data, struct wl_touch *wl_touch, uint32_t time, int32_t id, wl_fixed_t x, wl_fixed_t y) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->last_touch_id = id;
+
+	TouchPoint &tp = ss->touch_points_buffer[id];
+
+	tp.motion_time = time;
+
+	tp.position.x = wl_fixed_to_double(x);
+	tp.position.y = wl_fixed_to_double(y);
+}
+
+void WaylandThread::_wl_touch_on_frame(void *data, struct wl_touch *wl_touch) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
+	// Release handling.
+	for (KeyValue<int32_t, TouchPoint> &pair : ss->touch_points) {
+		int32_t id = pair.key;
+		TouchPoint &tp = pair.value;
+
+		WindowState *ws = wayland_thread->window_get_state(tp.touched_id);
+		if (tp.touched_id == DisplayServer::INVALID_WINDOW_ID || ws == nullptr) {
+			continue;
+		}
+
+		double scale = window_state_get_scale_factor(ws);
+
+		if (!ss->touch_points_buffer.has(id)) {
+			Ref<InputEventScreenTouch> st;
+			st.instantiate();
+			st->set_index(id);
+			st->set_position(tp.position * scale);
+			st->set_window_id(tp.touched_id);
+			st->set_pressed(false);
+
+			Ref<InputEventMessage> iev_msg;
+			iev_msg.instantiate();
+			iev_msg->event = st;
+
+			wayland_thread->push_message(iev_msg);
+
+			// TODO: Handle "mouse enter" events globally, independently of input method.
+			if (tp.touched_id != DisplayServer::INVALID_WINDOW_ID) {
+				Ref<WindowEventMessage> msg;
+				msg.instantiate();
+				msg->id = tp.touched_id;
+				msg->event = DisplayServer::WINDOW_EVENT_MOUSE_EXIT;
+
+				wayland_thread->push_message(msg);
+			}
+		}
+	}
+
+	for (KeyValue<int32_t, TouchPoint> &pair : ss->touch_points_buffer) {
+		int32_t id = pair.key;
+		TouchPoint &tp = pair.value;
+
+		WindowState *ws = wayland_thread->window_get_state(tp.touched_id);
+		if (tp.touched_id == DisplayServer::INVALID_WINDOW_ID || ws == nullptr) {
+			continue;
+		}
+
+		double scale = window_state_get_scale_factor(ws);
+
+		// Press handling.
+		if (!ss->touch_points.has(id)) {
+			Ref<InputEventScreenTouch> st;
+			st.instantiate();
+			st->set_index(id);
+			st->set_position(tp.position * scale);
+			st->set_window_id(tp.touched_id);
+			st->set_pressed(true);
+
+			Ref<InputEventMessage> iev_msg;
+			iev_msg.instantiate();
+			iev_msg->event = st;
+
+			wayland_thread->push_message(iev_msg);
+
+			// TODO: Handle "mouse enter" events globally, independently of input method.
+			if (tp.touched_id != DisplayServer::INVALID_WINDOW_ID) {
+				Ref<WindowEventMessage> msg;
+				msg.instantiate();
+				msg->id = tp.touched_id;
+				msg->event = DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
+
+				wayland_thread->push_message(msg);
+			}
+
+			continue;
+		}
+
+		TouchPoint &tp_old = ss->touch_points[id];
+
+		if (tp.touched_id == DisplayServer::INVALID_WINDOW_ID) {
+			ws = wayland_thread->window_get_state(tp.touched_id);
+		}
+
+		if (wayland_thread->window_get_state(tp.touched_id) == nullptr) {
+			continue;
+		}
+
+		if (tp.position != tp_old.position) {
+			Ref<InputEventScreenDrag> sd;
+			sd.instantiate();
+			sd->set_index(id);
+			sd->set_window_id(tp.touched_id);
+			sd->set_position(tp.position * scale);
+			sd->set_relative((tp.position - tp_old.position) * scale);
+			sd->set_relative_screen_position(sd->get_relative());
+
+			Ref<InputEventMessage> iev_msg;
+			iev_msg.instantiate();
+			iev_msg->event = sd;
+
+			wayland_thread->push_message(iev_msg);
+		}
+	}
+
+	ss->touch_points = ss->touch_points_buffer;
+}
+
+// NOTE: Per the spec, a frame event is not required after this event, so let's
+// assume that it's not going to happen.
+void WaylandThread::_wl_touch_on_cancel(void *data, struct wl_touch *wl_touch) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
+	for (KeyValue<int32_t, TouchPoint> &pair : ss->touch_points_buffer) {
+		int32_t id = pair.key;
+		TouchPoint &tp = pair.value;
+
+		WindowState *ws = wayland_thread->window_get_state(tp.touched_id);
+		double scale = window_state_get_scale_factor(ws);
+
+		Ref<InputEventScreenTouch> st;
+		st.instantiate();
+		st->set_index(id);
+		st->set_position(tp.position * scale);
+		st->set_window_id(tp.touched_id);
+		st->set_pressed(false);
+		st->set_canceled(true);
+
+		// TODO: Handle "mouse enter" events globally, independently of input method.
+		if (tp.touched_id != DisplayServer::INVALID_WINDOW_ID) {
+			Ref<WindowEventMessage> msg;
+			msg.instantiate();
+			msg->id = tp.touched_id;
+			msg->event = DisplayServer::WINDOW_EVENT_MOUSE_EXIT;
+
+			wayland_thread->push_message(msg);
+		}
+	}
+
+	ss->touch_points_buffer.clear();
+	ss->touch_points.clear();
+}
+
+void WaylandThread::_wl_touch_on_shape(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t major, wl_fixed_t minor) {
+}
+
+void WaylandThread::_wl_touch_on_orientation(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t orientation) {
 }
 
 // NOTE: Don't forget to `memfree` the offer's state.
@@ -4493,10 +4726,16 @@ int WaylandThread::get_screen_count() const {
 	return registry.wl_outputs.size();
 }
 
+bool WaylandThread::input_has_touch() const {
+	return has_touch;
+}
+
 DisplayServer::WindowID WaylandThread::pointer_get_pointed_window_id() const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss) {
+		TouchPoint *tp = ss->touch_points.getptr(ss->last_touch_id);
+
 		// Let's determine the most recently used tablet tool.
 		TabletToolState *max_ts = nullptr;
 		for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
@@ -4517,14 +4756,33 @@ DisplayServer::WindowID WaylandThread::pointer_get_pointed_window_id() const {
 
 		const PointerData &pd = ss->pointer_data;
 
+		Pair<uint32_t, DisplayServer::WindowID> best;
+		best.first = MAX(pd.button_time, pd.motion_time);
+		best.second = pd.pointed_id;
+
 		if (max_ts) {
 			TabletToolData &td = max_ts->data;
-			if (MAX(td.button_time, td.motion_time) > MAX(pd.button_time, pd.motion_time)) {
-				return td.proximal_id;
+
+			Pair<uint32_t, DisplayServer::WindowID> cur;
+			cur.first = MAX(td.button_time, td.motion_time);
+			cur.second = td.proximal_id;
+
+			if (cur.first > best.first) {
+				best = cur;
 			}
 		}
 
-		return ss->pointer_data.pointed_id;
+		if (tp) {
+			Pair<uint32_t, DisplayServer::WindowID> cur;
+			cur.first = MAX(tp->down_time, tp->motion_time);
+			cur.second = tp->touched_id;
+
+			if (cur.first > best.first) {
+				best = cur;
+			}
+		}
+
+		return best.second;
 	}
 
 	return DisplayServer::INVALID_WINDOW_ID;
@@ -5366,6 +5624,10 @@ void WaylandThread::destroy() {
 		xkb_keymap_unref(ss->xkb_keymap);
 		xkb_compose_table_unref(ss->xkb_compose_table);
 		xkb_compose_state_unref(ss->xkb_compose_state);
+
+		if (ss->wl_touch) {
+			wl_touch_destroy(ss->wl_touch);
+		}
 
 		if (ss->wl_keyboard) {
 			wl_keyboard_destroy(ss->wl_keyboard);
