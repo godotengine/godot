@@ -2703,6 +2703,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, pop_at, sarray("position"), varray());
 	bind_method(Array, sort, sarray(), varray());
 	bind_method(Array, sort_custom, sarray("func"), varray());
+	bind_method(Array, sort_by_key, sarray("func", "reverse"), varray(false));
 	bind_method(Array, shuffle, sarray(), varray());
 	bind_method(Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(Array, bsearch_custom, sarray("value", "func", "before"), varray(true));
