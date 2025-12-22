@@ -46,10 +46,6 @@ Ref<ArrayMesh> SeparationRayShape3D::get_debug_arraymesh_faces(const Color &p_mo
 	return memnew(ArrayMesh);
 }
 
-real_t SeparationRayShape3D::get_enclosing_radius() const {
-	return length;
-}
-
 void SeparationRayShape3D::_update_shape() {
 	Dictionary d;
 	d["length"] = length;
