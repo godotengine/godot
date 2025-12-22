@@ -750,9 +750,14 @@ def get_compiler_version(env):
     # Not using -dumpversion as some GCC distros only return major, and
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
     try:
-        version = subprocess.check_output(
-            shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
-        ).strip()
+        cxx_path = env.subst(env["CXX"])
+        if os.name == "nt":
+            cmd = [cxx_path, "--version"]
+            version = subprocess.check_output(cmd, shell=False, encoding="utf-8").strip()
+        else:
+            version = subprocess.check_output(
+                shlex.split(cxx_path) + ["--version"], shell=False, encoding="utf-8"
+            ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
         return update_compiler_version_cache(ret)
