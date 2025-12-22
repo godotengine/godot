@@ -551,11 +551,29 @@ void CanvasItem::_top_level_changed() {
 			child->_top_level_changed_on_parent();
 		}
 	}
+	update_configuration_warnings();
 }
 
 void CanvasItem::_top_level_changed_on_parent() {
 	// Inform children that top_level status has changed on a parent.
 	_top_level_changed();
+}
+
+void CanvasItem::_visibility_layer_changed() {
+	// Inform children that visibility_layer has changed on a parent.
+	int children = get_child_count();
+	for (int i = 0; i < children; i++) {
+		CanvasItem *child = Object::cast_to<CanvasItem>(get_child(i));
+		if (child) {
+			child->_visibility_layer_changed_on_parent();
+		}
+	}
+	update_configuration_warnings();
+}
+
+void CanvasItem::_visibility_layer_changed_on_parent() {
+	// Inform children that top_level status has changed on a parent.
+	_visibility_layer_changed();
 }
 
 bool CanvasItem::is_set_as_top_level() const {
@@ -1297,7 +1315,24 @@ void CanvasItem::_validate_property(PropertyInfo &p_property) const {
 }
 
 PackedStringArray CanvasItem::get_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
 	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	// Check compatible visibility layer, only if not top-level and any bit is set.
+	CanvasItem *parent = get_parent_item();
+	if (parent && visibility_layer) {
+		uint32_t combined_layers = visibility_layer;
+
+		// Iterate over parents until non-canvas item, or node is top-level.
+		do {
+			combined_layers &= parent->visibility_layer;
+			parent = parent->get_parent_item();
+		} while (parent && combined_layers);
+
+		if (combined_layers == 0) {
+			warnings.push_back("CanvasItem with non-zero visibility_layer but shares no layer with parents, this node will not be visible.\nConsider matching at least one layer with all parents or setting this as top-level.");
+		}
+	}
 
 	if (clip_children_mode != CLIP_CHILDREN_DISABLED && is_inside_tree()) {
 		bool warned_about_ancestor_clipping = false;
@@ -1599,6 +1634,8 @@ void CanvasItem::set_visibility_layer(uint32_t p_visibility_layer) {
 	ERR_THREAD_GUARD;
 	visibility_layer = p_visibility_layer;
 	RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item, p_visibility_layer);
+	// Propagate update to tree.
+	_visibility_layer_changed();
 }
 
 uint32_t CanvasItem::get_visibility_layer() const {
