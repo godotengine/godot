@@ -2088,7 +2088,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 		XDestroyIC(wd.xic);
 		wd.xic = nullptr;
 	}
-	XDestroyWindow(x11_display, wd.x11_xim_window);
+
 #ifdef XKB_ENABLED
 	if (xkb_loaded_v05p) {
 		if (wd.xkb_state) {
@@ -2098,7 +2098,6 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 #endif
 
-	XUnmapWindow(x11_display, wd.x11_window);
 	XDestroyWindow(x11_display, wd.x11_window);
 
 	window_set_rect_changed_callback(Callable(), p_id);
@@ -2400,7 +2399,7 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 		// Set focus to parent sub window to avoid losing all focus when closing a nested sub-menu.
 		// RevertToPointerRoot is used to make sure we don't lose all focus in case
 		// a subwindow and its parent are both destroyed.
-		if (!wd_window.no_focus && !wd_window.is_popup && wd_window.focused) {
+		if (!supported_atoms.has("_NET_WM_STATE_FOCUSED") && !wd_window.no_focus && !wd_window.is_popup && wd_window.focused) {
 			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup && _window_focus_check()) {
 				_set_input_focus(wd_parent.x11_window, RevertToPointerRoot);
 			}
@@ -2536,6 +2535,14 @@ void DisplayServerX11::_update_wm_state_hints(WindowID p_window) {
 	wd.fullscreen = hints.has(fullscreen_atom);
 	wd.maximized = hints.has(maximized_horz_atom) && hints.has(maximized_vert_atom);
 	wd.minimized = hints.has(hidden_atom);
+
+	if (supported_atoms.has("_NET_WM_STATE_FOCUSED")) {
+		const bool old_focused = wd.focused;
+		wd.focused = hints.has(supported_atoms["_NET_WM_STATE_FOCUSED"]);
+		if (old_focused != wd.focused) {
+			_window_focus_changed(p_window);
+		}
+	}
 }
 
 Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
@@ -4764,9 +4771,10 @@ void DisplayServerX11::process_events() {
 		}
 
 		if (!focus_found) {
-			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_no_focus;
+			const uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_no_focus;
+			const uint64_t frames_delta = Engine::get_singleton()->get_process_frames() - frames_since_no_focus; // For time-consuming tasks.
 
-			if (delta > 250) {
+			if (delta > 250 && frames_delta > 15) {
 				//X11 can go between windows and have no focus for a while, when creating them or something else. Use this as safety to avoid unnecessary focus in/outs.
 				if (OS::get_singleton()->get_main_loop()) {
 					DEBUG_LOG_X11("All focus lost, triggering NOTIFICATION_APPLICATION_FOCUS_OUT\n");
@@ -4776,6 +4784,7 @@ void DisplayServerX11::process_events() {
 			}
 		} else {
 			time_since_no_focus = OS::get_singleton()->get_ticks_msec();
+			frames_since_no_focus = Engine::get_singleton()->get_process_frames();
 		}
 	}
 
@@ -4800,7 +4809,7 @@ void DisplayServerX11::process_events() {
 		XEvent &event = events[event_index];
 
 		bool ime_window_event = false;
-		WindowID window_id = MAIN_WINDOW_ID;
+		WindowID window_id = INVALID_WINDOW_ID;
 
 		// Assign the event to the relevant window
 		for (const KeyValue<WindowID, WindowData> &E : windows) {
@@ -4813,6 +4822,10 @@ void DisplayServerX11::process_events() {
 				ime_window_event = true;
 				break;
 			}
+		}
+
+		if (window_id == INVALID_WINDOW_ID) {
+			continue;
 		}
 
 		if (XGetEventData(x11_display, &event.xcookie)) {
@@ -5073,105 +5086,26 @@ void DisplayServerX11::process_events() {
 				if (ime_window_event || (event.xfocus.detail == NotifyInferior)) {
 					break;
 				}
-
 				WindowData &wd = windows[window_id];
-				last_focused_window = window_id;
-				wd.focused = true;
+				wd.contents_focused = true;
 
-				// Keep track of focus order for overlapping windows.
-				static unsigned int focus_order = 0;
-				wd.focus_order = ++focus_order;
-
-#ifdef ACCESSKIT_ENABLED
-				if (accessibility_driver) {
-					accessibility_driver->accessibility_set_window_focused(window_id, true);
-				}
-#endif
-				_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
-
-				if (mouse_mode_grab) {
-					// Show and update the cursor if confined and the window regained focus.
-
-					for (const KeyValue<WindowID, WindowData> &E : windows) {
-						if (mouse_mode == MOUSE_MODE_CONFINED) {
-							XUndefineCursor(x11_display, E.value.x11_window);
-						} else if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) { // Or re-hide it.
-							XDefineCursor(x11_display, E.value.x11_window, null_cursor);
-						}
-
-						XGrabPointer(
-								x11_display, E.value.x11_window, True,
-								ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-								GrabModeAsync, GrabModeAsync, E.value.x11_window, None, CurrentTime);
-					}
-				}
-#ifdef TOUCH_ENABLED
-				// Grab touch devices to avoid OS gesture interference
-				/*for (int i = 0; i < xi.touch_devices.size(); ++i) {
-					XIGrabDevice(x11_display, xi.touch_devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &xi.touch_event_mask);
-				}*/
-#endif
-
-				if (!app_focused) {
-					if (OS::get_singleton()->get_main_loop()) {
-						OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
-					}
-					app_focused = true;
+				if (!supported_atoms.has("_NET_WM_STATE_FOCUSED") && !wd.no_focus && !wd.focused) {
+					wd.focused = true;
+					_window_focus_changed(window_id);
 				}
 			} break;
 
 			case FocusOut: {
 				DEBUG_LOG_X11("[%u] FocusOut window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
-				WindowData &wd = windows[window_id];
 				if (ime_window_event || (event.xfocus.detail == NotifyInferior)) {
 					break;
 				}
-				if (wd.ime_active) {
-					MutexLock mutex_lock(events_mutex);
-					XUnsetICFocus(wd.xic);
-					XUnmapWindow(x11_display, wd.x11_xim_window);
-					wd.ime_active = false;
-					im_text = String();
-					im_selection = Vector2i();
-					OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+				WindowData &wd = windows[window_id];
+				wd.contents_focused = false;
+				if (!supported_atoms.has("_NET_WM_STATE_FOCUSED")) {
+					wd.focused = false;
+					_window_focus_changed(window_id);
 				}
-				wd.focused = false;
-
-				Input::get_singleton()->release_pressed_events();
-#ifdef ACCESSKIT_ENABLED
-				if (accessibility_driver) {
-					accessibility_driver->accessibility_set_window_focused(window_id, false);
-				}
-#endif
-				_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
-
-				if (mouse_mode_grab) {
-					for (const KeyValue<WindowID, WindowData> &E : windows) {
-						//dear X11, I try, I really try, but you never work, you do whatever you want.
-						if (mouse_mode == MOUSE_MODE_CAPTURED) {
-							// Show the cursor if we're in captured mode so it doesn't look weird.
-							XUndefineCursor(x11_display, E.value.x11_window);
-						}
-					}
-					XUngrabPointer(x11_display, CurrentTime);
-				}
-#ifdef TOUCH_ENABLED
-				// Ungrab touch devices so input works as usual while we are unfocused
-				/*for (int i = 0; i < xi.touch_devices.size(); ++i) {
-					XIUngrabDevice(x11_display, xi.touch_devices[i], CurrentTime);
-				}*/
-
-				// Release every pointer to avoid sticky points
-				for (const KeyValue<int, Vector2> &E : xi.state) {
-					Ref<InputEventScreenTouch> st;
-					st.instantiate();
-					st->set_index(E.key);
-					st->set_window_id(window_id);
-					st->set_position(E.value);
-					Input::get_singleton()->parse_input_event(st);
-				}
-				xi.state.clear();
-#endif
 			} break;
 
 			case ConfigureNotify: {
@@ -5261,7 +5195,7 @@ void DisplayServerX11::process_events() {
 
 					WindowID window_id_other = INVALID_WINDOW_ID;
 					Window wd_other_x11_window;
-					if (!wd.focused) {
+					if (!wd.contents_focused) {
 						// Propagate the event to the focused window,
 						// because it's received only on the topmost window.
 						// Note: This is needed for drag & drop to work between windows,
@@ -5634,6 +5568,101 @@ void DisplayServerX11::swap_buffers() {
 		gl_manager_egl->swap_buffers();
 	}
 #endif
+}
+
+void DisplayServerX11::_window_focus_changed(WindowID p_window) {
+	WindowData &wd = windows[p_window];
+
+	if (wd.focused) {
+		last_focused_window = p_window;
+
+		// Keep track of focus order for overlapping windows.
+		static unsigned int focus_order = 0;
+		wd.focus_order = ++focus_order;
+
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver) {
+			accessibility_driver->accessibility_set_window_focused(p_window, true);
+		}
+#endif
+		_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
+
+		if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+			// Show and update the cursor if confined and the window regained focus.
+
+			for (const KeyValue<WindowID, WindowData> &E : windows) {
+				if (mouse_mode == MOUSE_MODE_CONFINED) {
+					XUndefineCursor(x11_display, E.value.x11_window);
+				} else if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) { // Or re-hide it.
+					XDefineCursor(x11_display, E.value.x11_window, null_cursor);
+				}
+
+				XGrabPointer(
+						x11_display, E.value.x11_window, True,
+						ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+						GrabModeAsync, GrabModeAsync, E.value.x11_window, None, CurrentTime);
+			}
+		}
+#ifdef TOUCH_ENABLED
+		// Grab touch devices to avoid OS gesture interference
+		/*for (int i = 0; i < xi.touch_devices.size(); ++i) {
+			XIGrabDevice(x11_display, xi.touch_devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &xi.touch_event_mask);
+		}*/
+#endif
+
+		if (!app_focused) {
+			if (OS::get_singleton()->get_main_loop()) {
+				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+			}
+			app_focused = true;
+		}
+	} else {
+		if (wd.ime_active) {
+			MutexLock mutex_lock(events_mutex);
+			XUnsetICFocus(wd.xic);
+			XUnmapWindow(x11_display, wd.x11_xim_window);
+			wd.ime_active = false;
+			im_text = String();
+			im_selection = Vector2i();
+			OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+		}
+
+		Input::get_singleton()->release_pressed_events();
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver) {
+			accessibility_driver->accessibility_set_window_focused(p_window, false);
+		}
+#endif
+		_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
+
+		if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+			for (const KeyValue<WindowID, WindowData> &E : windows) {
+				//dear X11, I try, I really try, but you never work, you do whatever you want.
+				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+					// Show the cursor if we're in captured mode so it doesn't look weird.
+					XUndefineCursor(x11_display, E.value.x11_window);
+				}
+			}
+			XUngrabPointer(x11_display, CurrentTime);
+		}
+#ifdef TOUCH_ENABLED
+		// Ungrab touch devices so input works as usual while we are unfocused
+		/*for (int i = 0; i < xi.touch_devices.size(); ++i) {
+			XIUngrabDevice(x11_display, xi.touch_devices[i], CurrentTime);
+		}*/
+
+		// Release every pointer to avoid sticky points
+		for (const KeyValue<int, Vector2> &E : xi.state) {
+			Ref<InputEventScreenTouch> st;
+			st.instantiate();
+			st->set_index(E.key);
+			st->set_window_id(p_window);
+			st->set_position(E.value);
+			Input::get_singleton()->parse_input_event(st);
+		}
+		xi.state.clear();
+#endif
+	}
 }
 
 void DisplayServerX11::_update_context(WindowData &wd) {
@@ -6629,6 +6658,53 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	return id;
 }
 
+void DisplayServerX11::_fetch_supported_atoms() {
+	supported_atoms.clear();
+
+	Atom supported = XInternAtom(x11_display, "_NET_SUPPORTED", True);
+	if (supported == None) {
+		return;
+	}
+
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = nullptr;
+
+	int result = XGetWindowProperty(
+			x11_display,
+			DefaultRootWindow(x11_display),
+			supported,
+			0,
+			1024,
+			False,
+			XA_ATOM,
+			&type,
+			&format,
+			&len,
+			&remaining,
+			&data);
+	if (result != Success) {
+		return;
+	}
+
+	if (!data) {
+		return;
+	}
+
+	Atom *atoms = (Atom *)data;
+	LocalVector<char *> names;
+	names.resize(len);
+
+	XGetAtomNames(x11_display, atoms, len, names.ptr());
+	XFree(data);
+
+	for (unsigned long i = 0; i < len; i++) {
+		supported_atoms.insert(String::utf8(names[i]), atoms[i]);
+	}
+}
+
 static bool _is_xim_style_supported(const ::XIMStyle &p_style) {
 	const ::XIMStyle supported_preedit = XIMPreeditCallbacks | XIMPreeditPosition | XIMPreeditNothing | XIMPreeditNone;
 	const ::XIMStyle supported_status = XIMStatusNothing | XIMStatusNone;
@@ -7177,6 +7253,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		Rect2i scr_rect = screen_get_usable_rect(p_screen);
 		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
 	}
+
+	_fetch_supported_atoms();
 
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), p_parent_window);
 	if (main_window == INVALID_WINDOW_ID) {
