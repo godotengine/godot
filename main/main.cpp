@@ -3624,6 +3624,14 @@ Error Main::setup2(bool p_show_boot_logo) {
 		OS::get_singleton()->benchmark_end_measure("Startup", "Text Server");
 	}
 
+	MAIN_PRINT("Main: Load Platforms");
+
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Platforms");
+
+	register_platform_apis();
+
+	OS::get_singleton()->benchmark_end_measure("Startup", "Platforms");
+
 	MAIN_PRINT("Main: Load Scene Types");
 
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Scene");
@@ -3693,14 +3701,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 	ClassDB::set_current_api(ClassDB::API_CORE);
 
 #endif
-
-	MAIN_PRINT("Main: Load Platforms");
-
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Platforms");
-
-	register_platform_apis();
-
-	OS::get_singleton()->benchmark_end_measure("Startup", "Platforms");
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.bmp,*.hdr,*.jpg,*.jpeg,*.svg,*.tga,*.exr,*.webp"), String());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());
