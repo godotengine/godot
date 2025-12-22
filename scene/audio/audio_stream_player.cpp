@@ -178,6 +178,14 @@ bool AudioStreamPlayer::get_stream_paused() const {
 	return internal->get_stream_paused();
 }
 
+Vector2 AudioStreamPlayer::get_speaker_position() {
+	return speaker_position;
+}
+void AudioStreamPlayer::set_speaker_position(Vector2 p_position) {
+	speaker_position = Vector2(CLAMP(p_position.x, -1, 1), CLAMP(p_position.y, -1, 1));
+	set_volume_db(internal->volume_db);
+}
+
 Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 	Vector<AudioFrame> volume_vector;
 	// We need at most four stereo pairs (for 7.1 systems).
@@ -190,21 +198,46 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 
 	float volume_linear = Math::db_to_linear(internal->volume_db);
 
+	float volume_forward = volume_linear * (1 + speaker_position.y);
+	float volume_back = volume_linear * (1 - speaker_position.y);
 	// Set the volume vector up according to the speaker mode and mix target.
 	// TODO do we need to scale the volume down when we output to more channels?
 	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
-		volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+		float volume_left = volume_linear * (1 - speaker_position.x);
+		float volume_right = volume_linear * (1 + speaker_position.x);
+		volume_vector.write[0] = AudioFrame(CLAMP(volume_left, 0, 1), CLAMP(volume_right, 0, 1));
 	} else {
 		switch (mix_target) {
 			case MIX_TARGET_STEREO: {
-				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+				float volume_left = volume_linear * (1 - speaker_position.x);
+				float volume_right = volume_linear * (1 + speaker_position.x);
+				volume_vector.write[0] = AudioFrame(CLAMP(volume_left, 0, 1), CLAMP(volume_right, 0, 1));
 			} break;
 			case MIX_TARGET_SURROUND: {
-				// TODO Make sure this is right.
-				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
-				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
-				volume_vector.write[2] = AudioFrame(volume_linear, volume_linear);
-				volume_vector.write[3] = AudioFrame(volume_linear, volume_linear);
+				float distance = speaker_position.length();
+				if (distance == 0) {
+					volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
+					volume_vector.write[1] = AudioFrame(volume_linear, volume_linear);
+					volume_vector.write[2] = AudioFrame(volume_linear, volume_linear);
+					volume_vector.write[3] = AudioFrame(volume_linear, volume_linear);
+				} else {
+					Vector2 dir = speaker_position / distance;
+					float gain_fl = MAX(0.0f, dir.dot(Vector2(-0.5f, 0.5f)));
+					float gain_fr = MAX(0.0f, dir.dot(Vector2(0.5f, 0.5f)));
+					float gain_rl = MAX(0.0f, dir.dot(Vector2(-0.5f, -0.5f)));
+					float gain_rr = MAX(0.0f, dir.dot(Vector2(0.5f, -0.5f)));
+
+					// Front speakers
+					volume_vector.write[0] = AudioFrame(volume_linear * gain_fl, volume_linear * gain_fr);
+					// Center and Sub
+					volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
+					// Rear Speakers
+					volume_vector.write[2] = AudioFrame(volume_linear * gain_rl, volume_linear * gain_rr);
+					// Side speakers
+					float volume_left = volume_linear * (1 - speaker_position.x);
+					float volume_right = volume_linear * (1 + speaker_position.x);
+					volume_vector.write[3] = AudioFrame(volume_left, volume_right);
+				}
 			} break;
 			case MIX_TARGET_CENTER: {
 				// TODO Make sure this is right.
@@ -264,6 +297,9 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mix_target", "mix_target"), &AudioStreamPlayer::set_mix_target);
 	ClassDB::bind_method(D_METHOD("get_mix_target"), &AudioStreamPlayer::get_mix_target);
 
+	ClassDB::bind_method(D_METHOD("set_speaker_position"), &AudioStreamPlayer::set_speaker_position);
+	ClassDB::bind_method(D_METHOD("get_speaker_position"), &AudioStreamPlayer::get_speaker_position);
+
 	ClassDB::bind_method(D_METHOD("set_playing", "enable"), &AudioStreamPlayer::_set_playing);
 
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer::set_stream_paused);
@@ -286,6 +322,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speaker_position", PROPERTY_HINT_NONE, "speaker_position"), "set_speaker_position", "get_speaker_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
