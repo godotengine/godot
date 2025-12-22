@@ -226,7 +226,7 @@ void EditorAudioBus::update_send() {
 	send->clear();
 	if (is_master) {
 		send->set_disabled(true);
-		send->set_text(TTR("Speakers"));
+		send->add_item(TTRC("Speakers"));
 	} else {
 		send->set_disabled(false);
 		StringName current_send = AudioServer::get_singleton()->get_bus_send(get_index());
