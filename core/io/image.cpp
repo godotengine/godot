@@ -2791,12 +2791,28 @@ Error Image::save_jpg(const String &p_path, float p_quality) const {
 	return save_jpg_func(p_path, Ref<Image>((Image *)this), p_quality);
 }
 
+Error Image::save_qoi(const String &p_path) const {
+	if (save_qoi_func == nullptr) {
+		return ERR_UNAVAILABLE;
+	}
+
+	return save_qoi_func(p_path, Ref<Image>((Image *)this));
+}
+
 Vector<uint8_t> Image::save_png_to_buffer() const {
 	if (save_png_buffer_func == nullptr) {
 		return Vector<uint8_t>();
 	}
 
 	return save_png_buffer_func(Ref<Image>((Image *)this));
+}
+
+Vector<uint8_t> Image::save_qoi_to_buffer() const {
+	if (save_qoi_buffer_func == nullptr) {
+		return Vector<uint8_t>();
+	}
+
+	return save_qoi_buffer_func(Ref<Image>((Image *)this));
 }
 
 Vector<uint8_t> Image::save_jpg_to_buffer(float p_quality) const {
@@ -3866,6 +3882,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
 	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality"), &Image::save_jpg, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("save_jpg_to_buffer", "quality"), &Image::save_jpg_to_buffer, DEFVAL(0.75));
+	ClassDB::bind_method(D_METHOD("save_qoi", "path"), &Image::save_qoi);
+	ClassDB::bind_method(D_METHOD("save_qoi_to_buffer"), &Image::save_qoi_to_buffer);
 	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale"), &Image::save_exr, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::save_exr_to_buffer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("save_dds", "path"), &Image::save_dds);
@@ -3923,6 +3941,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_bmp_from_buffer", "buffer"), &Image::load_bmp_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_qoi_from_buffer", "buffer"), &Image::load_qoi_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_ktx_from_buffer", "buffer"), &Image::load_ktx_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_dds_from_buffer", "buffer"), &Image::load_dds_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_exr_from_buffer", "buffer"), &Image::load_exr_from_buffer);
@@ -4459,6 +4478,14 @@ Error Image::load_dds_from_buffer(const Vector<uint8_t> &p_array) {
 			ERR_UNAVAILABLE,
 			"The DDS module isn't enabled. Recompile the Godot editor or export template binary with the `module_dds_enabled=yes` SCons option.");
 	return _load_from_buffer(p_array, _dds_mem_loader_func);
+}
+
+Error Image::load_qoi_from_buffer(const Vector<uint8_t> &p_array) {
+	ERR_FAIL_NULL_V_MSG(
+			_qoi_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The QOI module isn't enabled. Recompile the Godot editor or export template binary with the `module_qoi_enabled=yes` SCons option.");
+	return _load_from_buffer(p_array, _qoi_mem_loader_func);
 }
 
 Error Image::load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale) {
