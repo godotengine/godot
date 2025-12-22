@@ -50,11 +50,13 @@ Size2 TabBar::get_minimum_size() const {
 
 	int y_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_hovered_style->get_minimum_size().height), theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
 	int max_tab_width = 0;
+	int visible_tabs_count = 0;
 
 	for (int i = 0; i < tabs.size(); i++) {
 		if (tabs[i].hidden) {
 			continue;
 		}
+		visible_tabs_count++;
 
 		int ofs = ms.width;
 
@@ -112,6 +114,11 @@ Size2 TabBar::get_minimum_size() const {
 		if (ms.width - ofs > max_tab_width) {
 			max_tab_width = ms.width - ofs;
 		}
+	}
+
+	if (tab_sizing == TAB_SIZING_UNIFORM && visible_tabs_count > 0) {
+		int total_separation = (visible_tabs_count - 1) * theme_cache.tab_separation;
+		ms.width = (max_tab_width * visible_tabs_count) + total_separation;
 	}
 
 	if (clip_tabs) {
@@ -1202,19 +1209,105 @@ void TabBar::_update_cache(bool p_update_hover) {
 	int limit = get_size().width;
 	int limit_minus_buttons = limit - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 
+	// Calculate sizing information for the chosen tab sizing mode.
+	int visible_count = 0;
+	int total_base_width = 0;
+	int max_base_width = 0;
+
+	for (int i = 0; i < tabs.size(); i++) {
+		// Update text buffer so that the sizing calculations use the correct text size.
+		tabs.write[i].text_buf->set_width(-1);
+		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
+
+		int tab_width = get_tab_width(i);
+		tabs.write[i].size_cache = tab_width;
+
+		if (tabs[i].hidden) {
+			continue;
+		}
+
+		total_base_width += tab_width;
+		max_base_width = MAX(max_base_width, tab_width);
+		visible_count++;
+	}
+
+	bool can_expand = false;
+	int expand_remainder = 0;
+	float justify_ratio = 1.0;
+	int uniform_width = 0;
+
+	if (visible_count > 0 && tab_sizing != TAB_SIZING_FIT_CONTENT) {
+		int total_separation = MAX(0, visible_count - 1) * theme_cache.tab_separation;
+		int available_space = limit - total_separation;
+
+		if (tab_sizing == TAB_SIZING_UNIFORM) {
+			// All tabs take the width of the largest tab.
+			uniform_width = max_base_width;
+		} else if (tab_sizing == TAB_SIZING_EXPAND) {
+			// Distribute space equally among all tabs.
+			int width_per_tab = available_space / visible_count;
+			// Only expand if the resulting width fits the largest tab, otherwise fall back to fit content.
+			if (width_per_tab >= max_base_width) {
+				can_expand = true;
+				uniform_width = width_per_tab;
+				expand_remainder = available_space % visible_count;
+			}
+		} else if (tab_sizing == TAB_SIZING_JUSTIFY) {
+			// Scale tabs proportionally to fill the space, if we have space to fill.
+			if (total_base_width <= available_space) {
+				can_expand = true;
+				justify_ratio = (float)available_space / (float)total_base_width;
+
+				// Recalculate the remainder that results from integer rounding.
+				int simulated_total = 0;
+				for (int i = 0; i < tabs.size(); i++) {
+					if (tabs[i].hidden) {
+						continue;
+					}
+					simulated_total += (int)(tabs[i].size_cache * justify_ratio);
+				}
+				expand_remainder = available_space - simulated_total;
+			}
+		}
+	}
+
 	int w = 0;
+	int visible_index = 0;
 
 	max_drawn_tab = tabs.size() - 1;
 
 	for (int i = 0; i < tabs.size(); i++) {
-		tabs.write[i].text_buf->set_width(-1);
-		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
-		tabs.write[i].size_cache = get_tab_width(i);
+		int natural_width = tabs[i].size_cache;
+		int final_width = natural_width;
+
+		// Apply sizing.
+		if (!tabs[i].hidden) {
+			if (tab_sizing == TAB_SIZING_UNIFORM) {
+				final_width = uniform_width;
+			} else if (can_expand) {
+				if (tab_sizing == TAB_SIZING_EXPAND) {
+					final_width = uniform_width;
+				} else if (tab_sizing == TAB_SIZING_JUSTIFY) {
+					final_width = (int)(final_width * justify_ratio);
+				}
+
+				// Distribute remaining pixels.
+				if (visible_index < expand_remainder) {
+					final_width++;
+				}
+				visible_index++;
+			}
+		}
+
+		tabs.write[i].size_cache = final_width;
 		tabs.write[i].accessibility_item_dirty = true;
 
 		tabs.write[i].truncated = max_width > 0 && tabs[i].size_cache > max_width;
 		if (tabs[i].truncated) {
-			int size_textless = tabs[i].size_cache - tabs[i].size_text;
+			int size_textless = natural_width;
+			if (!tabs[i].text.is_empty()) {
+				size_textless -= tabs[i].size_text;
+			}
 			int mw = MAX(size_textless, max_width);
 
 			tabs.write[i].size_text = MAX(mw - size_textless, 1);
@@ -1684,6 +1777,24 @@ TabBar::AlignmentMode TabBar::get_tab_alignment() const {
 	return tab_alignment;
 }
 
+void TabBar::set_tab_sizing(SizingMode p_sizing) {
+	ERR_FAIL_INDEX(p_sizing, TAB_SIZING_MAX);
+
+	if (tab_sizing == p_sizing) {
+		return;
+	}
+
+	tab_sizing = p_sizing;
+
+	_update_cache();
+	queue_redraw();
+	update_minimum_size();
+}
+
+TabBar::SizingMode TabBar::get_tab_sizing() const {
+	return tab_sizing;
+}
+
 void TabBar::set_clip_tabs(bool p_clip_tabs) {
 	if (clip_tabs == p_clip_tabs) {
 		return;
@@ -2084,6 +2195,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabBar::get_tab_idx_at_point);
 	ClassDB::bind_method(D_METHOD("set_tab_alignment", "alignment"), &TabBar::set_tab_alignment);
 	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabBar::get_tab_alignment);
+	ClassDB::bind_method(D_METHOD("set_tab_sizing", "tab_sizing"), &TabBar::set_tab_sizing);
+	ClassDB::bind_method(D_METHOD("get_tab_sizing"), &TabBar::get_tab_sizing);
 	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &TabBar::set_clip_tabs);
 	ClassDB::bind_method(D_METHOD("get_clip_tabs"), &TabBar::get_clip_tabs);
 	ClassDB::bind_method(D_METHOD("get_tab_offset"), &TabBar::get_tab_offset);
@@ -2124,6 +2237,7 @@ void TabBar::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_sizing", PROPERTY_HINT_ENUM, "Fit Content,Uniform,Justify,Expand"), "set_tab_sizing", "get_tab_sizing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "close_with_middle_mouse"), "set_close_with_middle_mouse", "get_close_with_middle_mouse");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
@@ -2142,6 +2256,12 @@ void TabBar::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
 	BIND_ENUM_CONSTANT(ALIGNMENT_RIGHT);
 	BIND_ENUM_CONSTANT(ALIGNMENT_MAX);
+
+	BIND_ENUM_CONSTANT(TAB_SIZING_FIT_CONTENT);
+	BIND_ENUM_CONSTANT(TAB_SIZING_UNIFORM);
+	BIND_ENUM_CONSTANT(TAB_SIZING_JUSTIFY);
+	BIND_ENUM_CONSTANT(TAB_SIZING_EXPAND);
+	BIND_ENUM_CONSTANT(TAB_SIZING_MAX);
 
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_SHOW_NEVER);
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_SHOW_ACTIVE_ONLY);
