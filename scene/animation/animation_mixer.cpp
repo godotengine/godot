@@ -43,9 +43,11 @@
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_stream_player_3d.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/main/viewport.h"
 #endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
@@ -135,8 +137,29 @@ void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
 #ifdef TOOLS_ENABLED // `editing` is surrounded by TOOLS_ENABLED so this should also be.
-	if (Engine::get_singleton()->is_editor_hint() && editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
-		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+		if (!fps_lod) {
+			if (p_property.name == "fps_lod_target" ||
+					p_property.name == "fps_lod_levels" ||
+					p_property.name == "fps_lod_manual" ||
+					p_property.name == "fps_lod_skip_frames") {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else {
+			if (fps_lod_manual) {
+				if (p_property.name == "fps_lod_target" ||
+						p_property.name == "fps_lod_levels") {
+					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+				}
+			} else {
+				if (p_property.name == "fps_lod_skip_frames") {
+					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+				}
+			}
+		}
 	}
 #endif // TOOLS_ENABLED
 	if (root_motion_track.is_empty() && p_property.name == "root_motion_local") {
@@ -1009,6 +1032,68 @@ void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 		emit_signal(SNAME("mixer_applied"));
 	};
 	clear_animation_instances();
+}
+
+void AnimationMixer::_process_fpslod(double p_delta) {
+	if (!fps_lod_manual) {
+		Node *n = get_node_or_null(lod_target_path);
+		Node3D *target = Object::cast_to<Node3D>(n);
+		if (target != lod_target) {
+			lod_target = target;
+		}
+
+		if (lod_target && fpslod_levels.size() > 0) {
+			double dist = 0.0;
+			Camera3D *cam = get_viewport()->get_camera_3d();
+			dist = lod_target->get_global_position().distance_to(cam->get_global_position());
+			if (cam->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
+				double base_fov = 75.0;
+				double current_fov = cam->get_fov();
+				double fov_factor = current_fov / base_fov;
+				dist *= fov_factor;
+			} else if (cam->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
+				double base_size = 10.0;
+				double current_size = cam->get_size();
+				double ortho_factor = current_size / base_size;
+				dist *= ortho_factor;
+			}
+
+			int lod_index = _get_fpslod_for_distance(dist);
+			Ref<FPSLODLevel> first_lvl = fpslod_levels[0];
+			current_lod_index = 0;
+			if (!first_lvl.is_valid()) {
+				return;
+			}
+
+			double min_dist = first_lvl->get_distance();
+			if (dist < min_dist) {
+				skip_frames_fpslod = 0;
+			} else if (lod_index >= 0) {
+				Ref<FPSLODLevel> lvl = fpslod_levels[lod_index];
+				if (lvl.is_valid() && current_lod_index != lod_index) {
+					skip_frames_fpslod = lvl->get_skip_frames();
+					current_lod_index = lod_index;
+				}
+			}
+		}
+	}
+
+	frame_time_accum -= frame_time_history[frame_time_index];
+	frame_time_accum += p_delta;
+	frame_time_history[frame_time_index] = p_delta;
+	frame_time_index = (frame_time_index + 1) % FRAME_HISTORY_SIZE;
+	average_frame_time = frame_time_accum / FRAME_HISTORY_SIZE;
+
+	tick_fpslod += 1.0;
+
+	if (skip_frames_fpslod <= 0) {
+		_process_animation(p_delta);
+		tick_fpslod = 0.0;
+	} else if (tick_fpslod >= skip_frames_fpslod) {
+		double time_to_play = average_frame_time * (tick_fpslod);
+		_process_animation(time_to_play);
+		tick_fpslod = 0.0;
+	}
 }
 
 Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant &p_value, ObjectID p_object_id, int p_object_sub_idx) {
@@ -2065,6 +2150,81 @@ void AnimationMixer::clear_caches() {
 	_clear_caches();
 }
 
+void AnimationMixer::set_fpslod(bool p_enabled) {
+	fps_lod = p_enabled;
+	notify_property_list_changed();
+}
+
+bool AnimationMixer::is_fpslod() const {
+	return fps_lod;
+}
+
+void AnimationMixer::set_fpslod_manual(bool p_enabled) {
+	fps_lod_manual = p_enabled;
+	if (p_enabled) {
+		current_lod_index = -1;
+	}
+	notify_property_list_changed();
+}
+
+bool AnimationMixer::is_fpslod_manual() const {
+	return fps_lod_manual;
+}
+
+void AnimationMixer::set_fpslod_skip_frames(int frames) {
+	if (fps_lod_manual) {
+		skip_frames_fpslod = frames;
+	}
+}
+
+int AnimationMixer::get_fpslod_skip_frames() const {
+	return skip_frames_fpslod;
+}
+
+void AnimationMixer::set_fpslod_target(const NodePath &p_path) {
+	lod_target_path = p_path;
+	if (is_inside_tree()) {
+		Node *n = get_node_or_null(p_path);
+		lod_target = Object::cast_to<Node3D>(n);
+	}
+}
+
+NodePath AnimationMixer::get_fpslod_target() const {
+	return lod_target_path;
+}
+
+void AnimationMixer::set_fpslod_levels(const TypedArray<FPSLODLevel> &p_levels) {
+	fpslod_levels = p_levels;
+}
+
+TypedArray<FPSLODLevel> AnimationMixer::get_fpslod_levels() const {
+	return fpslod_levels;
+}
+
+int AnimationMixer::get_fpslod_current_index_level() const {
+	return current_lod_index;
+}
+
+int AnimationMixer::_get_fpslod_for_distance(double dist) const {
+	int best = -1;
+	for (int i = 0; i < fpslod_levels.size(); i++) {
+		Ref<FPSLODLevel> lvl = fpslod_levels[i];
+		if (!lvl.is_valid()) {
+			continue;
+		}
+
+		if (dist < lvl->get_distance()) {
+			best = i;
+			break;
+		}
+	}
+
+	if (best == -1 && fpslod_levels.size() > 0) {
+		best = fpslod_levels.size() - 1;
+	}
+	return best;
+}
+
 /* -------------------------------------------- */
 /* -- Root motion ----------------------------- */
 /* -------------------------------------------- */
@@ -2353,14 +2513,22 @@ void AnimationMixer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (active && callback_mode_process == ANIMATION_CALLBACK_MODE_PROCESS_IDLE) {
-				_process_animation(get_process_delta_time());
+			if (active) {
+				if (fps_lod) {
+					_process_fpslod(get_process_delta_time());
+				} else if (callback_mode_process == ANIMATION_CALLBACK_MODE_PROCESS_IDLE) {
+					_process_animation(get_process_delta_time());
+				}
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (active && callback_mode_process == ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS) {
-				_process_animation(get_physics_process_delta_time());
+			if (active) {
+				if (fps_lod) {
+					_process_fpslod(get_physics_process_delta_time());
+				} else if (callback_mode_process == ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS) {
+					_process_animation(get_physics_process_delta_time());
+				}
 			}
 		} break;
 
@@ -2424,6 +2592,22 @@ void AnimationMixer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_callback_mode_discrete", "mode"), &AnimationMixer::set_callback_mode_discrete);
 	ClassDB::bind_method(D_METHOD("get_callback_mode_discrete"), &AnimationMixer::get_callback_mode_discrete);
 
+	ClassDB::bind_method(D_METHOD("set_fpslod", "enable"), &AnimationMixer::set_fpslod);
+	ClassDB::bind_method(D_METHOD("is_fpslod"), &AnimationMixer::is_fpslod);
+
+	ClassDB::bind_method(D_METHOD("set_fpslod_manual", "enable"), &AnimationMixer::set_fpslod_manual);
+	ClassDB::bind_method(D_METHOD("is_fpslod_manual"), &AnimationMixer::is_fpslod_manual);
+
+	ClassDB::bind_method(D_METHOD("set_fpslod_target", "path"), &AnimationMixer::set_fpslod_target);
+	ClassDB::bind_method(D_METHOD("get_fpslod_target"), &AnimationMixer::get_fpslod_target);
+
+	ClassDB::bind_method(D_METHOD("set_fpslod_levels", "levels"), &AnimationMixer::set_fpslod_levels);
+	ClassDB::bind_method(D_METHOD("get_fpslod_levels"), &AnimationMixer::get_fpslod_levels);
+
+	ClassDB::bind_method(D_METHOD("get_fpslod_current_index_level"), &AnimationMixer::get_fpslod_current_index_level);
+	ClassDB::bind_method(D_METHOD("set_fpslod_skip_frames", "frames"), &AnimationMixer::set_fpslod_skip_frames);
+	ClassDB::bind_method(D_METHOD("get_fpslod_skip_frames"), &AnimationMixer::get_fpslod_skip_frames);
+
 	/* ---- Audio ---- */
 	ClassDB::bind_method(D_METHOD("set_audio_max_polyphony", "max_polyphony"), &AnimationMixer::set_audio_max_polyphony);
 	ClassDB::bind_method(D_METHOD("get_audio_max_polyphony"), &AnimationMixer::get_audio_max_polyphony);
@@ -2457,6 +2641,13 @@ void AnimationMixer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root_node", "get_root_node");
+
+	ADD_GROUP("FPS LOD", "fps_lod");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fps_lod_enable"), "set_fpslod", "is_fpslod");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fps_lod_manual"), "set_fpslod_manual", "is_fpslod_manual");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fps_lod_skip_frames", PROPERTY_HINT_RANGE, "0,60,1"), "set_fpslod_skip_frames", "get_fpslod_skip_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "fps_lod_target", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_fpslod_target", "get_fpslod_target");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fps_lod_levels", PROPERTY_HINT_ARRAY_TYPE, "FPSLODLevel", PROPERTY_USAGE_DEFAULT, "FPSLODLevel"), "set_fpslod_levels", "get_fpslod_levels");
 
 	ADD_GROUP("Root Motion", "root_motion_");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_motion_track"), "set_root_motion_track", "get_root_motion_track");
