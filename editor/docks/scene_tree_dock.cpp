@@ -610,7 +610,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (!_validate_no_foreign()) {
 					break;
 				}
-				tree->grab_focus();
+				tree->grab_focus(!tree->has_focus(true));
 				tree->edit_selected();
 			}
 		} break;
@@ -3835,6 +3835,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	const List<Node *> selection = editor_selection->get_top_selected_node_list();
 	List<Node *> full_selection = editor_selection->get_full_selected_node_list(); // Above method only returns nodes with common parent.
+
+	scene_tree->get_scene_tree()->grab_focus(true);
 
 	if (selection.is_empty()) {
 		if (!profile_allow_editing) {

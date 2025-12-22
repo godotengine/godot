@@ -2517,6 +2517,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				to_move.push_back(to_rename);
 
 				if (tree->has_focus()) {
+					tree->grab_focus(!tree->has_focus(true));
 					// Edit node in Tree.
 					tree->edit_selected(true);
 
