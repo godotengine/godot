@@ -412,6 +412,11 @@ Comment: WebP codec
 Copyright: 2010, Google Inc.
 License: BSD-3-clause
 
+Files: thirdparty/lzfse
+Comment: LZFSE
+Copyright: 2015-2016, Apple Inc.
+License: BSD-3-clause
+
 Files: thirdparty/manifold/*
 Comment: Manifold
 Copyright: 2020-2025, The Manifold Authors
