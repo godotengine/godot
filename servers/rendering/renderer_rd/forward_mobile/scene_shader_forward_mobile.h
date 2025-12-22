@@ -241,6 +241,7 @@ public:
 		int depth_test_invertedi = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 		int cull_mode = RS::CULL_MODE_BACK;
+		bool keep_backface_normals = false;
 
 		bool uses_point_size = false;
 		bool uses_alpha = false;

@@ -2039,11 +2039,11 @@ void main() {
 
 #ifdef NORMAL_USED
 	vec3 normal = normal_interp;
-#if defined(DO_SIDE_CHECK)
+#if defined(DO_SIDE_CHECK) && !defined(AVOID_SIDE_CHECK)
 	if (!gl_FrontFacing) {
 		normal = -normal;
 	}
-#endif // DO_SIDE_CHECK
+#endif // DO_SIDE_CHECK && !AVOID_SIDE_CHECK
 #endif // NORMAL_USED
 
 #ifdef UV_USED
