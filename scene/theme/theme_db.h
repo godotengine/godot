@@ -121,6 +121,7 @@ private:
 	HashMap<StringName, List<ThemeItemBind>> theme_item_binds_list; // Used for listing purposes.
 
 	void _sort_theme_items();
+	void _update_project_settings();
 
 protected:
 	static void _bind_methods();
