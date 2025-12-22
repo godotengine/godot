@@ -456,6 +456,7 @@
 				node.Call(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] When calling methods that use static type hints, parameter types must match, including typed arrays/dictionaries. You may have to create explicitly typed arrays using [Array] and [Dictionary]'s typed constructors, as opposed to using the shorthand [code][][/code] and [code]{}[/code] syntaxes. Otherwise, the method won't be called and an error is printed.
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
@@ -488,6 +489,7 @@
 				# CONNECT_ONE_SHOT makes sure it only gets called once instead of every frame.
 				get_tree().process_frame.connect(callable, CONNECT_ONE_SHOT)
 				[/codeblock]
+				[b]Note:[/b] When calling methods that use static type hints, parameter types must match, including typed arrays/dictionaries. You may have to create explicitly typed arrays using [Array] and [Dictionary]'s typed constructors, as opposed to using the shorthand [code][][/code] and [code]{}[/code] syntaxes. Otherwise, the method won't be called and an error is printed.
 			</description>
 		</method>
 		<method name="callv">
@@ -506,6 +508,7 @@
 				node.Callv(Node3D.MethodName.Rotate, [new Vector3(1f, 0f, 0f), 1.571f]);
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] When calling methods that use static type hints, parameter types must match, including typed arrays/dictionaries. You may have to create explicitly typed arrays using [Array] and [Dictionary]'s typed constructors, as opposed to using the shorthand [code][][/code] and [code]{}[/code] syntaxes. Otherwise, the method won't be called and an error is printed.
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
