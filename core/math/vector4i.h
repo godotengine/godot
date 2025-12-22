@@ -146,7 +146,10 @@ struct [[nodiscard]] Vector4i {
 
 	constexpr Vector4i() :
 			x(0), y(0), z(0), w(0) {}
-	Vector4i(const Vector4 &p_vec4);
+	constexpr Vector4i(const Vector4i &) = default;
+	constexpr Vector4i &operator=(const Vector4i &) = default;
+	constexpr explicit Vector4i(int32_t p_x_y_z_and_w) :
+			x(p_x_y_z_and_w), y(p_x_y_z_and_w), z(p_x_y_z_and_w), w(p_x_y_z_and_w) {}
 	constexpr Vector4i(int32_t p_x, int32_t p_y, int32_t p_z, int32_t p_w) :
 			x(p_x), y(p_y), z(p_z), w(p_w) {}
 };

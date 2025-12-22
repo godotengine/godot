@@ -41,6 +41,13 @@
 				Returns a [Vector4i] with the given components.
 			</description>
 		</constructor>
+		<constructor name="Vector4i">
+			<return type="Vector4i" />
+			<param index="0" name="x_y_z_and_w" type="int" />
+			<description>
+				Constructs a new [Vector4i] using the same value of [param x_y_z_and_w] for all [member x], [member y], [member z] and [member w] components.
+			</description>
+		</constructor>
 	</constructors>
 	<methods>
 		<method name="abs" qualifiers="const">
