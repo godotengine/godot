@@ -11611,7 +11611,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (comp_ident) {
 					if (is_shader_inc) {
 						for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-							const HashMap<StringName, ShaderLanguage::FunctionInfo> info = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i));
+							const HashMap<StringName, ShaderLanguage::FunctionInfo> &info = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i));
 
 							if (info.has("global")) {
 								for (const KeyValue<StringName, BuiltInInfo> &E : info["global"].built_ins) {
