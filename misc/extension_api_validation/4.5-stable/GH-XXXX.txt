@@ -1,0 +1,8 @@
+GH-XXXXX
+---------
+Validate extension JSON: Error: Field 'classes/TextServer/methods/save_support_data/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_save_support_data/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/TextServer/methods/get_support_data': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/TextServerExtension/methods/_get_support_data': arguments
+
+Optional "config" argument added. Compatibility methods registered.

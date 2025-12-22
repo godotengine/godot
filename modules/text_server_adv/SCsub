@@ -462,6 +462,11 @@ if env["builtin_icu4c"]:
             "#thirdparty/icu4c/icudt_godot.dat",
             env.Run(text_server_adv_builders.make_icu_data),
         )
+        icudata_base = env_icu.CommandNoCache(
+            "#thirdparty/icu4c/icudata_base.gen.h",
+            "#thirdparty/icu4c/icudt_godot_base.dat",
+            env.Run(text_server_adv_builders.make_icu_data_base),
+        )
         env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/"])
     else:
         thirdparty_sources += ["icu_data/icudata_stub.cpp"]
