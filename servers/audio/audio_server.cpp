@@ -1515,6 +1515,7 @@ void AudioServer::init_channels_and_buffers() {
 void AudioServer::init() {
 	channel_disable_threshold_db = GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_threshold_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 2.0)) * get_mix_rate();
+	speed_of_sound = GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/speed_of_sound", PROPERTY_HINT_RANGE, "0.01,1000,or_greater,suffix:m/s"), 343.0);
 	// TODO: Buffer size is hardcoded for now. This would be really nice to have as a project setting because currently it limits audio latency to an absolute minimum of 11ms with default mix rate, but there's some additional work required to make that happen. See TODOs in `_mix_step_for_channel`.
 	// When this becomes a project setting, it should be specified in milliseconds rather than raw sample count, because 512 samples at 192khz is shorter than it is at 48khz, for example.
 	buffer_size = 512;
@@ -2015,6 +2016,16 @@ void AudioServer::update_sample_playback_pitch_scale(const Ref<AudioSamplePlayba
 	return AudioDriver::get_singleton()->update_sample_playback_pitch_scale(p_playback, p_pitch_scale);
 }
 
+void AudioServer::set_speed_of_sound(float p_speed) {
+	ERR_FAIL_COND(p_speed <= 0);
+
+	speed_of_sound = p_speed;
+}
+
+float AudioServer::get_speed_of_sound() const {
+	return speed_of_sound;
+}
+
 void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus_count", "amount"), &AudioServer::set_bus_count);
 	ClassDB::bind_method(D_METHOD("get_bus_count"), &AudioServer::get_bus_count);
@@ -2064,6 +2075,9 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_playback_speed_scale", "scale"), &AudioServer::set_playback_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_playback_speed_scale"), &AudioServer::get_playback_speed_scale);
 
+	ClassDB::bind_method(D_METHOD("set_speed_of_sound", "speed"), &AudioServer::set_speed_of_sound);
+	ClassDB::bind_method(D_METHOD("get_speed_of_sound"), &AudioServer::get_speed_of_sound);
+
 	ClassDB::bind_method(D_METHOD("lock"), &AudioServer::lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &AudioServer::unlock);
 
@@ -2104,6 +2118,7 @@ void AudioServer::_bind_methods() {
 	// Override for class reference generation purposes.
 	ADD_PROPERTY_DEFAULT("input_device", "Default");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed_scale"), "set_playback_speed_scale", "get_playback_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_of_sound"), "set_speed_of_sound", "get_speed_of_sound");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
 	ADD_SIGNAL(MethodInfo("bus_renamed", PropertyInfo(Variant::INT, "bus_index"), PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));

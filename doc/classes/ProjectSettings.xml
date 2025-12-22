@@ -485,6 +485,11 @@
 		<member name="audio/general/ios/session_category" type="int" setter="" getter="" default="0" keywords="ambient, play, record, solo">
 			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosessioncategory]AVAudioSessionCategory[/url] on iOS. Use the [code]Playback[/code] category to get sound output, even if the phone is in silent mode.
 		</member>
+		<member name="audio/general/speed_of_sound" type="float" setter="" getter="" default="343.0">
+			The speed of sound, in meters per second. Used for Doppler effect calculation in [AudioStreamPlayer3D].
+			This can be changed at runtime by changing [member AudioServer.speed_of_sound].
+			[b]Note:[/b] The engine currently does not simulate audio delay based on the distance between the [AudioStreamPlayer3D] node and the listener.
+		</member>
 		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], text-to-speech support is enabled on startup, otherwise it is enabled the first time any TTS method is used. See also [method DisplayServer.tts_get_voices] and [method DisplayServer.tts_speak].
 			[b]Note:[/b] Enabling TTS can cause additional idle CPU usage and interfere with the sleep mode, so consider disabling it if TTS is not used.

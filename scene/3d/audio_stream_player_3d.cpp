@@ -367,10 +367,12 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	}
 
 	Vector3 linear_velocity;
+	float speed_of_sound = 343.0;
 
-	//compute linear velocity for doppler
 	if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
+		//compute linear velocity for doppler
 		linear_velocity = velocity_tracker->get_tracked_linear_velocity();
+		speed_of_sound = AudioServer::get_singleton()->get_speed_of_sound();
 	}
 
 	Vector3 global_pos = get_global_transform().origin;
@@ -516,7 +518,6 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			if (local_velocity != Vector3()) {
 				float approaching = local_pos.normalized().dot(local_velocity.normalized());
 				float velocity = local_velocity.length();
-				float speed_of_sound = 343.0;
 
 				float doppler_pitch_scale = internal->pitch_scale * speed_of_sound / (speed_of_sound + velocity * approaching);
 				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1 / 8.0), 8.0); //avoid crazy stuff
