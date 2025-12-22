@@ -218,8 +218,8 @@ public:
 	virtual String get_distribution_name() const = 0;
 	virtual String get_version() const = 0;
 	virtual String get_version_alias() const { return get_version(); }
-	virtual List<String> get_cmdline_args() const { return _cmdline; }
-	virtual List<String> get_cmdline_user_args() const { return _user_args; }
+	virtual List<String> get_cmdline_args() const { return List<String>(_cmdline); }
+	virtual List<String> get_cmdline_user_args() const { return List<String>(_user_args); }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
 	virtual String get_model_name() const;
 

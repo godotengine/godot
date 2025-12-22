@@ -1260,7 +1260,7 @@ HashSet<String> FileSystemDock::_get_valid_conversions_for_file_paths(const Vect
 		}
 	}
 
-	return all_valid_conversion_to_targets;
+	return HashSet<String>(all_valid_conversion_to_targets);
 }
 
 void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites, bool p_navigate) {
@@ -1656,7 +1656,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 
 void FileSystemDock::_update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames) {
 	// Find all project settings of type FILE and replace them if needed.
-	const HashMap<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
+	const HashMap<StringName, PropertyInfo> prop_info = HashMap<StringName, PropertyInfo>(ProjectSettings::get_singleton()->get_custom_property_info());
 	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
 		if (E.value.hint == PROPERTY_HINT_FILE || E.value.hint == PROPERTY_HINT_FILE_PATH) {
 			String old_path = GLOBAL_GET(E.key);

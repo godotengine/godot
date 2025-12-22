@@ -44,7 +44,7 @@ HashMap<String, bool *> OpenXRHTCControllerExtension::get_requested_extensions(X
 
 	request_extensions[XR_HTC_HAND_INTERACTION_EXTENSION_NAME] = &available[HTC_HAND_INTERACTION];
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 PackedStringArray OpenXRHTCControllerExtension::get_suggested_tracker_names() {

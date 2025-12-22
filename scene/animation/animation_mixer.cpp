@@ -2224,7 +2224,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 	make_animation_instance(SceneStringName(RESET), pi);
 	_build_backup_track_cache();
 
-	backup->set_data(track_cache);
+	backup->set_data(AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher>(track_cache));
 	clear_animation_instances();
 
 	return backup;
@@ -2521,7 +2521,7 @@ AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> Animated
 
 		ret.insert(E.key, track);
 	}
-	return ret;
+	return AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher>(ret);
 }
 
 void AnimatedValuesBackup::clear_data() {

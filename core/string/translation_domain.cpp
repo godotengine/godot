@@ -286,7 +286,7 @@ void TranslationDomain::clear() {
 }
 
 const HashSet<Ref<Translation>> TranslationDomain::get_translations() const {
-	return translations;
+	return HashSet<Ref<Translation>>(translations);
 }
 
 HashSet<Ref<Translation>> TranslationDomain::find_translations(const String &p_locale, bool p_exact) const {
@@ -304,7 +304,7 @@ HashSet<Ref<Translation>> TranslationDomain::find_translations(const String &p_l
 			}
 		}
 	}
-	return res;
+	return HashSet<Ref<Translation>>(res);
 }
 
 bool TranslationDomain::has_translation(const Ref<Translation> &p_translation) const {

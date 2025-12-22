@@ -38,7 +38,7 @@ HashMap<String, String> _create_hashmap_from_vector(Vector<Pair<String, String>>
 	for (const Pair<String, String> &pair : vector) {
 		hashmap.insert(pair.first, pair.second);
 	}
-	return hashmap;
+	return HashMap<String, String>(hashmap);
 }
 
 // Hardcoded collection of PascalCase name conversions.

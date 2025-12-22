@@ -130,7 +130,7 @@ HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(co
 		}
 	}
 	settings["ios/launch_screen_image_mode"] = value;
-	return settings;
+	return HashMap<String, Variant>(settings);
 }
 
 Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {

@@ -49,7 +49,7 @@ HashMap<String, bool *> OpenXRCompositionLayerDepthExtension::get_requested_exte
 
 	request_extensions[XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME] = &available;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRCompositionLayerDepthExtension::is_available() {

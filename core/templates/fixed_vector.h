@@ -63,7 +63,7 @@ public:
 		}
 	}
 
-	constexpr FixedVector(const FixedVector &p_from) {
+	constexpr explicit FixedVector(const FixedVector &p_from) {
 		if constexpr (std::is_trivially_copyable_v<T>) {
 			// Copy size and all provided elements at once.
 			memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));

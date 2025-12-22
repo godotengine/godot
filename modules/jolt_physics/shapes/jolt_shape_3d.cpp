@@ -75,7 +75,7 @@ void JoltShape3D::remove_owner(JoltShapedObject3D *p_owner) {
 void JoltShape3D::remove_self() {
 	// `remove_owner` will be called when we `remove_shape`, so we need to copy the map since the
 	// iterator would be invalidated from underneath us.
-	const HashMap<JoltShapedObject3D *, int> ref_counts_by_owner_copy = ref_counts_by_owner;
+	const HashMap<JoltShapedObject3D *, int> ref_counts_by_owner_copy = HashMap<JoltShapedObject3D *, int>(ref_counts_by_owner);
 
 	for (const KeyValue<JoltShapedObject3D *, int> &E : ref_counts_by_owner_copy) {
 		E.key->remove_shape(this);

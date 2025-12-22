@@ -129,8 +129,7 @@ class GDScriptCompiler {
 		}
 
 		void start_block() {
-			HashMap<StringName, GDScriptCodeGenerator::Address> old_locals = locals;
-			locals_stack.push_back(old_locals);
+			locals_stack.push_back(HashMap<StringName, GDScriptCodeGenerator::Address>(locals));
 			generator->start_block();
 		}
 

@@ -67,7 +67,7 @@ HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions(Xr
 		request_extensions[XR_EXT_HAND_TRACKING_DATA_SOURCE_EXTENSION_NAME] = &hand_tracking_source_ext;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRHandTrackingExtension::on_instance_created(const XrInstance p_instance) {
