@@ -445,6 +445,87 @@ Ref<Shader> ShaderMaterial::get_shader() const {
 	return shader;
 }
 
+#ifdef DEBUG_METHODS_ENABLED
+void ShaderMaterial::_check_parameter_type(const Variant &p_from, const Variant &p_to) {
+	Variant::Type from_type = p_from.get_type();
+
+	if (from_type == Variant::NIL) {
+		return;
+	}
+
+	Variant::Type to_type = p_to.get_type();
+
+	switch (to_type) {
+		case Variant::BOOL:
+		case Variant::INT:
+		case Variant::FLOAT:
+		case Variant::VECTOR2:
+		case Variant::VECTOR2I:
+		case Variant::VECTOR3I:
+		case Variant::VECTOR4I:
+		case Variant::TRANSFORM2D:
+		case Variant::BASIS:
+		case Variant::OBJECT:
+			if (from_type == to_type) {
+				return;
+			}
+			break;
+		// Check for types which may be compatible with multiple other types
+		case Variant::COLOR:
+			switch (from_type) {
+				case Variant::COLOR:
+				case Variant::VECTOR3:
+				case Variant::VECTOR4:
+				case Variant::RECT2:
+				case Variant::PLANE:
+				case Variant::QUATERNION:
+					return;
+				default:
+					break;
+			}
+			break;
+		case Variant::VECTOR3:
+			switch (from_type) {
+				case Variant::VECTOR3:
+				case Variant::COLOR:
+					return;
+				default:
+					break;
+			}
+			break;
+		case Variant::VECTOR4:
+		case Variant::RECT2:
+		case Variant::PLANE:
+		case Variant::QUATERNION:
+			switch (from_type) {
+				case Variant::VECTOR4:
+				case Variant::COLOR:
+				case Variant::RECT2:
+				case Variant::PLANE:
+				case Variant::QUATERNION:
+					return;
+				default:
+					break;
+			}
+			break;
+		case Variant::PROJECTION:
+		case Variant::TRANSFORM3D:
+			switch (from_type) {
+				case Variant::PROJECTION:
+				case Variant::TRANSFORM3D:
+					return;
+				default:
+					break;
+			}
+			break;
+		default:
+			WARN_PRINT(vformat(Variant::get_type_name(to_type) + " is not a valid shader type."));
+			return;
+	}
+	WARN_PRINT(vformat(("Type mismatch between previous and new value: " + Variant::get_type_name(from_type) + " and " + Variant::get_type_name(to_type))));
+}
+#endif
+
 void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Variant &p_value) {
 	RID material_rid = _get_material();
 	if (p_value.get_type() == Variant::NIL) {
@@ -459,12 +540,16 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 			remap_cache["shader_parameter/" + p_param.operator String()] = p_param;
 			param_cache.insert(p_param, p_value);
 		} else {
+#ifdef DEBUG_METHODS_ENABLED
+			ShaderMaterial::_check_parameter_type(*v, p_value);
+#endif
 			*v = p_value;
 		}
 
 		if (p_value.get_type() == Variant::OBJECT) {
 			RID tex_rid = p_value;
 			if (tex_rid == RID()) {
+				WARN_PRINT(vformat(Object::cast_to<Object>(p_value)->get_class() + " is not a valid texture."));
 				param_cache.erase(p_param);
 
 				if (material_rid.is_valid()) {
