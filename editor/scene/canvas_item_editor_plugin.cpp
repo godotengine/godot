@@ -6644,6 +6644,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 	default_texture_node_type = "Sprite2D";
 	// Node2D
 	texture_node_types.push_back("Sprite2D");
+	texture_node_types.push_back("NinePatchSprite");
 	texture_node_types.push_back("PointLight2D");
 	texture_node_types.push_back("CPUParticles2D");
 	texture_node_types.push_back("GPUParticles2D");
