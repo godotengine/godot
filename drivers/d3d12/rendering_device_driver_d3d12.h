@@ -483,6 +483,14 @@ private:
 		uint32_t vertex_buffer_count = 0;
 	};
 
+	struct DynParams {
+		D3D12_PRIMITIVE_TOPOLOGY primitive_topology = {};
+		Color blend_constant;
+		float depth_bounds_min = 0.0f;
+		float depth_bounds_max = 1.0f;
+		uint32_t stencil_reference = 0;
+	};
+
 	// Leveraging knowledge of actual usage and D3D12 specifics (namely, command lists from the same allocator
 	// can't be freely begun and ended), an allocator per list works better.
 	struct CommandBufferInfo {
@@ -491,9 +499,15 @@ private:
 
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> cmd_allocator;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd_list;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList1> cmd_list_1;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5> cmd_list_5;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList7> cmd_list_7;
 
 		ID3D12PipelineState *graphics_pso = nullptr;
 		ID3D12PipelineState *compute_pso = nullptr;
+
+		DynParams dyn_params;
+		bool pending_dyn_params = true;
 
 		uint32_t graphics_root_signature_crc = 0;
 		uint32_t compute_root_signature_crc = 0;
@@ -708,14 +722,7 @@ public:
 
 	struct RenderPipelineInfo {
 		const VertexFormatInfo *vf_info = nullptr;
-
-		struct {
-			D3D12_PRIMITIVE_TOPOLOGY primitive_topology = {};
-			Color blend_constant;
-			float depth_bounds_min = 0.0f;
-			float depth_bounds_max = 0.0f;
-			uint32_t stencil_reference = 0;
-		} dyn_params;
+		DynParams dyn_params;
 	};
 
 	struct PipelineInfo {
