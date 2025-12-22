@@ -1294,6 +1294,9 @@ void CanvasItem::_validate_property(PropertyInfo &p_property) const {
 	if (hide_clip_children && p_property.name == "clip_children") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
+	if (clip_children_mode != CLIP_CHILDREN_GROUP && (p_property.name == "fit_margin" || p_property.name == "clear_margin" || p_property.name == "use_mipmaps")) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
 }
 
 PackedStringArray CanvasItem::get_configuration_warnings() const {
@@ -1465,6 +1468,13 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip_children_mode", "mode"), &CanvasItem::set_clip_children_mode);
 	ClassDB::bind_method(D_METHOD("get_clip_children_mode"), &CanvasItem::get_clip_children_mode);
 
+	ClassDB::bind_method(D_METHOD("set_fit_margin"), &CanvasItem::set_fit_margin);
+	ClassDB::bind_method(D_METHOD("get_fit_margin"), &CanvasItem::get_fit_margin);
+	ClassDB::bind_method(D_METHOD("set_clear_margin"), &CanvasItem::set_clear_margin);
+	ClassDB::bind_method(D_METHOD("get_clear_margin"), &CanvasItem::get_clear_margin);
+	ClassDB::bind_method(D_METHOD("set_use_mipmaps"), &CanvasItem::set_use_mipmaps);
+	ClassDB::bind_method(D_METHOD("is_using_mipmaps"), &CanvasItem::is_using_mipmaps);
+
 	GDVIRTUAL_BIND(_draw);
 
 	ADD_GROUP("Visibility", "");
@@ -1473,7 +1483,10 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "self_modulate"), "set_self_modulate", "get_self_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_children", PROPERTY_HINT_ENUM, "Disabled,Clip Only,Clip + Draw"), "set_clip_children_mode", "get_clip_children_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_children", PROPERTY_HINT_ENUM, "Disabled,Clip Only,Clip + Draw,Group"), "set_clip_children_mode", "get_clip_children_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fit_margin", PROPERTY_HINT_RANGE, "0,1024,1.0,or_greater,suffix:px"), "set_fit_margin", "get_fit_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clear_margin", PROPERTY_HINT_RANGE, "0,1024,1.0,or_greater,suffix:px"), "set_clear_margin", "get_clear_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_mipmaps"), "set_use_mipmaps", "is_using_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_layer", PROPERTY_HINT_LAYERS_2D_RENDER), "set_visibility_layer", "get_visibility_layer");
 
@@ -1525,6 +1538,7 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_DISABLED);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_ONLY);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_AND_DRAW);
+	BIND_ENUM_CONSTANT(CLIP_CHILDREN_GROUP);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_MAX);
 }
 
@@ -1744,12 +1758,66 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 		return;
 	}
 
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode));
+	if (clip_children_mode == CLIP_CHILDREN_GROUP) {
+		RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode), clear_margin, true, fit_margin, use_mipmaps);
+		notify_property_list_changed();
+		return;
+	}
+
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode), 5.0, false, 0.0, false);
+	notify_property_list_changed();
 }
 
 CanvasItem::ClipChildrenMode CanvasItem::get_clip_children_mode() const {
 	ERR_READ_THREAD_GUARD_V(CLIP_CHILDREN_DISABLED);
 	return clip_children_mode;
+}
+
+void CanvasItem::set_fit_margin(real_t p_fit_margin) {
+	ERR_FAIL_COND(p_fit_margin < 0.0);
+
+	fit_margin = p_fit_margin;
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode), clear_margin, true, fit_margin, use_mipmaps);
+
+	queue_redraw();
+
+	if (clip_children_mode != CLIP_CHILDREN_GROUP) {
+		WARN_PRINT("fit_margin is active only when ClipChildrenMode is set to Group.");
+	}
+}
+
+real_t CanvasItem::get_fit_margin() const {
+	return fit_margin;
+}
+
+void CanvasItem::set_clear_margin(real_t p_clear_margin) {
+	ERR_FAIL_COND(p_clear_margin < 0.0);
+
+	clear_margin = p_clear_margin;
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode), clear_margin, true, fit_margin, use_mipmaps);
+
+	queue_redraw();
+	
+	if (clip_children_mode != CLIP_CHILDREN_GROUP) {
+		WARN_PRINT("clear_margin is active only when ClipChildrenMode is set to Group.");
+	}
+}
+
+real_t CanvasItem::get_clear_margin() const {
+	return clear_margin;
+}
+
+void CanvasItem::set_use_mipmaps(bool p_use_mipmaps) {
+	use_mipmaps = p_use_mipmaps;
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode), clear_margin, true, fit_margin, use_mipmaps);
+	
+	if (clip_children_mode != CLIP_CHILDREN_GROUP) {
+		WARN_PRINT("use_mipmaps is active only when ClipChildrenMode is set to Group.");
+	}
+}
+
+bool CanvasItem::is_using_mipmaps() const {
+	return use_mipmaps;
 }
 
 CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
