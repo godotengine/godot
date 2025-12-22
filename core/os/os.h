@@ -54,6 +54,7 @@ class OS {
 	bool _delta_smoothing_enabled = false;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
+	bool _colored_stdout = false;
 	String _local_clipboard;
 	// Assume success by default, all failure cases need to set EXIT_FAILURE explicitly.
 	int _exit_code = EXIT_SUCCESS;
@@ -264,6 +265,7 @@ public:
 
 	bool is_stdout_verbose() const;
 	bool is_stdout_debug_enabled() const;
+	bool is_stdout_colored() const;
 
 	bool is_stdout_enabled() const;
 	bool is_stderr_enabled() const;
