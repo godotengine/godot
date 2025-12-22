@@ -185,15 +185,15 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(no_root_node);
 	}
 
-	bool can_save_all_scenes = false;
+	bool has_unsaved_scenes = false;
 	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
-		if (!EditorNode::get_editor_data().get_scene_path(i).is_empty() && EditorNode::get_editor_data().get_edited_scene_root(i)) {
-			can_save_all_scenes = true;
+		if (EditorNode::get_singleton()->_is_scene_unsaved(i)) {
+			has_unsaved_scenes = true;
 			break;
 		}
 	}
 	scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_all_scenes"), EditorNode::SCENE_SAVE_ALL_SCENES);
-	DISABLE_LAST_OPTION_IF(!can_save_all_scenes);
+	DISABLE_LAST_OPTION_IF(!has_unsaved_scenes);
 
 	if (tab_id >= 0) {
 		const String scene_path = EditorNode::get_editor_data().get_scene_path(tab_id);
