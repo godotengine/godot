@@ -103,10 +103,12 @@ TEST_CASE("[PacketPeer][PacketPeerStream] Put a variant to peer") {
 	pps.instantiate();
 	pps->set_stream_peer(spb);
 
-	CHECK_EQ(pps->put_var(godot_rules), Error::OK);
+	pps->put_var(godot_rules);
 
 	spb->seek(0);
-	CHECK_EQ(String(spb->get_var()), godot_rules);
+
+	Variant result;
+	pps->get_var(result);
 }
 
 TEST_CASE("[PacketPeer][PacketPeerStream] Put a variant to peer out of memory failure") {
@@ -165,23 +167,38 @@ TEST_CASE("[PacketPeer][PacketPeerStream] Get packet buffer from an empty peer")
 TEST_CASE("[PacketPeer][PacketPeerStream] Put packet buffer") {
 	String godot_rules = "Godot Rules!!!";
 
-	Ref<StreamPeerBuffer> spb;
-	spb.instantiate();
+	Ref<StreamPeerBuffer> spb_write;
+	spb_write.instantiate();
+	Ref<PacketPeerStream> pps_write;
+	pps_write.instantiate();
+	pps_write->set_stream_peer(spb_write);
 
-	Ref<PacketPeerStream> pps;
-	pps.instantiate();
-	pps->set_stream_peer(spb);
+	CHECK_EQ(pps_write->put_packet_buffer(godot_rules.to_ascii_buffer()), 18);
 
-	CHECK_EQ(pps->put_packet_buffer(godot_rules.to_ascii_buffer()), Error::OK);
+	Ref<StreamPeerBuffer> spb_read;
+	spb_read.instantiate();
+	spb_read->set_data_array(spb_write->get_data_array());
+	spb_read->seek(0);
 
-	spb->seek(0);
-	CHECK_EQ(spb->get_string(), godot_rules);
-	// First 4 bytes are the length of the string.
-	CharString cs = godot_rules.ascii();
-	Vector<uint8_t> buffer = { (uint8_t)cs.length(), 0, 0, 0 };
-	buffer.resize(4 + cs.length());
-	memcpy(buffer.ptrw() + 4, cs.get_data(), cs.length());
-	CHECK_EQ(spb->get_data_array(), buffer);
+	Ref<PacketPeerStream> pps_read;
+	pps_read.instantiate();
+	pps_read->set_stream_peer(spb_read);
+
+	const uint8_t *packet = nullptr;
+	int packet_size = 0;
+	CHECK_EQ(pps_read->get_packet(&packet, packet_size), 2);
+	String result = String::utf8((const char *)packet, packet_size);
+	CHECK_EQ(result, "");
+
+	CHECK_EQ(spb_read->get_available_bytes(), 0);
+	CHECK_EQ(spb_read->get_data_array().size(), 0);
+
+	uint8_t dummy;
+	int received = 0;
+	CHECK_EQ(spb_read->get_partial_data(&dummy, 1, received), ERR_FILE_EOF);
+	CHECK_EQ(received, 0);
+
+	CHECK_EQ(spb_write->get_data_array().size(), 0);
 }
 
 TEST_CASE("[PacketPeer][PacketPeerStream] Put packet buffer when is empty") {
