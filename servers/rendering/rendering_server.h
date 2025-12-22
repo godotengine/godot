@@ -35,6 +35,7 @@
 #include "core/math/transform_2d.h"
 #include "core/templates/rid.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/typed_dictionary.h"
 #include "core/variant/variant.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device.h"
@@ -266,6 +267,14 @@ public:
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) = 0;
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
+
+	virtual void material_set_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) = 0;
+	virtual void material_update_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) = 0;
+	virtual TypedDictionary<StringName, Variant> material_get_buffer(RID p_material, const StringName &p_buffer) const = 0;
+	virtual void material_set_buffer_raw(RID p_material, const StringName &p_buffer, const PackedByteArray &p_values) = 0;
+	virtual PackedByteArray material_get_buffer_raw(RID p_material, const StringName &p_buffer) const = 0;
+	virtual void material_set_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field, const Variant &p_value) = 0;
+	virtual Variant material_get_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field) const = 0;
 
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
 

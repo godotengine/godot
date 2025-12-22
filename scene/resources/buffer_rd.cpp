@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  shader_warnings.h                                                     */
+/*  texture_rd.cpp                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,65 +28,71 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "buffer_rd.h"
 
-#ifdef DEBUG_ENABLED
+////////////////////////////////////////////////////////////////////////////
+// Texture2DRD
 
-#include "core/string/string_name.h"
-#include "core/templates/hash_map.h"
-#include "core/variant/variant.h"
+void BufferRD::_bind_methods() {
+	// ClassDB::bind_method(D_METHOD("set_texture_rd_rid", "texture_rd_rid"), &Texture2DRD::set_texture_rd_rid);
+	// ClassDB::bind_method(D_METHOD("get_texture_rd_rid"), &Texture2DRD::get_texture_rd_rid);
 
-class ShaderWarning {
-public:
-	enum Code {
-		FLOAT_COMPARISON,
-		UNUSED_CONSTANT,
-		UNUSED_FUNCTION,
-		UNUSED_STRUCT,
-		UNUSED_UNIFORM,
-		UNUSED_VARYING,
-		UNUSED_LOCAL_VARIABLE,
-		FORMATTING_ERROR,
-		DEVICE_LIMIT_EXCEEDED,
-		MAGIC_POSITION_WRITE,
-		UNUSED_BUFFER,
-		WARNING_MAX,
-	};
+	// ADD_PROPERTY(PropertyInfo(Variant::RID, "texture_rd_rid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_texture_rd_rid", "get_texture_rd_rid");
+}
 
-	enum CodeFlags : uint32_t {
-		NONE_FLAG = 0U,
-		FLOAT_COMPARISON_FLAG = 1U,
-		UNUSED_CONSTANT_FLAG = 2U,
-		UNUSED_FUNCTION_FLAG = 4U,
-		UNUSED_STRUCT_FLAG = 8U,
-		UNUSED_UNIFORM_FLAG = 16U,
-		UNUSED_VARYING_FLAG = 32U,
-		UNUSED_LOCAL_VARIABLE_FLAG = 64U,
-		FORMATTING_ERROR_FLAG = 128U,
-		DEVICE_LIMIT_EXCEEDED_FLAG = 256U,
-		MAGIC_POSITION_WRITE_FLAG = 512U,
-		UNUSED_BUFFER_FLAG = 1024U,
-	};
 
-private:
-	Code code;
-	int line;
-	StringName subject;
-	Vector<Variant> extra_args;
+RID BufferRD::get_rid() const {
+	if (buffer_rid.is_null()) {
+		// We are in trouble, create something temporary.
+		buffer_rid = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+	}
 
-public:
-	Code get_code() const;
-	int get_line() const;
-	const StringName &get_subject() const;
-	String get_message() const;
-	String get_name() const;
-	Vector<Variant> get_extra_args() const;
+	return buffer_rid;
+}
 
-	static String get_name_from_code(Code p_code);
-	static Code get_code_from_name(const String &p_name);
-	static CodeFlags get_flags_from_codemap(const HashMap<Code, bool> &p_map);
+void BufferRD::set_buffer_rd_rid(RID p_buffer_rd_rid) {
+	ERR_FAIL_NULL(RS::get_singleton());
 
-	ShaderWarning(Code p_code = WARNING_MAX, int p_line = -1, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>());
-};
+	if (p_buffer_rd_rid.is_valid()) {
+		RS::get_singleton()->call_on_render_thread(callable_mp(this, &BufferRD::_set_buffer_rd_rid).bind(p_buffer_rd_rid));
+	} else if (buffer_rid.is_valid()) {
+		RS::get_singleton()->free(buffer_rid);
+		buffer_rid = RID();
+		size = Size2i();
 
-#endif // DEBUG_ENABLED
+		notify_property_list_changed();
+		emit_changed();
+	}
+}
+
+void BufferRD::_set_buffer_rd_rid(RID p_buffer_rd_rid) {
+	ERR_FAIL_NULL(RD::get_singleton());
+	//ERR_FAIL_COND(!RD::get_singleton()->buffer_is_valid(p_buffer_rd_rid));
+
+	buffer_rd_rid = p_buffer_rd_rid;
+
+	if (buffer_rid.is_valid()) {
+		// RS::get_singleton()->buffer_replace(buffer_rid, RS::get_singleton()->buffer_rd_create(p_buffer_rd_rid));
+	} else {
+		// buffer_rid = RS::get_singleton()->buffer_rd_create(p_buffer_rd_rid);
+	}
+
+	notify_property_list_changed();
+	emit_changed();
+}
+
+RID BufferRD::get_buffer_rd_rid() const {
+	return buffer_rd_rid;
+}
+
+BufferRD::BufferRD() {
+	size = Size2i();
+}
+
+BufferRD::~BufferRD() {
+	if (buffer_rid.is_valid()) {
+		ERR_FAIL_NULL(RS::get_singleton());
+		RS::get_singleton()->free(buffer_rid);
+		buffer_rid = RID();
+	}
+}
