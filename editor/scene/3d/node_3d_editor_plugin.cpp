@@ -766,6 +766,30 @@ Vector3 Node3DEditorViewport::_get_camera_normal() const {
 	return -_get_camera_transform().basis.get_column(2);
 }
 
+real_t Node3DEditorViewport::_get_gizmo_depth() const {
+	Vector3 cam_pos = _get_camera_position();
+	return _get_camera_normal().dot(_edit.center - cam_pos) - get_znear();
+}
+
+Vector3 Node3DEditorViewport::_screen_to_world_at_depth(const Vector2 &p_screen_pos, real_t p_z_depth) {
+	return _get_screen_to_space(Vector3(p_screen_pos.x, p_screen_pos.y, p_z_depth));
+}
+
+Vector3 Node3DEditorViewport::_screen_delta_to_world(const Vector2 &p_screen_delta, real_t p_z_depth) {
+	Vector2 center = get_size() / 2.0;
+	Vector3 origin = _get_screen_to_space(Vector3(center.x, center.y, p_z_depth));
+	Vector3 offset = _get_screen_to_space(Vector3(center.x + p_screen_delta.x, center.y + p_screen_delta.y, p_z_depth));
+	return offset - origin;
+}
+
+Vector3 Node3DEditorViewport::_get_axis(int p_col) const {
+	return spatial_editor->get_gizmo_transform().basis.get_column(p_col).normalized();
+}
+
+Vector3 Node3DEditorViewport::_project_onto_axis(const Vector3 &p_vector, const Vector3 &p_axis) const {
+	return p_axis * p_axis.dot(p_vector);
+}
+
 Vector3 Node3DEditorViewport::get_ray(const Vector2 &p_pos) const {
 	return camera->project_ray_normal(p_pos);
 }
@@ -2280,7 +2304,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	// Instant transforms process mouse motion in input() to handle wrapping.
 	if (m.is_valid() && !_edit.instant) {
-		_edit.mouse_pos = m->get_position();
+		bool is_transforming = _edit.gizmo.is_valid() || _edit.mode != TRANSFORM_NONE;
+		bool use_warping = is_transforming && bool(EDITOR_GET("editors/3d/navigation/warped_mouse_panning"));
+		if (use_warping) {
+			_edit.mouse_pos += _get_warped_mouse_motion(m);
+		} else {
+			_edit.mouse_pos = m->get_position();
+		}
 
 		if (spatial_editor->get_single_selected_node()) {
 			Vector<Ref<Node3DGizmo>> gizmos = spatial_editor->get_single_selected_node()->get_gizmos();
@@ -2323,7 +2353,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		NavigationMode nav_mode = NAVIGATION_NONE;
 
 		if (_edit.gizmo.is_valid()) {
-			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, m->get_position());
+			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, _edit.mouse_pos);
 			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			set_message(n + ": " + String(v));
@@ -5657,8 +5687,6 @@ void Node3DEditorViewport::apply_transform(Vector3 p_motion, double p_snap) {
 
 // Update the current transform operation in response to an input.
 void Node3DEditorViewport::update_transform(bool p_shift) {
-	Vector3 ray_pos = get_ray_pos(_edit.mouse_pos);
-	Vector3 ray = get_ray(_edit.mouse_pos);
 	double snap = EDITOR_GET("interface/inspector/default_float_step");
 	int snap_step_decimals = Math::range_step_decimals(snap);
 
@@ -5668,78 +5696,57 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 
 	switch (_edit.mode) {
 		case TRANSFORM_SCALE: {
-			Vector3 motion_mask;
-			Plane plane;
-			bool plane_mv = false;
-
-			switch (_edit.plane) {
-				case TRANSFORM_VIEW:
-					motion_mask = Vector3(0, 0, 0);
-					plane = Plane(_get_camera_normal(), _edit.center);
-					break;
-				case TRANSFORM_X_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(0).normalized();
-					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
-					break;
-				case TRANSFORM_Y_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(1).normalized();
-					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
-					break;
-				case TRANSFORM_Z_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(2).normalized();
-					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
-					break;
-				case TRANSFORM_YZ:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_column(1).normalized();
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(0).normalized(), _edit.center);
-					plane_mv = true;
-					break;
-				case TRANSFORM_XZ:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_column(0).normalized();
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(1).normalized(), _edit.center);
-					plane_mv = true;
-					break;
-				case TRANSFORM_XY:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(0).normalized() + spatial_editor->get_gizmo_transform().basis.get_column(1).normalized();
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(2).normalized(), _edit.center);
-					plane_mv = true;
-					break;
-			}
-
-			Vector3 intersection;
-			if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
+			const real_t depth = _get_gizmo_depth();
+			Vector3 click = _screen_to_world_at_depth(_edit.original_mouse_pos, depth);
+			Vector3 current = _screen_to_world_at_depth(_edit.mouse_pos, depth);
+			real_t click_dist = click.distance_to(_edit.center);
+			if (click_dist == 0) {
 				break;
 			}
 
-			Vector3 click;
-			if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
-				break;
-			}
-
-			Vector3 motion = intersection - click;
-			if (_edit.plane != TRANSFORM_VIEW) {
-				if (!plane_mv) {
-					motion = motion_mask.dot(motion) * motion_mask;
-
-				} else {
-					// Alternative planar scaling mode
-					if (p_shift) {
-						motion = motion_mask.dot(motion) * motion_mask;
-					}
-				}
-
-			} else {
-				const real_t center_click_dist = click.distance_to(_edit.center);
-				const real_t center_inters_dist = intersection.distance_to(_edit.center);
-				if (center_click_dist == 0) {
-					break;
-				}
-
-				const real_t scale = center_inters_dist - center_click_dist;
+			Vector3 motion;
+			if (_edit.plane == TRANSFORM_VIEW) {
+				real_t scale = (current.distance_to(_edit.center) - click_dist) / click_dist;
 				motion = Vector3(scale, scale, scale);
-			}
+			} else {
+				Vector3 world_delta = _screen_delta_to_world(_edit.mouse_pos - _edit.original_mouse_pos, depth);
 
-			motion /= click.distance_to(_edit.center);
+				switch (_edit.plane) {
+					case TRANSFORM_X_AXIS:
+						world_delta = _project_onto_axis(world_delta, _get_axis(0));
+						break;
+					case TRANSFORM_Y_AXIS:
+						world_delta = _project_onto_axis(world_delta, _get_axis(1));
+						break;
+					case TRANSFORM_Z_AXIS:
+						world_delta = _project_onto_axis(world_delta, _get_axis(2));
+						break;
+					case TRANSFORM_YZ:
+						if (p_shift) {
+							world_delta = _project_onto_axis(world_delta, _get_axis(2));
+						} else {
+							world_delta -= _project_onto_axis(world_delta, _get_axis(0));
+						}
+						break;
+					case TRANSFORM_XZ:
+						if (p_shift) {
+							world_delta = _project_onto_axis(world_delta, _get_axis(0));
+						} else {
+							world_delta -= _project_onto_axis(world_delta, _get_axis(1));
+						}
+						break;
+					case TRANSFORM_XY:
+						if (p_shift) {
+							world_delta = _project_onto_axis(world_delta, _get_axis(1));
+						} else {
+							world_delta -= _project_onto_axis(world_delta, _get_axis(2));
+						}
+						break;
+					default:
+						break;
+				}
+				motion = world_delta / click_dist;
+			}
 
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
 				snap = spatial_editor->get_scale_snap() / 100;
@@ -5759,55 +5766,29 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 		} break;
 
 		case TRANSFORM_TRANSLATE: {
-			Vector3 motion_mask;
-			Plane plane;
-			bool plane_mv = false;
+			Vector3 motion = _screen_delta_to_world(_edit.mouse_pos - _edit.original_mouse_pos, _get_gizmo_depth());
 
 			switch (_edit.plane) {
-				case TRANSFORM_VIEW:
-					plane = Plane(_get_camera_normal(), _edit.center);
-					break;
 				case TRANSFORM_X_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(0).normalized();
-					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
+					motion = _project_onto_axis(motion, _get_axis(0));
 					break;
 				case TRANSFORM_Y_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(1).normalized();
-					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
+					motion = _project_onto_axis(motion, _get_axis(1));
 					break;
 				case TRANSFORM_Z_AXIS:
-					motion_mask = spatial_editor->get_gizmo_transform().basis.get_column(2).normalized();
-					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
+					motion = _project_onto_axis(motion, _get_axis(2));
 					break;
 				case TRANSFORM_YZ:
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(0).normalized(), _edit.center);
-					plane_mv = true;
+					motion -= _project_onto_axis(motion, _get_axis(0));
 					break;
 				case TRANSFORM_XZ:
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(1).normalized(), _edit.center);
-					plane_mv = true;
+					motion -= _project_onto_axis(motion, _get_axis(1));
 					break;
 				case TRANSFORM_XY:
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_column(2).normalized(), _edit.center);
-					plane_mv = true;
+					motion -= _project_onto_axis(motion, _get_axis(2));
 					break;
-			}
-
-			Vector3 intersection;
-			if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
-				break;
-			}
-
-			Vector3 click;
-			if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
-				break;
-			}
-
-			Vector3 motion = intersection - click;
-			if (_edit.plane != TRANSFORM_VIEW) {
-				if (!plane_mv) {
-					motion = motion_mask.dot(motion) * motion_mask;
-				}
+				default:
+					break;
 			}
 
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
@@ -5826,17 +5807,11 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 		} break;
 
 		case TRANSFORM_ROTATE: {
-			Plane plane;
-			if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
-				Vector3 cam_to_obj = _edit.center - _get_camera_position();
-				if (!cam_to_obj.is_zero_approx()) {
-					plane = Plane(cam_to_obj.normalized(), _edit.center);
-				} else {
-					plane = Plane(_get_camera_normal(), _edit.center);
-				}
-			} else {
-				plane = Plane(_get_camera_normal(), _edit.center);
-			}
+			Vector3 cam_to_obj = _edit.center - _get_camera_position();
+			Vector3 view_normal = (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE && !cam_to_obj.is_zero_approx())
+					? cam_to_obj.normalized()
+					: _get_camera_normal();
+			Plane plane(view_normal, _edit.center);
 
 			Vector3 local_axis;
 			Vector3 global_axis;
@@ -5847,34 +5822,23 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 					break;
 				case TRANSFORM_X_AXIS:
 					local_axis = Vector3(1, 0, 0);
+					global_axis = _get_axis(0);
 					break;
 				case TRANSFORM_Y_AXIS:
 					local_axis = Vector3(0, 1, 0);
+					global_axis = _get_axis(1);
 					break;
-				case TRANSFORM_Z_AXIS:
+				default:
 					local_axis = Vector3(0, 0, 1);
-					break;
-				case TRANSFORM_YZ:
-				case TRANSFORM_XZ:
-				case TRANSFORM_XY:
+					global_axis = _get_axis(2);
 					break;
 			}
 
-			if (_edit.plane != TRANSFORM_VIEW) {
-				global_axis = spatial_editor->get_gizmo_transform().basis.xform(local_axis).normalized();
-			}
-
-			Vector3 intersection;
-			if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
-				break;
-			}
-
-			Vector3 click;
-			if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
-				break;
-			}
-
-			Vector3 current_rotation_vector = (intersection - _edit.center).normalized();
+			// Project mouse positions to world space.
+			const real_t depth = _get_gizmo_depth();
+			Vector3 click = _screen_to_world_at_depth(_edit.original_mouse_pos, depth);
+			Vector3 current = _screen_to_world_at_depth(_edit.mouse_pos, depth);
+			Vector3 current_rotation_vector = (current - _edit.center).normalized();
 
 			if (_edit.initial_click_vector == Vector3()) {
 				_edit.initial_click_vector = (click - _edit.center).normalized();
@@ -5890,8 +5854,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			if (axis_is_orthogonal) {
 				_edit.show_rotation_line = false;
 				Vector3 projection_axis = plane.normal.cross(global_axis);
-				Vector3 delta = intersection - click;
-				float projection = delta.dot(projection_axis);
+				float projection = (current - click).dot(projection_axis);
 				angle = (projection * (Math::PI / 2.0f)) / (gizmo_scale * GIZMO_CIRCLE_SIZE);
 			} else {
 				_edit.show_rotation_line = true;
