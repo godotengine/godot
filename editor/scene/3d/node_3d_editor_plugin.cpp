@@ -8930,6 +8930,7 @@ void Node3DEditor::_notification(int p_what) {
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
+			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
