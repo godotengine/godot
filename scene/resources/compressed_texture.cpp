@@ -147,6 +147,8 @@ Error CompressedTexture2D::load(const String &p_path) {
 	} else {
 		texture = RS::get_singleton()->texture_2d_create(image);
 	}
+	RS::get_singleton()->texture_set_path(texture, get_path());
+
 	if (lw || lh) {
 		RS::get_singleton()->texture_set_size_override(texture, lw, lh);
 	}
