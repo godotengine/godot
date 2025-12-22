@@ -5304,23 +5304,33 @@ void DisplayServerX11::process_events() {
 					focused_window_id = MAIN_WINDOW_ID;
 				}
 
-				while (true) {
-					if (mouse_mode == MOUSE_MODE_CAPTURED && event.xmotion.x == windows[focused_window_id].size.width / 2 && event.xmotion.y == windows[focused_window_id].size.height / 2) {
-						//this is likely the warp event since it was warped here
-						center = Vector2(event.xmotion.x, event.xmotion.y);
-						break;
-					}
+				// Check for warp event first
+				if (mouse_mode == MOUSE_MODE_CAPTURED &&
+						event.xmotion.x == windows[focused_window_id].size.width / 2 &&
+						event.xmotion.y == windows[focused_window_id].size.height / 2) {
+					center = Vector2(event.xmotion.x, event.xmotion.y);
+					break;
+				}
 
-					if (event_index + 1 < events.size()) {
+				// If not a warp, check for accumulation
+				if (Input::get_singleton()->is_using_accumulated_input()) {
+					// Accumulate all subsequent motion events,
+					// but stop if we see a warp event.
+					while (event_index + 1 < events.size()) {
 						const XEvent &next_event = events[event_index + 1];
 						if (next_event.type == MotionNotify) {
+							// Check if the *next* event is a warp. If so, stop accumulating.
+							if (mouse_mode == MOUSE_MODE_CAPTURED &&
+									next_event.xmotion.x == windows[focused_window_id].size.width / 2 &&
+									next_event.xmotion.y == windows[focused_window_id].size.height / 2) {
+								break;
+							}
+
 							++event_index;
 							event = next_event;
 						} else {
 							break;
 						}
-					} else {
-						break;
 					}
 				}
 
