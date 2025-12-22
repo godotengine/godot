@@ -111,6 +111,14 @@ void ScriptEditorDebugger::debug_ignore_error_breaks() {
 	_put_msg("set_ignore_error_breaks", msg);
 }
 
+void ScriptEditorDebugger::debug_select_thread(int p_thread_id) {
+	if (p_thread_id != Thread::UNASSIGNED_ID) {
+		ERR_FAIL_COND(!threads_debugged.has(p_thread_id));
+	}
+
+	debugging_thread_id = p_thread_id;
+}
+
 void ScriptEditorDebugger::debug_out() {
 	ERR_FAIL_COND(!is_breaked());
 
@@ -339,7 +347,7 @@ void ScriptEditorDebugger::_thread_debug_enter(uint64_t p_thread_id) {
 	ERR_FAIL_COND(!threads_debugged.has(p_thread_id));
 	ThreadDebugged &td = threads_debugged[p_thread_id];
 	_set_reason_text(td.error, MESSAGE_ERROR);
-	emit_signal(SNAME("breaked"), true, td.can_debug, td.error, td.has_stackdump);
+	emit_signal(SNAME("breaked"), true, td.can_debug, td.error, td.has_stackdump, p_thread_id);
 	_mute_audio_on_break(true);
 	if (!td.error.is_empty() && EDITOR_GET("debugger/auto_switch_to_stack_trace")) {
 		tabs->set_current_tab(0);
@@ -349,7 +357,7 @@ void ScriptEditorDebugger::_thread_debug_enter(uint64_t p_thread_id) {
 }
 
 void ScriptEditorDebugger::_select_thread(int p_index) {
-	debugging_thread_id = threads->get_item_metadata(threads->get_selected());
+	debug_select_thread(threads->get_item_metadata(threads->get_selected()));
 	_thread_debug_enter(debugging_thread_id);
 }
 
@@ -371,7 +379,7 @@ void ScriptEditorDebugger::_msg_debug_enter(uint64_t p_thread_id, const Array &p
 
 	if (threads_debugged.size() == 1) {
 		// First thread that requests debug
-		debugging_thread_id = p_thread_id;
+		debug_select_thread(p_thread_id);
 		_thread_debug_enter(p_thread_id);
 		can_request_idle_draw = true;
 		if (is_move_to_foreground()) {
@@ -379,6 +387,9 @@ void ScriptEditorDebugger::_msg_debug_enter(uint64_t p_thread_id, const Array &p
 		}
 		profiler->set_enabled(false, false);
 		visual_profiler->set_enabled(false);
+	} else if (is_external_debugger()) {
+		emit_signal(SNAME("breaked"), true, td.can_debug, td.error, td.has_stackdump, p_thread_id);
+		_put_msg("get_stack_dump", Array(), p_thread_id);
 	}
 	_update_buttons_state();
 }
@@ -388,7 +399,7 @@ void ScriptEditorDebugger::_msg_debug_exit(uint64_t p_thread_id, const Array &p_
 	if (p_thread_id == debugging_thread_id) {
 		_clear_execution();
 		if (threads_debugged.is_empty()) {
-			debugging_thread_id = Thread::UNASSIGNED_ID;
+			debug_select_thread(Thread::UNASSIGNED_ID);
 		} else {
 			// Find next thread to debug.
 			uint32_t min_order = 0xFFFFFFFF;
@@ -400,7 +411,7 @@ void ScriptEditorDebugger::_msg_debug_exit(uint64_t p_thread_id, const Array &p_
 				}
 			}
 
-			debugging_thread_id = next_thread;
+			debug_select_thread(next_thread);
 		}
 
 		if (debugging_thread_id == Thread::UNASSIGNED_ID) {
@@ -411,7 +422,7 @@ void ScriptEditorDebugger::_msg_debug_exit(uint64_t p_thread_id, const Array &p_
 			visual_profiler->set_enabled(true);
 
 			_set_reason_text(TTRC("Execution resumed."), MESSAGE_SUCCESS);
-			emit_signal(SNAME("breaked"), false, false, "", false);
+			emit_signal(SNAME("breaked"), false, false, "", false, Thread::UNASSIGNED_ID);
 			_mute_audio_on_break(false);
 
 			_update_buttons_state();
@@ -514,6 +525,10 @@ void ScriptEditorDebugger::_msg_stack_dump(uint64_t p_thread_id, const Array &p_
 	DebuggerMarshalls::ScriptStackDump stack;
 	stack.deserialize(p_data);
 
+	if (is_external_debugger()) {
+		debug_select_thread(p_thread_id);
+	}
+
 	stack_dump->clear();
 	inspector->clear_stack_variables();
 	TreeItem *r = stack_dump->create_item();
@@ -538,18 +553,18 @@ void ScriptEditorDebugger::_msg_stack_dump(uint64_t p_thread_id, const Array &p_
 			s->select(0);
 		}
 	}
-	emit_signal(SNAME("stack_dump"), stack_dump_info);
+	emit_signal(SNAME("stack_dump"), stack_dump_info, p_thread_id);
 }
 
 void ScriptEditorDebugger::_msg_stack_frame_vars(uint64_t p_thread_id, const Array &p_data) {
 	inspector->clear_stack_variables();
 	ERR_FAIL_COND(p_data.size() != 1);
-	emit_signal(SNAME("stack_frame_vars"), p_data[0]);
+	emit_signal(SNAME("stack_frame_vars"), p_data[0], p_thread_id);
 }
 
 void ScriptEditorDebugger::_msg_stack_frame_var(uint64_t p_thread_id, const Array &p_data) {
 	inspector->add_stack_variable(p_data);
-	emit_signal(SNAME("stack_frame_var"), p_data);
+	emit_signal(SNAME("stack_frame_var"), p_data, p_thread_id);
 }
 
 void ScriptEditorDebugger::_msg_output(uint64_t p_thread_id, const Array &p_data) {
@@ -973,7 +988,7 @@ void ScriptEditorDebugger::_msg_embed_next_frame(uint64_t p_thread_id, const Arr
 }
 
 void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data) {
-	emit_signal(SNAME("debug_data"), p_msg, p_data);
+	emit_signal(SNAME("debug_data"), p_msg, p_data, p_thread_id);
 
 	ParseMessageFunc *fn_ptr = parse_message_handlers.getptr(p_msg);
 	if (fn_ptr) {
@@ -1319,7 +1334,7 @@ void ScriptEditorDebugger::_stop_and_notify() {
 void ScriptEditorDebugger::stop() {
 	set_process(false);
 	threads_debugged.clear();
-	debugging_thread_id = Thread::UNASSIGNED_ID;
+	debug_select_thread(Thread::UNASSIGNED_ID);
 	remote_pid = 0;
 	_clear_execution();
 
@@ -1669,6 +1684,15 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 	}
 }
 
+bool ScriptEditorDebugger::is_external_debugger() const {
+	return external_debugger;
+}
+
+void ScriptEditorDebugger::set_external_debugger(bool p_enable) {
+	external_debugger = p_enable;
+	set_move_to_foreground(!p_enable);
+}
+
 bool ScriptEditorDebugger::get_debug_mute_audio() const {
 	return debug_mute_audio;
 }
@@ -2002,7 +2026,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoint_selected", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
-	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug"), PropertyInfo(Variant::STRING, "reason"), PropertyInfo(Variant::BOOL, "has_stackdump")));
+	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug"), PropertyInfo(Variant::STRING, "reason"), PropertyInfo(Variant::BOOL, "has_stackdump"), PropertyInfo(Variant::INT, "thread_id")));
 	ADD_SIGNAL(MethodInfo("remote_objects_requested", PropertyInfo(Variant::ARRAY, "ids")));
 	ADD_SIGNAL(MethodInfo("remote_objects_updated", PropertyInfo(Variant::OBJECT, "remote_objects")));
 	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
@@ -2011,10 +2035,10 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("remote_tree_select_requested", PropertyInfo(Variant::ARRAY, "ids")));
 	ADD_SIGNAL(MethodInfo("remote_tree_clear_selection_requested"));
 	ADD_SIGNAL(MethodInfo("output", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::INT, "level")));
-	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
-	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
-	ADD_SIGNAL(MethodInfo("stack_frame_var", PropertyInfo(Variant::ARRAY, "data")));
-	ADD_SIGNAL(MethodInfo("debug_data", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::ARRAY, "data")));
+	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump"), PropertyInfo(Variant::INT, "thread_id")));
+	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars"), PropertyInfo(Variant::INT, "thread_id")));
+	ADD_SIGNAL(MethodInfo("stack_frame_var", PropertyInfo(Variant::ARRAY, "data"), PropertyInfo(Variant::INT, "thread_id")));
+	ADD_SIGNAL(MethodInfo("debug_data", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::ARRAY, "data"), PropertyInfo(Variant::INT, "thread_id")));
 	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
 	ADD_SIGNAL(MethodInfo("errors_cleared"));
