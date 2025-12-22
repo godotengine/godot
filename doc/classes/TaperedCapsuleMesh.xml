@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TaperedCapsuleMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A mesh that is tapered capsule-shaped [PrimitiveMesh].
+	</brief_description>
+	<description>
+		A mesh that is a tapered capsule-shaped [PrimitiveMesh]. A tapered capsule is a cylinder with hemispherical ends where the hemispheres can have different radii, creating a tapered or cone-like appearance. The shape is defined by two radii ([member radius_top] for the top hemisphere and [member radius_bottom] for the bottom hemisphere) and a [member mid_height] for the cylindrical section between them.
+		This shape is useful for creating various organic forms, projectiles, or tapered objects where smooth transitions between different radii are needed.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			Total height of the tapered capsule, calculated as [member mid_height] + [member radius_top] + [member radius_bottom]. This is the full extent from the bottom of the lower hemisphere to the top of the upper hemisphere. Setting this property adjusts [member mid_height] while keeping the radii unchanged.
+		</member>
+		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height" default="1.0">
+			Height of the cylindrical section of the tapered capsule (excluding the hemispherical ends). This is the distance between the centers of the two hemispheres.
+			[b]Note:[/b] The [member mid_height] must be greater than [code]0.0[/code]. Unlike regular capsules, tapered capsules can have any positive height regardless of the radius values, allowing for creative shapes where hemispheres can conceptually overlap.
+		</member>
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
+			Number of radial segments around the tapered capsule. Higher values result in a smoother, more detailed shape at the cost of performance.
+		</member>
+		<member name="radius_bottom" type="float" setter="set_radius_bottom" getter="get_radius_bottom" default="0.5">
+			Radius of the bottom hemisphere of the tapered capsule. This determines the size of the lower hemispherical end. When [member radius_bottom] differs from [member radius_top], the cylindrical section becomes tapered, creating a cone-like transition between the hemispheres.
+		</member>
+		<member name="radius_top" type="float" setter="set_radius_top" getter="get_radius_top" default="0.5">
+			Radius of the top hemisphere of the tapered capsule. This determines the size of the upper hemispherical end.
+		</member>
+		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="8">
+			Number of edge rings along the height of the tapered capsule. Changing [member rings] does not have any visual impact unless a shader or procedural mesh tool is used to alter the vertex data. Higher values result in more subdivisions, which can be used to create smoother-looking effects with shaders or procedural mesh tools (at the cost of performance).
+		</member>
+	</members>
+</class>
