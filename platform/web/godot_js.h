@@ -131,7 +131,7 @@ extern void godot_js_display_notification_cb(void (*p_callback)(int p_notificati
 // Display Virtual Keyboard
 extern int godot_js_display_vk_available();
 extern int godot_js_display_tts_available();
-extern void godot_js_display_vk_cb(void (*p_input)(const char *p_text, int p_cursor));
+extern void godot_js_display_vk_cb(void (*p_input)(const char *p_text, int p_cursor), void (*p_callback)());
 extern void godot_js_display_vk_show(const char *p_text, int p_type, int p_start, int p_end);
 extern void godot_js_display_vk_hide();
 
