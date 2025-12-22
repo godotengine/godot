@@ -72,6 +72,24 @@ int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bo
 	return item_id;
 }
 
+void ItemList::insert_item(int p_idx, const String &p_item, const Ref<Texture2D> &p_texture, bool p_selectable) {
+	ERR_FAIL_INDEX(p_idx, items.size() + 1);
+
+	Item item;
+	item.icon = p_texture;
+	item.text = p_item;
+	item.selectable = p_selectable;
+	items.insert(p_idx, item);
+
+	items.write[p_idx].xl_text = _atr(p_idx, p_item);
+	_shape_text(p_idx);
+
+	queue_accessibility_update();
+	queue_redraw();
+	shape_changed = true;
+	notify_property_list_changed();
+}
+
 int ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	Item item;
 	item.icon = p_item;
@@ -2263,6 +2281,8 @@ bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
 void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_item", "text", "icon", "selectable"), &ItemList::add_item, DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "icon", "selectable"), &ItemList::add_icon_item, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("insert_item", "idx", "text", "icon", "selectable"), &ItemList::insert_item, DEFVAL(Variant()), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &ItemList::set_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &ItemList::get_item_text);
