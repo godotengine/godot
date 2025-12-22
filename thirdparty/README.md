@@ -1153,6 +1153,17 @@ Patches:
 - `0002-VMA-godot-vulkan.patch` ([GH-97510](https://github.com/godotengine/godot/pull/97510))
 - `0003-VMA-add-vmaCalculateLazilyAllocatedBytes.patch` ([GH-99257](https://github.com/godotengine/godot/pull/99257))
 
+## wasm3
+
+- Upstream: https://github.com/wasm3/wasm3
+- Version: master (35b5e2fb53c5cbc1ff3d7e42c381cd7cfa14f308, 2024)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `source/*.{c,h}`
+- `source/extra/wasi_core.h`
+- `LICENSE`
 
 ## wayland
 
