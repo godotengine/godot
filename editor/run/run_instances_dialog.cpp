@@ -196,12 +196,21 @@ void RunInstancesDialog::_instance_tree_rmb(const Vector2 &p_pos, MouseButton p_
 }
 
 void RunInstancesDialog::popup_dialog() {
+	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
+	enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
+
+	stored_data = TypedArray<Dictionary>(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instances_config", TypedArray<Dictionary>()));
+	instance_count->set_value(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instance_count", stored_data.size()));
+
+	instance_count->set_editable(enable_multiple_instances_checkbox->is_pressed());
+	_refresh_argument_count();
+
 	popup_centered_clamped(Size2(1200, 600) * EDSCALE, 0.8);
 }
 
 int RunInstancesDialog::get_instance_count() const {
-	if (enable_multiple_instances_checkbox->is_pressed()) {
-		return instance_count->get_value();
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false)) {
+		return EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instance_count", 1);
 	} else {
 		return 1;
 	}
@@ -209,7 +218,7 @@ int RunInstancesDialog::get_instance_count() const {
 
 void RunInstancesDialog::get_argument_list_for_instance(int p_idx, List<String> &r_list) const {
 	bool override_args = instances_data[p_idx].overrides_run_args();
-	bool use_multiple_instances = enable_multiple_instances_checkbox->is_pressed();
+	bool use_multiple_instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false);
 	String raw_custom_args;
 
 	if (use_multiple_instances) {
@@ -271,7 +280,7 @@ void RunInstancesDialog::apply_custom_features(int p_instance_idx) {
 	const InstanceData &instance = instances_data[p_instance_idx];
 
 	String raw_text;
-	if (enable_multiple_instances_checkbox->is_pressed()) {
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false)) {
 		if (instance.overrides_features()) {
 			raw_text = instance.get_feature_tags();
 		} else {
