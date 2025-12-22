@@ -910,6 +910,12 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 	}
 }
 
+static HashMap<StringName, int64_t> _init_enum_values_map(StringName p_name) {
+	HashMap<StringName, int64_t> map;
+	CoreConstants::get_enum_values(p_name, &map);
+	return map;
+}
+
 static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
 	ERR_FAIL_NULL(p_annotation);
 
@@ -984,20 +990,14 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 	} else if (p_annotation->name == SNAME("@export_custom")) {
 		switch (p_argument) {
 			case 0: {
-				static HashMap<StringName, int64_t> items;
-				if (unlikely(items.is_empty())) {
-					CoreConstants::get_enum_values(SNAME("PropertyHint"), &items);
-				}
+				static const HashMap<StringName, int64_t> items = _init_enum_values_map("PropertyHint");
 				for (const KeyValue<StringName, int64_t> &item : items) {
 					ScriptLanguage::CodeCompletionOption option(item.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
 					r_result.insert(option.display, option);
 				}
 			} break;
 			case 2: {
-				static HashMap<StringName, int64_t> items;
-				if (unlikely(items.is_empty())) {
-					CoreConstants::get_enum_values(SNAME("PropertyUsageFlags"), &items);
-				}
+				static const HashMap<StringName, int64_t> items = _init_enum_values_map("PropertyUsageFlags");
 				for (const KeyValue<StringName, int64_t> &item : items) {
 					ScriptLanguage::CodeCompletionOption option(item.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
 					r_result.insert(option.display, option);

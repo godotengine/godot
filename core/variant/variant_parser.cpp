@@ -1199,20 +1199,14 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			static HashMap<StringName, Variant::Type> builtin_types;
-			if (builtin_types.is_empty()) {
-				for (int i = 1; i < Variant::VARIANT_MAX; i++) {
-					builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
-				}
-			}
-
 			Dictionary dict;
 			Variant::Type key_type = Variant::NIL;
 			StringName key_class_name;
 			Variant key_script;
 			bool got_comma_token = false;
-			if (builtin_types.has(token.value)) {
-				key_type = builtin_types.get(token.value);
+			Variant::Type key_builtin_type = Variant::get_type_by_name(token.value);
+			if (key_builtin_type != Variant::NIL && key_builtin_type != Variant::VARIANT_MAX) {
+				key_type = key_builtin_type;
 			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
@@ -1257,8 +1251,9 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			StringName value_class_name;
 			Variant value_script;
 			bool got_bracket_token = false;
-			if (builtin_types.has(token.value)) {
-				value_type = builtin_types.get(token.value);
+			Variant::Type value_builtin_type = Variant::get_type_by_name(token.value);
+			if (value_builtin_type != Variant::NIL && value_builtin_type != Variant::VARIANT_MAX) {
+				value_type = value_builtin_type;
 			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
@@ -1339,17 +1334,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			static HashMap<String, Variant::Type> builtin_types;
-			if (builtin_types.is_empty()) {
-				for (int i = 1; i < Variant::VARIANT_MAX; i++) {
-					builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
-				}
-			}
-
 			Array array = Array();
 			bool got_bracket_token = false;
-			if (builtin_types.has(token.value)) {
-				array.set_typed(builtin_types.get(token.value), StringName(), Variant());
+			Variant::Type builtin_type = Variant::get_type_by_name(token.value);
+			if (builtin_type != Variant::NIL && builtin_type != Variant::VARIANT_MAX) {
+				array.set_typed(builtin_type, StringName(), Variant());
 			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
