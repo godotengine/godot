@@ -2336,6 +2336,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	GDScriptCodeGenerator::Address vararg_addr;
 
 	if (p_func) {
+		codegen.parameters.reserve(p_func->parameters.size());
 		for (int i = 0; i < p_func->parameters.size(); i++) {
 			const GDScriptParser::ParameterNode *parameter = p_func->parameters[i];
 			GDScriptDataType par_type = _gdtype_from_datatype(parameter->get_datatype(), p_script);
@@ -2711,13 +2712,13 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	p_script->members.clear();
 
 	// This makes possible to clear script constants and member_functions without heap-use-after-free errors.
-	HashMap<StringName, Variant> constants;
+	HashMap<StringName, Variant> constants(p_script->constants.size());
 	for (const KeyValue<StringName, Variant> &E : p_script->constants) {
 		constants.insert(E.key, E.value);
 	}
 	p_script->constants.clear();
 	constants.clear();
-	HashMap<StringName, GDScriptFunction *> member_functions;
+	HashMap<StringName, GDScriptFunction *> member_functions(p_script->member_functions.size());
 	for (const KeyValue<StringName, GDScriptFunction *> &E : p_script->member_functions) {
 		member_functions.insert(E.key, E.value);
 	}
@@ -3220,10 +3221,12 @@ GDScriptCompiler::ScriptLambdaInfo GDScriptCompiler::_get_script_lambda_replacem
 		info.static_initializer_info = _get_function_lambda_replacement_info(p_script->static_initializer);
 	}
 
+	info.member_function_infos.reserve(p_script->member_functions.size());
 	for (const KeyValue<StringName, GDScriptFunction *> &E : p_script->member_functions) {
 		info.member_function_infos.insert(E.key, _get_function_lambda_replacement_info(E.value));
 	}
 
+	info.other_function_infos.reserve(p_script->lambda_info.size());
 	for (const KeyValue<StringName, Ref<GDScript>> &KV : p_script->get_subclasses()) {
 		info.subclass_info.insert(KV.key, _get_script_lambda_replacement_info(KV.value.ptr()));
 	}
