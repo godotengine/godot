@@ -3833,6 +3833,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &Image::get_size);
 	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Image::has_mipmaps);
 	ClassDB::bind_method(D_METHOD("get_format"), &Image::get_format);
+	ClassDB::bind_static_method("Image", D_METHOD("get_format_name", "format"), &Image::get_format_name);
 	ClassDB::bind_method(D_METHOD("get_data"), &Image::get_data);
 	ClassDB::bind_method(D_METHOD("get_data_size"), &Image::get_data_size);
 
