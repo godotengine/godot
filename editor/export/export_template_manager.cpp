@@ -30,6 +30,8 @@
 
 #include "export_template_manager.h"
 
+#include "core/crypto/crypto.h"
+#include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
@@ -37,6 +39,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export_preset.h"
+#include "editor/export/export_template_keys.gen.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -48,6 +51,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
@@ -240,17 +244,7 @@ void ExportTemplateManager::_download_template_completed(int p_status, int p_cod
 				String path = download_templates->get_download_file();
 
 				is_downloading_templates = false;
-				bool ret = _install_file_selected(path, true);
-				if (ret) {
-					// Clean up downloaded file.
-					Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-					Error err = da->remove(path);
-					if (err != OK) {
-						EditorNode::get_singleton()->add_io_error(TTR("Cannot remove temporary file:") + "\n" + path + "\n");
-					}
-				} else {
-					EditorNode::get_singleton()->add_io_error(vformat(TTR("Templates installation failed.\nThe problematic templates archives can be found at '%s'."), path));
-				}
+				_verify_and_install_file_selected(path, true, true);
 			}
 		} break;
 	}
@@ -427,14 +421,219 @@ void ExportTemplateManager::_install_file() {
 	install_file_dialog->popup_file_dialog();
 }
 
-bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_skip_progress) {
+static Vector<uint8_t> _get_current_file_hash(unz_file_info &p_info, unzFile p_pkg) {
+	CryptoCore::SHA256Context ctx;
+	Error err = ctx.start();
+	ERR_FAIL_COND_V(err != OK, Vector<uint8_t>());
+
+	unzOpenCurrentFile(p_pkg);
+	uint8_t buf[4096];
+	int64_t to_read = p_info.uncompressed_size;
+	while (to_read) {
+		int64_t len = MIN(to_read, 4096);
+		int64_t read = unzReadCurrentFile(p_pkg, buf, len);
+		ERR_FAIL_COND_V(read < 0, Vector<uint8_t>());
+		err = ctx.update((const uint8_t *)buf, read);
+		ERR_FAIL_COND_V(err != OK, Vector<uint8_t>());
+		to_read -= read;
+		if (read == UNZ_EOF) {
+			break;
+		}
+	}
+	unzCloseCurrentFile(p_pkg);
+
+	Vector<uint8_t> out;
+	out.resize(32);
+	err = ctx.finish((unsigned char *)out.ptrw());
+	ERR_FAIL_COND_V(err != OK, Vector<uint8_t>());
+
+	return out;
+}
+
+void ExportTemplateManager::_clenup(const String &p_file, bool p_remove_file) {
+	if (p_file.is_empty()) {
+		return;
+	}
+
+	if (p_remove_file) {
+		// Clean up downloaded file.
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Error err = da->remove(p_file);
+		if (err != OK) {
+			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove temporary file:") + "\n" + p_file + "\n");
+		}
+	}
+}
+
+void ExportTemplateManager::_verify_and_install_file_selected(const String &p_file, bool p_skip_progress, bool p_remove_file) {
+	HashMap<String, Vector<uint8_t>> expected_hashes;
+	HashMap<String, Vector<uint8_t>> file_hashes;
+	Vector<uint8_t> signature;
+	Vector<uint8_t> manifest_hash;
+	Vector<String> user_keys = EDITOR_GET("export/template_trusted_public_keys");
+	bool has_keys = std::size(trusted_public_keys) > 0 || !user_keys.is_empty();
+
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
 	if (!pkg) {
 		EditorNode::get_singleton()->show_warning(TTR("Can't open the export templates file."));
-		return false;
+		_clenup(p_file, p_remove_file);
+		return;
+	}
+
+	int ret = unzGoToFirstFile(pkg);
+	while (ret == UNZ_OK) {
+		unz_file_info info;
+		char fname[16384];
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
+		String file = String::utf8(fname);
+		if (file == ".manifest") {
+			Vector<uint8_t> uncomp_data;
+			uncomp_data.resize(info.uncompressed_size);
+
+			unzOpenCurrentFile(pkg);
+			ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
+			ERR_BREAK(ret < 0);
+			unzCloseCurrentFile(pkg);
+			Vector<String> manifest = String::utf8((const char *)uncomp_data.ptr(), uncomp_data.size()).split("\n");
+			for (const String &file_info : manifest) {
+				String hash = file_info.get_slice(" ", 0);
+				String name = file_info.get_slice(" ", 1).trim_prefix("*");
+				if (!name.is_empty() && !hash.is_empty() && name != ".manifest" && name != ".signature") {
+					expected_hashes[name] = hash.hex_decode();
+				}
+			}
+			manifest_hash = _get_current_file_hash(info, pkg);
+		} else if (file == ".signature") {
+			signature.resize(info.uncompressed_size);
+			unzOpenCurrentFile(pkg);
+			ret = unzReadCurrentFile(pkg, signature.ptrw(), signature.size());
+			ERR_BREAK(ret < 0);
+			unzCloseCurrentFile(pkg);
+		} else {
+			file_hashes[file] = _get_current_file_hash(info, pkg);
+		}
+
+		ret = unzGoToNextFile(pkg);
+	}
+	unzClose(pkg);
+
+	// Unsigned export templates file.
+	if (signature.is_empty() && expected_hashes.is_empty()) {
+		if (!has_keys) {
+			// No trusted keys specified, install without user interaction.
+			_install_file_selected(p_file, p_skip_progress);
+			_clenup(p_file, p_remove_file);
+		} else {
+			// Show confirmation dialog.
+			ver_file = p_file;
+			ver_skip_progress = p_skip_progress;
+			ver_remove_file = p_remove_file;
+			verification_dialog_accept->popup_centered();
+		}
+		return;
+	}
+
+	Vector<String> error_msgs;
+	const String &bullet = U"• ";
+
+	// Verify file hashes.
+	bool files_ok = true;
+	for (const KeyValue<String, Vector<uint8_t>> &E : file_hashes) {
+		if (!expected_hashes.has(E.key)) {
+			error_msgs.push_back(bullet + vformat(TTR("Unexpected file \"%s\" found."), E.key));
+			files_ok = false;
+		} else {
+			if (E.value != expected_hashes[E.key]) {
+				error_msgs.push_back(bullet + vformat(TTR("File \"%s\" hash mismatch."), E.key));
+				files_ok = false;
+			}
+		}
+	}
+	for (const KeyValue<String, Vector<uint8_t>> &E : expected_hashes) {
+		if (!file_hashes.has(E.key)) {
+			error_msgs.push_back(bullet + vformat(TTR("Missing file \"%s\"."), E.key));
+			files_ok = false;
+		}
+	}
+
+	bool signature_ok = false;
+	if (!has_keys) {
+		error_msgs.push_back(bullet + TTR("Signature verification skipped, no trusted public keys configured."));
+		signature_ok = true;
+	}
+	if (!signature_ok) {
+		for (size_t i = 0; i < std::size(trusted_public_keys); i++) {
+			Ref<CryptoKey> key = Ref<CryptoKey>(CryptoKey::create());
+			ERR_FAIL_COND(key.is_null());
+			if (key->load_from_string(trusted_public_keys[i], true) != OK) {
+				continue;
+			}
+
+			Ref<Crypto> crypto = Crypto::create();
+			ERR_FAIL_COND(crypto.is_null());
+			if (crypto->verify(HashingContext::HASH_SHA256, manifest_hash, signature, key)) {
+				signature_ok = true;
+				break;
+			}
+		}
+	}
+	if (!signature_ok) {
+		for (const String &k : user_keys) {
+			String ukey = vformat("-----BEGIN PUBLIC KEY-----\n%s\n-----END PUBLIC KEY-----", k);
+			Ref<CryptoKey> key = Ref<CryptoKey>(CryptoKey::create());
+			ERR_FAIL_COND(key.is_null());
+			if (key->load_from_string(ukey, true) != OK) {
+				continue;
+			}
+
+			Ref<Crypto> crypto = Crypto::create();
+			ERR_FAIL_COND(crypto.is_null());
+			if (crypto->verify(HashingContext::HASH_SHA256, manifest_hash, signature, key)) {
+				signature_ok = true;
+				break;
+			}
+		}
+	}
+	if (!signature_ok) {
+		error_msgs.push_back(bullet + TTR("Signature verification failed."));
+	}
+
+	if (!files_ok || !signature_ok) {
+		verification_fail_message_label->set_text(String("\n").join(error_msgs));
+		verification_dialog_fail->popup_centered();
+		_clenup(p_file, p_remove_file);
+		return;
+	}
+
+	_install_file_selected(p_file, p_skip_progress);
+	_clenup(p_file, p_remove_file);
+}
+
+void ExportTemplateManager::_install_continue() {
+	_install_file_selected(ver_file, ver_skip_progress);
+	_clenup(ver_file, ver_remove_file);
+	ver_file = String();
+}
+
+void ExportTemplateManager::_install_cancel() {
+	_clenup(ver_file, ver_remove_file);
+	ver_file = String();
+}
+
+void ExportTemplateManager::_install_file_selected(const String &p_file, bool p_skip_progress) {
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
+	if (!pkg) {
+		EditorNode::get_singleton()->show_warning(TTR("Can't open the export templates file."));
+		return;
 	}
 	int ret = unzGoToFirstFile(pkg);
 
@@ -477,7 +676,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			if (data_str.get_slice_count(".") < 3) {
 				EditorNode::get_singleton()->show_warning(vformat(TTR("Invalid version.txt format inside the export templates file: %s."), data_str));
 				unzClose(pkg);
-				return false;
+				return;
 			}
 
 			version = data_str;
@@ -494,7 +693,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 	if (version.is_empty()) {
 		EditorNode::get_singleton()->show_warning(TTR("No version.txt found inside the export templates file."));
 		unzClose(pkg);
-		return false;
+		return;
 	}
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -503,7 +702,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Error creating path for extracting templates:") + "\n" + template_path);
 		unzClose(pkg);
-		return false;
+		return;
 	}
 
 	EditorProgress *p = nullptr;
@@ -595,7 +794,6 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 
 	_update_template_status();
 	EditorSettings::get_singleton()->set("_export_template_download_directory", p_file.get_base_dir());
-	return true;
 }
 
 void ExportTemplateManager::_uninstall_template(const String &p_version) {
@@ -980,6 +1178,8 @@ ExportTemplateManager::ExportTemplateManager() {
 	set_hide_on_ok(false);
 	set_ok_button_text(TTR("Close"));
 
+	EDITOR_DEF_BASIC("export/template_trusted_public_keys", Vector<String>());
+
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 
@@ -1169,11 +1369,56 @@ ExportTemplateManager::ExportTemplateManager() {
 	install_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 	install_file_dialog->set_current_dir(EDITOR_DEF("_export_template_download_directory", ""));
 	install_file_dialog->add_filter("*.tpz", TTR("Godot Export Templates"));
-	install_file_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_install_file_selected).bind(false));
+	install_file_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_verify_and_install_file_selected).bind(false, false), CONNECT_DEFERRED);
 	add_child(install_file_dialog);
 
 	hide_dialog_accept = memnew(AcceptDialog);
 	hide_dialog_accept->set_text(TTR("The templates will continue to download.\nYou may experience a short editor freeze when they finish."));
 	add_child(hide_dialog_accept);
 	hide_dialog_accept->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_hide_dialog));
+
+	verification_dialog_accept = memnew(AcceptDialog);
+	verification_dialog_accept->add_cancel_button();
+	verification_dialog_accept->set_title(TTR("Unsigned Export Templates File"));
+	verification_dialog_accept->set_ok_button_text(TTR("Install Anyway"));
+	add_child(verification_dialog_accept);
+	verification_dialog_accept->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_install_continue));
+	verification_dialog_accept->connect(SNAME("canceled"), callable_mp(this, &ExportTemplateManager::_install_cancel));
+
+	VBoxContainer *verification_accept_message_vbox = memnew(VBoxContainer);
+	verification_dialog_accept->add_child(verification_accept_message_vbox);
+
+	verification_accept_message_title = memnew(Label);
+	verification_accept_message_title->set_text(TTR("Can't validate the export templates file, templates file is not signed."));
+	verification_accept_message_title->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	verification_accept_message_title->set_theme_type_variation("HeaderSmall");
+	verification_accept_message_vbox->add_child(verification_accept_message_title);
+
+	verification_accept_message_vbox->add_spacer();
+
+	Label *verification_accept_message_label = memnew(Label);
+	verification_accept_message_label->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	verification_accept_message_label->set_text(TTR("Installing this export templates file might put your computer at risk."));
+	verification_accept_message_vbox->add_child(verification_accept_message_label);
+
+	verification_dialog_fail = memnew(AcceptDialog);
+	verification_dialog_fail->set_title(TTR("Export Templates File Verification Failed"));
+	add_child(verification_dialog_fail);
+
+	VBoxContainer *verification_fail_message_vbox = memnew(VBoxContainer);
+	verification_dialog_fail->add_child(verification_fail_message_vbox);
+
+	verification_fail_message_title = memnew(Label);
+	verification_fail_message_title->set_text(TTR("Can't install the export templates file, templates file damaged or has invalid signature."));
+	verification_fail_message_title->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	verification_fail_message_title->set_theme_type_variation("HeaderSmall");
+	verification_fail_message_vbox->add_child(verification_fail_message_title);
+
+	verification_fail_message_vbox->add_spacer();
+
+	verification_fail_message_label = memnew(RichTextLabel);
+	verification_fail_message_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	verification_fail_message_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	verification_fail_message_label->set_custom_minimum_size(Size2(0, 200) * EditorScale::get_scale());
+	verification_fail_message_vbox->add_child(verification_fail_message_label);
 }
