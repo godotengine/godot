@@ -646,9 +646,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 			if (root_path) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(track)));
 				if (ap) {
-					List<StringName> anims;
-					ap->get_animation_list(&anims);
-					for (const StringName &E : anims) {
+					for (const StringName &E : ap->get_sorted_animation_list()) {
 						if (!animations.is_empty()) {
 							animations += ",";
 						}
@@ -1252,9 +1250,7 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 				if (root_path) {
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(first_track)));
 					if (ap) {
-						List<StringName> anims;
-						ap->get_animation_list(&anims);
-						for (const StringName &anim : anims) {
+						for (const StringName &anim : ap->get_sorted_animation_list()) {
 							if (!animations.is_empty()) {
 								animations += ",";
 							}
@@ -4255,10 +4251,8 @@ void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Anim
 					if (reset->track_get_path(i) == p_from_animation->track_get_path(p_track)) {
 						// Check if the reset track isn't used by other animations.
 						bool used = false;
-						List<StringName> animation_list;
-						player->get_animation_list(&animation_list);
 
-						for (const StringName &anim_name : animation_list) {
+						for (const StringName &anim_name : player->get_sorted_animation_list()) {
 							Ref<Animation> anim = player->get_animation(anim_name);
 							if (anim == p_from_animation || anim == reset) {
 								continue;
@@ -7638,9 +7632,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION_CONFIRM: {
 			if (cleanup_all->is_pressed()) {
-				List<StringName> names;
-				AnimationPlayerEditor::get_singleton()->get_player()->get_animation_list(&names);
-				for (const StringName &E : names) {
+				for (const StringName &E : AnimationPlayerEditor::get_singleton()->get_player()->get_sorted_animation_list()) {
 					_cleanup_animation(AnimationPlayerEditor::get_singleton()->get_player()->get_animation(E));
 				}
 			} else {
