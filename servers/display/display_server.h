@@ -68,6 +68,14 @@ public:
 		WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
 	};
 
+	enum ProgressState {
+		PROGRESS_STATE_NOPROGRESS,
+		PROGRESS_STATE_INDETERMINATE,
+		PROGRESS_STATE_NORMAL,
+		PROGRESS_STATE_ERROR,
+		PROGRESS_STATE_PAUSED,
+	};
+
 	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
 	// project setting hint.
 	enum VSyncMode {
@@ -510,6 +518,8 @@ public:
 	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual void window_set_taskbar_progress_value(float p_value, WindowID p_window = MAIN_WINDOW_ID) {}
+	virtual void window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window = MAIN_WINDOW_ID) {}
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
@@ -1018,3 +1028,4 @@ VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
 VARIANT_ENUM_CAST(DisplayServer::FileDialogMode)
+VARIANT_ENUM_CAST(DisplayServer::ProgressState)

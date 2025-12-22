@@ -2466,6 +2466,27 @@
 				[b]Note:[/b] It's recommended to change this value using [member Window.size] instead.
 			</description>
 		</method>
+		<method name="window_set_taskbar_progress_state">
+			<return type="void" />
+			<param index="0" name="state" type="int" enum="DisplayServer.ProgressState" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the type and state of the progress bar on the taskbar/dock icon of the window specified by [param window_id]. See [enum ProgressState] for possible values and how each mode behaves.
+				[b]Note:[/b] This method is implemented only on Windows and macOS.
+				[b]Note:[/b] On macOS, the progress bar is displayed only for the main window.
+			</description>
+		</method>
+		<method name="window_set_taskbar_progress_value">
+			<return type="void" />
+			<param index="0" name="value" type="float" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Creates a progress bar on taskbar/dock icon of the window specified by [param window_id] if it does not exist, sets the progress of the icon.
+				[param value] acts as a percentage relative, ranges from [code]0.0[/code] (lowest) to [code]1.0[/code] (highest).
+				[b]Note:[/b] This method is implemented only on Windows and macOS.
+				[b]Note:[/b] On macOS, the progress bar is displayed only for the main window.
+			</description>
+		</method>
 		<method name="window_set_title">
 			<return type="void" />
 			<param index="0" name="title" type="String" />
@@ -3110,6 +3131,24 @@
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
 			[b]On Linux (Wayland):[/b] Equivalent to [constant WINDOW_MODE_FULLSCREEN].
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+		</constant>
+		<constant name="PROGRESS_STATE_NOPROGRESS" value="0" enum="ProgressState">
+			Stops displaying progress and returns the button to its normal state.
+		</constant>
+		<constant name="PROGRESS_STATE_INDETERMINATE" value="1" enum="ProgressState">
+			The progress indicator shows an indeterminate progress.
+			On Windows, the progress indicator does not grow in size, but cycles repeatedly along the length of the taskbar button by default.
+		</constant>
+		<constant name="PROGRESS_STATE_NORMAL" value="2" enum="ProgressState">
+			The progress indicator shows progress normally.
+		</constant>
+		<constant name="PROGRESS_STATE_ERROR" value="3" enum="ProgressState">
+			The progress indicator shows that an error has occurred.
+			On Windows, the progress indicator turns red by default to show that an error has occurred in one of the windows that is broadcasting progress.
+		</constant>
+		<constant name="PROGRESS_STATE_PAUSED" value="4" enum="ProgressState">
+			The progress indicator shows it was paused.
+			On Windows, the progress indicator turns yellow by default to show that progress is currently stopped in one of the windows but can be resumed by the user.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
 			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.

@@ -588,6 +588,20 @@ void Window::request_attention() {
 	}
 }
 
+void Window::set_taskbar_progress_value(float p_value) {
+	ERR_MAIN_THREAD_GUARD;
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_taskbar_progress_value(p_value, window_id);
+	}
+}
+
+void Window::set_taskbar_progress_state(DisplayServer::ProgressState p_state) {
+	ERR_MAIN_THREAD_GUARD;
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_taskbar_progress_state(p_state);
+	}
+}
+
 #ifndef DISABLE_DEPRECATED
 void Window::move_to_foreground() {
 	WARN_DEPRECATED_MSG(R"*(The "move_to_foreground()" method is deprecated, use "grab_focus()" instead.)*");
@@ -3226,6 +3240,8 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request_attention"), &Window::request_attention);
 
+	ClassDB::bind_method(D_METHOD("set_taskbar_progress_value", "value"), &Window::set_taskbar_progress_value);
+	ClassDB::bind_method(D_METHOD("set_taskbar_progress_state", "state"), &Window::set_taskbar_progress_state);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("move_to_foreground"), &Window::move_to_foreground);
 #endif // DISABLE_DEPRECATED

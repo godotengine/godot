@@ -2811,6 +2811,63 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	FlashWindowEx(&info);
 }
 
+void DisplayServerWindows::window_set_taskbar_progress_value(float p_value, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	const WindowData &wd = windows[p_window];
+
+	if (taskbar == nullptr) {
+		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+			taskbar = nullptr;
+			return;
+		} else {
+			taskbar->HrInit();
+		}
+	}
+
+	taskbar->SetProgressValue(wd.hWnd, Math::round(p_value * 100000), 100000);
+}
+
+void DisplayServerWindows::window_set_taskbar_progress_state(ProgressState p_state, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	const WindowData &wd = windows[p_window];
+
+	if (taskbar == nullptr) {
+		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+			taskbar = nullptr;
+			return;
+		} else {
+			taskbar->HrInit();
+		}
+	}
+
+	TBPFLAG tbpf = TBPF_NOPROGRESS;
+	switch (p_state) {
+		case PROGRESS_STATE_NOPROGRESS:
+			tbpf = TBPF_NOPROGRESS;
+			break;
+		case PROGRESS_STATE_INDETERMINATE:
+			tbpf = TBPF_INDETERMINATE;
+			break;
+		case PROGRESS_STATE_ERROR:
+			tbpf = TBPF_ERROR;
+			break;
+		case PROGRESS_STATE_PAUSED:
+			tbpf = TBPF_PAUSED;
+			break;
+		case PROGRESS_STATE_NORMAL:
+			tbpf = TBPF_NORMAL;
+			break;
+		default:
+			break;
+	}
+
+	taskbar->SetProgressState(wd.hWnd, tbpf);
+}
+
 void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
