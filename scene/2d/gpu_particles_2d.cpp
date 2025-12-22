@@ -234,7 +234,14 @@ void GPUParticles2D::_update_collision_size() {
 	real_t csize = collision_base_size;
 
 	if (texture.is_valid()) {
-		csize *= (texture->get_width() + texture->get_height()) / 4.0; //half size since its a radius
+		int twidth = texture->get_width();
+		int theight = texture->get_height();
+		Ref<CanvasItemMaterial> mat = get_material();
+		if (mat.is_valid() && mat->get_particles_animation()) {
+			twidth /= mat->get_particles_anim_h_frames();
+			theight /= mat->get_particles_anim_v_frames();
+		}
+		csize *= (twidth + theight) / 4.0; // half size since its a radius
 	}
 
 	RS::get_singleton()->particles_set_collision_base_size(particles, csize);
