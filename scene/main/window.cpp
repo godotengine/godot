@@ -288,6 +288,11 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = hint_string;
 	}
+
+	if (p_property.name == "title") {
+		p_property.hint = PROPERTY_HINT_PLACEHOLDER_TEXT;
+		p_property.hint_string = default_title;
+	}
 }
 
 //
@@ -301,11 +306,25 @@ Window *Window::get_from_id(DisplayServer::WindowID p_window_id) {
 
 void Window::set_title(const String &p_title) {
 	ERR_MAIN_THREAD_GUARD;
-
+	if (title == p_title) {
+		return;
+	}
 	title = p_title;
 	_update_displayed_title();
 
 	emit_signal("title_changed");
+}
+
+void Window::set_default_title(const String &p_title) {
+	ERR_MAIN_THREAD_GUARD;
+	if (default_title == p_title) {
+		return;
+	}
+	default_title = p_title;
+	if (title.is_empty()) {
+		_update_displayed_title();
+	}
+	notify_property_list_changed();
 }
 
 String Window::get_title() const {
@@ -672,8 +691,6 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
 	DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
-
-	_update_window_size();
 
 	if (transient_parent) {
 		for (const Window *E : transient_children) {
@@ -3154,7 +3171,11 @@ void Window::_mouse_leave_viewport() {
 }
 
 void Window::_update_displayed_title() {
-	displayed_title = atr(title);
+	String title_text = title;
+	if (title_text.is_empty()) {
+		title_text = default_title;
+	}
+	displayed_title = atr(title_text);
 
 #ifdef DEBUG_ENABLED
 	if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
