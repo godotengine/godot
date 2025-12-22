@@ -300,7 +300,24 @@ int test_main(int argc, char *argv[]) {
 		delete[] doctest_args;
 	}
 
-	return test_context.run();
+	// Catch any error messages that aren't properly suppressed, the content doesn't matter.
+	// Consider the operation a failure if any were leaked.
+	int err_leaks = 0;
+	ErrorHandlerList err_handler;
+	err_handler.userdata = &err_leaks;
+	err_handler.errfunc = [](void *p_self, const char *, const char *, int, const char *, const char *, bool, ErrorHandlerType) {
+		if (CoreGlobals::print_error_enabled) {
+			(*static_cast<int *>(p_self))++;
+		}
+	};
+	add_error_handler(&err_handler);
+	const int ret = test_context.run();
+	remove_error_handler(&err_handler);
+
+	CoreGlobals::print_error_enabled = true;
+	ERR_FAIL_COND_V_MSG(err_leaks, err_leaks, "Error/warning messages leaked: " + itos(err_leaks) + "! If any errors or warnings were expected, please ensure their output is properly suppressed by surrounding them with `ERR_PRINT_OFF` and `ERR_PRINT_ON`.");
+
+	return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
