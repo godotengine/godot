@@ -573,6 +573,48 @@ bool Window::is_popup() const {
 	return get_flag(Window::FLAG_POPUP) || get_flag(Window::FLAG_NO_FOCUS);
 }
 
+bool Window::is_hdr_output_supported() const {
+	ERR_READ_THREAD_GUARD_V(false);
+
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_is_hdr_output_supported(window_id);
+	}
+
+	return false;
+}
+
+void Window::set_hdr_output_requested(bool p_requested) {
+	ERR_MAIN_THREAD_GUARD;
+
+	hdr_output_requested = p_requested;
+
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_request_hdr_output(hdr_output_requested, window_id);
+	}
+
+	_update_viewport_for_hdr_output();
+}
+
+bool Window::is_hdr_output_requested() const {
+	ERR_READ_THREAD_GUARD_V(false);
+
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		hdr_output_requested = DisplayServer::get_singleton()->window_is_hdr_output_requested(window_id);
+	}
+
+	return hdr_output_requested;
+}
+
+float Window::get_output_max_linear_value() const {
+	ERR_READ_THREAD_GUARD_V(1.0f);
+
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_get_output_max_linear_value(window_id);
+	}
+
+	return 1.0f;
+}
+
 bool Window::is_maximize_allowed() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -672,6 +714,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
 	DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+	DisplayServer::get_singleton()->window_request_hdr_output(hdr_output_requested, window_id);
 
 	_update_window_size();
 
@@ -954,6 +997,13 @@ void Window::set_visible(bool p_visible) {
 			}
 			embedder->_sub_window_register(this);
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+
+			// Make sure the sub-window shares the HDR output settings of the embedder.
+			Window *containing_window = embedder->get_window();
+			if (containing_window) {
+				hdr_output_requested = containing_window->is_hdr_output_requested();
+				_update_viewport_for_hdr_output();
+			}
 		} else {
 			embedder->_sub_window_remove(this);
 			embedder = nullptr;
@@ -1541,6 +1591,11 @@ void Window::_notification(int p_what) {
 						size = DisplayServer::get_singleton()->window_get_size(window_id);
 						focused = DisplayServer::get_singleton()->window_is_focused(window_id);
 					}
+					// Update HDR settings to reflect the current state of the window.
+					{
+						hdr_output_requested = DisplayServer::get_singleton()->window_is_hdr_output_requested(window_id);
+						_update_viewport_for_hdr_output();
+					}
 					_update_window_size(); // Inform DisplayServer of minimum and maximum size.
 					_update_viewport_size(); // Then feed back to the viewport.
 					_update_window_callbacks();
@@ -1815,6 +1870,16 @@ void Window::child_controls_changed() {
 
 	updating_child_controls = true;
 	callable_mp(this, &Window::_update_child_controls).call_deferred();
+}
+
+void Window::_update_viewport_for_hdr_output() {
+	// If HDR output is enabled, we need to enable HDR 2D rendering as well.
+	// This is required to get the correct dynamic range for the final output.
+	// We only need to do this if the viewport is not already set up for HDR 2D rendering.
+
+	if (!is_using_hdr_2d()) {
+		RS::get_singleton()->viewport_set_use_hdr_2d(viewport, hdr_output_requested);
+	}
 }
 
 void Window::_update_child_controls() {
@@ -3222,6 +3287,11 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enabled"), &Window::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &Window::get_flag);
 
+	ClassDB::bind_method(D_METHOD("is_hdr_output_supported"), &Window::is_hdr_output_supported);
+	ClassDB::bind_method(D_METHOD("set_hdr_output_requested", "requested"), &Window::set_hdr_output_requested);
+	ClassDB::bind_method(D_METHOD("is_hdr_output_requested"), &Window::is_hdr_output_requested);
+	ClassDB::bind_method(D_METHOD("get_output_max_linear_value"), &Window::get_output_max_linear_value);
+
 	ClassDB::bind_method(D_METHOD("is_maximize_allowed"), &Window::is_maximize_allowed);
 
 	ClassDB::bind_method(D_METHOD("request_attention"), &Window::request_attention);
@@ -3419,6 +3489,9 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_stretch", PROPERTY_HINT_ENUM, "Fractional,Integer"), "set_content_scale_stretch", "get_content_scale_stretch");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
+
+	ADD_GROUP("HDR Output", "hdr_output_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr_output_requested"), "set_hdr_output_requested", "is_hdr_output_requested");
 
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_auto_translate", "is_auto_translating");

@@ -2251,7 +2251,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
-void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
+void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, float p_window_output_max_value, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 	RENDER_TIMESTAMP("Setup 3D Scene");
@@ -2387,7 +2387,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 		tonemap_ubo.exposure = environment_get_exposure(render_data.environment);
 		tonemap_ubo.tonemapper = int32_t(environment_get_tone_mapper(render_data.environment));
-		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(render_data.environment, false);
+		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(render_data.environment, false, 1.0f);
 		tonemap_ubo.tonemapper_params[0] = params.tonemapper_params[0];
 		tonemap_ubo.tonemapper_params[1] = params.tonemapper_params[1];
 		tonemap_ubo.tonemapper_params[2] = params.tonemapper_params[2];
@@ -2856,7 +2856,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		glow_hdr_bleed_threshold = environment_get_glow_hdr_bleed_threshold(p_render_data->environment);
 		glow_hdr_bleed_scale = environment_get_glow_hdr_bleed_scale(p_render_data->environment);
 		glow_hdr_luminance_cap = environment_get_glow_hdr_luminance_cap(p_render_data->environment);
-		srgb_white = environment_get_white(p_render_data->environment, false);
+		srgb_white = environment_get_white(p_render_data->environment, false, 1.0f);
 	}
 
 	if (glow_enabled) {

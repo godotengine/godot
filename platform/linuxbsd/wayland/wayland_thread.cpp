@@ -616,6 +616,16 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		registry->wp_viewporter_name = name;
 	}
 
+	if (strcmp(interface, wp_color_manager_v1_interface.name) == 0) {
+		registry->wp_color_manager = (struct wp_color_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_color_manager_v1_interface, 1);
+		registry->wp_color_manager_name = name;
+		wl_proxy_tag_godot((struct wl_proxy *)registry->wp_color_manager);
+
+		WaylandThread::ColorManagementState *color_state = memnew(WaylandThread::ColorManagementState);
+		wp_color_manager_v1_add_listener(registry->wp_color_manager, &wp_color_manager_listener, color_state);
+		return;
+	}
+
 	if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
 		registry->wp_cursor_shape_manager = (struct wp_cursor_shape_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_cursor_shape_manager_v1_interface, 1);
 		registry->wp_cursor_shape_manager_name = name;
@@ -839,6 +849,32 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		registry->wp_viewporter_name = 0;
 
 		return;
+	}
+
+	if (name == registry->wp_color_manager_name) {
+		for (KeyValue<DisplayServer::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
+			WindowState ws = pair.value;
+
+			if (ws.wp_color_management_surface) {
+				wp_color_management_surface_v1_destroy(ws.wp_color_management_surface);
+				ws.wp_color_management_surface = nullptr;
+			}
+
+			if (ws.wp_color_management_surface_feedback) {
+				wp_color_management_surface_feedback_v1_destroy(ws.wp_color_management_surface_feedback);
+				ws.wp_color_management_surface_feedback = nullptr;
+			}
+		}
+
+		if (registry->wp_color_manager) {
+			ColorManagementState *color_state = wp_color_manager_get_state(registry->wp_color_manager);
+			memdelete(color_state);
+
+			wp_color_manager_v1_destroy(registry->wp_color_manager);
+			registry->wp_color_manager = nullptr;
+		}
+
+		registry->wp_color_manager_name = 0;
 	}
 
 	if (name == registry->wp_cursor_shape_manager_name) {
@@ -2488,6 +2524,125 @@ void WaylandThread::_wl_data_source_on_dnd_finished(void *data, struct wl_data_s
 void WaylandThread::_wl_data_source_on_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action) {
 }
 
+void WaylandThread::_wp_color_manager_on_supported_intent(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t render_intent) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_render_intents |= 1 << render_intent;
+}
+
+void WaylandThread::_wp_color_manager_on_supported_feature(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t feature) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_render_feature |= 1 << feature;
+}
+
+void WaylandThread::_wp_color_manager_on_supported_tf_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t tf) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_transfer_function |= 1 << tf;
+}
+
+void WaylandThread::_wp_color_manager_on_supported_primaries_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t primaries) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_primaries |= 1 << primaries;
+}
+
+void WaylandThread::_wp_color_manager_on_done(void *data, struct wp_color_manager_v1 *wp_color_manager_v1) {
+}
+
+void WaylandThread::_wp_color_management_surface_feedback_on_preferred_changed(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity) {
+	_wp_color_management_surface_feedback_on_preferred_changed2(data, wp_color_management_surface_feedback_v1, 0, identity);
+}
+
+void WaylandThread::_wp_color_management_surface_feedback_on_preferred_changed2(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity_hi, uint32_t identity_lo) {
+	struct wp_image_description_v1 *image_description = wp_color_management_surface_feedback_v1_get_preferred_parametric(wp_color_management_surface_feedback_v1);
+
+	wp_image_description_v1_add_listener(image_description, &wp_image_description_listener, data);
+}
+
+void WaylandThread::_wp_image_description_on_failed(void *data, struct wp_image_description_v1 *image_descrptor, uint32_t cause, const char *msg) {
+	WARN_PRINT(msg);
+}
+
+void WaylandThread::_wp_image_description_on_ready(void *data, struct wp_image_description_v1 *image_descriptor, uint32_t identity) {
+	_wp_image_description_on_ready2(data, image_descriptor, 0, identity);
+}
+
+void WaylandThread::_wp_image_description_on_ready2(void *data, struct wp_image_description_v1 *image_descriptor, uint32_t identity_hi, uint32_t identity_lo) {
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	struct wp_image_description_info_v1 *image_info = wp_image_description_v1_get_information(image_descriptor);
+	if (image_info != nullptr) {
+		ColorProfileMessage *msg = memnew(ColorProfileMessage);
+		msg->id = ws->id;
+		msg->wayland_thread = ws->wayland_thread;
+
+		wp_image_description_info_v1_add_listener(image_info, &wp_image_description_info_listener, msg);
+		wp_image_description_v1_destroy(image_descriptor);
+	}
+}
+
+void WaylandThread::_wp_image_description_info_on_done(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->wayland_thread->push_message(msg);
+}
+
+void WaylandThread::_wp_image_description_info_on_icc_file(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t icc, uint32_t icc_size) {
+	::close(icc);
+}
+
+void WaylandThread::_wp_image_description_info_on_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) {
+}
+
+void WaylandThread::_wp_image_description_info_on_primaries_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t primaries) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.named_primary = primaries;
+}
+
+void WaylandThread::_wp_image_description_info_on_tf_power(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t eexp) {
+}
+
+void WaylandThread::_wp_image_description_info_on_tf_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t tf) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.named_transfer_function = tf;
+}
+
+void WaylandThread::_wp_image_description_info_on_luminances(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum, uint32_t reference_lum) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.reference_luminance = reference_lum;
+}
+
+void WaylandThread::_wp_image_description_info_on_target_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) {
+}
+
+void WaylandThread::_wp_image_description_info_on_target_luminance(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.target_min_luminance = static_cast<float>(min_lum) / 10000; // The uint32 is multiplied by 10000 for precision
+	msg->color_profile.target_max_luminance = max_lum;
+}
+
+void WaylandThread::_wp_image_description_info_on_target_max_cll(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_cll) {
+}
+
+void WaylandThread::_wp_image_description_info_on_target_max_fall(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_fall) {
+}
+
 void WaylandThread::_wp_fractional_scale_on_preferred_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale) {
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
@@ -3383,6 +3538,14 @@ WaylandThread::OfferState *WaylandThread::wp_primary_selection_offer_get_offer_s
 	return nullptr;
 }
 
+WaylandThread::ColorManagementState *WaylandThread::wp_color_manager_get_state(wp_color_manager_v1 *p_color_manager) {
+	if (p_color_manager && wl_proxy_is_godot((wl_proxy *)p_color_manager)) {
+		return (ColorManagementState *)wp_color_manager_v1_get_user_data(p_color_manager);
+	}
+
+	return nullptr;
+}
+
 WaylandThread::EmbeddingCompositorState *WaylandThread::godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor) {
 	// NOTE: No need for tag check as it's a "fake" interface - nothing else exposes it.
 	if (p_compositor) {
@@ -3762,6 +3925,14 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, const Siz
 		}
 	}
 
+	if (supports_hdr()) {
+		ws.wp_color_management_surface_feedback = wp_color_manager_v1_get_surface_feedback(registry.wp_color_manager, ws.wl_surface);
+		wp_color_management_surface_feedback_v1_add_listener(ws.wp_color_management_surface_feedback, &wp_color_management_surface_feedback_listener, &ws);
+
+		//NOTE: requires vulkan to use the VK_COLOR_SPACE_PASSTHROUGH_EXT colorspace to not raise protocol errors
+		ws.wp_color_management_surface = wp_color_manager_v1_get_surface(registry.wp_color_manager, ws.wl_surface);
+	}
+
 	bool decorated = false;
 
 #ifdef LIBDECOR_ENABLED
@@ -3933,6 +4104,14 @@ void WaylandThread::window_destroy(DisplayServer::WindowID p_window_id) {
 
 	if (ws.wp_fractional_scale) {
 		wp_fractional_scale_v1_destroy(ws.wp_fractional_scale);
+	}
+
+	if (ws.wp_color_management_surface) {
+		wp_color_management_surface_v1_destroy(ws.wp_color_management_surface);
+	}
+
+	if (ws.wp_color_management_surface_feedback) {
+		wp_color_management_surface_feedback_v1_destroy(ws.wp_color_management_surface_feedback);
 	}
 
 	if (ws.wp_viewport) {
@@ -4481,6 +4660,34 @@ bool WaylandThread::window_get_idle_inhibition(DisplayServer::WindowID p_window_
 	const WindowState &ws = windows[p_window_id];
 
 	return ws.wp_idle_inhibitor != nullptr;
+}
+
+void WaylandThread::window_set_color_profile(DisplayServer::WindowID p_window_id, ColorProfile p_profile) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	const WindowState &ws = windows[p_window_id];
+
+	if (!ws.wp_color_management_surface) {
+		return;
+	}
+
+	ColorManagementState *cms = wp_color_manager_get_state(registry.wp_color_manager);
+
+	struct wp_image_description_creator_params_v1 *builder = wp_color_manager_v1_create_parametric_creator(registry.wp_color_manager);
+	wp_image_description_creator_params_v1_set_primaries_named(builder, p_profile.named_primary);
+	wp_image_description_creator_params_v1_set_tf_named(builder, p_profile.named_transfer_function);
+
+	if ((cms->supported_render_feature & WP_COLOR_MANAGER_V1_FEATURE_SET_LUMINANCES) > 0) {
+		if (p_profile.named_transfer_function == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR) {
+			uint32_t min_luminance = static_cast<uint32_t>(p_profile.target_min_luminance * 10000);
+			wp_image_description_creator_params_v1_set_luminances(builder, min_luminance, p_profile.target_max_luminance, p_profile.reference_luminance);
+		} else {
+			wp_image_description_creator_params_v1_set_luminances(builder, 0.05, 80, 80);
+		}
+	}
+
+	struct wp_image_description_v1 *image_desc = wp_image_description_creator_params_v1_create(builder);
+	wp_color_management_surface_v1_set_image_description(ws.wp_color_management_surface, image_desc, WP_COLOR_MANAGER_V1_RENDER_INTENT_PERCEPTUAL);
+	wp_image_description_v1_destroy(image_desc);
 }
 
 WaylandThread::ScreenData WaylandThread::screen_get_data(int p_screen) const {
@@ -5149,6 +5356,31 @@ void WaylandThread::primary_set_text(const String &p_text) {
 	wl_display_roundtrip(wl_display);
 }
 
+bool WaylandThread::supports_hdr() const {
+	ColorManagementState *color_state = wp_color_manager_get_state(registry.wp_color_manager);
+	if (!color_state) {
+		return false;
+	}
+
+	// We require parametric profiles until we can support reading ICC files.
+	if ((color_state->supported_render_feature & (1 << WP_COLOR_MANAGER_V1_FEATURE_PARAMETRIC)) == 0) {
+		return false;
+	}
+
+	// We require the compositor to support extended linear sRGB.
+	// sRGB primaries support is assumed.
+	return color_state->supported_transfer_function & (1 << WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR);
+}
+
+bool WaylandThread::supports_compound_2_4() const {
+	ColorManagementState *color_state = wp_color_manager_get_state(registry.wp_color_manager);
+	if (!color_state) {
+		return false;
+	}
+
+	return color_state->supported_transfer_function & (1 << WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_COMPOUND_POWER_2_4);
+}
+
 void WaylandThread::commit_surfaces() {
 	for (KeyValue<DisplayServer::WindowID, WindowState> &pair : windows) {
 		wl_surface_commit(pair.value.wl_surface);
@@ -5499,6 +5731,10 @@ void WaylandThread::destroy() {
 
 	if (registry.xdg_decoration_manager) {
 		zxdg_decoration_manager_v1_destroy(registry.xdg_decoration_manager);
+	}
+
+	if (registry.wp_color_manager) {
+		wp_color_manager_v1_destroy(registry.wp_color_manager);
 	}
 
 	if (registry.wp_cursor_shape_manager) {

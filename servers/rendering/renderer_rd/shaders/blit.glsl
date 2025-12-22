@@ -4,23 +4,28 @@
 
 #VERSION_DEFINES
 
-layout(push_constant, std140) uniform Pos {
+layout(push_constant, std430) uniform Pos {
 	vec4 src_rect;
 	vec4 dst_rect;
 
 	float rotation_sin;
 	float rotation_cos;
-
 	vec2 eye_center;
+
 	float k1;
 	float k2;
-
 	float upscale;
 	float aspect_ratio;
+
 	uint layer;
-	bool convert_to_srgb;
+	bool source_is_srgb;
+	bool enforce_gamma;
 	bool use_debanding;
-	float pad;
+	uint target_color_space;
+
+	float reference_multiplier;
+	float output_max_value;
+	uint pad[1];
 }
 data;
 
@@ -45,23 +50,28 @@ void main() {
 
 #VERSION_DEFINES
 
-layout(push_constant, std140) uniform Pos {
+layout(push_constant, std430) uniform Pos {
 	vec4 src_rect;
 	vec4 dst_rect;
 
 	float rotation_sin;
 	float rotation_cos;
-
 	vec2 eye_center;
+
 	float k1;
 	float k2;
-
 	float upscale;
 	float aspect_ratio;
+
 	uint layer;
-	bool convert_to_srgb;
+	bool source_is_srgb;
+	bool enforce_gamma;
 	bool use_debanding;
-	float pad;
+	uint target_color_space;
+
+	float reference_multiplier;
+	float output_max_value;
+	uint pad[1];
 }
 data;
 
@@ -74,6 +84,18 @@ layout(binding = 0) uniform sampler2DArray src_rt;
 #else
 layout(binding = 0) uniform sampler2D src_rt;
 #endif
+
+// Keep in sync with RenderingDeviceCommons::ColorSpace
+#define COLOR_SPACE_REC709_LINEAR 0
+#define COLOR_SPACE_REC709_NONLINEAR_SRGB 1
+
+vec3 gamma_to_linear(vec3 color) {
+	return pow(color.rgb, vec3(2.2f));
+}
+
+vec3 srgb_to_linear(vec3 color) {
+	return mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), lessThan(color.rgb, vec3(0.04045)));
+}
 
 vec3 linear_to_srgb(vec3 color) {
 	const vec3 a = vec3(0.055f);
@@ -133,19 +155,46 @@ void main() {
 	color = texture(src_rt, uv);
 #endif
 
-	if (data.convert_to_srgb) {
-		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
-
-		// Even if debanding was applied earlier in the rendering process, it must
-		// be reapplied after the linear_to_srgb floating point operations.
-		// When the linear_to_srgb operation was not performed, the source is
-		// already an 8-bit format and debanding cannot be effective. In this
-		// case, GPU driver rounding error can add noise so debanding should be
-		// skipped entirely.
-		if (data.use_debanding) {
-			color.rgb += screen_space_dither(gl_FragCoord.xy);
+	// Colorspace conversion for final blit
+	if (data.target_color_space == COLOR_SPACE_REC709_LINEAR) {
+		if (data.source_is_srgb == true) {
+			// sRGB -> linear conversion
+			color.rgb = srgb_to_linear(color.rgb);
 		}
 
-		color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
+		if (data.enforce_gamma) {
+			color.rgb = linear_to_srgb(color.rgb);
+			color.rgb = gamma_to_linear(color.rgb);
+		}
+
+		// Negative values may be interpreted as scRGB colors,
+		// so clip them to the intended Rec. 709 colors.
+		// Additionally, it is important that the game developer can trust that
+		// Window.output_max_linear_value is truly the max output value, even if
+		// the max luminance has been misconfigured by the player. This ensures that
+		// the resulting image will always be as the game developer expects when they
+		// use Window.output_max_linear_value and tonemapping functions will behave
+		// as expected.
+		color.rgb = clamp(color.rgb, vec3(0.0), vec3(data.output_max_value));
+
+		// Adjust brightness of SDR content to reference luminance
+		color.rgb *= data.reference_multiplier;
+	} else if (data.target_color_space == COLOR_SPACE_REC709_NONLINEAR_SRGB) {
+		// Negative values and values above 1.0 will be clipped by the target,
+		// so no need to clip them here.
+		if (data.source_is_srgb == false) {
+			// linear -> sRGB conversion
+			color.rgb = linear_to_srgb(color.rgb);
+
+			// Even if debanding was applied earlier in the rendering process, it must
+			// be reapplied after the linear_to_srgb floating point operations.
+			// When the linear_to_srgb operation was not performed, the source is
+			// already an 8-bit format and debanding cannot be effective. In this
+			// case, GPU driver rounding error can add noise so debanding should be
+			// skipped entirely.
+			if (data.use_debanding) {
+				color.rgb += screen_space_dither(gl_FragCoord.xy);
+			}
+		}
 	}
 }

@@ -101,6 +101,9 @@ class DisplayServerWayland : public DisplayServer {
 
 		DisplayServer::WindowMode mode = WINDOW_MODE_WINDOWED;
 
+		bool hdr_requested;
+		WaylandThread::ColorProfile color_profile;
+
 		Callable rect_changed_callback;
 		Callable window_event_callback;
 		Callable input_event_callback;
@@ -182,6 +185,8 @@ class DisplayServerWayland : public DisplayServer {
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
 	void _update_window_rect(const Rect2i &p_rect, WindowID p_window_id = MAIN_WINDOW_ID);
+
+	void _window_update_hdr_state(WindowData &p_window);
 
 	void try_suspend();
 
@@ -323,6 +328,22 @@ public:
 
 	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window) override;
+
+	virtual bool window_is_hdr_output_supported(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
+	virtual void window_request_hdr_output(const bool p_enabled, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_requested(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+	virtual bool window_is_hdr_output_enabled(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_reference_luminance(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_reference_luminance(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_max_luminance(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_max_luminance(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
+	virtual float window_get_output_max_linear_value(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;

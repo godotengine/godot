@@ -4463,6 +4463,17 @@ RenderingDevice::FramebufferFormatID RenderingDevice::screen_get_framebuffer_for
 	return const_cast<RenderingDevice *>(this)->framebuffer_format_create(screen_attachment);
 }
 
+RenderingDevice::ColorSpace RenderingDevice::screen_get_color_space(DisplayServer::WindowID p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), COLOR_SPACE_MAX, "Screen was never prepared.");
+
+	ColorSpace color_space = driver->swap_chain_get_color_space(it->value);
+	ERR_FAIL_COND_V_MSG(color_space == COLOR_SPACE_MAX, COLOR_SPACE_MAX, "Unknown color space.");
+	return color_space;
+}
+
 Error RenderingDevice::screen_free(DisplayServer::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
@@ -8296,6 +8307,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUPPORTS_METALFX_TEMPORAL);
 	BIND_ENUM_CONSTANT(SUPPORTS_BUFFER_DEVICE_ADDRESS);
 	BIND_ENUM_CONSTANT(SUPPORTS_IMAGE_ATOMIC_32_BIT);
+	BIND_ENUM_CONSTANT(SUPPORTS_HDR_OUTPUT);
 
 	BIND_ENUM_CONSTANT(LIMIT_MAX_BOUND_UNIFORM_SETS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS);
