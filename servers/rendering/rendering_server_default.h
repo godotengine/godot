@@ -450,6 +450,7 @@ public:
 	FUNCRIDSPLIT(directional_light)
 	FUNCRIDSPLIT(omni_light)
 	FUNCRIDSPLIT(spot_light)
+	FUNCRIDSPLIT(area_light)
 
 	FUNC2(light_set_color, RID, const Color &)
 	FUNC3(light_set_param, RID, LightParam, float)
@@ -468,6 +469,10 @@ public:
 	FUNC2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)
 	FUNC2(light_directional_set_sky_mode, RID, LightDirectionalSkyMode)
+
+	FUNC2(light_area_set_size, RID, const Vector2 &)
+	FUNC2(light_area_set_normalize_energy, RID, bool)
+	FUNC2(light_area_set_texture, RID, RID)
 
 	/* PROBE API */
 
@@ -937,6 +942,7 @@ public:
 	FUNC2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	FUNC3R(TypedArray<Image>, bake_render_uv2, RID, const TypedArray<RID> &, const Size2i &)
+	FUNC4R(PackedByteArray, bake_render_area_light_atlas, const TypedArray<RID> &, const TypedArray<Rect2> &, const Size2i &, int)
 
 	FUNC1(gi_set_use_half_resolution, bool)
 

@@ -98,6 +98,11 @@ private:
 
 	virtual void setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 
+	struct LTC {
+		RID lut1_texture;
+		RID lut2_texture;
+	} ltc;
+
 	/* Rendering */
 
 	enum PassMode {
@@ -222,7 +227,9 @@ private:
 			uint32_t reflection_probes[2]; // Packed reflection probes.
 			uint32_t omni_lights[2]; // Packed omni lights.
 			uint32_t spot_lights[2]; // Packed spot lights.
+			uint32_t area_lights[2]; // Packed area lights.
 			uint32_t decals[2]; // Packed spot lights.
+			uint32_t padding[2];
 #ifdef REAL_T_IS_DOUBLE
 			float model_precision[4];
 			float prev_model_precision[4];
@@ -549,6 +556,8 @@ protected:
 		RendererRD::ForwardID omni_lights[MAX_RDL_CULL];
 		uint32_t spot_light_count = 0;
 		RendererRD::ForwardID spot_lights[MAX_RDL_CULL];
+		uint32_t area_light_count = 0;
+		RendererRD::ForwardID area_lights[MAX_RDL_CULL];
 		uint32_t decals_count = 0;
 		RendererRD::ForwardID decals[MAX_RDL_CULL];
 

@@ -18,6 +18,15 @@
 		<link title="Optimization using Servers">$DOCS_URL/tutorials/performance/using_servers.html</link>
 	</tutorials>
 	<methods>
+		<method name="area_light_create">
+			<return type="RID" />
+			<description>
+				Creates a new area light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				To place in a scene, attach this area light to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent node is [AreaLight3D].
+			</description>
+		</method>
 		<method name="bake_render_uv2">
 			<return type="Image[]" />
 			<param index="0" name="base" type="RID" />
@@ -2098,6 +2107,22 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if our code is currently executing on the rendering thread.
+			</description>
+		</method>
+		<method name="light_area_set_normalize_energy">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Defines whether the energy of an [AreaLight3D] is normalized (divided) by its area. If set to [code]true[/code], changing the size does not affect the total energy output. Equivalent to [member AreaLight3D.area_normalize_energy].
+			</description>
+		</method>
+		<method name="light_area_set_size">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="size" type="Vector2" />
+			<description>
+				Sets the extents (width and height) in meters for this area light. Equivalent to [member AreaLight3D.area_size].
 			</description>
 		</method>
 		<method name="light_directional_set_blend_splits">
@@ -4846,6 +4871,9 @@
 		</constant>
 		<constant name="LIGHT_SPOT" value="2" enum="LightType">
 			Spot light (see [SpotLight3D]).
+		</constant>
+		<constant name="LIGHT_AREA" value="3" enum="LightType">
+			Area light (see [AreaLight3D]).
 		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy multiplier.

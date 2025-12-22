@@ -48,6 +48,9 @@ public:
 	virtual RID spot_light_allocate() = 0;
 	virtual void spot_light_initialize(RID p_rid) = 0;
 
+	virtual RID area_light_allocate() = 0;
+	virtual void area_light_initialize(RID p_rid) = 0;
+
 	virtual void light_free(RID p_rid) = 0;
 
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;
@@ -73,6 +76,13 @@ public:
 
 	virtual RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) = 0;
 	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) = 0;
+
+	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) = 0;
+	virtual Vector2 light_area_get_size(RID p_light) const = 0;
+	virtual void light_area_set_normalize_energy(RID p_light, bool p_enabled) = 0;
+	virtual bool light_area_get_normalize_energy(RID p_light) const = 0;
+	virtual void light_area_set_texture(RID p_light, RID p_texture) = 0;
+	virtual RID light_area_get_texture(RID p_light) const = 0;
 
 	virtual bool light_has_shadow(RID p_light) const = 0;
 

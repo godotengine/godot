@@ -752,6 +752,14 @@
 			Draws the internal resolution buffer of the scene in linear colorspace before tonemapping or post-processing is applied.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_AREA_LIGHTS" value="27" enum="DebugDraw">
+			Draws the cluster used by [AreaLight3D] nodes to optimize light rendering.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
+		</constant>
+		<constant name="DEBUG_DRAW_AREA_LIGHT_ATLAS" value="28" enum="DebugDraw">
+			Draws the atlas used by [AreaLight3D] nodes in the upper left quadrant of the [Viewport].
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering method.
+		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>

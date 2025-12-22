@@ -108,6 +108,10 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
 
+	/* AREA LIGHT ATLAS API */
+	virtual void texture_add_to_area_light_atlas(RID p_texture) = 0;
+	virtual void texture_remove_from_area_light_atlas(RID p_texture) = 0;
+
 	/* Decal API */
 	virtual RID decal_allocate() = 0;
 	virtual void decal_initialize(RID p_rid) = 0;

@@ -52,6 +52,26 @@ real_t Light3D::get_param(Param p_param) const {
 	return param[p_param];
 }
 
+void Light3D::set_area_size(const Vector2 &p_size) {
+	area_size = p_size.maxf(0.0f);
+	RS::get_singleton()->light_area_set_size(light, area_size);
+
+	update_gizmos();
+}
+
+Vector2 Light3D::get_area_size() const {
+	return area_size;
+}
+
+void Light3D::set_area_normalize_energy(bool p_enabled) {
+	area_normalize_energy = p_enabled;
+	RS::get_singleton()->light_area_set_normalize_energy(light, p_enabled);
+}
+
+bool Light3D::is_area_normalizing_energy() const {
+	return area_normalize_energy;
+}
+
 void Light3D::set_shadow(bool p_enable) {
 	shadow = p_enable;
 	RS::get_singleton()->light_set_shadow(light, p_enable);
@@ -172,6 +192,13 @@ AABB Light3D::get_aabb() const {
 
 		real_t size = Math::sin(cone_angle_rad) * cone_slant_height;
 		return AABB(Vector3(-size, -size, -cone_slant_height), Vector3(2 * size, 2 * size, cone_slant_height));
+	} else if (type == RenderingServer::LIGHT_AREA) {
+		float len = param[PARAM_RANGE];
+
+		float width = area_size.x / 2.0 + len;
+		float height = area_size.y / 2.0 + len;
+
+		return AABB(-Vector3(width, height, 0), Vector3(width * 2, height * 2, -len));
 	}
 
 	return AABB();
@@ -219,6 +246,31 @@ void Light3D::set_projector(const Ref<Texture2D> &p_texture) {
 
 Ref<Texture2D> Light3D::get_projector() const {
 	return projector;
+}
+
+void Light3D::set_area_texture(const Ref<Texture2D> &p_texture) {
+	area_texture = p_texture;
+	RID tex_id = area_texture.is_valid() ? area_texture->get_rid() : RID();
+
+#ifdef DEBUG_ENABLED
+	if (p_texture.is_valid() &&
+			(p_texture->is_class("AnimatedTexture") ||
+					p_texture->is_class("AtlasTexture") ||
+					p_texture->is_class("CameraTexture") ||
+					p_texture->is_class("CanvasTexture") ||
+					p_texture->is_class("MeshTexture") ||
+					p_texture->is_class("Texture2DRD") ||
+					p_texture->is_class("ViewportTexture"))) {
+		WARN_PRINT(vformat("%s cannot be used as a Light3D projector texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
+	}
+#endif
+
+	RS::get_singleton()->light_area_set_texture(light, tex_id);
+	update_configuration_warnings();
+}
+
+Ref<Texture2D> Light3D::get_area_texture() const {
+	return area_texture;
 }
 
 void Light3D::owner_changed_notify() {
@@ -377,9 +429,18 @@ void Light3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_projector", "projector"), &Light3D::set_projector);
 	ClassDB::bind_method(D_METHOD("get_projector"), &Light3D::get_projector);
 
+	ClassDB::bind_method(D_METHOD("set_area_texture", "texture"), &Light3D::set_area_texture);
+	ClassDB::bind_method(D_METHOD("get_area_texture"), &Light3D::get_area_texture);
+
 	ClassDB::bind_method(D_METHOD("set_temperature", "temperature"), &Light3D::set_temperature);
 	ClassDB::bind_method(D_METHOD("get_temperature"), &Light3D::get_temperature);
 	ClassDB::bind_method(D_METHOD("get_correlated_color"), &Light3D::get_correlated_color);
+
+	ClassDB::bind_method(D_METHOD("set_area_size", "area_size"), &AreaLight3D::set_area_size);
+	ClassDB::bind_method(D_METHOD("get_area_size"), &AreaLight3D::get_area_size);
+
+	ClassDB::bind_method(D_METHOD("set_area_normalize_energy", "enable"), &AreaLight3D::set_area_normalize_energy);
+	ClassDB::bind_method(D_METHOD("is_area_normalizing_energy"), &AreaLight3D::is_area_normalizing_energy);
 
 	ADD_GROUP("Light", "light_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lumens", PROPERTY_HINT_RANGE, "0,100000.0,0.01,or_greater,suffix:lm"), "set_param", "get_param", PARAM_INTENSITY);
@@ -459,6 +520,9 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 		case RS::LIGHT_SPOT:
 			light = RenderingServer::get_singleton()->spot_light_create();
 			break;
+		case RS::LIGHT_AREA:
+			light = RenderingServer::get_singleton()->area_light_create();
+			break;
 		default: {
 		};
 	}
@@ -479,6 +543,8 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_ATTENUATION, 1);
 	set_param(PARAM_SPOT_ANGLE, 45);
 	set_param(PARAM_SPOT_ATTENUATION, 1);
+	set_area_size(Vector2(1, 1));
+	set_area_normalize_energy(true);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 0);
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET, 0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET, 0.2);
@@ -637,7 +703,7 @@ void OmniLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &OmniLight3D::get_shadow_mode);
 
 	ADD_GROUP("Omni", "omni_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp"), "set_param", "get_param", PARAM_RANGE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.001,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_mode", PROPERTY_HINT_ENUM, "Dual Paraboloid,Cube"), "set_shadow_mode", "get_shadow_mode");
 
@@ -680,4 +746,38 @@ SpotLight3D::SpotLight3D() :
 		Light3D(RenderingServer::LIGHT_SPOT) {
 	// Decrease the default shadow bias to better suit most scenes.
 	set_param(PARAM_SHADOW_BIAS, 0.03);
+}
+
+AreaLight3D::AreaLight3D() :
+		Light3D(RenderingServer::LIGHT_AREA) {
+	// Decrease the default shadow bias to better suit most scenes.
+	set_param(PARAM_SHADOW_BIAS, 0.1);
+	set_param(PARAM_SIZE, 0.5);
+	set_param(PARAM_SPECULAR, 1.0);
+}
+
+void AreaLight3D::_bind_methods() {
+	ADD_GROUP("Area", "area_");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.001,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "area_normalize_energy"), "set_area_normalize_energy", "is_area_normalizing_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "area_size", PROPERTY_HINT_LINK, "suffix:m"), "set_area_size", "get_area_size");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "area_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture"), "set_area_texture", "get_area_texture");
+}
+
+PackedStringArray AreaLight3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Light3D::get_configuration_warnings();
+
+	if (get_projector().is_valid()) {
+		warnings.push_back(RTR("Projector texture is not supported for area lights. Use the area_texture field instead."));
+	}
+	if (get_area_texture().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Rendering textured area lights is not implemented in the Compatibility rendering mode."));
+	}
+
+	if (has_shadow() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Rendering area light shadows does not work in the Compatibility rendering mode."));
+	}
+
+	return warnings;
 }

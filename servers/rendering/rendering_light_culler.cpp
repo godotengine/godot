@@ -98,6 +98,12 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 			lsource.type = LightSource::ST_OMNI;
 			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_RANGE);
 			break;
+		case RS::LIGHT_AREA: {
+			lsource.type = LightSource::ST_AREA;
+			lsource.area_size = RSG::light_storage->light_area_get_size(p_instance.base);
+			float half_diagonal = lsource.area_size.length() / 2.0;
+			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_RANGE) + half_diagonal;
+		} break;
 		case RS::LIGHT_DIRECTIONAL:
 			lsource.type = LightSource::ST_DIRECTIONAL;
 			// Could deal with a max directional shadow range here? NYI
@@ -324,6 +330,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 	switch (p_light_source.type) {
 		case LightSource::ST_SPOTLIGHT:
 		case LightSource::ST_OMNI:
+		case LightSource::ST_AREA:
 			break;
 		case LightSource::ST_DIRECTIONAL:
 			return add_light_camera_planes_directional(r_cull_planes, p_light_source);
@@ -363,6 +370,24 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 				// This is one of the tests. If the point source is more than range distance from a frustum plane, it can't
 				// be seen.
 				if (dist >= p_light_source.range) {
+					// If the light is out of range, no need to do anything else, everything will be culled.
+					data.out_of_range = true;
+					return false;
+				}
+			}
+		}
+	} else if (p_light_source.type == LightSource::ST_AREA) {
+		for (int n = 0; n < 6; n++) {
+			float dist = data.frustum_planes[n].distance_to(p_light_source.pos);
+			float half_diagonal = p_light_source.area_size.length() / 2.0;
+			if (dist < 0.0f) {
+				lookup |= 1 << n;
+
+				// Add backfacing camera frustum planes.
+				r_cull_planes.add_cull_plane(data.frustum_planes[n]);
+			} else {
+				// Is the light out of range?
+				if (dist >= p_light_source.range + half_diagonal) {
 					// If the light is out of range, no need to do anything else, everything will be culled.
 					data.out_of_range = true;
 					return false;

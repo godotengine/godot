@@ -123,11 +123,12 @@ public:
 				uint32_t directional_penumbra_shadow_samples : 6;
 				uint32_t omni_lights : 2;
 				uint32_t spot_lights : 2;
+				uint32_t area_lights : 2;
 				uint32_t reflection_probes : 2;
 				uint32_t directional_lights : 2;
 				uint32_t decals : 1;
 				uint32_t directional_light_blend_splits : 8;
-				uint32_t padding_1 : 3;
+				uint32_t padding_1 : 1;
 			};
 		};
 

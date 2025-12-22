@@ -14,6 +14,8 @@ pack_coeffs = "#define MODE_PACK_L1_COEFFS";
 
 #VERSION_DEFINES
 
+#define M_PI 3.14159265359
+
 #extension GL_EXT_samplerless_texture_functions : enable
 
 // One 2D local group focusing in one layer at a time, though all
@@ -64,6 +66,10 @@ layout(rgba16f, set = 1, binding = 4) uniform restrict image2DArray accum_light;
 layout(rgba8, set = 1, binding = 5) uniform restrict writeonly image2DArray shadowmask;
 #elif defined(MODE_BOUNCE_LIGHT)
 layout(set = 1, binding = 5) uniform texture2D environment;
+#endif
+
+#if defined(MODE_DIRECT_LIGHT) || defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
+layout(set = 1, binding = 6) uniform texture2D area_light_atlas;
 #endif
 
 #if defined(MODE_DILATE) || defined(MODE_DENOISE) || defined(MODE_PACK_L1_COEFFS)
@@ -425,6 +431,256 @@ vec2 get_vogel_disk(float p_i, float p_rotation, float p_sample_count_sqrt) {
 	return vec2(cos(theta), sin(theta)) * r;
 }
 
+// TODO: move to a common shader file, to reuse this code
+vec3 integrate_edge_hill(vec3 p0, vec3 p1) {
+	// Approximation suggested by Hill and Heitz, calculating the integral of the spherical cosine distribution over the line between p0 and p1.
+	// Runs faster than the exact formula of Baum et al. (1989).
+	float cosTheta = dot(p0, p1);
+
+	float x = cosTheta;
+	float y = abs(x);
+	float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+	float b = 3.45068 + (4.18814 + y) * y;
+	float theta_sintheta = a / b;
+
+	if (x < 0.0) {
+		theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta;
+	}
+	return theta_sintheta * cross(p0, p1);
+}
+
+// TODO: move to a common shader file, to reuse this code
+float integrate_edge(vec3 p_proj0, vec3 p_proj1, vec3 p0, vec3 p1) {
+	float epsilon = 0.00001;
+	bool opposite_sides = dot(p_proj0, p_proj1) < -1.0 + epsilon;
+	if (opposite_sides) {
+		// calculate the point on the line p0 to p1 that is closest to the vertex (origin)
+		vec3 half_point_t = p0 + normalize(p1 - p0) * dot(p0, normalize(p0 - p1));
+		vec3 half_point = normalize(half_point_t);
+		return integrate_edge_hill(p_proj0, half_point).y + integrate_edge_hill(half_point, p_proj1).y;
+	}
+	return integrate_edge_hill(p_proj0, p_proj1).y;
+}
+
+// TODO: move to a common shader file, to reuse this code
+void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
+	// detect clipping config
+	int config = 0;
+	if (L[0].y > 0.0) {
+		config += 1;
+	}
+	if (L[1].y > 0.0) {
+		config += 2;
+	}
+	if (L[2].y > 0.0) {
+		config += 4;
+	}
+	if (L[3].y > 0.0) {
+		config += 8;
+	}
+
+	// clip
+	vertex_count = 0;
+
+	if (config == 0) {
+		// clip all
+	} else if (config == 1) // V1 clip V2 V3 V4
+	{
+		vertex_count = 3;
+		L[1] = -L[1].y * L[0] + L[0].y * L[1];
+		L[2] = -L[3].y * L[0] + L[0].y * L[3];
+	} else if (config == 2) // V2 clip V1 V3 V4
+	{
+		vertex_count = 3;
+		L[0] = -L[0].y * L[1] + L[1].y * L[0];
+		L[2] = -L[2].y * L[1] + L[1].y * L[2];
+	} else if (config == 3) // V1 V2 clip V3 V4
+	{
+		vertex_count = 4;
+		L[2] = -L[2].y * L[1] + L[1].y * L[2];
+		L[3] = -L[3].y * L[0] + L[0].y * L[3];
+	} else if (config == 4) // V3 clip V1 V2 V4
+	{
+		vertex_count = 3;
+		L[0] = -L[3].y * L[2] + L[2].y * L[3];
+		L[1] = -L[1].y * L[2] + L[2].y * L[1];
+	} else if (config == 5) // V1 V3 clip V2 V4) impossible
+	{
+		vertex_count = 0;
+	} else if (config == 6) // V2 V3 clip V1 V4
+	{
+		vertex_count = 4;
+		L[0] = -L[0].y * L[1] + L[1].y * L[0];
+		L[3] = -L[3].y * L[2] + L[2].y * L[3];
+	} else if (config == 7) // V1 V2 V3 clip V4
+	{
+		vertex_count = 5;
+		L[4] = -L[3].y * L[0] + L[0].y * L[3];
+		L[3] = -L[3].y * L[2] + L[2].y * L[3];
+	} else if (config == 8) // V4 clip V1 V2 V3
+	{
+		vertex_count = 3;
+		L[0] = -L[0].y * L[3] + L[3].y * L[0];
+		L[1] = -L[2].y * L[3] + L[3].y * L[2];
+		L[2] = L[3];
+	} else if (config == 9) // V1 V4 clip V2 V3
+	{
+		vertex_count = 4;
+		L[1] = -L[1].y * L[0] + L[0].y * L[1];
+		L[2] = -L[2].y * L[3] + L[3].y * L[2];
+	} else if (config == 10) // V2 V4 clip V1 V3) impossible
+	{
+		vertex_count = 0;
+	} else if (config == 11) // V1 V2 V4 clip V3
+	{
+		vertex_count = 5;
+		L[4] = L[3];
+		L[3] = -L[2].y * L[3] + L[3].y * L[2];
+		L[2] = -L[2].y * L[1] + L[1].y * L[2];
+	} else if (config == 12) // V3 V4 clip V1 V2
+	{
+		vertex_count = 4;
+		L[1] = -L[1].y * L[2] + L[2].y * L[1];
+		L[0] = -L[0].y * L[3] + L[3].y * L[0];
+	} else if (config == 13) // V1 V3 V4 clip V2
+	{
+		vertex_count = 5;
+		L[4] = L[3];
+		L[3] = L[2];
+		L[2] = -L[1].y * L[2] + L[2].y * L[1];
+		L[1] = -L[1].y * L[0] + L[0].y * L[1];
+	} else if (config == 14) // V2 V3 V4 clip V1
+	{
+		vertex_count = 5;
+		L[4] = -L[0].y * L[3] + L[3].y * L[0];
+		L[0] = -L[0].y * L[1] + L[1].y * L[0];
+	} else if (config == 15) // V1 V2 V3 V4
+	{
+		vertex_count = 4;
+	}
+
+	if (vertex_count == 3) {
+		L[3] = L[0];
+	}
+	if (vertex_count == 4) {
+		L[4] = L[0];
+	}
+}
+
+vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod, float max_mipmap) {
+	float low = clamp(floor(lod), 0.0, max(max_mipmap - 1.0, 0.0));
+	float high = clamp(floor(lod + 1.0), 1.0, max(max_mipmap, 1.0));
+	vec2 sample_pos = texture_rect.xy + clamp(uv, 0.0, 1.0) * texture_rect.zw; // take border into account
+	vec4 sample_col_low = textureLod(sampler2D(area_light_atlas, area_light_atlas_sampler), sample_pos, low);
+	vec4 sample_col_high = textureLod(sampler2D(area_light_atlas, area_light_atlas_sampler), sample_pos, high);
+
+	float blend = high - clamp(lod, high - 1.0, high);
+	vec4 sample_col = mix(sample_col_high, sample_col_low, blend);
+	return sample_col.rgb * sample_col.a; // premultiply alpha channel
+}
+
+vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5], float max_mipmap) {
+	vec3 L0 = normalize(L[0]);
+	vec3 L1 = normalize(L[1]);
+	vec3 L2 = normalize(L[2]);
+	vec3 L3 = normalize(L[3]);
+
+	vec3 F = vec3(0.0); // form factor
+	F += integrate_edge_hill(L0, L1);
+	F += integrate_edge_hill(L1, L2);
+	F += integrate_edge_hill(L2, L3);
+	F += integrate_edge_hill(L3, L0);
+
+	//return F;//
+	//F = vec3(0.0, 1.0, 0.0);
+	vec2 uv;
+	float lod = 0.0;
+
+	if (dot(F, F) < 1e-16) {
+		uv = vec2(0.5);
+		lod = max_mipmap;
+	} else {
+		vec3 lx = L[1] - L[0];
+		vec3 ly = L[3] - L[0];
+		vec3 ln = cross(lx, ly);
+
+		float dist_x_area = dot(L[0], ln);
+		float d = dist_x_area / dot(F, ln);
+		vec3 isec = d * F;
+		vec3 li = isec - L[0]; // light to intersection
+
+		float dot_lxy = dot(lx, ly);
+		float inv_dot_lxlx = 1.0 / dot(lx, lx);
+		vec3 ly_ = ly - lx * dot_lxy * inv_dot_lxlx;
+
+		uv.y = dot(li, ly_) / dot(ly_, ly_);
+		uv.x = dot(li, lx) * inv_dot_lxlx - dot_lxy * inv_dot_lxlx * uv.y;
+
+		lod = abs(dist_x_area) / pow(dot(ln, ln), 0.75);
+		lod = log(2048.0 * lod) / log(3.0);
+	}
+	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod, max_mipmap);
+}
+
+float ltc_evaluate_diff(vec3 normal, vec3 points[4], vec4 texture_rect, float max_mipmap, out vec3 tex_color) {
+	// default is white
+	tex_color = vec3(1.0);
+	// construct the orthonormal basis around the normal vector
+	vec3 x, z;
+	vec3 eye_vec = abs(normal.z) < 0.7 ? vec3(0.0, 0.0, -1.0) : vec3(1.0, 0.0, 0.0);
+	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector
+	x = cross(normal, z);
+
+	// rotate area light in (T1, normal, T2) basis
+	mat3 basis = transpose(mat3(x, normal, z));
+
+	vec3 L[5];
+	L[0] = basis * points[0];
+	L[1] = basis * points[1];
+	L[2] = basis * points[2];
+	L[3] = basis * points[3];
+	vec3 L_unclipped[5] = L;
+
+	int n = 0;
+	clip_quad_to_horizon(L, n);
+	if (n == 0) {
+		return 0.0;
+	}
+
+	vec3 L_proj[5];
+	// project onto unit sphere
+	L_proj[0] = normalize(L[0]);
+	L_proj[1] = normalize(L[1]);
+	L_proj[2] = normalize(L[2]);
+	L_proj[3] = normalize(L[3]);
+	L_proj[4] = normalize(L[4]);
+
+	// Prevent abnormal values when the light goes through (or close to) the fragment
+	vec3 pnorm = normalize(cross(L_proj[0] - L_proj[1], L_proj[2] - L_proj[1]));
+	if (abs(dot(pnorm, L_proj[0])) < 1e-10) {
+		// we could just return black, but that would lead to some black pixels in front of the light.
+		// for global illumination that shouldn't cause any visual artifacts
+		return 0.0;
+	}
+
+	if (texture_rect != vec4(0.0)) {
+		tex_color = fetch_ltc_filtered_texture_with_form_factor(texture_rect, L_unclipped, max_mipmap);
+	}
+
+	float I;
+	I = integrate_edge(L_proj[0], L_proj[1], L[0], L[1]);
+	I += integrate_edge(L_proj[1], L_proj[2], L[1], L[2]);
+	I += integrate_edge(L_proj[2], L_proj[3], L[2], L[3]);
+	if (n >= 4) {
+		I += integrate_edge(L_proj[3], L_proj[4], L[3], L[4]);
+	}
+	if (n == 5) {
+		I += integrate_edge(L_proj[4], L_proj[0], L[4], L[0]);
+	}
+
+	return abs(I);
+}
+
 void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool p_soft_shadowing, out vec3 r_light, out vec3 r_light_dir, inout uint r_noise, float p_texel_size, out float r_shadow) {
 	const float EPSILON = 0.00001;
 
@@ -435,17 +691,60 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	float dist;
 	float attenuation;
 	float soft_shadowing_disk_size;
+	vec3 light_texture_color = vec3(1.0);
+	vec3 shadow_dir;
 	Light light_data = lights.data[p_light_index];
 	if (light_data.type == LIGHT_TYPE_DIRECTIONAL) {
 		vec3 light_vec = light_data.direction;
 		light_pos = p_position - light_vec * length(bake_params.world_size);
 		r_light_dir = normalize(light_pos - p_position);
+		shadow_dir = r_light_dir;
 		dist = length(bake_params.world_size);
 		attenuation = 1.0;
+		attenuation *= max(0.0, dot(p_normal, r_light_dir));
 		soft_shadowing_disk_size = light_data.size;
+	} else if (light_data.type == LIGHT_TYPE_AREA) {
+		r_light_dir = vec3(0.0); // has to be initialized!
+		if (dot(light_data.direction, p_position - light_data.position) <= 0) {
+			return;
+		}
+		vec3 area_width = light_data.area_width.xyz;
+		vec3 area_height = light_data.area_height.xyz;
+		vec3 h_area_width = area_width / 2.0;
+		vec3 h_area_height = area_height / 2.0;
+		vec3 area_width_norm = normalize(area_width);
+		vec3 area_height_norm = normalize(area_height);
+		float a_half_len = length(area_width) / 2.0;
+		float b_half_len = length(area_height) / 2.0;
+
+		vec3 points[4];
+		points[0] = light_data.position - h_area_width - h_area_height - p_position;
+		points[1] = light_data.position + h_area_width - h_area_height - p_position;
+		points[2] = light_data.position + h_area_width + h_area_height - p_position;
+		points[3] = light_data.position - h_area_width + h_area_height - p_position;
+
+		float ltc_diffuse = max(ltc_evaluate_diff(p_normal, points, light_data.area_texture_rect, light_data.cos_spot_angle, light_texture_color), 0);
+
+		vec3 light_to_vert = p_position - light_data.position;
+		vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -light_data.direction)); // p_position in LIGHT SPACE
+
+		vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
+		dist = max(0.0001, distance(closest_point_local_to_light, pos_local_to_light));
+		if (dist > light_data.range) {
+			return;
+		}
+		// set light pos to closest point
+		light_pos = light_data.position;
+		vec3 closest_point = light_data.position + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm;
+		r_light_dir = normalize(closest_point - p_position);
+		shadow_dir = normalize(light_pos - p_position);
+		attenuation = get_omni_attenuation(dist, 1.0 / light_data.range, light_data.attenuation) * dist * dist; // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+		attenuation *= ltc_diffuse;
+		soft_shadowing_disk_size = light_data.size / dist;
 	} else {
 		light_pos = light_data.position;
 		r_light_dir = normalize(light_pos - p_position);
+		shadow_dir = r_light_dir;
 		dist = distance(p_position, light_pos);
 		if (dist > light_data.range) {
 			return;
@@ -468,10 +767,10 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
 			attenuation *= 1.0 - pow(spot_rim, light_data.inv_spot_attenuation);
 		}
+		attenuation *= max(0.0, dot(p_normal, r_light_dir));
 	}
 
-	attenuation *= max(0.0, dot(p_normal, r_light_dir));
-	if (attenuation <= 0.0001) {
+	if (attenuation * light_data.energy <= 0.0001) {
 		return;
 	}
 
@@ -491,7 +790,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		vec3 bitan = normalize(cross(p_normal, tangent));
 
 		// Setup light tangent pass to calculate samples over disk aligned towards the light
-		vec3 light_to_point = -r_light_dir;
+		vec3 light_to_point = -shadow_dir;
 		vec3 light_aux = light_to_point.y < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
 		vec3 light_to_point_tan = normalize(cross(light_to_point, light_aux));
 		vec3 light_to_point_bitan = normalize(cross(light_to_point, light_to_point_tan));
@@ -533,7 +832,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					vec2 light_disk_sample = get_vogel_disk(vogel_index, a, shadowing_ray_count_sqrt) * soft_shadowing_disk_size * light_data.shadow_blur;
 					vec3 light_disk_to_point = normalize(light_to_point + light_disk_sample.x * light_to_point_tan + light_disk_sample.y * light_to_point_bitan);
 					float sample_penumbra = 0.0;
-					vec3 sample_penumbra_color = light_data.color.rgb;
+					vec3 sample_penumbra_color = light_data.color.rgb * light_texture_color;
 					bool sample_did_hit = false;
 
 					for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
@@ -560,7 +859,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 								sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
 								sample_penumbra *= 1.0 - hit_albedo.a;
 							}
-							origin = hit_position + r_light_dir * bake_params.bias;
+							origin = hit_position + shadow_dir * bake_params.bias;
 
 							if (sample_penumbra - EPSILON <= 0) {
 								break;
@@ -575,7 +874,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 
 			} else { // No soft shadows (size == 0).
 				float sample_penumbra = 0.0;
-				vec3 sample_penumbra_color = light_data.color.rgb;
+				vec3 sample_penumbra_color = light_data.color.rgb * light_texture_color;
 				bool sample_did_hit = false;
 				for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
 					vec4 hit_albedo = vec4(1.0);
@@ -598,7 +897,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 							sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
 							sample_penumbra *= 1.0 - hit_albedo.a;
 						}
-						origin = hit_position + r_light_dir * bake_params.bias;
+						origin = hit_position + shadow_dir * bake_params.bias;
 
 						if (sample_penumbra - EPSILON <= 0) {
 							break;
@@ -617,11 +916,11 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	} else { // No soft shadows and anti-aliasing (disabled via parameter).
 		bool did_hit = false;
 		penumbra = 0.0;
-		penumbra_color = light_data.color.rgb;
+		penumbra_color = light_data.color.rgb * light_texture_color;
 		for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
 			vec4 hit_albedo = vec4(1.0);
 			vec3 hit_position;
-			uint ret = trace_ray_closest_hit_triangle_albedo_alpha(p_position + r_light_dir * bake_params.bias, light_pos, hit_albedo, hit_position);
+			uint ret = trace_ray_closest_hit_triangle_albedo_alpha(p_position + shadow_dir * bake_params.bias, light_pos, hit_albedo, hit_position);
 			if (ret == RAY_MISS) {
 				if (!did_hit) {
 					penumbra = 1.0;
@@ -639,7 +938,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					penumbra *= 1.0 - hit_albedo.a;
 				}
 
-				p_position = hit_position + r_light_dir * bake_params.bias;
+				p_position = hit_position + shadow_dir * bake_params.bias;
 
 				if (penumbra - EPSILON <= 0) {
 					break;
@@ -925,7 +1224,7 @@ void main() {
 	imageStore(shadowmask, ivec3(atlas_pos, params.atlas_slice), vec4(shadowmask_value, shadowmask_value, shadowmask_value, 1.0));
 #endif
 
-#endif
+#endif // MODE_DIRECT_LIGHT
 
 #ifdef MODE_BOUNCE_LIGHT
 
