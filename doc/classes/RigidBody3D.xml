@@ -129,6 +129,16 @@
 				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
+		<method name="set_mass_properties">
+			<return type="void" />
+			<param index="0" name="mass" type="float" />
+			<param index="1" name="center_of_mass" type="Vector3" />
+			<param index="2" name="inertia" type="Vector3" />
+			<param index="3" name="product_of_inertia" type="Vector3" />
+			<description>
+				Sets all mass properties for the body in a single function call. This is more efficient than setting each property individually and is a good option if the mass properties of an object change over time.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.0">
@@ -184,8 +194,9 @@
 			This is multiplied by [member ProjectSettings.physics/3d/default_gravity] to produce this body's gravity. For example, a value of [code]1.0[/code] will apply normal gravity, [code]2.0[/code] will apply double the gravity, and [code]0.5[/code] will apply half the gravity to this body.
 		</member>
 		<member name="inertia" type="Vector3" setter="set_inertia" getter="get_inertia" default="Vector3(0, 0, 0)">
-			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
+			The body's moments of inertia in the local frame. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
 			If set to [constant Vector3.ZERO], inertia is automatically computed (default value).
+			In 3D, the rotational inertia of a body is fully represented by a symmetric 3x3 tensor. The [member inertia] property sets the diagonal entries of this tensor while the off-diagonal entries are set by the [member product_of_inertia] property. For more information on the inertia tensor, see the [url=https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_tensor]Wikipedia article[/url].
 			[b]Note:[/b] This value does not change when inertia is automatically computed. Use [PhysicsServer3D] to get the computed inertia.
 			[codeblocks]
 			[gdscript]
@@ -232,6 +243,30 @@
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 			The physics material override for the body.
 			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
+		</member>
+		<member name="product_of_inertia" type="Vector3" setter="set_product_of_inertia" getter="get_product_of_inertia" default="Vector3(0, 0, 0)">
+			The body's products of inertia in (Iyz, Ixz, Ixy) order, resolved in the local frame. In 3D, the full rotational inertia of an object can be represented by a symmetric 3x3 tensor with 6 unique elements. The [member inertia] property sets the diagonal entries while this property sets the off-diagonal entries. When combined with the [member inertia] vector, the local inertia tensor can be fully defined. For most applications, the products of inertia can be left as [constant Vector3.ZERO]. For more information on the inertia tensor, see the [url=https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_tensor]Wikipedia article[/url].
+			If [member inertia] is set to [constant Vector3.ZERO], the body's entire inertia will be computed automatically, and the value set here will be ignored.
+			If the principal moments and axes of inertia are known, the inertia tensor can be computed by pre- and post-multiplying the principal moments by the principal axes and transpose of the principal axes, respectively. The [member inertia] and [member product_of_inertia] vectors can then be extracted from the inertia tensor.
+			[codeblocks]
+			[gdscript]
+			func inertia_from_principal(principal_inertia: Vector3, principal_axes: Basis):
+				var principal_inertia_tensor: Basis = Basis.from_scale(principal_inertia)
+				var inertia_tensor: Basis = principal_axes * principal_inertia_tensor * principal_axes.transposed()
+				inertia = Vector3(inertia_tensor.x.x, inertia_tensor.y.y, inertia_tensor.z.z)
+				product_of_inertia = Vector3(-inertia_tensor.y.z, -inertia_tensor.x.z, -inertia_tensor.x.y)
+			[/gdscript]
+			[csharp]
+			void InertiaFromPrincipal(Vector3 principalInertia, Basis principalAxes)
+			{
+				Basis principalInertiaTensor = Basis.FromScale(principalInertia);
+				Basis inertiaTensor = principalAxes * principalInertiaTensor * principalAxes.Transposed();
+				Inertia = Vector3(inertiaTensor.X.X, inertiaTensor.Y.Y, inertiaTensor.Z.Z);
+				ProductOfInertia = Vector3(-inertiaTensor.Y.Z, -inertiaTensor.X.Z, -inertiaTensor.X.Y);
+			}
+			[/csharp]
+			[/codeblocks]
+			[b]Note:[/b] The "alternate" convention for products of inertia is used. The products of inertia are assumed to be the positive product of mass and position, and will be negated when inserted into the inertia tensor.
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
 			If [code]true[/code], the body will not move and will not calculate forces until woken up by another body through, for example, a collision, or by using the [method apply_impulse] or [method apply_force] methods.

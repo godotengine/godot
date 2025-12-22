@@ -670,6 +670,13 @@ Variant GodotPhysicsServer3D::body_get_param(RID p_body, BodyParameter p_param) 
 	return body->get_param(p_param);
 }
 
+void GodotPhysicsServer3D::body_set_mass_properties(RID p_body, real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->set_mass_properties(p_mass, p_center_of_mass, p_inertia, p_product_of_inertia);
+}
+
 void GodotPhysicsServer3D::body_reset_mass_properties(RID p_body) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
