@@ -238,6 +238,8 @@ static DisplayServer::VSyncMode window_vsync_mode = DisplayServer::VSYNC_ENABLED
 static uint32_t window_flags = 0;
 static Size2i window_size = Size2i(1152, 648);
 
+static String session_path;
+
 static int init_screen = DisplayServer::SCREEN_PRIMARY;
 static bool init_fullscreen = false;
 static bool init_maximized = false;
@@ -3069,16 +3071,28 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 
+#ifdef TOOLS_ENABLED
+		if (project_manager) {
+			session_path = EditorPaths::get_singleton()->get_data_dir() + "/window_state.cfg";
+		} else if (editor) {
+			session_path = EditorPaths::get_singleton()->get_project_data_dir() + "/window_state.cfg";
+		} else {
+			session_path = "user://godot_window_state.cfg";
+		}
+#else
+		session_path = "user://godot_window_state.cfg";
+#endif
+
 		bool has_command_line_window_override = init_use_custom_pos || init_use_custom_screen || init_windowed;
-		if (editor && !has_command_line_window_override && restore_editor_window_layout) {
+		if (!has_command_line_window_override && restore_editor_window_layout) {
 			Ref<ConfigFile> config;
 			config.instantiate();
 			// Load and amend existing config if it exists.
-			Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+			Error err = config->load(session_path);
 			if (err == OK) {
-				init_screen = config->get_value("EditorWindow", "screen", init_screen);
-				String mode = config->get_value("EditorWindow", "mode", "maximized");
-				window_size = config->get_value("EditorWindow", "size", window_size);
+				init_screen = config->get_value("MainWindow", "screen", init_screen);
+				String mode = config->get_value("MainWindow", "mode", "maximized");
+				window_size = config->get_value("MainWindow", "size", window_size);
 				if (mode == "windowed") {
 					window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
 					init_windowed = true;
@@ -3092,7 +3106,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 				if (init_windowed) {
 					init_use_custom_pos = true;
-					init_custom_pos = config->get_value("EditorWindow", "position", Vector2i(0, 0));
+					init_custom_pos = config->get_value("MainWindow", "position", Vector2i(0, 0));
 				}
 			}
 		}
@@ -3279,8 +3293,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 			return err;
 		}
 
+		DisplayServer::get_singleton()->set_session_path(session_path);
+
 #ifdef TOOLS_ENABLED
-		if (project_manager) {
+		if (project_manager && init_display_scale_found) {
 			float ui_scale = init_custom_scale;
 			switch (init_display_scale) {
 				case 0:
