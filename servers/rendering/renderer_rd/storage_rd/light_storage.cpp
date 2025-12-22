@@ -1511,13 +1511,12 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	// but not the other way around. This can lead to situations where the reflection atlas will be stuck on a lower resolution
 	// even if no real-time probes are present. This is intentional behavior until a future solution can accommodate for both
 	// quality levels being used simultaneously.
+	const int required_real_time_mipmaps = 7;
 	const bool switched_to_real_time = !atlas->update_always && update_always && atlas->reflection.is_valid();
-	const bool real_time_mipmaps_different = update_always && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8;
+	const bool real_time_mipmaps_different = update_always && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != required_real_time_mipmaps;
 	if (switched_to_real_time || real_time_mipmaps_different) {
 		_reflection_atlas_clear(atlas);
 	}
-
-	const int required_real_time_mipmaps = 7;
 
 	if (atlas->reflection.is_null()) {
 		RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
