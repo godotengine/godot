@@ -2169,6 +2169,12 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 			selected_strings = _tree_get_selected(false, true);
 			[[fallthrough]];
 		}
+		case FILE_MENU_RESCAN: {
+			Vector<String> selected = _tree_get_selected(false);
+			if (!selected.is_empty()) {
+				EditorFileSystem::get_singleton()->scan_changes();
+			}
+		} break;
 		default: {
 			_file_option(p_option, selected_strings);
 		} break;
@@ -3445,6 +3451,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 				folder_colors_menu->set_item_icon_modulate(-1, editor_is_dark_icon_and_font ? E.value : E.value * 2);
 				folder_colors_menu->set_item_metadata(-1, E.key);
 			}
+		} else {
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Reload")), TTRC("Rescan Filesystem"), FILE_MENU_RESCAN);
 		}
 	}
 
