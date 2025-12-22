@@ -129,7 +129,7 @@ private:
 	TextEdit *commit_message = nullptr;
 	Button *commit_button = nullptr;
 
-	VBoxContainer *version_control_dock = nullptr;
+	EditorDock *version_control_dock = nullptr;
 	Label *diff_title = nullptr;
 	RichTextLabel *diff = nullptr;
 	OptionButton *diff_view_type_select = nullptr;

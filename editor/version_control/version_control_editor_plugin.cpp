@@ -277,7 +277,7 @@ void VersionControlEditorPlugin::_commit() {
 
 	EditorVCSInterface::get_singleton()->commit(msg);
 
-	EditorNode::get_bottom_panel()->make_item_visible(version_control_dock, false);
+	version_control_dock->try_hide();
 
 	commit_message->release_focus();
 	commit_button->release_focus();
@@ -489,7 +489,7 @@ void VersionControlEditorPlugin::_move_all(Object *p_tree) {
 void VersionControlEditorPlugin::_load_diff(Object *p_tree) {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorNode::get_bottom_panel()->make_item_visible(version_control_dock, true, true);
+	version_control_dock->make_visible();
 
 	Tree *tree = Object::cast_to<Tree>(p_tree);
 	if (tree == staged_files) {
@@ -910,8 +910,7 @@ void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 
 void VersionControlEditorPlugin::register_editor() {
 	EditorDockManager::get_singleton()->add_dock(version_commit_dock);
-
-	EditorNode::get_bottom_panel()->add_item(TTRC("Version Control"), version_control_dock, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTRC("Toggle Version Control Bottom Panel")));
+	EditorDockManager::get_singleton()->add_dock(version_control_dock);
 
 	_set_vcs_ui_state(true);
 }
@@ -930,7 +929,7 @@ void VersionControlEditorPlugin::shut_down() {
 	EditorVCSInterface::set_singleton(nullptr);
 
 	EditorDockManager::get_singleton()->remove_dock(version_commit_dock);
-	EditorNode::get_bottom_panel()->remove_item(version_control_dock);
+	EditorDockManager::get_singleton()->remove_dock(version_control_dock);
 
 	_set_vcs_ui_state(false);
 }
@@ -1149,7 +1148,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_commit_dock->set_visible(false);
 	version_commit_dock->set_name(TTRC("Commit"));
 	version_commit_dock->set_layout_key("VersionCommit");
-	version_commit_dock->set_icon_name("VcsBranches");
+	version_commit_dock->set_icon_name("VCSCommit");
 	version_commit_dock->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_version_control", TTRC("Open Version Control Dock")));
 	version_commit_dock->set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
 
@@ -1494,15 +1493,22 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	change_type_to_icon[EditorVCSInterface::CHANGE_TYPE_DELETED] = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("StatusError"), EditorStringName(EditorIcons));
 	change_type_to_icon[EditorVCSInterface::CHANGE_TYPE_UNMERGED] = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("StatusWarning"), EditorStringName(EditorIcons));
 
-	version_control_dock = memnew(VBoxContainer);
+	version_control_dock = memnew(EditorDock);
+	version_control_dock->set_name(TTRC("Version Control"));
+	version_control_dock->set_icon_name("VcsBranches");
+	version_control_dock->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTRC("Toggle Version Control Dock")));
+	version_control_dock->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	version_control_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	version_control_dock->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	version_control_dock->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	version_control_dock->hide();
+
+	VBoxContainer *dock_vb2 = memnew(VBoxContainer);
+	version_control_dock->add_child(dock_vb2);
 
 	HBoxContainer *diff_heading = memnew(HBoxContainer);
 	diff_heading->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	diff_heading->set_tooltip_text(TTR("View file diffs before committing them to the latest version"));
-	version_control_dock->add_child(diff_heading);
+	dock_vb2->add_child(diff_heading);
 
 	diff_title = memnew(Label);
 	diff_title->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -1526,7 +1532,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff->set_use_bbcode(true);
 	diff->set_selection_enabled(true);
 	diff->set_context_menu_enabled(true);
-	version_control_dock->add_child(diff);
+	dock_vb2->add_child(diff);
 
 	_update_set_up_warning("");
 }
