@@ -39,6 +39,7 @@
  */
 
 #include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
 #include "core/templates/cowdata.h"
 #include "core/templates/sort_array.h"
 
@@ -212,6 +213,11 @@ public:
 			memcpy(ret.ptrw(), ptr(), alloc_size);
 		}
 		return ret;
+	}
+
+	T pick_random() const {
+		ERR_FAIL_COND_V_MSG(is_empty(), T(), "Can't take value from empty array.");
+		return operator[](Math::rand() % size());
 	}
 
 	Vector<T> slice(Size p_begin, Size p_end = CowData<T>::MAX_INT) const {
