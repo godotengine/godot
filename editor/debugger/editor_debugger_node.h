@@ -182,6 +182,7 @@ public:
 
 	String get_var_value(const String &p_var) const;
 	Ref<Script> get_dump_stack_script() const { return stack_script; } // Why do we need this?
+	void send_config_value(const String &p_variable, const Variant &p_value);
 
 	bool get_debug_with_external_editor() { return debug_with_external_editor; }
 
