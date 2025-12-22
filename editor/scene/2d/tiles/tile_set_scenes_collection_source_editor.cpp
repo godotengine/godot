@@ -31,6 +31,7 @@
 #include "tile_set_scenes_collection_source_editor.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -335,10 +336,7 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 			to_reselect = i;
 		}
 	}
-	if (scene_tiles_list->get_item_count() == 0) {
-		scene_tiles_list->add_item(TTR("Drag and drop scenes here or use the Add button."));
-		scene_tiles_list->set_item_disabled(-1, true);
-	}
+	scenes_empty_label->set_visible(scene_tiles_list->get_item_count() == 0);
 
 	// Reselect if needed.
 	if (to_reselect >= 0) {
@@ -366,6 +364,7 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			scene_tile_add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			scene_tile_delete_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			scenes_empty_label->add_theme_color_override(SceneStringName(font_color), get_theme_color("warning_color", EditorStringName(Editor)));
 			_update_scenes_list();
 		} break;
 
@@ -551,6 +550,10 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	// Scenes list.
 	VBoxContainer *right_vbox_container = memnew(VBoxContainer);
 	split_container_right_side->add_child(right_vbox_container);
+
+	scenes_empty_label = memnew(Label);
+	scenes_empty_label->set_text(TTRC("Drag and drop scenes here or use the Add button."));
+	right_vbox_container->add_child(scenes_empty_label);
 
 	scene_tiles_list = memnew(ItemList);
 	scene_tiles_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
