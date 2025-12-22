@@ -1119,7 +1119,7 @@ void GodotSoftBody3D::solve_constraints(real_t p_delta) {
 		const real_t ti = isolve / (real_t)iteration_count;
 		solve_links(1.0, ti);
 	}
-	const real_t vc = (1.0 - damping_coefficient) * inv_delta;
+	const real_t vc = MAX(inv_delta - damping_coefficient, 0.0);
 	for (Node &node : nodes) {
 		node.x += node.bv * p_delta;
 		node.bv = Vector3();
