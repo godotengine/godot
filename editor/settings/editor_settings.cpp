@@ -540,7 +540,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/import_resources_when_unfocused", false, "")
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/update_continuously", false, "")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/update_priority", 1, "Update Continuously (Deprecated),Update When Changed,Update Vital Changes")
 
 	bool is_android_editor = false;
 #ifdef ANDROID_ENABLED
@@ -2281,6 +2281,10 @@ void EditorSettings::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
+
+	BIND_ENUM_CONSTANT(UPDATE_CONTINUOUSLY);
+	BIND_ENUM_CONSTANT(UPDATE_WHEN_CHANGED);
+	BIND_ENUM_CONSTANT(UPDATE_VITAL_ONLY);
 }
 
 EditorSettings::EditorSettings() {

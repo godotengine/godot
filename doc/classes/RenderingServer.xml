@@ -1801,8 +1801,9 @@
 		</method>
 		<method name="has_changed" qualifiers="const">
 			<return type="bool" />
+			<param index="0" name="queried_priority" type="int" enum="RenderingServer.ChangedPriority" default="0" />
 			<description>
-				Returns [code]true[/code] if changes have been made to the RenderingServer's data. [method force_draw] is usually called if this happens.
+				Returns [code]true[/code] if changes of the queried_priority have been made to the RenderingServer's data. [method force_draw] is usually called if this happens.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const" deprecated="This method has not been used since Godot 3.0.">
@@ -6026,6 +6027,15 @@
 		</constant>
 		<constant name="SPLASH_STRETCH_MODE_IGNORE" value="5" enum="SplashStretchMode">
 			Stretches the image to cover the entire screen but doesn't preserve aspect ratio.
+		</constant>
+		<constant name="CHANGED_PRIORITY_ANY" value="0" enum="ChangedPriority">
+			Priority Enumeration for Function has_changed. Returns true if any changes have been made to the RenderingServer's data
+		</constant>
+		<constant name="CHANGED_PRIORITY_LOW" value="1" enum="ChangedPriority">
+			Priority Enumeration for Function has_changed. Returns true if any low priority changes have been made to the RenderingServer's data
+		</constant>
+		<constant name="CHANGED_PRIORITY_HIGH" value="2" enum="ChangedPriority">
+			Priority Enumeration for Function has_changed. Returns true if any high priority changes have been made to the RenderingServer's data
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>

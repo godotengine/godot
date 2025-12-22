@@ -5162,6 +5162,7 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 }
 
 void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field) {
+	// Inspect set happens right here
 	if (autoclear && editor_property_map.has(p_name)) {
 		for (EditorProperty *E : editor_property_map[p_name]) {
 			if (E->is_checkable()) {

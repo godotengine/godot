@@ -561,7 +561,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 	}
 
 	if (time_used) {
-		RenderingServerDefault::redraw_request();
+		RenderingServerDefault::redraw_request(false);
 	}
 
 	state.canvas_instance_data_buffers[state.current_data_buffer_index].fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
@@ -1279,7 +1279,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 				double local_time = Math::fposmod(current_time - as->offset, as->animation_length);
 				skipping = !(local_time >= as->slice_begin && local_time < as->slice_end);
 
-				RenderingServerDefault::redraw_request(); // animation visible means redraw request
+				RenderingServerDefault::redraw_request(false); // animation visible means redraw request
 			} break;
 		}
 
@@ -1436,7 +1436,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 					break;
 				}
 
-				RenderingServerDefault::redraw_request(); // Active particles means redraw request.
+				RenderingServerDefault::redraw_request(false); // Active particles means redraw request.
 
 				int dpc = particles_storage->particles_get_draw_passes(particles);
 				if (dpc == 0) {
