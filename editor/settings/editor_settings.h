@@ -121,6 +121,7 @@ private:
 	void _set_initialized();
 	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
 	void _load_default_visual_shader_editor_theme();
+	void _update_linked_settings(const StringName &p_name, const Variant &p_value);
 	static String _guess_exec_args_for_extenal_editor(const String &p_value);
 	const String _get_project_metadata_path() const;
 #ifndef DISABLE_DEPRECATED

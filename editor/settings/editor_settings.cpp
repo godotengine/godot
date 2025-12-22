@@ -49,6 +49,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/project_manager/engine_update_label.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/translations/editor_translation.h"
 #include "main/main.h"
@@ -72,13 +73,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	bool changed = _set_only(p_name, p_value);
 	if (changed && initialized) {
 		changed_settings.insert(p_name);
-		if (p_name == SNAME("text_editor/external/exec_path")) {
-			const StringName exec_args_name = "text_editor/external/exec_flags";
-			const String exec_args_value = _guess_exec_args_for_extenal_editor(p_value);
-			if (!exec_args_value.is_empty() && _set_only(exec_args_name, exec_args_value)) {
-				changed_settings.insert(exec_args_name);
-			}
-		}
+		_update_linked_settings(p_name, p_value);
 		emit_signal(SNAME("settings_changed"));
 
 		if (p_name == SNAME("interface/editor/editor_language")) {
@@ -1212,6 +1207,28 @@ String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path)
 	}
 
 	return new_exec_flags;
+}
+
+void EditorSettings::_update_linked_settings(const StringName &p_name, const Variant &p_value) {
+	const String &name_string = p_name;
+	if (p_name == SNAME("text_editor/external/exec_path")) {
+		const StringName exec_args_name = "text_editor/external/exec_flags";
+		const String exec_args_value = _guess_exec_args_for_extenal_editor(p_value);
+		if (!exec_args_value.is_empty() && _set_only(exec_args_name, exec_args_value)) {
+			changed_settings.insert(exec_args_name);
+		}
+	} else if (p_name == "interface/theme/accent_color" || p_name == "interface/theme/base_color" || p_name == "interface/theme/contrast" || p_name == "interface/theme/draw_extra_borders" || p_name == "interface/theme/icon_saturation" || p_name == "interface/theme/draw_relationship_lines" || p_name == "interface/theme/corner_radius") {
+		// Set theme presets to Custom when controlled settings change.
+		set_manually("interface/theme/color_preset", "Custom");
+	} else if (p_name == "interface/theme/base_spacing" || p_name == "interface/theme/additional_spacing") {
+		set_manually("interface/theme/spacing_preset", "Custom");
+	} else if (name_string.begins_with("text_editor/theme/highlighting")) {
+		set_manually("text_editor/theme/color_theme", "Custom");
+	} else if (name_string.begins_with("editors/visual_editors/connection_colors") || name_string.begins_with("editors/visual_editors/category_colors")) {
+		set_manually("editors/visual_editors/color_theme", "Custom");
+	} else if (p_name == "editors/3d/navigation/orbit_mouse_button" || p_name == "editors/3d/navigation/pan_mouse_button" || p_name == "editors/3d/navigation/zoom_mouse_button" || p_name == "editors/3d/navigation/emulate_3_button_mouse") {
+		set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
+	}
 }
 
 const String EditorSettings::_get_project_metadata_path() const {
