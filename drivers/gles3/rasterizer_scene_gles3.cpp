@@ -2263,11 +2263,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	ERR_FAIL_COND(rb.is_null());
 
 	if (rb->get_scaling_3d_mode() != RS::VIEWPORT_SCALING_3D_MODE_OFF) {
-		// If we're scaling, we apply tonemapping etc. in post, so disable it during rendering
+		// If we're scaling, we apply tonemapping etc. in post, so disable it during rendering.
 		apply_color_adjustments_in_post = true;
 	}
 
-	GLES3::RenderTarget *rt = nullptr; // No render target for reflection probe
+	GLES3::RenderTarget *rt = nullptr; // No render target for reflection probe.
 	if (!is_reflection_probe) {
 		rt = texture_storage->get_render_target(rb->render_target);
 		ERR_FAIL_NULL(rt);
@@ -2277,7 +2277,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	if (p_environment.is_valid()) {
 		glow_enabled = environment_get_glow_enabled(p_environment);
 		if (glow_enabled) {
-			// If glow is enabled, we apply tonemapping etc. in post, so disable it during rendering
+			// If glow is enabled, we apply tonemapping etc. in post, so disable it during rendering.
 			apply_color_adjustments_in_post = true;
 		}
 	}
@@ -2286,9 +2286,16 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	if (p_environment.is_valid()) {
 		ssao_enabled = environment_get_ssao_enabled(p_environment);
 		if (ssao_enabled) {
-			// If SSAO is enabled, we apply tonemapping etc. in post, so disable it during rendering
+			// If SSAO is enabled, we apply tonemapping etc. in post, so disable it during rendering.
 			apply_color_adjustments_in_post = true;
 		}
+	}
+
+	bool fxaa_enabled = false;
+	fxaa_enabled = rb->get_screen_space_aa() == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA;
+	if (fxaa_enabled) {
+		// If FXAA is enabled, we apply tonemapping etc. in post, so disable it during rendering.
+		apply_color_adjustments_in_post = true;
 	}
 
 	// Assign render data
@@ -2947,7 +2954,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 			// Copy color buffer
 			post_effects->post_copy(fbo_rt, target_size, color,
 					depth_buffer, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
-					internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
+					internal_size, p_render_data->luminance_multiplier, rb->get_screen_space_aa(), glow_buffers, glow_intensity,
 					srgb_white, 0, false, bcs_spec_constants);
 
 			// Copy depth buffer
@@ -3021,7 +3028,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 				glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, write_color, 0, v);
 				post_effects->post_copy(fbos[2], target_size, source_color,
 						read_depth, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
-						internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
+						internal_size, p_render_data->luminance_multiplier, rb->get_screen_space_aa(), glow_buffers, glow_intensity,
 						srgb_white, v, true, bcs_spec_constants);
 			}
 
