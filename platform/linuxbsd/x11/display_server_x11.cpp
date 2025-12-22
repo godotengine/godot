@@ -6259,6 +6259,10 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 
 DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
+	if (r_error != OK) {
+		memdelete(ds);
+		return nullptr;
+	}
 	return ds;
 }
 
