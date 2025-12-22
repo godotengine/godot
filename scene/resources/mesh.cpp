@@ -916,7 +916,7 @@ void Mesh::clear_cache() const {
 
 #ifndef PHYSICS_3D_DISABLED
 Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
-	ERR_FAIL_NULL_V(convex_decomposition_function, Vector<Ref<Shape3D>>());
+	ERR_FAIL_NULL_V_MSG(convex_decomposition_function, Vector<Ref<Shape3D>>(), "The V-HACD module isn't enabled. Recompile the Godot editor or export template binary with the `module_vhacd_enabled=yes` SCons option.");
 
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
 	ERR_FAIL_COND_V(tm.is_null(), Vector<Ref<Shape3D>>());
