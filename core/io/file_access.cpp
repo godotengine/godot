@@ -71,6 +71,10 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
+#ifdef TOOLS_ENABLED
+	} else if (p_path.begins_with("editor://")) {
+		ret = create(ACCESS_EDITOR_RESOURCES);
+#endif
 	} else if (p_path.begins_with("pipe://")) {
 		ret = create(ACCESS_PIPE);
 	} else {
@@ -180,7 +184,6 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 	if (err != OK) {
 		ret.unref();
 	}
-
 	return ret;
 }
 
@@ -286,8 +289,19 @@ String FileAccess::fix_path(const String &p_path) const {
 				}
 				return r_path.replace("user://", "");
 			}
-
 		} break;
+		case ACCESS_EDITOR_RESOURCES: {
+#ifdef TOOLS_ENABLED
+			if (r_path.begins_with("editor://")) {
+				String data_dir = ProjectSettings::get_singleton()->get_editor_resource_path();
+				if (!data_dir.is_empty()) {
+					return r_path.replace("editor:/", data_dir);
+				}
+				return r_path.replace("editor://", "");
+			}
+#endif
+		} break;
+
 		case ACCESS_PIPE: {
 			return r_path;
 		} break;
