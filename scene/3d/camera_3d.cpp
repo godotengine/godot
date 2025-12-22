@@ -613,6 +613,14 @@ Camera3D::DopplerTracking Camera3D::get_doppler_tracking() const {
 	return doppler_tracking;
 }
 
+void Camera3D::set_doppler_scale(float p_scale) {
+	doppler_scale = p_scale;
+}
+
+float Camera3D::get_doppler_scale() const {
+	return doppler_scale;
+}
+
 void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("project_ray_normal", "screen_point"), &Camera3D::project_ray_normal);
 	ClassDB::bind_method(D_METHOD("project_local_ray_normal", "screen_point"), &Camera3D::project_local_ray_normal);
@@ -657,6 +665,8 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera3D::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera3D::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera3D::get_doppler_tracking);
+	ClassDB::bind_method(D_METHOD("set_doppler_scale", "mode"), &Camera3D::set_doppler_scale);
+	ClassDB::bind_method(D_METHOD("get_doppler_scale"), &Camera3D::get_doppler_scale);
 	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera3D::_get_frustum);
 	ClassDB::bind_method(D_METHOD("is_position_in_frustum", "world_point"), &Camera3D::is_position_in_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera3D::get_camera);
@@ -677,6 +687,7 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doppler_scale", PROPERTY_HINT_RANGE, "-4.0,4.0,or_less,or_greater"), "set_doppler_scale", "get_doppler_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1,degrees"), "set_fov", "get_fov");
