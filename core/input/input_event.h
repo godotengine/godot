@@ -527,6 +527,24 @@ public:
 	InputEventType get_type() const final override { return InputEventType::PAN_GESTURE; }
 };
 
+class InputEventRotateGesture : public InputEventGesture {
+	GDCLASS(InputEventRotateGesture, InputEventGesture);
+	real_t rotation = 0.0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_rotation(real_t p_rotation);
+	real_t get_rotation() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual String as_text() const override;
+	virtual String to_string() override;
+
+	InputEventRotateGesture() {}
+};
+
 class InputEventMIDI : public InputEvent {
 	GDCLASS(InputEventMIDI, InputEvent);
 
