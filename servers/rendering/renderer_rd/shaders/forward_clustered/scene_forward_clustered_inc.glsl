@@ -485,6 +485,13 @@ vec3 get_energy_compensation(vec3 f0, float env) {
 	return 1.0 + f0 * (1.0 / env - 1.0);
 }
 
+// Brinck and Maximov 2016, "The Technical Art of Uncharted 4"
+float compute_micro_shadowing(float NoL, float ao, float opacity) {
+	float aperture = 2.0 * ao * ao;
+	float microshadow = clamp(NoL + aperture - 1.0, 0.0, 1.0);
+	return mix(1.0, microshadow, opacity);
+}
+
 /* Set 2 Skeleton & Instancing (can change per item) */
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {

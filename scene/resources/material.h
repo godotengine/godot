@@ -502,6 +502,7 @@ private:
 		StringName distance_fade_min;
 		StringName distance_fade_max;
 		StringName ao_light_affect;
+		StringName micro_shadows;
 
 		StringName metallic_texture_channel;
 		StringName ao_texture_channel;
@@ -563,6 +564,7 @@ private:
 	float alpha_antialiasing_edge = 0.0f;
 	bool grow_enabled = false;
 	float ao_light_affect = 0.0f;
+	float micro_shadows = 0.85f;
 	float grow = 0.0f;
 	int particles_anim_h_frames = 0;
 	int particles_anim_v_frames = 0;
@@ -675,6 +677,9 @@ public:
 
 	void set_ao_light_affect(float p_ao_light_affect);
 	float get_ao_light_affect() const;
+
+	void set_micro_shadows(float p_micro_shadows);
+	float get_micro_shadows() const;
 
 	void set_clearcoat(float p_clearcoat);
 	float get_clearcoat() const;

@@ -102,6 +102,11 @@
 		<member name="ao_light_affect" type="float" setter="set_ao_light_affect" getter="get_ao_light_affect" default="0.0">
 			Amount that ambient occlusion affects lighting from lights. If [code]0[/code], ambient occlusion only affects ambient light. If [code]1[/code], ambient occlusion affects lights just as much as it affects ambient light. This can be used to impact the strength of the ambient occlusion effect, but typically looks unrealistic.
 		</member>
+		<member name="ao_micro_shadows" type="float" setter="set_micro_shadows" getter="get_micro_shadows" default="0.85">
+			Amount of micro shadowing applied to ambient occlusion. Higher values result in more shadowing in crevices and corners, while lower values result in less shadowing. This can help improve the appearance of ambient occlusion by simulating small details embedded in the materials. This property serves as a physically-based alternative to [member ao_light_affect].
+			[b]Note:[/b] This setting only has an effect if directional lights are present in the scene. It does not affect light rendering with [OmniLight3D] and [SpotLight3D].
+			[b]Note:[/b] For best results, this setting requires an [member ao_texture] and a [member normal_texture] generated with the same pipeline.
+		</member>
 		<member name="ao_on_uv2" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], use [code]UV2[/code] coordinates to look up from the [member ao_texture].
 		</member>
