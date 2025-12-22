@@ -485,7 +485,11 @@ void FileAccessPack::set_big_endian(bool p_big_endian) {
 }
 
 Error FileAccessPack::get_error() const {
-	if (eof) {
+	if (encryption_error) {
+		return encryption_error;
+	} else if (f.is_null()) {
+		return ERR_FILE_CANT_OPEN;
+	} else if (eof) {
 		return ERR_FILE_EOF;
 	}
 	return OK;
@@ -533,8 +537,8 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 			key.write[i] = script_encryption_key[i];
 		}
 
-		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
-		ERR_FAIL_COND_MSG(err, vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
+		encryption_error = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
+		ERR_FAIL_COND_MSG(encryption_error, vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
 		f = fae;
 		off = 0;
 	}
