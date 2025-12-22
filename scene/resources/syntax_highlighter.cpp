@@ -146,6 +146,12 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 
 	const String &str = text_edit->get_line_with_ime(p_line);
 	const int line_length = str.length();
+
+	// Don't highlight lines longer than ten thousand characters, otherwise TextEdit starts to struggle.
+	if (line_length > 10000) {
+		return Dictionary();
+	}
+
 	Color prev_color;
 
 	if (in_region != -1 && str.length() == 0) {
