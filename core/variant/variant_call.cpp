@@ -2220,7 +2220,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Rect2, get_center, sarray(), varray());
 	bind_method(Rect2, get_area, sarray(), varray());
 	bind_method(Rect2, has_area, sarray(), varray());
-	bind_method(Rect2, has_point, sarray("point"), varray());
+	bind_method(Rect2, has_point, sarray("point", "include_all_borders"), varray(false));
 	bind_method(Rect2, is_equal_approx, sarray("rect"), varray());
 	bind_method(Rect2, is_finite, sarray(), varray());
 	bind_method(Rect2, intersects, sarray("b", "include_borders"), varray(false));
