@@ -309,6 +309,13 @@
 				Emitted when the [param node] enters this tree.
 			</description>
 		</signal>
+		<signal name="node_added_to_group">
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="node" type="Node" />
+			<description>
+				Emitted when the [param node] is added to the given [param group].
+			</description>
+		</signal>
 		<signal name="node_configuration_warning_changed">
 			<param index="0" name="node" type="Node" />
 			<description>
@@ -319,6 +326,13 @@
 			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when the [param node] exits this tree.
+			</description>
+		</signal>
+		<signal name="node_removed_from_group">
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="node" type="Node" />
+			<description>
+				Emitted when the [param node] is removed from the given [param group].
 			</description>
 		</signal>
 		<signal name="node_renamed">
