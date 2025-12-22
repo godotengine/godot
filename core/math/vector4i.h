@@ -149,6 +149,9 @@ struct [[nodiscard]] Vector4i {
 	Vector4i(const Vector4 &p_vec4);
 	constexpr Vector4i(int32_t p_x, int32_t p_y, int32_t p_z, int32_t p_w) :
 			x(p_x), y(p_y), z(p_z), w(p_w) {}
+	template <typename V, std::enable_if_t<std::is_arithmetic_v<V>, int> = 0>
+	constexpr explicit Vector4i(V p_v) :
+			x(p_v), y(p_v), z(p_v), w(p_v) {}
 };
 
 int64_t Vector4i::length_squared() const {
