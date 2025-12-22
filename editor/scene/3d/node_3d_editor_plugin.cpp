@@ -673,12 +673,12 @@ Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) co
 }
 
 int Node3DEditorViewport::get_selected_count() const {
-	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
 	int count = 0;
 
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		Node3D *sp = Object::cast_to<Node3D>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
 		if (!sp) {
 			continue;
 		}
@@ -3349,13 +3349,13 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_update_camera(delta);
 			}
 
-			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+			const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
 			bool changed = false;
 			bool exist = false;
 
-			for (const KeyValue<Node *, Object *> &E : selection) {
-				Node3D *sp = Object::cast_to<Node3D>(E.key);
+			for (const KeyValue<ObjectID, Object *> &E : selection) {
+				Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
 				if (!sp) {
 					continue;
 				}
@@ -6156,7 +6156,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Cascades"), VIEW_DISPLAY_DEBUG_SDFGI, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Probes"), VIEW_DISPLAY_DEBUG_SDFGI_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
+			TTRC("Left-click a SDFGI probe to display its occlusion information (white = not occluded, red = fully occluded).\nRequires SDFGI to be enabled in Environment to have a visible effect."));
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
 			TTRC("Displays the scene luminance computed from the 3D buffer. This is used for Auto Exposure calculation.\nRequires Auto Exposure to be enabled in CameraAttributes to have a visible effect."));
@@ -8497,10 +8497,10 @@ void Node3DEditor::update_grid() {
 void Node3DEditor::_selection_changed() {
 	_refresh_menu_icons();
 
-	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		Node3D *sp = Object::cast_to<Node3D>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
 		if (!sp) {
 			continue;
 		}

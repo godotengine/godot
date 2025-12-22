@@ -2947,19 +2947,19 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 			switch (animation->track_get_type(track)) {
 				case Animation::TYPE_POSITION_3D: {
 					Vector3 t = animation->track_get_key_value(track, key_idx);
-					text += TTR("Position:") + " " + String(t) + "\n";
+					text += TTR("Position:") + " " + String(t);
 				} break;
 				case Animation::TYPE_ROTATION_3D: {
 					Quaternion t = animation->track_get_key_value(track, key_idx);
-					text += TTR("Rotation:") + " " + String(t) + "\n";
+					text += TTR("Rotation:") + " " + String(t);
 				} break;
 				case Animation::TYPE_SCALE_3D: {
 					Vector3 t = animation->track_get_key_value(track, key_idx);
-					text += TTR("Scale:") + " " + String(t) + "\n";
+					text += TTR("Scale:") + " " + String(t);
 				} break;
 				case Animation::TYPE_BLEND_SHAPE: {
 					float t = animation->track_get_key_value(track, key_idx);
-					text += TTR("Blend Shape:") + " " + itos(t) + "\n";
+					text += TTR("Blend Shape:") + " " + itos(t);
 				} break;
 				case Animation::TYPE_VALUE: {
 					const Variant &v = animation->track_get_key_value(track, key_idx);
@@ -2988,7 +2988,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 						}
 						text += args[i].get_construct_string();
 					}
-					text += ")\n";
+					text += ")";
 
 				} break;
 				case Animation::TYPE_BEZIER: {
@@ -3019,7 +3019,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 							handle_mode = itos(hm);
 						} break;
 					}
-					text += vformat(TTR("Handle mode: %s\n"), handle_mode);
+					text += vformat(TTR("Handle mode: %s"), handle_mode);
 				} break;
 				case Animation::TYPE_AUDIO: {
 					String stream_name = "null";
@@ -3038,11 +3038,11 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					float so = animation->audio_track_get_key_start_offset(track, key_idx);
 					text += TTR("Start (s):") + " " + rtos(so) + "\n";
 					float eo = animation->audio_track_get_key_end_offset(track, key_idx);
-					text += TTR("End (s):") + " " + rtos(eo) + "\n";
+					text += TTR("End (s):") + " " + rtos(eo);
 				} break;
 				case Animation::TYPE_ANIMATION: {
 					String name = animation->animation_track_get_key_animation(track, key_idx);
-					text += TTR("Animation Clip:") + " " + name + "\n";
+					text += TTR("Animation Clip:") + " " + name;
 				} break;
 			}
 			return text;

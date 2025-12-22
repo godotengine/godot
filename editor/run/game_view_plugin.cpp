@@ -1243,7 +1243,8 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	speed_state_button = memnew(MenuButton);
 	process_hb->add_child(speed_state_button);
 	speed_state_button->set_text(U"1.0×");
-	speed_state_button->set_theme_type_variation(SceneStringName(FlatButton));
+	speed_state_button->set_flat(false);
+	speed_state_button->set_theme_type_variation("FlatMenuButton");
 	speed_state_button->set_tooltip_text(TTRC("Change the game speed."));
 	speed_state_button->set_accessibility_name(TTRC("Speed State"));
 

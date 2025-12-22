@@ -100,9 +100,6 @@ void OpenXRVisibilityMaskExtension::on_session_created(const XrSession p_instanc
 		rendering_server->material_set_shader(material, shader);
 		rendering_server->material_set_render_priority(material, 99);
 
-		// Create our mesh.
-		mesh = rendering_server->mesh_create();
-
 		// Get our initial mesh data.
 		mesh_count = openxr_api->get_view_count(); // We need a mesh for each view.
 		for (uint32_t i = 0; i < mesh_count; i++) {
@@ -237,6 +234,16 @@ void OpenXRVisibilityMaskExtension::_update_mesh() {
 			index_count += mesh_data[i].indices.size();
 		}
 
+		if (vertice_count == 0 || index_count == 0) {
+			// Free our mesh if we have one.
+			if (mesh.is_valid()) {
+				rendering_server->free_rid(mesh);
+				mesh = RID();
+			}
+
+			return;
+		}
+
 		vertices.resize(vertice_count);
 		indices.resize(index_count);
 		uint64_t offset = 0;
@@ -261,6 +268,11 @@ void OpenXRVisibilityMaskExtension::_update_mesh() {
 			}
 
 			offset += mesh_data[i].vertices.size();
+		}
+
+		// Create our mesh if we don't have one yet.
+		if (mesh.is_null()) {
+			mesh = rendering_server->mesh_create();
 		}
 
 		// Update our mesh.

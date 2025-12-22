@@ -35,13 +35,13 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -409,7 +409,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		folder_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesDialog::_on_folder_button_pressed));
 		hbc->add_child(folder_button);
 
-		_folder_dialog = memnew(FileDialog);
+		_folder_dialog = memnew(EditorFileDialog);
 		_folder_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 		_folder_dialog->connect("dir_selected", callable_mp(this, &FindInFilesDialog::_on_folder_selected));
 		add_child(_folder_dialog);

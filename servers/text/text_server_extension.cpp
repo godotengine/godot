@@ -43,6 +43,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_support_data_info);
 	GDVIRTUAL_BIND(_save_support_data, "filename");
 	GDVIRTUAL_BIND(_get_support_data);
+	GDVIRTUAL_BIND(_is_locale_using_support_data, "locale");
 
 	GDVIRTUAL_BIND(_is_locale_right_to_left, "locale");
 
@@ -445,6 +446,12 @@ bool TextServerExtension::save_support_data(const String &p_filename) const {
 PackedByteArray TextServerExtension::get_support_data() const {
 	PackedByteArray ret;
 	GDVIRTUAL_CALL(_get_support_data, ret);
+	return ret;
+}
+
+bool TextServerExtension::is_locale_using_support_data(const String &p_locale) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_is_locale_using_support_data, p_locale, ret);
 	return ret;
 }
 

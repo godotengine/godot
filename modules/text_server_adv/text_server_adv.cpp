@@ -522,6 +522,15 @@ PackedByteArray TextServerAdvanced::_get_support_data() const {
 #endif
 }
 
+bool TextServerAdvanced::_is_locale_using_support_data(const String &p_locale) const {
+	String l = p_locale.get_slicec('_', 0);
+	if ((l == "my") || (l == "zh") || (l == "ja") || (l == "ko") || (l == "km") || (l == "lo") || (l == "th")) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 bool TextServerAdvanced::_is_locale_right_to_left(const String &p_locale) const {
 	String l = p_locale.get_slicec('_', 0);
 	if ((l == "ar") || (l == "dv") || (l == "he") || (l == "fa") || (l == "ff") || (l == "ku") || (l == "ur")) {

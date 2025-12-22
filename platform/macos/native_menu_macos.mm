@@ -1204,6 +1204,8 @@ void NativeMenuMacOS::set_item_disabled(const RID &p_rid, int p_idx, bool p_disa
 	ERR_FAIL_COND(p_idx >= item_start + item_count);
 	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
 	if (menu_item) {
+		GodotMenuItem *obj = [menu_item representedObject];
+		obj->enabled = !p_disabled;
 		[menu_item setEnabled:(!p_disabled)];
 	}
 }

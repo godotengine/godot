@@ -1477,6 +1477,19 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 	}
 }
 
+void RasterizerSceneGLES3::_update_scene_ubo(GLuint &p_ubo_buffer, GLuint p_index, uint32_t p_size, const void *p_source_data, String p_name) {
+	if (p_ubo_buffer == 0) {
+		glGenBuffers(1, &p_ubo_buffer);
+		glBindBufferBase(GL_UNIFORM_BUFFER, p_index, p_ubo_buffer);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, p_ubo_buffer, p_size, p_source_data, GL_STREAM_DRAW, p_name);
+	} else {
+		glBindBufferBase(GL_UNIFORM_BUFFER, p_index, p_ubo_buffer);
+		glBufferData(GL_UNIFORM_BUFFER, p_size, p_source_data, GL_STREAM_DRAW);
+	}
+
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
 // Needs to be called after _setup_lights so that directional_light_count is accurate.
 void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows, float p_shadow_bias) {
 	Projection correction;
@@ -1619,29 +1632,19 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 		scene_state.data.IBL_exposure_normalization = 1.0;
 	}
 
-	if (scene_state.ubo_buffer == 0) {
-		glGenBuffers(1, &scene_state.ubo_buffer);
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DATA_UNIFORM_LOCATION, scene_state.ubo_buffer);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, scene_state.ubo_buffer, sizeof(SceneState::UBO) * 2, &scene_state.data, GL_STREAM_DRAW, "Scene state UBO");
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	} else {
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DATA_UNIFORM_LOCATION, scene_state.ubo_buffer);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::UBO) * 2, &scene_state.data, GL_STREAM_DRAW);
+	_update_scene_ubo(scene_state.ubo_buffer, SCENE_DATA_UNIFORM_LOCATION, sizeof(SceneState::UBO), &scene_state.data, "Scene state UBO");
+	if (p_render_data->view_count > 1) {
+		_update_scene_ubo(scene_state.multiview_buffer, SCENE_MULTIVIEW_UNIFORM_LOCATION, sizeof(SceneState::MultiviewUBO), &scene_state.multiview_data, "Multiview UBO");
 	}
 
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	if (scene_state.prev_data_state != 0) {
+		void *source_data = scene_state.prev_data_state == 1 ? &scene_state.data : &scene_state.prev_data;
+		_update_scene_ubo(scene_state.prev_ubo_buffer, SCENE_PREV_DATA_UNIFORM_LOCATION, sizeof(SceneState::UBO), source_data, "Previous scene state UBO");
 
-	if (p_render_data->view_count > 1) {
-		if (scene_state.multiview_buffer == 0) {
-			glGenBuffers(1, &scene_state.multiview_buffer);
-			glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
-			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, scene_state.multiview_buffer, sizeof(SceneState::MultiviewUBO) * 2, &scene_state.multiview_data, GL_STREAM_DRAW, "Multiview UBO");
-		} else {
-			glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
-			glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::MultiviewUBO) * 2, &scene_state.multiview_data, GL_STREAM_DRAW);
+		if (p_render_data->view_count > 1) {
+			source_data = scene_state.prev_data_state == 1 ? &scene_state.multiview_data : &scene_state.prev_multiview_data;
+			_update_scene_ubo(scene_state.prev_multiview_buffer, SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION, sizeof(SceneState::MultiviewUBO), source_data, "Previous multiview UBO");
 		}
-
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 }
 
@@ -2408,6 +2411,17 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	scene_state.data.emissive_exposure_normalization = -1.0; // Use default exposure normalization.
 
+	bool enough_vertex_attribs_for_motion_vectors = GLES3::Config::get_singleton()->max_vertex_attribs >= 22;
+	if (rt && rt->overridden.velocity_fbo != 0 && enough_vertex_attribs_for_motion_vectors) {
+		// First frame we render motion vectors? Use our current data!
+		if (scene_state.prev_data_state == 0) {
+			scene_state.prev_data_state = 1;
+		}
+	} else {
+		// Not using motion vectors? We don't need to load our data.
+		scene_state.prev_data_state = 0;
+	}
+
 	bool flip_y = !is_reflection_probe;
 
 	if (rt && rt->overridden.color.is_valid()) {
@@ -2520,18 +2534,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.reset_gl_state();
 
 	GLuint motion_vectors_fbo = rt ? rt->overridden.velocity_fbo : 0;
-	if (motion_vectors_fbo != 0 && GLES3::Config::get_singleton()->max_vertex_attribs >= 22) {
+	if (motion_vectors_fbo != 0 && enough_vertex_attribs_for_motion_vectors) {
 		RENDER_TIMESTAMP("Motion Vectors Pass");
 		glBindFramebuffer(GL_FRAMEBUFFER, motion_vectors_fbo);
 
 		Size2i motion_vectors_target_size = rt->velocity_target_size;
 		glViewport(0, 0, motion_vectors_target_size.x, motion_vectors_target_size.y);
-
-		if (!scene_state.is_prev_data_stored) {
-			scene_state.prev_data = scene_state.data;
-			scene_state.prev_multiview_data = scene_state.multiview_data;
-			scene_state.is_prev_data_stored = true;
-		}
 
 		scene_state.enable_gl_depth_test(true);
 		scene_state.enable_gl_depth_draw(true);
@@ -2553,8 +2561,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, spec_constant, use_wireframe);
 		_render_list_template<PASS_MODE_MOTION_VECTORS>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_OPAQUE].elements.size());
 
+		// Copy our current scene data to our previous scene data for use in the next frame.
 		scene_state.prev_data = scene_state.data;
 		scene_state.prev_multiview_data = scene_state.multiview_data;
+		scene_state.prev_data_state = 2;
 	}
 
 	GLuint fbo = 0;
@@ -4602,8 +4612,16 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 		GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.ubo_buffer);
 	}
 
+	if (scene_state.prev_ubo_buffer != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.prev_ubo_buffer);
+	}
+
 	if (scene_state.multiview_buffer != 0) {
 		GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.multiview_buffer);
+	}
+
+	if (scene_state.prev_multiview_buffer != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.prev_multiview_buffer);
 	}
 
 	if (scene_state.tonemap_buffer != 0) {

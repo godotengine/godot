@@ -4519,7 +4519,7 @@ Bool DisplayServerX11::_predicate_all_events(Display *display, XEvent *event, XP
 	return True;
 }
 
-bool DisplayServerX11::_wait_for_events() const {
+bool DisplayServerX11::_wait_for_events(int timeout_seconds, int timeout_microseconds) const {
 	int x11_fd = ConnectionNumber(x11_display);
 	fd_set in_fds;
 
@@ -4529,8 +4529,8 @@ bool DisplayServerX11::_wait_for_events() const {
 	FD_SET(x11_fd, &in_fds);
 
 	struct timeval tv;
-	tv.tv_usec = 0;
-	tv.tv_sec = 1;
+	tv.tv_sec = timeout_seconds;
+	tv.tv_usec = timeout_microseconds;
 
 	// Wait for next event or timeout.
 	int num_ready_fds = select(x11_fd + 1, &in_fds, nullptr, nullptr, &tv);
@@ -4549,7 +4549,8 @@ bool DisplayServerX11::_wait_for_events() const {
 
 void DisplayServerX11::_poll_events() {
 	while (!events_thread_done.is_set()) {
-		_wait_for_events();
+		// Wait with a shorter timeout from the events thread to avoid delayed inputs.
+		_wait_for_events(0, 1000);
 
 		// Process events from the queue.
 		{
