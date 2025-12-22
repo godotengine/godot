@@ -505,6 +505,22 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		} else {
 			contents_aabb.merge_with(aabb);
 		}
+	} else {
+		MultiMeshInstance3D *multi_mesh_node = Object::cast_to<MultiMeshInstance3D>(p_node);
+		if (multi_mesh_node && multi_mesh_node->get_multimesh().is_valid()) {
+			const Ref<MultiMesh> multi_mesh = multi_mesh_node->get_multimesh();
+			const Ref<Mesh> mm_mesh = multi_mesh->get_mesh();
+			if (mm_mesh.is_valid()) {
+				_fill_mesh(scene_tree, mm_mesh, item);
+			}
+			AABB aabb = accum_xform.xform(multi_mesh->get_aabb());
+			if (first_aabb) {
+				contents_aabb = aabb;
+				first_aabb = false;
+			} else {
+				contents_aabb.merge_with(aabb);
+			}
+		}
 	}
 	MultiMeshInstance3D *multi_mesh_node = Object::cast_to<MultiMeshInstance3D>(p_node);
 	if (multi_mesh_node && multi_mesh_node->get_multimesh().is_valid()) {

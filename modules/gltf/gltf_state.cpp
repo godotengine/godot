@@ -489,3 +489,13 @@ GLTFNodeIndex GLTFState::append_gltf_node(Ref<GLTFNode> p_gltf_node, Node *p_god
 	}
 	return new_index;
 }
+
+String GLTFState::generate_unique_name(const String &p_requested_name) {
+	const String start_name = p_requested_name.validate_node_name();
+	String unique_name = start_name;
+	for (int i = 2; unique_names.has(unique_name); i++) {
+		unique_name = start_name + itos(i);
+	}
+	unique_names.insert(unique_name);
+	return unique_name;
+}
