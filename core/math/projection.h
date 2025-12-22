@@ -109,6 +109,7 @@ struct [[nodiscard]] Projection {
 	real_t get_aspect() const;
 	real_t get_fov() const;
 	bool is_orthogonal() const;
+	bool is_frustum_symmetric() const;
 
 	Vector<Plane> get_projection_planes(const Transform3D &p_transform) const;
 

@@ -158,7 +158,7 @@ public:
 
 			float z_far; // 4 - 340
 			uint32_t directional_light_count; // 4 - 344
-			uint32_t pad1; // 4 - 348
+			uint32_t full_projection; // 4 - 348
 			uint32_t pad2; // 4 - 352
 		};
 
