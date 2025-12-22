@@ -37,6 +37,7 @@
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
@@ -672,7 +673,7 @@ void EditorPropertyPath::_path_selected(const String &p_path) {
 	String full_path = p_path;
 
 	if (enable_uid) {
-		const ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
+		const ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(full_path);
 		if (id != ResourceUID::INVALID_ID) {
 			full_path = ResourceUID::get_singleton()->id_to_text(id);
 		}
