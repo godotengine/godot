@@ -2526,6 +2526,9 @@
 			During each physics tick, Godot will multiply the linear velocity of RigidBodies by [code]1.0 - combined_damp / physics_ticks_per_second[/code], where [code]combined_damp[/code] is the sum of the linear damp of the body and this value, or the area's value the body is in, assuming the body defaults to combine damp values. See [enum RigidBody2D.DampMode].
 			[b]Warning:[/b] Godot's damping calculations are simulation tick rate dependent. Changing [member physics/common/physics_ticks_per_second] may significantly change the outcomes and feel of your simulation. This is true for the entire range of damping values greater than 0. To get back to a similar feel, you also need to change your damp values. This needed change is not proportional and differs from case to case.
 		</member>
+		<member name="physics/2d/kinematic_body_initial_teleport" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the first time the transform is set on a 2D physics body after the body's mode is set to [constant PhysicsServer2D.BODY_MODE_KINEMATIC] it will teleport to the new transform, keeping its velocity and ignoring other bodies in its path. This is the default behavior for Godot versions before 4.6.
+		</member>
 		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;" keywords="godotphysics">
 			Sets which physics engine to use for 2D physics.
 			[b]DEFAULT[/b] is currently equivalent to [b]GodotPhysics2D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
@@ -2606,6 +2609,9 @@
 			[b]Note:[/b] Godot damping calculations are velocity-dependent, meaning bodies moving faster will take a longer time to come to rest. They do not simulate inertia, friction, or air resistance. Therefore heavier or larger bodies will lose speed at the same proportional rate as lighter or smaller bodies.
 			During each physics tick, Godot will multiply the linear velocity of RigidBodies by [code]1.0 - combined_damp / physics_ticks_per_second[/code]. By default, bodies combine damp factors: [code]combined_damp[/code] is the sum of the damp value of the body and this value or the area's value the body is in. See [enum RigidBody3D.DampMode].
 			[b]Warning:[/b] Godot's damping calculations are simulation tick rate dependent. Changing [member physics/common/physics_ticks_per_second] may significantly change the outcomes and feel of your simulation. This is true for the entire range of damping values greater than 0. To get back to a similar feel, you also need to change your damp values. This needed change is not proportional and differs from case to case.
+		</member>
+		<member name="physics/3d/kinematic_body_initial_teleport" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the first time the transform is set on a 3D physics body after the body's mode is set to [constant PhysicsServer3D.BODY_MODE_KINEMATIC] it will teleport to the new transform, keeping its velocity and ignoring other bodies in its path. This is the default behavior for Godot versions before 4.6.
 		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;" keywords="godotphysics, jolt">
 			Sets which physics engine to use for 3D physics.

@@ -568,6 +568,19 @@ void JoltBody3D::set_transform(Transform3D p_transform) {
 	_transform_changed();
 }
 
+void JoltBody3D::flush_kinematic_transform() {
+	ERR_FAIL_COND_MSG(!is_kinematic(), "Attempted to flush kinematic transform of non-kinematic body.");
+
+	if (!in_space()) {
+		jolt_settings->mPosition = to_jolt_r(kinematic_transform.origin);
+		jolt_settings->mRotation = to_jolt(kinematic_transform.basis);
+	} else {
+		space->get_body_iface().SetPositionAndRotation(jolt_body->GetID(), to_jolt_r(kinematic_transform.origin), to_jolt(kinematic_transform.basis), JPH::EActivation::DontActivate);
+	}
+
+	_transform_changed();
+}
+
 Variant JoltBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
 	switch (p_state) {
 		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
