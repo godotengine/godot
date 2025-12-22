@@ -71,6 +71,7 @@ private:
 	EditorFileDialog *file_dialog = nullptr;
 	AcceptDialog *accept = nullptr;
 	String last_filter;
+	HashMap<String, String> scene_file_path_renames;
 
 	void _scene_tree_folded(Object *p_obj);
 	void _scene_tree_selected();
@@ -80,6 +81,7 @@ private:
 	void _scene_tree_rmb_selected(const Vector2 &p_position, MouseButton p_button);
 	void _item_menu_id_pressed(int p_option);
 	void _file_selected(const String &p_file);
+	void _files_moved(const String &p_old_file, const String &p_new_file);
 
 protected:
 	static void _bind_methods();

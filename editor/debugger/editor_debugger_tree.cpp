@@ -31,6 +31,7 @@
 #include "editor_debugger_tree.h"
 
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -75,6 +76,15 @@ void EditorDebuggerTree::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			update_icon_max_width();
+			if (FileSystemDock::get_singleton()) {
+				FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &EditorDebuggerTree::_files_moved));
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (FileSystemDock::get_singleton()) {
+				FileSystemDock::get_singleton()->disconnect("files_moved", callable_mp(this, &EditorDebuggerTree::_files_moved));
+			}
 		} break;
 	}
 }
@@ -256,7 +266,13 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		if (node.scene_file_path.is_empty()) {
 			item->set_tooltip_text(0, node.name + "\n" + TTR("Type:") + " " + node.type_name);
 		} else {
-			item->set_tooltip_text(0, node.name + "\n" + TTR("Instance:") + " " + node.scene_file_path + "\n" + TTR("Type:") + " " + node.type_name);
+			String node_scene_file_path = node.scene_file_path;
+
+			if (scene_file_path_renames.has(node_scene_file_path)) {
+				node_scene_file_path = scene_file_path_renames[node_scene_file_path];
+			}
+
+			item->set_tooltip_text(0, node.name + "\n" + TTR("Instance:") + " " + node_scene_file_path + "\n" + TTR("Type:") + " " + node.type_name);
 		}
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(node.type_name);
 		if (icon.is_valid()) {
@@ -307,6 +323,11 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		const Color remote_button_color = Color(1, 1, 1, 0.8);
 		if (!node.scene_file_path.is_empty()) {
 			String node_scene_file_path = node.scene_file_path;
+
+			if (scene_file_path_renames.has(node_scene_file_path)) {
+				node_scene_file_path = scene_file_path_renames[node_scene_file_path];
+			}
+
 			Ref<Texture2D> button_icon = get_editor_theme_icon(SNAME("InstanceOptions"));
 			String tooltip = vformat(TTR("This node has been instantiated from a PackedScene file:\n%s\nClick to open the original file in the Editor."), node_scene_file_path);
 
@@ -532,6 +553,20 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 
 			ensure_cursor_is_visible();
 		}
+	}
+}
+
+void EditorDebuggerTree::_files_moved(const String &p_old_file, const String &p_new_file) {
+	scene_file_path_renames[p_old_file] = p_new_file;
+
+	for (KeyValue<String, String> &E : scene_file_path_renames) {
+		if (E.value == p_old_file) {
+			E.value = p_new_file;
+		}
+	}
+
+	if (!updating_scene_tree && EditorDebuggerNode::get_singleton()) {
+		EditorDebuggerNode::get_singleton()->request_remote_tree();
 	}
 }
 
