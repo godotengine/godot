@@ -580,6 +580,36 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	const Ref<StyleBoxFlat> style_slider_grabber = make_flat_stylebox(style_progress_color, 4, 4, 4, 4, 4);
 	const Ref<StyleBoxFlat> style_slider_grabber_highlight = make_flat_stylebox(style_focus_color, 4, 4, 4, 4, 4);
 
+	// HResizableScrollbar
+
+	theme->set_stylebox("scroll", "HResizableScrollBar", style_h_scrollbar);
+	theme->set_stylebox("scroll_focus", "HResizableScrollBar", focus);
+	theme->set_stylebox("grabber", "HResizableScrollBar", style_scrollbar_grabber);
+	theme->set_stylebox("grabber_highlight", "HResizableScrollBar", style_scrollbar_grabber_highlight);
+	theme->set_stylebox("grabber_pressed", "HResizableScrollBar", style_scrollbar_grabber_pressed);
+
+	theme->set_icon("increment", "HResizableScrollBar", empty_icon);
+	theme->set_icon("increment_highlight", "HResizableScrollBar", empty_icon);
+	theme->set_icon("increment_pressed", "HResizableScrollBar", empty_icon);
+	theme->set_icon("decrement", "HResizableScrollBar", empty_icon);
+	theme->set_icon("decrement_highlight", "HResizableScrollBar", empty_icon);
+	theme->set_icon("decrement_pressed", "HResizableScrollBar", empty_icon);
+
+	// VResizableScrollBar
+
+	theme->set_stylebox("scroll", "VResizableScrollBar", style_v_scrollbar);
+	theme->set_stylebox("scroll_focus", "VResizableScrollBar", focus);
+	theme->set_stylebox("grabber", "VResizableScrollBar", style_scrollbar_grabber);
+	theme->set_stylebox("grabber_highlight", "VResizableScrollBar", style_scrollbar_grabber_highlight);
+	theme->set_stylebox("grabber_pressed", "VResizableScrollBar", style_scrollbar_grabber_pressed);
+
+	theme->set_icon("increment", "VResizableScrollBar", empty_icon);
+	theme->set_icon("increment_highlight", "VResizableScrollBar", empty_icon);
+	theme->set_icon("increment_pressed", "VResizableScrollBar", empty_icon);
+	theme->set_icon("decrement", "VResizableScrollBar", empty_icon);
+	theme->set_icon("decrement_highlight", "VResizableScrollBar", empty_icon);
+	theme->set_icon("decrement_pressed", "VResizableScrollBar", empty_icon);
+
 	// HSlider
 
 	theme->set_stylebox("slider", "HSlider", style_slider);
