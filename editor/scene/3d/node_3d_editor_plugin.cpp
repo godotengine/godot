@@ -2718,7 +2718,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_SCALE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", event_mod) && editor_selection->get_top_selected_node_list().size() == 1 && !collision_reposition) {
+			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", event_mod) && editor_selection->get_top_selected_node_list().size() >= 1 && !collision_reposition) {
 				if (_edit.mode == TRANSFORM_NONE || _edit.instant) {
 					if (_edit.mode == TRANSFORM_NONE) {
 						_compute_edit(_edit.mouse_pos);
@@ -3527,8 +3527,42 @@ void Node3DEditorViewport::_notification(int p_what) {
 					}
 				} else {
 					const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-					if (selection.size() == 1) {
-						selected_node = Object::cast_to<Node3D>(selection.front()->get());
+					if (selection.size() >= 1) {
+						if (selection.size() == 1) {
+							selected_node = Object::cast_to<Node3D>(selection.front()->get());
+						} else {
+							Vector3 center = Vector3();
+							int valid_nodes = 0;
+
+							for (Node *E : selection) {
+								Node3D *sp = Object::cast_to<Node3D>(E);
+								if (sp) {
+									center += sp->get_global_position();
+									valid_nodes++;
+								}
+							}
+
+							if (valid_nodes > 0) {
+								center /= valid_nodes;
+
+								Vector3 collision_pos = spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, nullptr));
+								Vector3 offset = collision_pos - center;
+
+								for (Node *E : selection) {
+									Node3D *sp = Object::cast_to<Node3D>(E);
+									if (sp) {
+										sp->set_global_position(sp->get_global_position() + offset);
+									}
+								}
+
+								if (!ruler->is_inside_tree()) {
+									double snap = EDITOR_GET("interface/inspector/default_float_step");
+									int snap_step_decimals = Math::range_step_decimals(snap);
+									set_message(TTR("Translating:") + " (" + String::num(collision_pos.x, snap_step_decimals) + ", " +
+											String::num(collision_pos.y, snap_step_decimals) + ", " + String::num(collision_pos.z, snap_step_decimals) + ")");
+								}
+							}
+						}
 					}
 				}
 
@@ -4926,10 +4960,11 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	} else if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
 		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
-		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
-
-		if (first_selected_node) {
-			_insert_rid_recursive(first_selected_node, rids);
+		for (Node *E : selection) {
+			Node3D *selected_node = Object::cast_to<Node3D>(E);
+			if (selected_node) {
+				_insert_rid_recursive(selected_node, rids);
+			}
 		}
 	}
 
@@ -4954,16 +4989,46 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 		const Vector3 bb_basis_z = bb_basis_x.cross(bb_basis_y);
 		const Basis bb_basis = Basis(bb_basis_x, bb_basis_y, bb_basis_z);
 
-		// This normal-aligned Basis allows us to create an AABB that can fit on the surface plane as snugly as possible.
-		const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_transform().origin);
-		const AABB p_node_bb = _calculate_spatial_bounds(p_node, true, &bb_transform);
-		// The x-axis's alignment with the surface normal also makes it trivial to get the distance from `p_node`'s origin at (0, 0, 0) to the correct AABB face.
-		const float offset_distance = -p_node_bb.position.x;
+		if (p_node == nullptr) {
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			Vector3 center;
+			int valid_nodes = 0;
+			AABB combined_aabb;
+			bool first = true;
 
-		// `result_offset` is in global space.
-		const Vector3 result_offset = result.position + result.normal * offset_distance;
+			for (Node *E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E);
+				if (sp) {
+					center += sp->get_global_position();
+					valid_nodes++;
 
-		return result_offset;
+					AABB node_aabb = _calculate_spatial_bounds(sp, true);
+					Transform3D node_xform = sp->get_global_transform();
+					node_aabb = node_xform.xform(node_aabb);
+
+					if (first) {
+						combined_aabb = node_aabb;
+						first = false;
+					} else {
+						combined_aabb.merge_with(node_aabb);
+					}
+				}
+			}
+
+			if (valid_nodes > 0) {
+				center /= valid_nodes;
+
+				const Transform3D bb_transform = Transform3D(bb_basis, center);
+				const AABB transformed_aabb = bb_transform.affine_inverse().xform(combined_aabb);
+				const float offset_distance = -transformed_aabb.position.x;
+				return result.position + result.normal * offset_distance;
+			}
+		} else {
+			const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_transform().origin);
+			const AABB p_node_bb = _calculate_spatial_bounds(p_node, true, &bb_transform);
+			const float offset_distance = -p_node_bb.position.x;
+			return result.position + result.normal * offset_distance;
+		}
 	}
 
 	const bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
