@@ -30,6 +30,8 @@
 
 #include "texture_rect.h"
 
+#include "scene/resources/atlas_texture.h"
+
 void TextureRect::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -95,7 +97,25 @@ void TextureRect::_notification(int p_what) {
 			if (region.has_area()) {
 				draw_texture_rect_region(texture, Rect2(offset, size), region);
 			} else {
-				draw_texture_rect(texture, Rect2(offset, size), tile);
+				// `draw_texture_rect` doesn't support tiling an AtlasTexture.
+				// Workaround using nine patch. Doesn't work properly for non-zero margin, nesting AtlasTextures is fine otherwise.
+				if (tile && Object::cast_to<AtlasTexture>(*texture)) {
+					Rect2 src_rect(Vector2(), texture->get_size());
+					Rect2 dst_rect(offset, size);
+					bool has_margin = false;
+					Ref<AtlasTexture> at = texture;
+					while (at.is_valid()) {
+						at->get_rect_region(dst_rect, src_rect, dst_rect, src_rect);
+						has_margin = has_margin || (at->get_margin() != Rect2());
+						at = at->get_atlas();
+					}
+					if (has_margin) {
+						WARN_PRINT_ONCE(vformat("Tiling an AtlasTexture with non-zero margin is not supported (in: %s).", this));
+					}
+					RS::get_singleton()->canvas_item_add_nine_patch(get_canvas_item(), dst_rect, src_rect, texture->get_scaled_rid(), Vector2(), Vector2(), RS::NINE_PATCH_TILE, RS::NINE_PATCH_TILE, true);
+				} else {
+					draw_texture_rect(texture, Rect2(offset, size), tile);
+				}
 			}
 		} break;
 		case NOTIFICATION_RESIZED: {
