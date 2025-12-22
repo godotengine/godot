@@ -162,7 +162,7 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 			image = atlas->get_image();
 		}
 	} else {
-		image = p_texture->get_image();
+		image = RS::get_singleton()->texture_2d_get(p_texture->get_rid());
 	}
 
 	if (image.is_valid()) {
@@ -179,7 +179,9 @@ void TexturePreview::_update_metadata_label_text() {
 
 	const String format_name = format != Image::FORMAT_MAX ? Image::get_format_name(format) : texture->get_class();
 
-	const Vector2i resolution = texture->get_size();
+	const Ref<Image> img = RS::get_singleton()->texture_2d_get(texture->get_rid());
+	ERR_FAIL_COND(img.is_null());
+	const Vector2i resolution = img->get_size();
 	const int mipmaps = get_texture_mipmaps_count(texture);
 
 	if (format != Image::FORMAT_MAX) {
@@ -198,24 +200,15 @@ void TexturePreview::_update_metadata_label_text() {
 		}
 		memory *= mipmaps_multiplier;
 
-		if (mipmaps >= 1) {
-			metadata_label->set_text(
-					vformat(String::utf8("%d×%d %s\n") + TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
-							texture->get_width(),
-							texture->get_height(),
-							format_name,
-							mipmaps,
-							String::humanize_size(memory)));
-		} else {
-			// "No Mipmaps" is easier to distinguish than "0 Mipmaps",
-			// especially since 0, 6, and 8 look quite close with the default code font.
-			metadata_label->set_text(
-					vformat(String::utf8("%d×%d %s\n") + TTR("No Mipmaps") + "\n" + TTR("Memory: %s"),
-							texture->get_width(),
-							texture->get_height(),
-							format_name,
-							String::humanize_size(memory)));
-		}
+		String texture_size_str = texture->get_size() != resolution ? vformat(String::utf8("(%d×%d)"), texture->get_width(), texture->get_height()) : "";
+		String mipmaps_str = mipmaps >= 1 ? vformat("%d Mipmaps", mipmaps) : "No Mipmaps";
+		metadata_label->set_text(
+				vformat(String::utf8("%d×%d %s %s\n") + TTR(mipmaps_str) + "\n" + TTR("Memory: %s"),
+						resolution.width,
+						resolution.height,
+						format_name,
+						texture_size_str,
+						String::humanize_size(memory)));
 	} else {
 		metadata_label->set_text(
 				vformat(String::utf8("%d×%d %s"),
