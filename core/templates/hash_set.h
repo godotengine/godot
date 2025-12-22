@@ -381,7 +381,10 @@ public:
 	};
 
 	_FORCE_INLINE_ Iterator begin() const {
-		return _size ? Iterator(_keys, _size, 0) : Iterator();
+		if (_size == 0) {
+			return Iterator();
+		}
+		return Iterator(_keys, _size, 0);
 	}
 	_FORCE_INLINE_ Iterator end() const {
 		return Iterator();
