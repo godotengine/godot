@@ -1281,15 +1281,15 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							Quaternion rot;
 							if (!backward) {
 								if (Animation::is_greater_approx(prev_time, time)) {
-									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0], backward);
 									if (err != OK) {
 										continue;
 									}
 									loc[0] = post_process_key_value(a, i, loc[0], t->object_id, t->bone_idx);
-									a->try_position_track_interpolate(i, end, &loc[1]);
+									a->try_position_track_interpolate(i, end, &loc[1], backward);
 									loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 
-									a->try_rotation_track_interpolate(rot_track, end, &rot);
+									a->try_rotation_track_interpolate(rot_track, end, &rot, backward);
 									rot = post_process_key_value(a, rot_track, rot, t->object_id, t->bone_idx);
 
 									root_motion_cache.loc += rot.xform_inv(loc[1] - loc[0]) * blend;
@@ -1297,30 +1297,30 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							} else {
 								if (Animation::is_less_approx(prev_time, time)) {
-									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0], backward);
 									if (err != OK) {
 										continue;
 									}
 									loc[0] = post_process_key_value(a, i, loc[0], t->object_id, t->bone_idx);
-									a->try_position_track_interpolate(i, start, &loc[1]);
+									a->try_position_track_interpolate(i, start, &loc[1], backward);
 									loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 
-									a->try_rotation_track_interpolate(rot_track, start, &rot);
+									a->try_rotation_track_interpolate(rot_track, start, &rot, backward);
 									rot = post_process_key_value(a, rot_track, rot, t->object_id, t->bone_idx);
 
 									root_motion_cache.loc += rot.xform_inv(loc[1] - loc[0]) * blend;
 									prev_time = end;
 								}
 							}
-							Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+							Error err = a->try_position_track_interpolate(i, prev_time, &loc[0], backward);
 							if (err != OK) {
 								continue;
 							}
 							loc[0] = post_process_key_value(a, i, loc[0], t->object_id, t->bone_idx);
-							a->try_position_track_interpolate(i, time, &loc[1]);
+							a->try_position_track_interpolate(i, time, &loc[1], backward);
 							loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 
-							a->try_rotation_track_interpolate(rot_track, time, &rot);
+							a->try_rotation_track_interpolate(rot_track, time, &rot, backward);
 							rot = post_process_key_value(a, rot_track, rot, t->object_id, t->bone_idx);
 
 							root_motion_cache.loc += rot.xform_inv(loc[1] - loc[0]) * blend;
@@ -1329,35 +1329,35 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							Vector3 loc[2];
 							if (!backward) {
 								if (Animation::is_greater_approx(prev_time, time)) {
-									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0], backward);
 									if (err != OK) {
 										continue;
 									}
 									loc[0] = post_process_key_value(a, i, loc[0], t->object_id, t->bone_idx);
-									a->try_position_track_interpolate(i, end, &loc[1]);
+									a->try_position_track_interpolate(i, end, &loc[1], backward);
 									loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 									root_motion_cache.loc += (loc[1] - loc[0]) * blend;
 									prev_time = start;
 								}
 							} else {
 								if (Animation::is_less_approx(prev_time, time)) {
-									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+									Error err = a->try_position_track_interpolate(i, prev_time, &loc[0], backward);
 									if (err != OK) {
 										continue;
 									}
 									loc[0] = post_process_key_value(a, i, loc[0], t->object_id, t->bone_idx);
-									a->try_position_track_interpolate(i, start, &loc[1]);
+									a->try_position_track_interpolate(i, start, &loc[1], backward);
 									loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 									root_motion_cache.loc += (loc[1] - loc[0]) * blend;
 									prev_time = end;
 								}
 							}
-							Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+							Error err = a->try_position_track_interpolate(i, prev_time, &loc[0], backward);
 							if (err != OK) {
 								continue;
 							}
 							loc[0] = post_process_key_value(a, i, loc[0], t->object_id, t->bone_idx);
-							a->try_position_track_interpolate(i, time, &loc[1]);
+							a->try_position_track_interpolate(i, time, &loc[1], backward);
 							loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 							root_motion_cache.loc += (loc[1] - loc[0]) * blend;
 							prev_time = !backward ? start : end;
@@ -1365,7 +1365,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 					{
 						Vector3 loc;
-						Error err = a->try_position_track_interpolate(i, time, &loc);
+						Error err = a->try_position_track_interpolate(i, time, &loc, backward);
 						if (err != OK) {
 							continue;
 						}
@@ -1418,42 +1418,42 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						Quaternion rot[2];
 						if (!backward) {
 							if (Animation::is_greater_approx(prev_time, time)) {
-								Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
+								Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0], backward);
 								if (err != OK) {
 									continue;
 								}
 								rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
-								a->try_rotation_track_interpolate(i, end, &rot[1]);
+								a->try_rotation_track_interpolate(i, end, &rot[1], backward);
 								rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
 								root_motion_cache.rot = Animation::interpolate_via_rest(root_motion_cache.rot, rot[1], blend, rot[0]);
 								prev_time = start;
 							}
 						} else {
 							if (Animation::is_less_approx(prev_time, time)) {
-								Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
+								Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0], backward);
 								if (err != OK) {
 									continue;
 								}
 								rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
-								a->try_rotation_track_interpolate(i, start, &rot[1]);
+								a->try_rotation_track_interpolate(i, start, &rot[1], backward);
 								rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
 								root_motion_cache.rot = Animation::interpolate_via_rest(root_motion_cache.rot, rot[1], blend, rot[0]);
 								prev_time = end;
 							}
 						}
-						Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
+						Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0], backward);
 						if (err != OK) {
 							continue;
 						}
 						rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
-						a->try_rotation_track_interpolate(i, time, &rot[1]);
+						a->try_rotation_track_interpolate(i, time, &rot[1], backward);
 						rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
 						root_motion_cache.rot = Animation::interpolate_via_rest(root_motion_cache.rot, rot[1], blend, rot[0]);
 						prev_time = !backward ? start : end;
 					}
 					{
 						Quaternion rot;
-						Error err = a->try_rotation_track_interpolate(i, time, &rot);
+						Error err = a->try_rotation_track_interpolate(i, time, &rot, backward);
 						if (err != OK) {
 							continue;
 						}
@@ -1506,42 +1506,42 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						Vector3 scale[2];
 						if (!backward) {
 							if (Animation::is_greater_approx(prev_time, time)) {
-								Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
+								Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0], backward);
 								if (err != OK) {
 									continue;
 								}
 								scale[0] = post_process_key_value(a, i, scale[0], t->object_id, t->bone_idx);
-								a->try_scale_track_interpolate(i, end, &scale[1]);
+								a->try_scale_track_interpolate(i, end, &scale[1], backward);
 								scale[1] = post_process_key_value(a, i, scale[1], t->object_id, t->bone_idx);
 								root_motion_cache.scale += (scale[1] - scale[0]) * blend;
 								prev_time = start;
 							}
 						} else {
 							if (Animation::is_less_approx(prev_time, time)) {
-								Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
+								Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0], backward);
 								if (err != OK) {
 									continue;
 								}
 								scale[0] = post_process_key_value(a, i, scale[0], t->object_id, t->bone_idx);
-								a->try_scale_track_interpolate(i, start, &scale[1]);
+								a->try_scale_track_interpolate(i, start, &scale[1], backward);
 								scale[1] = post_process_key_value(a, i, scale[1], t->object_id, t->bone_idx);
 								root_motion_cache.scale += (scale[1] - scale[0]) * blend;
 								prev_time = end;
 							}
 						}
-						Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
+						Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0], backward);
 						if (err != OK) {
 							continue;
 						}
 						scale[0] = post_process_key_value(a, i, scale[0], t->object_id, t->bone_idx);
-						a->try_scale_track_interpolate(i, time, &scale[1]);
+						a->try_scale_track_interpolate(i, time, &scale[1], backward);
 						scale[1] = post_process_key_value(a, i, scale[1], t->object_id, t->bone_idx);
 						root_motion_cache.scale += (scale[1] - scale[0]) * blend;
 						prev_time = !backward ? start : end;
 					}
 					{
 						Vector3 scale;
-						Error err = a->try_scale_track_interpolate(i, time, &scale);
+						Error err = a->try_scale_track_interpolate(i, time, &scale, backward);
 						if (err != OK) {
 							continue;
 						}
@@ -1557,7 +1557,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 					TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
 					float value;
-					Error err = a->try_blend_shape_track_interpolate(i, time, &value);
+					Error err = a->try_blend_shape_track_interpolate(i, time, &value, backward);
 					//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 					if (err != OK) {
 						continue;
@@ -1580,7 +1580,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 
 						Variant value;
 						if (t->is_variant_interpolatable) {
-							value = is_value ? a->value_track_interpolate(i, time, is_discrete && force_continuous ? backward : false) : Variant(a->bezier_track_interpolate(i, time));
+							value = is_value ? a->value_track_interpolate(i, time, backward) : Variant(a->bezier_track_interpolate(i, time));
 							value = post_process_key_value(a, i, value, t->object_id);
 							if (value == Variant()) {
 								continue;
