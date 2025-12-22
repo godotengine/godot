@@ -70,6 +70,7 @@
 #include "scene/resources/style_box_texture.h"
 
 #define DRAG_THRESHOLD (8 * EDSCALE)
+#define DRAG_THRESHOLD_SQUARED (DRAG_THRESHOLD * DRAG_THRESHOLD)
 constexpr real_t SCALE_HANDLE_DISTANCE = 25;
 constexpr real_t MOVE_HANDLE_DISTANCE = 25;
 
@@ -1836,7 +1837,8 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 					};
 
 					DragType resize_drag = DRAG_NONE;
-					real_t radius = (select_handle->get_size().width / 2) * 1.5;
+					const real_t radius = select_handle->get_size().width * (1.5f / 2.0f);
+					const real_t radius_squared = radius * radius;
 
 					for (int i = 0; i < 4; i++) {
 						int prev = (i + 3) % 4;
@@ -1845,13 +1847,13 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 						Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
 						ofs *= (select_handle->get_size().width / 2);
 						ofs += endpoints[i];
-						if (ofs.distance_to(b->get_position()) < radius) {
+						if (ofs.distance_squared_to(b->get_position()) < radius_squared) {
 							resize_drag = dragger[i * 2];
 						}
 
 						ofs = (endpoints[i] + endpoints[next]) / 2;
 						ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (select_handle->get_size().width / 2);
-						if (ofs.distance_to(b->get_position()) < radius) {
+						if (ofs.distance_squared_to(b->get_position()) < radius_squared) {
 							resize_drag = dragger[i * 2 + 1];
 						}
 					}
@@ -2508,7 +2510,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		if (can_select) {
 			click = transform.affine_inverse().xform(b->get_position());
 			// Allow selecting on release when performed very small box selection (necessary when Shift is pressed, see below).
-			can_select = b->is_pressed() || (drag_type == DRAG_BOX_SELECTION && click.distance_to(drag_from) <= DRAG_THRESHOLD);
+			can_select = b->is_pressed() || (drag_type == DRAG_BOX_SELECTION && click.distance_squared_to(drag_from) <= DRAG_THRESHOLD_SQUARED);
 		}
 
 		if (can_select) {

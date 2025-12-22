@@ -2023,8 +2023,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Viewport *section_root = get_section_root_viewport();
 		if (!gui.drag_attempted && gui.mouse_focus && section_root && !section_root->gui.global_dragging && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			gui.drag_accum += mm->get_relative();
-			float len = gui.drag_accum.length();
-			if (len > gui.drag_threshold) {
+			const real_t len_squared = gui.drag_accum.length_squared();
+			if (len_squared > gui.drag_threshold * gui.drag_threshold) {
 				{ // Attempt grab, try parent controls too.
 					CanvasItem *ci = gui.mouse_focus;
 					while (ci) {

@@ -2053,7 +2053,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 					pd.last_pressed_position = pd.position;
 				}
 
-				if (old_pd.double_click_begun && mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(old_pd.last_pressed_position * scale).distance_to(Vector2(pd.last_pressed_position * scale)) < 5) {
+				if (old_pd.double_click_begun && mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(old_pd.last_pressed_position * scale).distance_squared_to(Vector2(pd.last_pressed_position * scale)) < 25.0f) {
 					pd.double_click_begun = false;
 					mb->set_double_click(true);
 				}
@@ -3011,7 +3011,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 					td.last_pressed_position = td.position;
 				}
 
-				if (old_td.double_click_begun && mb->is_pressed() && td.last_button_pressed == old_td.last_button_pressed && (td.button_time - old_td.button_time) < 400 && Vector2(td.last_pressed_position * scale).distance_to(Vector2(old_td.last_pressed_position * scale)) < 5) {
+				if (old_td.double_click_begun && mb->is_pressed() && td.last_button_pressed == old_td.last_button_pressed && (td.button_time - old_td.button_time) < 400 && Vector2(td.last_pressed_position * scale).distance_squared_to(Vector2(old_td.last_pressed_position * scale)) < 25.0f) {
 					td.double_click_begun = false;
 					mb->set_double_click(true);
 				}

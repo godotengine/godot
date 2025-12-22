@@ -91,7 +91,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 	Vector2 prev = Vector2(p2[lasti].x, p2[lasti].y);
 	for (uint64_t i = 0; i < p2.size(); i++) {
 		Vector2 cur = Vector2(p2[i].x, p2[i].y);
-		if (cur.distance_to(prev) > 0.5) {
+		if (cur.distance_squared_to(prev) > 0.25f) {
 			outPoints.push_back(cur);
 			prev = cur;
 		}

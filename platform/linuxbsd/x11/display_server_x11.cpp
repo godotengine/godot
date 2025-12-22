@@ -5241,7 +5241,7 @@ void DisplayServerX11::process_events() {
 					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
 
 					if (mb->get_button_index() == last_click_button_index) {
-						if (diff < 400 && Vector2(last_click_pos).distance_to(Vector2(event.xbutton.x, event.xbutton.y)) < 5) {
+						if (diff < 400 && Vector2(last_click_pos).distance_squared_to(Vector2(event.xbutton.x, event.xbutton.y)) < 25.0f) {
 							last_click_ms = 0;
 							last_click_pos = Point2i(-100, -100);
 							last_click_button_index = MouseButton::NONE;

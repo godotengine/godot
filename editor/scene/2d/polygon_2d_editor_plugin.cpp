@@ -920,6 +920,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					int pc = painted_weights.size();
 					real_t amount = bone_paint_strength->get_value();
 					real_t radius = bone_paint_radius->get_value() * EDSCALE;
+					real_t radius_squared = radius * radius;
 
 					if (selected_action == ACTION_CLEAR_WEIGHT) {
 						amount = -amount;
@@ -930,7 +931,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					const Vector2 *rv = editing_points.ptr();
 
 					for (int i = 0; i < pc; i++) {
-						if (mtx.xform(rv[i]).distance_to(bone_paint_pos) < radius) {
+						if (mtx.xform(rv[i]).distance_squared_to(bone_paint_pos) < radius_squared) {
 							w[i] = CLAMP(r[i] + amount, 0, 1);
 						}
 					}
