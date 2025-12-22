@@ -55,6 +55,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	};
 
 	bool selected;
+	bool highlighted;
 
 	Vector<Vector3> collision_segments;
 	LocalVector<Ref<TriangleMesh>> collision_meshes;
@@ -121,6 +122,8 @@ public:
 
 	void set_selected(bool p_selected) { selected = p_selected; }
 	bool is_selected() const { return selected; }
+	void set_highlighted(bool p_highlighted) { highlighted = p_highlighted; }
+	bool is_highlighted() const { return highlighted; }
 
 	void set_node_3d(Node3D *p_node);
 	Node3D *get_node_3d() const { return spatial_node; }
