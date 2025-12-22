@@ -82,6 +82,10 @@ private:
 	bool capture_input_on_drag = false;
 	bool ray_pickable = true;
 
+	// Physics bodies using sync to physics defer setting global xform until callbacks from the physics.
+	// In these cases, resets should also be deferred until the callback, because global_xforms will be stale.
+	bool _fti_physics_reset_requested = false;
+
 	HashSet<uint32_t> debug_shapes_to_update;
 	int debug_shapes_count = 0;
 	Transform3D debug_shape_old_transform;
@@ -109,7 +113,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _on_transform_changed();
+	void _on_transform_changed(bool p_in_physics_callback);
 
 	friend class Viewport;
 	virtual void _input_event_call(Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
