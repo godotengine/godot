@@ -71,7 +71,6 @@ void GradientTexture1D::set_gradient(Ref<Gradient> p_gradient) {
 		gradient->connect_changed(callable_mp(this, &GradientTexture1D::_queue_update));
 	}
 	_queue_update();
-	emit_changed();
 }
 
 Ref<Gradient> GradientTexture1D::get_gradient() const {
@@ -83,10 +82,10 @@ void GradientTexture1D::_queue_update() {
 		return;
 	}
 	update_pending = true;
-	callable_mp(this, &GradientTexture1D::update_now).call_deferred();
+	callable_mp(this, &GradientTexture1D::_update_texture).call_deferred();
 }
 
-void GradientTexture1D::_update() const {
+void GradientTexture1D::_update_now() const {
 	update_pending = false;
 
 	if (gradient.is_null()) {
@@ -140,11 +139,17 @@ void GradientTexture1D::_update() const {
 	RS::get_singleton()->texture_set_path(texture, get_path());
 }
 
+void GradientTexture1D::_update_texture() {
+	if (update_pending) {
+		_update_now();
+	}
+	emit_changed();
+}
+
 void GradientTexture1D::set_width(int p_width) {
 	ERR_FAIL_COND_MSG(p_width <= 0 || p_width > 16384, "Texture dimensions have to be within 1 to 16384 range.");
 	width = p_width;
 	_queue_update();
-	emit_changed();
 }
 
 int GradientTexture1D::get_width() const {
@@ -158,7 +163,6 @@ void GradientTexture1D::set_use_hdr(bool p_enabled) {
 
 	use_hdr = p_enabled;
 	_queue_update();
-	emit_changed();
 }
 
 bool GradientTexture1D::is_using_hdr() const {
@@ -166,24 +170,20 @@ bool GradientTexture1D::is_using_hdr() const {
 }
 
 RID GradientTexture1D::get_rid() const {
-	if (!texture.is_valid()) {
+	if (texture.is_null()) {
 		texture = RS::get_singleton()->texture_2d_placeholder_create();
 	}
 	return texture;
 }
 
 Ref<Image> GradientTexture1D::get_image() const {
-	update_now();
-	if (!texture.is_valid()) {
+	if (update_pending) {
+		_update_now();
+	}
+	if (texture.is_null()) {
 		return Ref<Image>();
 	}
 	return RenderingServer::get_singleton()->texture_2d_get(texture);
-}
-
-void GradientTexture1D::update_now() const {
-	if (update_pending) {
-		_update();
-	}
 }
 
 //////////////////
@@ -211,7 +211,6 @@ void GradientTexture2D::set_gradient(Ref<Gradient> p_gradient) {
 		gradient->connect_changed(callable_mp(this, &GradientTexture2D::_queue_update));
 	}
 	_queue_update();
-	emit_changed();
 }
 
 Ref<Gradient> GradientTexture2D::get_gradient() const {
@@ -223,10 +222,10 @@ void GradientTexture2D::_queue_update() {
 		return;
 	}
 	update_pending = true;
-	callable_mp(this, &GradientTexture2D::update_now).call_deferred();
+	callable_mp(this, &GradientTexture2D::_update_texture).call_deferred();
 }
 
-void GradientTexture2D::_update() const {
+void GradientTexture2D::_update_now() const {
 	update_pending = false;
 
 	if (gradient.is_null()) {
@@ -280,6 +279,13 @@ void GradientTexture2D::_update() const {
 	RS::get_singleton()->texture_set_path(texture, get_path());
 }
 
+void GradientTexture2D::_update_texture() {
+	if (update_pending) {
+		_update_now();
+	}
+	emit_changed();
+}
+
 float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
 	if (fill_to == fill_from) {
 		return 0;
@@ -324,7 +330,6 @@ void GradientTexture2D::set_width(int p_width) {
 	ERR_FAIL_COND_MSG(p_width <= 0 || p_width > 16384, "Texture dimensions have to be within 1 to 16384 range.");
 	width = p_width;
 	_queue_update();
-	emit_changed();
 }
 
 int GradientTexture2D::get_width() const {
@@ -335,7 +340,6 @@ void GradientTexture2D::set_height(int p_height) {
 	ERR_FAIL_COND_MSG(p_height <= 0 || p_height > 16384, "Texture dimensions have to be within 1 to 16384 range.");
 	height = p_height;
 	_queue_update();
-	emit_changed();
 }
 int GradientTexture2D::get_height() const {
 	return height;
@@ -348,7 +352,6 @@ void GradientTexture2D::set_use_hdr(bool p_enabled) {
 
 	use_hdr = p_enabled;
 	_queue_update();
-	emit_changed();
 }
 
 bool GradientTexture2D::is_using_hdr() const {
@@ -358,7 +361,6 @@ bool GradientTexture2D::is_using_hdr() const {
 void GradientTexture2D::set_fill_from(Vector2 p_fill_from) {
 	fill_from = p_fill_from;
 	_queue_update();
-	emit_changed();
 }
 
 Vector2 GradientTexture2D::get_fill_from() const {
@@ -368,7 +370,6 @@ Vector2 GradientTexture2D::get_fill_from() const {
 void GradientTexture2D::set_fill_to(Vector2 p_fill_to) {
 	fill_to = p_fill_to;
 	_queue_update();
-	emit_changed();
 }
 
 Vector2 GradientTexture2D::get_fill_to() const {
@@ -378,7 +379,6 @@ Vector2 GradientTexture2D::get_fill_to() const {
 void GradientTexture2D::set_fill(Fill p_fill) {
 	fill = p_fill;
 	_queue_update();
-	emit_changed();
 }
 
 GradientTexture2D::Fill GradientTexture2D::get_fill() const {
@@ -388,7 +388,6 @@ GradientTexture2D::Fill GradientTexture2D::get_fill() const {
 void GradientTexture2D::set_repeat(Repeat p_repeat) {
 	repeat = p_repeat;
 	_queue_update();
-	emit_changed();
 }
 
 GradientTexture2D::Repeat GradientTexture2D::get_repeat() const {
@@ -396,24 +395,20 @@ GradientTexture2D::Repeat GradientTexture2D::get_repeat() const {
 }
 
 RID GradientTexture2D::get_rid() const {
-	if (!texture.is_valid()) {
+	if (texture.is_null()) {
 		texture = RS::get_singleton()->texture_2d_placeholder_create();
 	}
 	return texture;
 }
 
 Ref<Image> GradientTexture2D::get_image() const {
-	update_now();
-	if (!texture.is_valid()) {
+	if (update_pending) {
+		_update_now();
+	}
+	if (texture.is_null()) {
 		return Ref<Image>();
 	}
 	return RenderingServer::get_singleton()->texture_2d_get(texture);
-}
-
-void GradientTexture2D::update_now() const {
-	if (update_pending) {
-		_update();
-	}
 }
 
 void GradientTexture2D::_bind_methods() {
