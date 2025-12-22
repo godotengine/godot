@@ -1682,28 +1682,33 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 	r.size = r.size.min(panel->get_max_size());
 
 	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS) || gui.tooltip_popup->is_embedded()) {
-		if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
-			// Place it in the opposite direction. If it fails, just hug the border.
+		
+   		// First try to show it to the right/bottom of the cursor.
+		// If it overflows, flip it to the left/above. If that also fails, clamp to the viewport edges.
+		if (r.position.x + r.size.x > vr.position.x + vr.size.x) {
 			r.position.x = gui.tooltip_pos.x - r.size.x - tooltip_offset.x;
-
-			if (r.position.x < vr.position.x) {
-				r.position.x = vr.position.x + vr.size.x - r.size.x;
-			}
-		} else if (r.position.x < vr.position.x) {
+		} 
+		else if (r.position.x < vr.position.x) {
+			r.position.x = vr.position.x + vr.size.x - r.size.x;
+		}
+		else if (r.position.x < vr.position.x) {
 			r.position.x = vr.position.x;
 		}
-
-		if (r.size.y + r.position.y > vr.size.y + vr.position.y) {
-			// Same as above.
+		// Same logic for the Y axis: try below, flip above if overflow, then clamp as fallback.
+		if (r.position.y + r.size.y > vr.position.y + vr.size.y) {
 			r.position.y = gui.tooltip_pos.y - r.size.y - tooltip_offset.y;
-
-			if (r.position.y < vr.position.y) {
-				r.position.y = vr.position.y + vr.size.y - r.size.y;
-			}
-		} else if (r.position.y < vr.position.y) {
+		}
+		else if (r.position.y < vr.position.y) {
+			r.position.y = vr.position.y + vr.size.y - r.size.y;
+		}
+		else if (r.position.y < vr.position.y) {
 			r.position.y = vr.position.y;
 		}
-	}
+        r.position.y = vr.position.y + vr.size.y - r.size.y;
+    }
+	} else if (r.position.y < vr.position.y) {
+
+	
 
 	DisplayServer::WindowID active_popup = DisplayServer::get_singleton()->window_get_active_popup();
 	if (active_popup == DisplayServer::INVALID_WINDOW_ID || active_popup == window->get_window_id()) {
