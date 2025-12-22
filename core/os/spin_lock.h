@@ -67,6 +67,11 @@ public:
 
 #include <atomic>
 
+#if defined(__loongarch64)
+// For __ibar C intrinsic.
+#include <larchintrin.h>
+#endif
+
 _ALWAYS_INLINE_ static void _cpu_pause() {
 #if defined(_MSC_VER)
 // ----- MSVC.
@@ -80,11 +85,20 @@ _ALWAYS_INLINE_ static void _cpu_pause() {
 #if defined(__i386__) || defined(__x86_64__) // x86.
 	__builtin_ia32_pause();
 #elif defined(__arm__) || defined(__aarch64__) // ARM.
-	asm volatile("yield");
+	// Use memory clobber to prevent
+	// reorder/optimization by the compiler.
+	asm volatile("yield" ::: "memory");
 #elif defined(__powerpc__) // PowerPC.
-	asm volatile("or 27,27,27");
+	asm volatile("or 27,27,27" ::: "memory");
 #elif defined(__riscv) // RISC-V.
-	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
+	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010" ::: "memory");
+#elif defined(__loongarch64) // Loongarch64.
+	// Use "ibar 0" repeated 32 times to
+	// simulate the delay of the x86 pause instruction (approx 140 cycles).
+	// See PR #110639#issuecomment-3675019388
+	for (int i = 0; i < 32; i++) {
+		__ibar(0);
+	}
 #endif
 #endif
 }
