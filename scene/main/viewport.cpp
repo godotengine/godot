@@ -2114,11 +2114,19 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						if (gui.tooltip_timer.is_valid()) {
 							gui.tooltip_timer->release_connections();
 						}
-						gui.tooltip_control = over;
-						gui.tooltip_pos = new_tooltip_pos;
-						gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
-						gui.tooltip_timer->set_ignore_time_scale(true);
-						gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
+						if (!Input::get_singleton()->is_key_pressed(Key::ALT)) {
+							// Skip tooltip when Alt is pressed.
+							float tooltip_delay = gui.tooltip_delay;
+							if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+								// Show tooltip immediately when Shift is pressed.
+								tooltip_delay = 0.0;
+							}
+							gui.tooltip_control = over;
+							gui.tooltip_pos = new_tooltip_pos;
+							gui.tooltip_timer = get_tree()->create_timer(tooltip_delay);
+							gui.tooltip_timer->set_ignore_time_scale(true);
+							gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
+						}
 					}
 				}
 			}
