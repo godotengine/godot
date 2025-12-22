@@ -79,6 +79,12 @@ private:
 		TYPE,
 	};
 
+	enum BracketType {
+		ROUND, // for ().
+		CURLY, // for {}.
+		SQUARE, // for [].
+	};
+
 	// Colors.
 	Color font_color;
 	Color symbol_color;
@@ -96,6 +102,8 @@ private:
 	Color string_name_color;
 	Color type_color;
 
+	PackedColorArray bracket_pair_colors;
+
 	enum CommentMarkerLevel {
 		COMMENT_MARKER_CRITICAL,
 		COMMENT_MARKER_WARNING,
@@ -105,7 +113,12 @@ private:
 	Color comment_marker_colors[COMMENT_MARKER_MAX];
 	HashMap<String, CommentMarkerLevel> comment_markers;
 
+	HashMap<int, Vector<int>> bracket_level_cache;
+
 	void add_color_region(ColorRegion::Type p_type, const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false, bool p_r_prefix = false);
+
+protected:
+	virtual void _clear_highlighting_cache() override;
 
 public:
 	virtual void _update_cache() override;
