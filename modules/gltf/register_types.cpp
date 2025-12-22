@@ -30,6 +30,7 @@
 
 #include "register_types.h"
 
+#include "extensions/gltf_attribute_map.h"
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "extensions/gltf_document_extension_texture_ktx.h"
 #include "extensions/gltf_document_extension_texture_webp.h"
@@ -108,6 +109,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		// glTF API available at runtime.
 		GDREGISTER_CLASS(GLTFAccessor);
 		GDREGISTER_CLASS(GLTFAnimation);
+		GDREGISTER_CLASS(GLTFAttributeMap);
 		GDREGISTER_CLASS(GLTFBufferView);
 		GDREGISTER_CLASS(GLTFCamera);
 		GDREGISTER_CLASS(GLTFDocument);
