@@ -3188,6 +3188,7 @@ GraphEdit::GraphEdit() {
 	panner->set_callbacks(callable_mp(this, &GraphEdit::_pan_callback), callable_mp(this, &GraphEdit::_zoom_callback));
 
 	top_layer = memnew(Control);
+	top_layer->set_name(StringName("_top_layer"));
 	add_child(top_layer, false, INTERNAL_MODE_BACK);
 	top_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	top_layer->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
@@ -3197,7 +3198,7 @@ GraphEdit::GraphEdit() {
 	connections_layer = memnew(Control);
 	add_child(connections_layer, false);
 	connections_layer->connect(SceneStringName(draw), callable_mp(this, &GraphEdit::_update_connections));
-	connections_layer->set_name("_connection_layer");
+	connections_layer->set_name(StringName("_connection_layer"));
 	connections_layer->set_disable_visibility_clip(true); // Necessary, so it can draw freely and be offset.
 	connections_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 
@@ -3215,11 +3216,11 @@ GraphEdit::GraphEdit() {
 	top_connection_layer->add_child(dragged_connection_line);
 
 	h_scrollbar = memnew(HScrollBar);
-	h_scrollbar->set_name("_h_scroll");
+	h_scrollbar->set_name(StringName("_h_scroll"));
 	top_layer->add_child(h_scrollbar);
 
 	v_scrollbar = memnew(VScrollBar);
-	v_scrollbar->set_name("_v_scroll");
+	v_scrollbar->set_name(StringName("_v_scroll"));
 	top_layer->add_child(v_scrollbar);
 
 	// Set large minmax so it can scroll even if not resized yet.
@@ -3240,11 +3241,13 @@ GraphEdit::GraphEdit() {
 	menu_panel->set_position(Vector2(10, 10));
 
 	menu_hbox = memnew(HBoxContainer);
+	menu_hbox->set_name(StringName("_menu_hbox"));
 	menu_panel->add_child(menu_hbox);
 
 	// Zoom label and controls.
 
 	zoom_label = memnew(Label);
+	zoom_label->set_name(StringName("_zoom_label"));
 	zoom_label->set_visible(show_zoom_label);
 	zoom_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	zoom_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -3253,6 +3256,7 @@ GraphEdit::GraphEdit() {
 	_update_zoom_label();
 
 	zoom_minus_button = memnew(Button);
+	zoom_minus_button->set_name(StringName("_zoom_minus_button"));
 	zoom_minus_button->set_theme_type_variation(SceneStringName(FlatButton));
 	zoom_minus_button->set_visible(show_zoom_buttons);
 	zoom_minus_button->set_tooltip_text(ETR("Zoom Out"));
@@ -3261,6 +3265,7 @@ GraphEdit::GraphEdit() {
 	zoom_minus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_minus));
 
 	zoom_reset_button = memnew(Button);
+	zoom_reset_button->set_name(StringName("_zoom_reset_button"));
 	zoom_reset_button->set_theme_type_variation(SceneStringName(FlatButton));
 	zoom_reset_button->set_visible(show_zoom_buttons);
 	zoom_reset_button->set_tooltip_text(ETR("Zoom Reset"));
@@ -3269,6 +3274,7 @@ GraphEdit::GraphEdit() {
 	zoom_reset_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_reset));
 
 	zoom_plus_button = memnew(Button);
+	zoom_plus_button->set_name(StringName("_zoom_plus_button"));
 	zoom_plus_button->set_theme_type_variation(SceneStringName(FlatButton));
 	zoom_plus_button->set_visible(show_zoom_buttons);
 	zoom_plus_button->set_tooltip_text(ETR("Zoom In"));
@@ -3279,6 +3285,7 @@ GraphEdit::GraphEdit() {
 	// Grid controls.
 
 	toggle_grid_button = memnew(Button);
+	toggle_grid_button->set_name(StringName("_toggle_grid_button"));
 	toggle_grid_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_grid_button->set_visible(show_grid_buttons);
 	toggle_grid_button->set_toggle_mode(true);
@@ -3289,6 +3296,7 @@ GraphEdit::GraphEdit() {
 	toggle_grid_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_show_grid_toggled));
 
 	toggle_snapping_button = memnew(Button);
+	toggle_snapping_button->set_name(StringName("_toggle_snapping_button"));
 	toggle_snapping_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_snapping_button->set_visible(show_grid_buttons);
 	toggle_snapping_button->set_toggle_mode(true);
@@ -3299,6 +3307,7 @@ GraphEdit::GraphEdit() {
 	toggle_snapping_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_snapping_toggled));
 
 	snapping_distance_spinbox = memnew(SpinBox);
+	snapping_distance_spinbox->set_name(StringName("_snapping_distance_spinbox"));
 	snapping_distance_spinbox->set_visible(show_grid_buttons);
 	snapping_distance_spinbox->set_min(GRID_MIN_SNAPPING_DISTANCE);
 	snapping_distance_spinbox->set_max(GRID_MAX_SNAPPING_DISTANCE);
@@ -3311,6 +3320,7 @@ GraphEdit::GraphEdit() {
 	// Extra controls.
 
 	minimap_button = memnew(Button);
+	minimap_button->set_name(StringName("_minimap_button"));
 	minimap_button->set_theme_type_variation(SceneStringName(FlatButton));
 	minimap_button->set_visible(show_minimap_button);
 	minimap_button->set_toggle_mode(true);
@@ -3321,6 +3331,7 @@ GraphEdit::GraphEdit() {
 	minimap_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_minimap_toggled));
 
 	arrange_button = memnew(Button);
+	arrange_button->set_name(StringName("_arrange_button"));
 	arrange_button->set_theme_type_variation(SceneStringName(FlatButton));
 	arrange_button->set_visible(show_arrange_button);
 	arrange_button->set_tooltip_text(ETR("Automatically arrange selected nodes."));
@@ -3334,8 +3345,8 @@ GraphEdit::GraphEdit() {
 	const float minimap_opacity = 0.65;
 
 	minimap = memnew(GraphEditMinimap(this));
+	minimap->set_name(StringName("_minimap"));
 	top_layer->add_child(minimap);
-	minimap->set_name("_minimap");
 	minimap->set_modulate(Color(1, 1, 1, minimap_opacity));
 	minimap->set_mouse_filter(MOUSE_FILTER_PASS);
 	minimap->set_custom_minimum_size(Vector2(50, 50));
