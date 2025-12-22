@@ -5261,7 +5261,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 
 		if (r) {
 			//Setting a Subresource. Since there's possibly multiple Nodes referencing 'r', we need to link them to the Subresource.
-			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
+			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_count_list(r);
 			for (Node *N : shared_nodes) {
 				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
 					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);

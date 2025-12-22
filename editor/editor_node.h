@@ -831,7 +831,7 @@ public:
 	void update_node_reference(const Variant &p_value, Node *p_node, bool p_remove = false);
 	void clear_node_reference(Ref<Resource> p_res);
 	int get_resource_count(Ref<Resource> p_res);
-	List<Node *> get_resource_node_list(Ref<Resource> p_res);
+	List<Node *> get_resource_count_list(Ref<Resource> p_res);
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
