@@ -9,6 +9,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_applied_force" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
+		<method name="get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the applied torque to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
 		<method name="get_param" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="SliderJoint3D.Param" />

@@ -673,3 +673,13 @@ bool GodotGeneric6DOFJoint3D::get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6
 
 	return false;
 }
+
+float GodotGeneric6DOFJoint3D::get_applied_force() const {
+	WARN_PRINT_ONCE("Generic6DOFJoint3D->get_applied_force only works with Jolt Physics.");
+	return 0;
+}
+
+float GodotGeneric6DOFJoint3D::get_applied_torque() const {
+	WARN_PRINT_ONCE("Generic6DOFJoint3D->get_applied_torque only works with Jolt Physics.");
+	return 0;
+}

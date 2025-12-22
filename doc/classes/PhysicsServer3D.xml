@@ -716,6 +716,20 @@
 				Creates a 3D concave polygon shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the concave polygon's triangles.
 			</description>
 		</method>
+		<method name="cone_twist_joint_get_applied_force" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
+		<method name="cone_twist_joint_get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the applied torque to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
@@ -757,6 +771,20 @@
 			<param index="0" name="rid" type="RID" />
 			<description>
 				Destroys any of the objects created by PhysicsServer3D. If the [RID] passed is not one of the objects that can be created by PhysicsServer3D, an error will be sent to the console.
+			</description>
+		</method>
+		<method name="generic_6dof_joint_get_applied_force" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
+		<method name="generic_6dof_joint_get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the applied torque to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_flag" qualifiers="const">
@@ -808,6 +836,20 @@
 			<return type="RID" />
 			<description>
 				Creates a 3D heightmap shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the heightmap's data.
+			</description>
+		</method>
+		<method name="hinge_joint_get_applied_force" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
+		<method name="hinge_joint_get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the applied torque to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
@@ -943,6 +985,13 @@
 				Sets the priority value of the Joint3D.
 			</description>
 		</method>
+		<method name="pin_joint_get_applied_force" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
 		<method name="pin_joint_get_local_a" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="joint" type="RID" />
@@ -1068,6 +1117,18 @@
 			<param index="2" name="value" type="float" />
 			<description>
 				Gets a slider joint parameter.
+			</description>
+		</method>
+		<method name="slider_twist_joint_get_applied_force" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="slider_twist_joint_get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
 			</description>
 		</method>
 		<method name="soft_body_add_collision_exception">
