@@ -4613,10 +4613,15 @@ void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
 
 	zoom_widget->set_zoom(zoom);
 	update_viewport();
+	oversampling_timer->start();
 }
 
 void CanvasItemEditor::_update_zoom(real_t p_zoom) {
 	_zoom_on_position(p_zoom, viewport_scrollable->get_size() / 2.0);
+}
+
+void CanvasItemEditor::_update_oversampling() {
+	EditorNode::get_singleton()->get_scene_root()->set_oversampling_override(zoom);
 }
 
 void CanvasItemEditor::_shortcut_zoom_set(real_t p_zoom) {
@@ -6015,6 +6020,12 @@ CanvasItemEditor::CanvasItemEditor() {
 	add_node_menu = memnew(PopupMenu);
 	add_child(add_node_menu);
 	add_node_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_add_node_pressed));
+
+	oversampling_timer = memnew(Timer);
+	oversampling_timer->set_wait_time(0.5);
+	oversampling_timer->set_one_shot(true);
+	add_child(oversampling_timer);
+	oversampling_timer->connect("timeout", callable_mp(this, &CanvasItemEditor::_update_oversampling));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTRC("Multiply grid step by 2"), Key::KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTRC("Divide grid step by 2"), Key::KP_DIVIDE);
