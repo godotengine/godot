@@ -236,6 +236,7 @@ opts.Add(BoolVariable("ninja", "Use the ninja backend for faster rebuilds", Fals
 opts.Add(BoolVariable("ninja_auto_run", "Run ninja automatically after generating the ninja file", True))
 opts.Add("ninja_file", "Path to the generated ninja file", "build.ninja")
 opts.Add(BoolVariable("compiledb", "Generate compilation DB (`compile_commands.json`) for external tools", False))
+opts.Add(BoolVariable("compiledb_gen_only", "Exit after building the compilation database", False))
 opts.Add(
     "num_jobs",
     "Use up to N jobs when compiling (equivalent to `-j N`). Defaults to max jobs - 1. Ignored if -j is used.",
@@ -1167,13 +1168,6 @@ GLSL_BUILDERS = {
 }
 env.Append(BUILDERS=GLSL_BUILDERS)
 
-if env["compiledb"]:
-    env.Tool("compilation_db")
-    env.Alias("compiledb", env.CompilationDatabase())
-    env.NoCache(env.CompilationDatabase())
-    if not env["verbose"]:
-        env["COMPILATIONDB_COMSTR"] = "$GENCOMSTR"
-
 if env["ninja"]:
     if env.scons_version < (4, 2, 0):
         print_error(f"The `ninja=yes` option requires SCons 4.2 or later, but your version is {scons_raw_version}.")
@@ -1203,6 +1197,14 @@ if "c_compiler_launcher" in env:
 if "cpp_compiler_launcher" in env:
     env["CXX"] = " ".join([env["cpp_compiler_launcher"], env["CXX"]])
 
+# NOTE: Compile command setup must take place in two distinct steps: once prior to the `SConscript`
+#  calls and once after. This isn't a limitation inherent to SCons, but rather a consequence of
+#  how we currently setup our `SCsub` files. If we had all the environment logic prepared prior to
+#  making the `Object`/`add_source_files` calls, those command lines would be considered "complete"
+#  and could be parsed immediately. As-is, those command lines would only represent the logic as it
+#  exists up to that point, making parsing at that stage only represent the logic *at* that stage.
+methods.setup_compilation_db(env)
+
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
@@ -1220,6 +1222,8 @@ if env["tests"]:
 SConscript("main/SCsub")
 
 SConscript("platform/" + env["platform"] + "/SCsub")  # Build selected platform.
+
+methods.finalize_compilation_db(env)
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:

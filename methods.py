@@ -3,6 +3,8 @@ from __future__ import annotations
 import atexit
 import contextlib
 import glob
+import itertools
+import json
 import math
 import os
 import re
@@ -110,6 +112,96 @@ def redirect_emitter(target, source, env):
             print_warning(f'Failed to redirect "{path}"')
         redirected_targets.append(item)
     return redirected_targets, source
+
+
+def setup_compilation_db(env):
+    """
+    A variation on the SCons `compilation_db` Tool emitter, but adjusted such that it can generate
+    a file in isolation.
+    """
+    if not env["compiledb"] or env["ninja"]:
+        return
+
+    from SCons.Action import Action
+    from SCons.Builder import ListEmitter
+    from SCons.Tool import createObjBuilders
+    from SCons.Tool.asm import ASPPSuffixes, ASSuffixes
+    from SCons.Tool.cc import CSuffixes
+    from SCons.Tool.cxx import CXXSuffixes
+
+    env.compilation_db_entries = []
+
+    def _generate_emitter(comstr):
+        action = Action(comstr)
+
+        def _compilation_db_emitter(target, source, env):
+            env.compilation_db_entries.append({"target": target, "source": source, "env": env, "action": action})
+            return target, source
+
+        return _compilation_db_emitter
+
+    GEN_CCCOM = _generate_emitter("$CCCOM")
+    GEN_SHCCCOM = _generate_emitter("$SHCCCOM")
+    GEN_CXXCOM = _generate_emitter("$CXXCOM")
+    GEN_SHCXXCOM = _generate_emitter("$SHCXXCOM")
+    GEN_ASCOM = _generate_emitter("$ASCOM")
+    GEN_ASPPCOM = _generate_emitter("$ASPPCOM")
+
+    static_obj, shared_obj = createObjBuilders(env)
+    for suffix, (builder, emitter) in itertools.chain(
+        itertools.product(CSuffixes, [(static_obj, GEN_CCCOM), (shared_obj, GEN_SHCCCOM)]),
+        itertools.product(CXXSuffixes, [(static_obj, GEN_CXXCOM), (shared_obj, GEN_SHCXXCOM)]),
+        itertools.product(ASSuffixes, [(static_obj, GEN_ASCOM), (shared_obj, GEN_ASCOM)]),
+        itertools.product(ASPPSuffixes, [(static_obj, GEN_ASPPCOM), (shared_obj, GEN_ASPPCOM)]),
+    ):
+        if emitter_old := builder.emitter.get(suffix):
+            builder.emitter[suffix] = ListEmitter(env.Flatten(emitter_old) + [emitter])
+
+
+def finalize_compilation_db(env):
+    """
+    The execution stage of the compilation database. Has to be handled after all `SConscript` files
+    are parsed to properly resolve the compilation commands.
+    """
+    if not env["compiledb"] or env["ninja"]:
+        return
+
+    def _generate_compilation_db():
+        from SCons.Platform import TempFileMunge
+
+        class _FakeTempFile(TempFileMunge):
+            def __call__(self, target, source, env, for_signature):
+                return self.cmd
+
+        OVERRIDES = {"TEMPFILE": _FakeTempFile}
+        DIRECTORY = env.Dir("#").abspath
+
+        json_entries = []
+        for entry in env.compilation_db_entries:
+            command = entry["action"].strfunction(
+                target=entry["target"], source=entry["source"], env=entry["env"], overrides=OVERRIDES
+            )
+            json_entries.append(
+                {
+                    "command": command,
+                    "directory": DIRECTORY,
+                    "file": entry["source"][0].path,
+                    "output": entry["target"][0].path,
+                }
+            )
+
+        with open("compile_commands.json", "w", encoding="utf-8", newline="\n") as file:
+            file.write(json.dumps(json_entries, indent="\t") + "\n")
+
+    if not env["compiledb_gen_only"] or env.GetOption("clean") or env.GetOption("help"):
+
+        def _generate_compilation_db_wrapper(target, source, env):
+            _generate_compilation_db()
+
+        env.AlwaysBuild(env.CommandNoCache("#compile_commands.json", [], env.Run(_generate_compilation_db_wrapper)))
+    else:
+        _generate_compilation_db()
+        env.Exit(0)
 
 
 def disable_warnings(self):
