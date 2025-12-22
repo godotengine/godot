@@ -1022,13 +1022,18 @@ void Node3D::set_disable_gizmos(bool p_enabled) {
 
 void Node3D::reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD;
+
 	if (p_keep_global_transform) {
-		Transform3D temp = get_global_transform();
-		Node::reparent(p_parent, p_keep_global_transform);
-		set_global_transform(temp);
-	} else {
-		Node::reparent(p_parent, p_keep_global_transform);
+		Transform3D new_local_transform = get_global_transform();
+		Node3D *new_parent = Object::cast_to<Node3D>(p_parent);
+		if (new_parent && !is_set_as_top_level()) {
+			new_local_transform = new_parent->get_global_transform().affine_inverse() * new_local_transform;
+		}
+
+		set_transform(new_local_transform);
 	}
+
+	Node::reparent(p_parent, p_keep_global_transform);
 }
 
 void Node3D::set_disable_scale(bool p_enabled) {

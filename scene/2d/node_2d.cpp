@@ -143,13 +143,18 @@ void Node2D::_update_transform() {
 
 void Node2D::reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD;
+
 	if (p_keep_global_transform) {
-		Transform2D temp = get_global_transform();
-		Node::reparent(p_parent);
-		set_global_transform(temp);
-	} else {
-		Node::reparent(p_parent);
+		Transform2D new_local_transform = get_global_transform();
+		CanvasItem *new_parent = Object::cast_to<CanvasItem>(p_parent);
+		if (new_parent && !is_set_as_top_level()) {
+			new_local_transform = new_parent->get_global_transform().affine_inverse() * new_local_transform;
+		}
+
+		set_transform(new_local_transform);
 	}
+
+	Node::reparent(p_parent, p_keep_global_transform);
 }
 
 void Node2D::set_position(const Point2 &p_pos) {
