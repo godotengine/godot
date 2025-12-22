@@ -442,10 +442,18 @@ uint64_t Utilities::get_rendering_info(RS::RenderingInfo p_info) {
 	return 0;
 }
 
+uint32_t Utilities::get_video_adapter_id() const {
+	return 0x0;
+}
+
 String Utilities::get_video_adapter_name() const {
 	const String rendering_device_name = String::utf8((const char *)glGetString(GL_RENDERER));
 	// NVIDIA suffixes all GPU model names with "/PCIe/SSE2" in OpenGL (but not Vulkan). This isn't necessary to display nowadays, so it can be trimmed.
 	return rendering_device_name.trim_suffix("/PCIe/SSE2");
+}
+
+uint32_t Utilities::get_video_adapter_vendor_id() const {
+	return 0x0;
 }
 
 String Utilities::get_video_adapter_vendor() const {

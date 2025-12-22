@@ -2115,7 +2115,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		}
 #endif // SOWRAP_ENABLED
 
-		if (getenv("DRI_PRIME") == nullptr) {
+		const char *env_dri_prime = getenv("DRI_PRIME");
+		if (env_dri_prime == nullptr) {
 			int prime_idx = -1;
 
 			if (getenv("PRIMUS_DISPLAY") ||
@@ -2154,7 +2155,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 				print_line(vformat("Found discrete GPU, setting DRI_PRIME=%d to use it.", prime_idx));
 				print_line("Note: Set DRI_PRIME=0 in the environment to disable Godot from using the discrete GPU.");
 				setenv("DRI_PRIME", itos(prime_idx).utf8().ptr(), 1);
+				dri_prime = "1";
+			} else {
+				dri_prime = String(itos(prime_idx));
 			}
+		} else {
+			dri_prime = String(env_dri_prime);
 		}
 
 		if (rendering_driver == "opengl3") {

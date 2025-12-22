@@ -178,7 +178,9 @@ public:
 	virtual void update_memory_info() = 0;
 
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) = 0;
+	virtual uint32_t get_video_adapter_id() const = 0;
 	virtual String get_video_adapter_name() const = 0;
+	virtual uint32_t get_video_adapter_vendor_id() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
 	virtual String get_video_adapter_api_version() const = 0;

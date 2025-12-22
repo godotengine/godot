@@ -7070,7 +7070,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
-		if (getenv("DRI_PRIME") == nullptr) {
+		const char *env_dri_prime = getenv("DRI_PRIME");
+		if (env_dri_prime == nullptr) {
 			int use_prime = -1;
 
 			if (getenv("PRIMUS_DISPLAY") ||
@@ -7108,7 +7109,12 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 				print_line("Found discrete GPU, setting DRI_PRIME=1 to use it.");
 				print_line("Note: Set DRI_PRIME=0 in the environment to disable Godot from using the discrete GPU.");
 				setenv("DRI_PRIME", "1", 1);
+				dri_prime = "1";
+			} else {
+				dri_prime = String(itos(use_prime));
 			}
+		} else {
+			dri_prime = String(env_dri_prime);
 		}
 	}
 	if (rendering_driver == "opengl3") {

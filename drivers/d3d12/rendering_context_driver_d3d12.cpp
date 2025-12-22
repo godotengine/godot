@@ -181,6 +181,7 @@ Error RenderingContextDriverD3D12::_initialize_devices() {
 		adapters[i]->GetDesc1(&desc);
 
 		Device &device = driver_devices[i];
+		device.id = desc.DeviceId;
 		device.name = desc.Description;
 		device.vendor = desc.VendorId;
 		device.workarounds = Workarounds();

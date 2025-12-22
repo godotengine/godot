@@ -143,6 +143,7 @@ class DisplayServerX11 : public DisplayServer {
 #endif
 #if defined(RD_ENABLED)
 	RenderingContextDriver *rendering_context = nullptr;
+	String dri_prime; // The DRI_PRIME index of the used graphics card; OpenGL-only.
 	RenderingDevice *rendering_device = nullptr;
 #endif
 
@@ -412,6 +413,10 @@ public:
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+
+#if defined(RD_ENABLED)
+	String get_dri_prime() { return dri_prime; }
+#endif
 
 #ifdef SPEECHD_ENABLED
 	virtual bool tts_is_speaking() const override;

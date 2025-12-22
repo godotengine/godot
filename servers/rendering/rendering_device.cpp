@@ -6473,8 +6473,16 @@ void RenderingDevice::draw_command_end_label() {
 	draw_graph.end_label();
 }
 
+uint32_t RenderingDevice::get_device_vendor_id() const {
+	return device.vendor;
+}
+
 String RenderingDevice::get_device_vendor_name() const {
 	return _get_device_vendor_name(device);
+}
+
+uint32_t RenderingDevice::get_device_id() const {
+	return device.id;
 }
 
 String RenderingDevice::get_device_name() const {
