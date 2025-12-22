@@ -5029,8 +5029,8 @@ void EditorInspector::set_use_filter(bool p_use) {
 	update_tree();
 }
 
-void EditorInspector::register_text_enter(Node *p_line_edit) {
-	search_box = Object::cast_to<LineEdit>(p_line_edit);
+void EditorInspector::register_text_enter(LineEdit *p_line_edit) {
+	search_box = p_line_edit;
 	if (search_box) {
 		search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorInspector::update_tree).unbind(1));
 	}
@@ -5885,6 +5885,18 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 	ClassDB::bind_method("get_selected_path", &EditorInspector::get_selected_path);
 	ClassDB::bind_method("get_edited_object", &EditorInspector::get_edited_object);
+
+	ClassDB::bind_method(D_METHOD("set_autoclear", "enable"), &EditorInspector::set_autoclear);
+	ClassDB::bind_method(D_METHOD("set_show_categories", "show_standard", "show_custom"), &EditorInspector::set_show_categories);
+	ClassDB::bind_method(D_METHOD("set_use_doc_hints", "enable"), &EditorInspector::set_use_doc_hints);
+	ClassDB::bind_method(D_METHOD("set_hide_script", "hide"), &EditorInspector::set_hide_script);
+	ClassDB::bind_method(D_METHOD("set_hide_metadata", "hide"), &EditorInspector::set_hide_metadata);
+	ClassDB::bind_method(D_METHOD("set_use_filter", "use_filter"), &EditorInspector::set_use_filter);
+	ClassDB::bind_method(D_METHOD("set_filter", "line_edit"), &EditorInspector::register_text_enter);
+	ClassDB::bind_method(D_METHOD("set_use_folding", "use_folding", "update_tree"), &EditorInspector::set_use_folding, DEFVAL(true));
+	ClassDB::bind_method("collapse_all_folding", &EditorInspector::collapse_all_folding);
+	ClassDB::bind_method("expand_all_folding", &EditorInspector::expand_all_folding);
+	ClassDB::bind_method("expand_revertable", &EditorInspector::expand_revertable);
 
 	ClassDB::bind_static_method("EditorInspector", D_METHOD("instantiate_property_editor", "object", "type", "path", "hint", "hint_text", "usage", "wide"), &EditorInspector::instantiate_property_editor, DEFVAL(false));
 
