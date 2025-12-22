@@ -184,7 +184,7 @@
 			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Returns a [Material] in a given surface. Surface is rendered using this material.
-				[b]Note:[/b] This returns the material within the [Mesh] resource, not the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties. To get the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.get_surface_override_material] instead.
+				[b]Note:[/b] This returns the material within the [Mesh] resource, not the [Material] associated with the [MeshInstance3D]'s Surface Material Override properties. To get the [Material] associated with the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.get_surface_override_material] instead.
 			</description>
 		</method>
 		<method name="surface_set_material">
@@ -193,7 +193,8 @@
 			<param index="1" name="material" type="Material" />
 			<description>
 				Sets a [Material] for a given surface. Surface will be rendered using this material.
-				[b]Note:[/b] This assigns the material within the [Mesh] resource, not the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties. To set the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.set_surface_override_material] instead.
+				[b]Note:[/b] This assigns the material within the [Mesh] resource, not the [Material] associated with the [MeshInstance3D]'s Surface Material Override properties. To set the [Material] associated with the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.set_surface_override_material] instead.
+				[b]Note:[/b] This has no visible effect on meshes rendered in [MeshInstance2D], as per-surface materials are ignored in favor of [member MeshInstance2D.texture] or the [CanvasItem] shader associated with the [MeshInstance2D] node.
 			</description>
 		</method>
 	</methods>
