@@ -52,8 +52,12 @@ int Texture2DRD::get_height() const {
 
 RID Texture2DRD::get_rid() const {
 	if (texture_rid.is_null()) {
-		// We are in trouble, create something temporary.
-		texture_rid = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+		// Initialize the resource RID if we have not to.
+		// The RID should not change again until resource destruction,
+		// because Material is not able to detect RID changes.
+		// This also applies to the same lazy initialization in `set_texture_rd_rid()`
+		// and `_set_texture_rd_rid()`.
+		texture_rid = RS::get_singleton()->texture_2d_placeholder_create();
 	}
 
 	return texture_rid;
@@ -77,11 +81,11 @@ void Texture2DRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 
 	if (p_texture_rd_rid.is_valid()) {
 		RS::get_singleton()->call_on_render_thread(callable_mp(this, &Texture2DRD::_set_texture_rd_rid).bind(p_texture_rd_rid));
-	} else if (texture_rid.is_valid()) {
-		RS::get_singleton()->free_rid(texture_rid);
-		texture_rid = RID();
+	} else if (texture_rid.is_valid() && texture_rd_rid.is_valid()) {
+		RID new_texture_rid = RS::get_singleton()->texture_2d_placeholder_create();
+		RS::get_singleton()->texture_replace(texture_rid, new_texture_rid);
 		size = Size2i();
-
+		texture_rd_rid = RID();
 		notify_property_list_changed();
 		emit_changed();
 	}
@@ -163,8 +167,12 @@ bool TextureLayeredRD::has_mipmaps() const {
 
 RID TextureLayeredRD::get_rid() const {
 	if (texture_rid.is_null()) {
-		// We are in trouble, create something temporary.
-		texture_rid = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+		// Initialize the resource RID if we have not to.
+		// The RID should not change again until resource destruction,
+		// because Material is not able to detect RID changes.
+		// This also applies to the same lazy initialization in `set_texture_rd_rid()`
+		// and `_set_texture_rd_rid()`.
+		texture_rid = RS::get_singleton()->texture_2d_placeholder_create();
 	}
 
 	return texture_rid;
@@ -180,14 +188,14 @@ void TextureLayeredRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 
 	if (p_texture_rd_rid.is_valid()) {
 		RS::get_singleton()->call_on_render_thread(callable_mp(this, &TextureLayeredRD::_set_texture_rd_rid).bind(p_texture_rd_rid));
-	} else if (texture_rid.is_valid()) {
-		RS::get_singleton()->free_rid(texture_rid);
-		texture_rid = RID();
+	} else if (texture_rid.is_valid() && texture_rd_rid.is_valid()) {
+		RID new_texture_rid = RS::get_singleton()->texture_2d_placeholder_create();
+		RS::get_singleton()->texture_replace(texture_rid, new_texture_rid);
 		image_format = Image::FORMAT_MAX;
 		size = Size2i();
 		layers = 0;
 		mipmaps = 0;
-
+		texture_rd_rid = RID();
 		notify_property_list_changed();
 		emit_changed();
 	}
@@ -290,8 +298,12 @@ bool Texture3DRD::has_mipmaps() const {
 
 RID Texture3DRD::get_rid() const {
 	if (texture_rid.is_null()) {
-		// We are in trouble, create something temporary.
-		texture_rid = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+		// Initialize the resource RID if we have not to.
+		// The RID should not change again until resource destruction,
+		// because Material is not able to detect RID changes.
+		// This also applies to the same lazy initialization in `set_texture_rd_rid()`
+		// and `_set_texture_rd_rid()`.
+		texture_rid = RS::get_singleton()->texture_2d_placeholder_create();
 	}
 
 	return texture_rid;
@@ -302,13 +314,13 @@ void Texture3DRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 
 	if (p_texture_rd_rid.is_valid()) {
 		RS::get_singleton()->call_on_render_thread(callable_mp(this, &Texture3DRD::_set_texture_rd_rid).bind(p_texture_rd_rid));
-	} else if (texture_rid.is_valid()) {
-		RS::get_singleton()->free_rid(texture_rid);
-		texture_rid = RID();
+	} else if (texture_rid.is_valid() && texture_rd_rid.is_valid()) {
+		RID new_texture_rid = RS::get_singleton()->texture_2d_placeholder_create();
+		RS::get_singleton()->texture_replace(texture_rid, new_texture_rid);
 		image_format = Image::FORMAT_MAX;
 		size = Vector3i();
 		mipmaps = 0;
-
+		texture_rd_rid = RID();
 		notify_property_list_changed();
 		emit_changed();
 	}
