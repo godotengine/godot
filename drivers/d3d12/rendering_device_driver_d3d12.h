@@ -508,6 +508,7 @@ private:
 
 		CPUDescriptorHeapPool::Allocation uav_alloc;
 		CPUDescriptorHeapPool::Allocation rtv_alloc;
+		CPUDescriptorHeapPool::Allocation dsv_alloc;
 	};
 
 public:
@@ -564,7 +565,7 @@ private:
 
 	D3D12_RENDER_TARGET_VIEW_DESC _make_rtv_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
 	D3D12_UNORDERED_ACCESS_VIEW_DESC _make_ranged_uav_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
-	D3D12_DEPTH_STENCIL_VIEW_DESC _make_dsv_for_texture(const TextureInfo *p_texture_info);
+	D3D12_DEPTH_STENCIL_VIEW_DESC _make_dsv_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
 
 	FramebufferID _framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height, bool p_is_screen);
 
@@ -697,6 +698,7 @@ public:
 	virtual void command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) override final;
 	virtual void command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) override final;
 	virtual void command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) override final;
+	virtual void command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) override final;
 
 public:
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) override final;
