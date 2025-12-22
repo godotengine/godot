@@ -52,6 +52,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/resources/style_box_flat.h"
 
 void ConnectionInfoDialog::ok_pressed() {
 }
@@ -351,6 +352,10 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 			}
 		}
 	}
+}
+
+void ScriptTextEditor::_on_mouse_exited() {
+	drag_info_label->hide();
 }
 
 void ScriptTextEditor::reload_text() {
@@ -2134,6 +2139,9 @@ void ScriptTextEditor::_notification(int p_what) {
 			inline_color_options->add_theme_font_override("font", code_font);
 			inline_color_options->get_popup()->add_theme_font_override("font", code_font);
 		} break;
+		case NOTIFICATION_DRAG_END: {
+			drag_info_label->hide();
+		} break;
 	}
 }
 
@@ -2204,10 +2212,46 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 					String(d["type"]) == "nodes" ||
 					String(d["type"]) == "obj_property" ||
 					String(d["type"]) == "files_and_dirs")) {
+		set_drop_info_text(d);
 		return true;
 	}
 
 	return false;
+}
+
+void ScriptTextEditor::set_drop_info_text(const Dictionary &p_info) const {
+	if (drag_info_label->is_visible() || !EDITOR_GET("text_editor/appearance/drag_and_drop_info/show_drag_and_drop_info")) {
+		return;
+	}
+
+	String text;
+	String c = keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL);
+	bool drop_as_uid = bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
+	String default_drop_option = drop_as_uid ? TTR("UID path") : TTR("file path");
+	String alternate_drop_option = drop_as_uid ? TTR("file path") : TTR("UID path");
+
+	const String type = p_info.get("type", "");
+
+	if (type == "files" || type == "files_and_dirs" || type == "resource") {
+		Array files = p_info.get("files", Array());
+		text = TTRN("Drop file path.", "Drop file paths.", files.size()) +
+				"\n" + vformat(TTRN("Hold %s: Add const preload by %s.", "Hold %s: Add const preloads by %s.", files.size()), c, default_drop_option) +
+				"\n" + vformat(TTRN("Hold %s+Shift: Add const preload by %s.", "Hold %s+Shift: Add const preloads by %s.", files.size()), c, alternate_drop_option) +
+				"\n" + TTRN("Hold Alt: Add @export var pointing to the resource.", "Hold Alt: Add @export vars pointing to the resources.", files.size());
+	} else if (type == "nodes") {
+		Array nodes = p_info["nodes"];
+		text = TTRN("Drop node path.", "Drop node paths.", nodes.size()) +
+				"\n" + vformat(TTRN("Hold %s: Add @onready var pointing to the node path.", "Hold %s: Add @onready vars pointing to the node paths.", nodes.size()), c) +
+				"\n" + TTRN("Hold Alt: Add @export var pointing to the node.", "Hold Alt: Add @export vars pointing to the nodes.", nodes.size());
+	} else if (type == "obj_property") {
+		text = TTR("Drop property path.");
+	}
+
+	if (!text.is_empty()) {
+		drag_info_label->show();
+		drag_info_label->set_text(text);
+		drag_info_label->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT, Control::PRESET_MODE_MINSIZE, 20 * EDSCALE);
+	}
 }
 
 static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
@@ -2540,6 +2584,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	te->insert_text_at_caret(text_to_drop);
 	te->end_complex_operation();
 	te->grab_focus();
+
+	drag_info_label->hide();
 }
 
 Vector<ObjectID> ScriptTextEditor::_get_objects_for_export_assignment() const {
@@ -3043,6 +3089,25 @@ ScriptTextEditor::ScriptTextEditor() {
 	errors_panel->set_context_menu_enabled(true);
 	errors_panel->set_focus_mode(FOCUS_CLICK);
 	errors_panel->hide();
+
+	drag_info_label = memnew(Label);
+	drag_info_label->set_anchors_preset(Control::PRESET_BOTTOM_RIGHT);
+	drag_info_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	drag_info_label->add_theme_constant_override("line_spacing", 0);
+
+	Ref<StyleBoxFlat> drag_info_sb;
+	drag_info_sb.instantiate();
+	drag_info_sb->set_bg_color(Color(0.2f, 0.2f, 0.2f, 1.f));
+	drag_info_sb->set_border_width_all(2 * EDSCALE);
+	drag_info_sb->set_border_color(Color(0.4f, 0.4f, 0.4f, 1.f));
+	drag_info_sb->set_corner_radius_all(5 * EDSCALE);
+	drag_info_sb->set_corner_detail(5);
+	drag_info_sb->set_expand_margin_all(5);
+	drag_info_label->add_theme_style_override(CoreStringName(normal), drag_info_sb);
+
+	code_editor->get_text_editor()->connect(SceneStringName(mouse_exited), callable_mp(this, &ScriptTextEditor::_on_mouse_exited));
+	code_editor->get_text_editor()->add_child(drag_info_label);
+	drag_info_label->hide();
 
 	update_settings();
 

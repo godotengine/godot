@@ -778,6 +778,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/minimap/show_minimap", true, true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/minimap/minimap_width", 80, "50,250,1")
 
+	// Appearance: Drag Info Label
+	_initial_set("text_editor/appearance/drag_and_drop_info/show_drag_and_drop_info", true, true);
+
 	// Appearance: Lines
 	_initial_set("text_editor/appearance/lines/code_folding", true, true);
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/lines/word_wrap", 0, "None,Boundary")
