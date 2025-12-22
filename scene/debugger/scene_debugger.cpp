@@ -33,6 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
@@ -341,6 +343,28 @@ Error SceneDebugger::_msg_live_res_call(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_live_audio_server_call(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+
+	AudioServer *audio_server = AudioServer::get_singleton();
+	ERR_FAIL_COND_V(!audio_server, ERR_UNAVAILABLE);
+
+	LocalVector<Variant> args;
+	LocalVector<Variant *> argptrs;
+	args.resize(p_args.size() - 1);
+	argptrs.resize(args.size());
+	for (uint32_t i = 0; i < args.size(); i++) {
+		args[i] = p_args[i + 1];
+		argptrs[i] = &args[i];
+	}
+
+	Callable::CallError ce;
+	audio_server->callp(p_args[0], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size(), ce);
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, FAILED);
+
+	return OK;
+}
+
 Error SceneDebugger::_msg_live_create_node(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 	LiveEditor::get_singleton()->_create_node_func(p_args[0], p_args[1], p_args[2]);
@@ -571,6 +595,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["live_res_prop"] = _msg_live_res_prop;
 	message_handlers["live_node_call"] = _msg_live_node_call;
 	message_handlers["live_res_call"] = _msg_live_res_call;
+	message_handlers["live_audio_server_call"] = _msg_live_audio_server_call;
 	message_handlers["live_create_node"] = _msg_live_create_node;
 	message_handlers["live_instantiate_node"] = _msg_live_instantiate_node;
 	message_handlers["live_remove_node"] = _msg_live_remove_node;
