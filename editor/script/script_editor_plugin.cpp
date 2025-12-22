@@ -1831,6 +1831,7 @@ void ScriptEditor::_notification(int p_what) {
 			}
 
 			members_overview_alphabeta_sort_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
+			scripts_sort_by_recent_button->set_button_icon(get_editor_theme_icon(SNAME("SortRecent")));
 
 			filter_scripts->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			filter_methods->set_right_icon(get_editor_theme_icon(SNAME("Search")));
@@ -2152,6 +2153,22 @@ void ScriptEditor::_toggle_members_overview_alpha_sort(bool p_alphabetic_sort) {
 	_update_members_overview();
 }
 
+void ScriptEditor::_toggle_scripts_sort_by_recent(bool p_sort_by_recent) {
+	scripts_sort_by_recent = p_sort_by_recent;
+	_update_script_names();
+}
+
+void ScriptEditor::_scripts_list_mouse_entered() {
+	mouse_over_script_list = true;
+}
+
+void ScriptEditor::_scripts_list_mouse_exited() {
+	mouse_over_script_list = false;
+	if (scripts_sort_by_recent) {
+		_update_script_names();
+	}
+}
+
 void ScriptEditor::_update_members_overview() {
 	members_overview->clear();
 
@@ -2293,6 +2310,11 @@ void ScriptEditor::_update_script_colors() {
 
 void ScriptEditor::_update_script_names() {
 	if (restoring_layout) {
+		return;
+	}
+
+	// Skip update if mouse is over the list and we're in recent sort mode.
+	if (scripts_sort_by_recent && mouse_over_script_list) {
 		return;
 	}
 
@@ -2463,6 +2485,38 @@ void ScriptEditor::_update_script_names() {
 		for (const FuzzySearchResult &res : results) {
 			sedata_filtered.push_back(sedata[res.original_index]);
 		}
+	}
+
+	if (scripts_sort_by_recent && !sedata_filtered.is_empty()) {
+		HashMap<int, int> history_order;
+		for (int i = history.size() - 1; i >= 0; i--) {
+			Control *control = history[i].control;
+			if (control) {
+				int tab_idx = tab_container->get_tab_idx_from_control(control);
+				if (tab_idx >= 0 && !history_order.has(tab_idx)) {
+					history_order[tab_idx] = i;
+				}
+			}
+		}
+
+		struct RecentSortComparator {
+			const HashMap<int, int> &history_order;
+
+			bool operator()(const _ScriptEditorItemData &a, const _ScriptEditorItemData &b) const {
+				int order_a = history_order.has(a.index) ? history_order[a.index] : -1;
+				int order_b = history_order.has(b.index) ? history_order[b.index] : -1;
+
+				// Scripts in history are sorted by last opened.
+				if (order_a != order_b) {
+					return order_a > order_b;
+				}
+
+				// For scripts not in history, maintain original order.
+				return a.index < b.index;
+			}
+		};
+
+		sedata_filtered.sort_custom<RecentSortComparator>(RecentSortComparator{ history_order });
 	}
 
 	Color tool_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -3671,6 +3725,11 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	_set_script_zoom_factor(p_layout->get_value("ScriptEditor", "zoom_factor", 1.0f));
 
+	if (p_layout->has_section_key("ScriptEditor", "scripts_sort_by_recent")) {
+		scripts_sort_by_recent = p_layout->get_value("ScriptEditor", "scripts_sort_by_recent");
+		scripts_sort_by_recent_button->set_pressed(scripts_sort_by_recent);
+	}
+
 	restoring_layout = false;
 
 	_update_script_names();
@@ -3721,6 +3780,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value("ScriptEditor", "script_split_offset", script_split->get_split_offset());
 	p_layout->set_value("ScriptEditor", "list_split_offset", list_split->get_split_offset());
 	p_layout->set_value("ScriptEditor", "zoom_factor", zoom_factor);
+	p_layout->set_value("ScriptEditor", "scripts_sort_by_recent", scripts_sort_by_recent);
 
 	// Save the cache.
 	script_editor_cache->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"));
@@ -4226,12 +4286,24 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	scripts_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 	list_split->add_child(scripts_vbox);
 
+	HBoxContainer *scripts_filter_hbox = memnew(HBoxContainer);
+	scripts_vbox->add_child(scripts_filter_hbox);
+
 	filter_scripts = memnew(LineEdit);
 	filter_scripts->set_placeholder(TTRC("Filter Scripts"));
 	filter_scripts->set_accessibility_name(TTRC("Filter Scripts"));
 	filter_scripts->set_clear_button_enabled(true);
+	filter_scripts->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter_scripts->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
-	scripts_vbox->add_child(filter_scripts);
+	scripts_filter_hbox->add_child(filter_scripts);
+
+	scripts_sort_by_recent_button = memnew(Button);
+	scripts_sort_by_recent_button->set_theme_type_variation(SceneStringName(FlatButton));
+	scripts_sort_by_recent_button->set_tooltip_text(TTRC("Toggle sorting scripts by most recently opened."));
+	scripts_sort_by_recent_button->set_toggle_mode(true);
+	scripts_sort_by_recent_button->set_pressed(false);
+	scripts_sort_by_recent_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditor::_toggle_scripts_sort_by_recent));
+	scripts_filter_hbox->add_child(scripts_sort_by_recent_button);
 
 	_sort_list_on_update = true;
 	script_list = memnew(ItemList);
@@ -4243,6 +4315,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_list->set_allow_rmb_select(true);
 	scripts_vbox->add_child(script_list);
 	script_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked), CONNECT_DEFERRED);
+	script_list->connect(SceneStringName(mouse_entered), callable_mp(this, &ScriptEditor::_scripts_list_mouse_entered));
+	script_list->connect(SceneStringName(mouse_exited), callable_mp(this, &ScriptEditor::_scripts_list_mouse_exited));
 	SET_DRAG_FORWARDING_GCD(script_list, ScriptEditor);
 
 	context_menu = memnew(PopupMenu);
