@@ -1003,6 +1003,7 @@ public:
 	FUNC3(canvas_item_add_multimesh, RID, RID, RID)
 	FUNC3(canvas_item_add_particles, RID, RID, RID)
 	FUNC2(canvas_item_add_set_transform, RID, const Transform2D &)
+	FUNC2(canvas_item_add_set_modulate, RID, const Color &)
 	FUNC2(canvas_item_add_clip_ignore, RID, bool)
 	FUNC5(canvas_item_add_animation_slice, RID, double, double, double, double)
 

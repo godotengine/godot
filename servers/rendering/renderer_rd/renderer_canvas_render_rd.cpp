@@ -2857,6 +2857,11 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				_update_transform_2d_to_mat2x3(base_transform * transform->xform, template_instance.world);
 			} break;
 
+			case Item::Command::TYPE_MODULATE: {
+				const Item::CommandModulate *modulate = static_cast<const Item::CommandModulate *>(c);
+				base_color = p_item->final_modulate * modulate->modulate;
+			} break;
+
 			case Item::Command::TYPE_CLIP_IGNORE: {
 				const Item::CommandClipIgnore *ci = static_cast<const Item::CommandClipIgnore *>(c);
 				if (r_current_clip) {
@@ -3216,6 +3221,7 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 			}
 		} break;
 		case Item::Command::TYPE_TRANSFORM:
+		case Item::Command::TYPE_MODULATE:
 		case Item::Command::TYPE_CLIP_IGNORE:
 		case Item::Command::TYPE_ANIMATION_SLICE: {
 			// Can ignore these as they only impact batch creation.

@@ -898,11 +898,19 @@ void PopupMenu::_draw_items() {
 		_shape_item(i);
 
 		Point2 item_ofs = ofs;
+		Size2 style_margin = Size2();
 		Size2 icon_size = _get_item_icon_size(i);
 		float h = _get_item_height(i);
+
+		StringName anim_id = itos(i);
+		StyleBox::begin_animation_group(anim_id);
 		if ((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) {
 			theme_cache.hover_style->draw(ci, Rect2(item_ofs + Point2(0, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
+			style_margin.x = theme_cache.hover_style->get_margin(SIDE_LEFT) - theme_cache.hover_style->get_margin(SIDE_RIGHT);
+			style_margin.y = theme_cache.hover_style->get_margin(SIDE_TOP) - theme_cache.hover_style->get_margin(SIDE_BOTTOM);
 		}
+		StyleBox::end_animation_group(anim_id);
+		item_ofs += StyleBox::get_animated_value(SNAME("style_margin"), style_margin, anim_id);
 
 		String text = items[i].xl_text;
 
@@ -1016,13 +1024,15 @@ void PopupMenu::_draw_items() {
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color));
+				Color font_color = items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color);
+				items[i].text_buf->draw(ci, text_pos, font_color);
 			} else {
 				Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color));
+				Color font_color = items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color);
+				items[i].text_buf->draw(ci, text_pos, font_color);
 			}
 		}
 

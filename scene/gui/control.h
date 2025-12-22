@@ -434,6 +434,8 @@ public:
 		NOTIFICATION_MOUSE_EXIT_SELF = 61,
 	};
 
+	bool is_stylebox_animator_connected = false;
+
 	// Editor plugin interoperability.
 
 	// TODO: Decouple controls from their editor plugin and get rid of this.

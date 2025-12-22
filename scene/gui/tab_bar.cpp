@@ -560,6 +560,8 @@ void TabBar::_notification(int p_what) {
 
 				_draw_tab(sb, col, theme_cache.icon_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus(true));
 			}
+			StyleBox::end_animation_group("tab_focus");
+			draw_set_transform_matrix(Transform2D());
 
 			if (buttons_visible) {
 				int vofs = (size.height - theme_cache.increment_icon->get_size().height) / 2;
@@ -648,12 +650,19 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 	if (tab_style_v_flip) {
 		draw_set_transform(Point2(0.0, p_tab_style->get_draw_rect(sb_rect).size.y), 0.0, Size2(1.0, -1.0));
 	}
+
+	StringName group_id = "tab:" + itos(p_index);
+	StyleBox::begin_animation_group(group_id);
 	p_tab_style->draw(ci, sb_rect);
+	StyleBox::end_animation_group(group_id);
+
 	if (tab_style_v_flip) {
 		draw_set_transform(Point2(), 0.0, Size2(1.0, 1.0));
 	}
+
 	if (p_focus) {
 		Ref<StyleBox> focus_style = theme_cache.tab_focus_style;
+		StyleBox::begin_animation_group("tab_focus");
 		focus_style->draw(ci, sb_rect);
 	}
 
@@ -675,11 +684,13 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 	if (!tabs[p_index].text.is_empty()) {
 		Point2i text_pos = Point2i(rtl ? p_x - tabs[p_index].size_text : p_x,
 				p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[p_index].text_buf->get_size().y) / 2);
+		text_pos = StyleBox::get_animated_value("text-position", text_pos, group_id);
+		Color font_color_animated = StyleBox::get_animated_value("font-color", p_font_color, group_id);
 
 		if (theme_cache.outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 			tabs[p_index].text_buf->draw_outline(ci, text_pos, theme_cache.outline_size, theme_cache.font_outline_color);
 		}
-		tabs[p_index].text_buf->draw(ci, text_pos, p_font_color);
+		tabs[p_index].text_buf->draw(ci, text_pos, font_color_animated);
 
 		p_x = rtl ? p_x - tabs[p_index].size_text - theme_cache.h_separation : p_x + tabs[p_index].size_text + theme_cache.h_separation;
 	}
@@ -696,6 +707,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 
 		tabs.write[p_index].rb_rect = rb_rect;
 
+		StyleBox::begin_animation_group("button_" + itos(p_index));
 		if (rb_hover == p_index) {
 			if (rb_pressing) {
 				theme_cache.button_pressed_style->draw(ci, rb_rect);
@@ -703,6 +715,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 				style->draw(ci, rb_rect);
 			}
 		}
+		StyleBox::end_animation_group();
 
 		rb->draw(ci, Point2i(rb_rect.position.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
 
@@ -723,6 +736,8 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 
 		tabs.write[p_index].cb_rect = cb_rect;
 
+		StringName sub_id = "close_" + itos(p_index);
+		StyleBox::begin_animation_group(sub_id);
 		if (!tabs[p_index].disabled && cb_hover == p_index) {
 			if (cb_pressing) {
 				theme_cache.button_pressed_style->draw(ci, cb_rect);
@@ -730,7 +745,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 				style->draw(ci, cb_rect);
 			}
 		}
-
+		StyleBox::end_animation_group(sub_id);
 		cb->draw(ci, Point2i(cb_rect.position.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
 	} else {
 		tabs.write[p_index].cb_rect = Rect2();

@@ -1257,6 +1257,11 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 				draw_transform = transform->xform;
 			} break;
 
+			case Item::Command::TYPE_MODULATE: {
+				const Item::CommandModulate *modulate = static_cast<const Item::CommandModulate *>(c);
+				base_color = p_item->final_modulate * modulate->modulate;
+			} break;
+
 			case Item::Command::TYPE_CLIP_IGNORE: {
 				const Item::CommandClipIgnore *ci = static_cast<const Item::CommandClipIgnore *>(c);
 				if (current_clip) {
@@ -1540,6 +1545,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 
 		} break;
 		case Item::Command::TYPE_TRANSFORM:
+		case Item::Command::TYPE_MODULATE:
 		case Item::Command::TYPE_CLIP_IGNORE:
 		case Item::Command::TYPE_ANIMATION_SLICE: {
 			// Can ignore these as they only impact batch creation.

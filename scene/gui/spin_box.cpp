@@ -482,8 +482,13 @@ void SpinBox::_notification(int p_what) {
 			draw_style_box(theme_cache.field_and_buttons_separator, Rect2(sizing_cache.field_and_buttons_separator_left, 0, sizing_cache.field_and_buttons_separator_width, size.height));
 
 			// Draw buttons.
+			StyleBox::begin_animation_group(SNAME("up"));
 			draw_style_box(up_stylebox, Rect2(sizing_cache.buttons_left, 0, sizing_cache.buttons_width, sizing_cache.button_up_height));
+			StyleBox::end_animation_group();
+
+			StyleBox::begin_animation_group(SNAME("down"));
 			draw_style_box(down_stylebox, Rect2(sizing_cache.buttons_left, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height));
+			StyleBox::end_animation_group();
 
 #ifndef DISABLE_DEPRECATED
 			if (theme_cache.is_updown_assigned) {

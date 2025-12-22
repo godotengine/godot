@@ -454,41 +454,74 @@ Rect2 StyleBoxFlat::get_draw_rect(const Rect2 &p_rect) const {
 }
 
 void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
-	bool draw_border = (border_width[0] > 0) || (border_width[1] > 0) || (border_width[2] > 0) || (border_width[3] > 0);
-	bool draw_shadow = (shadow_size > 0);
+	begin_draw(p_canvas_item, p_rect);
+
+	Rect2 rect_animated = get_animated_value(SNAME("rect"), p_rect);
+
+	Color bg_color_animated = get_animated_value(SNAME("bg_color"), bg_color);
+	Color border_color_animated = get_animated_value(SNAME("border/color"), border_color);
+
+	real_t expand_margin_animated[4] = {
+		get_animated_value(SNAME("expand/margin_left"), expand_margin[SIDE_LEFT]),
+		get_animated_value(SNAME("expand/margin_top"), expand_margin[SIDE_TOP]),
+		get_animated_value(SNAME("expand/margin_right"), expand_margin[SIDE_RIGHT]),
+		get_animated_value(SNAME("expand/margin_bottom"), expand_margin[SIDE_BOTTOM])
+	};
+
+	real_t border_width_animated[4] = {
+		get_animated_value(SNAME("border/width_left"), border_width[SIDE_LEFT]),
+		get_animated_value(SNAME("border/width_top"), border_width[SIDE_TOP]),
+		get_animated_value(SNAME("border/width_right"), border_width[SIDE_RIGHT]),
+		get_animated_value(SNAME("border/width_bottom"), border_width[SIDE_BOTTOM]),
+	};
+	for (int i = 0; i < 4; i++) {
+		border_width_animated[i] = MAX(0, border_width_animated[i]);
+	}
+	real_t corner_radius_animated[4];
+	corner_radius_animated[0] = MAX(0.0, (real_t)get_animated_value(SNAME("corner_radius/top_left"), corner_radius[CORNER_TOP_LEFT]));
+	corner_radius_animated[1] = MAX(0.0, (real_t)get_animated_value(SNAME("corner_radius/top_right"), corner_radius[CORNER_TOP_RIGHT]));
+	corner_radius_animated[2] = MAX(0.0, (real_t)get_animated_value(SNAME("corner_radius/bottom_right"), corner_radius[CORNER_BOTTOM_RIGHT]));
+	corner_radius_animated[3] = MAX(0.0, (real_t)get_animated_value(SNAME("corner_radius/bottom_left"), corner_radius[CORNER_BOTTOM_LEFT]));
+
+	real_t shadow_size_animated = get_animated_value(SNAME("shadow/size"), shadow_size);
+	Vector2 shadow_offset_animated = get_animated_value(SNAME("shadow/offset"), shadow_offset);
+	Color shadow_color_animated = get_animated_value(SNAME("shadow/color"), shadow_color);
+
+	bool draw_border = (border_width_animated[0] > 0) || (border_width_animated[1] > 0) || (border_width_animated[2] > 0) || (border_width_animated[3] > 0);
+	bool draw_shadow = (shadow_size_animated > 0);
 	if (!draw_border && !draw_center && !draw_shadow) {
 		return;
 	}
 
-	Rect2 style_rect = p_rect.grow_individual(expand_margin[SIDE_LEFT], expand_margin[SIDE_TOP], expand_margin[SIDE_RIGHT], expand_margin[SIDE_BOTTOM]);
+	Rect2 style_rect = rect_animated.grow_individual(expand_margin_animated[SIDE_LEFT], expand_margin_animated[SIDE_TOP], expand_margin_animated[SIDE_RIGHT], expand_margin_animated[SIDE_BOTTOM]);
 	if (Math::is_zero_approx(style_rect.size.width) || Math::is_zero_approx(style_rect.size.height)) {
 		return;
 	}
 
-	const bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
+	const bool rounded_corners = (corner_radius_animated[0] > 0) || (corner_radius_animated[1] > 0) || (corner_radius_animated[2] > 0) || (corner_radius_animated[3] > 0);
 	// Only enable antialiasing if it is actually needed. This improves performance
 	// and maximizes sharpness for non-skewed StyleBoxes with sharp corners.
 	const bool aa_on = (rounded_corners || !skew.is_zero_approx()) && anti_aliased;
 
 	const bool blend_on = blend_border && draw_border;
 
-	Color border_color_alpha = Color(border_color.r, border_color.g, border_color.b, 0);
-	Color border_color_blend = (draw_center ? bg_color : border_color_alpha);
-	Color border_color_inner = blend_on ? border_color_blend : border_color;
+	Color border_color_alpha = Color(border_color_animated.r, border_color_animated.g, border_color_animated.b, 0);
+	Color border_color_blend = (draw_center ? bg_color_animated : border_color_alpha);
+	Color border_color_inner = blend_on ? border_color_blend : border_color_animated;
 
 	// Adapt borders (prevent weird overlapping/glitchy drawings).
 	real_t width = MAX(style_rect.size.width, 0);
 	real_t height = MAX(style_rect.size.height, 0);
 	real_t adapted_border[4] = { 1000000.0, 1000000.0, 1000000.0, 1000000.0 };
-	adapt_values(SIDE_TOP, SIDE_BOTTOM, adapted_border, border_width, height, height, height);
-	adapt_values(SIDE_LEFT, SIDE_RIGHT, adapted_border, border_width, width, width, width);
+	adapt_values(SIDE_TOP, SIDE_BOTTOM, adapted_border, border_width_animated, height, height, height);
+	adapt_values(SIDE_LEFT, SIDE_RIGHT, adapted_border, border_width_animated, width, width, width);
 
 	// Adapt corners (prevent weird overlapping/glitchy drawings).
 	real_t adapted_corner[4] = { 1000000.0, 1000000.0, 1000000.0, 1000000.0 };
-	adapt_values(CORNER_TOP_RIGHT, CORNER_BOTTOM_RIGHT, adapted_corner, corner_radius, height, height - adapted_border[SIDE_BOTTOM], height - adapted_border[SIDE_TOP]);
-	adapt_values(CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, adapted_corner, corner_radius, height, height - adapted_border[SIDE_BOTTOM], height - adapted_border[SIDE_TOP]);
-	adapt_values(CORNER_TOP_LEFT, CORNER_TOP_RIGHT, adapted_corner, corner_radius, width, width - adapted_border[SIDE_RIGHT], width - adapted_border[SIDE_LEFT]);
-	adapt_values(CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, adapted_corner, corner_radius, width, width - adapted_border[SIDE_RIGHT], width - adapted_border[SIDE_LEFT]);
+	adapt_values(CORNER_TOP_RIGHT, CORNER_BOTTOM_RIGHT, adapted_corner, corner_radius_animated, height, height - adapted_border[SIDE_BOTTOM], height - adapted_border[SIDE_TOP]);
+	adapt_values(CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, adapted_corner, corner_radius_animated, height, height - adapted_border[SIDE_BOTTOM], height - adapted_border[SIDE_TOP]);
+	adapt_values(CORNER_TOP_LEFT, CORNER_TOP_RIGHT, adapted_corner, corner_radius_animated, width, width - adapted_border[SIDE_RIGHT], width - adapted_border[SIDE_LEFT]);
+	adapt_values(CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, adapted_corner, corner_radius_animated, width, width - adapted_border[SIDE_RIGHT], width - adapted_border[SIDE_LEFT]);
 
 	Rect2 infill_rect = style_rect.grow_individual(-adapted_border[SIDE_LEFT], -adapted_border[SIDE_TOP], -adapted_border[SIDE_RIGHT], -adapted_border[SIDE_BOTTOM]);
 
@@ -510,7 +543,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	if (aa_on) {
 		for (int i = 0; i < 4; i++) {
-			if (border_width[i] > 0) {
+			if (border_width_animated[i] > 0) {
 				border_style_rect = border_style_rect.grow_side((Side)i, -aa_size_scaled);
 			}
 		}
@@ -524,32 +557,32 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	// Create shadow.
 	if (draw_shadow) {
 		Rect2 shadow_inner_rect = style_rect;
-		shadow_inner_rect.position += shadow_offset;
+		shadow_inner_rect.position += shadow_offset_animated;
 
-		Rect2 shadow_rect = style_rect.grow(shadow_size);
-		shadow_rect.position += shadow_offset;
+		Rect2 shadow_rect = style_rect.grow(shadow_size_animated);
+		shadow_rect.position += shadow_offset_animated;
 
-		Color shadow_color_transparent = Color(shadow_color.r, shadow_color.g, shadow_color.b, 0);
+		Color shadow_color_transparent = Color(shadow_color_animated.r, shadow_color_animated.g, shadow_color_animated.b, 0);
 
 		draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner,
-				shadow_rect, shadow_inner_rect, shadow_color, shadow_color_transparent, corner_detail, skew);
+				shadow_rect, shadow_inner_rect, shadow_color_animated, shadow_color_transparent, corner_detail, skew);
 
 		if (draw_center) {
 			draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner,
-					shadow_inner_rect, shadow_inner_rect, shadow_color, shadow_color, corner_detail, skew, true);
+					shadow_inner_rect, shadow_inner_rect, shadow_color_animated, shadow_color_animated, corner_detail, skew, true);
 		}
 	}
 
 	// Create border (no AA).
 	if (draw_border && !aa_on) {
 		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-				border_style_rect, infill_rect, border_color_inner, border_color, corner_detail, skew);
+				border_style_rect, infill_rect, border_color_inner, border_color_animated, corner_detail, skew);
 	}
 
 	// Create infill (no AA).
 	if (draw_center && (!aa_on || blend_on)) {
 		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-				infill_rect, infill_rect, bg_color, bg_color, corner_detail, skew, true);
+				infill_rect, infill_rect, bg_color_animated, bg_color_animated, corner_detail, skew, true);
 	}
 
 	if (aa_on) {
@@ -560,7 +593,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 		if (draw_border) {
 			for (int i = 0; i < 4; i++) {
-				if (border_width[i] > 0) {
+				if (border_width_animated[i] > 0) {
 					aa_border_width[i] = aa_size_scaled;
 					aa_border_width_half[i] = aa_size_scaled * 0.5;
 					aa_fill_width[i] = 0;
@@ -591,13 +624,13 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 			if (!blend_on) {
 				// Create center fill, not antialiased yet
 				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_rect_aa_colored, infill_rect_aa_colored, bg_color, bg_color, corner_detail, skew, true);
+						infill_rect_aa_colored, infill_rect_aa_colored, bg_color_animated, bg_color_animated, corner_detail, skew, true);
 			}
 			if (!blend_on || !draw_border) {
-				Color alpha_bg = Color(bg_color.r, bg_color.g, bg_color.b, 0);
+				Color alpha_bg = Color(bg_color_animated.r, bg_color_animated.g, bg_color_animated.b, 0);
 				// Add antialiasing on the center fill
 				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_rect_aa_transparent, infill_rect_aa_colored, bg_color, alpha_bg, corner_detail, skew);
+						infill_rect_aa_transparent, infill_rect_aa_colored, bg_color_animated, alpha_bg, corner_detail, skew);
 			}
 		}
 
@@ -617,15 +650,15 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 			// Create border ring, not antialiased yet
 			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-					outer_rect_aa_colored, ((blend_on) ? infill_rect : inner_rect_aa_colored), border_color_inner, border_color, corner_detail, skew);
+					outer_rect_aa_colored, ((blend_on) ? infill_rect : inner_rect_aa_colored), border_color_inner, border_color_animated, corner_detail, skew);
 			if (!blend_on) {
 				// Add antialiasing on the ring inner border
 				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						inner_rect_aa_colored, inner_rect_aa_transparent, border_color_blend, border_color, corner_detail, skew);
+						inner_rect_aa_colored, inner_rect_aa_transparent, border_color_blend, border_color_animated, corner_detail, skew);
 			}
 			// Add antialiasing on the ring outer border
 			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-					outer_rect_aa_transparent, outer_rect_aa_colored, border_color, border_color_alpha, corner_detail, skew);
+					outer_rect_aa_transparent, outer_rect_aa_colored, border_color_animated, border_color_alpha, corner_detail, skew);
 		}
 	}
 
@@ -641,6 +674,8 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	// Draw stylebox.
 	RenderingServer *vs = RenderingServer::get_singleton();
 	vs->canvas_item_add_triangle_array(p_canvas_item, indices, verts, colors, uvs);
+
+	end_draw(p_canvas_item, p_rect);
 }
 
 void StyleBoxFlat::_bind_methods() {
