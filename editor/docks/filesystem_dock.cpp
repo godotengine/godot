@@ -2565,11 +2565,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			if (to_duplicate.is_file) {
 				String name = to_duplicate.path.get_file();
 				make_dir_dialog->config(to_duplicate.path.get_base_dir(), callable_mp(this, &FileSystemDock::_duplicate_operation_confirm),
-						DirectoryCreateDialog::MODE_FILE, TTR("Duplicating file:") + " " + name, name);
+						DirectoryCreateDialog::MODE_DUPLICATE_FILE, TTR("Duplicating file:") + " " + name, name);
 			} else {
 				String name = to_duplicate.path.trim_suffix("/").get_file();
 				make_dir_dialog->config(to_duplicate.path.trim_suffix("/").get_base_dir(), callable_mp(this, &FileSystemDock::_duplicate_operation_confirm),
-						DirectoryCreateDialog::MODE_DIRECTORY, TTR("Duplicating folder:") + " " + name, name);
+						DirectoryCreateDialog::MODE_CREATE_DIRECTORY, TTR("Duplicating folder:") + " " + name, name);
 			}
 			make_dir_dialog->popup_centered();
 		} break;
@@ -2584,7 +2584,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				directory = directory.get_base_dir();
 			}
 			make_dir_dialog->config(directory, callable_mp(this, &FileSystemDock::create_directory).bind(directory),
-					DirectoryCreateDialog::MODE_DIRECTORY, TTR("Create Folder"), "new folder");
+					DirectoryCreateDialog::MODE_CREATE_DIRECTORY, TTR("Create Folder"), "new folder");
 			make_dir_dialog->popup_centered();
 		} break;
 
