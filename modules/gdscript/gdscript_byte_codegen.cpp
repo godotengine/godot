@@ -1643,6 +1643,14 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, bool p_use_
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_VECTOR3I;
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_VECTOR3I;
 					break;
+				case Variant::RECT2:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_RECT2;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_RECT2;
+					break;
+				case Variant::RECT2I:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_RECT2I;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_RECT2I;
+					break;
 				case Variant::STRING:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_STRING;
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_STRING;

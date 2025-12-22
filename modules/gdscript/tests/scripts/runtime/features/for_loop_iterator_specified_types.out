@@ -31,3 +31,13 @@ Test implicitly typed dictionary literal.
 &"x" &"x"
 &"y" &"y"
 &"z" &"z"
+Test rect2.
+Vector2(3.5, 3.5) Vector2(3.5, 3.5)
+Vector2(4.5, 3.5) Vector2(4.5, 3.5)
+Vector2(3.5, 4.5) Vector2(3.5, 4.5)
+Vector2(4.5, 4.5) Vector2(4.5, 4.5)
+Test rect2i.
+Vector2i(4, 4) Vector2i(4, 4)
+Vector2i(5, 4) Vector2i(5, 4)
+Vector2i(4, 5) Vector2i(4, 5)
+Vector2i(5, 5) Vector2i(5, 5)
