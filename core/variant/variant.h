@@ -952,6 +952,23 @@ Variant Callable::call(VarArgs... p_args) const {
 }
 
 template <typename... VarArgs>
+inline bool Callable::call_with_error(const String &p_error_message, Variant &r_return_value, VarArgs... p_args) const {
+	Variant args[sizeof...(p_args) + 1] = { p_args..., 0 }; // +1 makes sure zero sized arrays are also supported.
+	const Variant *argptrs[sizeof...(p_args) + 1];
+	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+		argptrs[i] = &args[i];
+	}
+
+	CallError ce;
+	callp(sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), r_return_value, ce);
+
+	if (unlikely(ce.error != CallError::CALL_OK)) {
+		ERR_FAIL_V_MSG(false, p_error_message + ": " + Variant::get_callable_error_text(*this, argptrs, sizeof...(p_args), ce) + ".");
+	}
+	return true;
+}
+
+template <typename... VarArgs>
 Callable Callable::bind(VarArgs... p_args) const {
 	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 	const Variant *argptrs[sizeof...(p_args) + 1];
