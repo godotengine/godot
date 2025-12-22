@@ -91,7 +91,6 @@ String _get_mono_user_dir() {
 #endif
 }
 
-#if !TOOLS_ENABLED
 // This should be the equivalent of GodotTools.Utils.OS.PlatformNameMap.
 static const char *platform_name_map[][2] = {
 	{ "Windows", "windows" },
@@ -119,14 +118,15 @@ String _get_platform_name() {
 
 	return "";
 }
-#endif
 
 class _GodotSharpDirs {
 public:
 	String res_metadata_dir;
 	String res_temp_assemblies_dir;
+	String packaged_assemblies_dir;
 	String mono_user_dir;
 	String api_assemblies_dir;
+	String tools_assemblies_dir;
 
 #ifdef TOOLS_ENABLED
 	String build_logs_dir;
@@ -151,9 +151,9 @@ private:
 		String res_dir = OS::get_singleton()->get_bundle_resource_dir();
 
 #ifdef TOOLS_ENABLED
-		String data_dir_root = exe_dir.path_join("GodotSharp");
-		data_editor_tools_dir = data_dir_root.path_join("Tools");
-		String api_assemblies_base_dir = data_dir_root.path_join("Api");
+		String engine_data_dir_root = exe_dir.path_join("GodotSharp");
+		data_editor_tools_dir = engine_data_dir_root.path_join("Tools");
+		String api_assemblies_base_dir = engine_data_dir_root.path_join("Api");
 		build_logs_dir = mono_user_dir.path_join("build_logs");
 #ifdef MACOS_ENABLED
 		if (!DirAccess::exists(data_editor_tools_dir)) {
@@ -164,15 +164,21 @@ private:
 		}
 #endif
 		api_assemblies_dir = api_assemblies_base_dir.path_join(GDMono::get_expected_api_build_config());
-#else // TOOLS_ENABLED
+		tools_assemblies_dir = api_assemblies_base_dir.path_join(GDMono::get_expected_api_build_config());
+#endif //TOOLS_ENABLED
+
 		String platform = _get_platform_name();
 		String arch = Engine::get_singleton()->get_architecture_name();
 		String appname_safe = Path::get_csharp_project_name();
 		String packed_path = "res://.godot/mono/publish/" + arch;
 #ifdef ANDROID_ENABLED
 		api_assemblies_dir = packed_path;
+		packaged_assemblies_dir = packed_path;
 		print_verbose(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
-#else
+#else // ANDROID_ENABLED
+
+		packaged_assemblies_dir = ProjectSettings::get_singleton()->globalize_path("res://data_" + appname_safe + "_" + platform + "_" + arch);
+
 		if (DirAccess::exists(packed_path)) {
 			// The dotnet publish data is packed in the pck/zip.
 			String data_dir_root = OS::get_singleton()->get_cache_path().path_join("data_" + appname_safe + "_" + platform + "_" + arch);
@@ -218,7 +224,6 @@ private:
 #endif
 			api_assemblies_dir = data_dir_root;
 		}
-#endif // ANDROID_ENABLED
 #endif
 	}
 
@@ -233,8 +238,18 @@ String get_res_metadata_dir() {
 	return _GodotSharpDirs::get_singleton().res_metadata_dir;
 }
 
-String get_res_temp_assemblies_dir() {
-	return _GodotSharpDirs::get_singleton().res_temp_assemblies_dir;
+String get_res_assemblies_dir() {
+	if (!DirAccess::exists(_GodotSharpDirs::get_singleton().packaged_assemblies_dir)) {
+		print_verbose(".NET : using engine temporary assemblies");
+		return _GodotSharpDirs::get_singleton().res_temp_assemblies_dir;
+	} else {
+		print_verbose(".NET : using packaged data assemblies");
+		return _GodotSharpDirs::get_singleton().packaged_assemblies_dir;
+	}
+}
+
+String get_tools_assemblies_dir() {
+	return _GodotSharpDirs::get_singleton().tools_assemblies_dir;
 }
 
 String get_api_assemblies_dir() {
