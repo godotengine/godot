@@ -207,7 +207,11 @@ public:
 	List<String> get_input_presets() const { return input_presets; }
 
 	Variant get_setting_with_override(const StringName &p_name) const;
+	Variant get_setting_with_override_or_null(const StringName &p_name) const;
+	Variant _get_setting_with_override(const StringName &p_name, bool p_warn_not_found) const;
 	Variant get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const;
+	Variant get_setting_with_override_and_custom_features_or_null(const StringName &p_name, const Vector<String> &p_features) const;
+	Variant _get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features, bool p_warn_not_found) const;
 
 	bool is_using_datapack() const;
 	bool is_project_loaded() const;

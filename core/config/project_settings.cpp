@@ -387,6 +387,18 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 Variant ProjectSettings::get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const {
 	_THREAD_SAFE_METHOD_
 
+	return _get_setting_with_override_and_custom_features(p_name, p_features, true);
+}
+
+Variant ProjectSettings::get_setting_with_override_and_custom_features_or_null(const StringName &p_name, const Vector<String> &p_features) const {
+	_THREAD_SAFE_METHOD_
+
+	return _get_setting_with_override_and_custom_features(p_name, p_features, false);
+}
+
+Variant ProjectSettings::_get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features, bool p_warn_not_found) const {
+	_THREAD_SAFE_METHOD_
+
 	StringName name = p_name;
 	if (feature_overrides.has(name)) {
 		const LocalVector<Pair<StringName, StringName>> &overrides = feature_overrides[name];
@@ -401,13 +413,27 @@ Variant ProjectSettings::get_setting_with_override_and_custom_features(const Str
 	}
 
 	if (!props.has(name)) {
-		WARN_PRINT("Property not found: " + String(name));
+		if (p_warn_not_found) {
+			WARN_PRINT(vformat("Project setting not found, returning `null`: \"%s\"", name));
+		}
 		return Variant();
 	}
 	return props[name].variant;
 }
 
 Variant ProjectSettings::get_setting_with_override(const StringName &p_name) const {
+	_THREAD_SAFE_METHOD_
+
+	return _get_setting_with_override(p_name, true);
+}
+
+Variant ProjectSettings::get_setting_with_override_or_null(const StringName &p_name) const {
+	_THREAD_SAFE_METHOD_
+
+	return _get_setting_with_override(p_name, false);
+}
+
+Variant ProjectSettings::_get_setting_with_override(const StringName &p_name, bool p_warn_not_found) const {
 	_THREAD_SAFE_METHOD_
 
 	const LocalVector<Pair<StringName, StringName>> *overrides = feature_overrides.getptr(p_name);
@@ -427,7 +453,9 @@ Variant ProjectSettings::get_setting_with_override(const StringName &p_name) con
 
 	const RBMap<StringName, VariantContainer>::Element *prop = props.find(p_name);
 	if (!prop) {
-		WARN_PRINT(vformat("Property not found: '%s'.", p_name));
+		if (p_warn_not_found) {
+			WARN_PRINT(vformat("Project setting not found, returning `null`: \"%s\"", p_name));
+		}
 		return Variant();
 	}
 
@@ -1583,7 +1611,8 @@ void ProjectSettings::get_argument_options(const StringName &p_function, int p_i
 	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "has_setting" || pf == "set_setting" || pf == "get_setting" || pf == "get_setting_with_override" ||
-				pf == "set_order" || pf == "get_order" || pf == "set_initial_value" || pf == "set_as_basic" ||
+				pf == "get_setting_with_override_or_null" || pf == "set_order" || pf == "get_order" ||
+				pf == "set_initial_value" || pf == "set_as_basic" ||
 				pf == "set_as_internal" || pf == "set_restart_if_changed" || pf == "clear") {
 			for (const KeyValue<StringName, VariantContainer> &E : props) {
 				if (E.value.hide_from_editor) {
@@ -1615,8 +1644,10 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name", "default_value"), &ProjectSettings::get_setting, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_setting_with_override", "name"), &ProjectSettings::get_setting_with_override);
-	ClassDB::bind_method(D_METHOD("get_global_class_list"), &ProjectSettings::get_global_class_list);
+	ClassDB::bind_method(D_METHOD("get_setting_with_override_or_null", "name"), &ProjectSettings::get_setting_with_override_or_null);
 	ClassDB::bind_method(D_METHOD("get_setting_with_override_and_custom_features", "name", "features"), &ProjectSettings::get_setting_with_override_and_custom_features);
+	ClassDB::bind_method(D_METHOD("get_setting_with_override_and_custom_features_or_null", "name", "features"), &ProjectSettings::get_setting_with_override_and_custom_features_or_null);
+	ClassDB::bind_method(D_METHOD("get_global_class_list"), &ProjectSettings::get_global_class_list);
 	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);
