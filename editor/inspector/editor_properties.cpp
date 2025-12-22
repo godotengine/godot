@@ -859,7 +859,7 @@ void EditorPropertyClassName::update_property() {
 }
 
 void EditorPropertyClassName::_property_selected() {
-	dialog->popup_create(true, true, get_edited_property_value(), get_edited_property());
+	dialog->popup_create(true, true, false, get_edited_property_value(), get_edited_property());
 }
 
 void EditorPropertyClassName::_dialog_created() {
