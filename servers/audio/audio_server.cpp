@@ -2121,6 +2121,7 @@ void AudioServer::_bind_methods() {
 
 AudioServer::AudioServer() {
 	singleton = this;
+	cached_volume_db_affects_3d_attenuation = GLOBAL_GET_CACHED(bool, "audio/general/3d_volume_db_affects_attenuation");
 }
 
 AudioServer::~AudioServer() {

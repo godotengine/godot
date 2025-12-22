@@ -206,6 +206,7 @@ public:
 	};
 
 	typedef void (*AudioCallback)(void *p_userdata);
+	bool cached_volume_db_affects_3d_attenuation = true;
 
 private:
 	uint64_t mix_time = 0;
