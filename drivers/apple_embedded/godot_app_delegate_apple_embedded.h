@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  app.swift                                                             */
+/*  godot_app_delegate_apple_embedded.h                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,52 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-import SwiftUI
-import UIKit
+#pragma once
 
-struct GodotSwiftUIViewController: UIViewControllerRepresentable {
+#import <UIKit/UIKit.h>
 
-	func makeUIViewController(context: Context) -> GDTViewController {
-		let viewController = GDTViewController()
-		GDTAppDelegateService.viewController = viewController
-		return viewController
-	}
+typedef NSObject<UIApplicationDelegate> GDTAppDelegateServiceProtocol;
 
-	func updateUIViewController(_ uiViewController: GDTViewController, context: Context) {
-		// NOOP
-	}
+@interface GDTAppDelegate : NSObject <UIApplicationDelegate>
 
-}
+@property(class, readonly, strong) NSArray<GDTAppDelegateServiceProtocol *> *services;
 
-@main
-struct SwiftUIApp: App {
-	@UIApplicationDelegateAdaptor(GDTApplicationDelegate.self) var appDelegate
-	@Environment(\.scenePhase) private var scenePhase
++ (void)addService:(GDTAppDelegateServiceProtocol *)service;
 
-	var body: some Scene {
-		WindowGroup {
-			GodotSwiftUIViewController()
-				.ignoresSafeArea()
-				// UIViewControllerRepresentable does not call viewWillDisappear() nor viewDidDisappear() when
-				// backgrounding the app, or closing the app's main window, update the renderer here.
-				.onChange(of: scenePhase) { phase in
-					// For some reason UIViewControllerRepresentable is not calling viewWillDisappear()
-					// nor viewDidDisappear when closing the app's main window, call it here so we
-					// stop the renderer.
-					switch phase {
-					case .active:
-						print("GodotSwiftUIViewController scene active")
-						GDTAppDelegateService.viewController?.godotView.startRendering()
-					case .inactive:
-						print("GodotSwiftUIViewController scene inactive")
-						GDTAppDelegateService.viewController?.godotView.stopRendering()
-					case .background:
-						print("GodotSwiftUIViewController scene backgrounded")
-						GDTAppDelegateService.viewController?.godotView.stopRendering()
-					@unknown default:
-						print("unknown default")
-					}
-				}
-		}
-	}
-}
+@end

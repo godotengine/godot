@@ -480,6 +480,10 @@ String EditorExportPlatformIOS::_process_config_file_line(const Ref<EditorExport
 	} else if (p_line.contains("$valid_archs")) {
 		strnew += p_line.replace("$valid_archs", "arm64 x86_64") + "\n";
 
+		// Application Scene Manifest
+	} else if (p_line.contains("$application_scene_manifest")) {
+		strnew += p_line.replace("$application_scene_manifest", "") + "\n";
+
 		// Apple Embedded common
 	} else {
 		strnew += EditorExportPlatformAppleEmbedded::_process_config_file_line(p_preset, p_line, p_config, p_debug, p_code_signing);
