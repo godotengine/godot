@@ -12,7 +12,6 @@ layout(std140) uniform TonemapData { //ubo:0
 
 // This expects 0-1 range input.
 vec3 linear_to_srgb(vec3 color) {
-	//color = clamp(color, vec3(0.0), vec3(1.0));
 	//const vec3 a = vec3(0.055f);
 	//return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
