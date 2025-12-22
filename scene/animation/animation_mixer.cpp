@@ -257,6 +257,101 @@ TypedArray<StringName> AnimationMixer::_get_animation_library_list() const {
 	return ret;
 }
 
+#if !defined(_3D_DISABLED) && !defined(DISABLE_DEPRECATED)
+bool AnimationMixer::_recalc_animation(Ref<Animation> &p_anim) {
+	HashMap<int, Vector<real_t>> new_track_values_map;
+	Node *parent = get_node_or_null(root_node);
+	if (!parent) {
+		return false;
+	}
+
+	for (int i = 0; i < p_anim->get_track_count(); i++) {
+		int track_type = p_anim->track_get_type(i);
+		if (!p_anim->track_is_relative_to_rest(i)) {
+			continue;
+		}
+		if (track_type == Animation::TYPE_POSITION_3D || track_type == Animation::TYPE_ROTATION_3D || track_type == Animation::TYPE_SCALE_3D) {
+			NodePath path = p_anim->track_get_path(i);
+			Node *node = parent->get_node(path);
+			ERR_FAIL_NULL_V(node, false);
+			Skeleton3D *skel = Object::cast_to<Skeleton3D>(node);
+			if (!skel) { // transforming non-skeleton node, not relative to rest
+				continue;
+			}
+			StringName bone = path.get_subname(0);
+			int bone_idx = skel->find_bone(bone);
+			if (bone_idx == -1) {
+				continue;
+			}
+			Transform3D rest = skel->get_bone_rest(bone_idx);
+			new_track_values_map[i] = Vector<real_t>();
+			const int32_t POSITION_TRACK_SIZE = 5;
+			const int32_t ROTATION_TRACK_SIZE = 6;
+			const int32_t SCALE_TRACK_SIZE = 5;
+			int32_t track_size = POSITION_TRACK_SIZE;
+			if (track_type == Animation::TYPE_ROTATION_3D) {
+				track_size = ROTATION_TRACK_SIZE;
+			}
+			new_track_values_map[i].resize(track_size * p_anim->track_get_key_count(i));
+			real_t *r = new_track_values_map[i].ptrw();
+			for (int j = 0; j < p_anim->track_get_key_count(i); j++) {
+				real_t time = p_anim->track_get_key_time(i, j);
+				real_t transition = p_anim->track_get_key_transition(i, j);
+				if (track_type == Animation::TYPE_POSITION_3D) {
+					Vector3 a_pos = p_anim->track_get_key_value(i, j);
+					Transform3D t;
+					t.set_origin(a_pos);
+					Vector3 new_a_pos = (rest * t).origin;
+
+					real_t *ofs = &r[j * POSITION_TRACK_SIZE];
+					ofs[0] = time;
+					ofs[1] = transition;
+					ofs[2] = new_a_pos.x;
+					ofs[3] = new_a_pos.y;
+					ofs[4] = new_a_pos.z;
+				} else if (track_type == Animation::TYPE_ROTATION_3D) {
+					Quaternion q = p_anim->track_get_key_value(i, j);
+					Transform3D t;
+					t.basis.rotate(q);
+					Quaternion new_q = (rest * t).basis.get_rotation_quaternion();
+					real_t *ofs = &r[j * ROTATION_TRACK_SIZE];
+					ofs[0] = time;
+					ofs[1] = transition;
+					ofs[2] = new_q.x;
+					ofs[3] = new_q.y;
+					ofs[4] = new_q.z;
+					ofs[5] = new_q.w;
+				} else if (track_type == Animation::TYPE_SCALE_3D) {
+					Vector3 v = p_anim->track_get_key_value(i, j);
+					Transform3D t;
+					t.scale(v);
+					Vector3 new_v = (rest * t).basis.get_scale();
+
+					real_t *ofs = &r[j * SCALE_TRACK_SIZE];
+					ofs[0] = time;
+					ofs[1] = transition;
+					ofs[2] = new_v.x;
+					ofs[3] = new_v.y;
+					ofs[4] = new_v.z;
+				}
+			}
+		}
+	}
+	if (new_track_values_map.is_empty()) {
+		return false;
+	}
+	for (int i = 0; i < p_anim->get_track_count(); i++) {
+		if (!new_track_values_map.has(i)) {
+			continue;
+		}
+		p_anim->set("tracks/" + itos(i) + "/keys", new_track_values_map[i]);
+		p_anim->set("tracks/" + itos(i) + "/relative_to_rest", false);
+	}
+	p_anim->emit_changed();
+	return true;
+}
+#endif // !defined(_3D_DISABLED) || !defined(DISABLE_DEPRECATED)
+
 void AnimationMixer::get_animation_library_list(List<StringName> *p_libraries) const {
 	for (const AnimationLibraryData &lib : animation_libraries) {
 		p_libraries->push_back(lib.name);
@@ -685,6 +780,11 @@ bool AnimationMixer::_update_caches() {
 	}
 	for (const StringName &E : sname_list) {
 		Ref<Animation> anim = get_animation(E);
+#if !defined(_3D_DISABLED) && !defined(DISABLE_DEPRECATED)
+		if (anim->has_tracks_relative_to_rest()) {
+			_recalc_animation(anim);
+		}
+#endif
 		for (int i = 0; i < anim->get_track_count(); i++) {
 			if (!anim->track_is_enabled(i)) {
 				continue;
