@@ -3035,6 +3035,10 @@ void WaylandThread::_wp_text_input_on_enter(void *data, struct zwp_text_input_v3
 		return;
 	}
 
+	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
+		return;
+	}
+
 	WindowState *ws = wl_surface_get_window_state(surface);
 	if (!ws) {
 		return;
@@ -3044,9 +3048,14 @@ void WaylandThread::_wp_text_input_on_enter(void *data, struct zwp_text_input_v3
 	ss->ime_enabled = true;
 }
 
+// NOTE: From now on, we must ignore all further events until an enter event.
 void WaylandThread::_wp_text_input_on_leave(void *data, struct zwp_text_input_v3 *wp_text_input_v3, struct wl_surface *surface) {
 	SeatState *ss = (SeatState *)data;
 	if (!ss) {
+		return;
+	}
+
+	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
 
@@ -3068,6 +3077,10 @@ void WaylandThread::_wp_text_input_on_leave(void *data, struct zwp_text_input_v3
 void WaylandThread::_wp_text_input_on_preedit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text, int32_t cursor_begin, int32_t cursor_end) {
 	SeatState *ss = (SeatState *)data;
 	if (!ss) {
+		return;
+	}
+
+	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
 
@@ -3119,6 +3132,10 @@ void WaylandThread::_wp_text_input_on_commit_string(void *data, struct zwp_text_
 		return;
 	}
 
+	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
+		return;
+	}
+
 	ss->ime_text_commit = String::utf8(text);
 }
 
@@ -3129,6 +3146,10 @@ void WaylandThread::_wp_text_input_on_delete_surrounding_text(void *data, struct
 void WaylandThread::_wp_text_input_on_done(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t serial) {
 	SeatState *ss = (SeatState *)data;
 	if (!ss) {
+		return;
+	}
+
+	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
 
