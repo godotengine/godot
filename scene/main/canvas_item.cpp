@@ -1420,7 +1420,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &CanvasItem::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform_with_canvas"), &CanvasItem::get_global_transform_with_canvas);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_viewport_transform"), &CanvasItem::get_viewport_transform);
+#endif // DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_viewport_rect"), &CanvasItem::get_viewport_rect);
 	ClassDB::bind_method(D_METHOD("get_canvas_transform"), &CanvasItem::get_canvas_transform);
 	ClassDB::bind_method(D_METHOD("get_screen_transform"), &CanvasItem::get_screen_transform);
@@ -1541,6 +1543,7 @@ Transform2D CanvasItem::get_canvas_transform() const {
 	}
 }
 
+#ifndef DISABLE_DEPRECATED
 Transform2D CanvasItem::get_viewport_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
@@ -1551,6 +1554,7 @@ Transform2D CanvasItem::get_viewport_transform() const {
 		return get_viewport()->get_final_transform() * get_viewport()->get_canvas_transform();
 	}
 }
+#endif // DISABLE_DEPRECATED
 
 void CanvasItem::set_notify_local_transform(bool p_enable) {
 	ERR_THREAD_GUARD;
