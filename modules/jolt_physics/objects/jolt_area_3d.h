@@ -101,6 +101,8 @@ private:
 	OverlapsById areas_by_id;
 
 	Vector3 gravity_vector = Vector3(0, -1, 0);
+	Vector3 wind_source;
+	Vector3 wind_direction;
 
 	Callable body_monitor_callback;
 	Callable area_monitor_callback;
@@ -110,6 +112,8 @@ private:
 	float point_gravity_distance = 0.0f;
 	float linear_damp = 0.1f;
 	float angular_damp = 0.1f;
+	float wind_force_magnitude = 0.0f;
+	float wind_attenuation_factor = 0.0f;
 
 	OverrideMode gravity_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
 	OverrideMode linear_damp_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
@@ -219,6 +223,18 @@ public:
 
 	Vector3 get_gravity_vector() const { return gravity_vector; }
 	void set_gravity_vector(const Vector3 &p_vector);
+
+	float get_wind_force_magnitude() const { return wind_force_magnitude; }
+	void set_wind_force_magnitude(float p_wind_force_magnitude) { wind_force_magnitude = p_wind_force_magnitude; }
+
+	float get_wind_attenuation_factor() const { return wind_attenuation_factor; }
+	void set_wind_attenuation_factor(float p_wind_attenuation_factor) { wind_attenuation_factor = p_wind_attenuation_factor; }
+
+	const Vector3 &get_wind_source() const { return wind_source; }
+	void set_wind_source(const Vector3 &p_wind_source) { wind_source = p_wind_source; }
+
+	const Vector3 &get_wind_direction() const { return wind_direction; }
+	void set_wind_direction(const Vector3 &p_wind_direction) { wind_direction = p_wind_direction; }
 
 	Vector3 compute_gravity(const Vector3 &p_position) const;
 

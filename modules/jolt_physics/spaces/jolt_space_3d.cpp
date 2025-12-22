@@ -85,6 +85,15 @@ void JoltSpace3D::_pre_step(float p_step) {
 		JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
 		object->pre_step(p_step, *jolt_body);
 	}
+
+	const JPH::BodyID *active_soft_bodies = physics_system->GetActiveBodiesUnsafe(JPH::EBodyType::SoftBody);
+	const JPH::uint32 active_soft_body_count = physics_system->GetNumActiveBodies(JPH::EBodyType::SoftBody);
+
+	for (JPH::uint32 i = 0; i < active_soft_body_count; i++) {
+		JPH::Body *jolt_body = lock_iface.TryGetBody(active_soft_bodies[i]);
+		JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
+		object->pre_step(p_step, *jolt_body);
+	}
 }
 
 void JoltSpace3D::_post_step(float p_step) {

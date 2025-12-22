@@ -307,6 +307,10 @@ void JoltSoftBody3D::_motion_changed() {
 	wake_up();
 }
 
+void JoltSoftBody3D::_transform_changed() {
+	wake_up();
+}
+
 JoltSoftBody3D::JoltSoftBody3D() :
 		JoltObject3D(OBJECT_TYPE_SOFT_BODY) {
 	jolt_settings->mRestitution = 0.0f;
@@ -338,6 +342,25 @@ bool JoltSoftBody3D::has_collision_exception(const RID &p_excepted_body) const {
 	return exceptions.find(p_excepted_body) >= 0;
 }
 
+void JoltSoftBody3D::add_area(JoltArea3D *p_area) {
+	int i = 0;
+	for (; i < (int)areas.size(); i++) {
+		if (p_area->get_priority() > areas[i]->get_priority()) {
+			break;
+		}
+	}
+
+	areas.insert(i, p_area);
+
+	// TODO: Should we have _areas_changed() here?
+}
+
+void JoltSoftBody3D::remove_area(JoltArea3D *p_area) {
+	areas.erase(p_area);
+
+	// TODO: Should we have _areas_changed() here?
+}
+
 bool JoltSoftBody3D::can_interact_with(const JoltBody3D &p_other) const {
 	return (can_collide_with(p_other) || p_other.can_collide_with(*this)) && !has_collision_exception(p_other.get_rid()) && !p_other.has_collision_exception(rid);
 }
@@ -352,6 +375,10 @@ bool JoltSoftBody3D::can_interact_with(const JoltArea3D &p_other) const {
 
 Vector3 JoltSoftBody3D::get_velocity_at_position(const Vector3 &p_position) const {
 	return Vector3();
+}
+
+void JoltSoftBody3D::pre_step(float p_step, JPH::Body &p_jolt_body) {
+	// TODO: Actually apply the wind forces.
 }
 
 void JoltSoftBody3D::set_mesh(const RID &p_mesh) {
@@ -582,7 +609,8 @@ void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 		vertex.mPosition = vertex.mPreviousPosition = relative_transform.Multiply3x3(vertex.mPosition);
 		vertex.mVelocity = JPH::Vec3::sZero();
 	}
-	wake_up();
+
+	_transform_changed();
 }
 
 AABB JoltSoftBody3D::get_bounds() const {
