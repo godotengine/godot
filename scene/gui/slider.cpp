@@ -298,8 +298,13 @@ void Slider::_notification(int p_what) {
 				int widget_width = style->get_minimum_size().width;
 				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
 				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
+				StyleBox::begin_animation_group("bg");
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
+				StyleBox::end_animation_group();
+
+				StyleBox::begin_animation_group("grabber");
 				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift)), Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift))));
+				StyleBox::end_animation_group();
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
@@ -330,13 +335,18 @@ void Slider::_notification(int p_what) {
 				int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
 				bool rtl = is_layout_rtl();
 
+				StyleBox::begin_animation_group("bg");
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
+				StyleBox::end_animation_group();
+
+				StyleBox::begin_animation_group("grabber");
 				int p = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
 				if (rtl) {
 					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
 				} else {
 					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
 				}
+				StyleBox::end_animation_group();
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_width() / 2 - tick->get_width() / 2);
