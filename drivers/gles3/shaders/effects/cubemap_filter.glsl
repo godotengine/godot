@@ -99,10 +99,13 @@ void main() {
 #else
 
 	vec4 sum = vec4(0.0);
-	vec3 UpVector = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+	// https://jcgt.org/published/0006/01/01/
+	float side = N.z >= 0.0f ? 1.0f : -1.0f;
+	float a = -1.0f / (side + N.z);
+	float b = N.x * N.y * a;
 	mat3 T;
-	T[0] = normalize(cross(UpVector, N));
-	T[1] = cross(N, T[0]);
+	T[0] = vec3(1.0f + side * N.x * N.x * a, side * b, -side * N.x);
+	T[1] = vec3(b, side + N.y * N.y * a, -N.y);
 	T[2] = N;
 
 	for (uint sample_num = 0u; sample_num < sample_count; sample_num++) {
