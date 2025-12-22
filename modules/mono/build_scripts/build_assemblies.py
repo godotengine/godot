@@ -223,7 +223,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
         if werror:
             args += ["/p:TreatWarningsAsErrors=true"]
 
-        sln = os.path.join(module_dir, "glue/GodotSharp/GodotSharp.sln")
+        sln = os.path.join(module_dir, "glue/GodotSharp/GodotSharp.slnx")
         exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
         if exit_code != 0:
             return exit_code
@@ -355,7 +355,7 @@ def build_all(
         return exit_code
 
     # GodotTools
-    sln = os.path.join(module_dir, "editor/GodotTools/GodotTools.sln")
+    sln = os.path.join(module_dir, "editor/GodotTools/GodotTools.slnx")
     args = ["/restore", "/t:Build", "/p:Configuration=" + ("Debug" if dev_debug else "Release")] + (
         ["/p:GodotPlatform=" + godot_platform] if godot_platform else []
     )
@@ -375,7 +375,7 @@ def build_all(
         args += ["/p:GodotFloat64=true"]
     if no_deprecated:
         args += ["/p:GodotNoDeprecated=true"]
-    sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
+    sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.slnx")
     exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
     if exit_code != 0:
         return exit_code
