@@ -196,13 +196,35 @@ NativeMenu::SystemMenus PopupMenu::get_system_menu() const {
 	return system_menu_id;
 }
 
+void PopupMenu::set_default_alt_shortcuts(AltShortcuts p_short) {
+	default_alt_shortcuts = p_short;
+}
+
 String PopupMenu::_get_accel_text(const Item &p_item) const {
-	if (p_item.shortcut.is_valid()) {
-		return p_item.shortcut->get_as_text();
-	} else if (p_item.accel != Key::NONE) {
-		return keycode_get_string(p_item.accel);
+	String accel;
+	AltShortcuts alt_short = (alt_shortcuts == ALT_SHORTCUTS_AUTO) ? default_alt_shortcuts : alt_shortcuts;
+	bool use_alt_short = alt_short == ALT_SHORTCUTS_ENABLED;
+	if (alt_short == ALT_SHORTCUTS_AUTO) {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+		use_alt_short = true;
+#else
+		use_alt_short = false;
+#endif
 	}
-	return String();
+	if (p_item.shortcut.is_valid()) {
+		if (use_alt_short) {
+			accel = p_item.shortcut->get_as_text_alt();
+		} else {
+			accel = p_item.shortcut->get_as_text();
+		}
+	} else if (p_item.accel != Key::NONE) {
+		if (use_alt_short) {
+			accel = keycode_get_string_alt(p_item.accel);
+		} else {
+			accel = keycode_get_string(p_item.accel);
+		}
+	}
+	return accel;
 }
 
 Size2 PopupMenu::_get_item_icon_size(int p_idx) const {
@@ -2633,6 +2655,17 @@ void PopupMenu::set_item_shortcut_disabled(int p_idx, bool p_disabled) {
 	_menu_changed();
 }
 
+void PopupMenu::set_alt_shortcuts(PopupMenu::AltShortcuts p_short) {
+	if (alt_shortcuts != p_short) {
+		alt_shortcuts = p_short;
+		_shortcut_changed();
+	}
+}
+
+PopupMenu::AltShortcuts PopupMenu::get_alt_shortcuts() const {
+	return alt_shortcuts;
+}
+
 void PopupMenu::toggle_item_multistate(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	if (0 >= items[p_idx].max_states) {
@@ -3243,6 +3276,9 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_submenu_popup_delay", "seconds"), &PopupMenu::set_submenu_popup_delay);
 	ClassDB::bind_method(D_METHOD("get_submenu_popup_delay"), &PopupMenu::get_submenu_popup_delay);
 
+	ClassDB::bind_method(D_METHOD("set_alt_shortcuts", "short"), &PopupMenu::set_alt_shortcuts);
+	ClassDB::bind_method(D_METHOD("get_alt_shortcuts"), &PopupMenu::get_alt_shortcuts);
+
 	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &PopupMenu::set_allow_search);
 	ClassDB::bind_method(D_METHOD("get_allow_search"), &PopupMenu::get_allow_search);
 
@@ -3257,6 +3293,11 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "system_menu_id", PROPERTY_HINT_ENUM, "None:0,Application Menu:2,Window Menu:3,Help Menu:4,Dock:5"), "set_system_menu", "get_system_menu");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefer_native_menu"), "set_prefer_native_menu", "is_prefer_native_menu");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alt_shortcuts", PROPERTY_HINT_ENUM, "Auto,Enabled,Disabled"), "set_alt_shortcuts", "get_alt_shortcuts");
+
+	BIND_ENUM_CONSTANT(ALT_SHORTCUTS_AUTO);
+	BIND_ENUM_CONSTANT(ALT_SHORTCUTS_ENABLED);
+	BIND_ENUM_CONSTANT(ALT_SHORTCUTS_DISABLED);
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 
