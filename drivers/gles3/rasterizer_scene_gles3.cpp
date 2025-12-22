@@ -3122,6 +3122,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 				material_data = overdraw_material_data_ptr;
 				shader = material_data->shader_data;
+			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS)) {
+				material_data = debug_shadow_splits_material_data_ptr;
+				shader = material_data->shader_data;
 			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
 				material_data = default_material_data_ptr;
 				shader = material_data->shader_data;
@@ -4489,6 +4492,26 @@ void fragment() {
 	}
 
 	{
+		scene_globals.debug_shadow_splits_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(scene_globals.debug_shadow_splits_shader);
+		material_storage->shader_set_code(scene_globals.debug_shadow_splits_shader, R"(
+// 3D editor Directional Shadow Splits debug draw mode shader (Compatibility).
+
+shader_type spatial;
+
+render_mode debug_shadow_splits;
+
+void fragment() {
+	ALBEDO = vec3(1.0);
+}
+)");
+		scene_globals.debug_shadow_splits_material = material_storage->material_allocate();
+		material_storage->material_initialize(scene_globals.debug_shadow_splits_material);
+		material_storage->material_set_shader(scene_globals.debug_shadow_splits_material, scene_globals.debug_shadow_splits_shader);
+		debug_shadow_splits_material_data_ptr = static_cast<GLES3::SceneMaterialData *>(GLES3::MaterialStorage::get_singleton()->material_get_data(scene_globals.debug_shadow_splits_material, RS::SHADER_SPATIAL));
+	}
+
+	{
 		// Initialize Sky stuff
 		sky_globals.roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
 
@@ -4594,6 +4617,10 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 	// Overdraw Shader
 	RSG::material_storage->material_free(scene_globals.overdraw_material);
 	RSG::material_storage->shader_free(scene_globals.overdraw_shader);
+
+	// Directional Shadow Splits Shader
+	RSG::material_storage->material_free(scene_globals.debug_shadow_splits_material);
+	RSG::material_storage->shader_free(scene_globals.debug_shadow_splits_shader);
 
 	// Sky Shader
 	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_free(sky_globals.shader_default_version);
