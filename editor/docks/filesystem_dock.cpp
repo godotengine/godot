@@ -2499,7 +2499,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 			if (to_move.size() > 0) {
 				move_dialog->config(p_selected);
-				move_dialog->popup_centered_ratio(0.4);
+				move_dialog->popup_centered(Vector2i(260 * EDSCALE, DisplayServer::get_singleton()->screen_get_size().y * 0.6));
 			}
 		} break;
 
