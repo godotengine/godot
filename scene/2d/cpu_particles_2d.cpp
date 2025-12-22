@@ -80,6 +80,11 @@ void CPUParticles2D::set_amount(int p_amount) {
 	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_2D, true, true);
 
 	particle_order.resize(p_amount);
+	set_amount_ratio(amount_ratio);
+}
+
+void CPUParticles2D::set_amount_ratio(float p_amount_ratio) {
+	amount_ratio = p_amount_ratio;
 }
 
 void CPUParticles2D::set_lifetime(double p_lifetime) {
@@ -136,6 +141,10 @@ bool CPUParticles2D::is_emitting() const {
 
 int CPUParticles2D::get_amount() const {
 	return particles.size();
+}
+
+float CPUParticles2D::get_amount_ratio() const {
+	return amount_ratio;
 }
 
 double CPUParticles2D::get_lifetime() const {
@@ -777,11 +786,21 @@ void CPUParticles2D::_particles_process(double p_delta) {
 		velocity_xform[2] = Vector2();
 	}
 
+	float amount_ratio_accumulator = 0.0;
 	double system_phase = time / lifetime;
 
 	bool should_be_active = false;
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
+
+		amount_ratio_accumulator += amount_ratio;
+		bool active_by_ratio = false;
+		if (amount_ratio_accumulator >= 1.0) {
+			active_by_ratio = true;
+			amount_ratio_accumulator -= 1.0;
+		} else if (!p.active) {
+			continue;
+		}
 
 		if (!emitting && !p.active) {
 			continue;
@@ -841,6 +860,11 @@ void CPUParticles2D::_particles_process(double p_delta) {
 		float tv = 0.0;
 
 		if (restart) {
+			if (!active_by_ratio) {
+				p.active = false;
+				continue;
+			}
+
 			if (!emitting) {
 				p.active = false;
 				continue;
@@ -1432,6 +1456,7 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &CPUParticles2D::set_emitting);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &CPUParticles2D::set_amount);
+	ClassDB::bind_method(D_METHOD("set_amount_ratio", "amount_ratio"), &CPUParticles2D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &CPUParticles2D::set_lifetime);
 	ClassDB::bind_method(D_METHOD("set_one_shot", "enable"), &CPUParticles2D::set_one_shot);
 	ClassDB::bind_method(D_METHOD("set_pre_process_time", "secs"), &CPUParticles2D::set_pre_process_time);
@@ -1446,6 +1471,7 @@ void CPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &CPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &CPUParticles2D::get_amount);
+	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &CPUParticles2D::get_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &CPUParticles2D::get_lifetime);
 	ClassDB::bind_method(D_METHOD("get_one_shot"), &CPUParticles2D::get_one_shot);
 	ClassDB::bind_method(D_METHOD("get_pre_process_time"), &CPUParticles2D::get_pre_process_time);
@@ -1473,6 +1499,7 @@ void CPUParticles2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting", PROPERTY_HINT_ONESHOT), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount"); // FIXME: Evaluate support for `exp` in integer properties, or remove this.
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_amount_ratio", "get_amount_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp,suffix:s"), "set_lifetime", "get_lifetime");
@@ -1673,6 +1700,7 @@ CPUParticles2D::CPUParticles2D() {
 
 	set_emitting(true);
 	set_amount(8);
+	set_amount_ratio(1);
 	set_use_local_coordinates(false);
 	set_seed(Math::rand());
 
