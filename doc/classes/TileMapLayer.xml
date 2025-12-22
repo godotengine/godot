@@ -141,6 +141,13 @@
 				Creates and returns a new [TileMapPattern] from the given array of cells. See also [method set_pattern].
 			</description>
 		</method>
+		<method name="get_physics_space" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the [PhysicsServer2D] space used by this [TileMapLayer].
+				By default this returns the default [World2D] physics space, unless a custom space was provided using [method set_physics_space].
+			</description>
+		</method>
 		<method name="get_surrounding_cells">
 			<return type="Vector2i[]" />
 			<param index="0" name="coords" type="Vector2i" />
@@ -282,6 +289,13 @@
 			<param index="1" name="pattern" type="TileMapPattern" />
 			<description>
 				Pastes the [TileMapPattern] at the given [param position] in the tile map. See also [method get_pattern].
+			</description>
+		</method>
+		<method name="set_physics_space">
+			<return type="void" />
+			<param index="0" name="space" type="RID" />
+			<description>
+				Sets a custom [param space] as a [PhysicsServer2D] physics space. If not set, uses the default [World2D] physics space instead.
 			</description>
 		</method>
 		<method name="update_internals">
