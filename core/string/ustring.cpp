@@ -1302,6 +1302,43 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	return ret;
 }
 
+Vector<String> String::split_lines() const {
+	Vector<String> ret;
+	if (is_empty()) {
+		return ret;
+	}
+	int from = 0;
+	int end = length();
+	int current = 0;
+	while (current < end) {
+		char32_t chr = get_data()[current];
+		if (chr == '\r') {
+			ret.append(substr(from, current - from));
+			if (current + 1 < end && get_data()[current + 1] == '\n') {
+				// CRLF
+				current += 2;
+				from = current; // Next line starts after \r\n
+			} else {
+				current++;
+				from = current; // Next line starts after \r
+			}
+		} else if (chr == '\n') {
+			ret.append(substr(from, current - from));
+			current++;
+			from = current; // Next line starts after \n
+		} else {
+			current++;
+		}
+	}
+
+	// Like Python, we drop the last empty line
+	if (from < end) {
+		ret.append(substr(from, end - from));
+	}
+
+	return ret;
+}
+
 String String::join(const Vector<String> &parts) const {
 	if (parts.is_empty()) {
 		return String();
