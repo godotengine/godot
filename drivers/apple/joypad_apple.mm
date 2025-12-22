@@ -390,6 +390,10 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 				xboxGamepad.paddleButton3.pressedChangedHandler = BUTTON(JoyButton::PADDLE3);
 				xboxGamepad.paddleButton4.pressedChangedHandler = BUTTON(JoyButton::PADDLE4);
 			}
+			if ([gamepad isKindOfClass:[GCDualShockGamepad class]]) {
+				GCDualShockGamepad *dualShockGamepad = (GCDualShockGamepad *)gamepad;
+				dualShockGamepad.touchpadButton.pressedChangedHandler = BUTTON(JoyButton::TOUCHPAD);
+			}
 		}
 
 		if (@available(macOS 12, iOS 15.0, tvOS 15.0, *)) {
