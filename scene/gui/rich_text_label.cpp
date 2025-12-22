@@ -5385,9 +5385,6 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			if (tag_stack.front()->get() == "i") {
 				in_italics = false;
 			}
-			if ((tag_stack.front()->get() == "indent") || (tag_stack.front()->get() == "ol") || (tag_stack.front()->get() == "ul")) {
-				current_frame->indent_level--;
-			}
 
 			if (!tag_ok) {
 				txt += "[" + tag;
@@ -5396,6 +5393,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				after_list_close_tag = false;
 				pos = brk_end;
 				continue;
+			}
+
+			if ((tag_stack.front()->get() == "indent") || (tag_stack.front()->get() == "ol") || (tag_stack.front()->get() == "ul")) {
+				current_frame->indent_level--;
 			}
 
 			if (txt.is_empty() && after_list_open_tag) {
