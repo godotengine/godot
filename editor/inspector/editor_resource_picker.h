@@ -37,6 +37,7 @@ class Button;
 class ConfirmationDialog;
 class EditorFileDialog;
 class PopupMenu;
+class Skin;
 class TextureRect;
 class Tree;
 class TreeItem;
@@ -151,6 +152,7 @@ public:
 	bool is_toggle_pressed() const;
 
 	void set_resource_owner(Object *p_object);
+	Object *get_resource_owner() const;
 	void set_property_path(const StringName &p_path) { property_path = p_path; }
 
 	void set_editable(bool p_editable);
@@ -200,6 +202,23 @@ public:
 	void set_edited_material(ShaderMaterial *p_material);
 	ShaderMaterial *get_edited_material() const;
 	void set_preferred_mode(int p_preferred_mode);
+};
+
+class EditorSkinPicker : public EditorResourcePicker {
+	GDCLASS(EditorSkinPicker, EditorResourcePicker);
+
+	enum ExtraMenuOption {
+		OBJ_MENU_REST_SKIN = 50,
+	};
+
+	Ref<Skin> rest_skin;
+
+public:
+	virtual void set_create_options(Object *p_menu_node) override;
+	virtual bool handle_menu_selected(int p_which) override;
+
+	void set_rest_skin(Ref<Skin> p_reset_skin);
+	Ref<Skin> get_rest_skin() const;
 };
 
 class EditorAudioStreamPicker : public EditorResourcePicker {

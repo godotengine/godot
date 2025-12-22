@@ -53,6 +53,9 @@
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/text_edit.h"
@@ -3571,7 +3574,22 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 	} else if (ClassDB::is_parent_class(p_base_type, "AudioStream")) {
 		EditorAudioStreamPicker *astream_picker = memnew(EditorAudioStreamPicker);
 		resource_picker = astream_picker;
-	} else {
+	} else if (p_path == "skin" && p_base_type == "Skin") {
+		Skeleton3D *s = nullptr;
+		if (Object::cast_to<MeshInstance3D>(p_object)) {
+			MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_object);
+			s = Object::cast_to<Skeleton3D>(mi->get_node_or_null(mi->get_skeleton_path()));
+		} else if (Object::cast_to<ImporterMeshInstance3D>(p_object)) {
+			ImporterMeshInstance3D *imi = Object::cast_to<ImporterMeshInstance3D>(p_object);
+			s = Object::cast_to<Skeleton3D>(imi->get_node_or_null(imi->get_skeleton_path()));
+		}
+		if (s != nullptr) {
+			EditorSkinPicker *skin_picker = memnew(EditorSkinPicker);
+			skin_picker->set_rest_skin(s->create_skin_from_rest_transforms());
+			resource_picker = skin_picker;
+		}
+	}
+	if (resource_picker == nullptr) {
 		resource_picker = memnew(EditorResourcePicker);
 	}
 
