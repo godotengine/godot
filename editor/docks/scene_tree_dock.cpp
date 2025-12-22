@@ -96,7 +96,6 @@ void SceneTreeDock::_inspect_hovered_node() {
 		return;
 	}
 
-	select_node_hovered_at_end_of_drag = true;
 	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
 
 	_restore_treeitem_custom_color(tree_item_inspected);
@@ -1803,30 +1802,24 @@ void SceneTreeDock::_notification(int p_what) {
 			if (tree_item_inspected) {
 				_restore_treeitem_custom_color(tree_item_inspected);
 				tree_item_inspected = nullptr;
-			} else {
+			}
+
+			InspectorDock *inspector_dock = InspectorDock::get_singleton();
+			if (!inspector_dock->get_rect().has_point(inspector_dock->get_local_mouse_position())) {
+				List<Node *> full_selection = editor_selection->get_full_selected_node_list();
+				editor_selection->clear();
+				for (Node *E : full_selection) {
+					editor_selection->add_node(E);
+				}
 				return;
 			}
-			if (!hovered_but_reparenting) {
-				InspectorDock *inspector_dock = InspectorDock::get_singleton();
-				if (!inspector_dock->get_rect().has_point(inspector_dock->get_local_mouse_position())) {
-					List<Node *> full_selection = editor_selection->get_full_selected_node_list();
-					editor_selection->clear();
-					for (Node *E : full_selection) {
-						editor_selection->add_node(E);
-					}
-					return;
-				}
-				if (select_node_hovered_at_end_of_drag) {
-					Node *node_inspected = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
-					if (node_inspected) {
-						editor_selection->clear();
-						editor_selection->add_node(node_inspected);
-						scene_tree->set_selected(node_inspected);
-						select_node_hovered_at_end_of_drag = false;
-					}
-				}
+
+			Node *node_edited = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+			if (node_edited) {
+				editor_selection->clear();
+				editor_selection->add_node(node_edited);
+				scene_tree->set_selected(node_edited);
 			}
-			hovered_but_reparenting = false;
 		} break;
 	}
 }
@@ -2430,9 +2423,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		return; // Position and parent didn't change.
 	}
 
-	// Prevent selecting the hovered node and keep the reparented node(s) selected instead.
-	hovered_but_reparenting = true;
-
 	Node *validate = p_new_parent;
 	while (validate) {
 		ERR_FAIL_COND_MSG(p_nodes.has(validate), "Selection changed at some point. Can't reparent.");
@@ -2449,7 +2439,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	Vector<StringName> former_names;
 
 	int inc = 0;
-	bool need_edit = false;
 
 	for (int ni = 0; ni < p_nodes.size(); ni++) {
 		// No undo implemented for this yet.
@@ -2470,11 +2459,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			inc--; // If the child will generate a gap when moved, adjust.
 		}
 
-		if (same_parent) {
-			// When node is reparented to the same parent, EditorSelection does not change.
-			// After hovering another node, the inspector has to be manually updated in this case.
-			need_edit = select_node_hovered_at_end_of_drag;
-		} else {
+		if (!same_parent) {
 			undo_redo->add_do_method(node->get_parent(), "remove_child", node);
 			undo_redo->add_do_method(p_new_parent, "add_child", node, true);
 		}
@@ -2588,11 +2573,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	for (Node *E : full_selection) {
 		undo_redo->add_do_method(editor_selection, "add_node", E);
 		undo_redo->add_undo_method(editor_selection, "add_node", E);
-	}
-
-	if (need_edit) {
-		EditorNode::get_singleton()->edit_current();
-		editor_selection->clear();
 	}
 
 	undo_redo->commit_action();
