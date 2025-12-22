@@ -666,6 +666,15 @@ PackedStringArray OS::get_connected_midi_inputs() {
 	ERR_FAIL_V_MSG(list, vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
 }
 
+PackedStringArray OS::get_connected_midi_outputs() {
+	if (MIDIDriver::get_singleton()) {
+		return MIDIDriver::get_singleton()->get_connected_outputs();
+	}
+
+	PackedStringArray list;
+	ERR_FAIL_V_MSG(list, vformat("MIDI output isn't supported on %s.", OS::get_singleton()->get_name()));
+}
+
 void OS::open_midi_inputs() {
 	if (MIDIDriver::get_singleton()) {
 		MIDIDriver::get_singleton()->open();
@@ -680,6 +689,10 @@ void OS::close_midi_inputs() {
 	} else {
 		ERR_PRINT(vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
 	}
+}
+
+Error OS::send_midi(Ref<InputEventMIDI> p_event) {
+	return MIDIDriver::get_singleton()->send(p_event);
 }
 
 uint64_t OS::get_frame_delay(bool p_can_draw) const {
