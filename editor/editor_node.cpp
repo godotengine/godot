@@ -4297,7 +4297,7 @@ void EditorNode::_update_addon_config() {
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
 	String addon_path = p_addon;
 
-	if (!addon_path.begins_with("res://")) {
+	if (!addon_path.begins_with("res://") && !addon_path.begins_with("editor://")) {
 		addon_path = "res://addons/" + addon_path + "/plugin.cfg";
 	}
 
@@ -4393,6 +4393,10 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	if (p_addon.begins_with("res://")) {
+		return addon_name_to_plugin.has(p_addon);
+	}
+
+	if (p_addon.begins_with("editor://")) {
 		return addon_name_to_plugin.has(p_addon);
 	}
 
@@ -9375,6 +9379,9 @@ EditorNode::EditorNode() {
 
 	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
+
+	const String editor_resource_path = EditorPaths::get_singleton()->get_data_dir().path_join("editor_resources").path_join(vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR));
+	ProjectSettings::get_singleton()->set_editor_resource_path(editor_resource_path);
 }
 
 EditorNode::~EditorNode() {

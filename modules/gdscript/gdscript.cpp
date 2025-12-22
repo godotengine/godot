@@ -2828,11 +2828,17 @@ GDScriptLanguage::GDScriptLanguage() {
 
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
 
-	GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY,
-					   "debug/gdscript/warnings/directory_rules",
-					   PROPERTY_HINT_TYPE_STRING,
-					   vformat("%d/%d:;%d/%d:Exclude,Include", Variant::STRING, PROPERTY_HINT_DIR, Variant::INT, PROPERTY_HINT_ENUM)),
-			Dictionary({ { "res://addons", GDScriptParser::WarningDirectoryRule::DECISION_EXCLUDE } }));
+	const PropertyInfo directory_rules_property_info = {
+		Variant::DICTIONARY,
+		"debug/gdscript/warnings/directory_rules",
+		PROPERTY_HINT_TYPE_STRING,
+		vformat("%d/%d:;%d/%d:Exclude,Include", Variant::STRING, PROPERTY_HINT_DIR, Variant::INT, PROPERTY_HINT_ENUM),
+	};
+	const Dictionary directory_rules_default_value = {
+		{ "res://addons", GDScriptParser::WarningDirectoryRule::DECISION_EXCLUDE },
+		{ "editor://addons", GDScriptParser::WarningDirectoryRule::DECISION_EXCLUDE },
+	};
+	GLOBAL_DEF(directory_rules_property_info, directory_rules_default_value);
 
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		const GDScriptWarning::Code code = (GDScriptWarning::Code)i;

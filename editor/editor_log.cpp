@@ -210,7 +210,7 @@ void EditorLog::_meta_clicked(const String &p_meta) {
 	String path = parts[0];
 	const int line = parts[1].to_int() - 1;
 
-	if (path.begins_with("res://")) {
+	if (path.begins_with("res://") || path.begins_with("editor://")) {
 		if (ResourceLoader::exists(path)) {
 			const Ref<Resource> res = ResourceLoader::load(path);
 			ScriptEditor::get_singleton()->edit(res, line, 0);
