@@ -350,7 +350,7 @@ Error RenderingDevice::_staging_buffer_allocate(StagingBuffers &p_staging_buffer
 				}
 			}
 
-		} else if (p_staging_buffers.blocks[p_staging_buffers.current].frame_used <= frames_drawn - frames.size()) {
+		} else if (frames_drawn - p_staging_buffers.blocks[p_staging_buffers.current].frame_used >= frames.size()) {
 			// This is an old block, which was already processed, let's reuse.
 			p_staging_buffers.blocks.write[p_staging_buffers.current].frame_used = frames_drawn;
 			p_staging_buffers.blocks.write[p_staging_buffers.current].fill_amount = 0;
