@@ -3921,6 +3921,7 @@ void DisplayServerWindows::swap_buffers() {
 
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	_THREAD_SAFE_METHOD_
+	MutexLock lock(icon_mutex);
 
 	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file with icon '" + p_filename + "'.");
@@ -3978,34 +3979,43 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	}
 
 	// Read the big icon.
-	DWORD bytecount_big = icon_dir->idEntries[big_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_big;
-	data_big.resize(bytecount_big);
+	DWORD bytecount_big_icon = icon_dir->idEntries[big_icon_index].dwBytesInRes;
+	big_icon_buffer.resize(bytecount_big_icon);
 	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
-	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
-	ERR_FAIL_NULL_MSG(icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
+	f->get_buffer(big_icon_buffer.ptrw(), bytecount_big_icon);
+
+	if (cached_hicon_big) {
+		DestroyIcon(cached_hicon_big);
+		cached_hicon_big = nullptr;
+	}
+
+	cached_hicon_big = CreateIconFromResource((PBYTE)big_icon_buffer.ptr(), bytecount_big_icon, TRUE, 0x00030000);
+	ERR_FAIL_NULL_MSG(cached_hicon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon.
-	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_small;
-	data_small.resize(bytecount_small);
+	DWORD bytecount_small_icon = icon_dir->idEntries[small_icon_index].dwBytesInRes;
+	small_icon_buffer.resize(bytecount_small_icon); // <-- persistent buffer
 	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
-	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
-	ERR_FAIL_NULL_MSG(icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
+	f->get_buffer(small_icon_buffer.ptrw(), bytecount_small_icon);
+
+	if (cached_hicon_small) {
+		DestroyIcon(cached_hicon_small);
+		cached_hicon_small = nullptr;
+	}
+	cached_hicon_small = CreateIconFromResource((PBYTE)small_icon_buffer.ptr(), bytecount_small_icon, TRUE, 0x00030000);
+	ERR_FAIL_NULL_MSG(cached_hicon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first.
 	int err = 0;
 	SetLastError(err);
 
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)cached_hicon_small);
 	err = GetLastError();
 	ERR_FAIL_COND_MSG(err, "Error setting ICON_SMALL: " + format_error_message(err) + ".");
 
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)cached_hicon_big);
 	err = GetLastError();
 	ERR_FAIL_COND_MSG(err, "Error setting ICON_BIG: " + format_error_message(err) + ".");
 
@@ -4014,6 +4024,7 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	_THREAD_SAFE_METHOD_
+	MutexLock lock(icon_mutex);
 
 	if (p_icon.is_valid()) {
 		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
@@ -4024,45 +4035,52 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 			img->convert(Image::FORMAT_RGBA8);
 		}
 
-		int w = img->get_width();
-		int h = img->get_height();
-
-		// Create temporary bitmap buffer.
-		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
-
-		encode_uint32(40, &icon_bmp[0]);
-		encode_uint32(w, &icon_bmp[4]);
-		encode_uint32(h * 2, &icon_bmp[8]);
-		encode_uint16(1, &icon_bmp[12]);
-		encode_uint16(32, &icon_bmp[14]);
-		encode_uint32(BI_RGB, &icon_bmp[16]);
-		encode_uint32(w * h * 4, &icon_bmp[20]);
-		encode_uint32(0, &icon_bmp[24]);
-		encode_uint32(0, &icon_bmp[28]);
-		encode_uint32(0, &icon_bmp[32]);
-		encode_uint32(0, &icon_bmp[36]);
-
-		uint8_t *wr = &icon_bmp[40];
-		const uint8_t *r = img->get_data().ptr();
-
-		for (int i = 0; i < h; i++) {
-			for (int j = 0; j < w; j++) {
-				const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
-				uint8_t *wpx = &wr[(i * w + j) * 4];
-				wpx[0] = rpx[2];
-				wpx[1] = rpx[1];
-				wpx[2] = rpx[0];
-				wpx[3] = rpx[3];
+		if (img != icon) {
+			if (cached_hicon) {
+				DestroyIcon(cached_hicon);
+				cached_hicon = nullptr;
 			}
+
+			int w = img->get_width();
+			int h = img->get_height();
+
+			// Use previously declared buffer.
+			int icon_len = 40 + h * w * 4;
+			icon_buffer.resize(icon_len);
+			BYTE *icon_bmp = icon_buffer.ptrw();
+
+			encode_uint32(40, &icon_bmp[0]);
+			encode_uint32(w, &icon_bmp[4]);
+			encode_uint32(h * 2, &icon_bmp[8]);
+			encode_uint16(1, &icon_bmp[12]);
+			encode_uint16(32, &icon_bmp[14]);
+			encode_uint32(BI_RGB, &icon_bmp[16]);
+			encode_uint32(w * h * 4, &icon_bmp[20]);
+			encode_uint32(0, &icon_bmp[24]);
+			encode_uint32(0, &icon_bmp[28]);
+			encode_uint32(0, &icon_bmp[32]);
+			encode_uint32(0, &icon_bmp[36]);
+
+			uint8_t *wr = &icon_bmp[40];
+			const uint8_t *r = img->get_data().ptr();
+
+			for (int i = 0; i < h; i++) {
+				for (int j = 0; j < w; j++) {
+					const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
+					uint8_t *wpx = &wr[(i * w + j) * 4];
+					wpx[0] = rpx[2];
+					wpx[1] = rpx[1];
+					wpx[2] = rpx[0];
+					wpx[3] = rpx[3];
+				}
+			}
+
+			cached_hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+			ERR_FAIL_NULL(cached_hicon);
 		}
 
-		HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
-		ERR_FAIL_NULL(hicon);
-
 		icon = img;
+		HICON hicon = cached_hicon;
 
 		// Set the icon for the window.
 		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
@@ -4071,12 +4089,17 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
 	} else {
 		icon = Ref<Image>();
+		if (cached_hicon) {
+			DestroyIcon(cached_hicon);
+			cached_hicon = nullptr;
+		}
 		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, 0);
 		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, 0);
 	}
 }
 
 DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+	MutexLock lock(icon_mutex);
 	HICON hicon = nullptr;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
@@ -4091,9 +4114,8 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		status_icon_buffer.resize(icon_len);
+		BYTE *icon_bmp = status_icon_buffer.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4121,7 +4143,13 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		if (cached_status_hicon) {
+			DestroyIcon(cached_status_hicon);
+			cached_status_hicon = nullptr;
+		}
+
+		cached_status_hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		hicon = cached_status_hicon;
 	}
 
 	IndicatorData idat;
@@ -4149,6 +4177,7 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 
 void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND(!indicators.has(p_id));
+	MutexLock lock(icon_mutex);
 
 	HICON hicon = nullptr;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
@@ -4164,9 +4193,8 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		status_icon_buffer.resize(icon_len);
+		BYTE *icon_bmp = status_icon_buffer.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4194,7 +4222,12 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		if (cached_status_hicon) {
+			DestroyIcon(cached_status_hicon);
+			cached_status_hicon = nullptr;
+		}
+		cached_status_hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		hicon = cached_status_hicon;
 	}
 
 	NOTIFYICONDATAW ndat;
