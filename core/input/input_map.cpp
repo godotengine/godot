@@ -234,6 +234,10 @@ void InputMap::action_erase_events(const StringName &p_action) {
 	}
 
 	input_map[p_action].inputs.clear();
+
+	if (Input::get_singleton()->is_action_pressed(p_action)) {
+		Input::get_singleton()->action_release(p_action);
+	}
 }
 
 TypedArray<InputEvent> InputMap::_action_get_events(const StringName &p_action) {
