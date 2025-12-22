@@ -262,14 +262,14 @@ def configure(env: "SConsEnvironment"):
         env["metal"] = False
 
     if env["metal"]:
-        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED"])
         extra_frameworks.add("Metal")
         extra_frameworks.add("MetalKit")
         extra_frameworks.add("MetalFX")
         env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
         extra_frameworks.add("Metal")
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])

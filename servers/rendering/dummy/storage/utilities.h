@@ -89,7 +89,9 @@ public:
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) override { return 0; }
 	virtual String get_video_adapter_name() const override { return String(); }
 	virtual String get_video_adapter_vendor() const override { return String(); }
+#ifdef RD_ENABLED
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override { return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER; }
+#endif // RD_ENABLED
 	virtual String get_video_adapter_api_version() const override { return String(); }
 
 	virtual Size2i get_maximum_viewport_size() const override { return Size2i(); }

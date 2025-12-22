@@ -90,18 +90,16 @@ void BetsyCompressor::_init() {
 	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
 
 	if (rd == nullptr) {
-#if defined(RD_ENABLED)
 #if defined(METAL_ENABLED)
 		rcd = memnew(RenderingContextDriverMetal);
 		rd = memnew(RenderingDevice);
-#endif
+#endif // METAL_ENABLED
 #if defined(VULKAN_ENABLED)
 		if (rcd == nullptr) {
 			rcd = memnew(RenderingContextDriverVulkan);
 			rd = memnew(RenderingDevice);
 		}
-#endif
-#endif
+#endif // VULKAN_ENABLED
 		if (rcd != nullptr && rd != nullptr) {
 			Error err = rcd->initialize();
 			if (err == OK) {

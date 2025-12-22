@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/light_storage.h"
 
 namespace RendererDummy {

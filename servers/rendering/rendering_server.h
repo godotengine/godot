@@ -37,7 +37,9 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display/display_server.h"
+#ifdef RD_ENABLED
 #include "servers/rendering/rendering_device.h"
+#endif // RD_ENABLED
 
 // Helper macros for code outside of the rendering server, but that is
 // called by the rendering server.
@@ -1820,7 +1822,9 @@ public:
 	virtual uint64_t get_rendering_info(RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
+#ifdef RD_ENABLED
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
+#endif // RD_ENABLED
 	virtual String get_video_adapter_api_version() const = 0;
 
 	struct FrameProfileArea {
@@ -1891,8 +1895,10 @@ public:
 
 	virtual Size2i get_maximum_viewport_size() const = 0;
 
+#ifdef RD_ENABLED
 	RenderingDevice *get_rendering_device() const;
 	RenderingDevice *create_local_rendering_device() const;
+#endif // RD_ENABLED
 
 	bool is_render_loop_enabled() const;
 	void set_render_loop_enabled(bool p_enabled);

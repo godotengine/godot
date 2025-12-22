@@ -1128,11 +1128,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #if defined(WEB_ENABLED)
 	// Web platform only supports `gl_compatibility`.
 	const String default_renderer = "gl_compatibility";
-#elif defined(ANDROID_ENABLED)
-	// Use more suitable rendering method by default.
+#elif defined(FORWARD_RD_ENABLED) && (!defined(ANDROID_ENABLED) || !defined(MOBILE_RD_ENABLED))
+	const String default_renderer = "forward_plus";
+#elif defined(MOBILE_RD_ENABLED)
 	const String default_renderer = "mobile";
 #else
-	const String default_renderer = "forward_plus";
+	// No other options.
+	const String default_renderer = "gl_compatibility";
 #endif
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", default_renderer, "forward_plus,mobile,gl_compatibility")
 

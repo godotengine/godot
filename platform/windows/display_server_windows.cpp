@@ -7268,6 +7268,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 					main_window_created = true;
 				}
 
+#ifdef RD_ENABLED
 				if (_create_rendering_context_window(MAIN_WINDOW_ID, tested_rendering_driver) == OK) {
 					rendering_device = memnew(RenderingDevice);
 					if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) == OK) {
@@ -7292,6 +7293,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 					_destroy_rendering_context_window(MAIN_WINDOW_ID);
 				}
+#endif // RD_ENABLED
 			}
 
 			memdelete(rendering_context);

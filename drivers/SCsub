@@ -43,22 +43,23 @@ if env["platform"] in ["macos"]:
 SConscript("winmidi/SCsub")
 
 # Graphics drivers
-if env["vulkan"]:
-    SConscript("vulkan/SCsub")
-if env["d3d12"]:
-    if "d3d12" not in supported:
-        print_error("Target platform '{}' does not support the D3D12 rendering driver".format(env["platform"]))
-        Exit(255)
-    SConscript("d3d12/SCsub")
+if env["rendering_device"]:
+    if env["vulkan"]:
+        SConscript("vulkan/SCsub")
+    if env["d3d12"]:
+        if "d3d12" not in supported:
+            print_error("Target platform '{}' does not support the D3D12 rendering driver".format(env["platform"]))
+            Exit(255)
+        SConscript("d3d12/SCsub")
+    if env["metal"]:
+        if "metal" not in supported:
+            print_error("Target platform '{}' does not support the Metal rendering driver".format(env["platform"]))
+            Exit(255)
+        SConscript("metal/SCsub")
 if env["opengl3"]:
     SConscript("gl_context/SCsub")
     SConscript("gles3/SCsub")
     SConscript("egl/SCsub")
-if env["metal"]:
-    if "metal" not in supported:
-        print_error("Target platform '{}' does not support the Metal rendering driver".format(env["platform"]))
-        Exit(255)
-    SConscript("metal/SCsub")
 
 # Input drivers
 if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows"]:

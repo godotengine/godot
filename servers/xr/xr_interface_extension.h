@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/xr/xr_interface.h"
 
 class XRInterfaceExtension : public XRInterface {
