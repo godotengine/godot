@@ -177,7 +177,7 @@ SSEffects::SSEffects() {
 	}
 
 	// Initialize Screen Space Ambient Occlusion (SSAO)
-	ssao_set_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
+	ssao_set_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), RS::EnvironmentSSAOType(int(GLOBAL_GET("rendering/environment/ssao/type"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
 
 	{
 		RD::SamplerState sampler;
@@ -275,6 +275,40 @@ SSEffects::SSEffects() {
 		ERR_FAIL_COND(pipeline != SSAO_MAX);
 
 		ss_effects.mirror_sampler = RD::get_singleton()->sampler_create(sampler);
+	}
+
+	// Initialize Ground Truth Ambient Occlusion (GTAO)
+
+	{
+		RD::SamplerState sampler;
+		sampler.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+		sampler.min_filter = RD::SAMPLER_FILTER_NEAREST;
+		sampler.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+		sampler.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		sampler.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		sampler.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		sampler.max_lod = 4;
+
+		gtao.base_shader.initialize({ "" });
+		gtao.base_shader_version = gtao.base_shader.version_create();
+		gtao.pipelines[GTAO_BASE].create_compute_pipeline(gtao.base_shader.version_get_shader(gtao.base_shader_version, 0));
+
+		{
+			Vector<String> gtao_modes;
+			gtao_modes.push_back("\n");
+			gtao_modes.push_back("\n#define GTAO_BLUR_FINAL_APPLY\n");
+
+			gtao.blur_shader.initialize(gtao_modes);
+			gtao.blur_shader_version = gtao.blur_shader.version_create();
+			gtao.pipelines[GTAO_BLUR].create_compute_pipeline(gtao.blur_shader.version_get_shader(gtao.blur_shader_version, 0));
+			gtao.pipelines[GTAO_BLUR_FINAL].create_compute_pipeline(gtao.blur_shader.version_get_shader(gtao.blur_shader_version, 1));
+		}
+
+		gtao.interleave_shader.initialize({ "" });
+		gtao.interleave_shader_version = gtao.interleave_shader.version_create();
+		gtao.pipelines[GTAO_INTERLEAVE].create_compute_pipeline(gtao.interleave_shader.version_get_shader(gtao.interleave_shader_version, 0));
+
+		gtao.point_clamp_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 
 	// Screen Space Reflections
@@ -483,6 +517,19 @@ SSEffects::~SSEffects() {
 		ssao.importance_map_shader.version_free(ssao.importance_map_shader_version);
 
 		RD::get_singleton()->free_rid(ssao.importance_map_load_counter);
+	}
+
+	{
+		// Cleanup GTAO
+		for (int i = 0; i < GTAO_MAX; i++) {
+			gtao.pipelines[i].free();
+		}
+
+		gtao.base_shader.version_free(gtao.base_shader_version);
+		gtao.blur_shader.version_free(gtao.blur_shader_version);
+		gtao.interleave_shader.version_free(gtao.interleave_shader_version);
+
+		RD::get_singleton()->free_rid(gtao.point_clamp_sampler);
 	}
 
 	{
@@ -1045,8 +1092,9 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 /* SSAO */
 
-void SSEffects::ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+void SSEffects::ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOType p_type, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 	ssao_quality = p_quality;
+	ssao_type = p_type;
 	ssao_half_size = p_half_size;
 	ssao_adaptive_target = p_adaptive_target;
 	ssao_blur_passes = p_blur_passes;
@@ -1054,7 +1102,7 @@ void SSEffects::ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_ha
 	ssao_fadeout_to = p_fadeout_to;
 }
 
-void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set) {
+void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_slices, const AOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 
@@ -1095,9 +1143,10 @@ void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_sl
 	RD::get_singleton()->compute_list_add_barrier(p_compute_list);
 }
 
-void SSEffects::ssao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORenderBuffers &p_ssao_buffers, const SSAOSettings &p_settings) {
+void SSEffects::ao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_ssao_buffers, const AOSettings &p_settings) {
 	if (p_ssao_buffers.half_size != ssao_half_size) {
 		p_render_buffers->clear_context(RB_SCOPE_SSAO);
+		p_render_buffers->clear_context(RB_SCOPE_GTAO);
 	}
 
 	p_ssao_buffers.half_size = ssao_half_size;
@@ -1120,14 +1169,21 @@ void SSEffects::ssao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers
 	// As we're not clearing these, and render buffers will return the cached texture if it already exists,
 	// we don't first check has_texture here
 
-	p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_DEINTERLEAVED, RD::DATA_FORMAT_R8G8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, 4 * view_count);
-	p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_DEINTERLEAVED_PONG, RD::DATA_FORMAT_R8G8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, 4 * view_count);
-	p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_IMPORTANCE_MAP, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, half_size);
-	p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_IMPORTANCE_PONG, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, half_size);
+	if (ssao_type == RS::ENV_SSAO_TYPE_ASSAO) {
+		p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_DEINTERLEAVED, RD::DATA_FORMAT_R8G8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, 4 * view_count);
+		p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_DEINTERLEAVED_PONG, RD::DATA_FORMAT_R8G8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, 4 * view_count);
+		p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_IMPORTANCE_MAP, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, half_size);
+		p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_IMPORTANCE_PONG, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, half_size);
+	} else {
+		p_render_buffers->create_texture(RB_SCOPE_GTAO, RB_AO_TERM, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, 4 * view_count);
+		p_render_buffers->create_texture(RB_SCOPE_GTAO, RB_AO_TERM_PONG, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, 4 * view_count);
+		p_render_buffers->create_texture(RB_SCOPE_GTAO, RB_EDGES, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, 4 * view_count);
+	}
+
 	p_render_buffers->create_texture(RB_SCOPE_SSAO, RB_FINAL, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1);
 }
 
-void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORenderBuffers &p_ssao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const SSAOSettings &p_settings) {
+void SSEffects::generate_assao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_ssao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -1421,6 +1477,219 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 
 	int zero[1] = { 0 };
 	RD::get_singleton()->buffer_update(ssao.importance_map_load_counter, 0, sizeof(uint32_t), &zero);
+}
+
+/* GTAO */
+
+void SSEffects::generate_gtao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_gtao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	// Obtain our (cached) buffer slices for the view we are rendering.
+	RID working_term = p_render_buffers->get_texture_slice(RB_SCOPE_GTAO, RB_AO_TERM, p_view * 4, 0, 4, 1);
+	RID working_term_pong = p_render_buffers->get_texture_slice(RB_SCOPE_GTAO, RB_AO_TERM_PONG, p_view * 4, 0, 4, 1);
+	RID edges = p_render_buffers->get_texture_slice(RB_SCOPE_GTAO, RB_EDGES, p_view * 4, 0, 4, 1);
+	RID ao_final = p_render_buffers->get_texture_slice(RB_SCOPE_SSAO, RB_FINAL, p_view, 0);
+
+	RID working_term_slices[4];
+	RID working_term_pong_slices[4];
+	RID edges_slices[4];
+	for (uint32_t i = 0; i < 4; i++) {
+		working_term_slices[i] = p_render_buffers->get_texture_slice(RB_SCOPE_GTAO, RB_AO_TERM, p_view * 4 + i, 0);
+		working_term_pong_slices[i] = p_render_buffers->get_texture_slice(RB_SCOPE_GTAO, RB_AO_TERM_PONG, p_view * 4 + i, 0);
+		edges_slices[i] = p_render_buffers->get_texture_slice(RB_SCOPE_GTAO, RB_EDGES, p_view * 4 + i, 0);
+	}
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	memset(&gtao.base_push_constant, 0, sizeof(GTAOBasePushConstant));
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RID shader = gtao.base_shader.version_get_shader(gtao.base_shader_version, 0);
+
+	RD::get_singleton()->draw_command_begin_label("Process Screen-Space Ambient Occlusion");
+
+	/* BASE PASS */
+	{
+		RD::get_singleton()->draw_command_begin_label("GTAO Sampling");
+		gtao.base_push_constant.screen_size[0] = p_settings.full_screen_size.x;
+		gtao.base_push_constant.screen_size[1] = p_settings.full_screen_size.y;
+
+		gtao.base_push_constant.viewport_pixel_size[0] = 2.0 / p_settings.full_screen_size.x;
+		gtao.base_push_constant.viewport_pixel_size[1] = 2.0 / p_settings.full_screen_size.y;
+		if (ssao_half_size) {
+			gtao.base_push_constant.viewport_pixel_size[0] *= 2.0;
+			gtao.base_push_constant.viewport_pixel_size[1] *= 2.0;
+		}
+
+		float tan_half_fov_x = 1.0 / p_projection.columns[0][0];
+		float tan_half_fov_y = 1.0 / p_projection.columns[1][1];
+		gtao.base_push_constant.NDC_to_view_mul[0] = tan_half_fov_x * 2.0;
+		gtao.base_push_constant.NDC_to_view_mul[1] = tan_half_fov_y * -2.0;
+		gtao.base_push_constant.NDC_to_view_add[0] = tan_half_fov_x * -1.0;
+		gtao.base_push_constant.NDC_to_view_add[1] = tan_half_fov_y;
+		gtao.base_push_constant.is_orthogonal = p_projection.is_orthogonal();
+
+		gtao.base_push_constant.radius = p_settings.radius;
+		float radius_near_limit = (p_settings.radius * 1.2f);
+		if (ssao_quality <= RS::ENV_SSAO_QUALITY_LOW) {
+			radius_near_limit *= 1.50f;
+
+			if (ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW) {
+				gtao.base_push_constant.radius *= 0.8f;
+			}
+		}
+		radius_near_limit /= tan_half_fov_y;
+		gtao.base_push_constant.intensity = p_settings.intensity;
+		gtao.base_push_constant.shadow_power = p_settings.power;
+		gtao.base_push_constant.shadow_clamp = 0.98;
+		gtao.base_push_constant.fade_out_mul = -1.0 / (ssao_fadeout_to - ssao_fadeout_from);
+		gtao.base_push_constant.fade_out_add = ssao_fadeout_from / (ssao_fadeout_to - ssao_fadeout_from) + 1.0;
+		gtao.base_push_constant.inv_radius_near_limit = 1.0f / radius_near_limit;
+
+		gtao.base_push_constant.quality = MAX(0, ssao_quality - 1);
+		gtao.base_push_constant.size_multiplier = ssao_half_size ? 4 : 2;
+		gtao.base_push_constant.thickness_heuristic = 0.5f;
+		gtao.base_push_constant.fov_scale = p_projection.columns[0][0] * p_gtao_buffers.buffer_height;
+
+		// We are using our uniform cache so our uniform sets are automatically freed when our textures are freed.
+		// It also ensures that we're reusing the right cached entry in a multiview situation without us having to
+		// remember each instance of the uniform set.
+		RID base_uniform_set;
+		{
+			RID depth_texture_view = p_render_buffers->get_texture_slice(RB_SCOPE_SSDS, RB_LINEAR_DEPTH, p_view * 4, ssao_half_size ? 1 : 0, 4, 4);
+
+			RD::Uniform u_depth_texture_view;
+			u_depth_texture_view.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+			u_depth_texture_view.binding = 0;
+			u_depth_texture_view.append_id(gtao.point_clamp_sampler);
+			u_depth_texture_view.append_id(depth_texture_view);
+
+			RD::Uniform u_normal_buffer;
+			u_normal_buffer.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u_normal_buffer.binding = 1;
+			u_normal_buffer.append_id(p_normal_buffer);
+
+			base_uniform_set = uniform_set_cache->get_cache(shader, 0, u_depth_texture_view, u_normal_buffer);
+		}
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gtao.pipelines[GTAO_BASE].get_rid());
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, base_uniform_set, 0);
+
+		Size2i size;
+		// Make sure we use the same size as with which our buffer was created
+		if (ssao_half_size) {
+			size.x = (p_settings.full_screen_size.x + 3) / 4;
+			size.y = (p_settings.full_screen_size.y + 3) / 4;
+		} else {
+			size.x = (p_settings.full_screen_size.x + 1) / 2;
+			size.y = (p_settings.full_screen_size.y + 1) / 2;
+		}
+
+		for (int i = 0; i < 4; i++) {
+			RD::Uniform u_working_term_slice(RD::UNIFORM_TYPE_IMAGE, 0, working_term_slices[i]);
+
+			RD::Uniform u_edges_slice(RD::UNIFORM_TYPE_IMAGE, 1, edges_slices[i]);
+
+			gtao.base_push_constant.pass_coord_offset[0] = i % 2;
+			gtao.base_push_constant.pass_coord_offset[1] = i / 2;
+			gtao.base_push_constant.pass = i;
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_working_term_slice, u_edges_slice), 1);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &gtao.base_push_constant, sizeof(GTAOBasePushConstant));
+
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, size.x, size.y, 1);
+		}
+
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+		RD::get_singleton()->draw_command_end_label(); // GTAO Sampling
+	}
+
+	// BLUR PASS
+	int blur_passes = ssao_quality > RS::ENV_SSAO_QUALITY_VERY_LOW ? ssao_blur_passes : 1;
+	{
+		RD::get_singleton()->draw_command_begin_label("Spatial Blur");
+		gtao.blur_push_constant.blur_beta = 1.2f;
+		gtao.blur_push_constant.viewport_pixel_size[0] = 1.0 / p_gtao_buffers.buffer_width;
+		gtao.blur_push_constant.viewport_pixel_size[1] = 1.0 / p_gtao_buffers.buffer_height;
+
+		shader = gtao.blur_shader.version_get_shader(gtao.blur_shader_version, 0);
+		int dispatch_width = (p_gtao_buffers.buffer_width + 1) / 2;
+
+		for (int pass = 0; pass < blur_passes; pass++) {
+			int blur_pipeline = pass == blur_passes - 1 ? GTAO_BLUR_FINAL : GTAO_BLUR;
+
+			RID blur_shader = gtao.blur_shader.version_get_shader(gtao.blur_shader_version, blur_pipeline - GTAO_BLUR);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gtao.pipelines[blur_pipeline].get_rid());
+
+			RID *in_working_term_slices, *out_working_term_slices;
+			if (pass % 2 == 0) {
+				in_working_term_slices = working_term_slices;
+				out_working_term_slices = working_term_pong_slices;
+			} else {
+				in_working_term_slices = working_term_pong_slices;
+				out_working_term_slices = working_term_slices;
+			}
+
+			for (int i = 0; i < 4; i++) {
+				RD::Uniform u_in_working_term(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ gtao.point_clamp_sampler, in_working_term_slices[i] }));
+
+				RD::Uniform u_edges(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ gtao.point_clamp_sampler, edges_slices[i] }));
+
+				RD::Uniform u_out_working_term(RD::UNIFORM_TYPE_IMAGE, 2, out_working_term_slices[i]);
+
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(blur_shader, 0, u_in_working_term, u_edges, u_out_working_term), 0);
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &gtao.blur_push_constant, sizeof(GTAOBlurPushConstant));
+				RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_width, p_gtao_buffers.buffer_height, 1);
+			}
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		}
+		RD::get_singleton()->draw_command_end_label(); // Blur
+	}
+
+	// Interleave buffers
+	// back to full size
+	{
+		RD::get_singleton()->draw_command_begin_label("Interleave Buffers");
+		gtao.interleave_push_constant.pixel_size[0] = 1.0 / p_settings.full_screen_size.x;
+		gtao.interleave_push_constant.pixel_size[1] = 1.0 / p_settings.full_screen_size.y;
+		gtao.interleave_push_constant.size_modifier = uint32_t(ssao_half_size ? 4 : 2);
+
+		shader = gtao.interleave_shader.version_get_shader(gtao.interleave_shader_version, 0);
+
+		RID interleave_shader = gtao.interleave_shader.version_get_shader(gtao.interleave_shader_version, 0);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gtao.pipelines[GTAO_INTERLEAVE].get_rid());
+
+		RD::Uniform u_upscale_buffer(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ ao_final }));
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(interleave_shader, 0, u_upscale_buffer), 0);
+
+		RD::Uniform u_edges(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, edges }));
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(interleave_shader, 2, u_edges), 2);
+
+		if (blur_passes % 2 == 0) {
+			RD::Uniform u_ao(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, working_term }));
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(interleave_shader, 1, u_ao), 1);
+		} else {
+			RD::Uniform u_ao(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, working_term_pong }));
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(interleave_shader, 1, u_ao), 1);
+		}
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &gtao.interleave_push_constant, sizeof(GTAOInterleavePushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_settings.full_screen_size.x, p_settings.full_screen_size.y, 1);
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+		RD::get_singleton()->draw_command_end_label(); // Interleave
+	}
+
+	RD::get_singleton()->draw_command_end_label(); // GTAO
+	RD::get_singleton()->compute_list_end();
+}
+
+void SSEffects::generate_ao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings) {
+	if (ssao_type == RS::ENV_SSAO_TYPE_ASSAO) {
+		generate_assao(p_render_buffers, p_buffers, p_view, p_normal_buffer, p_projection, p_settings);
+	} else {
+		generate_gtao(p_render_buffers, p_buffers, p_view, p_normal_buffer, p_projection, p_settings);
+	}
 }
 
 /* Screen Space Reflection */

@@ -152,6 +152,8 @@ private:
 		float ssao_direct_light_affect = 0.0;
 		float ssao_ao_channel_affect = 0.0;
 
+		// GTAO
+
 		// SSIL
 		bool ssil_enabled = false;
 		float ssil_radius = 5.0;
