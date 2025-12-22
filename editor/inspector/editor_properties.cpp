@@ -2956,7 +2956,6 @@ EditorPropertyColor::EditorPropertyColor() {
 
 void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
 	assign->set_disabled(p_read_only);
-	menu->set_disabled(p_read_only);
 }
 
 Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
@@ -3023,8 +3022,9 @@ void EditorPropertyNodePath::_assign_draw() {
 void EditorPropertyNodePath::_update_menu() {
 	const NodePath &np = _get_node_path();
 
-	menu->get_popup()->set_item_disabled(ACTION_CLEAR, np.is_empty());
+	menu->get_popup()->set_item_disabled(ACTION_CLEAR, np.is_empty() || is_read_only());
 	menu->get_popup()->set_item_disabled(ACTION_COPY, np.is_empty());
+	menu->get_popup()->set_item_disabled(ACTION_EDIT, is_read_only());
 
 	Node *edited_node = Object::cast_to<Node>(get_edited_object());
 	menu->get_popup()->set_item_disabled(ACTION_SELECT, !edited_node || !edited_node->has_node(np));
