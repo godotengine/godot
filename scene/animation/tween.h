@@ -124,7 +124,7 @@ private:
 	bool started = false;
 	bool running = true;
 	bool in_step = false;
-	bool dead = false;
+	bool finished = false;
 	bool valid = false;
 	bool default_parallel = false;
 	bool parallel_enabled = false;
@@ -158,6 +158,7 @@ public:
 
 	bool is_running();
 	bool is_valid();
+	bool is_finished();
 	void clear();
 
 	RequiredResult<Tween> bind_node(RequiredParam<const Node> rp_node);
