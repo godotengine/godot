@@ -3347,31 +3347,64 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 					} break;
 					case RS::LIGHT_SPOT: {
-						float radius = RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
-						float angle = RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_SPOT_ANGLE);
+						float range = RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
+						float angle = Math::deg_to_rad(RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_SPOT_ANGLE));
 
-						float w = radius * Math::sin(Math::deg_to_rad(angle));
-						float d = radius * Math::cos(Math::deg_to_rad(angle));
+						// Radius of the cone at the base
+						float w = range * Math::sin(angle);
 
-						Vector3 base = ins->transform.origin - ins->transform.basis.get_column(2).normalized() * d;
+						float screen_diameter = 0.0f;
 
-						Vector3 points[2] = {
-							base,
-							base + cam_xf.basis.get_column(0) * w
-						};
+						if (p_camera_data->is_orthogonal) {
+							// If camera is orthogonal - diameter of the cone at the base is the
+							// best screen diameter approximation.
+							screen_diameter = w * 2.0f;
+						} else {
+							// Screen diameter approximation for spot light with perspective projection:
+							// 1. Pick a sphere on the *far base* of the cone.
+							// 2. Project that sphere and measure its diameter on the near plane.
+							// 3. Repeat for the point on the cone axis that is closest to the camera.
+							// 4. Take the larger on-screen diameter; this guarantees enough pixels
+							//    whether the viewer looks side-on or straight down the beam.
 
-						if (!p_camera_data->is_orthogonal) {
-							//if using perspetive, map them to near plane
-							for (int j = 0; j < 2; j++) {
+							Vector3 light_forward = -ins->transform.basis.get_column(2).normalized();
+							Vector3 cam_right = cam_xf.basis.get_column(0);
+
+							// Distance to the base of the cone
+							float d = range * Math::cos(angle);
+
+							// Center of the sphere on the base
+							Vector3 center = ins->transform.origin + light_forward * d;
+							// Point on the sphere
+							Vector3 point = center + cam_right * w;
+
+							// Signed distance along light_forward axis
+							float d_near = CLAMP(light_forward.dot(cam_xf.origin - ins->transform.origin), 0.0f, d);
+
+							// Approximate radius of the sphere that fits in the cone when centered at d_near
+							// from the origin of the cone.
+							float w_near = d_near * Math::tan(angle);
+
+							Vector3 center_near = ins->transform.origin + light_forward * d_near;
+							Vector3 point_near = center_near + cam_right * w_near;
+
+							Vector3 points[4] = {
+								center,
+								point,
+								center_near,
+								point_near
+							};
+
+							for (int j = 0; j < 4; j++) {
 								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
+									points[j].z = -zn; // Keep the size constant when behind the near plane.
 								}
-
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+								p.intersects_segment(cam_xf.origin, points[j], &points[j]);
 							}
+
+							screen_diameter = MAX(points[0].distance_to(points[1]), points[2].distance_to(points[3])) * 2.0f;
 						}
 
-						float screen_diameter = points[0].distance_to(points[1]) * 2;
 						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 
 					} break;
