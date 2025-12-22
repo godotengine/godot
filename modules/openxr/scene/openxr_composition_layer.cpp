@@ -146,6 +146,9 @@ void OpenXRCompositionLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_border_color", "color"), &OpenXRCompositionLayer::set_border_color);
 	ClassDB::bind_method(D_METHOD("get_border_color"), &OpenXRCompositionLayer::get_border_color);
 
+	ClassDB::bind_method(D_METHOD("set_eye_visibility", "eye_visibility"), &OpenXRCompositionLayer::set_eye_visibility);
+	ClassDB::bind_method(D_METHOD("get_eye_visibility"), &OpenXRCompositionLayer::get_eye_visibility);
+
 	ClassDB::bind_method(D_METHOD("intersects_ray", "origin", "direction"), &OpenXRCompositionLayer::intersects_ray);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
@@ -155,6 +158,7 @@ void OpenXRCompositionLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sort_order", PROPERTY_HINT_NONE, ""), "set_sort_order", "get_sort_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alpha_blend", PROPERTY_HINT_NONE, ""), "set_alpha_blend", "get_alpha_blend");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_hole_punch", PROPERTY_HINT_NONE, ""), "set_enable_hole_punch", "get_enable_hole_punch");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "eye_visibility", PROPERTY_HINT_ENUM, "Both,Left,Right"), "set_eye_visibility", "get_eye_visibility");
 
 	ADD_GROUP("Swapchain State", "swapchain_state_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_min_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Cubic"), "set_min_filter", "get_min_filter");
@@ -190,6 +194,10 @@ void OpenXRCompositionLayer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SWIZZLE_ALPHA);
 	BIND_ENUM_CONSTANT(SWIZZLE_ZERO);
 	BIND_ENUM_CONSTANT(SWIZZLE_ONE);
+
+	BIND_ENUM_CONSTANT(EYE_VISIBILITY_BOTH);
+	BIND_ENUM_CONSTANT(EYE_VISIBILITY_LEFT);
+	BIND_ENUM_CONSTANT(EYE_VISIBILITY_RIGHT);
 }
 
 bool OpenXRCompositionLayer::_should_use_fallback_node() {
@@ -247,6 +255,26 @@ void OpenXRCompositionLayer::_clear_composition_layer() {
 void OpenXRCompositionLayer::_viewport_size_changed() {
 	if (layer_viewport && openxr_session_running && composition_layer_extension && is_natively_supported() && is_visible() && is_inside_tree()) {
 		composition_layer_extension->composition_layer_set_viewport(composition_layer, layer_viewport->get_viewport_rid(), layer_viewport->get_size());
+	}
+}
+
+void OpenXRCompositionLayer::_update_pose_space() {
+	if (composition_layer_extension) {
+		bool parent_is_xr_camera = Object::cast_to<XRCamera3D>(get_parent()) != nullptr;
+		OpenXRCompositionLayerExtension::PoseSpace new_pose_space;
+		Transform3D xf;
+
+		// Automatically set the PoseSpace to POSE_HEAD_LOCKED if layer is a child of XRCamera3D
+		if (parent_is_xr_camera) {
+			new_pose_space = OpenXRCompositionLayerExtension::PoseSpace::POSE_HEAD_LOCKED;
+			xf = get_transform();
+		} else {
+			new_pose_space = OpenXRCompositionLayerExtension::PoseSpace::POSE_WORLD_LOCKED;
+			xf = get_global_transform();
+		}
+
+		composition_layer_extension->composition_layer_set_pose_space(composition_layer, new_pose_space);
+		composition_layer_extension->composition_layer_set_transform(composition_layer, xf);
 	}
 }
 
@@ -606,6 +634,20 @@ Color OpenXRCompositionLayer::get_border_color() const {
 	return border_color;
 }
 
+void OpenXRCompositionLayer::set_eye_visibility(EyeVisibility p_eye_visibility) {
+	if (eye_visibility == p_eye_visibility) {
+		return;
+	}
+	eye_visibility = p_eye_visibility;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_eye_visibility(composition_layer, (OpenXRCompositionLayerExtension::EyeVisibility)p_eye_visibility);
+	}
+}
+
+OpenXRCompositionLayer::EyeVisibility OpenXRCompositionLayer::get_eye_visibility() const {
+	return eye_visibility;
+}
+
 Ref<JavaObject> OpenXRCompositionLayer::get_android_surface() {
 	if (composition_layer_extension) {
 		return composition_layer_extension->composition_layer_get_android_surface(composition_layer);
@@ -678,6 +720,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 			if (is_natively_supported() && openxr_session_running && is_inside_tree()) {
 				if (is_visible()) {
 					_setup_composition_layer();
+					_update_pose_space();
 				} else {
 					_clear_composition_layer();
 				}
@@ -686,6 +729,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			update_transform();
+			_update_pose_space();
 			update_configuration_warnings();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -694,6 +738,10 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 			} else if (openxr_session_running && is_visible()) {
 				_setup_composition_layer();
 			}
+			_update_pose_space();
+		} break;
+		case NOTIFICATION_PARENTED: {
+			_update_pose_space();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			// This will clean up existing resources.
@@ -760,9 +808,11 @@ PackedStringArray OpenXRCompositionLayer::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
-		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-		if (origin == nullptr) {
-			warnings.push_back(RTR("OpenXR composition layers must have an XROrigin3D node as their parent."));
+		XROrigin3D *xr_origin = Object::cast_to<XROrigin3D>(get_parent());
+		XRCamera3D *xr_camera = Object::cast_to<XRCamera3D>(get_parent());
+
+		if (xr_origin == nullptr && xr_camera == nullptr) {
+			warnings.push_back(RTR("OpenXR composition layers must have have either an XROrigin3D or XRCamera3D node as their parent."));
 		}
 	}
 
