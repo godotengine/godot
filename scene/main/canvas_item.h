@@ -41,6 +41,20 @@ class SubViewport;
 class Window;
 class World2D;
 
+class CanvasItemGizmo : public RefCounted {
+	GDCLASS(CanvasItemGizmo, RefCounted);
+
+public:
+	virtual void create() = 0;
+	virtual void transform() = 0;
+	virtual void clear() = 0;
+	virtual void redraw() = 0;
+	virtual void free() = 0;
+
+	CanvasItemGizmo();
+	virtual ~CanvasItemGizmo() {}
+};
+
 class CanvasItem : public Node {
 	GDCLASS(CanvasItem, Node);
 
@@ -93,6 +107,13 @@ private:
 		// an optimization for faster traversal.
 		LocalVector<CanvasItem *> canvas_item_children;
 		uint32_t index_in_parent = UINT32_MAX;
+#ifdef TOOLS_ENABLED
+		Vector<Ref<CanvasItemGizmo>> gizmos;
+		bool gizmos_requested : 1;
+		bool gizmos_disabled : 1;
+		bool gizmos_dirty : 1;
+		bool transform_dirty : 1;
+#endif
 	} data;
 
 	int light_mask = 1;
@@ -159,6 +180,8 @@ private:
 
 	void _notify_transform_deferred();
 	const StringName *_instance_shader_parameter_get_remap(const StringName &p_name) const;
+
+	void _update_gizmos();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -260,6 +283,16 @@ public:
 #endif // DEBUG_ENABLED
 
 	void update_draw_order();
+
+	/* GIZMOS */
+	Vector<Ref<CanvasItemGizmo>> get_gizmos() const;
+	TypedArray<CanvasItemGizmo> get_gizmos_bind() const;
+	void add_gizmo(Ref<CanvasItemGizmo> p_gizmo);
+	void remove_gizmo(Ref<CanvasItemGizmo> p_gizmo);
+	void clear_gizmos();
+	void update_gizmos();
+	void set_subgizmo_selection(Ref<CanvasItemGizmo> p_gizmo, int p_id, Transform2D p_transform = Transform2D());
+	void clear_subgizmo_selection();
 
 	/* VISIBILITY */
 
