@@ -144,6 +144,26 @@
 				Unregisters the given [ResourceFormatLoader].
 			</description>
 		</method>
+		<method name="rename_dependencies">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="rename_paths_from_to" type="Dictionary" />
+			<description>
+				Renames resource dependency paths from their current path to a replacement path. Rename paths are confirmed to exist in the resource file before renaming.
+				[param rename_paths_from_to] is a [Dictionary] with each key a [String] that is a path to replace in the exact format as a key returned by [method get_dependencies], and its value a [String] as the replacement path without the UID. See [method get_dependencies] on how to get the path from the dependency [String] slices.
+				[codeblocks]
+				[gdscript]
+				var rename_paths_from_to = {
+				    "uid://cy6m27ymhc1l1::::res://local/my_script_101.gd":"res://migrate/local/my_script_101.gd",
+				    "uid://cprj8dpcbi7f5::::res://local/my_script_202.gd":"res://migrate/local/my_script_202.gd",
+				}
+				[/gdscript]
+				[/codeblocks]
+				If the resource is a file located in the [code]res://[/code] path the rename is performed immediately on the source file.
+				If the resource is located in the [code]user://[/code] path, a new resource file is created at the same location as the original. The original file is not modified. The name of the new, modified resource at [param path] is dependent on the particular [ResourceFormatLoader] used by the resource type. [PackedScene] resources, [code].tscn[/code] and [code].scn[/code] are saved with the original [param path] name appended with [code].depren[/code].
+				[b]Note:[/b] Resources that were saved prior to Godot 4.0 will not show a UID in the dependency key, so the [param rename_paths_from_to] key/value will look like this: [code]"res://local/my_script_303.gd":"res://migrate/local/my_script_303.gd"[/code].
+			</description>
+		</method>
 		<method name="set_abort_on_missing_resources">
 			<return type="void" />
 			<param index="0" name="abort" type="bool" />
