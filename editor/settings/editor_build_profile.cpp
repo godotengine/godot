@@ -702,7 +702,39 @@ void EditorBuildProfileManager::_notification(int p_what) {
 				edited.instantiate();
 				_update_edited_profile();
 			}
+		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			info->set_text(vformat(TTR("Compilation profiles need to be used while compiling the engine ir order to affect the build size, read more about this in the [url=%s]documentation[/url]."),
+					"https://docs.godotengine.org/en/stable/tutorials/editor/using_engine_compilation_configuration_editor.html"));
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			if (scan_data->new_file.is_set()) {
+				scan_data->new_file.clear();
+
+				if (progress->step(scan_data->current_file, 1)) {
+					scan_data->canceled.set();
+				}
+			}
+
+			if (!scan_data->finished.is_set()) {
+				return;
+			}
+
+			scan_data->thread->wait_to_finish();
+			memdelete(scan_data->thread);
+
+			if (!scan_data->canceled.is_set()) {
+				_detect_from_project_finished();
+			}
+
+			memdelete(progress);
+			progress = nullptr;
+			memdelete(scan_data);
+			scan_data = nullptr;
+
+			set_process(false);
 		} break;
 	}
 }
@@ -749,16 +781,19 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 	}
 }
 
-void EditorBuildProfileManager::_find_files(EditorFileSystemDirectory *p_dir, const HashMap<String, DetectedFile> &p_cache, HashMap<String, DetectedFile> &r_detected) {
-	if (p_dir == nullptr || p_dir->get_path().get_file().begins_with(".")) {
+void EditorBuildProfileManager::_find_files(void *p_scan_data) {
+	ScanData *sd = static_cast<ScanData *>(p_scan_data);
+	if (sd->dir == nullptr || sd->dir->get_path().get_file().begins_with(".")) {
 		return;
 	}
 
-	for (int i = 0; i < p_dir->get_file_count(); i++) {
-		String p = p_dir->get_file_path(i);
+	for (int i = 0; i < sd->dir->get_file_count(); i++) {
+		String p = sd->dir->get_file_path(i);
+		sd->current_file = p;
+		sd->new_file.set();
 
-		if (EditorNode::get_singleton()->progress_task_step("detect_classes_from_project", p, 1)) {
-			project_scan_canceled = true;
+		if (sd->canceled.is_set()) {
+			sd->finished.set();
 			return;
 		}
 
@@ -772,8 +807,8 @@ void EditorBuildProfileManager::_find_files(EditorFileSystemDirectory *p_dir, co
 		uint64_t timestamp = 0;
 		String md5;
 
-		if (p_cache.has(p)) {
-			const DetectedFile &cache = p_cache[p];
+		if (sd->cache.has(p)) {
+			const DetectedFile &cache = sd->cache[p];
 			// Check if timestamp and MD5 match.
 			timestamp = FileAccess::get_modified_time(p_check);
 			bool cache_valid = true;
@@ -785,7 +820,7 @@ void EditorBuildProfileManager::_find_files(EditorFileSystemDirectory *p_dir, co
 			}
 
 			if (cache_valid) {
-				r_detected.insert(p, cache);
+				sd->detected.insert(p, cache);
 				continue;
 			}
 		}
@@ -814,16 +849,24 @@ void EditorBuildProfileManager::_find_files(EditorFileSystemDirectory *p_dir, co
 			cache.md5 = md5;
 		}
 
-		r_detected.insert(p, cache);
+		sd->detected.insert(p, cache);
 	}
 
-	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
-		_find_files(p_dir->get_subdir(i), p_cache, r_detected);
+	bool project_root = sd->project_root.is_set();
+	sd->project_root.clear();
+
+	for (int i = 0; i < sd->dir->get_subdir_count(); i++) {
+		sd->dir = sd->dir->get_subdir(i);
+		_find_files(p_scan_data);
+	}
+
+	if (project_root) {
+		sd->finished.set();
 	}
 }
 
 void EditorBuildProfileManager::_detect_from_project() {
-	EditorNode::get_singleton()->progress_add_task("detect_classes_from_project", TTRC("Scanning Project for Used Classes"), 3, true);
+	progress = memnew(EditorProgress("detect_classes_from_project", TTR("Scanning Project for Used Classes"), 3, true));
 
 	HashMap<String, DetectedFile> previous_file_cache;
 
@@ -845,26 +888,25 @@ void EditorBuildProfileManager::_detect_from_project() {
 		f.unref();
 	}
 
-	HashMap<String, DetectedFile> updated_file_cache;
+	scan_data = memnew(ScanData);
+	scan_data->dir = EditorFileSystem::get_singleton()->get_filesystem();
+	scan_data->cache = previous_file_cache;
+	scan_data->thread = memnew(Thread);
+	scan_data->project_root.set();
+	set_process(true);
+	scan_data->thread->start(_find_files, scan_data);
+}
 
-	_find_files(EditorFileSystem::get_singleton()->get_filesystem(), previous_file_cache, updated_file_cache);
-
-	if (project_scan_canceled) {
-		project_scan_canceled = false;
-		EditorNode::get_singleton()->progress_end_task("detect_classes_from_project");
-
-		return;
-	}
-
-	EditorNode::get_singleton()->progress_task_step("detect_classes_from_project", TTRC("Processing Classes Found"), 2);
+void EditorBuildProfileManager::_detect_from_project_finished() {
+	progress->step(TTR("Processing Classes Found"), 2);
 
 	HashSet<StringName> used_classes;
 	LocalVector<String> used_build_deps;
 
 	// Find classes and update the disk cache in the process.
-	f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache"), FileAccess::WRITE);
+	Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache"), FileAccess::WRITE);
 
-	for (const KeyValue<String, DetectedFile> &E : updated_file_cache) {
+	for (const KeyValue<String, DetectedFile> &E : scan_data->detected) {
 		String l = E.key + "::" + itos(E.value.timestamp) + "::" + E.value.md5 + "::";
 		for (int i = 0; i < E.value.classes.size(); i++) {
 			String c = E.value.classes[i];
@@ -1039,8 +1081,7 @@ void EditorBuildProfileManager::_detect_from_project() {
 	if (edited->is_build_option_disabled(EditorBuildProfile::BUILD_OPTION_TEXT_SERVER_ADVANCED)) {
 		edited->set_disable_build_option(EditorBuildProfile::BUILD_OPTION_TEXT_SERVER_FALLBACK, false);
 	}
-
-	EditorNode::get_singleton()->progress_end_task("detect_classes_from_project");
+	_update_edited_profile();
 }
 
 void EditorBuildProfileManager::_action_confirm() {
@@ -1071,6 +1112,10 @@ void EditorBuildProfileManager::_action_confirm() {
 
 void EditorBuildProfileManager::_hide_requested() {
 	_cancel_pressed(); // From AcceptDialog.
+}
+
+void EditorBuildProfileManager::_meta_clicked(const String &p_meta) {
+	OS::get_singleton()->shell_open(p_meta);
 }
 
 void EditorBuildProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
@@ -1309,8 +1354,6 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	main_vbc->add_margin_child(TTR("Profile:"), path_hbc);
 
-	main_vbc->add_child(memnew(HSeparator));
-
 	HBoxContainer *profiles_hbc = memnew(HBoxContainer);
 
 	profile_actions[ACTION_RESET] = memnew(Button(TTR("Reset to Defaults")));
@@ -1320,6 +1363,19 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	profile_actions[ACTION_DETECT] = memnew(Button(TTR("Detect from Project")));
 	profiles_hbc->add_child(profile_actions[ACTION_DETECT]);
 	profile_actions[ACTION_DETECT]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
+
+	info = memnew(RichTextLabel);
+	info->set_use_bbcode(true);
+	info->set_fit_content(true);
+	main_vbc->add_child(info);
+	info->connect("meta_clicked", callable_mp(this, &EditorBuildProfileManager::_meta_clicked));
+
+	Ref<StyleBoxEmpty> stylebox;
+	stylebox.instantiate();
+	stylebox->set_content_margin_all(4 * EDSCALE);
+	info->add_theme_style_override(CoreStringName(normal), stylebox);
+
+	main_vbc->add_child(memnew(HSeparator));
 
 	main_vbc->add_margin_child(TTR("Actions:"), profiles_hbc);
 
