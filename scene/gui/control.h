@@ -214,6 +214,14 @@ private:
 		Vector2 pivot_offset;
 		Vector2 pivot_offset_ratio;
 
+		bool render_transform_enabled = false;
+		Vector2 render_offset;
+		bool render_offset_relative_to_size = true;
+		Vector2 render_scale = Vector2(1, 1);
+		real_t render_rotation = 0.0;
+		Vector2 render_transform_pivot = Vector2(0.5, 0.5);
+		bool render_transform_pivot_relative_to_size = true;
+
 		Point2 pos_cache;
 		Size2 size_cache;
 		mutable Size2 minimum_size_cache;
@@ -560,6 +568,23 @@ public:
 	BitField<SizeFlags> get_v_size_flags() const;
 	void set_stretch_ratio(real_t p_ratio);
 	real_t get_stretch_ratio() const;
+
+	// Render transform.
+
+	void set_render_transform_enabled(bool p_enabled);
+	bool is_render_transform_enabled() const;
+	void set_render_offset(const Vector2 &p_offset);
+	Vector2 get_render_offset() const;
+	void set_render_offset_relative_to_size(bool p_relative);
+	bool get_render_offset_relative_to_size() const;
+	void set_render_scale(const Vector2 &p_scale);
+	Vector2 get_render_scale() const;
+	void set_render_rotation(real_t p_rotation);
+	real_t get_render_rotation() const;
+	void set_render_transform_pivot(const Vector2 &p_pivot);
+	Vector2 get_render_transform_pivot() const;
+	void set_render_transform_pivot_relative_to_size(bool p_relative);
+	bool get_render_transform_pivot_relative_to_size() const;
 
 	// Input events.
 

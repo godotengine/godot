@@ -1138,6 +1138,27 @@
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" enum="Control.SizeFlags" is_bitfield="true" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use a combination of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
+		<member name="render_transform_enabled" type="bool" setter="set_render_transform_enabled" getter="is_render_transform_enabled" default="false">
+		    If [code]true[/code], applies all render_transform variables to offset this Control node. Otherwise, all render transform variables are disabled.
+		</member>
+		<member name="render_offset" type="Vector2" setter="set_render_offset" getter="get_render_offset" default="Vector2(0, 0)">
+			Position offset applied after layouting. If [member render_offset_relative_to_size] is [code]true[/code], the offset is relative to the node's [member size].
+		</member>
+		<member name="render_offset_relative_to_size" type="bool" setter="set_render_offset_relative_to_size" getter="get_render_offset_relative_to_size" default="true">
+			If [code]true[/code], [member render_offset] is relative to the node's [member size], otherwise it is absolute pixel values.
+		</member>
+		<member name="render_rotation" type="float" setter="set_render_rotation" getter="get_render_rotation" default="0.0">
+			Rotation applied after layouting. The rotation pivot is defined by [member render_transform_pivot].
+		</member>
+		<member name="render_scale" type="Vector2" setter="set_render_scale" getter="get_render_scale" default="Vector2(1, 1)">
+			Scale applied after layouting. The scale pivot is defined by [member render_transform_pivot].
+		</member>
+		<member name="render_transform_pivot" type="Vector2" setter="set_render_transform_pivot" getter="get_render_transform_pivot" default="Vector2(0, 0)">
+			Pivot used for [member render_rotation] and [member render_scale]. If [member render_transform_pivot_relative_to_size] is [code]true[/code], the pivot is relative to the node's size, otherwise it represents absolute pixel values.
+		</member>
+		<member name="render_transform_pivot_relative_to_size" type="bool" setter="set_render_transform_pivot_relative_to_size" getter="get_render_transform_pivot_relative_to_size" default="true">
+			If [code]true[/code], [member render_transform_pivot] is relative to the node's [member size], otherwise it is absolute pixel values.
+		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
 			[b]Note:[/b] [Window] styles will have no effect unless the window is embedded.
