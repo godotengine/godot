@@ -1158,14 +1158,20 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		_export_find_customized_resources(p_preset, EditorFileSystem::get_singleton()->get_filesystem(), p_preset->get_file_export_mode("res://"), paths);
 	} else {
 		bool scenes_only = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_SCENES;
+		bool without_dependencies = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_RESOURCES_INDEPENDENTLY;
+
+		// Find files to export.
 
 		Vector<String> files = p_preset->get_files_to_export();
 		for (int i = 0; i < files.size(); i++) {
 			if (scenes_only && ResourceLoader::get_resource_type(files[i]) != "PackedScene") {
 				continue;
 			}
-
-			_export_find_dependencies(files[i], paths);
+			if (!without_dependencies) {
+				_export_find_dependencies(files[i], paths);
+			} else {
+				paths.insert(files[i]);
+			}
 		}
 
 		// Add autoload resources and their dependencies
@@ -1183,7 +1189,11 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				autoload_path = autoload_path.substr(1);
 			}
 
-			_export_find_dependencies(autoload_path, paths);
+			if (!without_dependencies) {
+				_export_find_dependencies(autoload_path, paths);
+			} else {
+				paths.insert(autoload_path);
+			}
 		}
 	}
 
@@ -2204,6 +2214,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 			*r_embedded_size = f->get_position() - embed_pos;
 		}
 	}
+
 	f->close();
 
 	return OK;
