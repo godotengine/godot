@@ -63,6 +63,11 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_display_refresh_rate", "refresh_rate"), &OpenXRInterface::set_display_refresh_rate);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_refresh_rate"), "set_display_refresh_rate", "get_display_refresh_rate");
 
+	// Protected content
+	ClassDB::bind_method(D_METHOD("is_protected_content"), &OpenXRInterface::is_protected_content);
+	ClassDB::bind_method(D_METHOD("set_protected_content", "protected_content"), &OpenXRInterface::set_protected_content);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "protected_content"), "set_protected_content", "is_protected_content");
+
 	// Render Target size multiplier
 	ClassDB::bind_method(D_METHOD("get_render_target_size_multiplier"), &OpenXRInterface::get_render_target_size_multiplier);
 	ClassDB::bind_method(D_METHOD("set_render_target_size_multiplier", "multiplier"), &OpenXRInterface::set_render_target_size_multiplier);
@@ -834,6 +839,21 @@ PackedVector3Array OpenXRInterface::get_play_area() const {
 	}
 
 	return arr;
+}
+
+void OpenXRInterface::set_protected_content(bool p_protected_content) {
+	if (openxr_api == nullptr) {
+		return;
+	}
+
+	openxr_api->set_protected_content(p_protected_content);
+}
+
+bool OpenXRInterface::is_protected_content() const {
+	if (openxr_api == nullptr) {
+		return false;
+	}
+	return openxr_api->is_protected_content();
 }
 
 float OpenXRInterface::get_display_refresh_rate() const {
