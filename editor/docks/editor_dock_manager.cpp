@@ -1157,6 +1157,7 @@ void DockContextPopup::_dock_select_draw() {
 	unused_dock_color.a = 0.4;
 	Color unusable_dock_color = unused_dock_color;
 	unusable_dock_color.a = 0.1;
+	Color tab_unusable_color = unusable_dock_color;
 
 	// Update sizes.
 	Size2 dock_size = dock_select->get_size();
@@ -1223,9 +1224,10 @@ void DockContextPopup::_dock_select_draw() {
 
 		int tabs_to_draw = MIN(max_tabs, dock_slot.container->get_tab_count());
 		bool is_context_dock = context_tab_container == dock_slot.container;
+		bool is_slot_available = _is_slot_available(i);
 		if (i == context_dock->dock_slot_index) {
 			dock_select->draw_rect(dock_slot_draw_rect, tab_selected_color);
-		} else if (!_is_slot_available(i)) {
+		} else if (!is_slot_available) {
 			dock_select->draw_rect(dock_slot_draw_rect, unusable_dock_color);
 		} else if (i == dock_select_rect_over_idx) {
 			dock_select->draw_rect(dock_slot_draw_rect, hovered_dock_color);
@@ -1237,7 +1239,7 @@ void DockContextPopup::_dock_select_draw() {
 
 		// Draw tabs above each used dock slot.
 		for (int j = 0; j < tabs_to_draw; j++) {
-			Color tab_color = tab_unselected_color;
+			Color tab_color = is_slot_available ? tab_unselected_color : tab_unusable_color;
 			if (is_context_dock && context_tab_index == j) {
 				tab_color = tab_selected_color;
 			}
