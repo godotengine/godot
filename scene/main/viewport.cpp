@@ -1117,7 +1117,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 		new_font_oversampling = font_oversampling_override;
 	}
 
-	Size2i new_size = p_size.maxi(2);
+	Size2i new_size = p_size.clampi(2, 16384);
 	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override && new_font_oversampling == font_oversampling) {
 		return false;
 	}
