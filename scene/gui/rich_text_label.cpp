@@ -2890,7 +2890,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		if (scroll_active) {
-			vscroll->scroll(vscroll->get_page() * pan_gesture->get_delta().y * 0.5 / 8);
+			vscroll->scroll(pan_gesture->get_delta().y * 5 / 2);
 			queue_accessibility_update();
 		}
 
