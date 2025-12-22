@@ -284,6 +284,9 @@ public:
 	FUNC3RC(RID, shader_get_default_texture_parameter, RID, const StringName &, int)
 	FUNC2RC(Variant, shader_get_parameter_default, RID, const StringName &)
 
+	FUNC2(shader_set_color_pass_blend_state, RID, const Ref<RDPipelineColorBlendState> &)
+	FUNC1RC(Ref<RDPipelineColorBlendState>, shader_get_color_pass_blend_state, RID)
+
 	FUNC1RC(ShaderNativeSourceCode, shader_get_native_source_code, RID)
 
 	/* COMMON MATERIAL API */

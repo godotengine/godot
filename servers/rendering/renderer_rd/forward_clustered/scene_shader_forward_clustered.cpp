@@ -453,6 +453,9 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 				depth_stencil_state.enable_depth_write = false;
 			}
 		}
+		if (uses_color_pass_blend_state) {
+			blend_state = color_pass_blend_state;
+		}
 	} else {
 		switch (p_pipeline_key.version) {
 			case PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS:

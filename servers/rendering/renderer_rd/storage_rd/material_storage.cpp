@@ -587,6 +587,13 @@ Variant MaterialStorage::ShaderData::get_default_parameter(const StringName &p_p
 	return Variant();
 }
 
+void MaterialStorage::ShaderData::set_color_pass_blend_state(const Ref<RDPipelineColorBlendState> &p_value) {
+	uses_color_pass_blend_state = p_value.is_valid();
+	if (uses_color_pass_blend_state) {
+		color_pass_blend_state = p_value->get_base();
+	}
+}
+
 void MaterialStorage::ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
 	SortArray<Pair<StringName, int>, ShaderLanguage::UniformOrderComparator> sorter;
 	LocalVector<Pair<StringName, int>> filtered_uniforms;
@@ -2077,6 +2084,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 					shader->data->set_default_texture_parameter(E.key, E2.value, E2.key);
 				}
 			}
+			shader->data->set_color_pass_blend_state(shader->color_pass_blend_state);
 		}
 	}
 
@@ -2160,6 +2168,21 @@ Variant MaterialStorage::shader_get_parameter_default(RID p_shader, const String
 		return shader->data->get_default_parameter(p_param);
 	}
 	return Variant();
+}
+
+void MaterialStorage::shader_set_color_pass_blend_state(RID p_shader, const Ref<RDPipelineColorBlendState> &p_value) {
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL(shader);
+	shader->color_pass_blend_state = p_value;
+	if (shader->data) {
+		shader->data->set_color_pass_blend_state(p_value);
+	}
+}
+
+Ref<RDPipelineColorBlendState> MaterialStorage::shader_get_color_pass_blend_state(RID p_shader) const {
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL_V(shader, nullptr);
+	return shader->color_pass_blend_state;
 }
 
 void MaterialStorage::shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function) {

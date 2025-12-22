@@ -30,6 +30,7 @@
 
 #include "rendering_server.h"
 #include "rendering_server.compat.inc"
+#include "rendering_device_binds.h"
 
 #include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
@@ -2380,6 +2381,9 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shader_set_default_texture_parameter", "shader", "name", "texture", "index"), &RenderingServer::shader_set_default_texture_parameter, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("shader_get_default_texture_parameter", "shader", "name", "index"), &RenderingServer::shader_get_default_texture_parameter, DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("shader_set_color_pass_blend_state", "shader", "value"), &RenderingServer::shader_set_color_pass_blend_state);
+	ClassDB::bind_method(D_METHOD("shader_get_color_pass_blend_state", "shader"), &RenderingServer::shader_get_color_pass_blend_state);
 
 	BIND_ENUM_CONSTANT(SHADER_SPATIAL);
 	BIND_ENUM_CONSTANT(SHADER_CANVAS_ITEM);
