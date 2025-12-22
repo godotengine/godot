@@ -82,6 +82,8 @@ void ImageTexture::set_image(const Ref<Image> &p_image) {
 		RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_image);
 		RenderingServer::get_singleton()->texture_replace(texture, new_texture);
 	}
+	RS::get_singleton()->texture_set_path(texture, get_path());
+
 	notify_property_list_changed();
 	emit_changed();
 
@@ -314,6 +316,7 @@ Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 		texture = RS::get_singleton()->texture_2d_layered_create(p_images, RS::TextureLayeredType(layered_type));
 		ERR_FAIL_COND_V(!texture.is_valid(), ERR_CANT_CREATE);
 	}
+	RS::get_singleton()->texture_set_path(texture, get_path());
 
 	format = new_format;
 	width = new_width;
@@ -417,6 +420,7 @@ Error ImageTexture3D::create(Image::Format p_format, int p_width, int p_height, 
 	} else {
 		texture = tex;
 	}
+	RS::get_singleton()->texture_set_path(texture, get_path());
 
 	format = p_format;
 	width = p_width;
