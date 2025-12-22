@@ -4238,6 +4238,18 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			bool current = view_display_menu->get_popup()->is_item_checked(idx);
 			view_display_menu->get_popup()->set_item_checked(idx, !current);
 		} break;
+		case VIEW_ORIGIN: {
+			int idx = view_display_menu->get_popup()->get_item_index(VIEW_ORIGIN);
+			bool current = view_display_menu->get_popup()->is_item_checked(idx);
+			current = !current;
+			uint32_t layers = camera->get_cull_mask();
+			layers &= ~(1 << GIZMO_ORIGIN_LAYER);
+			if (current) {
+				layers |= (1 << GIZMO_ORIGIN_LAYER);
+			}
+			camera->set_cull_mask(layers);
+			view_display_menu->get_popup()->set_item_checked(idx, current);
+		} break;
 		case VIEW_GRID: {
 			int idx = view_display_menu->get_popup()->get_item_index(VIEW_GRID);
 			bool current = view_display_menu->get_popup()->is_item_checked(idx);
@@ -4722,6 +4734,14 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			_menu_option(VIEW_TRANSFORM_GIZMO);
 		}
 	}
+	if (p_state.has("origin")) {
+		bool origin = p_state["origin"];
+
+		int idx = view_display_menu->get_popup()->get_item_index(VIEW_ORIGIN);
+		if (view_display_menu->get_popup()->is_item_checked(idx) != origin) {
+			_menu_option(VIEW_ORIGIN);
+		}
+	}
 	if (p_state.has("grid")) {
 		bool grid = p_state["grid"];
 
@@ -4818,6 +4838,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["doppler"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_AUDIO_DOPPLER));
 	d["gizmos"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GIZMOS));
 	d["transform_gizmo"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_TRANSFORM_GIZMO));
+	d["origin"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORIGIN));
 	d["grid"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GRID));
 	d["information"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["frame_time"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
@@ -6083,7 +6104,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	surface->set_clip_contents(true);
 	camera = memnew(Camera3D);
 	camera->set_disable_gizmos(true);
-	camera->set_cull_mask(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << MISC_TOOL_LAYER));
+	camera->set_cull_mask(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER) | (1 << GIZMO_ORIGIN_LAYER) | (1 << MISC_TOOL_LAYER));
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
@@ -6192,6 +6213,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTRC("View Environment")), VIEW_ENVIRONMENT);
 	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTRC("View Gizmos")), VIEW_GIZMOS);
 	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_transform_gizmo", TTRC("View Transform Gizmo")), VIEW_TRANSFORM_GIZMO);
+	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin_lines", TTRC("View Origin")), VIEW_ORIGIN);
 	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid_lines", TTRC("View Grid")), VIEW_GRID);
 	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTRC("View Information")), VIEW_INFORMATION);
 	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_fps", TTRC("View Frame Time")), VIEW_FRAME_TIME);
@@ -7488,13 +7510,9 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		case MENU_VIEW_ORIGIN: {
 			bool is_checked = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(p_option));
 
-			origin_enabled = !is_checked;
-			RenderingServer::get_singleton()->instance_set_visible(origin_instance, origin_enabled);
-			// Update the grid since its appearance depends on whether the origin is enabled
-			_finish_grid();
-			_init_grid();
+			RenderingServer::get_singleton()->instance_set_visible(origin_instance, !is_checked);
 
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(p_option), origin_enabled);
+			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(p_option), !is_checked);
 		} break;
 		case MENU_VIEW_GRID: {
 			bool is_checked = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(p_option));
@@ -7614,7 +7632,6 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 void Node3DEditor::_init_indicators() {
 	{
-		origin_enabled = true;
 		grid_enabled = true;
 
 		Ref<Shader> origin_shader = memnew(Shader);
@@ -7667,6 +7684,7 @@ void fragment() {
 
 		origin_mat.instantiate();
 		origin_mat->set_shader(origin_shader);
+		origin_mat->set_render_priority(-1);
 
 		Vector<Vector3> origin_points;
 		origin_points.resize(6);
@@ -7736,7 +7754,7 @@ void fragment() {
 		}
 
 		origin_instance = RenderingServer::get_singleton()->instance_create2(origin_multimesh, get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
+		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_ORIGIN_LAYER);
 		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
@@ -7780,6 +7798,7 @@ void fragment() {
 		for (int i = 0; i < 3; i++) {
 			grid_mat[i].instantiate();
 			grid_mat[i]->set_shader(grid_shader);
+			grid_mat[i]->set_render_priority(-2);
 		}
 
 		grid_enable[0] = EDITOR_GET("editors/3d/grid_xy_plane");
@@ -8348,17 +8367,7 @@ void Node3DEditor::_init_grid() {
 		// Count our elements same as code below it.
 		int expected_size = 0;
 		for (int i = -grid_size; i <= grid_size; i++) {
-			const real_t position_a = center_a + i * small_step_size;
-			const real_t position_b = center_b + i * small_step_size;
-
-			// Don't draw lines over the origin if it's enabled.
-			if (!(origin_enabled && Math::is_zero_approx(position_a))) {
-				expected_size += 2;
-			}
-
-			if (!(origin_enabled && Math::is_zero_approx(position_b))) {
-				expected_size += 2;
-			}
+			expected_size += 4;
 		}
 
 		int idx = 0;
@@ -8380,38 +8389,32 @@ void Node3DEditor::_init_grid() {
 			real_t position_a = center_a + i * small_step_size;
 			real_t position_b = center_b + i * small_step_size;
 
-			// Don't draw lines over the origin if it's enabled.
-			if (!(origin_enabled && Math::is_zero_approx(position_a))) {
-				Vector3 line_bgn;
-				Vector3 line_end;
-				line_bgn[a] = position_a;
-				line_end[a] = position_a;
-				line_bgn[b] = bgn_b;
-				line_end[b] = end_b;
-				ref_grid[idx] = line_bgn;
-				ref_grid[idx + 1] = line_end;
-				ref_grid_colors[idx] = line_color;
-				ref_grid_colors[idx + 1] = line_color;
-				ref_grid_normals[idx] = normal;
-				ref_grid_normals[idx + 1] = normal;
-				idx += 2;
-			}
+			Vector3 line_bgn;
+			Vector3 line_end;
 
-			if (!(origin_enabled && Math::is_zero_approx(position_b))) {
-				Vector3 line_bgn;
-				Vector3 line_end;
-				line_bgn[b] = position_b;
-				line_end[b] = position_b;
-				line_bgn[a] = bgn_a;
-				line_end[a] = end_a;
-				ref_grid[idx] = line_bgn;
-				ref_grid[idx + 1] = line_end;
-				ref_grid_colors[idx] = line_color;
-				ref_grid_colors[idx + 1] = line_color;
-				ref_grid_normals[idx] = normal;
-				ref_grid_normals[idx + 1] = normal;
-				idx += 2;
-			}
+			line_bgn[a] = position_a;
+			line_end[a] = position_a;
+			line_bgn[b] = bgn_b;
+			line_end[b] = end_b;
+			ref_grid[idx] = line_bgn;
+			ref_grid[idx + 1] = line_end;
+			ref_grid_colors[idx] = line_color;
+			ref_grid_colors[idx + 1] = line_color;
+			ref_grid_normals[idx] = normal;
+			ref_grid_normals[idx + 1] = normal;
+			idx += 2;
+
+			line_bgn[b] = position_b;
+			line_end[b] = position_b;
+			line_bgn[a] = bgn_a;
+			line_end[a] = end_a;
+			ref_grid[idx] = line_bgn;
+			ref_grid[idx + 1] = line_end;
+			ref_grid_colors[idx] = line_color;
+			ref_grid_colors[idx + 1] = line_color;
+			ref_grid_normals[idx] = normal;
+			ref_grid_normals[idx + 1] = normal;
+			idx += 2;
 		}
 
 		// Create a mesh from the pushed vector points and colors.
