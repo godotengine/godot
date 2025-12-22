@@ -35,6 +35,8 @@
 class FlowContainer : public Container {
 	GDCLASS(FlowContainer, Container);
 
+	friend class ContainerEditorPlugin;
+
 public:
 	enum AlignmentMode {
 		ALIGNMENT_BEGIN,
@@ -57,6 +59,8 @@ private:
 	bool reverse_fill = false;
 	AlignmentMode alignment = ALIGNMENT_BEGIN;
 	LastWrapAlignmentMode last_wrap_alignment = LAST_WRAP_ALIGNMENT_INHERIT;
+
+	Vector<Vector<int32_t>> cell_sizes;
 
 	struct ThemeCache {
 		int h_separation = 0;

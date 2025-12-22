@@ -135,6 +135,9 @@ void FlowContainer::_resort() {
 	ofs.x = 0;
 	ofs.y = 0;
 
+	cell_sizes.clear();
+	Vector<int32_t> current_cell_sizes;
+	_LineData line_data;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *child = as_sortable_control(get_child(i));
 		if (!child) {
@@ -142,17 +145,21 @@ void FlowContainer::_resort() {
 		}
 		Size2i child_size = children_minsize_cache[child];
 
-		_LineData line_data = lines_data[current_line_idx];
+		line_data = lines_data[current_line_idx];
 		if (child_idx_in_line >= lines_data[current_line_idx].child_count) {
 			current_line_idx++;
 			child_idx_in_line = 0;
 			if (vertical) {
 				ofs.x += line_data.min_line_height + theme_cache.h_separation;
+				current_cell_sizes.append(ofs.x);
 				ofs.y = 0;
 			} else {
 				ofs.x = 0;
 				ofs.y += line_data.min_line_height + theme_cache.v_separation;
+				current_cell_sizes.append(ofs.y);
 			}
+			cell_sizes.append(current_cell_sizes);
+			current_cell_sizes = Vector<int32_t>();
 			line_data = lines_data[current_line_idx];
 		}
 
@@ -253,12 +260,22 @@ void FlowContainer::_resort() {
 
 		if (vertical) { /* VERTICAL */
 			ofs.y += child_size.height + theme_cache.v_separation;
+			// Main axis position.
+			current_cell_sizes.append(ofs.y);
 		} else { /* HORIZONTAL */
 			ofs.x += child_size.width + theme_cache.h_separation;
+			current_cell_sizes.append(ofs.x);
 		}
 
 		child_idx_in_line++;
 	}
+	if (vertical) {
+		// Cross axis position.
+		current_cell_sizes.append(ofs.x + line_data.min_line_height + theme_cache.h_separation);
+	} else {
+		current_cell_sizes.append(ofs.y + line_data.min_line_height + theme_cache.v_separation);
+	}
+	cell_sizes.append(current_cell_sizes);
 	cached_size = (vertical ? ofs.x : ofs.y) + line_height;
 	cached_line_count = lines_data.size();
 	cached_line_max_child_count = lines_data.size() > 0 ? lines_data[0].child_count : 0;

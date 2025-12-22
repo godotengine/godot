@@ -194,6 +194,7 @@ void BoxContainer::_resort() {
 		delta = -1;
 	}
 
+	cell_positions.clear();
 	for (int i = start; i != end; i += delta) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
@@ -227,6 +228,7 @@ void BoxContainer::_resort() {
 		} else {
 			rect = Rect2(from, 0, size, new_size.height);
 		}
+		cell_positions.push_back(from);
 
 		fit_child_in_rect(c, rect);
 
