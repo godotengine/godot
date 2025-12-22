@@ -96,6 +96,7 @@ public:
 
 	bool has_nothing_selected() const;
 	String get_selected() const;
+	const Vector<StringName> &get_base_types() const;
 
 	bool is_instant_preview_enabled() const;
 	void set_instant_preview_toggle_visible(bool p_visible);
@@ -263,6 +264,7 @@ public:
 protected:
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void item_pressed(bool p_double_click);
 	void selection_changed();
 
