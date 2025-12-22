@@ -2005,24 +2005,40 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 // Can be recursive or not, and limited to owned nodes.
 TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_type, bool p_recursive, bool p_owned) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>());
+
 	TypedArray<Node> ret;
 	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), ret);
+
+	// Start at first child
 	_update_children_cache();
-	Node *const *cptr = data.children_cache.ptr();
-	int ccount = data.children_cache.size();
-	for (int i = 0; i < ccount; i++) {
-		if (p_owned && !cptr[i]->data.owner) {
+	if (data.children_cache.is_empty()) {
+		return ret;
+	}
+	const Node *current_node = data.children_cache[0];
+
+	// Check current node repeatedly
+	while (true) {
+		if (p_owned && !current_node->data.owner) {
+			const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
+
+			if (current_node->data.index + 1 >= (int)siblings.size()) {
+				// Finished iterating all children
+				return ret;
+			}
+
+			// Go to next sibling
+			current_node = siblings[current_node->data.index + 1];
 			continue;
 		}
 
-		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
-			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
-				ret.append(cptr[i]);
-			} else if (cptr[i]->get_script_instance()) {
-				Ref<Script> scr = cptr[i]->get_script_instance()->get_script();
+		if (p_pattern.is_empty() || current_node->data.name.operator String().match(p_pattern)) {
+			if (p_type.is_empty() || current_node->is_class(p_type)) {
+				ret.append(current_node);
+			} else if (current_node->get_script_instance()) {
+				Ref<Script> scr = current_node->get_script_instance()->get_script();
 				while (scr.is_valid()) {
 					if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
-						ret.append(cptr[i]);
+						ret.append(current_node);
 						break;
 					}
 
@@ -2031,12 +2047,47 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			}
 		}
 
-		if (p_recursive) {
-			ret.append_array(cptr[i]->find_children(p_pattern, p_type, true, p_owned));
+		// The following code performs a "tree walk" to avoid recursion and allocations
+		current_node->_update_children_cache();
+
+		if (!p_recursive) {
+			const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
+
+			if (current_node->data.index + 1 >= (int)siblings.size()) {
+				// Finished iterating all children
+				return ret;
+			}
+
+			// Go to next sibling
+			current_node = siblings[current_node->data.index + 1];
+			continue;
+		}
+
+		if (!current_node->data.children_cache.is_empty()) {
+			// Go to first child
+			current_node = current_node->data.children_cache[0];
+			continue;
+		}
+
+		// Find next sibling
+		while (true) {
+			const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
+
+			if (current_node->data.index + 1 < (int)siblings.size()) {
+				// Go to next sibling
+				current_node = siblings[current_node->data.index + 1];
+				break;
+			}
+
+			// Go back to parent
+			current_node = current_node->data.parent;
+
+			if (current_node == this) {
+				// Finished iterating all descendants
+				return ret;
+			}
 		}
 	}
-
-	return ret;
 }
 
 void Node::reparent(RequiredParam<Node> rp_parent, bool p_keep_global_transform) {
