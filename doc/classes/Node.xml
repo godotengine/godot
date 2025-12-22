@@ -1227,6 +1227,10 @@
 		<constant name="NOTIFICATION_ENABLED" value="29">
 			Notification received when the node is enabled again after being disabled. See [constant PROCESS_MODE_DISABLED].
 		</constant>
+		<constant name="NOTIFICATION_PRE_EXIT_TREE" value="30">
+			Notification received before the node is about to exit the tree.
+			This notification is emitted [i]before[/i] the related [signal tree_exiting] and before any child node exits the tree.
+		</constant>
 		<constant name="NOTIFICATION_RESET_PHYSICS_INTERPOLATION" value="2001">
 			Notification received when [method reset_physics_interpolation] is called on the node or its ancestors.
 		</constant>
