@@ -1271,6 +1271,8 @@ void ScriptTextEditor::_on_caret_moved() {
 		store_previous_state();
 	}
 	previous_line = current_line;
+
+	ScriptEditor::get_singleton()->update_members_overview_current(current_line);
 }
 
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
@@ -3017,6 +3019,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 	code_editor->get_text_editor()->connect("caret_changed", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+	code_editor->get_text_editor()->connect("lines_edited_from", callable_mp(ScriptEditor::get_singleton(), &ScriptEditor::mark_members_overview_dirty).unbind(2));
 	code_editor->connect("navigation_preview_ended", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
 
 	connection_gutter = 1;
