@@ -300,7 +300,7 @@ void SceneReplicationInterface::_visibility_changed(int p_peer, ObjectID p_sid) 
 	_update_sync_visibility(p_peer, sync);
 }
 
-bool SceneReplicationInterface::is_rpc_visible(const ObjectID &p_oid, int p_peer) const {
+bool SceneReplicationInterface::_is_rpc_visible_on_node(const ObjectID &p_oid, int p_peer) const {
 	if (!tracked_nodes.has(p_oid)) {
 		return true; // Untracked nodes are always visible to RPCs.
 	}
@@ -337,6 +337,37 @@ bool SceneReplicationInterface::is_rpc_visible(const ObjectID &p_oid, int p_peer
 		}
 		return false; // Not visible.
 	}
+}
+
+bool SceneReplicationInterface::is_rpc_visible(const ObjectID &p_oid, int p_peer) const {
+	// Climb the hierarchy to check visibility.
+	ObjectID current = p_oid;
+	while (tracked_nodes.has(current)) {
+		if (!_is_rpc_visible_on_node(current, p_peer)) {
+			return false;
+		}
+		// find the nearest tracked parent:
+		Node *node = get_id_as<Node>(current);
+		if (!node) {
+			return true; // Not tracked, so visible.
+		}
+
+		// Find closest tracked parent.
+		ObjectID next = ObjectID();
+		Node *p = node->get_parent();
+		while (p) {
+			ObjectID pid = p->get_instance_id();
+			if (tracked_nodes.has(pid)) {
+				next = pid;
+				break;
+			}
+			p = p->get_parent();
+		}
+
+		current = next;
+	}
+
+	return true; // Not tracked, so visible.
 }
 
 Error SceneReplicationInterface::_update_sync_visibility(int p_peer, MultiplayerSynchronizer *p_sync) {
