@@ -3924,7 +3924,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						GDScriptLanguage::get_singleton()->debug_break("Breakpoint", true);
 					}
 
-					EngineDebugger::get_singleton()->line_poll();
+					if (EngineDebugger::is_started()) {
+						EngineDebugger::get_singleton()->line_poll();
+					}
 				}
 			}
 			DISPATCH_OPCODE;
