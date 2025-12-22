@@ -420,7 +420,7 @@ protected:
 public:
 #ifdef TOOLS_ENABLED
 	void set_editor_settings(Object *p_editor_settings);
-	void set_quick_open_callback(const Callable &p_file_selected);
+	void set_quick_open_callback(const Callable &p_callback);
 	void set_palette_saved_callback(const Callable &p_palette_saved);
 
 	void _quick_open_palette_file_selected(const String &p_path);
