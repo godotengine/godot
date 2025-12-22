@@ -528,7 +528,8 @@
 			<param index="2" name="flags" type="int" default="0" />
 			<description>
 				Connects a [param signal] by name to a [param callable]. Optional [param flags] can be also added to configure the connection's behavior (see [enum ConnectFlags] constants).
-				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and generates an error, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
+				A signal can only be connected once to the same [Callable]. A [Callable] is considered the same even if it has different arguments bound via [method Callable.bind], unless the [constant CONNECT_UNIQUE] flag is used.
+				If the signal is already connected to the [Callable], this method returns [constant ERR_INVALID_PARAMETER] and generates an error, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
 				[b]Note:[/b] If the [param callable]'s object is freed, the connection will be lost.
 				[b]Note:[/b] In GDScript, it is generally recommended to connect signals with [method Signal.connect] instead.
 				[b]Note:[/b] This method, and all other signal-related methods, are thread-safe.
@@ -786,7 +787,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Returns [code]true[/code] if a connection exists between the given [param signal] name and [param callable].
+				Returns [code]true[/code] if a connection exists between the given [param signal] name and [param callable], even if the [Callable] has different arguments bound via [method Callable.bind].
 				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
@@ -1052,6 +1053,9 @@
 		</constant>
 		<constant name="CONNECT_APPEND_SOURCE_OBJECT" value="16" enum="ConnectFlags">
 			The source object is automatically bound when a [PackedScene] is instantiated. If this flag bit is enabled, the source object will be appended right after the original arguments of the signal.
+		</constant>
+		<constant name="CONNECT_UNIQUE" value="64" enum="ConnectFlags">
+			Unique connections can use the same [Callable] as another connection on the same signal, but with different arguments bound via [method Callable.bind] or unbound via [method Callable.unbind].
 		</constant>
 	</constants>
 </class>
