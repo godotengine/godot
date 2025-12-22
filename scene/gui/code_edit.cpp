@@ -54,7 +54,7 @@ void CodeEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			set_gutter_width(main_gutter, get_line_height());
+			_update_draw_main_gutter();
 			_update_line_number_gutter_width();
 			set_gutter_width(fold_gutter, get_line_height() / 1.2);
 			_clear_line_number_text_cache();
@@ -1334,6 +1334,8 @@ String CodeEdit::get_auto_brace_completion_close_key(const String &p_open_key) c
 /* Main Gutter */
 void CodeEdit::_update_draw_main_gutter() {
 	set_gutter_draw(main_gutter, draw_breakpoints || draw_bookmarks || draw_executing_lines);
+	int main_gutter_width = get_line_height() / (_is_bookmark_only() ? 2 : 1);
+	set_gutter_width(main_gutter, main_gutter_width);
 }
 
 void CodeEdit::set_draw_breakpoints_gutter(bool p_draw) {
@@ -1390,7 +1392,7 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
 		if (bookmarked || (hovering && !is_dragging_cursor() && shift_pressed)) {
-			int horizontal_padding = p_region.size.x / 2;
+			int horizontal_padding = p_region.size.x / (_is_bookmark_only() ? 8 : 2);
 			int vertical_padding = p_region.size.y / 4;
 
 			Color use_color = theme_cache.bookmark_color;
@@ -1604,12 +1606,14 @@ void CodeEdit::_clear_line_number_text_cache() {
 }
 
 void CodeEdit::_update_line_number_gutter_width() {
-	set_gutter_width(line_number_gutter, (line_number_digits + 1) * theme_cache.font->get_char_size('0', theme_cache.font_size).width);
+	int width_in_chars = line_number_digits + (!is_drawing_fold_gutter() ? 1 : 0); // Extra padding if there is no fold gutter.
+	set_gutter_width(line_number_gutter, width_in_chars * theme_cache.font->get_char_size('0', theme_cache.font_size).width);
 }
 
 /* Fold Gutter */
 void CodeEdit::set_draw_fold_gutter(bool p_draw) {
 	set_gutter_draw(fold_gutter, p_draw);
+	_update_line_number_gutter_width();
 }
 
 bool CodeEdit::is_drawing_fold_gutter() const {
