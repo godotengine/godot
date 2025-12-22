@@ -141,6 +141,26 @@
 				Creates and returns a new [TileMapPattern] from the given array of cells. See also [method set_pattern].
 			</description>
 		</method>
+		<method name="get_physics_quadrant_coord">
+			<return type="Vector2i" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the quadrant coord at a given [param index]. Indexes can be obtained from [method get_physics_quadrant_count].
+			</description>
+		</method>
+		<method name="get_physics_quadrant_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of physics quadrants in the tilemap. Can be used to get the coordinate of each quadrant from [method get_physics_quadrant_coord].
+			</description>
+		</method>
+		<method name="get_physics_quadrant_polygons" qualifiers="const">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="quadrant_coord" type="Vector2i" />
+			<description>
+				Returns an array of polygons inside of the given physics quadrant.
+			</description>
+		</method>
 		<method name="get_surrounding_cells">
 			<return type="Vector2i[]" />
 			<param index="0" name="coords" type="Vector2i" />

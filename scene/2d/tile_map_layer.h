@@ -461,7 +461,7 @@ private:
 #endif // DEBUG_ENABLED
 
 #ifndef PHYSICS_2D_DISABLED
-	HashMap<Vector2i, Ref<PhysicsQuadrant>> physics_quadrant_map;
+	AHashMap<Vector2i, Ref<PhysicsQuadrant>> physics_quadrant_map;
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
 	bool _physics_was_cleaned_up = true;
 	void _physics_update(bool p_force_cleanup);
@@ -583,6 +583,9 @@ public:
 	// --- Physics helpers ---
 	bool has_body_rid(RID p_physics_body) const;
 	Vector2i get_coords_for_body_rid(RID p_physics_body) const; // For finding tiles from collision.
+	int get_physics_quadrant_count() const;
+	Vector2i get_physics_quadrant_coord(int p_index);
+	TypedArray<Vector<Vector2>> get_physics_quadrant_polygons(Vector2i p_quadrant_coord) const;
 #endif // PHYSICS_2D_DISABLED
 
 	// --- Runtime ---
