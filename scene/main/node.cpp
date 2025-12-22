@@ -3536,6 +3536,16 @@ PackedStringArray Node::get_configuration_warnings() const {
 		ret.append_array(warnings);
 	}
 
+#ifdef TOOLS_ENABLED
+	List<PropertyInfo> properties;
+	get_property_list(&properties);
+	for (const PropertyInfo &E : properties) {
+		if ((E.usage & PROPERTY_USAGE_REQUIRED) && get(E.name).get_type() == Variant::NIL) {
+			ret.append("Property " + E.name.quote() + " is required but not set.");
+		}
+	}
+#endif
+
 	return ret;
 }
 
