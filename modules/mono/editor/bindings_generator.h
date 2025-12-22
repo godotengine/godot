@@ -666,6 +666,15 @@ class BindingsGenerator {
 	void _initialize_blacklisted_methods();
 	void _initialize_compat_singletons();
 
+	// Interface generation methods
+	bool _should_generate_interface(const TypeInterface &p_itype);
+	Error _generate_cs_interface(const TypeInterface &p_itype, const String &p_output_file);
+	Error _generate_cs_interface_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, StringBuilder &p_output, bool p_use_span);
+	void _collect_interface_properties(const TypeInterface &p_itype, List<PropertyInterface> &r_properties);
+	void _collect_interface_methods(const TypeInterface &p_itype, List<MethodInterface> &r_methods);
+	void _collect_interface_signals(const TypeInterface &p_itype, List<SignalInterface> &r_signals);
+	bool _is_property_accessor(const TypeInterface &p_itype, const MethodInterface &p_imethod);
+
 	struct NameCache {
 		StringName type_void = "void";
 		StringName type_Variant = "Variant";

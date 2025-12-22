@@ -1805,6 +1805,28 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		compile_items.push_back(output_file);
 	}
 
+	// Generate interfaces for all types
+	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+		const TypeInterface &itype = E.value;
+
+		if (itype.api_type == ClassDB::API_EDITOR) {
+			continue;
+		}
+
+		if (!_should_generate_interface(itype)) {
+			continue;
+		}
+
+		String output_file = Path::join(godot_objects_gen_dir, "I" + itype.proxy_name + ".cs");
+		Error err = _generate_cs_interface(itype, output_file);
+
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(output_file);
+	}
+
 	// Generate source file for built-in type constructor dictionary.
 
 	{
@@ -1967,6 +1989,28 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		if (err == ERR_SKIP) {
 			continue;
 		}
+
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(output_file);
+	}
+
+	// Generate interfaces for all editor types
+	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+		const TypeInterface &itype = E.value;
+
+		if (itype.api_type != ClassDB::API_EDITOR) {
+			continue;
+		}
+
+		if (!_should_generate_interface(itype)) {
+			continue;
+		}
+
+		String output_file = Path::join(godot_objects_gen_dir, "I" + itype.proxy_name + ".cs");
+		Error err = _generate_cs_interface(itype, output_file);
 
 		if (err != OK) {
 			return err;
@@ -2212,7 +2256,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	}
 	output.append(itype.proxy_name);
 
-	if (is_derived_type && !itype.is_singleton) {
+	bool has_base = is_derived_type && !itype.is_singleton;
+	bool has_interface = _should_generate_interface(itype);
+
+	if (has_base) {
 		if (obj_types.has(itype.base_name)) {
 			TypeInterface base_type = obj_types[itype.base_name];
 			output.append(" : ");
@@ -2225,6 +2272,19 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
 			return ERR_INVALID_DATA;
 		}
+	}
+
+	// Add interface implementation
+	if (has_interface) {
+		// If no base class, need to add " : " first
+		if (!has_base) {
+			output.append(" : ");
+		} else {
+			// Already has base class, use comma separator
+			output.append(", ");
+		}
+		output.append("I");
+		output.append(itype.proxy_name);
 	}
 
 	output.append("\n{");
@@ -5307,6 +5367,397 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 		// Exit once done.
 		cleanup_and_exit_godot();
 	}
+}
+
+bool BindingsGenerator::_should_generate_interface(const TypeInterface &p_itype) {
+	if (p_itype.is_singleton) {
+		return false;
+	}
+
+	if (p_itype.is_enum) {
+		return false;
+	}
+
+	return true;
+}
+
+bool BindingsGenerator::_is_property_accessor(const TypeInterface &p_itype, const MethodInterface &p_imethod) {
+	for (const PropertyInterface &iprop : p_itype.properties) {
+		if (iprop.setter == p_imethod.cname || iprop.getter == p_imethod.cname) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void BindingsGenerator::_collect_interface_properties(const TypeInterface &p_itype, List<PropertyInterface> &r_properties) {
+	for (const PropertyInterface &iprop : p_itype.properties) {
+		if (iprop.is_hidden) {
+			continue;
+		}
+
+		r_properties.push_back(iprop);
+	}
+}
+
+void BindingsGenerator::_collect_interface_methods(const TypeInterface &p_itype, List<MethodInterface> &r_methods) {
+	for (const MethodInterface &imethod : p_itype.methods) {
+		// Skip static methods (interfaces can't have static methods)
+		if (imethod.is_static) {
+			continue;
+		}
+
+		if (imethod.is_internal) {
+			continue;
+		}
+
+		if (imethod.is_hidden) {
+			continue;
+		}
+
+		if (imethod.is_compat) {
+			continue;
+		}
+
+		// Skip property accessor methods (properties are handled separately)
+		if (_is_property_accessor(p_itype, imethod)) {
+			continue;
+		}
+
+		r_methods.push_back(imethod);
+	}
+}
+
+void BindingsGenerator::_collect_interface_signals(const TypeInterface &p_itype, List<SignalInterface> &r_signals) {
+	for (const SignalInterface &isignal : p_itype.signals_) {
+		r_signals.push_back(isignal);
+	}
+}
+
+Error BindingsGenerator::_generate_cs_interface_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, StringBuilder &p_output, bool p_use_span) {
+	// Skip span overloads for virtual methods (they're not implemented in classes)
+	if (p_imethod.is_virtual && p_use_span) {
+		return OK;
+	}
+
+	bool has_span_argument = false;
+
+	if (p_use_span) {
+		if (p_imethod.is_vararg) {
+			has_span_argument = true;
+		} else {
+			for (const ArgumentInterface &iarg : p_imethod.arguments) {
+				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+				if (arg_type && arg_type->is_span_compatible) {
+					has_span_argument = true;
+					break;
+				}
+			}
+		}
+	}
+
+	if (p_use_span && !has_span_argument) {
+		return OK;
+	}
+
+	const TypeInterface *return_type = _get_type_or_null(p_imethod.return_type);
+	ERR_FAIL_NULL_V_MSG(return_type, ERR_INVALID_DATA, vformat("Return type '%s' not found for method '%s' in interface I%s.", p_imethod.return_type.cname.operator String(), p_imethod.name, p_itype.proxy_name));
+
+	// Only for non-span version to avoid duplication.
+	if (!p_use_span && p_imethod.method_doc && p_imethod.method_doc->description.size()) {
+		String xml_summary = bbcode_to_xml(fix_doc_description(p_imethod.method_doc->description), &p_itype);
+		Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
+
+		if (summary_lines.size()) {
+			p_output.append("\n" INDENT1 "/// <summary>\n");
+			for (const String &summary_line : summary_lines) {
+				p_output.append(INDENT1 "/// ");
+				p_output.append(summary_line);
+				p_output.append("\n");
+			}
+			p_output.append(INDENT1 "/// </summary>\n");
+		}
+	}
+
+	// Only for non-span version to avoid duplication.
+	if (!p_use_span && p_imethod.is_deprecated) {
+		p_output.append(INDENT1 "[Obsolete(\"");
+		p_output.append(bbcode_to_text(p_imethod.deprecation_message, &p_itype));
+		p_output.append("\")]\n");
+	}
+
+	p_output.append(INDENT1);
+	String return_cs_type = return_type->cs_type + _get_generic_type_parameters(*return_type, p_imethod.return_type.generic_type_parameters);
+	p_output.append(return_cs_type);
+	p_output.append(" ");
+	p_output.append(p_imethod.proxy_name);
+	p_output.append("(");
+
+	bool first_arg = true;
+	for (const ArgumentInterface &iarg : p_imethod.arguments) {
+		const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+		ERR_CONTINUE_MSG(!arg_type, vformat("Argument type '%s' not found for method '%s' in interface I%s.", iarg.type.cname.operator String(), p_imethod.name, p_itype.proxy_name));
+
+		if (!first_arg) {
+			p_output.append(", ");
+		}
+		first_arg = false;
+
+		bool use_span_for_arg = p_use_span && arg_type->is_span_compatible;
+		String arg_cs_type;
+
+		if (use_span_for_arg) {
+			arg_cs_type = arg_type->c_type_in + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+		} else {
+			arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+		}
+
+		// Wrap nullable types to match class signature
+		if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+			p_output.append("Nullable<");
+			p_output.append(arg_cs_type);
+			p_output.append("> ");
+		} else {
+			p_output.append(arg_cs_type);
+			p_output.append(" ");
+		}
+
+		p_output.append(iarg.name);
+
+		// Default values (skip for span overloads).
+		if (!p_use_span && iarg.default_argument.size()) {
+			if (iarg.def_param_mode != ArgumentInterface::CONSTANT) {
+				p_output.append(" = null");
+			} else {
+				p_output.append(" = ");
+				p_output.append(sformat(iarg.default_argument, arg_cs_type));
+			}
+		}
+	}
+
+	p_output.append(");\n\n");
+
+	return OK;
+}
+
+Error BindingsGenerator::_generate_cs_interface(const TypeInterface &p_itype, const String &p_output_file) {
+	StringBuilder output;
+
+	output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
+
+	output.append("using System;\n");
+	output.append("using System.ComponentModel;\n");
+	output.append("using Godot.NativeInterop;\n\n");
+
+	output.append("#nullable disable\n");
+
+	if (p_itype.class_doc) {
+		const DocData::ClassDoc &class_doc = *p_itype.class_doc;
+		if (class_doc.description.size()) {
+			String xml_summary = bbcode_to_xml(fix_doc_description(class_doc.description), &p_itype);
+			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
+
+			if (summary_lines.size()) {
+				output.append("/// <summary>\n");
+				for (const String &summary_line : summary_lines) {
+					output.append("/// ");
+					output.append(summary_line);
+					output.append("\n");
+				}
+				output.append("/// </summary>\n");
+			}
+		}
+	}
+
+	if (p_itype.is_deprecated) {
+		output.append("[Obsolete(\"");
+		output.append(bbcode_to_text(p_itype.deprecation_message, &p_itype));
+		output.append("\")]\n");
+	}
+
+	// Make Node and PackedScene interfaces partial to allow extension with generic methods
+	if (p_itype.proxy_name == "Node" || p_itype.proxy_name == "PackedScene") {
+		output.append("public partial interface I");
+	} else {
+		output.append("public interface I");
+	}
+	output.append(p_itype.proxy_name);
+
+	bool is_derived = !p_itype.is_singleton && p_itype.base_name != StringName();
+	if (is_derived) {
+		if (obj_types.has(p_itype.base_name)) {
+			const TypeInterface &base_type = obj_types[p_itype.base_name];
+			// Only inherit from base interface if the base type should also have an interface generated
+			// (e.g., skip inheritance if base is a singleton)
+			if (_should_generate_interface(base_type)) {
+				output.append(" : I");
+				output.append(base_type.proxy_name);
+			}
+		} else {
+			ERR_FAIL_V_MSG(ERR_INVALID_DATA, vformat("Base type '%s' does not exist for interface I%s.", p_itype.base_name.operator String(), p_itype.proxy_name));
+		}
+	}
+
+	output.append("\n{\n");
+
+	List<PropertyInterface> interface_properties;
+	List<MethodInterface> interface_methods;
+	List<SignalInterface> interface_signals;
+
+	_collect_interface_properties(p_itype, interface_properties);
+	_collect_interface_methods(p_itype, interface_methods);
+	_collect_interface_signals(p_itype, interface_signals);
+
+	for (const PropertyInterface &iprop : interface_properties) {
+		const MethodInterface *getter = nullptr;
+		const MethodInterface *setter = nullptr;
+
+		// Find getter/setter methods to determine property type
+		if (iprop.getter != StringName()) {
+			getter = p_itype.find_method_by_name(iprop.getter);
+			// Search in base types too
+			const TypeInterface *current_type = &p_itype;
+			while (!getter && current_type->base_name != StringName()) {
+				HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
+				if (base_match) {
+					current_type = &base_match->value;
+					getter = current_type->find_method_by_name(iprop.getter);
+				} else {
+					break;
+				}
+			}
+		}
+		if (iprop.setter != StringName()) {
+			setter = p_itype.find_method_by_name(iprop.setter);
+			// Search in base types too
+			const TypeInterface *current_type = &p_itype;
+			while (!setter && current_type->base_name != StringName()) {
+				HashMap<StringName, TypeInterface>::Iterator base_match = obj_types.find(current_type->base_name);
+				if (base_match) {
+					current_type = &base_match->value;
+					setter = current_type->find_method_by_name(iprop.setter);
+				} else {
+					break;
+				}
+			}
+		}
+
+		const TypeInterface *prop_type_interface = nullptr;
+		const TypeReference *prop_type_ref = nullptr;
+		if (getter) {
+			prop_type_interface = _get_type_or_null(getter->return_type);
+			prop_type_ref = &getter->return_type;
+		} else if (setter && setter->arguments.size() > 0) {
+			// For indexed setters, value is the second param; otherwise first.
+			int type_param_index = (setter->arguments.size() > 1) ? 1 : 0;
+			List<ArgumentInterface>::ConstIterator arg_it = setter->arguments.begin();
+			for (int i = 0; i < type_param_index; i++) {
+				++arg_it;
+			}
+			prop_type_interface = _get_type_or_null(arg_it->type);
+			prop_type_ref = &arg_it->type;
+		}
+
+		if (!prop_type_interface || !prop_type_ref) {
+			ERR_PRINT("Could not determine property type for '" + iprop.cname.operator String() + "' in interface I" + p_itype.proxy_name + ".");
+			continue;
+		}
+
+		if (iprop.prop_doc && iprop.prop_doc->description.size()) {
+			String xml_summary = bbcode_to_xml(fix_doc_description(iprop.prop_doc->description), &p_itype);
+			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
+
+			if (summary_lines.size()) {
+				output.append(INDENT1 "/// <summary>\n");
+				for (const String &summary_line : summary_lines) {
+					output.append(INDENT1 "/// ");
+					output.append(summary_line);
+					output.append("\n");
+				}
+				output.append(INDENT1 "/// </summary>\n");
+			}
+		}
+
+		if (iprop.is_deprecated) {
+			output.append(INDENT1 "[Obsolete(\"");
+			output.append(bbcode_to_text(iprop.deprecation_message, &p_itype));
+			output.append("\")]\n");
+		}
+
+		output.append(INDENT1);
+		String prop_cs_type = prop_type_interface->cs_type + _get_generic_type_parameters(*prop_type_interface, prop_type_ref->generic_type_parameters);
+		output.append(prop_cs_type);
+		output.append(" ");
+		output.append(iprop.proxy_name);
+		output.append(" { ");
+
+		if (getter) {
+			output.append("get; ");
+		}
+		if (setter) {
+			output.append("set; ");
+		}
+
+		output.append("}\n\n");
+	}
+
+	for (const MethodInterface &imethod : interface_methods) {
+		// Generate normal method (array parameters)
+		Error method_err = _generate_cs_interface_method(p_itype, imethod, output, false);
+		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
+				"Failed to generate interface method '" + imethod.name + "' for interface I" + p_itype.proxy_name + "'.");
+
+		// Generate span overload if applicable (skip for internal methods)
+		if (!imethod.is_internal) {
+			method_err = _generate_cs_interface_method(p_itype, imethod, output, true);
+			ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
+					"Failed to generate span overload interface method '" + imethod.name + "' for interface I" + p_itype.proxy_name + "'.");
+		}
+	}
+
+	for (const SignalInterface &isignal : interface_signals) {
+		if (isignal.method_doc && isignal.method_doc->description.size()) {
+			String xml_summary = bbcode_to_xml(fix_doc_description(isignal.method_doc->description), &p_itype);
+			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
+
+			if (summary_lines.size()) {
+				output.append("\n" INDENT1 "/// <summary>\n");
+				for (const String &summary_line : summary_lines) {
+					output.append(INDENT1 "/// ");
+					output.append(summary_line);
+					output.append("\n");
+				}
+				output.append(INDENT1 "/// </summary>\n");
+			}
+		}
+
+		if (isignal.is_deprecated) {
+			output.append(INDENT1 "[Obsolete(\"");
+			output.append(bbcode_to_text(isignal.deprecation_message, &p_itype));
+			output.append("\")]\n");
+		}
+
+		output.append(INDENT1 "event ");
+
+		if (isignal.arguments.is_empty()) {
+			// Parameterless signal - use Action
+			output.append("Action ");
+		} else {
+			// Signal with parameters - need to use delegate type
+			// Delegates are nested in the class, so we must qualify with class name
+			output.append(p_itype.proxy_name);
+			output.append(".");
+			output.append(isignal.proxy_name);
+			output.append("EventHandler ");
+		}
+
+		output.append(isignal.proxy_name);
+		output.append(";\n\n");
+	}
+
+	output.append("}\n");
+
+	return _save_file(p_output_file, output);
 }
 
 #endif // DEBUG_ENABLED
