@@ -1019,6 +1019,9 @@
 		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] and [method Node.can_auto_translate] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
 		</member>
+		<member name="autofocus" type="bool" setter="set_autofocus" getter="get_autofocus" default="false">
+			If [code]true[/code], the control will automatically grab focus when it becomes visible (when it receives [constant CanvasItem.NOTIFICATION_VISIBILITY_CHANGED]). Since only one control can be focused at a time, the last control to become visible with [member autofocus] set to [code]true[/code] will receive focus. See also [method grab_focus].
+		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
 		</member>
