@@ -821,7 +821,7 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 		}
 	} else if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
-		sky_material = sky_globals.fog_material;
+		sky_material = sky_globals.clear_color_material;
 		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 	}
 
@@ -912,7 +912,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 		}
 	} else if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
-		sky_material = sky_globals.fog_material;
+		sky_material = sky_globals.clear_color_material;
 		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 	}
 
@@ -2443,7 +2443,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
 
 	bool draw_sky = false;
-	bool draw_sky_fog_only = false;
+	bool draw_sky_cc_only = false;
 	bool keep_color = false;
 	bool draw_canvas = false;
 	bool draw_feed = false;
@@ -2464,24 +2464,30 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 
 		switch (bg_mode) {
-			case RS::ENV_BG_CLEAR_COLOR: {
-				clear_color.r *= bg_energy_multiplier;
-				clear_color.g *= bg_energy_multiplier;
-				clear_color.b *= bg_energy_multiplier;
-				if (!render_data.transparent_bg && environment_get_fog_enabled(render_data.environment)) {
-					draw_sky_fog_only = true;
-					GLES3::MaterialStorage::get_singleton()->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
-				}
-			} break;
+			case RS::ENV_BG_CLEAR_COLOR:
 			case RS::ENV_BG_COLOR: {
-				clear_color = environment_get_bg_color(render_data.environment);
-				clear_color.r *= bg_energy_multiplier;
-				clear_color.g *= bg_energy_multiplier;
-				clear_color.b *= bg_energy_multiplier;
-				if (!render_data.transparent_bg && environment_get_fog_enabled(render_data.environment)) {
-					draw_sky_fog_only = true;
-					GLES3::MaterialStorage::get_singleton()->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
+				if (bg_mode == RS::ENV_BG_COLOR) {
+					clear_color = environment_get_bg_color(render_data.environment);
 				}
+
+				int32_t tonemapper = environment_get_tone_mapper(render_data.environment);
+				float white = environment_get_white(render_data.environment);
+				bool use_tonemap = !apply_color_adjustments_in_post && tonemapper != RS::ENV_TONE_MAPPER_LINEAR && !(tonemapper == RS::ENV_TONE_MAPPER_REINHARD && white == 1.0);
+
+				if (!render_data.transparent_bg && (environment_get_fog_enabled(render_data.environment) || use_tonemap)) {
+					draw_sky_cc_only = true;
+					GLES3::MaterialStorage::get_singleton()->material_set_param(sky_globals.clear_color_material, "clear_color", Variant(clear_color));
+				} else if (use_tonemap) {
+					apply_color_adjustments_in_post = true;
+				}
+
+				float exposure = environment_get_exposure(render_data.environment);
+
+				clear_color = clear_color.srgb_to_linear();
+				clear_color.r *= bg_energy_multiplier * exposure;
+				clear_color.g *= bg_energy_multiplier * exposure;
+				clear_color.b *= bg_energy_multiplier * exposure;
+				clear_color = clear_color.linear_to_srgb();
 			} break;
 			case RS::ENV_BG_SKY: {
 				draw_sky = !render_data.transparent_bg;
@@ -2507,7 +2513,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		sky_ambient |= ambient_source == RS::ENV_AMBIENT_SOURCE_BG && bg_mode == RS::ENV_BG_SKY;
 
 		// setup sky if used for ambient, reflections, or background
-		if (draw_sky || draw_sky_fog_only || sky_reflections || sky_ambient) {
+		if (draw_sky || draw_sky_cc_only || sky_reflections || sky_ambient) {
 			RENDER_TIMESTAMP("Setup Sky");
 			Projection projection = render_data.cam_projection;
 			if (is_reflection_probe) {
@@ -2737,7 +2743,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.enable_gl_depth_draw(false);
 	scene_state.enable_gl_stencil_test(false);
 
-	if (draw_sky || draw_sky_fog_only) {
+	if (draw_sky || draw_sky_cc_only) {
 		RENDER_TIMESTAMP("Render Sky");
 
 		scene_state.enable_gl_depth_test(true);
@@ -4519,10 +4525,10 @@ void sky() {
 		material_storage->material_set_shader(sky_globals.default_material, sky_globals.default_shader);
 	}
 	{
-		sky_globals.fog_shader = material_storage->shader_allocate();
-		material_storage->shader_initialize(sky_globals.fog_shader);
+		sky_globals.clear_color_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(sky_globals.clear_color_shader);
 
-		material_storage->shader_set_code(sky_globals.fog_shader, R"(
+		material_storage->shader_set_code(sky_globals.clear_color_shader, R"(
 // Default clear color sky shader.
 
 shader_type sky;
@@ -4533,10 +4539,10 @@ void sky() {
 	COLOR = clear_color.rgb;
 }
 )");
-		sky_globals.fog_material = material_storage->material_allocate();
-		material_storage->material_initialize(sky_globals.fog_material);
+		sky_globals.clear_color_material = material_storage->material_allocate();
+		material_storage->material_initialize(sky_globals.clear_color_material);
 
-		material_storage->material_set_shader(sky_globals.fog_material, sky_globals.fog_shader);
+		material_storage->material_set_shader(sky_globals.clear_color_material, sky_globals.clear_color_shader);
 	}
 
 	{
@@ -4599,8 +4605,8 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_free(sky_globals.shader_default_version);
 	RSG::material_storage->material_free(sky_globals.default_material);
 	RSG::material_storage->shader_free(sky_globals.default_shader);
-	RSG::material_storage->material_free(sky_globals.fog_material);
-	RSG::material_storage->shader_free(sky_globals.fog_shader);
+	RSG::material_storage->material_free(sky_globals.clear_color_material);
+	RSG::material_storage->shader_free(sky_globals.clear_color_shader);
 	GLES3::Utilities::get_singleton()->buffer_free_data(sky_globals.screen_triangle);
 	glDeleteVertexArrays(1, &sky_globals.screen_triangle_array);
 	GLES3::Utilities::get_singleton()->buffer_free_data(sky_globals.directional_light_buffer);

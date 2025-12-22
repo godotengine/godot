@@ -1994,25 +1994,19 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		}
 
 		switch (bg_mode) {
-			case RS::ENV_BG_CLEAR_COLOR: {
-				clear_color = p_default_bg_color;
-				clear_color.r *= bg_energy_multiplier;
-				clear_color.g *= bg_energy_multiplier;
-				clear_color.b *= bg_energy_multiplier;
-				if (!p_render_data->transparent_bg && (rb->has_custom_data(RB_SCOPE_FOG) || environment_get_fog_enabled(p_render_data->environment))) {
-					draw_sky_fog_only = true;
-					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
-				}
-			} break;
+			case RS::ENV_BG_CLEAR_COLOR:
 			case RS::ENV_BG_COLOR: {
-				clear_color = environment_get_bg_color(p_render_data->environment);
+				clear_color = bg_mode == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_render_data->environment);
+
+				if (!p_render_data->transparent_bg && (rb->has_custom_data(RB_SCOPE_FOG) || environment_get_fog_enabled(p_render_data->environment))) {
+					draw_sky_fog_only = true;
+					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color));
+				}
+
+				clear_color = clear_color.srgb_to_linear();
 				clear_color.r *= bg_energy_multiplier;
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
-				if (!p_render_data->transparent_bg && (rb->has_custom_data(RB_SCOPE_FOG) || environment_get_fog_enabled(p_render_data->environment))) {
-					draw_sky_fog_only = true;
-					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
-				}
 			} break;
 			case RS::ENV_BG_SKY: {
 				draw_sky = !p_render_data->transparent_bg;
@@ -2060,9 +2054,15 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 			RD::get_singleton()->draw_command_end_label();
 		}
+
+		if (bg_mode != RS::ENV_BG_CLEAR_COLOR && bg_mode != RS::ENV_BG_COLOR) {
+			clear_color = clear_color.srgb_to_linear();
+		}
 	} else {
-		clear_color = p_default_bg_color;
+		clear_color = p_default_bg_color.srgb_to_linear();
 	}
+
+	// After this point clear_color has linear encoding.
 
 	RS::ViewportMSAA msaa = rb->get_msaa_3d();
 	bool use_msaa = msaa != RS::VIEWPORT_MSAA_DISABLED;
@@ -2169,12 +2169,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		{
 			Vector<Color> c;
 			if (!load_color) {
-				Color cc = clear_color.srgb_to_linear();
 				if (using_separate_specular || rb_data.is_valid()) {
 					// Effects that rely on separate specular, like subsurface scattering, must clear the alpha to zero.
-					cc.a = 0;
+					clear_color.a = 0;
 				}
-				c.push_back(cc);
+				c.push_back(clear_color);
 
 				if (rb_data.is_valid()) {
 					c.push_back(Color(0, 0, 0, 0)); // Separate specular.
