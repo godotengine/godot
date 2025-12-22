@@ -1528,7 +1528,7 @@ float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
 
-	if (OS::get_singleton()->is_hidpi_allowed()) {
+	if (OS::get_singleton()->get_hidpi_awareness() != OS::HidpiAwareness::NO_AWARENESS) {
 		NSArray<NSScreen *> *screens = NSScreen.screens;
 		NSUInteger index = (NSUInteger)p_screen;
 		if (index < screens.count) {

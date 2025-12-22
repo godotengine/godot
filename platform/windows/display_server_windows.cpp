@@ -7102,8 +7102,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	if (OS::get_singleton()->is_hidpi_allowed()) {
-		SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+	OS::HidpiAwareness awareness_setting = OS::get_singleton()->get_hidpi_awareness();
+	if (awareness_setting != OS::HidpiAwareness::NO_AWARENESS) {
+		if (awareness_setting == OS::HidpiAwareness::PER_MONITOR_AWARENESS) {
+			SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+		} else {
+			SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+		}
 	}
 
 	HMODULE comctl32 = LoadLibraryW(L"comctl32.dll");
