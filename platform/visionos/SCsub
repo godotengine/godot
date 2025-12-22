@@ -3,6 +3,7 @@ from misc.utility.scons_hints import *
 
 from platform_visionos_builders import generate_bundle
 
+from misc.utility.compatibility import try_use_cxx20_module
 from platform_methods import combine_libs_apple_embedded
 
 Import("env")
@@ -19,7 +20,8 @@ env_visionos = env.Clone()
 visionos_lib = env_visionos.add_library("visionos", visionos_lib)
 
 # Enable module support
-env_visionos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+# env_visionos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+try_use_cxx20_module(env_visionos)
 
 combine_command = env_visionos.Command(
     "#bin/libgodot" + env_visionos["LIBSUFFIX"], [visionos_lib] + env_visionos["LIBS"], combine_libs_apple_embedded

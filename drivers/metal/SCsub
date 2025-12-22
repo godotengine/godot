@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
+from misc.utility.compatibility import try_use_cxx20_module
+
 Import("env")
 
 env_metal = env.Clone()
@@ -41,7 +43,10 @@ if "-std=gnu++17" in env_metal["CXXFLAGS"]:
 env_metal.Append(CXXFLAGS=["-std=gnu++20"])
 
 # Enable module support
-env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+if env["platform"] == "macos":
+    try_use_cxx20_module(env_metal)
+else:
+    env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
 # Driver source files
 
