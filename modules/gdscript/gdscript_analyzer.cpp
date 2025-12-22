@@ -898,6 +898,17 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		}
 	}
 
+	if (!result.is_set() && first == SNAME("Self")) {
+		// Strong type for the `self` identifier. Resolves to the current class
+		// meta-type so it behaves like using the current class name directly.
+		if (parser->current_class) {
+			result = parser->current_class->datatype;
+		} else {
+			push_error(R"("Self" can only be used inside a class.)", p_type);
+			return bad_type;
+		}
+	}
+
 	if (!result.is_set()) {
 		push_error(vformat(R"(Could not find type "%s" in the current scope.)", first), p_type);
 		return bad_type;
@@ -4659,6 +4670,24 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		variant.is_meta_type = true;
 		variant.is_pseudo_type = true;
 		p_identifier->set_datatype(variant);
+		return;
+	}
+
+	// Allow "Self" here, as a value it resolves to the current class meta-type.
+	// This enables expressions like `Self.new()` or `Self.my_static()` to work.
+	if (name == SNAME("Self")) {
+		if (parser->current_class == nullptr) {
+			push_error(R"("Self" can only be used inside a class.)", p_identifier);
+		} else {
+			p_identifier->datatype = parser->current_class->datatype;
+
+			Error err = OK;
+			Ref<GDScript> scr = get_depended_shallow_script(parser->current_class->datatype.script_path, err);
+			if (!err && scr.is_valid()) {
+				p_identifier->reduced_value = scr->find_class(parser->current_class->datatype.class_type->fqcn);
+				p_identifier->is_constant = true;
+			}
+		}
 		return;
 	}
 
