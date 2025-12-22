@@ -3349,6 +3349,21 @@ void RendererCanvasRenderRD::_prepare_batch_texture_info(RID p_texture, TextureS
 RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RD *rd = RD::get_singleton();
+
+	// Drop canvas texture callbacks before TextureStorage teardown to avoid invalidation
+	// callbacks accessing the destroyed canvas renderer during shutdown.
+	if (texture_storage) {
+		for (KeyValue<RID, TightLocalVector<RID>> &E : canvas_texture_to_uniform_set) {
+			if (rd) {
+				for (RID rid : E.value) {
+					rd->free(rid);
+				}
+			}
+			texture_storage->canvas_texture_set_invalidation_callback(E.key, nullptr, nullptr);
+		}
+		canvas_texture_to_uniform_set.clear();
+	}
 
 	//canvas state
 
