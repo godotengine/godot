@@ -181,6 +181,9 @@ TEST_CASE("[Vector2] Normalization methods") {
 	CHECK_MESSAGE(
 			Vector2(1, 1).normalized().is_equal_approx(Vector2(Math::SQRT12, Math::SQRT12)),
 			"Vector2 normalized should work as expected.");
+	CHECK_MESSAGE(
+			Vector2(0, 0).normalized() == Vector2(0, 0),
+			"Vector2 normalized should leave 0 vector unchanged.");
 
 	Vector2 vector = Vector2(3.2, -5.4);
 	vector.normalize();
