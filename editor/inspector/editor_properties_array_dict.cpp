@@ -32,18 +32,23 @@
 
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/variant/variant.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/editor_variant_type_selectors.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_properties_vector.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
+#include "scene/main/node.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -508,6 +513,8 @@ void EditorPropertyArray::update_property() {
 			// Check if the editor property needs to be updated.
 			bool value_as_id = Object::cast_to<EncodedObjectAsID>(array.get(idx));
 			if (value_type != slot.type || (value_type == Variant::OBJECT && (value_as_id != slot.as_id))) {
+				Variant elem = array.get(idx);
+
 				slot.as_id = value_as_id;
 				slot.type = value_type;
 				EditorProperty *new_prop = nullptr;
@@ -516,6 +523,12 @@ void EditorPropertyArray::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
+					Variant e = array.get(idx);
+					if (Object::cast_to<Node>(e.get_validated_object())) {
+						subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+						value_type = Variant::OBJECT;
+					}
+
 					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
 				}
 				new_prop->set_selectable(false);
@@ -1373,6 +1386,11 @@ void EditorPropertyDictionary::update_property() {
 						editor->setup("Object");
 						new_prop = editor;
 					} else {
+						if (Object::cast_to<Node>(key.get_validated_object())) {
+							key_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+							key_type = Variant::OBJECT;
+						}
+
 						new_prop = EditorInspector::instantiate_property_editor(this, key_type, "", key_subtype_hint, key_subtype_hint_string, PROPERTY_USAGE_NONE);
 					}
 					new_prop->set_read_only(true);
@@ -1420,6 +1438,11 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
+					if (Object::cast_to<Node>(value.get_validated_object())) {
+						value_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+						value_type = Variant::OBJECT;
+					}
+
 					bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
 					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", use_key ? key_subtype_hint : value_subtype_hint,
 							use_key ? key_subtype_hint_string : value_subtype_hint_string, PROPERTY_USAGE_NONE);

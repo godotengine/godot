@@ -31,12 +31,17 @@
 #include "packed_scene.h"
 
 #include "core/config/engine.h"
+#include "core/error/error_list.h"
 #include "core/io/file_access.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/object.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/array.h"
 #include "core/variant/callable_bind.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
@@ -790,6 +795,66 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int> &vari
 	return idx;
 }
 
+// Recursively parses arrays, mostly to look for Nodes to turn into NodePaths
+void SceneState::_parse_array(Array &r_out_array, Node *p_node, const Array &p_orig_array) {
+	for (int i = 0; i < p_orig_array.size(); i++) {
+		Variant elem = p_orig_array[i];
+
+		if (elem.get_type() == Variant::OBJECT) {
+			if (Node *n = Object::cast_to<Node>(elem)) {
+				r_out_array.push_back(p_node->get_path_to(n));
+			}
+		} else if (elem.get_type() == Variant::DICTIONARY) {
+			Dictionary new_dict;
+			_parse_dict(new_dict, p_node, elem);
+			r_out_array.push_back(new_dict);
+		} else if (elem.get_type() == Variant::ARRAY) {
+			Array new_array;
+			_parse_array(new_array, p_node, elem);
+			r_out_array.push_back(new_array);
+		} else {
+			r_out_array.push_back(elem);
+		}
+	}
+}
+
+// Recursively parses dictionaries, mostly to look for Nodes to turn into NodePaths
+void SceneState::_parse_dict(Dictionary &r_out_dict, Node *p_node, const Dictionary &p_orig_dict) {
+	Array keys = p_orig_dict.keys();
+
+	for (int i = 0; i < keys.size(); i++) {
+		Variant key = keys[i];
+
+		if (key.get_type() == Variant::DICTIONARY) {
+			Dictionary key_dict;
+			_parse_dict(key_dict, p_node, key);
+			key = key_dict;
+		} else if (key.get_type() == Variant::ARRAY) {
+			Array key_arr;
+			_parse_array(key_arr, p_node, key);
+			key = key_arr;
+		} else if (Node *key_n = Object::cast_to<Node>(key)) {
+			key = p_node->get_path_to(key_n);
+		}
+
+		Variant value = p_orig_dict.get(keys[i], Variant::NIL);
+
+		if (value.get_type() == Variant::DICTIONARY) {
+			Dictionary value_dict;
+			_parse_dict(value_dict, p_node, value);
+			value = value_dict;
+		} else if (value.get_type() == Variant::ARRAY) {
+			Array value_arr;
+			_parse_array(value_arr, p_node, value);
+			value = value_arr;
+		} else if (Node *value_n = Object::cast_to<Node>(value)) {
+			value = p_node->get_path_to(value_n);
+		}
+
+		r_out_dict.set(key, value);
+	}
+}
+
 Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, HashSet<int32_t> &ids_saved) {
 	// this function handles all the work related to properly packing scenes, be it
 	// instantiated or inherited.
@@ -929,6 +994,13 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					value = new_array;
 				}
 			}
+		} else if (E.type == Variant::ARRAY) {
+			Array array = value;
+			Array new_array;
+
+			_parse_array(new_array, p_node, array);
+
+			value = new_array;
 		} else if (E.type == Variant::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
 			int key_value_separator = E.hint_string.find_char(';');
 			if (key_value_separator >= 0) {
@@ -976,6 +1048,13 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					value = new_dict;
 				}
 			}
+		} else if (E.type == Variant::DICTIONARY) {
+			Dictionary dict = value;
+			Dictionary new_dict;
+
+			_parse_dict(new_dict, p_node, dict);
+
+			value = new_dict;
 		}
 
 		if (!pinned_props.has(name)) {
