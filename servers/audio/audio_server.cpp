@@ -94,7 +94,8 @@ double AudioDriver::get_time_to_next_mix() {
 
 void AudioDriver::input_buffer_init(int driver_buffer_frames) {
 	const int input_buffer_channels = 2;
-	input_buffer.resize(driver_buffer_frames * input_buffer_channels * 4);
+	// We want at least a delay of padding around input_position so mul by 4 (to keep pow of 2) again
+	input_buffer.resize(driver_buffer_frames * input_buffer_channels * 4 * 4);
 	input_position = 0;
 	input_size = 0;
 }
