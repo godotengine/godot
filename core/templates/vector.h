@@ -245,55 +245,8 @@ public:
 	bool operator==(const Vector<T> &p_arr) const { return span() == p_arr.span(); }
 	bool operator!=(const Vector<T> &p_arr) const { return span() != p_arr.span(); }
 
-	struct Iterator {
-		_FORCE_INLINE_ T &operator*() const {
-			return *elem_ptr;
-		}
-		_FORCE_INLINE_ T *operator->() const { return elem_ptr; }
-		_FORCE_INLINE_ Iterator &operator++() {
-			elem_ptr++;
-			return *this;
-		}
-		_FORCE_INLINE_ Iterator &operator--() {
-			elem_ptr--;
-			return *this;
-		}
-
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return elem_ptr != b.elem_ptr; }
-
-		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
-		Iterator() {}
-		Iterator(const Iterator &p_it) { elem_ptr = p_it.elem_ptr; }
-
-	private:
-		T *elem_ptr = nullptr;
-	};
-
-	struct ConstIterator {
-		_FORCE_INLINE_ const T &operator*() const {
-			return *elem_ptr;
-		}
-		_FORCE_INLINE_ const T *operator->() const { return elem_ptr; }
-		_FORCE_INLINE_ ConstIterator &operator++() {
-			elem_ptr++;
-			return *this;
-		}
-		_FORCE_INLINE_ ConstIterator &operator--() {
-			elem_ptr--;
-			return *this;
-		}
-
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
-
-		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
-		ConstIterator() {}
-		ConstIterator(const ConstIterator &p_it) { elem_ptr = p_it.elem_ptr; }
-
-	private:
-		const T *elem_ptr = nullptr;
-	};
+	using Iterator = T *;
+	using ConstIterator = const T *;
 
 	_FORCE_INLINE_ Iterator begin() {
 		return Iterator(ptrw());
