@@ -73,6 +73,7 @@ void EditorPluginSettings::update_plugins() {
 	TreeItem *root = plugin_list->create_item();
 
 	Vector<String> plugins = _get_plugins("res://addons");
+	plugins.append_array(_get_plugins("editor://"));
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
@@ -186,7 +187,8 @@ void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, in
 }
 
 Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
+	ERR_FAIL_COND_V_MSG(da.is_null(), Vector<String>(), "Could not create DirAccess for path: " + p_dir);
 	Error err = da->change_dir(p_dir);
 	if (err != OK) {
 		return Vector<String>();

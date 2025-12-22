@@ -35,6 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
+#include "core/version.h"
 #include "main/main.h"
 
 EditorPaths *EditorPaths::singleton = nullptr;
@@ -204,6 +205,11 @@ EditorPaths::EditorPaths() {
 
 		if (!dir->dir_exists(export_templates_folder)) {
 			dir->make_dir(export_templates_folder);
+		}
+
+		String versioned_editor_resources_folder = editor_resources_folder.path_join(vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR));
+		if (!dir->dir_exists(versioned_editor_resources_folder)) {
+			dir->make_dir_recursive(versioned_editor_resources_folder);
 		}
 	}
 
