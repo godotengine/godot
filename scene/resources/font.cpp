@@ -2080,6 +2080,8 @@ Error FontFile::load_dynamic_font(const String &p_path) {
 }
 
 void FontFile::set_data_ptr(const uint8_t *p_data, size_t p_size) {
+	MutexLock lock(data_mutex);
+
 	data.clear();
 	data_ptr = p_data;
 	data_size = p_size;
@@ -2092,9 +2094,20 @@ void FontFile::set_data_ptr(const uint8_t *p_data, size_t p_size) {
 }
 
 void FontFile::set_data(const PackedByteArray &p_data) {
+	MutexLock lock(data_mutex);
+
+	// Make a copy to ensure data stability before getting the pointer
 	data = p_data;
-	data_ptr = data.ptr();
-	data_size = data.size();
+	// Ensure data is not empty before getting pointer
+	if (data.size() > 0) {
+		// Force a unique copy to prevent COW issues
+		data.write[0] = data[0];
+		data_ptr = data.ptr();
+		data_size = data.size();
+	} else {
+		data_ptr = nullptr;
+		data_size = 0;
+	}
 
 	for (int i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
@@ -2104,9 +2117,13 @@ void FontFile::set_data(const PackedByteArray &p_data) {
 }
 
 PackedByteArray FontFile::get_data() const {
+	MutexLock lock(data_mutex);
+
 	if (unlikely((size_t)data.size() != data_size)) {
 		data.resize(data_size);
-		memcpy(data.ptrw(), data_ptr, data_size);
+		if (data_ptr && data_size > 0) {
+			memcpy(data.ptrw(), data_ptr, data_size);
+		}
 	}
 	return data;
 }
