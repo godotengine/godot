@@ -884,6 +884,38 @@ void RenderingContextDriverVulkan::_check_driver_workarounds(const VkPhysicalDev
 			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
 			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
 			r_device.name.find("Turnip") < 0;
+
+	// Workaround for the ARM Mali-G52 family of devices. (GH-112530)
+	//TODO
+	//crash with driverVersion: 0.24.2.8, 0.25.1.0, 0.34.0.0
+	if (r_device.vendor == Vendor::VENDOR_ARM && p_device_properties.deviceID == 0x74021000) {
+		r_device.workarounds.avoid_subpass_post_process = true;
+	}
+	// Workaround issue on Qualcomm XR2+ Gen2 with subpasses when MSAA and eye-tracked foveated rendering are enabled.
+	if (r_device.vendor == Vendor::VENDOR_QUALCOMM && p_device_properties.deviceID == 0x43050B00 && p_device_properties.driverVersion == 0x80335006) {
+		r_device.workarounds.avoid_subpass_post_process = true;
+	}
+
+	uint32_t driver_variant = VK_API_VERSION_VARIANT(p_device_properties.driverVersion);
+	uint32_t driver_major = VK_VERSION_MAJOR(p_device_properties.driverVersion);
+	uint32_t driver_minor = VK_VERSION_MINOR(p_device_properties.driverVersion);
+	uint32_t driver_patch = VK_VERSION_PATCH(p_device_properties.driverVersion);
+
+	print_line("==========================");
+	print_line("_check_driver_workarounds");
+	print_line("==========================");
+	print_line("r_device.vendor:", vformat("0x%08X", r_device.vendor));
+	print_line("r_device.type:", r_device.type);
+	print_line("r_device.name:", r_device.name);
+	print_line("------------------------------------");
+	print_line("deviceName:", p_device_properties.deviceName);
+	print_line("deviceID:", vformat("0x%08X", p_device_properties.deviceID));
+	print_line("driverVersion:", vformat("%d.%d.%d.%d", driver_variant, driver_major, driver_minor, driver_patch), vformat("(0x%08X)", p_device_properties.driverVersion));
+	print_line("apiVersion:", vformat("(0x%08X)", p_device_properties.apiVersion));
+	print_line("------------------------------------");
+	print_line("avoid_compute_after_draw:", r_device.workarounds.avoid_compute_after_draw);
+	print_line("avoid_subpass_post_process:", r_device.workarounds.avoid_subpass_post_process);
+	print_line("------------------------------------");
 }
 
 bool RenderingContextDriverVulkan::_use_validation_layers() const {
