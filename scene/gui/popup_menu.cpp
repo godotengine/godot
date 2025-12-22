@@ -1102,7 +1102,7 @@ void PopupMenu::_shape_item(int p_idx) const {
 	if (items.write[p_idx].dirty) {
 		items.write[p_idx].text_buf->clear();
 
-		Ref<Font> font = items[p_idx].separator ? theme_cache.font_separator : theme_cache.font;
+		Ref<Font> font = items[p_idx].separator ? theme_cache.font_separator : (items[p_idx].font.is_null() ? theme_cache.font : items[p_idx].font);
 		int font_size = items[p_idx].separator ? theme_cache.font_separator_size : theme_cache.font_size;
 
 		if (items[p_idx].text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -1973,6 +1973,24 @@ void PopupMenu::set_item_text(int p_idx, const String &p_text) {
 	_menu_changed();
 }
 
+void PopupMenu::set_item_font(int p_idx, const Ref<Font> &p_font) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+	if (items[p_idx].font == p_font) {
+		return;
+	}
+
+	items.write[p_idx].font = p_font;
+	items.write[p_idx].dirty = true;
+
+	_shape_item(p_idx);
+	control->queue_redraw();
+	child_controls_changed();
+	_menu_changed();
+}
+
 void PopupMenu::set_item_text_direction(int p_idx, Control::TextDirection p_text_direction) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
@@ -2320,6 +2338,11 @@ int PopupMenu::get_item_idx_from_text(const String &text) const {
 	}
 
 	return -1;
+}
+
+Ref<Font> PopupMenu::get_item_font(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Font>());
+	return items[p_idx].font;
 }
 
 Ref<Texture2D> PopupMenu::get_item_icon(int p_idx) const {
@@ -3189,6 +3212,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_multistate", "index", "state"), &PopupMenu::set_item_multistate);
 	ClassDB::bind_method(D_METHOD("set_item_multistate_max", "index", "max_states"), &PopupMenu::set_item_max_states);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut_disabled", "index", "disabled"), &PopupMenu::set_item_shortcut_disabled);
+	ClassDB::bind_method(D_METHOD("set_item_font", "index", "font"), &PopupMenu::set_item_font);
 
 	ClassDB::bind_method(D_METHOD("toggle_item_checked", "index"), &PopupMenu::toggle_item_checked);
 	ClassDB::bind_method(D_METHOD("toggle_item_multistate", "index"), &PopupMenu::toggle_item_multistate);
@@ -3215,6 +3239,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "index"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "index"), &PopupMenu::get_item_shortcut);
 	ClassDB::bind_method(D_METHOD("get_item_indent", "index"), &PopupMenu::get_item_indent);
+	ClassDB::bind_method(D_METHOD("get_item_font", "index"), &PopupMenu::get_item_font);
 
 	ClassDB::bind_method(D_METHOD("get_item_multistate_max", "index"), &PopupMenu::get_item_max_states);
 	ClassDB::bind_method(D_METHOD("get_item_multistate", "index"), &PopupMenu::get_item_state);
@@ -3319,6 +3344,7 @@ void PopupMenu::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id, &PopupMenu::set_item_id, &PopupMenu::get_item_id);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &PopupMenu::set_item_disabled, &PopupMenu::is_item_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &PopupMenu::set_item_as_separator, &PopupMenu::is_item_separator);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), defaults.font, &PopupMenu::set_item_font, &PopupMenu::get_item_font);
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
