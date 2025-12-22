@@ -1353,9 +1353,7 @@ void Theme::rename_type(const StringName &p_old_theme_type, const StringName &p_
 	_emit_theme_changed(true);
 }
 
-void Theme::get_type_list(List<StringName> *p_list) const {
-	ERR_FAIL_NULL(p_list);
-
+void Theme::get_type_list(LocalVector<StringName> &p_list) const {
 	// This Set guarantees uniqueness.
 	// Because each map can have the same type defined, but for this method
 	// we only want one occurrence of each type.
@@ -1397,7 +1395,7 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 	}
 
 	for (const StringName &E : types) {
-		p_list->push_back(E);
+		p_list.push_back(E);
 	}
 }
 
@@ -1660,15 +1658,16 @@ Vector<String> Theme::_get_type_variation_list(const StringName &p_theme_type) c
 
 Vector<String> Theme::_get_type_list() const {
 	Vector<String> ilret;
-	List<StringName> il;
+	LocalVector<StringName> il;
 
-	get_type_list(&il);
+	get_type_list(il);
 	ilret.resize(il.size());
 
 	int i = 0;
 	String *w = ilret.ptrw();
-	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
-		w[i] = E->get();
+	for (const StringName &E : il) {
+		w[i] = E;
+		i++;
 	}
 	return ilret;
 }
