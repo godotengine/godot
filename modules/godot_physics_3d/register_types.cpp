@@ -34,6 +34,8 @@
 #include "servers/physics_3d/physics_server_3d.h"
 #include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 
+#include "modules/modules_enabled.gen.h" // For jolt_physics.
+
 static PhysicsServer3D *_createGodotPhysics3DCallback() {
 #ifdef THREADS_ENABLED
 	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
@@ -51,7 +53,11 @@ void initialize_godot_physics_3d_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 	PhysicsServer3DManager::get_singleton()->register_server("GodotPhysics3D", callable_mp_static(_createGodotPhysics3DCallback));
+#ifndef MODULE_JOLT_PHYSICS_ENABLED
+	// Set the default explicitly as the call to `set_default_server()` in `modules/jolt_physics/` isn't compiled in.
+	// Otherwise, we would fall back to the Dummy physics server and end up with no physics at all.
 	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");
+#endif
 }
 
 void uninitialize_godot_physics_3d_module(ModuleInitializationLevel p_level) {
