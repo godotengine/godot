@@ -723,6 +723,12 @@
 			If [code]true[/code], the label uses BBCode formatting.
 			[b]Note:[/b] This only affects the contents of [member text], not the tag stack.
 		</member>
+		<member name="bbcode_prefix" type="String" setter="set_bbcode_prefix" getter="get_bbcode_prefix" default="&quot;&quot;">
+			A string containing [i]opening[/i] BBCode tags to apply as a prefix. Brackets are required if there are multiple tags, but they are optional if there is only a single tag. The closing tags are automatically inferred from the prefix, which means closing tags must [b]not[/b] be specified in [member bbcode_prefix].
+			For example, [member bbcode_prefix] can be set to [code skip-lint][b][pulse][bgcolor=blue][/code] to make the text bold, pulsing, and with a blue background color. As another example, [code]shake level=2 rate=8[/code] will make the text shake with custom [code]level[/code] and [code]rate[/code] parameters for the built-in [code]shake[/code] [RichTextEffect].
+			[b]Note:[/b] Unlike tags in [member text], [member bbcode_prefix] is not included as part of the string extracted by the translation extractor ([b]Project Settings &gt; Localization &gt; POT Generation[/b]). This means the tags themselves are not internationalized, which prevents mistakes during localization.
+			[b]Note:[/b] Only effective if [member bbcode_enabled] is [code]true[/code].
+		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="false">
 			If [code]true[/code], a right-click displays the context menu.
