@@ -253,12 +253,17 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 	History &history = get_or_create_history(pending_action.history_id);
 	bool merging = history.undo_redo->is_merging();
 	history.undo_redo->commit_action(p_execute);
-	history.redo_stack.clear();
 
 	if (history.undo_redo->get_action_level() > 0) {
 		// Nested action.
 		is_committing = false;
 		return;
+	}
+
+	history.redo_stack.clear();
+	// If you undo history beyond saved version and modify it, the saved version can no longer be restored.
+	if (history.saved_version >= history.undo_redo->get_version()) {
+		history.saved_version = UNSAVED_VERSION;
 	}
 
 	if (!merging) {
@@ -270,6 +275,9 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 		History &global = get_or_create_history(GLOBAL_HISTORY);
 		global.redo_stack.clear();
 		global.undo_redo->discard_redo();
+		if (global.saved_version > global.undo_redo->get_version()) {
+			global.saved_version = UNSAVED_VERSION;
+		}
 	} else {
 		// On global actions, clear redo of all scenes instead.
 		for (KeyValue<int, History> &E : history_map) {
@@ -278,6 +286,9 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 			}
 			E.value.redo_stack.clear();
 			E.value.undo_redo->discard_redo();
+			if (E.value.saved_version > E.value.undo_redo->get_version()) {
+				E.value.saved_version = UNSAVED_VERSION;
+			}
 		}
 	}
 
@@ -377,12 +388,12 @@ void EditorUndoRedoManager::set_history_as_saved(int p_id) {
 
 void EditorUndoRedoManager::set_history_as_unsaved(int p_id) {
 	History &history = get_or_create_history(p_id);
-	history.saved_version = 0;
+	history.saved_version = UNSAVED_VERSION;
 }
 
 bool EditorUndoRedoManager::is_history_unsaved(int p_id) {
 	History &history = get_or_create_history(p_id);
-	if (history.saved_version == 0) {
+	if (history.saved_version == UNSAVED_VERSION) {
 		return true;
 	}
 
@@ -439,7 +450,7 @@ void EditorUndoRedoManager::clear_history(int p_idx, bool p_increase_version) {
 		history.redo_stack.clear();
 
 		if (p_increase_version) {
-			history.saved_version = 0;
+			history.saved_version = UNSAVED_VERSION;
 		} else {
 			set_history_as_saved(p_idx);
 		}
