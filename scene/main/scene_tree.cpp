@@ -1636,7 +1636,7 @@ Node *SceneTree::get_edited_scene_root() const {
 
 void SceneTree::set_current_scene(Node *p_scene) {
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Changing scene can only be done from the main thread.");
-	ERR_FAIL_COND(p_scene && p_scene->get_parent() != root);
+	ERR_FAIL_COND_MSG(p_scene && !root->is_ancestor_of(p_scene), "Scene must be a descendent of the scene tree's root.");
 	current_scene = p_scene;
 }
 
