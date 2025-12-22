@@ -1327,18 +1327,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--delta-smoothing") {
 			if (N) {
 				String string = N->get();
-				bool recognized = false;
 				if (string == "enable") {
 					OS::get_singleton()->set_delta_smoothing(true);
 					delta_smoothing_override = true;
-					recognized = true;
-				}
-				if (string == "disable") {
+				} else if (string == "disable") {
 					OS::get_singleton()->set_delta_smoothing(false);
 					delta_smoothing_override = false;
-					recognized = true;
-				}
-				if (!recognized) {
+				} else {
 					OS::get_singleton()->print("Delta-smoothing argument not recognized, aborting.\n");
 					goto error;
 				}
@@ -1353,16 +1348,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--accessibility") {
 			if (N) {
 				String string = N->get();
+				accessibility_mode_set = true;
 				if (string == "auto") {
 					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
-					accessibility_mode_set = true;
 				} else if (string == "always") {
 					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_ALWAYS;
-					accessibility_mode_set = true;
 				} else if (string == "disabled") {
 					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED;
-					accessibility_mode_set = true;
 				} else {
+					accessibility_mode_set = false;
 					OS::get_singleton()->print("Accessibility mode argument not recognized, aborting.\n");
 					goto error;
 				}
