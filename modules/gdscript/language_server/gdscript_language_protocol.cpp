@@ -338,7 +338,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	peer->res_queue.push_back(msg.utf8());
 }
 
-void GDScriptLanguageProtocol::request_client(const String &p_method, const Variant &p_params, int p_client_id) {
+void GDScriptLanguageProtocol::request_client(const String &p_method, const Variant &p_params, int p_client_id, const Callable &p_response_handler) {
 #ifdef TESTS_ENABLED
 	if (clients.is_empty()) {
 		return;
@@ -353,6 +353,7 @@ void GDScriptLanguageProtocol::request_client(const String &p_method, const Vari
 	ERR_FAIL_COND(peer.is_null());
 
 	Dictionary message = make_request(p_method, p_params, next_server_id);
+	set_response_handler(next_client_id, p_response_handler);
 	next_server_id++;
 	String msg = Variant(message).to_json_string();
 	msg = format_output(msg);
