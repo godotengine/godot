@@ -1802,6 +1802,10 @@ bool ClassDB::is_class_enabled(const StringName &p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
 
+bool ClassDB::is_class_exposed(const StringName &p_class) const {
+	return ::ClassDB::is_class_exposed(p_class);
+}
+
 #ifdef TOOLS_ENABLED
 void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
@@ -1814,7 +1818,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "class_has_method" || pf == "class_get_method_list" ||
 				pf == "class_get_integer_constant_list" || pf == "class_has_integer_constant" || pf == "class_get_integer_constant" ||
 				pf == "class_has_enum" || pf == "class_get_enum_list" || pf == "class_get_enum_constants" || pf == "class_get_integer_constant_enum" ||
-				pf == "is_class_enabled" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
+				pf == "is_class_enabled" || pf == "is_class_exposed" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
 		LocalVector<StringName> classes;
@@ -1874,6 +1878,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("is_class_enum_bitfield", "class", "enum", "no_inheritance"), &ClassDB::is_class_enum_bitfield, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
+
+	::ClassDB::bind_method(D_METHOD("is_class_exposed", "class"), &ClassDB::is_class_exposed);
 
 	BIND_ENUM_CONSTANT(API_CORE);
 	BIND_ENUM_CONSTANT(API_EDITOR);
