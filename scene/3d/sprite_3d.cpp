@@ -1233,6 +1233,9 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	_queue_redraw();
 	update_configuration_warnings();
 	emit_signal("sprite_frames_changed");
+#ifdef TOOLS_ENABLED
+	emit_signal(CoreStringName(_property_value_changed));
+#endif
 }
 
 Ref<SpriteFrames> AnimatedSprite3D::get_sprite_frames() const {
