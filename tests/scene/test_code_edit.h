@@ -65,7 +65,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			ERR_PRINT_ON;
 
-			Array args = { { 0 } };
+			Array args = { Array{ 0 } };
 
 			code_edit->set_line_as_breakpoint(0, true);
 			CHECK(code_edit->is_line_breakpointed(0));
@@ -81,7 +81,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->clear_breakpointed_lines();
 			SIGNAL_CHECK_FALSE("breakpoint_toggled");
 
-			Array args = { { 0 } };
+			Array args = { Array{ 0 } };
 
 			code_edit->set_line_as_breakpoint(0, true);
 			CHECK(code_edit->is_line_breakpointed(0));
@@ -93,7 +93,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and set text") {
-			Array args = { { 0 } };
+			Array args = { Array{ 0 } };
 
 			code_edit->set_text("test\nline");
 			code_edit->set_line_as_breakpoint(0, true);
@@ -110,7 +110,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->clear_breakpointed_lines();
 			SIGNAL_DISCARD("breakpoint_toggled")
 
-			args = { { 1 } };
+			args = { Array{ 1 } };
 			code_edit->set_text("test\nline");
 			code_edit->set_line_as_breakpoint(1, true);
 			CHECK(code_edit->is_line_breakpointed(1));
@@ -126,7 +126,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and clear") {
-			Array args = { { 0 } };
+			Array args = { Array{ 0 } };
 
 			code_edit->set_text("test\nline");
 			code_edit->set_line_as_breakpoint(0, true);
@@ -143,7 +143,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->clear_breakpointed_lines();
 			SIGNAL_DISCARD("breakpoint_toggled")
 
-			args = { { 1 } };
+			args = { Array{ 1 } };
 			code_edit->set_text("test\nline");
 			code_edit->set_line_as_breakpoint(1, true);
 			CHECK(code_edit->is_line_breakpointed(1));
@@ -159,7 +159,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and new lines no text") {
-			Array args = { { 0 } };
+			Array args = { Array{ 0 } };
 
 			/* No text moves breakpoint. */
 			code_edit->set_line_as_breakpoint(0, true);
@@ -167,7 +167,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Normal.
-			args = { { 0 }, { 1 } };
+			args = { Array{ 0 }, Array{ 1 } };
 
 			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line_count() == 2);
@@ -176,7 +176,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Non-Breaking.
-			args = { { 1 }, { 2 } };
+			args = { Array{ 1 }, Array{ 2 } };
 			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line_count() == 3);
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
@@ -184,7 +184,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Above.
-			args = { { 2 }, { 3 } };
+			args = { Array{ 2 }, Array{ 3 } };
 			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line_count() == 4);
 			CHECK_FALSE(code_edit->is_line_breakpointed(2));
@@ -193,7 +193,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and new lines with text") {
-			Array args = { { 0 } };
+			Array args = { Array{ 0 } };
 
 			/* Having text does not move breakpoint. */
 			code_edit->insert_text_at_caret("text");
@@ -217,7 +217,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK_FALSE("breakpoint_toggled");
 
 			// Above does move.
-			args = { { 0 }, { 1 } };
+			args = { Array{ 0 }, Array{ 1 } };
 
 			code_edit->set_caret_line(0);
 			SEND_GUI_ACTION("ui_text_newline_above");
@@ -228,7 +228,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and backspace") {
-			Array args = { { 1 } };
+			Array args = { Array{ 1 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(1, true);
@@ -251,7 +251,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Backspace above breakpointed line moves it.
-			args = { { 2 } };
+			args = { Array{ 2 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(2, true);
@@ -260,7 +260,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->set_caret_line(1);
 
-			args = { { 2 }, { 1 } };
+			args = { Array{ 2 }, Array{ 1 } };
 			SEND_GUI_ACTION("ui_text_backspace");
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(2));
@@ -270,7 +270,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete") {
-			Array args = { { 1 } };
+			Array args = { Array{ 1 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(1, true);
@@ -294,7 +294,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Delete above breakpointed line moves it.
-			args = { { 2 } };
+			args = { Array{ 2 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(2, true);
@@ -303,7 +303,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->set_caret_line(0);
 
-			args = { { 2 }, { 1 } };
+			args = { Array{ 2 }, Array{ 1 } };
 			SEND_GUI_ACTION("ui_text_delete");
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(2));
@@ -313,7 +313,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete selection") {
-			Array args = { { 1 } };
+			Array args = { Array{ 1 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(1, true);
@@ -327,7 +327,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Should handle breakpoint move when deleting selection by adding less text then removed.
-			args = { { 9 } };
+			args = { Array{ 9 } };
 
 			code_edit->set_text("\n\n\n\n\n\n\n\n\n");
 			code_edit->set_line_as_breakpoint(9, true);
@@ -336,7 +336,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->select(0, 0, 6, 0);
 
-			args = { { 9 }, { 4 } };
+			args = { Array{ 9 }, Array{ 4 } };
 			SEND_GUI_ACTION("ui_text_newline");
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(9));
@@ -345,7 +345,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			// Should handle breakpoint move when deleting selection by adding more text then removed.
-			args = { { 9 }, { 14 } };
+			args = { Array{ 9 }, Array{ 14 } };
 
 			code_edit->insert_text_at_caret("\n\n\n\n\n");
 			MessageQueue::get_singleton()->flush();
@@ -360,7 +360,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and undo") {
-			Array args = { { 1 } };
+			Array args = { Array{ 1 } };
 
 			code_edit->set_text("\n\n");
 			code_edit->set_line_as_breakpoint(1, true);
@@ -4536,7 +4536,7 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 		SEND_GUI_KEY_EVENT(Key::CTRL);
 #endif
 
-		Array signal_args = { { "some" } };
+		Array signal_args = { Array{ "some" } };
 		SIGNAL_CHECK("symbol_validate", signal_args);
 
 		SIGNAL_UNWATCH(code_edit, "symbol_validate");

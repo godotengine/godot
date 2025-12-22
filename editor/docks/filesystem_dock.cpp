@@ -2666,7 +2666,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					if (!fpath.ends_with("/")) {
 						fpath = fpath.get_base_dir();
 					}
-					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, { fpath });
+					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, PackedStringArray{ fpath });
 				}
 			} else if (p_option >= CONVERT_BASE_ID) {
 				selected_conversion_id = p_option - CONVERT_BASE_ID;
