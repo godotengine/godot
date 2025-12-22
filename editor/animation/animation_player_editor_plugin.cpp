@@ -2328,7 +2328,7 @@ AnimationPlayerEditor::~AnimationPlayerEditor() {
 void AnimationPlayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			Node3DEditor::get_singleton()->connect(SNAME("transform_key_request"), callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
+			Node3DEditor::get_singleton()->connect(SNAME("transform_3d_key_request"), callable_mp(this, &AnimationPlayerEditorPlugin::_transform_3d_key_request));
 			InspectorDock::get_inspector_singleton()->connect(SNAME("property_keyed"), callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
 			anim_editor->get_track_editor()->connect(SNAME("keying_changed"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
 			InspectorDock::get_inspector_singleton()->connect(SNAME("edited_object_changed"), callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
@@ -2346,7 +2346,7 @@ void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const V
 	te->insert_value_key(p_keyed, p_advance);
 }
 
-void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
+void AnimationPlayerEditorPlugin::_transform_3d_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
 	if (!anim_editor->get_track_editor()->has_keying()) {
 		return;
 	}
@@ -2354,9 +2354,9 @@ void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const Strin
 	if (!s) {
 		return;
 	}
-	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_POSITION_3D, p_key.origin);
-	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
-	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
+	anim_editor->get_track_editor()->insert_transform_3d_key(s, p_sub, Animation::TYPE_POSITION_3D, p_key.origin);
+	anim_editor->get_track_editor()->insert_transform_3d_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
+	anim_editor->get_track_editor()->insert_transform_3d_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
 }
 
 void AnimationPlayerEditorPlugin::_update_keying() {

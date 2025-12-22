@@ -260,13 +260,13 @@ void BonePropertiesEditor::_property_keyed(const String &p_path, bool p_advance)
 	if (split.size() == 3 && split[0] == "bones") {
 		int bone_idx = split[1].to_int();
 		if (split[2] == "position") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, (Vector3)skeleton->get(p_path) / skeleton->get_motion_scale());
+			te->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, (Vector3)skeleton->get(p_path) / skeleton->get_motion_scale());
 		}
 		if (split[2] == "rotation") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_ROTATION_3D, skeleton->get(p_path));
+			te->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_ROTATION_3D, skeleton->get(p_path));
 		}
 		if (split[2] == "scale") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_SCALE_3D, skeleton->get(p_path));
+			te->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_SCALE_3D, skeleton->get(p_path));
 		}
 	}
 }
@@ -477,14 +477,14 @@ void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 			continue;
 		}
 
-		if (pos_enabled && (p_all_bones || te->has_track(skeleton, name, Animation::TYPE_POSITION_3D))) {
-			te->insert_transform_key(skeleton, name, Animation::TYPE_POSITION_3D, skeleton->get_bone_pose_position(i) / skeleton->get_motion_scale());
+		if (pos_enabled && (p_all_bones || te->has_transform_3d_track(skeleton, name, Animation::TYPE_POSITION_3D))) {
+			te->insert_transform_3d_key(skeleton, name, Animation::TYPE_POSITION_3D, skeleton->get_bone_pose_position(i) / skeleton->get_motion_scale());
 		}
-		if (rot_enabled && (p_all_bones || te->has_track(skeleton, name, Animation::TYPE_ROTATION_3D))) {
-			te->insert_transform_key(skeleton, name, Animation::TYPE_ROTATION_3D, skeleton->get_bone_pose_rotation(i));
+		if (rot_enabled && (p_all_bones || te->has_transform_3d_track(skeleton, name, Animation::TYPE_ROTATION_3D))) {
+			te->insert_transform_3d_key(skeleton, name, Animation::TYPE_ROTATION_3D, skeleton->get_bone_pose_rotation(i));
 		}
-		if (scl_enabled && (p_all_bones || te->has_track(skeleton, name, Animation::TYPE_SCALE_3D))) {
-			te->insert_transform_key(skeleton, name, Animation::TYPE_SCALE_3D, skeleton->get_bone_pose_scale(i));
+		if (scl_enabled && (p_all_bones || te->has_transform_3d_track(skeleton, name, Animation::TYPE_SCALE_3D))) {
+			te->insert_transform_3d_key(skeleton, name, Animation::TYPE_SCALE_3D, skeleton->get_bone_pose_scale(i));
 		}
 	}
 	te->commit_insert_queue();

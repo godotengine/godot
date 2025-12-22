@@ -130,7 +130,7 @@ protected:
 
 public:
 	void popup_edit_settings();
-	static void update_navigation_preset();
+	static void update_3d_navigation_preset();
 
 	EditorSettingsDialog();
 };

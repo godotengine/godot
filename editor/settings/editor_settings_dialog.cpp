@@ -81,11 +81,11 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 	} else if (full_name == "editors/3d/navigation/orbit_mouse_button" || full_name == "editors/3d/navigation/pan_mouse_button" || full_name == "editors/3d/navigation/zoom_mouse_button" || full_name == "editors/3d/navigation/emulate_3_button_mouse") {
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
-		update_navigation_preset();
+		update_3d_navigation_preset();
 	}
 }
 
-void EditorSettingsDialog::update_navigation_preset() {
+void EditorSettingsDialog::update_3d_navigation_preset() {
 	Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 	Node3DEditorViewport::ViewportNavMouseButton set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
 	Node3DEditorViewport::ViewportNavMouseButton set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
