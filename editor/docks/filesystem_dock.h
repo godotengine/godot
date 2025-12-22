@@ -105,6 +105,71 @@ public:
 		OVERWRITE_RENAME,
 	};
 
+public:
+	struct PathSelection {
+		String path;
+		bool is_favorite = false;
+
+		Dictionary to_dict() const {
+			Dictionary dict;
+			dict["path"] = path;
+			dict["is_favorite"] = is_favorite;
+			return dict;
+		}
+
+		struct FileNoCaseComparator {
+			bool operator()(const PathSelection &p_a, const PathSelection &p_b) const {
+				return p_a.path.filenocasecmp_to(p_b.path) < 0;
+			}
+		};
+
+		static Vector<String> get_paths(Vector<PathSelection> p_items) {
+			Vector<String> paths;
+			for (const PathSelection &item : p_items) {
+				if (!paths.has(item.path)) {
+					paths.push_back(item.path);
+				}
+			}
+			return paths;
+		}
+
+		static Vector<PathSelection> from_paths(Vector<String> p_paths) {
+			Vector<PathSelection> items;
+			for (const String &path : p_paths) {
+				items.push_back({ path, false });
+			}
+			return items;
+		}
+
+		static Array get_dicts(Vector<PathSelection> p_items) {
+			Array array;
+			for (const PathSelection &item : p_items) {
+				array.push_back(item.to_dict());
+			}
+			return array;
+		}
+
+		bool operator==(const PathSelection &p_item) const {
+			return path == p_item.path && is_favorite == p_item.is_favorite;
+		}
+
+		bool operator!=(const PathSelection &p_item) const {
+			return !operator==(p_item);
+		}
+
+		static PathSelection from_dict(const Dictionary &p_dict) {
+			PathSelection item;
+			ERR_FAIL_COND_V(!PathSelection::is_valid_dict(p_dict), item);
+			item.path = p_dict["path"];
+			item.is_favorite = p_dict["is_favorite"];
+			return item;
+		}
+
+		static bool is_valid_dict(const Dictionary &p_dict) {
+			return (p_dict.has("path") && p_dict["path"].get_type() == Variant::Type::STRING) && (p_dict.has("is_favorite") && p_dict["is_favorite"].get_type() == Variant::Type::BOOL);
+		}
+	};
+
 private:
 	enum FileMenu {
 		FILE_MENU_OPEN,
@@ -263,7 +328,7 @@ private:
 
 	HashSet<String> cached_valid_conversion_targets;
 
-	Vector<String> prev_selection;
+	Vector<PathSelection> prev_selection;
 
 	void _update_selection_changed();
 
@@ -273,7 +338,7 @@ private:
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path);
 	void _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true);
-	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false, bool p_grab_focus = false);
+	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false, bool p_grab_focus = false, bool p_clear_selection = true);
 	bool _update_filtered_items(TreeItem *p_tree_item = nullptr);
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
@@ -369,14 +434,15 @@ private:
 
 	void _update_display_mode(bool p_force = false);
 
-	Vector<String> _tree_get_selected(bool remove_self_inclusion = true, bool p_include_unselected_cursor = false) const;
+	Vector<PathSelection> _tree_get_selected(bool remove_self_inclusion = true, bool p_include_unselected_cursor = false) const;
 	Vector<String> _file_list_get_selected() const;
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
 	void _feature_profile_changed();
 	void _project_settings_changed();
-	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
+	static Vector<String> _remove_self_included_paths(Vector<String> p_selected_strings);
+	static Vector<PathSelection> _remove_self_included_items(Vector<PathSelection> p_selected_items);
 
 private:
 	inline static FileSystemDock *singleton = nullptr;
@@ -404,6 +470,7 @@ public:
 	Dictionary get_assigned_folder_colors() const;
 
 	Vector<String> get_selected_paths() const;
+	Vector<PathSelection> get_selected_items() const;
 	Vector<String> get_uncollapsed_paths() const;
 
 	String get_current_path() const;

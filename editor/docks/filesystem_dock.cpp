@@ -720,15 +720,34 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 }
 
 Vector<String> FileSystemDock::get_selected_paths() const {
+	Vector<String> selected;
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-		return _tree_get_selected(false);
+		for (PathSelection &selection : _tree_get_selected(false)) {
+			if (!selected.has(selection.path)) {
+				selected.push_back(selection.path);
+			}
+		}
 	} else {
-		Vector<String> selected = _file_list_get_selected();
+		selected = _file_list_get_selected();
 		if (selected.is_empty()) {
 			selected.push_back(get_current_directory());
 		}
-		return selected;
 	}
+	return selected;
+}
+
+Vector<FileSystemDock::PathSelection> FileSystemDock::get_selected_items() const {
+	Vector<PathSelection> selected;
+	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
+		selected = _tree_get_selected(false);
+	} else {
+		Vector<String> selected_files = _file_list_get_selected();
+		if (selected_files.is_empty()) {
+			selected_files.push_back(get_current_directory());
+		}
+		selected = PathSelection::from_paths(selected_files);
+	}
+	return selected;
 }
 
 String FileSystemDock::get_current_path() const {
@@ -751,14 +770,24 @@ void FileSystemDock::_set_current_path_line_edit_text(const String &p_path) {
 	}
 }
 
-void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites, bool p_grab_focus) {
+void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites, bool p_grab_focus, bool p_clear_selection) {
 	String target_path = p_path;
 	bool is_directory = false;
 
 	if (p_path.is_empty()) {
 		target_path = "res://";
 		is_directory = true;
-	} else if (p_path != "Favorites") {
+	} else if (p_path == "Favorites") {
+		if (p_clear_selection) {
+			tree->deselect_all();
+		}
+		favorites_item->select(0);
+		if (p_grab_focus) {
+			tree->grab_focus(true);
+		}
+		tree->ensure_cursor_is_visible();
+		return;
+	} else {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->dir_exists(p_path)) {
 			is_directory = true;
@@ -774,35 +803,53 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	_set_current_path_line_edit_text(current_path);
 	_push_to_history();
 
-	String base_dir_path = target_path.get_base_dir();
-	if (base_dir_path != "res://") {
-		base_dir_path += "/";
-	}
+	String base_dir_path;
+	TreeItem **directory_ptr = nullptr;
+	if (!p_select_in_favorites) {
+		base_dir_path = target_path.get_base_dir();
+		if (base_dir_path != "res://") {
+			base_dir_path += "/";
+		}
 
-	TreeItem **directory_ptr = folder_map.getptr(base_dir_path);
-	if (!directory_ptr) {
-		return;
-	}
+		directory_ptr = folder_map.getptr(base_dir_path);
+		if (!directory_ptr) {
+			return;
+		}
 
-	// Unfold all folders along the path.
-	TreeItem *ti = *directory_ptr;
-	while (ti) {
-		ti->set_collapsed(false);
-		ti = ti->get_parent();
+		// Unfold all folders along the path.
+		TreeItem *ti = *directory_ptr;
+		while (ti) {
+			ti->set_collapsed(false);
+			ti = ti->get_parent();
+		}
 	}
 
 	// Select the file or directory in the tree.
-	tree->deselect_all();
+	if (p_clear_selection) {
+		tree->deselect_all();
+	}
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-		// Either search for 'folder/' or '/file.ext'.
-		const String file_name = is_directory ? target_path.trim_suffix("/").get_file() + "/" : "/" + target_path.get_file();
-		TreeItem *item = is_directory ? *directory_ptr : (*directory_ptr)->get_first_child();
-		while (item) {
-			if (item->get_metadata(0).operator String().ends_with(file_name)) {
-				item->select(0);
-				break;
+		if (p_select_in_favorites) {
+			TreeItem *favorite = favorites_item->get_first_child();
+			while (favorite) {
+				if (favorite->get_metadata(0).operator String() == p_path) {
+					favorites_item->set_collapsed(false);
+					favorite->select(0);
+					break;
+				}
+				favorite = favorite->get_next();
 			}
-			item = item->get_next();
+		} else {
+			// Either search for 'folder/' or '/file.ext'.
+			const String file_name = is_directory ? target_path.trim_suffix("/").get_file() + "/" : "/" + target_path.get_file();
+			TreeItem *item = is_directory ? *directory_ptr : (*directory_ptr)->get_first_child();
+			while (item) {
+				if (item->get_metadata(0).operator String().ends_with(file_name)) {
+					item->select(0);
+					break;
+				}
+				item = item->get_next();
+			}
 		}
 		if (p_grab_focus) {
 			tree->grab_focus(true);
@@ -851,6 +898,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 	file_list_search_box->clear();
 	// Try to set the FileSystem dock visible.
 	EditorDockManager::get_singleton()->focus_dock(this);
+	tree->deselect_all();
 	_navigate_to_path(p_path, false, is_visible_in_tree());
 
 	import_dock_needs_update = true;
@@ -2091,28 +2139,35 @@ void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Hash
 	EditorNode::get_singleton()->save_scene_list(r_file_owners);
 }
 
-Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion, bool p_include_unselected_cursor) const {
+Vector<FileSystemDock::PathSelection> FileSystemDock::_tree_get_selected(bool remove_self_inclusion, bool p_include_unselected_cursor) const {
 	// Build a list of selected items with the active one at the first position.
-	Vector<String> selected_strings;
+	Vector<PathSelection> selected_items;
+
+	auto is_favorite_item = [this](TreeItem *item) -> bool {
+		if (item == favorites_item) {
+			return false;
+		}
+		return item->get_parent() == favorites_item;
+	};
 
 	TreeItem *cursor_item = tree->get_selected();
-	if (cursor_item && (p_include_unselected_cursor || cursor_item->is_selected(0)) && cursor_item != favorites_item) {
-		selected_strings.push_back(cursor_item->get_metadata(0));
+	if (cursor_item && (p_include_unselected_cursor || cursor_item->is_selected(0))) {
+		selected_items.push_back({ .path = cursor_item->get_metadata(0), .is_favorite = is_favorite_item(cursor_item) });
 	}
 
 	TreeItem *selected = tree->get_root();
 	selected = tree->get_next_selected(selected);
 	while (selected) {
 		if (selected != cursor_item && selected != favorites_item && selected->is_visible_in_tree()) {
-			selected_strings.push_back(selected->get_metadata(0));
+			selected_items.push_back({ .path = selected->get_metadata(0), .is_favorite = is_favorite_item(selected) });
 		}
 		selected = tree->get_next_selected(selected);
 	}
 
 	if (remove_self_inclusion) {
-		selected_strings = _remove_self_included_paths(selected_strings);
+		selected_items = _remove_self_included_items(selected_items);
 	}
-	return selected_strings;
+	return selected_items;
 }
 
 Vector<String> FileSystemDock::_file_list_get_selected() const {
@@ -2129,22 +2184,45 @@ Vector<String> FileSystemDock::_file_list_get_selected() const {
 	return selected;
 }
 
-Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> selected_strings) {
+Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> p_selected_paths) {
 	// Remove paths or files that are included into another.
-	if (selected_strings.size() > 1) {
-		selected_strings.sort_custom<FileNoCaseComparator>();
+	if (p_selected_paths.size() > 1) {
+		p_selected_paths.sort_custom<FileNoCaseComparator>();
+		p_selected_paths.reverse();
 		String last_path = "";
-		for (int i = 0; i < selected_strings.size(); i++) {
-			if (!last_path.is_empty() && selected_strings[i].begins_with(last_path)) {
-				selected_strings.remove_at(i);
-				i--;
+		for (int i = p_selected_paths.size() - 1; i >= 0; i--) {
+			if (!last_path.is_empty() && p_selected_paths[i].begins_with(last_path)) {
+				p_selected_paths.remove_at(i);
 			}
-			if (selected_strings[i].ends_with("/")) {
-				last_path = selected_strings[i];
+			if (p_selected_paths[i].ends_with("/")) {
+				last_path = p_selected_paths[i];
 			}
 		}
+		p_selected_paths.reverse();
 	}
-	return selected_strings;
+	return p_selected_paths;
+}
+
+Vector<FileSystemDock::PathSelection> FileSystemDock::_remove_self_included_items(Vector<PathSelection> p_selected_items) {
+	// Remove paths or files that are included into another.
+	if (p_selected_items.size() > 1) {
+		p_selected_items.sort_custom<PathSelection::FileNoCaseComparator>();
+		p_selected_items.reverse();
+		String last_path = "";
+		for (int i = p_selected_items.size() - 1; i >= 0; i--) {
+			if (p_selected_items[i].is_favorite) {
+				continue;
+			}
+			if (!last_path.is_empty() && p_selected_items[i].path.begins_with(last_path)) {
+				p_selected_items.remove_at(i);
+			}
+			if (p_selected_items[i].path.ends_with("/")) {
+				last_path = p_selected_items[i].path;
+			}
+		}
+		p_selected_items.reverse();
+	}
+	return p_selected_items;
 }
 
 void FileSystemDock::_tree_rmb_option(int p_option) {
@@ -2154,7 +2232,7 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 		return;
 	}
 
-	Vector<String> selected_strings = _tree_get_selected(false);
+	Vector<PathSelection> selected_strings = _tree_get_selected(false);
 
 	// Execute the current option.
 	switch (p_option) {
@@ -2170,7 +2248,7 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 			[[fallthrough]];
 		}
 		default: {
-			_file_option(p_option, selected_strings);
+			_file_option(p_option, PathSelection::get_paths(selected_strings));
 		} break;
 	}
 }
@@ -2971,11 +3049,14 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 			all_not_favorites &= !is_favorite;
 			selected = tree->get_next_selected(selected);
 		}
+
+		Vector<PathSelection> items;
 		if (!all_not_favorites) {
-			paths = _tree_get_selected(false);
+			items = _tree_get_selected(false);
 		} else {
-			paths = _tree_get_selected();
+			items = _tree_get_selected();
 		}
+		paths = PathSelection::get_paths(items);
 	} else if (p_from == files) {
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->is_selected(i)) {
@@ -3604,7 +3685,7 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button
 	tree->grab_focus(true);
 
 	// Right click is pressed in the tree.
-	Vector<String> paths = _tree_get_selected(false);
+	Vector<String> paths = PathSelection::get_paths(_tree_get_selected(false));
 
 	tree_popup->clear();
 
@@ -3752,9 +3833,9 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 }
 
 void FileSystemDock::_update_selection_changed() {
-	Vector<String> selection;
+	Vector<PathSelection> selection;
 	selection.append_array(_tree_get_selected());
-	selection.append_array(_file_list_get_selected());
+	selection.append_array(PathSelection::from_paths(_file_list_get_selected()));
 	if (prev_selection != selection) {
 		prev_selection = selection;
 		emit_signal(SNAME("selection_changed"));
@@ -3846,7 +3927,7 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			}
 
 			if (custom_callback.is_valid()) {
-				PackedStringArray selected = _tree_get_selected(false);
+				PackedStringArray selected = PathSelection::get_paths(_tree_get_selected(false));
 				if (create) {
 					if (selected.is_empty()) {
 						selected.append("res://");
@@ -3971,11 +4052,10 @@ void FileSystemDock::_update_import_dock() {
 	_update_selection_changed();
 
 	// List selected.
-	Vector<String> selected;
+	Vector<PathSelection> selected;
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 		// Use the tree
 		selected = _tree_get_selected();
-
 	} else {
 		// Use the file list.
 		for (int i = 0; i < files->get_item_count(); i++) {
@@ -3983,11 +4063,11 @@ void FileSystemDock::_update_import_dock() {
 				continue;
 			}
 
-			selected.push_back(files->get_item_metadata(i));
+			selected.push_back({ .path = files->get_item_metadata(i), .is_favorite = false });
 		}
 	}
 
-	if (!selected.is_empty() && selected[0] == "res://") {
+	if (!selected.is_empty() && selected[0].path == "res://") {
 		// Scanning res:// is costly and unlikely to yield any useful results.
 		return;
 	}
@@ -3995,8 +4075,8 @@ void FileSystemDock::_update_import_dock() {
 	// Expand directory selection.
 	Vector<String> efiles;
 	String extension;
-	for (const String &fpath : selected) {
-		_get_imported_files(fpath, extension, efiles);
+	for (const String &path : PathSelection::get_paths(selected)) {
+		_get_imported_files(path, extension, efiles);
 	}
 
 	// Check import.
@@ -4160,8 +4240,8 @@ void FileSystemDock::save_layout_to_config(Ref<ConfigFile> &p_layout, const Stri
 	p_layout->set_value(p_section, "display_mode", get_display_mode());
 	p_layout->set_value(p_section, "file_sort", (int)get_file_sort());
 	p_layout->set_value(p_section, "file_list_display_mode", get_file_list_display_mode());
-	PackedStringArray selected_files = get_selected_paths();
-	p_layout->set_value(p_section, "selected_paths", selected_files);
+	Vector<PathSelection> selected_items = get_selected_items();
+	p_layout->set_value(p_section, "selected_paths", PathSelection::get_dicts(selected_items));
 	Vector<String> uncollapsed_paths = get_uncollapsed_paths();
 	p_layout->set_value(p_section, "uncollapsed_paths", searched_tokens.is_empty() ? uncollapsed_paths : uncollapsed_paths_before_search);
 }
@@ -4193,9 +4273,32 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 	}
 
 	if (p_layout->has_section_key(p_section, "selected_paths")) {
-		PackedStringArray dock_filesystem_selected_paths = p_layout->get_value(p_section, "selected_paths");
-		for (int i = 0; i < dock_filesystem_selected_paths.size(); i++) {
-			select_file(dock_filesystem_selected_paths[i]);
+		Variant dock_filesystem_selected_paths_variant = p_layout->get_value(p_section, "selected_paths");
+		switch (dock_filesystem_selected_paths_variant.get_type()) {
+			case Variant::Type::PACKED_STRING_ARRAY: {
+				PackedStringArray dock_filesystem_selected_paths = dock_filesystem_selected_paths_variant;
+				for (int i = 0; i < dock_filesystem_selected_paths.size(); i++) {
+					_navigate_to_path(dock_filesystem_selected_paths[i]);
+				}
+			} break;
+			case Variant::Type::ARRAY: {
+				tree->deselect_all();
+				Array dock_filesystem_selected_items = dock_filesystem_selected_paths_variant;
+				for (int i = 0; i < dock_filesystem_selected_items.size(); i++) {
+					Variant item_variant = dock_filesystem_selected_items[i];
+					if (item_variant.get_type() != Variant::Type::DICTIONARY) {
+						continue;
+					}
+					if (!PathSelection::is_valid_dict(item_variant)) {
+						continue;
+					}
+					Dictionary item = item_variant;
+					_navigate_to_path(item["path"], item["is_favorite"], false, false);
+				}
+			} break;
+			default: {
+				// Do nothing, invalid value.
+			} break;
 		}
 	}
 
