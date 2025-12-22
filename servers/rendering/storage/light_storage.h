@@ -82,6 +82,7 @@ public:
 	virtual AABB light_get_aabb(RID p_light) const = 0;
 	virtual float light_get_param(RID p_light, RS::LightParam p_param) = 0;
 	virtual Color light_get_color(RID p_light) = 0;
+	virtual bool light_is_negative(RID p_light) const = 0;
 	virtual bool light_get_reverse_cull_face_mode(RID p_light) const = 0;
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) = 0;
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) = 0;
