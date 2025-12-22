@@ -885,6 +885,8 @@ Error ResourceLoaderBinary::load() {
 		res->set_edited(false);
 #endif
 
+		res->notification(Object::NOTIFICATION_EXPORT_ASSIGNED);
+
 		if (progress) {
 			*progress = (i + 1) / float(internal_resources.size());
 		}
@@ -1252,6 +1254,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	if (err) {
 		return Ref<Resource>();
 	}
+
 	return loader.resource;
 }
 
