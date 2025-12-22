@@ -1299,7 +1299,7 @@ RBSet<GDScript *> GDScript::get_must_clear_dependencies() {
 	RBSet<GDScript *> must_clear_dependencies;
 	HashMap<GDScript *, RBSet<GDScript *>> all_dependencies = get_all_dependencies();
 
-	RBSet<GDScript *> cant_clear;
+	HashSet<GDScript *> cant_clear;
 	for (KeyValue<GDScript *, RBSet<GDScript *>> &E : all_dependencies) {
 		if (dependencies.has(E.key)) {
 			continue;
