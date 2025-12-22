@@ -1023,6 +1023,9 @@ layout(location = 0) out vec4 frag_color;
 #define SPECULAR_SCHLICK_GGX
 #endif
 
+// Mobile renderer uses a fixed kernel for the PCF shadows instead of more expensive disk sampling.
+#define PCF_FIXED_KERNEL
+
 #include "../scene_forward_lights_inc.glsl"
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && !defined(USE_VERTEX_LIGHTING)
@@ -1970,7 +1973,7 @@ void main() {
 
 					bool blend_split = sc_directional_light_blend_split(i);
 					float blend_split_weight = blend_split ? 1.0f : 0.0f;
-					shadow = half(sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor + (1.0 - blur_factor) * blend_split_weight), pssm_coord, scene_data.taa_frame_count));
+					shadow = half(sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size, pssm_coord, scene_data.taa_frame_count));
 
 					if (blend_split) {
 						half pssm_blend;
@@ -2004,7 +2007,7 @@ void main() {
 
 						pssm_coord /= pssm_coord.w;
 
-						half shadow2 = half(sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor2 + (1.0 - blur_factor2) * blend_split_weight), pssm_coord, scene_data.taa_frame_count));
+						half shadow2 = half(sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size, pssm_coord, scene_data.taa_frame_count));
 						shadow = mix(shadow, shadow2, pssm_blend);
 					}
 

@@ -273,6 +273,138 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 
 #ifndef SHADOWS_DISABLED
 
+#ifdef PCF_FIXED_KERNEL
+
+vec2 uv_wrap_omni(vec2 coord, bool omni, vec4 uv_rect, vec2 flip_offset) {
+	if (omni) {
+		vec2 coord_local = 2.0 * (coord - uv_rect.xy) / uv_rect.zw - 1.0;
+		float coord_length_squared = dot(coord_local, coord_local);
+		if (coord_length_squared > 1.0) {
+			coord_local = coord_local * (2.0 / sqrt(coord_length_squared) - 1.0) * 0.5 + 0.5;
+			return (flip_offset + uv_rect.xy + coord_local * uv_rect.zw);
+		} else {
+			return coord;
+		}
+	} else {
+		return coord;
+	}
+}
+
+half sample_pcf_shadow_fixed_kernel(texture2D shadow, vec2 shadow_pixel_size, vec3 coord, uint samples, bool omni, vec4 uv_rect, vec2 flip_offset) {
+#define uv_wrap(x) uv_wrap_omni(x, omni, uv_rect, flip_offset)
+
+	vec2 uv = uv_wrap(coord.xy) / shadow_pixel_size;
+
+	vec2 base_uv;
+	base_uv.x = floor(uv.x + 0.5);
+	base_uv.y = floor(uv.y + 0.5);
+
+	float s = (uv.x + 0.5 - base_uv.x);
+	float t = (uv.y + 0.5 - base_uv.y);
+
+	base_uv -= vec2(0.5, 0.5);
+	base_uv *= shadow_pixel_size;
+
+	float sum = 0;
+	if (samples == 4) {
+		float uw0 = (3.0 - 2.0 * s);
+		float uw1 = (1.0 + 2.0 * s);
+
+		float u0 = (2.0 - s) / uw0 - 1.0;
+		float u1 = s / uw1 + 1.0;
+
+		float vw0 = (3.0 - 2.0 * t);
+		float vw1 = (1.0 + 2.0 * t);
+
+		float v0 = (2.0 - t) / vw0 - 1.0;
+		float v1 = t / vw1 + 1.0;
+
+		sum += uw0 * vw0 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u0, v0) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw1 * vw0 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u1, v0) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw0 * vw1 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u0, v1) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw1 * vw1 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u1, v1) * shadow_pixel_size), coord.z, 1.0));
+
+		return half(sum * (1.0f / 16.0f));
+	} else if (samples == 9) {
+		float uw0 = (4.0 - 3.0 * s);
+		float uw1 = 7.0;
+		float uw2 = (1.0 + 3.0 * s);
+
+		float u0 = (3.0 - 2.0 * s) / uw0 - 2.0;
+		float u1 = (3.0 + s) / uw1;
+		float u2 = s / uw2 + 2.0;
+
+		float vw0 = (4.0 - 3.0 * t);
+		float vw1 = 7.0;
+		float vw2 = (1.0 + 3.0 * t);
+
+		float v0 = (3.0 - 2.0 * t) / vw0 - 2.0;
+		float v1 = (3.0 + t) / vw1;
+		float v2 = t / vw2 + 2.0;
+
+		sum += uw0 * vw0 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u0, v0) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw1 * vw0 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u1, v0) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw2 * vw0 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u2, v0) * shadow_pixel_size), coord.z, 1.0));
+
+		sum += uw0 * vw1 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u0, v1) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw1 * vw1 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u1, v1) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw2 * vw1 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u2, v1) * shadow_pixel_size), coord.z, 1.0));
+
+		sum += uw0 * vw2 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u0, v2) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw1 * vw2 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u1, v2) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw2 * vw2 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u2, v2) * shadow_pixel_size), coord.z, 1.0));
+
+		return half(sum * 1.0f / 144.0f);
+	} else if (samples == 16) {
+		float uw0 = (5.0 * s - 6.0);
+		float uw1 = (11.0 * s - 28.0);
+		float uw2 = -(11.0 * s + 17.0);
+		float uw3 = -(5.0 * s + 1.0);
+
+		float u0 = (4.0 * s - 5.0) / uw0 - 3.0;
+		float u1 = (4.0 * s - 16.0) / uw1 - 1.0;
+		float u2 = -(7.0 * s + 5.0) / uw2 + 1.0;
+		float u3 = -s / uw3 + 3.0;
+
+		float vw0 = (5.0 * t - 6.0);
+		float vw1 = (11.0 * t - 28.0);
+		float vw2 = -(11.0 * t + 17.0);
+		float vw3 = -(5.0 * t + 1.0);
+
+		float v0 = (4.0 * t - 5.0) / vw0 - 3.0;
+		float v1 = (4.0 * t - 16.0) / vw1 - 1.0;
+		float v2 = -(7.0 * t + 5.0) / vw2 + 1.0;
+		float v3 = -t / vw3 + 3;
+
+		sum += uw0 * vw0 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u0, v0) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw1 * vw0 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u1, v0) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw2 * vw0 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u2, v0) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw3 * vw0 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u3, v0) * shadow_pixel_size), coord.z, 1.0));
+
+		sum += uw0 * vw1 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u0, v1) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw1 * vw1 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u1, v1) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw2 * vw1 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u2, v1) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw3 * vw1 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u3, v1) * shadow_pixel_size), coord.z, 1.0));
+
+		sum += uw0 * vw2 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u0, v2) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw1 * vw2 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u1, v2) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw2 * vw2 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u2, v2) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw3 * vw2 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u3, v2) * shadow_pixel_size), coord.z, 1.0));
+
+		sum += uw0 * vw3 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u0, v3) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw1 * vw3 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u1, v3) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw2 * vw3 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u2, v3) * shadow_pixel_size), coord.z, 1.0));
+		sum += uw3 * vw3 * textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(base_uv + vec2(u3, v3) * shadow_pixel_size), coord.z, 1.0));
+
+		return half(sum * 1.0f / 2704.0f);
+	} else {
+		return half(textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(uv_wrap(coord.xy), coord.z, 1.0)));
+	}
+
+#undef uv_wrap
+}
+#endif
+
 // Interleaved Gradient Noise
 // https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
 float quick_hash(vec2 pos) {
@@ -281,6 +413,9 @@ float quick_hash(vec2 pos) {
 }
 
 half sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec4 coord, float taa_frame_count) {
+#ifdef PCF_FIXED_KERNEL
+	return sample_pcf_shadow_fixed_kernel(shadow, shadow_pixel_size, coord.xyz, sc_directional_soft_shadow_samples(), false, vec4(0.0), vec2(0.0));
+#else
 	vec2 pos = coord.xy;
 	float depth = coord.z;
 
@@ -305,9 +440,13 @@ half sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec
 	}
 
 	return half(avg * (1.0 / float(sc_directional_soft_shadow_samples())));
+#endif
 }
 
 half sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord, float taa_frame_count) {
+#ifdef PCF_FIXED_KERNEL
+	return sample_pcf_shadow_fixed_kernel(shadow, shadow_pixel_size, coord, sc_soft_shadow_samples(), false, vec4(0.0), vec2(0.0));
+#else
 	vec2 pos = coord.xy;
 	float depth = coord.z;
 
@@ -332,9 +471,15 @@ half sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord, flo
 	}
 
 	return half(avg * (1.0 / float(sc_soft_shadow_samples())));
+#endif
 }
 
 half sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec4 uv_rect, vec2 flip_offset, float depth, float taa_frame_count) {
+#ifdef PCF_FIXED_KERNEL
+	vec2 pos = coord.xy * 0.5 + 0.5;
+	pos = uv_rect.xy + pos * uv_rect.zw;
+	return sample_pcf_shadow_fixed_kernel(shadow, scene_data_block.data.shadow_atlas_pixel_size, vec3(pos, depth), sc_soft_shadow_samples(), true, uv_rect, flip_offset);
+#else
 	//if only one sample is taken, take it from the center
 	if (sc_soft_shadow_samples() == 0) {
 		vec2 pos = coord * 0.5 + 0.5;
@@ -376,6 +521,7 @@ half sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec4
 	}
 
 	return half(avg * (1.0 / float(sc_soft_shadow_samples())));
+#endif
 }
 
 half sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex_scale, float taa_frame_count) {
@@ -844,7 +990,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		} else {
 			//hard shadow
 			vec3 shadow_uv = vec3(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, splane.z);
-			shadow = mix(half(1.0), sample_pcf_shadow(shadow_atlas, spot_lights.data[idx].soft_shadow_scale * scene_data_block.data.shadow_atlas_pixel_size, shadow_uv, taa_frame_count), half(spot_lights.data[idx].shadow_opacity));
+			vec2 shadow_pixel_size = scene_data_block.data.shadow_atlas_pixel_size;
+#ifdef PCF_FIXED_KERNEL
+			shadow_pixel_size *= spot_lights.data[idx].soft_shadow_scale;
+#endif
+			shadow = mix(half(1.0), sample_pcf_shadow(shadow_atlas, shadow_pixel_size, shadow_uv, taa_frame_count), half(spot_lights.data[idx].shadow_opacity));
 		}
 	}
 #endif // SHADOWS_DISABLED
