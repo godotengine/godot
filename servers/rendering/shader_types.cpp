@@ -153,6 +153,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ROUGHNESS"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM_TINT"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SHEEN"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SHEEN_ROUGHNESS"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SHEEN_COLOR"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT_ROUGHNESS"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ANISOTROPY"] = ShaderLanguage::TYPE_FLOAT;

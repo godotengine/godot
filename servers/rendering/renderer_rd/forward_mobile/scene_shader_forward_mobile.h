@@ -261,6 +261,7 @@ public:
 		bool uses_vertex = false;
 		bool uses_sss = false;
 		bool uses_transmittance = false;
+		bool uses_sheen = false;
 		bool uses_screen_texture = false;
 		bool uses_depth_texture = false;
 		bool uses_normal_texture = false;
