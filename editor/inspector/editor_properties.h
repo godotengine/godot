@@ -697,8 +697,8 @@ class EditorPropertyNodePath : public EditorProperty {
 	bool dropping = false;
 
 	Vector<StringName> valid_types;
+	void _on_click();
 	void _node_selected(const NodePath &p_path, bool p_absolute = true);
-	void _node_assign();
 	void _assign_draw();
 	Node *get_base_node();
 	void _update_menu();
@@ -706,6 +706,8 @@ class EditorPropertyNodePath : public EditorProperty {
 	void _accept_text();
 	void _text_submitted(const String &p_text);
 	const NodePath _get_node_path() const;
+	Node *_get_node_in_scene_tree();
+	void _select_node_in_scene_tree();
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
@@ -718,6 +720,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void gui_input(const Ref<InputEvent> &p_ev) override;
 	virtual void update_property() override;
 	void setup(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root = true, bool p_editing_node = false);
 	EditorPropertyNodePath();
