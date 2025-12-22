@@ -1062,13 +1062,13 @@ struct CompletionItem {
 		dict["label"] = label;
 		dict["kind"] = kind;
 		dict["data"] = data;
+		dict["deprecated"] = deprecated;
 		if (!insertText.is_empty()) {
 			dict["insertText"] = insertText;
 		}
 		if (resolved) {
 			dict["detail"] = detail;
 			dict["documentation"] = documentation.to_json();
-			dict["deprecated"] = deprecated;
 			dict["preselect"] = preselect;
 			if (!sortText.is_empty()) {
 				dict["sortText"] = sortText;
@@ -1287,6 +1287,7 @@ struct DocumentSymbol {
 	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
 		LSP::CompletionItem item;
 		item.label = name;
+		item.deprecated = deprecated;
 
 		if (resolved) {
 			item.documentation = render();

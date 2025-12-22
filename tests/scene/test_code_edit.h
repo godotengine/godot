@@ -4064,7 +4064,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_code_completion_selected_index(1);
 			ERR_PRINT_ON;
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
-			CHECK(code_edit->get_code_completion_option(0).size() == 7);
+			CHECK(code_edit->get_code_completion_option(0).size() == 8);
 			CHECK(code_edit->get_code_completion_options().size() == 1);
 
 			/* Check cancel closes completion. */
@@ -4075,7 +4075,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 			code_edit->set_code_completion_selected_index(1);
 			CHECK(code_edit->get_code_completion_selected_index() == 1);
-			CHECK(code_edit->get_code_completion_option(0).size() == 7);
+			CHECK(code_edit->get_code_completion_option(0).size() == 8);
 			CHECK(code_edit->get_code_completion_options().size() == 3);
 
 			/* Check data. */
@@ -4086,6 +4086,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			CHECK(option["font_color"] == Color(1, 0, 0));
 			CHECK(option["icon"] == Ref<Resource>());
 			CHECK(option["default_value"] == Color(1, 0, 0));
+			CHECK(option["deprecated"] == Variant(false));
 
 			/* Set size for mouse input. */
 			code_edit->set_size(Size2(100, 100));
