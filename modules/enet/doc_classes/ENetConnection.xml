@@ -34,6 +34,14 @@
 				Limits the maximum allowed channels of future incoming connections.
 			</description>
 		</method>
+		<method name="check_events">
+			<return type="Array" />
+			<description>
+				Receive the next queued event from the host since the last call to [method service]. The returned [Array] will have 4 elements. An [enum EventType], the [ENetPacketPeer] which generated the event, the event associated data (if any), the event associated channel (if any). If the generated event is [constant EVENT_RECEIVE], the received packet will be queued to the associated [ENetPacketPeer].
+				For each call to [method service] within a frame/tick, call this method until queued events have been exhausted. This is typically used by the caller to handle all queued events without needing to repeatedly call [method service] within a frame/tick (which would potentially cause more events to be enqueued).
+				[b]Note:[/b] This method may be called on either end involved in the event (sending and receiving hosts).
+			</description>
+		</method>
 		<method name="compress">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="ENetConnection.CompressionMode" />
@@ -178,7 +186,7 @@
 			[url=https://facebook.github.io/zstd/]Zstandard[/url] compression. Note that this algorithm is not very efficient on packets smaller than 4 KB. Therefore, it's recommended to use other compression algorithms in most cases.
 		</constant>
 		<constant name="EVENT_ERROR" value="-1" enum="EventType">
-			An error occurred during [method service]. You will likely need to [method destroy] the host and recreate it.
+			An error occurred during [method service] or [method check_events]. You will likely need to [method destroy] the host and recreate it.
 		</constant>
 		<constant name="EVENT_NONE" value="0" enum="EventType">
 			No event occurred within the specified time limit.
