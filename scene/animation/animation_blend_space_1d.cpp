@@ -52,7 +52,12 @@ Variant AnimationNodeBlendSpace1D::get_parameter_default_value(const StringName 
 }
 
 Ref<AnimationNode> AnimationNodeBlendSpace1D::get_child_by_name(const StringName &p_name) const {
-	return get_blend_point_node(p_name.operator String().to_int());
+	String name_str = p_name.operator String();
+	int point_index = find_blend_point_by_name(name_str);
+	if (point_index != -1) {
+		return get_blend_point_node(point_index);
+	}
+	return Ref<AnimationRootNode>();
 }
 
 void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &p_property) const {
@@ -83,8 +88,12 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_blend_point_position", "point"), &AnimationNodeBlendSpace1D::get_blend_point_position);
 	ClassDB::bind_method(D_METHOD("set_blend_point_node", "point", "node"), &AnimationNodeBlendSpace1D::set_blend_point_node);
 	ClassDB::bind_method(D_METHOD("get_blend_point_node", "point"), &AnimationNodeBlendSpace1D::get_blend_point_node);
+	ClassDB::bind_method(D_METHOD("set_blend_point_name", "point", "name"), &AnimationNodeBlendSpace1D::set_blend_point_name);
+	ClassDB::bind_method(D_METHOD("get_blend_point_name", "point"), &AnimationNodeBlendSpace1D::get_blend_point_name);
+	ClassDB::bind_method(D_METHOD("find_blend_point_by_name", "name"), &AnimationNodeBlendSpace1D::find_blend_point_by_name);
 	ClassDB::bind_method(D_METHOD("remove_blend_point", "point"), &AnimationNodeBlendSpace1D::remove_blend_point);
 	ClassDB::bind_method(D_METHOD("get_blend_point_count"), &AnimationNodeBlendSpace1D::get_blend_point_count);
+	ClassDB::bind_method(D_METHOD("reorder_blend_point", "from_index", "to_index"), &AnimationNodeBlendSpace1D::reorder_blend_point);
 
 	ClassDB::bind_method(D_METHOD("set_min_space", "min_space"), &AnimationNodeBlendSpace1D::set_min_space);
 	ClassDB::bind_method(D_METHOD("get_min_space"), &AnimationNodeBlendSpace1D::get_min_space);
@@ -109,6 +118,7 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "blend_point_" + itos(i) + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_add_blend_point", "get_blend_point_node", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "blend_point_" + itos(i) + "/pos", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_position", "get_blend_point_position", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "blend_point_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_name", "get_blend_point_name", i);
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_min_space", "get_min_space");
@@ -125,8 +135,11 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 
 void AnimationNodeBlendSpace1D::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	for (int i = 0; i < blend_points_used; i++) {
+		if (blend_points[i].name.is_empty()) {
+			blend_points[i].name = itos(i);
+		}
 		ChildNode cn;
-		cn.name = itos(i);
+		cn.name = blend_points[i].name;
 		cn.node = blend_points[i].node;
 		r_child_nodes->push_back(cn);
 	}
@@ -148,6 +161,7 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 
 	blend_points[p_at_index].node = p_node;
 	blend_points[p_at_index].position = p_position;
+	blend_points[p_at_index].name = String();
 
 	blend_points[p_at_index].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed), CONNECT_REFERENCE_COUNTED);
 	blend_points[p_at_index].node->connect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_renamed), CONNECT_REFERENCE_COUNTED);
@@ -191,6 +205,51 @@ Ref<AnimationRootNode> AnimationNodeBlendSpace1D::get_blend_point_node(int p_poi
 	return blend_points[p_point].node;
 }
 
+void AnimationNodeBlendSpace1D::set_blend_point_name(int p_point, const String &p_name) {
+	ERR_FAIL_INDEX(p_point, blend_points_used);
+	ERR_FAIL_COND(p_name.contains_char('.') || p_name.contains_char('/'));
+
+	String final_name = p_name;
+	String base_name = p_name;
+
+	if (final_name.is_empty()) {
+		Ref<AnimationNode> node = blend_points[p_point].node;
+		if (node.is_valid()) {
+			base_name = node->get_class().replace_first("AnimationNode", "");
+		} else {
+			base_name = "Point";
+		}
+		final_name = base_name;
+	}
+
+	// Append number if there's a conflict.
+	int base = 1;
+	while (find_blend_point_by_name(final_name) != -1 && find_blend_point_by_name(final_name) != p_point) {
+		base++;
+		final_name = base_name + " " + itos(base);
+	}
+
+	String old_name = blend_points[p_point].name;
+	blend_points[p_point].name = final_name;
+	if (old_name != final_name) {
+		emit_signal(SNAME("animation_node_renamed"), get_instance_id(), old_name, final_name);
+	}
+}
+
+String AnimationNodeBlendSpace1D::get_blend_point_name(int p_point) const {
+	ERR_FAIL_INDEX_V(p_point, blend_points_used, String());
+	return blend_points[p_point].name;
+}
+
+int AnimationNodeBlendSpace1D::find_blend_point_by_name(const String &p_name) const {
+	for (int i = 0; i < blend_points_used; i++) {
+		if (blend_points[i].name == p_name) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
@@ -205,12 +264,30 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 
 	blend_points_used--;
 
+	blend_points[blend_points_used].name = StringName();
+
 	emit_signal(SNAME("animation_node_removed"), get_instance_id(), itos(p_point));
 	emit_signal(SNAME("tree_changed"));
 }
 
 int AnimationNodeBlendSpace1D::get_blend_point_count() const {
 	return blend_points_used;
+}
+
+void AnimationNodeBlendSpace1D::reorder_blend_point(int p_from_index, int p_to_index) {
+	ERR_FAIL_INDEX(p_from_index, blend_points_used);
+	ERR_FAIL_INDEX(p_to_index, blend_points_used);
+
+	if (p_from_index == p_to_index) {
+		return;
+	}
+
+	BlendPoint temp = blend_points[p_from_index];
+
+	blend_points[p_from_index] = blend_points[p_to_index];
+	blend_points[p_to_index] = temp;
+
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendSpace1D::set_min_space(float p_min) {
@@ -287,7 +364,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 	if (blend_points_used == 1) {
 		// only one point available, just play that animation
 		pi.weight = 1.0;
-		return blend_node(blend_points[0].node, blend_points[0].name, pi, FILTER_IGNORE, true, p_test_only);
+		return blend_node(blend_points[0].node, get_blend_point_name(0), pi, FILTER_IGNORE, true, p_test_only);
 	}
 
 	double blend_pos = get_parameter(blend_position);
@@ -350,7 +427,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 		for (int i = 0; i < blend_points_used; i++) {
 			if (i == point_lower || i == point_higher) {
 				pi.weight = weights[i];
-				NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+				NodeTimeInfo t = blend_node(blend_points[i].node, get_blend_point_name(i), pi, FILTER_IGNORE, true, p_test_only);
 				if (first || pi.weight > max_weight) {
 					max_weight = pi.weight;
 					mind = t;
@@ -358,7 +435,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 				}
 			} else if (sync) {
 				pi.weight = 0;
-				blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+				blend_node(blend_points[i].node, get_blend_point_name(i), pi, FILTER_IGNORE, true, p_test_only);
 			}
 		}
 	} else {
@@ -391,16 +468,16 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 				// See how much animation remains.
 				pi.seeked = false;
 				pi.weight = 0;
-				from = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, true);
+				from = blend_node(blend_points[cur_closest].node, get_blend_point_name(cur_closest), pi, FILTER_IGNORE, true, true);
 				pi.time = from.position;
 			}
 			pi.seeked = true;
 			pi.weight = 1.0;
-			mind = blend_node(blend_points[new_closest].node, blend_points[new_closest].name, pi, FILTER_IGNORE, true, p_test_only);
+			mind = blend_node(blend_points[new_closest].node, get_blend_point_name(new_closest), pi, FILTER_IGNORE, true, p_test_only);
 			cur_closest = new_closest;
 		} else {
 			pi.weight = 1.0;
-			mind = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, p_test_only);
+			mind = blend_node(blend_points[cur_closest].node, get_blend_point_name(cur_closest), pi, FILTER_IGNORE, true, p_test_only);
 		}
 
 		if (sync) {
@@ -408,7 +485,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 			pi.weight = 0;
 			for (int i = 0; i < blend_points_used; i++) {
 				if (i != cur_closest) {
-					blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+					blend_node(blend_points[i].node, get_blend_point_name(i), pi, FILTER_IGNORE, true, p_test_only);
 				}
 			}
 		}
@@ -424,7 +501,7 @@ String AnimationNodeBlendSpace1D::get_caption() const {
 
 AnimationNodeBlendSpace1D::AnimationNodeBlendSpace1D() {
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
-		blend_points[i].name = itos(i);
+		blend_points[i].name = String();
 	}
 }
 
