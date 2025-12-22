@@ -2492,7 +2492,7 @@ MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_b
 					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.mip_filter = mip_filter;
 					sampler_state.lod_bias = samplers.mipmap_bias;
-					sampler_state.use_anisotropy = true;
+					sampler_state.use_anisotropy = anisotropic_filtering_level != RS::VIEWPORT_ANISOTROPY_DISABLED;
 					sampler_state.anisotropy_max = anisotropy_max;
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
@@ -2500,7 +2500,7 @@ MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_b
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.mip_filter = mip_filter;
 					sampler_state.lod_bias = samplers.mipmap_bias;
-					sampler_state.use_anisotropy = true;
+					sampler_state.use_anisotropy = anisotropic_filtering_level != RS::VIEWPORT_ANISOTROPY_DISABLED;
 					sampler_state.anisotropy_max = anisotropy_max;
 
 				} break;
