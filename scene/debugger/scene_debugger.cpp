@@ -58,12 +58,17 @@
 
 #ifndef _3D_DISABLED
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/sprite_3d.h"
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
+#include "modules/csg/csg_shape.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 #endif // _3D_DISABLED
 
@@ -2698,10 +2703,62 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 			Ref<TriangleMesh> mesh_collision = geo_instance->generate_triangle_mesh();
 
 			if (mesh_collision.is_valid()) {
+				TriangleMesh::CullMode cull_mode = TriangleMesh::CULL_BACK;
+
+				Ref<Material> mat;
+				BaseMaterial3D::CullMode material_cull_mode = BaseMaterial3D::CULL_BACK;
+
+				MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(geo_instance);
+				if (mesh_inst) {
+					mat = mesh_inst->get_active_material(0);
+				} else {
+					// Override takes precedence.
+					mat = geo_instance->get_material_override();
+
+					if (!mat.is_valid()) {
+						SpriteBase3D *sprite = Object::cast_to<SpriteBase3D>(geo_instance);
+						if (sprite) {
+							if (sprite->get_draw_flag(SpriteBase3D::FLAG_DOUBLE_SIDED)) {
+								material_cull_mode = BaseMaterial3D::CULL_DISABLED;
+							}
+						} else {
+							// Each CSG shape type has its own get_material() method.
+							CSGPrimitive3D *csg_prim = Object::cast_to<CSGPrimitive3D>(geo_instance);
+							if (csg_prim) {
+#define CHECK_CSG_TYPE(TypeName)                             \
+	if (!mat.is_valid()) {                                   \
+		TypeName *csg = Object::cast_to<TypeName>(csg_prim); \
+		if (csg) {                                           \
+			mat = csg->get_material();                       \
+		}                                                    \
+	}
+
+								CHECK_CSG_TYPE(CSGBox3D)
+								CHECK_CSG_TYPE(CSGSphere3D)
+								CHECK_CSG_TYPE(CSGCylinder3D)
+								CHECK_CSG_TYPE(CSGTorus3D)
+								CHECK_CSG_TYPE(CSGPolygon3D)
+								CHECK_CSG_TYPE(CSGMesh3D)
+
+#undef CHECK_CSG_TYPE
+							}
+						}
+					}
+				}
+
+				if (mat.is_valid()) {
+					Ref<BaseMaterial3D> base_mat = mat;
+					if (base_mat.is_valid()) {
+						material_cull_mode = base_mat->get_cull_mode();
+					}
+				}
+
+				cull_mode = static_cast<TriangleMesh::CullMode>(material_cull_mode);
+
 				Transform3D gt = geo_instance->get_global_transform();
 				Transform3D ai = gt.affine_inverse();
 				Vector3 point, normal;
-				if (mesh_collision->intersect_ray(ai.xform(pos), ai.basis.xform(ray).normalized(), point, normal)) {
+				if (mesh_collision->intersect_ray(ai.xform(pos), ai.basis.xform(ray).normalized(), point, normal, nullptr, nullptr, cull_mode)) {
 					SelectResult res;
 					res.item = Object::cast_to<Node>(obj);
 					res.order = -pos.distance_to(gt.xform(point));
