@@ -2102,6 +2102,22 @@ Node *Node::find_parent(const String &p_pattern) const {
 	return nullptr;
 }
 
+void Node::set_parent(Node *p_parent, bool p_keep_global_transform) {
+	ERR_THREAD_GUARD
+
+	if (data.parent == p_parent) {
+		return;
+	}
+
+	if (!p_parent) {
+		data.parent->remove_child(this);
+	} else if (data.parent) {
+		reparent(p_parent, p_keep_global_transform);
+	} else {
+		p_parent->add_child(this);
+	}
+}
+
 void Node::set_unique_scene_id(int32_t p_unique_id) {
 	data.unique_scene_id = p_unique_id;
 }
@@ -3772,6 +3788,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
+	ClassDB::bind_method(D_METHOD("set_parent", "new_parent", "keep_global_transform"), &Node::set_parent, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned"), &Node::find_child, DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_children", "pattern", "type", "recursive", "owned"), &Node::find_children, DEFVAL(""), DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_parent", "pattern"), &Node::find_parent);

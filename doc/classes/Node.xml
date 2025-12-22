@@ -177,6 +177,7 @@
 				[/codeblocks]
 				If you need the child node to be added below a specific node in the list of children, use [method add_sibling] instead of this method.
 				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
+				See also [method set_parent].
 			</description>
 		</method>
 		<method name="add_sibling">
@@ -850,6 +851,7 @@
 			<description>
 				Changes the parent of this [Node] to the [param new_parent]. The node needs to already have a parent. The node's [member owner] is preserved if its owner is still reachable from the new location (i.e., the node is still a descendant of the new parent after the operation).
 				If [param keep_global_transform] is [code]true[/code], the node's global transform will be preserved if supported. [Node2D], [Node3D] and [Control] support this argument (but [Control] keeps only position).
+				See also [method set_parent].
 			</description>
 		</method>
 		<method name="replace_by">
@@ -940,6 +942,16 @@
 				Sets the node's multiplayer authority to the peer with the given peer [param id]. The multiplayer authority is the peer that has authority over the node on the network. Defaults to peer ID 1 (the server). Useful in conjunction with [method rpc_config] and the [MultiplayerAPI].
 				If [param recursive] is [code]true[/code], the given peer is recursively set as the authority for all children of this node.
 				[b]Warning:[/b] This does [b]not[/b] automatically replicate the new authority to other peers. It is the developer's responsibility to do so. You may replicate the new authority's information using [member MultiplayerSpawner.spawn_function], an RPC, or a [MultiplayerSynchronizer]. Furthermore, the parent's authority does [b]not[/b] propagate to newly added children.
+			</description>
+		</method>
+		<method name="set_parent">
+			<return type="void" />
+			<param index="0" name="new_parent" type="Node" />
+			<param index="1" name="keep_global_transform" type="bool" default="true" />
+			<description>
+				Sets the node's parent to [param new_parent].
+				If the node already had a parent, it will be reparented, respecting [param keep_global_transform].
+				If [param new_parent] is [code]null[/code] and the node has a parent, it will become an orphan node.
 			</description>
 		</method>
 		<method name="set_physics_process">
