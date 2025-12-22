@@ -1,0 +1,81 @@
+diff --git a/thirdparty/sdl/core/linux/SDL_udev.c b/thirdparty/sdl/core/linux/SDL_udev.c
+index fbf2ff0444..d9e7e11849 100644
+--- a/thirdparty/sdl/core/linux/SDL_udev.c
++++ b/thirdparty/sdl/core/linux/SDL_udev.c
+@@ -277,6 +277,43 @@ bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *pr
+     return true;
+ }
+ 
++bool SDL_UDEV_GetProductSerial(const char *device_path, const char **serial)
++{
++    struct stat statbuf;
++    char type;
++    struct udev_device *dev;
++    const char *val;
++
++    if (!_this) {
++        return false;
++    }
++
++    if (stat(device_path, &statbuf) < 0) {
++        return false;
++    }
++
++    if (S_ISBLK(statbuf.st_mode)) {
++        type = 'b';
++    } else if (S_ISCHR(statbuf.st_mode)) {
++        type = 'c';
++    } else {
++        return false;
++    }
++
++    dev = _this->syms.udev_device_new_from_devnum(_this->udev, type, statbuf.st_rdev);
++    if (!dev) {
++        return false;
++    }
++
++    val = _this->syms.udev_device_get_property_value(dev, "ID_SERIAL_SHORT");
++    if (val) {
++        *serial = val;
++        return true;
++    }
++
++    return false;
++}
++
+ void SDL_UDEV_UnloadLibrary(void)
+ {
+     if (!_this) {
+diff --git a/thirdparty/sdl/core/linux/SDL_udev.h b/thirdparty/sdl/core/linux/SDL_udev.h
+index 50bed36248..05b79342cd 100644
+--- a/thirdparty/sdl/core/linux/SDL_udev.h
++++ b/thirdparty/sdl/core/linux/SDL_udev.h
+@@ -104,6 +104,7 @@ extern bool SDL_UDEV_LoadLibrary(void);
+ extern void SDL_UDEV_Poll(void);
+ extern bool SDL_UDEV_Scan(void);
+ extern bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class);
++extern bool SDL_UDEV_GetProductSerial(const char *device_path, const char **serial);
+ extern bool SDL_UDEV_AddCallback(SDL_UDEV_Callback cb);
+ extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
+ extern const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void);
+diff --git a/thirdparty/sdl/joystick/linux/SDL_sysjoystick.c b/thirdparty/sdl/joystick/linux/SDL_sysjoystick.c
+index ea73821c06..70fed1cf57 100644
+--- a/thirdparty/sdl/joystick/linux/SDL_sysjoystick.c
++++ b/thirdparty/sdl/joystick/linux/SDL_sysjoystick.c
+@@ -1587,6 +1587,13 @@ static bool LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
+         item_sensor->hwdata = joystick->hwdata;
+     }
+ 
++    #ifdef SDL_USE_LIBUDEV
++    const char *serial = NULL;
++    if (SDL_UDEV_GetProductSerial(item->path, &serial)) {
++        joystick->serial = SDL_strdup(serial);
++    }
++    #endif
++
+     // mark joystick as fresh and ready
+     joystick->hwdata->fresh = true;
+ 
+diff --git a/thirdparty/sdl/patches/0008-fix-linux-joycon-serial-num.patch b/thirdparty/sdl/patches/0008-fix-linux-joycon-serial-num.patch
+new file mode 100644
+index 0000000000..e69de29bb2
