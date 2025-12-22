@@ -1286,6 +1286,15 @@ void CodeTextEditor::convert_case(CaseStyle p_case) {
 			String new_line = text_editor->get_line(i).substr(i == begin ? begin_col : 0, len);
 
 			switch (p_case) {
+				case PASCALCASE: {
+					new_line = new_line.to_pascal_case();
+				} break;
+				case SNAKECASE: {
+					new_line = new_line.to_snake_case();
+				} break;
+				case CONSTANTCASE: {
+					new_line = new_line.to_constant_case();
+				} break;
 				case UPPER: {
 					new_line = new_line.to_upper();
 				} break;

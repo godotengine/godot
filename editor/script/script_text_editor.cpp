@@ -1885,6 +1885,15 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_PICK_COLOR: {
 			color_panel->popup();
 		} break;
+		case EDIT_TO_PASCALCASE: {
+			_convert_case(CodeTextEditor::PASCALCASE);
+		} break;
+		case EDIT_TO_SNAKECASE: {
+			_convert_case(CodeTextEditor::SNAKECASE);
+		} break;
+		case EDIT_TO_CONSTANTCASE: {
+			_convert_case(CodeTextEditor::CONSTANTCASE);
+		} break;
 		case EDIT_TO_UPPERCASE: {
 			_convert_case(CodeTextEditor::UPPER);
 		} break;
@@ -2964,6 +2973,10 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
+		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_pascalcase"), EDIT_TO_PASCALCASE);
+		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_snakecase"), EDIT_TO_SNAKECASE);
+		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_constantcase"), EDIT_TO_CONSTANTCASE);
+
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/capitalize"), EDIT_CAPITALIZE);

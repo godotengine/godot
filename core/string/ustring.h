@@ -472,6 +472,7 @@ public:
 	String to_pascal_case() const;
 	String to_snake_case() const;
 	String to_kebab_case() const;
+	String to_constant_case() const;
 
 	String get_with_code_lines() const;
 	int get_slice_count(const String &p_splitter) const;

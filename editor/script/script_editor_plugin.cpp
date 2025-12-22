@@ -4802,9 +4802,13 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	ED_SHORTCUT("script_editor/clear_recent", TTRC("Clear Recent Scripts"));
 	ED_SHORTCUT("script_editor/replace_in_files", TTRC("Replace in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 
-	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTRC("Uppercase"), KeyModifierMask::SHIFT | Key::F4);
-	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTRC("Lowercase"), KeyModifierMask::SHIFT | Key::F5);
-	ED_SHORTCUT("script_text_editor/capitalize", TTRC("Capitalize"), KeyModifierMask::SHIFT | Key::F6);
+	ED_SHORTCUT("script_text_editor/convert_to_pascalcase", TTRC("Pascalecase"), KeyModifierMask::SHIFT | Key::F4);
+	ED_SHORTCUT("script_text_editor/convert_to_snakecase", TTRC("Snakecase"), KeyModifierMask::SHIFT | Key::F5);
+	ED_SHORTCUT("script_text_editor/convert_to_constantcase", TTRC("Constantcase"), KeyModifierMask::SHIFT | Key::F6);
+
+	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTRC("Uppercase"));
+	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTRC("Lowercase"));
+	ED_SHORTCUT("script_text_editor/capitalize", TTRC("Capitalize"));
 
 	window_wrapper = memnew(WindowWrapper);
 	window_wrapper->set_margins_enabled(true);

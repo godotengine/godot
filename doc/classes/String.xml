@@ -1110,6 +1110,12 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="to_constant_case" qualifiers="const">
+			<return type="String"/>
+			<description>
+				Returns the string converted to [code]CONSTANT_CASE[/code].
+			</description>
+		</method>
 		<method name="to_upper" qualifiers="const">
 			<return type="String" />
 			<description>
