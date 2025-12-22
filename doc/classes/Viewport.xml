@@ -421,7 +421,7 @@
 			The subdivision amount of the fourth quadrant on the shadow atlas.
 		</member>
 		<member name="positional_shadow_atlas_size" type="int" setter="set_positional_shadow_atlas_size" getter="get_positional_shadow_atlas_size" default="2048">
-			The shadow atlas' resolution (used for omni and spot lights). The value is rounded up to the nearest power of 2.
+			The shadow atlas's resolution (used for omni and spot lights). The final value is rounded up to the nearest power of 2.
 			[b]Note:[/b] If this is set to [code]0[/code], no positional shadows will be visible at all. This can improve performance significantly on low-end systems by reducing both the CPU and GPU load (as fewer draw calls are needed to draw the scene without shadows).
 		</member>
 		<member name="scaling_3d_mode" type="int" setter="set_scaling_3d_mode" getter="get_scaling_3d_mode" enum="Viewport.Scaling3DMode" default="0">

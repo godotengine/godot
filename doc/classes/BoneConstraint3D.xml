@@ -57,7 +57,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the reference node path of the setting at [param index].
-				This node will be only referenced and not modified by this modifier.
+				This node will only be referenced and not modified by this modifier.
 			</description>
 		</method>
 		<method name="get_reference_type" qualifiers="const">
@@ -103,7 +103,7 @@
 			<param index="1" name="bone" type="int" />
 			<description>
 				Sets the reference bone of the setting at [param index] to [param bone].
-				This bone will be only referenced and not modified by this modifier.
+				This bone will only be referenced and not modified by this modifier.
 			</description>
 		</method>
 		<method name="set_reference_bone_name">
@@ -112,7 +112,7 @@
 			<param index="1" name="bone_name" type="String" />
 			<description>
 				Sets the reference bone of the setting at [param index] to [param bone_name].
-				This bone will be only referenced and not modified by this modifier.
+				This bone will only be referenced and not modified by this modifier.
 			</description>
 		</method>
 		<method name="set_reference_node">
@@ -121,7 +121,7 @@
 			<param index="1" name="node" type="NodePath" />
 			<description>
 				Sets the reference node path of the setting at [param index] to [param node].
-				This node will be only referenced and not modified by this modifier.
+				This node will only be referenced and not modified by this modifier.
 			</description>
 		</method>
 		<method name="set_reference_type">
@@ -142,11 +142,11 @@
 	</methods>
 	<constants>
 		<constant name="REFERENCE_TYPE_BONE" value="0" enum="ReferenceType">
-			The reference target is a bone. In this case, the reference target spaces is local space.
+			The reference target is a bone. In this case, the reference target space is local space.
 		</constant>
 		<constant name="REFERENCE_TYPE_NODE" value="1" enum="ReferenceType">
-			The reference target is a [Node3D]. In this case, the reference target spaces is model space.
-			In other words, the reference target's coordinates are treated as if it were placed directly under [Skeleton3D] which parent of the [BoneConstraint3D].
+			The reference target is a [Node3D]. In this case, the reference target space is model space.
+			In other words, the reference target's coordinates are treated as if it was placed directly under the [Skeleton3D] parent of the [BoneConstraint3D].
 		</constant>
 	</constants>
 </class>
