@@ -1150,10 +1150,6 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(tex);
 	GLES3::Utilities::get_singleton()->texture_resize_data(tex->tex_id, tex->total_data_size);
-
-#ifdef TOOLS_ENABLED
-	tex->image_cache_2d.unref();
-#endif
 }
 
 void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
@@ -1250,12 +1246,6 @@ void TextureStorage::texture_3d_placeholder_initialize(RID p_texture) {
 Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL_V(texture, Ref<Image>());
-
-#ifdef TOOLS_ENABLED
-	if (texture->image_cache_2d.is_valid() && !texture->is_render_target) {
-		return texture->image_cache_2d;
-	}
-#endif
 
 	Ref<Image> image;
 #ifdef GL_API_ENABLED
@@ -1365,12 +1355,6 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		}
 	}
 #endif // GLES_API_ENABLED
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && !texture->is_render_target) {
-		texture->image_cache_2d = image;
-	}
-#endif
 
 	return image;
 }
@@ -1492,12 +1476,6 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 	ERR_FAIL_NULL_V(texture, Vector<Ref<Image>>());
 	ERR_FAIL_COND_V(texture->type != Texture::TYPE_3D, Vector<Ref<Image>>());
 
-#ifdef TOOLS_ENABLED
-	if (!texture->image_cache_3d.is_empty() && !texture->is_render_target) {
-		return texture->image_cache_3d;
-	}
-#endif
-
 	GLuint temp_framebuffer;
 	glGenFramebuffers(1, &temp_framebuffer);
 
@@ -1527,12 +1505,6 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glDeleteTextures(1, &temp_color_texture);
 	glDeleteFramebuffers(1, &temp_framebuffer);
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && !texture->is_render_target) {
-		texture->image_cache_3d = ret;
-	}
-#endif
 
 	return ret;
 }
@@ -1888,12 +1860,6 @@ void TextureStorage::_texture_set_3d_data(RID p_texture, const Vector<Ref<Image>
 
 	texture->total_data_size = all_data_size;
 	texture->mipmaps = mipmap_level + 1;
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && !texture->is_render_target) {
-		texture->image_cache_3d = images;
-	}
-#endif
 }
 
 void TextureStorage::_texture_set_swizzle(GLES3::Texture *p_texture, Image::Format p_real_format) {
