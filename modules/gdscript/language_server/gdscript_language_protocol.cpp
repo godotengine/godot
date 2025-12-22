@@ -31,6 +31,7 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/stream_peer_stdio.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_log.h"
@@ -62,10 +63,10 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 				ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Response header too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
-			if (err != OK) {
+			if (err == ERR_BUSY || read != 1) {
+				return ERR_BUSY; // Busy, wait until next poll
+			} else if (err != OK) {
 				return FAILED;
-			} else if (read != 1) { // Busy, wait until next poll
-				return ERR_BUSY;
 			}
 			char *r = (char *)req_buf;
 			int l = req_pos;
@@ -90,10 +91,10 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 				ERR_FAIL_COND_V_MSG(req_pos >= LSP_MAX_BUFFER_SIZE, ERR_OUT_OF_MEMORY, "Response content too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
-			if (err != OK) {
+			if (err == ERR_BUSY || read != 1) {
+				return ERR_BUSY; // Busy, wait until next poll
+			} else if (err != OK) {
 				return FAILED;
-			} else if (read != 1) {
-				return ERR_BUSY;
 			}
 			req_pos++;
 		}
@@ -272,34 +273,37 @@ void GDScriptLanguageProtocol::poll(int p_limit_usec) {
 	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
 	while (E != clients.end()) {
 		Ref<LSPeer> peer = E->value;
-		peer->connection->poll();
-		StreamPeerTCP::Status status = peer->connection->get_status();
-		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
+		Ref<StreamPeerTCP> tcp_peer = peer->connection;
+		if (tcp_peer.is_valid()) {
+			tcp_peer->poll();
+			StreamPeerTCP::Status status = tcp_peer->get_status();
+			if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
+				on_client_disconnected(E->key);
+				E = clients.begin();
+				continue;
+			}
+		}
+
+		Error err = OK;
+		while (peer->connection->get_available_bytes() > 0) {
+			latest_client_id = E->key;
+			err = peer->handle_data();
+			if (err != OK || OS::get_singleton()->get_ticks_usec() >= target_ticks) {
+				break;
+			}
+		}
+
+		if (err != OK && err != ERR_BUSY) {
 			on_client_disconnected(E->key);
 			E = clients.begin();
 			continue;
-		} else {
-			Error err = OK;
-			while (peer->connection->get_available_bytes() > 0) {
-				latest_client_id = E->key;
-				err = peer->handle_data();
-				if (err != OK || OS::get_singleton()->get_ticks_usec() >= target_ticks) {
-					break;
-				}
-			}
+		}
 
-			if (err != OK && err != ERR_BUSY) {
-				on_client_disconnected(E->key);
-				E = clients.begin();
-				continue;
-			}
-
-			err = peer->send_data();
-			if (err != OK && err != ERR_BUSY) {
-				on_client_disconnected(E->key);
-				E = clients.begin();
-				continue;
-			}
+		err = peer->send_data();
+		if (err != OK && err != ERR_BUSY) {
+			on_client_disconnected(E->key);
+			E = clients.begin();
+			continue;
 		}
 		++E;
 	}
@@ -309,10 +313,26 @@ Error GDScriptLanguageProtocol::start(int p_port, const IPAddress &p_bind_ip) {
 	return server->listen(p_port, p_bind_ip);
 }
 
+Error GDScriptLanguageProtocol::start_stdio() {
+	Ref<LSPeer> peer = memnew(LSPeer);
+	Ref<StreamPeerStdio> stdio_stream;
+	stdio_stream.instantiate();
+	peer->connection = stdio_stream;
+
+	clients.insert(next_client_id, peer);
+	next_client_id++;
+
+	OS::get_singleton()->print("[LSP] Started in stdio mode\n");
+	return OK;
+}
+
 void GDScriptLanguageProtocol::stop() {
 	for (const KeyValue<int, Ref<LSPeer>> &E : clients) {
 		Ref<LSPeer> peer = clients.get(E.key);
-		peer->connection->disconnect_from_host();
+		Ref<StreamPeerTCP> tcp_peer = peer->connection;
+		if (tcp_peer.is_valid()) {
+			tcp_peer->disconnect_from_host();
+		}
 	}
 
 	server->stop();

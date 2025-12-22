@@ -81,6 +81,7 @@ protected:
 public:
 	static inline const char *headless_args[] = {
 		"--headless",
+		"--lsp",
 		"-h",
 		"--help",
 		"/?",
