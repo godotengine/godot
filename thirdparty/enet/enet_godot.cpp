@@ -579,6 +579,9 @@ int enet_socket_get_address(ENetSocket socket, ENetAddress *address) {
 
 // Not implemented
 int enet_socket_wait(ENetSocket socket, enet_uint32 *condition, enet_uint32 timeout) {
+	// make sure this function does not block when used in protocol.c
+	*condition = ENET_SOCKET_WAIT_NONE | ENET_SOCKET_WAIT_RECEIVE;
+
 	return 0; // do we need this function?
 }
 
