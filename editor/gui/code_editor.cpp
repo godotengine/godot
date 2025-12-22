@@ -1161,6 +1161,11 @@ void CodeTextEditor::update_editor_settings() {
 	idle_time = EDITOR_GET("text_editor/completion/idle_parse_delay");
 	idle_time_with_errors = EDITOR_GET("text_editor/completion/idle_parse_delay_with_errors_found");
 
+	// Inline hints
+	text_editor->set_inline_hints_enabled(EDITOR_GET("text_editor/appearance/inline_hints/inline_hints_enabled"));
+	text_editor->set_inline_hint_type_enabled(SNAME("parameter"), EDITOR_GET("text_editor/appearance/inline_hints/parameter_hints_enabled"));
+	text_editor->set_inline_hint_type_enabled(SNAME("color"), EDITOR_GET("text_editor/appearance/inline_hints/color_hints_enabled"));
+
 	// Appearance: Guidelines
 	if (EDITOR_GET("text_editor/appearance/guidelines/show_line_length_guidelines")) {
 		TypedArray<int> guideline_cols;
@@ -1902,6 +1907,8 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_highlight_matching_braces_enabled(true);
 	text_editor->set_auto_indent_enabled(true);
 	text_editor->set_deselect_on_focus_loss_enabled(false);
+
+	EditorNode::get_singleton()->setup_color_picker(text_editor->get_inline_color_picker());
 
 	status_bar = memnew(HBoxContainer);
 	add_child(status_bar);

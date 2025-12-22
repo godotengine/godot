@@ -71,6 +71,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	List<ScriptLanguage::ScriptError> errors;
 	HashMap<String, List<ScriptLanguage::ScriptError>> depended_errors;
 	HashSet<int> safe_lines;
+	HashMap<int, TypedArray<Dictionary>> inline_info;
 
 	List<Connection> missing_connections;
 
@@ -83,14 +84,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 	PopupMenu *breakpoints_menu = nullptr;
 	PopupMenu *highlighter_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
-
-	int inline_color_line = -1;
-	int inline_color_start = -1;
-	int inline_color_end = -1;
-	PopupPanel *inline_color_popup = nullptr;
-	ColorPicker *inline_color_picker = nullptr;
-	OptionButton *inline_color_options = nullptr;
-	Ref<Texture2D> color_alpha_texture;
 
 	GotoLinePopup *goto_line_popup = nullptr;
 	ScriptEditorQuickOpen *quick_open = nullptr;
@@ -202,6 +195,7 @@ protected:
 	void _validate_script(); // No longer virtual.
 	void _update_warnings();
 	void _update_errors();
+	void _update_inline_info();
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
 
@@ -215,15 +209,11 @@ protected:
 	void _error_clicked(const Variant &p_line);
 	void _warning_clicked(const Variant &p_line);
 
-	bool _is_valid_color_info(const Dictionary &p_info);
-	Array _inline_object_parse(const String &p_text);
-	void _inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect);
-	void _inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
-	String _picker_color_stringify(const Color &p_color, COLOR_MODE p_mode);
-	void _picker_color_changed(const Color &p_color);
-	void _update_color_constructor_options();
+	void _enrich_inline_color_info(Dictionary &r_color_info);
+	String _stringify_color(const Color &p_color, COLOR_MODE p_mode);
+	void _update_color_constructor_options(const Dictionary &p_info, OptionButton *p_options, ColorPicker *p_picker);
+
 	void _update_background_color();
-	void _update_color_text();
 
 	void _notification(int p_what);
 
