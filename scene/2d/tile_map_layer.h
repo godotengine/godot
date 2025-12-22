@@ -502,7 +502,6 @@ private:
 	void _tile_set_changed();
 
 	void _renamed();
-	void _update_notify_local_transform();
 
 	// Internal updates.
 	void _queue_internal_update();
@@ -583,6 +582,7 @@ public:
 	// --- Physics helpers ---
 	bool has_body_rid(RID p_physics_body) const;
 	Vector2i get_coords_for_body_rid(RID p_physics_body) const; // For finding tiles from collision.
+	void move_physics_bodies(const Transform2D &p_global_transform); // For moving platforms.
 #endif // PHYSICS_2D_DISABLED
 
 	// --- Runtime ---
