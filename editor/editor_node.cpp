@@ -166,7 +166,6 @@
 #include "editor/settings/editor_settings_dialog.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/shader/editor_native_shader_source_visualizer.h"
-#include "editor/shader/visual_shader_editor_plugin.h"
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -8340,10 +8339,6 @@ EditorNode::EditorNode() {
 		rmp.instantiate();
 		EditorInspector::add_inspector_plugin(rmp);
 
-		Ref<EditorInspectorVisualShaderModePlugin> smp;
-		smp.instantiate();
-		EditorInspector::add_inspector_plugin(smp);
-
 		Ref<EditorInspectorParticleProcessMaterialPlugin> ppm;
 		ppm.instantiate();
 		EditorInspector::add_inspector_plugin(ppm);
@@ -9140,10 +9135,6 @@ EditorNode::EditorNode() {
 		Ref<FogMaterialConversionPlugin> fog_mat_convert;
 		fog_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(fog_mat_convert);
-
-		Ref<VisualShaderConversionPlugin> vshader_convert;
-		vshader_convert.instantiate();
-		resource_conversion_plugins.push_back(vshader_convert);
 	}
 
 	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();
