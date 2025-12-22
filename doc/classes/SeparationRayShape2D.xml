@@ -12,9 +12,13 @@
 		<member name="length" type="float" setter="set_length" getter="get_length" default="20.0">
 			The ray's length.
 		</member>
-		<member name="slide_on_slope" type="bool" setter="set_slide_on_slope" getter="get_slide_on_slope" default="false">
-			If [code]false[/code] (default), the shape always separates and returns a normal along its own direction.
-			If [code]true[/code], the shape can return the correct normal and separate in any direction, allowing sliding motion on slopes.
+		<member name="separate_along_ray" type="bool" setter="set_separate_along_ray" getter="get_separate_along_ray" default="true">
+			If [code]false[/code], the shape can return the correct normal and separate in any direction.
+			If [code]true[/code] (default), the shape always separates and returns a normal along its own direction.
+		</member>
+		<member name="stops_motion" type="bool" setter="set_stops_motion" getter="get_stops_motion" default="false">
+			If [code]false[/code](default), the shape will only be used for depenetration.
+			If [code]true[/code], the shape will be used in collision detection.
 		</member>
 	</members>
 </class>
