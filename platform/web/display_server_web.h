@@ -81,6 +81,9 @@ private:
 	uint64_t last_click_ms = 0;
 	MouseButton last_click_button_index = MouseButton::NONE;
 
+	uint64_t current_cursor_hash;
+	uint64_t _compute_cursor_hash(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) const;
+
 	bool ime_active = false;
 	bool ime_started = false;
 	String ime_text;

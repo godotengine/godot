@@ -509,8 +509,42 @@ DisplayServer::CursorShape DisplayServerWeb::cursor_get_shape() const {
 	return cursor_shape;
 }
 
+uint64_t DisplayServerWeb::_compute_cursor_hash(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) const {
+	if (!p_cursor.is_valid()) {
+		return 0;
+	}
+
+	uint64_t seed = 0;
+
+	// Local functor for combining hash values.
+	struct Combiner {
+		uint64_t &seed;
+
+		void combine(uint64_t value) const {
+			// This uses a 64-bit constant akin to `boost::hash_combine`.
+			seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+		}
+	};
+
+	Combiner combiner{ seed };
+
+	combiner.combine(p_cursor->get_instance_id());
+	combiner.combine(static_cast<uint64_t>(p_shape));
+	combiner.combine(static_cast<uint64_t>(static_cast<int>(p_hotspot.x)));
+	combiner.combine(static_cast<uint64_t>(static_cast<int>(p_hotspot.y)));
+
+	return seed;
+}
+
 void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+
+	uint64_t new_cursor_hash = _compute_cursor_hash(p_cursor, p_shape, p_hotspot);
+	if (new_cursor_hash == current_cursor_hash) {
+		return;
+	}
+	current_cursor_hash = new_cursor_hash;
+
 	if (p_cursor.is_valid()) {
 		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
 		ERR_FAIL_COND(image.is_null());
