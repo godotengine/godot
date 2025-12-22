@@ -704,7 +704,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	remapping_tools->add_child(memnew(VSeparator));
 
 	skip_toplevel_check = memnew(CheckBox);
-	skip_toplevel_check->set_text(TTRC("Ignore asset root"));
+	skip_toplevel_check->set_text(TTRC("Ignore Asset Root"));
 	skip_toplevel_check->set_tooltip_text(TTRC("Ignore the root directory when extracting files."));
 	skip_toplevel_check->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
 	remapping_tools->add_child(skip_toplevel_check);
@@ -714,7 +714,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	asset_conflicts_label = memnew(Label);
 	asset_conflicts_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	asset_conflicts_label->set_theme_type_variation("HeaderSmall");
-	asset_conflicts_label->set_text(TTRC("No files conflict with your project"));
+	asset_conflicts_label->set_text(TTRC("No files conflict with your project."));
 	remapping_tools->add_child(asset_conflicts_label);
 	asset_conflicts_link = memnew(LinkButton);
 	asset_conflicts_link->set_theme_type_variation("HeaderSmallLink");
