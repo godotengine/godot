@@ -169,6 +169,8 @@ void ColorPicker::_notification(int p_what) {
 			hex_label->set_custom_minimum_size(Size2(38 * theme_cache.base_scale, 0));
 			// Adjust for the width of the "script" icon.
 			text_type->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
+			text_copy->set_button_icon(theme_cache.color_copy);
+			text_copy->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 
 			_update_controls();
 			// HACK: Deferring updating presets to ensure their size is correct when creating ColorPicker at runtime.
@@ -840,6 +842,10 @@ void ColorPicker::_text_type_toggled() {
 	_update_color();
 }
 #endif // TOOLS_ENABLED
+
+void ColorPicker::_text_copy_pressed() {
+	DisplayServer::get_singleton()->clipboard_set(c_text->get_text());
+}
 
 Color ColorPicker::get_pick_color() const {
 	return color;
@@ -2055,6 +2061,7 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_script);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_copy);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
@@ -2217,6 +2224,13 @@ ColorPicker::ColorPicker() {
 	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
+
+	text_copy = memnew(Button);
+	hex_hbc->add_child(text_copy);
+	text_copy->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	text_copy->set_tooltip_text(ETR("Copy the color value."));
+	text_type->set_accessibility_name(ETR("Copy Color"));
+	text_copy->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_text_copy_pressed));
 
 	_update_controls();
 	updating = false;
