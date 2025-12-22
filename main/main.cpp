@@ -209,6 +209,7 @@ static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
 static bool cmdline_tool = false;
+static bool force_default_theme = false;
 static String locale;
 static String log_file;
 static bool show_help = false;
@@ -1622,6 +1623,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--import") {
 			editor = true;
 			cmdline_tool = true;
+			force_default_theme = true;
 			wait_for_import = true;
 			quit_after = 1;
 		} else if (arg == "--export-release" || arg == "--export-debug" ||
@@ -3739,7 +3741,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 #endif
 
-	theme_db->initialize_theme();
+	theme_db->initialize_theme(force_default_theme);
 	audio_server->load_default_bus_layout();
 
 #if defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)

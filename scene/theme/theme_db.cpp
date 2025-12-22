@@ -43,7 +43,7 @@
 
 // Default engine theme creation and configuration.
 
-void ThemeDB::initialize_theme() {
+void ThemeDB::initialize_theme(bool force_default_theme) {
 	// Default theme-related project settings.
 
 	// Allow creating the default theme at a different scale to suit higher/lower base resolutions.
@@ -61,22 +61,24 @@ void ThemeDB::initialize_theme() {
 
 	// Attempt to load custom project theme and font.
 
-	if (!project_theme_path.is_empty()) {
-		Ref<Theme> theme = ResourceLoader::load(project_theme_path);
-		if (theme.is_valid()) {
-			set_project_theme(theme);
-		} else {
-			ERR_PRINT("Error loading custom project theme '" + project_theme_path + "'");
-		}
-	}
-
 	Ref<Font> project_font;
-	if (!project_font_path.is_empty()) {
-		project_font = ResourceLoader::load(project_font_path);
-		if (project_font.is_valid()) {
-			set_fallback_font(project_font);
-		} else {
-			ERR_PRINT("Error loading custom project font '" + project_font_path + "'");
+	if (!force_default_theme) {
+		if (!project_theme_path.is_empty()) {
+			Ref<Theme> theme = ResourceLoader::load(project_theme_path);
+			if (theme.is_valid()) {
+				set_project_theme(theme);
+			} else {
+				ERR_PRINT("Error loading custom project theme '" + project_theme_path + "'");
+			}
+		}
+
+		if (!project_font_path.is_empty()) {
+			project_font = ResourceLoader::load(project_font_path);
+			if (project_font.is_valid()) {
+				set_fallback_font(project_font);
+			} else {
+				ERR_PRINT("Error loading custom project font '" + project_font_path + "'");
+			}
 		}
 	}
 
