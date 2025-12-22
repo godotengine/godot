@@ -116,8 +116,14 @@ bool Input::is_mouse_mode_override_enabled() {
 void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_anything_pressed"), &Input::is_anything_pressed);
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "keycode"), &Input::is_key_pressed);
+	ClassDB::bind_method(D_METHOD("is_key_just_pressed", "keycode"), &Input::is_key_just_pressed);
+	ClassDB::bind_method(D_METHOD("is_key_just_released", "keycode"), &Input::is_key_just_released);
 	ClassDB::bind_method(D_METHOD("is_physical_key_pressed", "keycode"), &Input::is_physical_key_pressed);
+	ClassDB::bind_method(D_METHOD("is_physical_key_just_pressed", "keycode"), &Input::is_physical_key_just_pressed);
+	ClassDB::bind_method(D_METHOD("is_physical_key_just_released", "keycode"), &Input::is_physical_key_just_released);
 	ClassDB::bind_method(D_METHOD("is_key_label_pressed", "keycode"), &Input::is_key_label_pressed);
+	ClassDB::bind_method(D_METHOD("is_key_label_just_pressed", "keycode"), &Input::is_key_label_just_pressed);
+	ClassDB::bind_method(D_METHOD("is_key_label_just_released", "keycode"), &Input::is_key_label_just_released);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact_match"), &Input::is_action_pressed, DEFVAL(false));
@@ -326,6 +332,26 @@ bool Input::is_key_pressed(Key p_keycode) const {
 	return keys_pressed.has(p_keycode);
 }
 
+bool Input::is_key_just_pressed(Key p_keycode) const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
+	return keys_just_pressed.has(p_keycode);
+}
+
+bool Input::is_key_just_released(Key p_keycode) const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
+	return keys_just_released.has(p_keycode);
+}
+
 bool Input::is_physical_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 
@@ -336,6 +362,25 @@ bool Input::is_physical_key_pressed(Key p_keycode) const {
 	return physical_keys_pressed.has(p_keycode);
 }
 
+bool Input::is_physical_key_just_pressed(Key p_keycode) const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
+	return physical_keys_just_pressed.has(p_keycode);
+}
+bool Input::is_physical_key_just_released(Key p_keycode) const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
+	return physical_keys_just_released.has(p_keycode);
+}
+
 bool Input::is_key_label_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 
@@ -344,6 +389,26 @@ bool Input::is_key_label_pressed(Key p_keycode) const {
 	}
 
 	return key_label_pressed.has(p_keycode);
+}
+
+bool Input::is_key_label_just_pressed(Key p_keycode) const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
+	return key_label_just_pressed.has(p_keycode);
+}
+
+bool Input::is_key_label_just_released(Key p_keycode) const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
+	return key_label_just_released.has(p_keycode);
 }
 
 bool Input::is_mouse_button_pressed(MouseButton p_button) const {
@@ -754,23 +819,44 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_keycode() != Key::NONE) {
 		if (k->is_pressed()) {
+			keys_just_pressed.insert(k->get_keycode());
 			keys_pressed.insert(k->get_keycode());
 		} else {
 			keys_pressed.erase(k->get_keycode());
+			keys_just_pressed.erase(k->get_keycode());
+		}
+		if (k->is_released()) {
+			keys_just_released.insert(k->get_keycode());
+		} else {
+			keys_just_released.erase(k->get_keycode());
 		}
 	}
 	if (k.is_valid() && !k->is_echo() && k->get_physical_keycode() != Key::NONE) {
 		if (k->is_pressed()) {
 			physical_keys_pressed.insert(k->get_physical_keycode());
+			physical_keys_just_pressed.insert(k->get_physical_keycode());
 		} else {
 			physical_keys_pressed.erase(k->get_physical_keycode());
+			physical_keys_just_pressed.erase(k->get_physical_keycode());
+		}
+		if (k->is_released()) {
+			physical_keys_just_released.insert(k->get_physical_keycode());
+		} else {
+			physical_keys_just_released.erase(k->get_physical_keycode());
 		}
 	}
 	if (k.is_valid() && !k->is_echo() && k->get_key_label() != Key::NONE) {
 		if (k->is_pressed()) {
 			key_label_pressed.insert(k->get_key_label());
+			key_label_just_pressed.insert(k->get_key_label());
 		} else {
 			key_label_pressed.erase(k->get_key_label());
+			key_label_just_pressed.erase(k->get_key_label());
+		}
+		if (k->is_released()) {
+			key_label_just_released.insert(k->get_key_label());
+		} else {
+			key_label_just_released.erase(k->get_key_label());
 		}
 	}
 
@@ -1313,8 +1399,11 @@ void Input::release_pressed_events() {
 	flush_buffered_events(); // this is needed to release actions strengths
 
 	keys_pressed.clear();
+	keys_just_pressed.clear();
 	physical_keys_pressed.clear();
+	physical_keys_just_pressed.clear();
 	key_label_pressed.clear();
+	key_label_just_pressed.clear();
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
