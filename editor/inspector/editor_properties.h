@@ -94,10 +94,13 @@ public:
 class EditorPropertyText : public EditorProperty {
 	GDCLASS(EditorPropertyText, EditorProperty);
 	LineEdit *text = nullptr;
+	Button *show_secret = nullptr;
 
 	bool monospaced = false;
 	bool updating = false;
 	bool string_name = false;
+	bool is_secret = false;
+	void _show_secret_toggled(bool p_toggled);
 	void _text_changed(const String &p_string);
 	void _text_submitted(const String &p_string);
 	void _update_theme();
@@ -106,6 +109,7 @@ protected:
 	void _notification(int p_what);
 
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 
 public:
 	void set_string_name(bool p_enabled);
