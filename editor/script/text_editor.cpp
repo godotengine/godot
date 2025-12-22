@@ -108,7 +108,9 @@ void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 
 	Ref<JSON> json_file = edited_res;
 	if (json_file.is_valid()) {
+		json_file->reload_from_file(); // Ignore possible unsaved changes.
 		code_editor->get_text_editor()->set_text(json_file->get_parsed_text());
+		json_file->connect_changed(callable_mp(this, &TextEditor::_update_text));
 	}
 
 	code_editor->get_text_editor()->clear_undo_history();
@@ -187,6 +189,19 @@ void TextEditor::reload_text() {
 	_validate_script();
 }
 
+void TextEditor::_update_text() {
+	if (parsing) {
+		// The changed signal emitted while parsing in the text editor.
+		parsing = false; // Block only once to allow the user's combo to be triggered.
+		return;
+	}
+	Ref<JSON> json = edited_res;
+	if (json.is_valid()) {
+		code_editor->get_text_editor()->set_text(json->get_parsed_text());
+		_validate_script();
+	}
+}
+
 void TextEditor::_validate_script() {
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
@@ -198,6 +213,7 @@ void TextEditor::_validate_script() {
 		te->set_line_background_color(code_editor->get_error_pos().x, Color(0, 0, 0, 0));
 		code_editor->set_error("");
 
+		parsing = true;
 		if (json_file->parse(te->get_text(), true) != OK) {
 			code_editor->set_error(json_file->get_error_message().replace("[", "[lb]"));
 			code_editor->set_error_pos(json_file->get_error_line(), 0);
@@ -249,6 +265,7 @@ void TextEditor::apply_code() {
 
 	Ref<JSON> json_file = edited_res;
 	if (json_file.is_valid()) {
+		parsing = true;
 		json_file->parse(code_editor->get_text_editor()->get_text(), true);
 	}
 	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();

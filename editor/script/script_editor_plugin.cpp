@@ -950,9 +950,14 @@ void ScriptEditor::_close_current_tab(bool p_save, bool p_history_back) {
 }
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
-	Ref<Script> scr = _get_current_script();
-	if (scr.is_valid()) {
-		scr->reload_from_file();
+	ScriptEditorBase *current = _get_current_editor();
+	if (current) {
+		Ref<Resource> current_res = current->get_edited_resource();
+		Ref<Script> scr = current_res;
+		Ref<JSON> json = current_res;
+		if (scr.is_valid() || json.is_valid()) {
+			current_res->reload_from_file();
+		}
 	}
 	_close_tab(tab_container->get_current_tab(), false);
 	erase_tab_confirm->hide();

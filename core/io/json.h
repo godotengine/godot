@@ -86,6 +86,10 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
+	Error copy_from(const Ref<Resource> &p_resource) override;
+#endif
+
 	Error parse(const String &p_json_string, bool p_keep_text = false);
 	String get_parsed_text() const;
 
