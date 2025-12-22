@@ -99,8 +99,10 @@ private:
 	static Error _msg_live_node_path(const Array &p_args);
 	static Error _msg_live_res_path(const Array &p_args);
 	static Error _msg_live_node_prop_res(const Array &p_args);
+	static Error _msg_live_node_prop_res_array(const Array &p_args);
 	static Error _msg_live_node_prop(const Array &p_args);
 	static Error _msg_live_res_prop_res(const Array &p_args);
+	static Error _msg_live_res_prop_res_array(const Array &p_args);
 	static Error _msg_live_res_prop(const Array &p_args);
 	static Error _msg_live_node_call(const Array &p_args);
 	static Error _msg_live_res_call(const Array &p_args);
@@ -210,9 +212,11 @@ private:
 
 	void _node_set_func(int p_id, const StringName &p_prop, const Variant &p_value);
 	void _node_set_res_func(int p_id, const StringName &p_prop, const String &p_value);
+	void _node_set_res_array_func(int p_id, const StringName &p_prop, const Variant &p_value, const uint32_t &p_typed_builtin, const StringName &p_typed_class_name, const String &p_typed_script_path, const Array &p_res_indexes_array);
 	void _node_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount);
 	void _res_set_func(int p_id, const StringName &p_prop, const Variant &p_value);
 	void _res_set_res_func(int p_id, const StringName &p_prop, const String &p_value);
+	void _res_set_res_array_func(int p_id, const StringName &p_prop, const Variant &p_value, const uint32_t &p_typed_builtin, const StringName &p_typed_class_name, const String &p_typed_script_path, const Array &p_res_indexes_array);
 	void _res_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount);
 	void _root_func(const NodePath &p_scene_path, const String &p_scene_from);
 
