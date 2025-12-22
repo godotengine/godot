@@ -1057,6 +1057,13 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	tv.swizzle_b = p_view.swizzle_b;
 	tv.swizzle_a = p_view.swizzle_a;
 
+	RDD::SamplerID *sampler = sampler_owner.get_or_null(p_view.ycbcr_sampler);
+	if (sampler != nullptr) {
+		tv.ycbcr_sampler = *sampler;
+	} else {
+		tv.ycbcr_sampler = RDD::SamplerID();
+	}
+
 	// Create.
 
 	Texture texture;
@@ -2012,6 +2019,10 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 		return driver->texture_get_data(tex->driver_id, p_layer);
 	} else {
 		RDD::TextureAspect aspect = tex->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
+		if (tex->format == DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM) {
+			aspect = RDD::TEXTURE_ASPECT_PLANE0;
+		}
+
 		uint32_t mip_alignment = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
 		uint32_t buffer_size = 0;
 
@@ -3486,9 +3497,19 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 		driver_sampler.type = source_sampler.uniform_type;
 		driver_sampler.binding = source_sampler.binding;
 
-		for (uint32_t j = 0; j < source_sampler.get_id_count(); j++) {
-			RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
-			driver_sampler.ids.push_back(*sampler_driver_id);
+		if (source_sampler.uniform_type == UNIFORM_TYPE_SAMPLER) {
+			for (uint32_t j = 0; j < source_sampler.get_id_count(); j++) {
+				RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
+				driver_sampler.ids.push_back(*sampler_driver_id);
+			}
+		} else if (source_sampler.uniform_type == UNIFORM_TYPE_SAMPLER_WITH_TEXTURE) {
+			for (uint32_t j = 0; j < source_sampler.get_id_count(); j += 2) {
+				RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
+				driver_sampler.ids.push_back(*sampler_driver_id);
+
+				Texture *texture_driver_id = texture_owner.get_or_null(source_sampler.get_id(j + 1));
+				driver_sampler.ids.push_back(texture_driver_id->driver_id);
+			}
 		}
 
 		driver_immutable_samplers.append(driver_sampler);
@@ -5785,6 +5806,211 @@ void RenderingDevice::compute_list_end() {
 	compute_list = ComputeList();
 }
 
+void RenderingDevice::video_profile_get_capabilities(const VideoProfile &p_profile) {
+}
+
+void RenderingDevice::video_profile_get_format_properties(const VideoProfile &p_profile) {
+}
+
+// TODO manage DPB directly from rendering device
+// TODO validate everything is alright
+RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_t p_width, uint32_t p_height) {
+	Vector<VideoProfile> video_profiles;
+	video_profiles.push_back(p_profile);
+
+	RD::TextureFormat dpb_format;
+	dpb_format.width = p_width;
+	dpb_format.height = p_height;
+	dpb_format.depth = 1;
+	dpb_format.mipmaps = 1;
+	dpb_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	dpb_format.samples = RD::TEXTURE_SAMPLES_1;
+	dpb_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT;
+	dpb_format.shareable_formats.clear();
+	dpb_format.video_profiles = video_profiles;
+	dpb_format.is_resolve_buffer = false;
+	dpb_format.is_discardable = false;
+
+	// TODO: Determine with driver capabilities
+	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+
+	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
+		dpb_format.array_layers = 17;
+	} else if (p_profile.operation == VIDEO_OPERATION_DECODE_AV1) {
+		dpb_format.array_layers = 10;
+	} else {
+		dpb_format.array_layers = 999999;
+	}
+
+	RDD::TextureView dpb_view_format = {};
+	dpb_view_format.format = dpb_format.format;
+	dpb_view_format.swizzle_a = TEXTURE_SWIZZLE_IDENTITY;
+	dpb_view_format.swizzle_r = TEXTURE_SWIZZLE_IDENTITY;
+	dpb_view_format.swizzle_g = TEXTURE_SWIZZLE_IDENTITY;
+	dpb_view_format.swizzle_b = TEXTURE_SWIZZLE_IDENTITY;
+
+	VideoSession video_session;
+	video_session.video_profile = p_profile;
+	video_session.dpb_id = driver->texture_create(dpb_format, dpb_view_format);
+
+	Vector<RDD::TextureID> dpb_views;
+	dpb_views.push_back(video_session.dpb_id);
+	for (size_t i = 1; i < dpb_format.array_layers; i++) {
+		RDD::TextureID dpb_view = driver->texture_create_shared_from_slice(video_session.dpb_id, dpb_view_format, TEXTURE_SLICE_2D, i, 1, 0, 1);
+		dpb_views.push_back(dpb_view);
+	}
+
+	video_session.driver_id = driver->video_session_create(p_profile, dpb_views);
+
+	RDD::QueryPoolID query_pool = driver->video_query_pool_create(1, p_profile);
+	driver->video_session_add_query_pool(video_session.driver_id, query_pool);
+
+	RID rid = video_session_owner.make_rid(video_session);
+	return rid;
+}
+
+// TODO validate everything is alright
+void RenderingDevice::video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
+
+	driver->video_session_add_h264_parameters(video_session->driver_id, p_sps_sets, p_pps_sets);
+
+	RDD::FenceID fence = driver->fence_create();
+
+	RDD::TextureBarrier tb;
+	tb.texture = video_session->dpb_id;
+	tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
+	tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
+	tb.src_access = RDD::BARRIER_ACCESS_NONE;
+	tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	tb.subresources.mipmap_count = 1;
+	tb.subresources.layer_count = 17;
+
+	driver->command_pool_reset(decode_pool);
+	driver->command_buffer_begin(decode_buffer);
+	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, {}, tb);
+	driver->command_video_session_reset(decode_buffer, video_session->driver_id);
+	driver->command_buffer_end(decode_buffer);
+	driver->command_queue_execute(decode_queue, decode_buffer, fence);
+
+	driver->fence_wait(fence);
+	driver->fence_free(fence);
+}
+
+// TODO validate everything is alright
+void RenderingDevice::video_session_add_av1_parameters(RID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
+
+	driver->video_session_add_av1_parameters(video_session->driver_id, p_sequence_header);
+
+	RDD::FenceID fence = driver->fence_create();
+
+	driver->command_pool_reset(decode_pool);
+	driver->command_buffer_begin(decode_buffer);
+	driver->command_video_session_reset(decode_buffer, video_session->driver_id);
+	driver->command_buffer_end(decode_buffer);
+	driver->command_queue_execute(decode_queue, decode_buffer, fence);
+
+	driver->fence_wait(fence);
+	driver->fence_free(fence);
+}
+
+void RenderingDevice::video_session_begin() {
+	driver->command_pool_reset(decode_pool);
+	driver->command_buffer_begin(decode_buffer);
+}
+
+void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_t> p_nal_unit, VideoDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
+
+	uint64_t buffer_size = p_nal_unit.size() + 3;
+	buffer_size += 128 - (buffer_size % 128);
+
+	BitField<RDD::BufferUsageBits> buffer_usage = {};
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
+
+	RDD::BufferID src_buffer = driver->buffer_create_video_session(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, video_session->video_profile);
+	uint8_t *write_ptr = driver->buffer_map(src_buffer);
+
+	uint8_t start_code[3] = { 0, 0, 1 };
+	memcpy(write_ptr, start_code, sizeof(start_code));
+	memcpy(write_ptr + sizeof(start_code), p_nal_unit.begin(), p_nal_unit.size());
+	driver->buffer_unmap(src_buffer);
+
+	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
+	ERR_FAIL_NULL(dst_texture);
+
+	RDD::BufferBarrier bb = {};
+	bb.buffer = src_buffer;
+	bb.size = buffer_size;
+	bb.offset = 0;
+	bb.src_access = RDD::BARRIER_ACCESS_NONE;
+	bb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_READ;
+
+	RDD::TextureBarrier decode_tb = {};
+	decode_tb.texture = dst_texture->driver_id;
+	decode_tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
+	decode_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
+	decode_tb.src_access = RDD::BARRIER_ACCESS_NONE;
+	decode_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	decode_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	decode_tb.subresources.mipmap_count = 1;
+	decode_tb.subresources.layer_count = 1;
+
+	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE, {}, bb, decode_tb);
+	driver->command_video_session_decode_h264(decode_buffer, video_session->driver_id, src_buffer, p_std_h264_info, dst_texture->driver_id);
+
+	RDD::TextureBarrier read_tb = {};
+	read_tb.texture = video_session->dpb_id;
+	read_tb.prev_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
+	read_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
+	read_tb.src_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	read_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_READ;
+	read_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	read_tb.subresources.mipmap_count = 1;
+	read_tb.subresources.layer_count = 1;
+
+	//TODO: use this barrier in a shader
+	driver->command_pipeline_barrier(decode_buffer, RDD::PIPELINE_STAGE_VIDEO_DECODE, RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, {}, {}, read_tb);
+}
+
+void RenderingDevice::video_session_decode_av1(RID p_video_session, Span<uint8_t> p_obu, VideoDecodeAV1Frame p_std_av1_info, RID p_dst_texture) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
+
+	uint64_t buffer_size = p_obu.size() + 128 - (p_obu.size() % 128);
+
+	BitField<RDD::BufferUsageBits> buffer_usage = {};
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
+
+	RDD::BufferID src_buffer = driver->buffer_create_video_session(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, video_session->video_profile);
+
+	uint8_t *write_ptr = driver->buffer_map(src_buffer);
+	memcpy(write_ptr, p_obu.begin(), p_obu.size());
+	driver->buffer_unmap(src_buffer);
+
+	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
+	ERR_FAIL_NULL(dst_texture);
+
+	driver->command_video_session_decode_av1(decode_buffer, video_session->driver_id, src_buffer, p_std_av1_info, dst_texture->driver_id);
+	driver->buffer_free(src_buffer);
+}
+
+void RenderingDevice::video_session_end() {
+	RDD::FenceID fence = driver->fence_create();
+	driver->command_buffer_end(decode_buffer);
+	driver->command_queue_execute(decode_queue, decode_buffer, fence);
+
+	driver->fence_wait(fence);
+	driver->fence_free(fence);
+}
+
 #ifndef DISABLE_DEPRECATED
 void RenderingDevice::barrier(BitField<BarrierMask> p_from, BitField<BarrierMask> p_to) {
 	WARN_PRINT("Deprecated. Barriers are automatically inserted by RenderingDevice.");
@@ -6386,6 +6612,10 @@ void RenderingDevice::_free_internal(RID p_id) {
 		ComputePipeline *pipeline = compute_pipeline_owner.get_or_null(p_id);
 		frames[frame].compute_pipelines_to_dispose_of.push_back(*pipeline);
 		compute_pipeline_owner.free(p_id);
+	} else if (video_session_owner.owns(p_id)) {
+		VideoSession *video_session = video_session_owner.get_or_null(p_id);
+		driver->video_session_free(video_session->driver_id);
+		video_session_owner.free(p_id);
 	} else {
 #ifdef DEV_ENABLED
 		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()) + " " + resource_name);
@@ -7019,6 +7249,13 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		present_queue_family = main_queue_family;
 	}
 
+	decode_queue_family = driver->command_queue_family_get(RDD::COMMAND_QUEUE_FAMILY_DECODE_BIT);
+	if (decode_queue_family) {
+		decode_queue = driver->command_queue_create(decode_queue_family);
+		decode_pool = driver->command_pool_create(decode_queue_family, RDD::COMMAND_BUFFER_TYPE_PRIMARY);
+		decode_buffer = driver->command_buffer_create(decode_pool);
+	}
+
 	// Use the processor count as the max amount of transfer workers that can be created.
 	transfer_worker_pool_max_size = OS::get_singleton()->get_processor_count();
 
@@ -7467,6 +7704,7 @@ void RenderingDevice::finalize() {
 	_free_rids(vertex_buffer_owner, "VertexBuffer");
 	_free_rids(framebuffer_owner, "Framebuffer");
 	_free_rids(sampler_owner, "Sampler");
+	_free_rids(video_session_owner, "VideoSession");
 	{
 		// For textures it's a bit more difficult because they may be shared.
 		LocalVector<RID> owned = texture_owner.get_owned_list();
@@ -7558,6 +7796,17 @@ void RenderingDevice::finalize() {
 	}
 
 	screen_swap_chains.clear();
+
+	if (decode_queue_family) {
+		if (decode_queue) {
+			driver->command_queue_free(decode_queue);
+			decode_queue = RDD::CommandQueueID();
+		}
+
+		if (decode_pool) {
+			driver->command_pool_free(decode_pool);
+		}
+	}
 
 	// Delete the command queues.
 	if (present_queue) {
