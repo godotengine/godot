@@ -4666,6 +4666,11 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 	_update_cursor();
 }
 
+void CanvasItemEditor::_tool_button_pressed(int p_tool) {
+	_button_tool_select(p_tool);
+	emit_signal(SNAME("tool_changed"));
+}
+
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
 	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
@@ -5205,6 +5210,7 @@ void CanvasItemEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
+	ADD_SIGNAL(MethodInfo("tool_changed"));
 }
 
 Dictionary CanvasItemEditor::get_state() const {
@@ -5669,7 +5675,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	select_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(select_button);
 	select_button->set_toggle_mode(true);
-	select_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_SELECT));
+	select_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_tool_button_pressed).bind(TOOL_SELECT));
 	select_button->set_pressed(true);
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTRC("Select Mode"), Key::Q, true));
 	select_button->set_shortcut_context(this);
@@ -5681,7 +5687,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	move_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(move_button);
 	move_button->set_toggle_mode(true);
-	move_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_MOVE));
+	move_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_tool_button_pressed).bind(TOOL_MOVE));
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTRC("Move Mode"), Key::W, true));
 	move_button->set_shortcut_context(this);
 	move_button->set_tooltip_text(TTRC("Move Mode"));
@@ -5690,7 +5696,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	rotate_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(rotate_button);
 	rotate_button->set_toggle_mode(true);
-	rotate_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_ROTATE));
+	rotate_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_tool_button_pressed).bind(TOOL_ROTATE));
 	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTRC("Rotate Mode"), Key::E, true));
 	rotate_button->set_shortcut_context(this);
 	rotate_button->set_tooltip_text(TTRC("Rotate Mode"));
@@ -5699,7 +5705,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	scale_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(scale_button);
 	scale_button->set_toggle_mode(true);
-	scale_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_SCALE));
+	scale_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_tool_button_pressed).bind(TOOL_SCALE));
 	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTRC("Scale Mode"), Key::R, true));
 	scale_button->set_shortcut_context(this);
 	scale_button->set_tooltip_text(TTRC("Shift: Scale proportionally."));
@@ -5711,7 +5717,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	list_select_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(list_select_button);
 	list_select_button->set_toggle_mode(true);
-	list_select_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_LIST_SELECT));
+	list_select_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_tool_button_pressed).bind(TOOL_LIST_SELECT));
 	list_select_button->set_tooltip_text(TTRC("Show list of selectable nodes at position clicked."));
 
 	pivot_button = memnew(Button);
@@ -5719,14 +5725,14 @@ CanvasItemEditor::CanvasItemEditor() {
 	pivot_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(pivot_button);
 	pivot_button->set_toggle_mode(true);
-	pivot_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_EDIT_PIVOT));
+	pivot_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_tool_button_pressed).bind(TOOL_EDIT_PIVOT));
 	pivot_button->set_accessibility_name(TTRC("Change Pivot"));
 
 	pan_button = memnew(Button);
 	pan_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(pan_button);
 	pan_button->set_toggle_mode(true);
-	pan_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_PAN));
+	pan_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_tool_button_pressed).bind(TOOL_PAN));
 	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTRC("Pan Mode"), Key::G));
 	pan_button->set_shortcut_context(this);
 	pan_button->set_tooltip_text(TTRC("You can also use Pan View shortcut (Space by default) to pan in any mode."));
@@ -5736,7 +5742,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	ruler_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(ruler_button);
 	ruler_button->set_toggle_mode(true);
-	ruler_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_RULER));
+	ruler_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_tool_button_pressed).bind(TOOL_RULER));
 	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTRC("Ruler Mode"), Key::M));
 	ruler_button->set_shortcut_context(this);
 	ruler_button->set_tooltip_text(TTRC("Ruler Mode"));

@@ -536,6 +536,7 @@ private:
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);
 	void _button_tool_select(int p_index);
+	void _tool_button_pressed(int p_tool);
 
 	HSplitContainer *left_panel_split = nullptr;
 	HSplitContainer *right_panel_split = nullptr;
