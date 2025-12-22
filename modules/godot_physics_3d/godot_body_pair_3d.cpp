@@ -237,6 +237,16 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		return false;
 	}
 
+	// Check one-way collision based on motion direction.
+	if (p_A->get_shape(p_shape_A)->allows_one_way_collision() && p_B->is_shape_set_as_one_way_collision(p_shape_B)) {
+		Vector3 direction = -predicted_xform_B.basis[1].normalized();
+		if (direction.dot(mnormal) < CMP_EPSILON) {
+			collided = false;
+			oneway_disabled = true;
+			return false;
+		}
+	}
+
 	Vector3 hitpos = predicted_xform_B.xform(segment_hit_local);
 
 	real_t newlen = hitpos.distance_to(supports_A[segment_support_idx]);
@@ -294,9 +304,13 @@ bool GodotBodyPair3D::setup(real_t p_step) {
 	GodotShape3D *shape_A_ptr = A->get_shape(shape_A);
 	GodotShape3D *shape_B_ptr = B->get_shape(shape_B);
 
+	bool prev_collided = collided;
+
 	collided = GodotCollisionSolver3D::solve_static(shape_A_ptr, xform_A, shape_B_ptr, xform_B, _contact_added_callback, this, &sep_axis);
 
 	if (!collided) {
+		oneway_disabled = false;
+
 		if (A->is_continuous_collision_detection_enabled() && collide_A) {
 			check_ccd = true;
 			return true;
@@ -310,10 +324,56 @@ bool GodotBodyPair3D::setup(real_t p_step) {
 		return false;
 	}
 
+	if (oneway_disabled) {
+		return false;
+	}
+
+	if (!prev_collided) {
+		if (shape_B_ptr->allows_one_way_collision() && A->is_shape_set_as_one_way_collision(shape_A)) {
+			Vector3 direction = -xform_A.basis[1].normalized();
+			bool valid = false;
+			for (int i = 0; i < contact_count; i++) {
+				Contact &c = contacts[i];
+				if (c.normal.dot(direction) > -CMP_EPSILON) { // Greater (normal inverted).
+					continue;
+				}
+				valid = true;
+				break;
+			}
+			if (!valid) {
+				collided = false;
+				oneway_disabled = true;
+				return false;
+			}
+		}
+
+		if (shape_A_ptr->allows_one_way_collision() && B->is_shape_set_as_one_way_collision(shape_B)) {
+			Vector3 direction = -xform_B.basis[1].normalized();
+			bool valid = false;
+			for (int i = 0; i < contact_count; i++) {
+				Contact &c = contacts[i];
+				if (c.normal.dot(direction) < CMP_EPSILON) { // Less (normal ok).
+					continue;
+				}
+				valid = true;
+				break;
+			}
+			if (!valid) {
+				collided = false;
+				oneway_disabled = true;
+				return false;
+			}
+		}
+	}
+
 	return true;
 }
 
 bool GodotBodyPair3D::pre_solve(real_t p_step) {
+	if (oneway_disabled) {
+		return false;
+	}
+
 	if (!collided) {
 		if (check_ccd) {
 			const Vector3 &offset_A = A->get_transform().get_origin();
@@ -452,7 +512,7 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 }
 
 void GodotBodyPair3D::solve(real_t p_step) {
-	if (!collided) {
+	if (!collided || oneway_disabled) {
 		return;
 	}
 

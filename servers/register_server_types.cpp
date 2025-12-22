@@ -87,6 +87,9 @@
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
 #include "servers/physics_2d/physics_server_2d_dummy.h"
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_2d/physics_server_2d_in_3d.h"
+#endif
 #include "servers/physics_2d/physics_server_2d_extension.h"
 #endif // PHYSICS_2D_DISABLED
 
@@ -116,6 +119,11 @@ ShaderTypes *shader_types = nullptr;
 static PhysicsServer2D *_create_dummy_physics_server_2d() {
 	return memnew(PhysicsServer2DDummy);
 }
+#ifndef PHYSICS_3D_DISABLED
+static PhysicsServer2D *_create_physics_server_2d_in_3d() {
+	return memnew(PhysicsServer2Din3D);
+}
+#endif // PHYSICS_3D_DISABLED
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
@@ -299,6 +307,9 @@ void register_server_types() {
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
 	PhysicsServer2DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_2d));
+#ifndef PHYSICS_3D_DISABLED
+	PhysicsServer2DManager::get_singleton()->register_server("Use 3D Physics Engine", callable_mp_static(_create_physics_server_2d_in_3d));
+#endif
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef NAVIGATION_3D_DISABLED
