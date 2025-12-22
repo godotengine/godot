@@ -79,7 +79,7 @@ class ProgressDialog : public CenterContainer {
 	PanelContainer *center_panel = nullptr;
 	VBoxContainer *main = nullptr;
 
-	LocalVector<Window *> host_windows;
+	LocalVector<ObjectID> host_windows;
 
 	Size2 main_border_size;
 
@@ -101,8 +101,8 @@ public:
 	bool task_step(const String &p_task, const String &p_state, int p_step = -1, bool p_force_redraw = true);
 	void end_task(const String &p_task);
 
-	void add_host_window(Window *p_window);
-	void remove_host_window(Window *p_window);
+	void add_host_window(ObjectID p_window);
+	void remove_host_window(ObjectID p_window);
 
 	ProgressDialog();
 };
