@@ -34,11 +34,11 @@
 #include "core/object/gdvirtual.gen.inc"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/theme.h"
+#include "scene/theme/theme_owner.h"
 
 class Viewport;
 class Label;
 class Panel;
-class ThemeOwner;
 class ThemeContext;
 
 class Control : public CanvasItem {
@@ -265,7 +265,7 @@ private:
 
 		// Theming.
 
-		ThemeOwner *theme_owner = nullptr;
+		ThemeOwner theme_owner;
 		Ref<Theme> theme;
 		StringName theme_type_variation;
 
