@@ -137,8 +137,11 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 		if (!source_tab_bar) {
 			return nullptr;
 		}
-
-		DockTabContainer *source_tab_container = Object::cast_to<DockTabContainer>(source_tab_bar->get_parent());
+		HBoxContainer *parent = Object::cast_to<HBoxContainer>(source_tab_bar->get_parent()); // The internal container.
+		if (!parent) {
+			return nullptr;
+		}
+		DockTabContainer *source_tab_container = Object::cast_to<DockTabContainer>(parent->get_parent());
 		if (!source_tab_container) {
 			return nullptr;
 		}
