@@ -1630,6 +1630,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			editor = true;
 			cmdline_tool = true;
 			wait_for_import = true;
+			// Run headless.
+			audio_driver = NULL_AUDIO_DRIVER;
+			display_driver = NULL_DISPLAY_DRIVER;
 			main_args.push_back(arg);
 		} else if (arg == "--patches") {
 			if (N) {
