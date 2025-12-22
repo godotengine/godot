@@ -2519,19 +2519,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_terrain_p
 			_add_to_output_if_tile_changed(output, edited_layer, kv.key, tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value));
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
-			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
-			TileMapCell cell = edited_layer->get_cell(kv.key);
-			if (cell.source_id != TileSet::INVALID_SOURCE) {
-				TileSetSource *source = *tile_set->get_source(cell.source_id);
-				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-				if (atlas_source) {
-					// Get tile data.
-					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
-						in_map_terrain_pattern = tile_data->get_terrains_pattern();
-					}
-				}
-			}
+			TileSet::TerrainsPattern in_map_terrain_pattern = edited_layer->get_terrain_pattern_of_cell(kv.key, p_terrain_set);
 			if (in_map_terrain_pattern != kv.value) {
 				_add_to_output_if_tile_changed(output, edited_layer, kv.key, tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value));
 			}
@@ -2566,19 +2554,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_terrain_p
 			_add_to_output_if_tile_changed(output, edited_layer, kv.key, tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value));
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
-			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
-			TileMapCell cell = edited_layer->get_cell(kv.key);
-			if (cell.source_id != TileSet::INVALID_SOURCE) {
-				TileSetSource *source = *tile_set->get_source(cell.source_id);
-				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-				if (atlas_source) {
-					// Get tile data.
-					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
-						in_map_terrain_pattern = tile_data->get_terrains_pattern();
-					}
-				}
-			}
+			TileSet::TerrainsPattern in_map_terrain_pattern = edited_layer->get_terrain_pattern_of_cell(kv.key, p_terrain_set);
 			if (in_map_terrain_pattern != kv.value) {
 				_add_to_output_if_tile_changed(output, edited_layer, kv.key, tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value));
 			}
@@ -2689,18 +2665,7 @@ RBSet<Vector2i> TileMapLayerEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vec
 			to_check.pop_back();
 			if (!already_checked.has(coords)) {
 				// Get the candidate cell pattern.
-				TileSet::TerrainsPattern candidate_pattern(*tile_set, selected_terrain_set);
-				if (edited_layer->get_cell_source_id(coords) != TileSet::INVALID_SOURCE) {
-					TileData *tile_data = nullptr;
-					Ref<TileSetSource> source = tile_set->get_source(edited_layer->get_cell_source_id(coords));
-					Ref<TileSetAtlasSource> atlas_source = source;
-					if (atlas_source.is_valid()) {
-						tile_data = atlas_source->get_tile_data(edited_layer->get_cell_atlas_coords(coords), edited_layer->get_cell_alternative_tile(coords));
-					}
-					if (tile_data) {
-						candidate_pattern = tile_data->get_terrains_pattern();
-					}
-				}
+				TileSet::TerrainsPattern candidate_pattern = edited_layer->get_terrain_pattern_of_cell(coords, selected_terrain_set);
 
 				// Draw.
 				if (candidate_pattern == source_pattern && (!source_pattern.is_erase_pattern() || boundaries.has_point(coords))) {
@@ -2734,18 +2699,7 @@ RBSet<Vector2i> TileMapLayerEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vec
 		for (int i = 0; i < to_check.size(); i++) {
 			Vector2i coords = to_check[i];
 			// Get the candidate cell pattern.
-			TileSet::TerrainsPattern candidate_pattern;
-			if (edited_layer->get_cell_source_id(coords) != TileSet::INVALID_SOURCE) {
-				TileData *tile_data = nullptr;
-				Ref<TileSetSource> source = tile_set->get_source(edited_layer->get_cell_source_id(coords));
-				Ref<TileSetAtlasSource> atlas_source = source;
-				if (atlas_source.is_valid()) {
-					tile_data = atlas_source->get_tile_data(edited_layer->get_cell_atlas_coords(coords), edited_layer->get_cell_alternative_tile(coords));
-				}
-				if (tile_data) {
-					candidate_pattern = tile_data->get_terrains_pattern();
-				}
-			}
+			TileSet::TerrainsPattern candidate_pattern = edited_layer->get_terrain_pattern_of_cell(coords, selected_terrain_set);
 
 			// Draw.
 			if (candidate_pattern == source_pattern && (!source_pattern.is_erase_pattern() || boundaries.has_point(coords))) {
