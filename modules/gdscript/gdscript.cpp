@@ -207,12 +207,9 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	/* STEP 1, CREATE */
 
-	if (!valid) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-		return Variant();
-	}
-
 	r_error.error = Callable::CallError::CALL_OK;
+	ERR_FAIL_COND_V_MSG(!valid, Variant(), "Can't instantiate an invalid GDScript.");
+
 	Ref<RefCounted> ref;
 	Object *owner = nullptr;
 
