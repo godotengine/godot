@@ -46,7 +46,7 @@ float CameraAttributes::get_exposure_multiplier() const {
 void CameraAttributes::set_exposure_sensitivity(float p_sensitivity) {
 	exposure_sensitivity = p_sensitivity;
 	_update_exposure();
-	emit_changed();
+	_update_auto_exposure(); // Sensitivity is used in auto exposure calculations.
 }
 
 float CameraAttributes::get_exposure_sensitivity() const {
