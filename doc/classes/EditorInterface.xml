@@ -251,6 +251,12 @@
 				Shows the given property on the given [param object] in the editor's Inspector dock. If [param inspector_only] is [code]true[/code], plugins will not attempt to edit [param object].
 			</description>
 		</method>
+		<method name="is_exiting" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the editor is currently exiting.
+			</description>
+		</method>
 		<method name="is_multi_window_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
