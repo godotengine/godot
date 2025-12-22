@@ -629,7 +629,8 @@ bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, c
 		".webp", // Same reasoning as .png
 		".cfb", // Don't let small config files slow-down startup
 		".scn", // Binary scenes are usually already compressed
-		".ctex", // Streamable textures are usually already compressed
+		".ctex", // Compressed textures are usually already compressed
+		".stex", // Streamable textures are already compressed
 		".pck", // Pack.
 		// Trailer for easier processing
 		nullptr

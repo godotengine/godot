@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  texture_loader_dds.h                                                  */
+/*  resource_importer_streamed_texture.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,40 +30,51 @@
 
 #pragma once
 
-#include "core/io/image_loader.h"
+#include "core/io/file_access.h"
+#include "core/io/image.h"
 #include "core/io/resource_importer.h"
-#include "core/io/resource_loader.h"
+#include "servers/rendering/rendering_server.h"
 
-class ResourceImporterDds : public ResourceImporter {
-	GDCLASS(ResourceImporterDds, ResourceImporter);
-	static ResourceImporterDds *singleton;
+class StreamedTexture2D;
+
+class ResourceImporterStreamedTexture : public ResourceImporter {
+	GDCLASS(ResourceImporterStreamedTexture, ResourceImporter);
+
+	static ResourceImporterStreamedTexture *singleton;
+
+	enum {
+		MAKE_ROUGHNESS_FLAG = 1,
+		MAKE_NORMAL_FLAG = 2,
+	};
+
+	Mutex mutex;
+	struct MakeInfo {
+		int flags = 0;
+		String normal_path_for_roughness;
+		RS::TextureDetectRoughnessChannel channel_for_roughness = RS::TEXTURE_DETECT_ROUGHNESS_R;
+	};
+
+	HashMap<StringName, MakeInfo> make_flags;
+
+	static void _texture_reimport_roughness(const Ref<StreamedTexture2D> &p_tex, const String &p_normal_path, RenderingServer::TextureDetectRoughnessChannel p_channel);
+	static void _texture_reimport_normal(const Ref<StreamedTexture2D> &p_tex);
 
 public:
-	static ResourceImporterDds *get_singleton() { return singleton; }
+	static ResourceImporterStreamedTexture *get_singleton() { return singleton; }
 
-	virtual String get_importer_name() const override;
-	virtual String get_visible_name() const override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual String get_save_extension() const override;
-	virtual String get_resource_type() const override;
-	virtual float get_priority() const override { return 2.0; }
+	String get_importer_name() const override;
+	String get_visible_name() const override;
+	void get_recognized_extensions(List<String> *p_extensions) const override;
+	String get_save_extension() const override;
+	String get_resource_type() const override;
+	float get_priority() const override { return 2.0; }
+
+	void update_imports();
 
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
-
 	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-	ResourceImporterDds(bool p_singleton = false);
-	virtual ~ResourceImporterDds() = default;
-};
-
-class ResourceLoaderDDS : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceLoaderDDS, ResourceFormatLoader);
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
-
-public:
-	virtual ~ResourceLoaderDDS() = default;
+	ResourceImporterStreamedTexture(bool p_singleton = false);
+	virtual ~ResourceImporterStreamedTexture() = default;
 };

@@ -1653,6 +1653,9 @@
 		<member name="TextServerManager" type="TextServerManager" setter="" getter="">
 			The [TextServerManager] singleton.
 		</member>
+		<member name="TextureStreaming" type="TextureStreaming" setter="" getter="">
+			The [TextureStreaming] singleton.
+		</member>
 		<member name="ThemeDB" type="ThemeDB" setter="" getter="">
 			The [ThemeDB] singleton.
 		</member>

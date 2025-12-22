@@ -48,7 +48,9 @@ class DirectionalLight3D;
 class EditorData;
 class EditorSelection;
 class EditorSpinSlider;
+class HSlider;
 class HSplitContainer;
+class Label;
 class LineEdit;
 class MenuButton;
 class Node3DEditor;
@@ -795,6 +797,8 @@ private:
 	PopupMenu *gizmos_menu = nullptr;
 	MenuButton *view_layout_menu = nullptr;
 
+	MenuButton *textures_layout_menu = nullptr;
+
 	AcceptDialog *accept = nullptr;
 
 	ConfirmationDialog *snap_dialog = nullptr;
@@ -920,6 +924,34 @@ private:
 
 	Button *sun_environ_settings = nullptr;
 
+	Button *textures_button = nullptr;
+	PopupPanel *textures_popup = nullptr;
+	Button *textures_very_low = nullptr;
+	Button *textures_low = nullptr;
+	Button *textures_medium = nullptr;
+	Button *textures_high = nullptr;
+	Button *textures_very_high = nullptr;
+	Button *textures_max = nullptr;
+	Button *textures_manual = nullptr;
+	LineEdit *textures_min_edit = nullptr;
+	HSlider *textures_min_slider = nullptr;
+	LineEdit *textures_max_edit = nullptr;
+	HSlider *textures_max_slider = nullptr;
+
+	CheckBox *textures_budget_enable = nullptr;
+	HSlider *textures_budget_slider = nullptr;
+	LineEdit *textures_budget_edit = nullptr;
+
+	enum TextureQualityPreset {
+		TEXTURE_QUALITY_VERY_LOW,
+		TEXTURE_QUALITY_LOW,
+		TEXTURE_QUALITY_MEDIUM,
+		TEXTURE_QUALITY_HIGH,
+		TEXTURE_QUALITY_VERY_HIGH,
+		TEXTURE_QUALITY_MAX,
+		TEXTURE_QUALITY_MANUAL,
+	};
+
 	DirectionalLight3D *preview_sun = nullptr;
 	bool preview_sun_dangling = false;
 	WorldEnvironment *preview_environment = nullptr;
@@ -951,6 +983,17 @@ private:
 
 	void _preview_settings_changed();
 	void _sun_environ_settings_pressed();
+
+	void _textures_button_pressed();
+	void _textures_close(const Ref<InputEvent> &p_event);
+	void _textures_preset_pressed(int p_preset);
+	void _textures_min_size_changed(float p_value);
+	void _textures_max_size_changed(float p_value);
+	void _textures_budget_toggled(bool p_enabled);
+	void _textures_budget_changed(float p_value);
+	void _textures_load_settings();
+	void _textures_apply_settings();
+	void _textures_save_pressed();
 
 	void _add_sun_to_scene(bool p_already_added_environment = false);
 	void _add_environment_to_scene(bool p_already_added_sun = false);

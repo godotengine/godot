@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureStreaming" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Manages dynamic texture mipmap streaming to optimize VRAM usage.
+	</brief_description>
+	<description>
+		The TextureStreaming singleton manages dynamic loading and unloading of texture mipmap levels based on what is visible in the current frame. This allows projects with many large textures to significantly reduce VRAM usage while maintaining visual quality for visible textures.
+		Texture streaming works by analyzing shader feedback to determine which textures are actively being used and at what resolution they're being displayed. Textures that are far from the camera or not currently visible have their higher-resolution mipmap levels unloaded, while textures being displayed up close are loaded at higher resolutions.
+		The system includes a memory budget feature that automatically manages texture resolutions to stay within a specified VRAM limit. When the budget is exceeded, the system prioritizes textures based on how recently they were used and how much screen space they occupy.
+		[b]Note:[/b] Texture streaming must be enabled in the Project Settings ([member ProjectSettings.rendering/textures/streaming/enabled]) and textures must be imported with streaming support to use this feature.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_memory_budget_bytes_used">
+			<return type="int" />
+			<description>
+				Returns the current VRAM usage of streamed textures in bytes. This represents the total memory consumed by all streamed textures at their currently loaded mipmap levels.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="budget_enabled" type="bool" setter="set_budget_enabled" getter="get_budget_enabled" default="true">
+		</member>
+		<member name="max_resolution" type="int" setter="set_max_resolution" getter="get_max_resolution" default="8192">
+		</member>
+		<member name="memory_budget_mb" type="float" setter="set_memory_budget_mb" getter="get_memory_budget_mb" default="512.0">
+		</member>
+		<member name="min_resolution" type="int" setter="set_min_resolution" getter="get_min_resolution" default="128">
+		</member>
+	</members>
+</class>

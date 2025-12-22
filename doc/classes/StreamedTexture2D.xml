@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamedTexture2D" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A texture that supports dynamic mipmap streaming for optimized VRAM usage.
+	</brief_description>
+	<description>
+		StreamedTexture2D is a texture type that supports dynamic mipmap streaming. When texture streaming is enabled in the Project Settings ([member ProjectSettings.rendering/textures/streaming/enabled]), these textures can have their mipmap levels dynamically loaded and unloaded based on usage.
+		The texture streaming system monitors which textures are visible in each frame and at what resolution they're being displayed. Textures that are far from the camera or not currently visible have their higher-resolution mipmap levels unloaded to save VRAM, while textures being displayed up close are loaded at higher resolutions.
+		This texture type is automatically created when importing images with the streaming-compatible importer.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="max_resolution" type="int" setter="set_mipmap_streaming_max" getter="get_mipmap_streaming_max" default="0">
+			The maximum resolution (in pixels) that this texture can be streamed at. If set to [code]0[/code], the global default from [member ProjectSettings.rendering/textures/streaming/default_max_dimension] is used. This limits how high the texture quality can be increased, even when the texture is displayed at full screen.
+		</member>
+		<member name="min_resolution" type="int" setter="set_mipmap_streaming_min" getter="get_mipmap_streaming_min" default="0">
+			The minimum resolution (in pixels) that this texture can be reduced to when streaming. If set to [code]0[/code], the global default from [member ProjectSettings.rendering/textures/streaming/default_min_dimension] is used. Lower values allow more memory savings when the texture is not actively used, but may result in visibly blurry textures.
+		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+	</members>
+</class>

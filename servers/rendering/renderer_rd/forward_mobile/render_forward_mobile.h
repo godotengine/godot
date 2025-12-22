@@ -133,8 +133,9 @@ private:
 		RD::FramebufferFormatID framebuffer_format = 0;
 		uint32_t element_offset = 0;
 		uint32_t subpass = 0;
+		bool use_material_feedback = false;
 
-		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, SceneShaderForwardMobile::ShaderSpecialization p_base_specialization, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0) {
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, SceneShaderForwardMobile::ShaderSpecialization p_base_specialization, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, bool p_use_material_feedback = false) {
 			elements = p_elements;
 			element_info = p_element_info;
 			element_count = p_element_count;
@@ -149,6 +150,7 @@ private:
 			screen_mesh_lod_threshold = p_screen_mesh_lod_threshold;
 			element_offset = p_element_offset;
 			base_specialization = p_base_specialization;
+			use_material_feedback = p_use_material_feedback;
 		}
 	};
 
@@ -211,7 +213,8 @@ private:
 		struct InstanceData {
 			float transform[12];
 			float compressed_aabb_position[4];
-			float compressed_aabb_size[4];
+			float compressed_aabb_size[3];
+			uint32_t material_feedback_index; // Index into the material feedback buffer.
 			float uv_scale[4];
 			uint32_t flags;
 			uint32_t instance_uniforms_ofs; // Base offset in global buffer for instance variables.

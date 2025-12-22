@@ -3449,6 +3449,31 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
+		<member name="rendering/textures/streaming/default_max_dimension" type="int" setter="" getter="" default="13">
+			The default maximum resolution dimension (as a power of 2) for texture streaming. The value is an exponent, so [code]13[/code] represents 2^13 = 8192 pixels. This sets the upper limit for the resolution of streamed textures.
+		</member>
+		<member name="rendering/textures/streaming/default_min_dimension" type="int" setter="" getter="" default="7">
+			The default minimum resolution dimension (as a power of 2) for texture streaming. The value is an exponent, so [code]5[/code] represents 2^5 = 32 pixels. This sets the lower limit for the resolution of streamed textures when reducing quality to save memory.
+		</member>
+		<member name="rendering/textures/streaming/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables texture streaming. This system dynamically loads and unloads texture mipmaps based on visibility, reducing VRAM usage. Useful for projects with many large textures.
+			[b]Note:[/b] Textures must be reimported after enabling this setting.
+		</member>
+		<member name="rendering/textures/streaming/import_high_quality" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], streamed textures are imported with higher quality compression. This improves visual quality but increases file size and import time.
+		</member>
+		<member name="rendering/textures/streaming/initial_size" type="int" setter="" getter="" default="7">
+			The initial resolution dimension (as a power of 2) for streamed textures when first loaded. The value is an exponent, so [code]7[/code] represents 2^7 = 128 pixels. Lower values reduce initial VRAM usage and load times, while higher values reduce pop-in artifacts.
+		</member>
+		<member name="rendering/textures/streaming/memory_budget_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], texture streaming respects the memory budget defined in [member rendering/textures/streaming/memory_budget_mb]. The system reduces texture resolution to stay within budget(when possible), prioritizing active textures.
+		</member>
+		<member name="rendering/textures/streaming/memory_budget_mb" type="int" setter="" getter="" default="512">
+			The maximum VRAM (in megabytes) allocated for streamed textures. If exceeded, the system reduces the resolution of less important textures to stay within budget.
+		</member>
+		<member name="rendering/textures/streaming/wait_time" type="int" setter="" getter="" default="100">
+			The minimum time (in milliseconds) to wait before changing a texture's resolution again. This prevents rapid resolution switching (thrashing) which can cause visual artifacts and performance issues.
+		</member>
 		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), making subsequent imports faster at the cost of increased memory usage.
 		</member>
