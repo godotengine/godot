@@ -180,6 +180,7 @@ protected:
 
 	void _update_joint_array(int p_index);
 	void _update_joints(bool p_reset);
+	void _set_joint_bone(int p_index, int p_joint, int p_bone);
 
 	void _update_bone_axis(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
 
@@ -267,9 +268,7 @@ public:
 	void set_individual_config(int p_index, bool p_enabled);
 	bool is_config_individual(int p_index) const;
 
-	void set_joint_bone_name(int p_index, int p_joint, const String &p_bone_name);
 	String get_joint_bone_name(int p_index, int p_joint) const;
-	void set_joint_bone(int p_index, int p_joint, int p_bone);
 	int get_joint_bone(int p_index, int p_joint) const;
 
 	void set_joint_rotation_axis(int p_index, int p_joint, RotationAxis p_axis);
