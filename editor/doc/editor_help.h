@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
@@ -312,6 +313,8 @@ class EditorHelpBit : public VBoxContainer {
 	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_signal_cache;
 	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_annotation_cache;
 
+	static SafeNumeric<int> instance_counter;
+
 	RichTextLabel *title = nullptr;
 	RichTextLabel *content = nullptr;
 
@@ -355,6 +358,7 @@ public:
 	void update_content_height();
 
 	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true);
+	~EditorHelpBit();
 };
 
 // Standard tooltips do not allow you to hover over them.
