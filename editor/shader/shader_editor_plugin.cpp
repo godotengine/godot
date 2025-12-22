@@ -72,6 +72,7 @@ void ShaderEditorPlugin::_update_shader_list() {
 			text = TTR("[unsaved]");
 		} else if (shader->is_built_in()) {
 			const String &shader_name = shader->get_name();
+			path = text.get_slice("::", 0);
 			if (!shader_name.is_empty()) {
 				text = vformat("%s (%s)", shader_name, text.get_slice("::", 0));
 			}
@@ -243,12 +244,25 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 	String selected_shader = p_layout->get_value("ShaderEditor", "selected_shader");
 	for (int i = 0; i < shaders.size(); i++) {
 		String path = shaders[i];
-		Ref<Resource> res = ResourceLoader::load(path);
-		if (res.is_valid()) {
-			edit(res.ptr());
-		}
-		if (selected_shader == path) {
-			selected_shader_idx = i;
+		if (!path.contains("::")) {
+			Ref<Resource> res = ResourceLoader::load(path);
+			if (res.is_valid()) {
+				edit(res.ptr());
+			}
+			if (selected_shader == path) {
+				selected_shader_idx = i;
+			}
+		} else {
+			Ref<Resource> res = ResourceLoader::load(path.get_slice("::", 0));
+			if (res.is_valid()) {
+				Ref<Resource> sub_res = ResourceLoader::load(path);
+				if (sub_res.is_valid()) {
+					edit(sub_res.ptr());
+				}
+				if (selected_shader == path) {
+					selected_shader_idx = i;
+				}
+			}
 		}
 	}
 
@@ -603,6 +617,9 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 		case FILE_MENU_SHOW_IN_FILE_SYSTEM: {
 			Ref<Resource> shader = _get_current_shader();
 			String path = shader->get_path();
+			if (shader->is_built_in()) {
+				path = path.get_slice("::", 0);
+			}
 			if (!path.is_empty()) {
 				FileSystemDock::get_singleton()->navigate_to_path(path);
 			}
