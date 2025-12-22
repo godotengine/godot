@@ -451,6 +451,20 @@ void EditorProperty::_notification(int p_what) {
 			queue_redraw(); //need to redraw text
 		} break;
 
+		case NOTIFICATION_DRAG_BEGIN: {
+			if (revert_pressed || revert_hover || delete_hover || keying_hover || check_hover || delete_pressed || keying_pressed || check_pressed) {
+				revert_hover = false;
+				delete_hover = false;
+				keying_hover = false;
+				check_hover = false;
+				revert_pressed = false;
+				delete_pressed = false;
+				keying_pressed = false;
+				check_pressed = false;
+				queue_redraw();
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			Ref<Font> font = theme_cache.font;
 			int font_size = theme_cache.font_size;
@@ -518,16 +532,14 @@ void EditorProperty::_notification(int p_what) {
 					rtl_pos = Point2(size.width - check_rect.position.x - (checkbox->get_width() + padding + (1 * EDSCALE)), check_rect.position.y);
 				}
 
-				Color color2(1, 1, 1);
-				if (check_hover) {
-					color2.r *= 1.2;
-					color2.g *= 1.2;
-					color2.b *= 1.2;
-
+				// Checkbox does not receive the button icon tinting
+				Color color2 = Color(1, 1, 1);
+				if (check_hover || check_pressed) {
+					const Ref<StyleBox> &button_stylebox = check_pressed ? theme_cache.button_pressed_background : theme_cache.button_hover_background;
 					if (rtl) {
-						draw_style_box(theme_cache.hover, Rect2(rtl_pos, check_rect.size));
+						draw_style_box(button_stylebox, Rect2(rtl_pos, check_rect.size));
 					} else {
-						draw_style_box(theme_cache.hover, check_rect);
+						draw_style_box(button_stylebox, check_rect);
 					}
 				}
 
@@ -555,16 +567,14 @@ void EditorProperty::_notification(int p_what) {
 					rtl_pos = Point2(size.width - revert_rect.position.x - (reload_icon->get_width() + padding + (1 * EDSCALE)), revert_rect.position.y);
 				}
 
-				Color color2(1, 1, 1);
-				if (revert_hover) {
-					color2.r *= 1.2;
-					color2.g *= 1.2;
-					color2.b *= 1.2;
-
+				Color color2 = theme_cache.button_icon_normal_color;
+				if (revert_hover || revert_pressed) {
+					color2 = revert_pressed ? theme_cache.button_icon_pressed_color : theme_cache.button_icon_hover_color;
+					const Ref<StyleBox> &button_stylebox = revert_pressed ? theme_cache.button_pressed_background : theme_cache.button_hover_background;
 					if (rtl) {
-						draw_style_box(theme_cache.hover, Rect2(rtl_pos, revert_rect.size));
+						draw_style_box(button_stylebox, Rect2(rtl_pos, revert_rect.size));
 					} else {
-						draw_style_box(theme_cache.hover, revert_rect);
+						draw_style_box(button_stylebox, revert_rect);
 					}
 				}
 
@@ -621,16 +631,14 @@ void EditorProperty::_notification(int p_what) {
 					rtl_pos = Point2(size.width - keying_rect.position.x - (key->get_width() + padding), keying_rect.position.y);
 				}
 
-				Color color2(1, 1, 1);
-				if (keying_hover) {
-					color2.r *= 1.2;
-					color2.g *= 1.2;
-					color2.b *= 1.2;
-
+				Color color2 = theme_cache.button_icon_normal_color;
+				if (keying_hover || keying_pressed) {
+					color2 = keying_pressed ? theme_cache.button_icon_pressed_color : theme_cache.button_icon_hover_color;
+					const Ref<StyleBox> &button_stylebox = keying_pressed ? theme_cache.button_pressed_background : theme_cache.button_hover_background;
 					if (rtl) {
-						draw_style_box(theme_cache.hover, Rect2(rtl_pos, keying_rect.size));
+						draw_style_box(button_stylebox, Rect2(rtl_pos, keying_rect.size));
 					} else {
-						draw_style_box(theme_cache.hover, keying_rect);
+						draw_style_box(button_stylebox, keying_rect);
 					}
 				}
 
@@ -656,16 +664,15 @@ void EditorProperty::_notification(int p_what) {
 					rtl_pos = Point2(size.width - delete_rect.position.x - (close->get_width() + padding), delete_rect.position.y);
 				}
 
-				Color color2(1, 1, 1);
-				if (delete_hover) {
-					color2.r *= 1.2;
-					color2.g *= 1.2;
-					color2.b *= 1.2;
+				Color color2 = theme_cache.button_icon_normal_color;
+				if (delete_hover || delete_pressed) {
+					color2 = delete_pressed ? theme_cache.button_icon_pressed_color : theme_cache.button_icon_hover_color;
 
+					const Ref<StyleBox> &button_stylebox = delete_pressed ? theme_cache.button_pressed_background : theme_cache.button_hover_background;
 					if (rtl) {
-						draw_style_box(theme_cache.hover, Rect2(rtl_pos, delete_rect.size));
+						draw_style_box(button_stylebox, Rect2(rtl_pos, delete_rect.size));
 					} else {
-						draw_style_box(theme_cache.hover, delete_rect);
+						draw_style_box(button_stylebox, delete_rect);
 					}
 				}
 
@@ -701,9 +708,10 @@ void EditorProperty::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_EXIT_SELF:
 		case NOTIFICATION_MOUSE_EXIT: {
-			if (keying_hover || revert_hover || check_hover || delete_hover) {
+			if (keying_hover || revert_hover || revert_pressed || check_hover || delete_hover) {
 				keying_hover = false;
 				revert_hover = false;
+				revert_pressed = false;
 				check_hover = false;
 				delete_hover = false;
 				queue_redraw();
@@ -1084,15 +1092,22 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
+		bool is_button_down = mb->is_pressed();
+
 		Vector2 mpos = mb->get_position();
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
 
-		select();
+		if (is_button_down) {
+			select();
+		}
 
-		if (keying_rect.has_point(mpos)) {
+		if (is_button_down && keying_rect.has_point(mpos)) {
+			keying_pressed = true;
+			queue_redraw();
+		} else if (!is_button_down && keying_pressed && keying_rect.has_point(mpos)) {
 			accept_event();
 			emit_signal(SNAME("property_keyed"), property, use_keying_next());
 
@@ -1115,12 +1130,18 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 				callable_mp(this, &EditorProperty::update_property).call_deferred();
 			}
 		}
-		if (delete_rect.has_point(mpos)) {
+		if (is_button_down && delete_rect.has_point(mpos)) {
+			delete_pressed = true;
+			queue_redraw();
+		} else if (!is_button_down && delete_pressed && delete_rect.has_point(mpos)) {
 			accept_event();
 			emit_signal(SNAME("property_deleted"), property);
 		}
 
-		if (revert_rect.has_point(mpos)) {
+		if (is_button_down && revert_rect.has_point(mpos)) {
+			revert_pressed = true;
+			queue_redraw();
+		} else if (!is_button_down && revert_pressed && revert_rect.has_point(mpos)) {
 			accept_event();
 			get_viewport()->gui_release_focus();
 			bool is_valid_revert = false;
@@ -1130,7 +1151,10 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			update_property();
 		}
 
-		if (check_rect.has_point(mpos)) {
+		if (is_button_down && check_rect.has_point(mpos)) {
+			check_pressed = true;
+			queue_redraw();
+		} else if (!is_button_down && check_pressed && check_rect.has_point(mpos)) {
 			accept_event();
 			if (!checked && Object::cast_to<Control>(object) && property_path.begins_with("theme_override_")) {
 				List<PropertyInfo> pinfo;
@@ -1146,6 +1170,15 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 			emit_signal(SNAME("property_checked"), property, checked);
 		}
+
+		if (!is_button_down && (revert_pressed || check_pressed || delete_pressed || keying_pressed)) {
+			revert_pressed = false;
+			check_pressed = false;
+			delete_pressed = false;
+			keying_pressed = false;
+			queue_redraw();
+		}
+
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
 		_update_popup();
@@ -1260,6 +1293,14 @@ void EditorProperty::update_cache() {
 	}
 }
 Variant EditorProperty::get_drag_data(const Point2 &p_point) {
+	Point2 drag_start = p_point;
+	if (is_layout_rtl()) {
+		drag_start.x = get_size().x - drag_start.x;
+	}
+	if (revert_rect.has_point(drag_start) || delete_rect.has_point(drag_start) || check_rect.has_point(drag_start) || keying_rect.has_point(drag_start)) {
+		return Variant();
+	}
+
 	if (property == StringName()) {
 		return Variant();
 	}
@@ -2023,7 +2064,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			if (indent_depth > 0 && section_indent_size > 0) {
 				section_indent = indent_depth * section_indent_size;
 			}
-			Ref<StyleBoxFlat> section_indent_style = theme_cache.indent_box;
+			Ref<StyleBox> section_indent_style = theme_cache.indent_box;
 			if (indent_depth > 0 && section_indent_style.is_valid()) {
 				section_indent += section_indent_style->get_margin(SIDE_LEFT) + section_indent_style->get_margin(SIDE_RIGHT);
 			}
@@ -2084,14 +2125,11 @@ void EditorInspectorSection::_notification(int p_what) {
 					key_position.x = (rtl ? margin_end : (get_size().width - key->get_width() - margin_end)) - theme_cache.key_padding_size / 2;
 					keying_rect = Rect2(key_position.x - theme_cache.key_padding_size / 2, 0, key->get_width() + theme_cache.key_padding_size, header_height);
 
-					Color key_color(1, 1, 1);
-					if (keying_hover) {
-						key_color.r *= 1.2;
-						key_color.g *= 1.2;
-						key_color.b *= 1.2;
-
-						Ref<StyleBox> sb_hover = theme_cache.key_hover;
-						draw_style_box(sb_hover, keying_rect);
+					Color key_color = theme_cache.button_icon_normal_color;
+					if (keying_hover || keying_pressed) {
+						key_color = keying_pressed ? theme_cache.button_icon_pressed_color : theme_cache.button_icon_hover_color;
+						const Ref<StyleBox> &button_stylebox = keying_pressed ? theme_cache.button_pressed_background : theme_cache.button_hover_background;
+						draw_style_box(button_stylebox, keying_rect);
 					}
 					key_position.y = (header_height - key->get_height()) / 2;
 
@@ -2122,11 +2160,15 @@ void EditorInspectorSection::_notification(int p_what) {
 
 					Color check_font_color = font_color;
 					Color checkbox_color(1, 1, 1);
-					if (check_hover) {
-						checkbox_color.r *= 1.2;
-						checkbox_color.g *= 1.2;
-						checkbox_color.b *= 1.2;
-						check_font_color = checked ? theme_cache.font_hover_pressed_color : theme_cache.font_hover_color;
+					if (check_hover || check_pressed) {
+						// The choice of colors for each interaction state is aligned on the normal checkboxes and buttons.
+						// TODO Handle a distinct "checked" (checkbox actually checked) state, different from the "pressed" (mouse button down) state.
+						// and combination of those states.
+						if (checked) {
+							check_font_color = check_pressed ? theme_cache.font_color : theme_cache.font_hover_pressed_color;
+						} else {
+							check_font_color = check_pressed ? theme_cache.font_pressed_color : theme_cache.font_hover_color;
+						}
 					} else if (checked) {
 						check_font_color = theme_cache.font_pressed_color;
 					}
@@ -2378,15 +2420,11 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 
 		if (checkable && check_rect.has_point(pos)) {
-			checked = !checked;
-			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
-			if (checked) {
-				unfold();
-			} else if (!checkbox_only) {
-				vbox->hide();
-			}
+			check_pressed = true;
+			queue_redraw();
 		} else if (keying && keying_rect.has_point(pos)) {
-			emit_signal(SNAME("property_keyed"), related_enable_property, false);
+			keying_pressed = true;
+			queue_redraw();
 		} else if (foldable) {
 			bool should_unfold = can_click_unfold && !object->editor_is_section_unfolded(section);
 			if (should_unfold) {
@@ -2396,6 +2434,24 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 	} else if (mb.is_valid() && !mb->is_pressed()) {
+		Vector2 pos = mb->get_position();
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			if (checkable && check_rect.has_point(pos)) {
+				checked = !checked;
+				emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
+				if (checked) {
+					unfold();
+				} else if (!checkbox_only) {
+					vbox->hide();
+				}
+			} else if (keying && keying_rect.has_point(pos) && keying_pressed) {
+				emit_signal(SNAME("property_keyed"), related_enable_property, false);
+			}
+		}
+
+		keying_pressed = false;
+		check_pressed = false;
+
 		queue_redraw();
 	}
 }
@@ -3592,7 +3648,12 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.icon_gui_animation_key = p_control->get_editor_theme_icon(SNAME("Key"));
 
 	p_cache.indent_box = p_control->get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
-	p_cache.key_hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
+	p_cache.button_hover_background = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
+	p_cache.button_pressed_background = p_control->get_theme_stylebox(SceneStringName(pressed), SceneStringName(FlatButton));
+
+	p_cache.button_icon_normal_color = p_control->get_theme_color(SNAME("icon_normal_color"), EditorStringName(Editor));
+	p_cache.button_icon_hover_color = p_control->get_theme_color(SNAME("icon_hover_color"), EditorStringName(Editor));
+	p_cache.button_icon_pressed_color = p_control->get_theme_color(SNAME("icon_pressed_color"), EditorStringName(Editor));
 }
 
 void EditorInspector::initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control) {
@@ -3630,7 +3691,12 @@ void EditorInspector::initialize_property_theme(EditorProperty::ThemeCache &p_ca
 	p_cache.background = p_control->get_theme_stylebox(SNAME("bg"), SNAME("EditorProperty"));
 	p_cache.background_selected = p_control->get_theme_stylebox(SNAME("bg_selected"), SNAME("EditorProperty"));
 	p_cache.child_background = p_control->get_theme_stylebox(SNAME("child_bg"), SNAME("EditorProperty"));
-	p_cache.hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
+	p_cache.button_hover_background = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
+	p_cache.button_pressed_background = p_control->get_theme_stylebox(SceneStringName(pressed), SceneStringName(FlatButton));
+
+	p_cache.button_icon_normal_color = p_control->get_theme_color(SNAME("icon_normal_color"), EditorStringName(Editor));
+	p_cache.button_icon_hover_color = p_control->get_theme_color(SNAME("icon_hover_color"), EditorStringName(Editor));
+	p_cache.button_icon_pressed_color = p_control->get_theme_color(SNAME("icon_pressed_color"), EditorStringName(Editor));
 
 	p_cache.key_icon = p_control->get_editor_theme_icon(SNAME("Key"));
 	p_cache.key_next_icon = p_control->get_editor_theme_icon(SNAME("KeyNext"));
