@@ -5926,10 +5926,6 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 	resolve_insertion_offset(p_ofs);
 
-	while (animation->track_find_key(p_track, p_ofs, Animation::FIND_MODE_APPROX) != -1) { // Make sure insertion point is valid.
-		p_ofs += SECOND_DECIMAL;
-	}
-
 	Node *node = root->get_node_or_null(animation->track_get_path(p_track));
 	if (!node) {
 		EditorNode::get_singleton()->show_warning(TTR("Track path is invalid, so can't add a key."));
