@@ -1959,7 +1959,7 @@ Dictionary EditorExportPlatform::_save_zip_patch(const Ref<EditorExportPreset> &
 	return ret;
 }
 
-bool EditorExportPlatform::_store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs) {
+bool EditorExportPlatform::_store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs, const String &p_salt) {
 	p_fd->store_32(PACK_HEADER_MAGIC);
 	p_fd->store_32(PACK_FORMAT_VERSION);
 	p_fd->store_32(GODOT_VERSION_MAJOR);
@@ -1981,8 +1981,18 @@ bool EditorExportPlatform::_store_header(Ref<FileAccess> p_fd, bool p_enc, bool 
 	r_dir_base_ofs = p_fd->get_position();
 	p_fd->store_64(0); // Directory offset.
 
-	for (int i = 0; i < 16; i++) {
-		//reserved
+	if (p_enc && p_sparse && p_salt.length() == 32) {
+		CharString cs = p_salt.latin1();
+		p_fd->store_buffer((const uint8_t *)cs.ptr(), 32);
+	} else {
+		for (int i = 0; i < 8; i++) {
+			// Reserved.
+			p_fd->store_32(0);
+		}
+	}
+
+	for (int i = 0; i < 8; i++) {
+		// Reserved.
 		p_fd->store_32(0);
 	}
 	return true;
@@ -2107,7 +2117,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	uint64_t file_base_ofs = 0;
 	uint64_t dir_base_ofs = 0;
 
-	_store_header(f, p_preset->get_enc_pck() && p_preset->get_enc_directory(), false, file_base_ofs, dir_base_ofs);
+	_store_header(f, p_preset->get_enc_pck() && p_preset->get_enc_directory(), false, file_base_ofs, dir_base_ofs, String());
 
 	// Align for first file.
 	int file_padding = _get_pad(PCK_PADDING, f->get_position());
