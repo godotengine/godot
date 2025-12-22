@@ -1787,7 +1787,13 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 
 		Vector3 extents = probe->size / 2;
 
-		rpi->cull_mask = probe->reflection_mask;
+		uint32_t reflection_mask = probe->reflection_mask;
+		if (Engine::get_singleton()->is_editor_hint()) {
+			// Add bit 26 to allow rendering preview gizmos.
+			reflection_mask |= (1 << 26);
+		}
+
+		rpi->cull_mask = reflection_mask;
 
 		reflection_ubo.box_extents[0] = extents.x;
 		reflection_ubo.box_extents[1] = extents.y;
@@ -1799,7 +1805,7 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 		reflection_ubo.box_offset[0] = origin_offset.x;
 		reflection_ubo.box_offset[1] = origin_offset.y;
 		reflection_ubo.box_offset[2] = origin_offset.z;
-		reflection_ubo.mask = probe->reflection_mask;
+		reflection_ubo.mask = reflection_mask;
 
 		reflection_ubo.intensity = probe->intensity;
 		reflection_ubo.blend_distance = probe->blend_distance;
