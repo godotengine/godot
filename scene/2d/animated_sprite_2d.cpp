@@ -60,7 +60,7 @@ bool AnimatedSprite2D::_edit_use_pivot() const {
 
 #ifdef DEBUG_ENABLED
 Rect2 AnimatedSprite2D::_edit_get_rect() const {
-	return _get_rect();
+	return get_rect();
 }
 
 bool AnimatedSprite2D::_edit_use_rect() const {
@@ -80,10 +80,10 @@ bool AnimatedSprite2D::_edit_use_rect() const {
 #endif // DEBUG_ENABLED
 
 Rect2 AnimatedSprite2D::get_anchorable_rect() const {
-	return _get_rect();
+	return get_rect();
 }
 
-Rect2 AnimatedSprite2D::_get_rect() const {
+Rect2 AnimatedSprite2D::get_rect() const {
 	if (frames.is_null() || !frames->has_animation(animation)) {
 		return Rect2();
 	}
@@ -176,7 +176,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			Rect2 dst_rect = _get_rect();
+			Rect2 dst_rect = get_rect();
 
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_IMAGE);
 			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
@@ -661,6 +661,8 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &AnimatedSprite2D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimatedSprite2D::get_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_playing_speed"), &AnimatedSprite2D::get_playing_speed);
+
+	ClassDB::bind_method(D_METHOD("get_rect"), &AnimatedSprite2D::get_rect);
 
 	ADD_SIGNAL(MethodInfo("sprite_frames_changed"));
 	ADD_SIGNAL(MethodInfo("animation_changed"));
