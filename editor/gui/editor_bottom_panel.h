@@ -42,7 +42,6 @@ class EditorBottomPanel : public TabContainer {
 	GDCLASS(EditorBottomPanel, TabContainer);
 
 	HBoxContainer *bottom_hbox = nullptr;
-	Control *icon_spacer = nullptr;
 	EditorToaster *editor_toaster = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
