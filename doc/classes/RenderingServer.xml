@@ -283,6 +283,7 @@
 			<param index="5" name="outline_size" type="int" default="0" />
 			<param index="6" name="px_range" type="float" default="1.0" />
 			<param index="7" name="scale" type="float" default="1.0" />
+			<param index="8" name="msdf_rounded_outline" type="float" default="1.0" />
 			<description>
 				See also [method CanvasItem.draw_msdf_texture_rect_region].
 			</description>

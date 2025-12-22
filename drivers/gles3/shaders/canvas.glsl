@@ -601,6 +601,8 @@ void main() {
 	if (bool(read_draw_data_flags & INSTANCE_FLAGS_USE_MSDF)) {
 		float px_range = read_draw_data_ninepatch_margins.x;
 		float outline_thickness = read_draw_data_ninepatch_margins.y;
+		float msdf_rounded_outline = read_draw_data_ninepatch_margins.z;
+		//float reserved = read_draw_data_ninepatch_margins.w;
 
 		vec4 msdf_sample = texture(color_texture, uv);
 		vec2 msdf_size = vec2(textureSize(color_texture, 0));
@@ -610,7 +612,7 @@ void main() {
 
 		if (outline_thickness > 0.0) {
 			float cr = clamp(outline_thickness, 0.0, (px_range / 2.0) - 1.0) / px_range;
-			d = min(d, msdf_sample.a);
+			d = mix(d, msdf_sample.a, msdf_rounded_outline);
 			float a = clamp((d - 0.5 + cr) * px_size, 0.0, 1.0);
 			color.a = a * color.a;
 		} else {

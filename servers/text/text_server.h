@@ -350,6 +350,9 @@ public:
 	virtual void font_set_baseline_offset(const RID &p_font_rid, double p_baseline_offset) = 0;
 	virtual double font_get_baseline_offset(const RID &p_font_rid) const = 0;
 
+	virtual void font_set_msdf_rounded_outline(const RID &p_font_rid, double p_msdf_rounded_outline) = 0;
+	virtual double font_get_msdf_rounded_outline(const RID &p_font_rid) const = 0;
+
 	virtual void font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) = 0;
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const = 0;
 

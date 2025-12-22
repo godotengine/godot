@@ -559,7 +559,9 @@ private:
 
 	struct GlyphMeshKeyHasher {
 		_FORCE_INLINE_ static uint32_t hash(const GlyphMeshKey &p_a) {
-			return hash_murmur3_buffer(&p_a, sizeof(GlyphMeshKey));
+			uint32_t h = hash_one_uint64(p_a.font_id);
+			h = hash_murmur3_one_32(p_a.gl_id, h);
+			return h;
 		}
 	};
 

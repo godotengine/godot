@@ -50,7 +50,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallbacks"), &Font::get_fallbacks);
 
 	// Output.
-	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph", "baseline_offset"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph", "baseline_offset", "msdf_rounded_outline"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0.0), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("get_rids"), &Font::get_rids);
 
 	// Font metrics.
@@ -976,6 +976,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extra_baseline_offset", "cache_index", "baseline_offset"), &FontFile::set_extra_baseline_offset);
 	ClassDB::bind_method(D_METHOD("get_extra_baseline_offset", "cache_index"), &FontFile::get_extra_baseline_offset);
 
+	ClassDB::bind_method(D_METHOD("set_extra_msdf_rounded_outline", "cache_index", "msdf_rounded_outline"), &FontFile::set_extra_msdf_rounded_outline);
+	ClassDB::bind_method(D_METHOD("get_extra_msdf_rounded_outline", "cache_index"), &FontFile::get_extra_msdf_rounded_outline);
+
 	ClassDB::bind_method(D_METHOD("set_face_index", "cache_index", "face_index"), &FontFile::set_face_index);
 	ClassDB::bind_method(D_METHOD("get_face_index", "cache_index"), &FontFile::get_face_index);
 
@@ -1206,6 +1209,9 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (tokens.size() == 3 && tokens[2] == "baseline_offset") {
 			set_extra_baseline_offset(cache_index, p_value);
 			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "msdf_rounded_outline") {
+			set_extra_msdf_rounded_outline(cache_index, p_value);
+			return true;
 		}
 		if (tokens.size() >= 5) {
 			Vector2i sz = Vector2i(tokens[2].to_int(), tokens[3].to_int());
@@ -1300,6 +1306,9 @@ bool FontFile::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (tokens.size() == 3 && tokens[2] == "baseline_offset") {
 			r_ret = get_extra_baseline_offset(cache_index);
 			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "msdf_rounded_outline") {
+			r_ret = get_extra_msdf_rounded_outline(cache_index);
+			return true;
 		}
 		if (tokens.size() >= 5) {
 			Vector2i sz = Vector2i(tokens[2].to_int(), tokens[3].to_int());
@@ -1376,6 +1385,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_glyph", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "baseline_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "msdf_rounded_outline", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 
 		for (int j = 0; j < sizes.size(); j++) {
 			Vector2i sz = sizes[j];
@@ -2361,7 +2371,7 @@ real_t FontFile::get_oversampling() const {
 	return oversampling_override;
 }
 
-RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, float p_msdf_rounded_outline) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
 	int make_linked_from = -1;
@@ -2378,6 +2388,7 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing_space);
 			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_GLYPH) == p_spacing_glyph);
 			match_linked = match_linked && (TS->font_get_baseline_offset(cache[i]) == p_baseline_offset);
+			match_linked = match_linked && (TS->font_get_msdf_rounded_outline(cache[i]) == p_msdf_rounded_outline);
 			for (const Variant *V = supported_coords.next(nullptr); V && match; V = supported_coords.next(V)) {
 				const Vector3 &def = supported_coords[*V];
 
@@ -2422,6 +2433,7 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
 		TS->font_set_baseline_offset(cache[idx], p_baseline_offset);
+		TS->font_set_msdf_rounded_outline(cache[idx], p_msdf_rounded_outline);
 	} else {
 		_ensure_rid(idx);
 		TS->font_set_variation_coordinates(cache[idx], p_variation_coordinates);
@@ -2433,6 +2445,7 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
 		TS->font_set_baseline_offset(cache[idx], p_baseline_offset);
+		TS->font_set_msdf_rounded_outline(cache[idx], p_msdf_rounded_outline);
 	}
 	return cache[idx];
 }
@@ -2537,6 +2550,18 @@ void FontFile::set_extra_baseline_offset(int p_cache_index, float p_baseline_off
 	ERR_FAIL_COND(p_cache_index < 0);
 	_ensure_rid(p_cache_index);
 	TS->font_set_baseline_offset(cache[p_cache_index], p_baseline_offset);
+}
+
+float FontFile::get_extra_msdf_rounded_outline(int p_cache_index) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0);
+	_ensure_rid(p_cache_index);
+	return TS->font_get_msdf_rounded_outline(cache[p_cache_index]);
+}
+
+void FontFile::set_extra_msdf_rounded_outline(int p_cache_index, float p_msdf_rounded_outline) {
+	ERR_FAIL_COND(p_cache_index < 0);
+	_ensure_rid(p_cache_index);
+	TS->font_set_msdf_rounded_outline(cache[p_cache_index], p_msdf_rounded_outline);
 }
 
 void FontFile::set_face_index(int p_cache_index, int64_t p_index) {
@@ -2900,6 +2925,9 @@ void FontVariation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_baseline_offset", "baseline_offset"), &FontVariation::set_baseline_offset);
 	ClassDB::bind_method(D_METHOD("get_baseline_offset"), &FontVariation::get_baseline_offset);
 
+	ClassDB::bind_method(D_METHOD("set_msdf_rounded_outline", "msdf_rounded_outline"), &FontVariation::set_msdf_rounded_outline);
+	ClassDB::bind_method(D_METHOD("get_msdf_rounded_outline"), &FontVariation::get_msdf_rounded_outline);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_base_font", "get_base_font");
 
 	ADD_GROUP("Variation", "variation_");
@@ -2919,6 +2947,18 @@ void FontVariation::_bind_methods() {
 
 	ADD_GROUP("Baseline", "baseline_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "baseline_offset", PROPERTY_HINT_RANGE, "-2,2,0.005"), "set_baseline_offset", "get_baseline_offset");
+
+	ADD_GROUP("MSDF", "msdf_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_rounded_outline", PROPERTY_HINT_RANGE, "0.0,1.0,0.0001"), "set_msdf_rounded_outline", "get_msdf_rounded_outline");
+}
+
+void FontVariation::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "msdf_rounded_outline") {
+		Ref<Font> f = _get_base_font_or_default();
+		if (f.is_null() || !f->is_multichannel_signed_distance_field()) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
 }
 
 void FontVariation::_update_rids() const {
@@ -2960,6 +3000,7 @@ void FontVariation::reset_state() {
 		extra_spacing[i] = 0;
 	}
 	baseline_offset = 0.0;
+	msdf_rounded_outline = 1.0;
 
 	Font::reset_state();
 }
@@ -3034,6 +3075,15 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 	}
 
 	return Ref<Font>();
+}
+
+bool FontVariation::is_multichannel_signed_distance_field() const {
+	Ref<Font> f = _get_base_font_or_default();
+	if (f.is_valid()) {
+		return f->is_multichannel_signed_distance_field();
+	} else {
+		return false;
+	}
 }
 
 void FontVariation::set_variation_opentype(const Dictionary &p_coords) {
@@ -3115,10 +3165,21 @@ float FontVariation::get_baseline_offset() const {
 	return baseline_offset;
 }
 
-RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+void FontVariation::set_msdf_rounded_outline(float p_msdf_rounded_outline) {
+	if (msdf_rounded_outline != p_msdf_rounded_outline) {
+		msdf_rounded_outline = p_msdf_rounded_outline;
+		_invalidate_rids();
+	}
+}
+
+float FontVariation::get_msdf_rounded_outline() const {
+	return msdf_rounded_outline;
+}
+
+RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, float p_msdf_rounded_outline) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset, p_msdf_rounded_outline);
 	}
 	return RID();
 }
@@ -3126,7 +3187,7 @@ RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int
 RID FontVariation::_get_rid() const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH], baseline_offset);
+		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH], baseline_offset, msdf_rounded_outline);
 	}
 	return RID();
 }
@@ -3646,7 +3707,7 @@ int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
 	}
 }
 
-RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, float p_msdf_rounded_outline) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
 		Dictionary var = p_variation_coordinates;
@@ -3662,9 +3723,9 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 
 		if (!face_indices.is_empty()) {
 			int face_index = CLAMP(p_face_index, 0, face_indices.size() - 1);
-			return f->find_variation(var, face_indices[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+			return f->find_variation(var, face_indices[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset, p_msdf_rounded_outline);
 		} else {
-			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset, p_msdf_rounded_outline);
 		}
 	}
 	return RID();

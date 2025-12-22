@@ -600,7 +600,8 @@ void main() {
 	// only used by TYPE_RECT
 	if (sc_use_msdf()) {
 		float px_range = params.msdf.x;
-		float outline_thickness = params.msdf.y;
+		float outline_thickness = params.msdf_outline.x;
+		float rounded_outline = params.msdf_outline.y;
 
 		vec4 msdf_sample = texture(sampler2D(color_texture, texture_sampler), uv);
 		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
@@ -610,7 +611,7 @@ void main() {
 
 		if (outline_thickness > 0) {
 			float cr = clamp(outline_thickness, 0.0, (px_range / 2.0) - 1.0) / px_range;
-			d = min(d, msdf_sample.a);
+			d = mix(d, msdf_sample.a, rounded_outline);
 			float a = clamp((d - 0.5 + cr) * px_size, 0.0, 1.0);
 			color.a = a * color.a;
 		} else {

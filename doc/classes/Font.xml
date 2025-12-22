@@ -125,6 +125,7 @@
 			<param index="6" name="spacing_space" type="int" default="0" />
 			<param index="7" name="spacing_glyph" type="int" default="0" />
 			<param index="8" name="baseline_offset" type="float" default="0.0" />
+			<param index="9" name="msdf_rounded_outline" type="float" default="1.0" />
 			<description>
 				Returns [TextServer] RID of the font cache for specific variation.
 			</description>
