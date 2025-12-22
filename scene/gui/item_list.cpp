@@ -2179,6 +2179,10 @@ bool ItemList::has_auto_height() const {
 	return auto_height;
 }
 
+float ItemList::get_auto_height_value() const {
+	return auto_height_value;
+}
+
 void ItemList::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	if (text_overrun_behavior != p_behavior) {
 		text_overrun_behavior = p_behavior;
@@ -2365,6 +2369,8 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_auto_height", "enable"), &ItemList::set_auto_height);
 	ClassDB::bind_method(D_METHOD("has_auto_height"), &ItemList::has_auto_height);
+
+	ClassDB::bind_method(D_METHOD("get_auto_height_value"), &ItemList::get_auto_height_value);
 
 	ClassDB::bind_method(D_METHOD("is_anything_selected"), &ItemList::is_anything_selected);
 
