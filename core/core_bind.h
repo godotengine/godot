@@ -580,6 +580,8 @@ public:
 
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
+	double get_process_step() const;
+	double get_physics_step() const;
 	double get_physics_interpolation_fraction() const;
 
 	void set_max_fps(int p_fps);
