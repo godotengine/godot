@@ -255,6 +255,15 @@ String FoldableContainer::get_tooltip(const Point2 &p_pos) const {
 	return String();
 }
 
+bool FoldableContainer::has_point(const Point2 &p_point) const {
+	if (folded) {
+		Rect2 title_rect = Rect2(0, (title_position == POSITION_TOP) ? 0 : get_size().height - title_minimum_size.height, get_size().width, title_minimum_size.height);
+		return title_rect.has_point(p_point);
+	}
+
+	return Control::has_point(p_point);
+}
+
 void FoldableContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
