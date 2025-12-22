@@ -835,7 +835,7 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 				editor_selection->add_node(selected);
 			}
 		} else {
-			if (!editor_selection->is_selected(selected)) {
+			if (!editor_selection->is_selected(selected) || editor_selection->get_selection().size() > 1) {
 				editor_selection->clear();
 				editor_selection->add_node(selected);
 				EditorNode::get_singleton()->edit_node(selected);
