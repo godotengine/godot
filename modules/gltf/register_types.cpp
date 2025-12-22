@@ -47,6 +47,8 @@
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
 #include "editor/editor_scene_importer_gltf.h"
+#include "editor/resource_importer_gltf_mesh_library.h"
+#include "editor/resource_importer_gltf_single_mesh.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
@@ -95,6 +97,14 @@ static void _editor_init() {
 	}
 	memnew(EditorImportBlendRunner);
 	EditorNode::get_singleton()->add_child(EditorImportBlendRunner::get_singleton());
+
+	// Non-ResourceImporterScene importers.
+	Ref<ResourceImporterGLTFMeshLibrary> res_imp_gltf_mesh_library;
+	res_imp_gltf_mesh_library.instantiate();
+	ResourceFormatImporter::get_singleton()->add_importer(res_imp_gltf_mesh_library);
+	Ref<ResourceImporterGLTFSingleMesh> res_imp_gltf_single_mesh;
+	res_imp_gltf_single_mesh.instantiate();
+	ResourceFormatImporter::get_singleton()->add_importer(res_imp_gltf_single_mesh);
 }
 #endif // TOOLS_ENABLED
 
@@ -142,6 +152,9 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		// Required to document import options in the class reference.
+		GDREGISTER_CLASS(ResourceImporterGLTFMeshLibrary);
+		GDREGISTER_CLASS(ResourceImporterGLTFSingleMesh);
 		GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
 		EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 

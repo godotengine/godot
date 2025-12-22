@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterGLTFSingleMesh" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Imports glTF files as a single [ArrayMesh] resource.
+	</brief_description>
+	<description>
+		ResourceImporterGLTFSingleMesh is a resource importer for glTF files which outputs an [ArrayMesh] resource containing the meshes from the glTF file. If the glTF file contains only one mesh, that mesh will be saved as-is. If the glTF file contains multiple meshes, the meshes will be merged together. This is useful for simple glTF files intended to only transfer mesh geometry without a scene hierarchy. This approach should be preferred over using the OBJ importer, since glTF is a more modern format and supports more features.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="deduplicate_surfaces" type="bool" setter="" getter="" default="true">
+			If the glTF file contains only one mesh, this option has no effect. If [code]true[/code] and the glTF file contains multiple meshes with the same surface names and formats, the surfaces will be merged together when the meshes are merged. This is useful for reducing the number of surfaces in the resulting mesh, and avoids duplicatng materials. If [code]false[/code] and the glTF file contains multiple meshes, the surfaces will always be kept separate.
+		</member>
+	</members>
+</class>
