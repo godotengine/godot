@@ -1127,6 +1127,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	if (!node) {
 		set_process(false);
+		_clear_clipboard_data();
 		for (int i = 0; i < 3; i++) {
 			RenderingServer::get_singleton()->instance_set_visible(grid_instance[i], false);
 		}
