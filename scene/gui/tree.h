@@ -638,6 +638,7 @@ private:
 		Color font_selected_color;
 		Color font_disabled_color;
 		Color guide_color;
+		Color drop_on_item_color;
 		Color drop_position_color;
 		Color relationship_line_color;
 		Color parent_hl_line_color;
