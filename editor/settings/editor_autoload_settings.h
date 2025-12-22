@@ -31,19 +31,20 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/tree.h"
 
+class Button;
 class EditorFileDialog;
+class SceneCreateDialog;
+class ScriptCreateDialog;
+class Tree;
 
 class EditorAutoloadSettings : public VBoxContainer {
 	GDCLASS(EditorAutoloadSettings, VBoxContainer);
 
 	enum {
-		BUTTON_OPEN,
 		BUTTON_MOVE_UP,
 		BUTTON_MOVE_DOWN,
-		BUTTON_DELETE
+		BUTTON_DELETE,
 	};
 
 	String path = "res://";
@@ -68,35 +69,35 @@ class EditorAutoloadSettings : public VBoxContainer {
 	String selected_autoload;
 
 	Tree *tree = nullptr;
-	LineEdit *autoload_add_name = nullptr;
-	Button *add_autoload = nullptr;
-	LineEdit *autoload_add_path = nullptr;
-	Label *error_message = nullptr;
 	Button *browse_button = nullptr;
-	EditorFileDialog *file_dialog = nullptr;
+	Button *create_script_autoload = nullptr;
+	Button *create_scene_autoload = nullptr;
+	EditorFileDialog *autoload_file_dialog = nullptr;
+	EditorFileDialog *scene_file_dialog = nullptr;
+	ScriptCreateDialog *script_create_dialog = nullptr;
+	SceneCreateDialog *scene_create_dialog = nullptr;
 
 	bool _autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
 
-	void _autoload_add();
 	void _autoload_selected();
 	void _autoload_edited();
 	void _autoload_button_pressed(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 	void _autoload_activated();
-	void _autoload_path_text_changed(const String &p_path);
-	void _autoload_text_submitted(const String &p_name);
-	void _autoload_text_changed(const String &p_name);
 	void _autoload_open(const String &fpath);
-	void _autoload_file_callback(const String &p_path);
 	Node *_create_autoload(const String &p_path);
 
+	void _create_script_autoload();
+	void _create_scene_autoload();
+	void _autoload_file_selected(const String &p_path);
+	void _scene_file_selected(const String &p_path);
+
 	void _script_created(Ref<Script> p_script);
+	void _scene_created();
+	void _add_autoload(const String &p_name, const String &p_path);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_control);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control);
-
-	void _set_autoload_add_path(const String &p_text);
-	void _browse_autoload_add_path();
 
 protected:
 	void _notification(int p_what);
@@ -107,8 +108,6 @@ public:
 	void update_autoload();
 	bool autoload_add(const String &p_name, const String &p_path);
 	void autoload_remove(const String &p_name);
-
-	LineEdit *get_path_box() const;
 
 	EditorAutoloadSettings();
 	~EditorAutoloadSettings();
