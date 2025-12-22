@@ -137,12 +137,12 @@ Error ResourceSaver::save(RequiredParam<Resource> rp_resource, const String &p_p
 			}
 #endif
 
-			if (p_flags & FLAG_CHANGE_PATH) {
-				p_resource->set_path(old_path);
-			}
-
 			if (save_callback && path.begins_with("res://")) {
 				save_callback(p_resource, path);
+			}
+
+			if (p_flags & FLAG_CHANGE_PATH) {
+				p_resource->set_path(old_path, true);
 			}
 
 			return OK;
