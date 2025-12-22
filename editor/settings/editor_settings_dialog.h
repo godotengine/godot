@@ -154,9 +154,12 @@ class EditorSettingsPropertyWrapper : public EditorProperty {
 	void _setup_override_info();
 	void _update_override();
 	void _create_override();
+	void _create_override_bind(const Variant &p_value = Variant());
 	void _remove_override();
+	void _remove_override_bind();
 
 protected:
+	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
