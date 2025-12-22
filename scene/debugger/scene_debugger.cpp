@@ -1781,10 +1781,10 @@ void RuntimeNodeSelect::_update_input_state() {
 		return;
 	}
 
-	bool disable_input = scene_tree->is_suspended() || node_select_type != RuntimeNodeSelect::NODE_TYPE_NONE;
-	Input::get_singleton()->set_disable_input(disable_input);
-	Input::get_singleton()->set_mouse_mode_override_enabled(disable_input);
-	scene_tree->get_root()->set_disable_input_override(disable_input);
+	bool should_disable_input = scene_tree->is_suspended() || node_select_type != RuntimeNodeSelect::NODE_TYPE_NONE;
+	Input::get_singleton()->set_input_disabled(should_disable_input);
+	Input::get_singleton()->set_mouse_mode_override_enabled(should_disable_input);
+	scene_tree->get_root()->set_disable_input_override(should_disable_input);
 }
 
 void RuntimeNodeSelect::_process_frame() {
@@ -1800,7 +1800,7 @@ void RuntimeNodeSelect::_process_frame() {
 		Input *input = Input::get_singleton();
 		bool was_input_disabled = input->is_input_disabled();
 		if (was_input_disabled) {
-			input->set_disable_input(false);
+			input->set_input_disabled(false);
 		}
 
 		if (input->is_physical_key_pressed(Key::A)) {
@@ -1831,7 +1831,7 @@ void RuntimeNodeSelect::_process_frame() {
 		}
 
 		if (was_input_disabled) {
-			input->set_disable_input(true);
+			input->set_input_disabled(true);
 		}
 
 		if (direction != Vector3()) {
