@@ -373,8 +373,8 @@ float RendererSceneRender::environment_get_exposure(RID p_env) const {
 	return environment_storage.environment_get_exposure(p_env);
 }
 
-float RendererSceneRender::environment_get_white(RID p_env, bool p_limit_agx_white) const {
-	return environment_storage.environment_get_white(p_env, p_limit_agx_white);
+float RendererSceneRender::environment_get_white(RID p_env, bool p_limit_agx_white, float p_output_max_value) const {
+	return environment_storage.environment_get_white(p_env, p_limit_agx_white, p_output_max_value);
 }
 
 void RendererSceneRender::environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast) {
@@ -385,8 +385,8 @@ float RendererSceneRender::environment_get_tonemap_agx_contrast(RID p_env) const
 	return environment_storage.environment_get_tonemap_agx_contrast(p_env);
 }
 
-RendererEnvironmentStorage::TonemapParameters RendererSceneRender::environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white) const {
-	return environment_storage.environment_get_tonemap_parameters(p_env, p_limit_agx_white);
+RendererEnvironmentStorage::TonemapParameters RendererSceneRender::environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white, float p_output_max_value) const {
+	return environment_storage.environment_get_tonemap_parameters(p_env, p_limit_agx_white, p_output_max_value);
 }
 
 // Fog
