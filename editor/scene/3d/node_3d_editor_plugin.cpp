@@ -85,6 +85,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/translations/editor_translation_preview_button.h"
 #include "editor/translations/editor_translation_preview_menu.h"
+#include "scene/2d/camera_2d.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/decal.h"
@@ -3191,6 +3192,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const Viewport::AnisotropicFiltering anisotropic_filtering_level = Viewport::AnisotropicFiltering(int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level")));
 	viewport->set_anisotropic_filtering_level(anisotropic_filtering_level);
+
+	_update_camera_2d_preview_settings();
 }
 
 static void override_label_colors(Control *p_control) {
@@ -3291,6 +3294,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED: {
 			callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view).call_deferred();
+			_update_camera_2d_preview_settings();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -4180,6 +4184,13 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_display_menu->get_popup()->set_item_checked(idx, current);
 
 		} break;
+		case VIEW_2D_PREVIEW: {
+			int idx = view_display_menu->get_popup()->get_item_index(VIEW_2D_PREVIEW);
+			bool current = view_display_menu->get_popup()->is_item_checked(idx);
+			current = !current;
+			view_display_menu->get_popup()->set_item_checked(idx, current);
+			_toggle_2d_preview(current);
+		} break;
 		case VIEW_CINEMATIC_PREVIEW: {
 			int idx = view_display_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW);
 			bool current = view_display_menu->get_popup()->is_item_checked(idx);
@@ -4496,6 +4507,49 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	}
 }
 
+void Node3DEditorViewport::_toggle_2d_preview(bool p_enable) {
+	if (p_enable) {
+		// Enable 2D MSAA only when needed to improve performance.
+		viewport->set_msaa_2d(GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d"));
+		viewport->set_world_2d(EditorNode::get_singleton()->get_edited_scene()->get_viewport()->get_world_2d());
+		_update_camera_2d_preview_settings();
+	} else {
+		// Disable 2D MSAA, as we don't need it anymore until the preview is re-renabled.
+		viewport->set_msaa_2d(Viewport::MSAA_DISABLED);
+		// FIXME: Prevent "WARNING: Invalid world_2d" from being printed (can't use `nullptr` as it causes a compilation error).
+		viewport->set_world_2d(Ref<World2D>());
+	}
+}
+
+void Node3DEditorViewport::_update_camera_2d_preview_settings() {
+	viewport->set_default_canvas_item_texture_filter(GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter"));
+
+	const Size2i viewport_current_size = viewport->get_size();
+	const Size2i viewport_project_size = Size2i(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+	preview_2d_camera->set_position(viewport_project_size / 2);
+
+	// Emulate font oversampling as it would behave in the running project.
+	// FIXME: This doesn't appear to have any effect. Is oversampling forcibly disabled in the editor? I couldn't find any references to this in the codebase.
+	viewport->set_use_oversampling(bool(GLOBAL_GET("gui/fonts/dynamic_fonts/use_oversampling")));
+
+	const bool integer_scaling = GLOBAL_GET("display/window/stretch/scale_mode") == "integer";
+	if (!integer_scaling && GLOBAL_GET("display/window/stretch/aspect") == "ignore") {
+		// Allow distortion to occur to match the `ignore` stretch aspect.
+		// Integer scaling does not allow distortion to occur, so skip this if enabled.
+		Vector2 factor = Vector2(float(viewport_current_size.width) / viewport_project_size.width, float(viewport_current_size.height) / viewport_project_size.height);
+		preview_2d_camera->set_zoom(factor);
+		viewport->set_oversampling_override(MAX(factor.x, factor.y));
+	} else {
+		// Keep aspect ratio.
+		float factor = MIN(float(viewport_current_size.width) / viewport_project_size.width, float(viewport_current_size.height) / viewport_project_size.height);
+		if (integer_scaling) {
+			factor = Math::floor(factor);
+		}
+		preview_2d_camera->set_zoom(Vector2(factor, factor));
+		viewport->set_oversampling_override(factor);
+	}
+}
+
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 	previewing_cinema = p_activate;
 	_update_navigation_controls_visibility();
@@ -4753,6 +4807,18 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 		view_display_menu->get_popup()->set_item_checked(idx, half_res);
 		_update_shrink();
 	}
+	if (p_state.has("2d_preview")) {
+		previewing_2d = p_state["2d_preview"];
+
+		int idx = view_display_menu->get_popup()->get_item_index(VIEW_2D_PREVIEW);
+		view_display_menu->get_popup()->set_item_checked(idx, previewing_2d);
+
+		if (previewing_2d) {
+			print_line("Restoring 2D preview state.");
+			// If previous state was restored, make it effective.
+			_toggle_2d_preview(true);
+		}
+	}
 	if (p_state.has("cinematic_preview")) {
 		previewing_cinema = p_state["cinematic_preview"];
 
@@ -4822,6 +4888,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["information"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["frame_time"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
 	d["half_res"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
+	d["2d_preview"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_2D_PREVIEW));
 	d["cinematic_preview"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
 	if (previewing) {
 		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
@@ -6075,6 +6142,9 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport = memnew(SubViewport);
 	viewport->set_disable_input(true);
 
+	preview_2d_camera = memnew(Camera2D);
+	viewport->add_child(preview_2d_camera);
+
 	c->add_child(viewport);
 	surface = memnew(Control);
 	SET_DRAG_FORWARDING_CD(surface, Node3DEditorViewport);
@@ -6206,6 +6276,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GRID), true);
 
 	view_display_menu->get_popup()->add_separator();
+	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_2d_preview", TTRC("2D Preview")), VIEW_2D_PREVIEW);
 	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_cinematic_preview", TTRC("Cinematic Preview")), VIEW_CINEMATIC_PREVIEW);
 
 	view_display_menu->get_popup()->add_separator();

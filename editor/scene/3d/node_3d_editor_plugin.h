@@ -167,6 +167,7 @@ class Node3DEditorViewport : public Control {
 		// > Keep in sync with menu.
 
 		VIEW_LOCK_ROTATION,
+		VIEW_2D_PREVIEW,
 		VIEW_CINEMATIC_PREVIEW,
 		VIEW_AUTO_ORTHOGONAL,
 		VIEW_MAX
@@ -255,6 +256,7 @@ private:
 	Control *surface = nullptr;
 	SubViewport *viewport = nullptr;
 	Camera3D *camera = nullptr;
+	Camera2D *preview_2d_camera = nullptr;
 	bool transforming = false;
 	bool orthogonal;
 	bool auto_orthogonal;
@@ -498,12 +500,15 @@ private:
 	Camera3D *preview = nullptr;
 
 	bool previewing_camera = false;
+	bool previewing_2d = false;
 	bool previewing_cinema = false;
 	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _preview_camera_property_changed();
 	void _update_centered_labels();
 	void _toggle_camera_preview(bool);
+	void _toggle_2d_preview(bool p_enable);
+	void _update_camera_2d_preview_settings();
 	void _toggle_cinema_preview(bool);
 	void _init_gizmo_instance(int p_idx);
 	void _finish_gizmo_instances();
