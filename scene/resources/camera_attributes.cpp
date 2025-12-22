@@ -67,6 +67,7 @@ void CameraAttributes::set_auto_exposure_enabled(bool p_enabled) {
 	auto_exposure_enabled = p_enabled;
 	_update_auto_exposure();
 	notify_property_list_changed();
+	emit_changed();
 }
 
 bool CameraAttributes::is_auto_exposure_enabled() const {
@@ -76,6 +77,7 @@ bool CameraAttributes::is_auto_exposure_enabled() const {
 void CameraAttributes::set_auto_exposure_speed(float p_auto_exposure_speed) {
 	auto_exposure_speed = p_auto_exposure_speed;
 	_update_auto_exposure();
+	emit_changed();
 }
 
 float CameraAttributes::get_auto_exposure_speed() const {
@@ -85,6 +87,7 @@ float CameraAttributes::get_auto_exposure_speed() const {
 void CameraAttributes::set_auto_exposure_scale(float p_auto_exposure_scale) {
 	auto_exposure_scale = p_auto_exposure_scale;
 	_update_auto_exposure();
+	emit_changed();
 }
 
 float CameraAttributes::get_auto_exposure_scale() const {
@@ -149,6 +152,7 @@ void CameraAttributesPractical::set_dof_blur_far_enabled(bool p_enabled) {
 	dof_blur_far_enabled = p_enabled;
 	_update_dof_blur();
 	notify_property_list_changed();
+	emit_changed();
 }
 
 bool CameraAttributesPractical::is_dof_blur_far_enabled() const {
@@ -158,6 +162,7 @@ bool CameraAttributesPractical::is_dof_blur_far_enabled() const {
 void CameraAttributesPractical::set_dof_blur_far_distance(float p_distance) {
 	dof_blur_far_distance = p_distance;
 	_update_dof_blur();
+	emit_changed();
 }
 
 float CameraAttributesPractical::get_dof_blur_far_distance() const {
@@ -167,6 +172,7 @@ float CameraAttributesPractical::get_dof_blur_far_distance() const {
 void CameraAttributesPractical::set_dof_blur_far_transition(float p_distance) {
 	dof_blur_far_transition = p_distance;
 	_update_dof_blur();
+	emit_changed();
 }
 
 float CameraAttributesPractical::get_dof_blur_far_transition() const {
@@ -177,6 +183,7 @@ void CameraAttributesPractical::set_dof_blur_near_enabled(bool p_enabled) {
 	dof_blur_near_enabled = p_enabled;
 	_update_dof_blur();
 	notify_property_list_changed();
+	emit_changed();
 }
 
 bool CameraAttributesPractical::is_dof_blur_near_enabled() const {
@@ -186,6 +193,7 @@ bool CameraAttributesPractical::is_dof_blur_near_enabled() const {
 void CameraAttributesPractical::set_dof_blur_near_distance(float p_distance) {
 	dof_blur_near_distance = p_distance;
 	_update_dof_blur();
+	emit_changed();
 }
 
 float CameraAttributesPractical::get_dof_blur_near_distance() const {
@@ -195,6 +203,7 @@ float CameraAttributesPractical::get_dof_blur_near_distance() const {
 void CameraAttributesPractical::set_dof_blur_near_transition(float p_distance) {
 	dof_blur_near_transition = p_distance;
 	_update_dof_blur();
+	emit_changed();
 }
 
 float CameraAttributesPractical::get_dof_blur_near_transition() const {
@@ -204,6 +213,7 @@ float CameraAttributesPractical::get_dof_blur_near_transition() const {
 void CameraAttributesPractical::set_dof_blur_amount(float p_amount) {
 	dof_blur_amount = p_amount;
 	_update_dof_blur();
+	emit_changed();
 }
 
 float CameraAttributesPractical::get_dof_blur_amount() const {
@@ -229,6 +239,7 @@ float CameraAttributesPractical::calculate_exposure_normalization() const {
 void CameraAttributesPractical::set_auto_exposure_min_sensitivity(float p_min) {
 	auto_exposure_min = p_min;
 	_update_auto_exposure();
+	emit_changed();
 }
 
 float CameraAttributesPractical::get_auto_exposure_min_sensitivity() const {
@@ -238,6 +249,7 @@ float CameraAttributesPractical::get_auto_exposure_min_sensitivity() const {
 void CameraAttributesPractical::set_auto_exposure_max_sensitivity(float p_max) {
 	auto_exposure_max = p_max;
 	_update_auto_exposure();
+	emit_changed();
 }
 
 float CameraAttributesPractical::get_auto_exposure_max_sensitivity() const {
@@ -252,7 +264,6 @@ void CameraAttributesPractical::_update_auto_exposure() {
 			auto_exposure_max * ((12.5 / 100.0) / exposure_sensitivity), // Convert from Sensitivity to Luminance
 			auto_exposure_speed,
 			auto_exposure_scale);
-	emit_changed();
 }
 
 void CameraAttributesPractical::_validate_property(PropertyInfo &p_property) const {
@@ -306,8 +317,9 @@ void CameraAttributesPractical::_bind_methods() {
 CameraAttributesPractical::CameraAttributesPractical() {
 	_update_dof_blur();
 	_update_exposure();
-	set_auto_exposure_min_sensitivity(0.0);
-	set_auto_exposure_max_sensitivity(800.0);
+	auto_exposure_min = 0.0;
+	auto_exposure_max = 800.0;
+	_update_auto_exposure();
 	notify_property_list_changed();
 }
 
@@ -349,6 +361,7 @@ float CameraAttributesPhysical::get_focal_length() const {
 void CameraAttributesPhysical::set_focus_distance(float p_focus_distance) {
 	frustum_focus_distance = p_focus_distance;
 	_update_frustum();
+	emit_changed();
 }
 
 float CameraAttributesPhysical::get_focus_distance() const {
@@ -426,6 +439,7 @@ float CameraAttributesPhysical::calculate_exposure_normalization() const {
 void CameraAttributesPhysical::set_auto_exposure_min_exposure_value(float p_min) {
 	auto_exposure_min = p_min;
 	_update_auto_exposure();
+	emit_changed();
 }
 
 float CameraAttributesPhysical::get_auto_exposure_min_exposure_value() const {
@@ -435,6 +449,7 @@ float CameraAttributesPhysical::get_auto_exposure_min_exposure_value() const {
 void CameraAttributesPhysical::set_auto_exposure_max_exposure_value(float p_max) {
 	auto_exposure_max = p_max;
 	_update_auto_exposure();
+	emit_changed();
 }
 
 float CameraAttributesPhysical::get_auto_exposure_max_exposure_value() const {
@@ -449,7 +464,6 @@ void CameraAttributesPhysical::_update_auto_exposure() {
 			std::pow(2.0, auto_exposure_max) * (12.5 / exposure_sensitivity), // Convert from EV100 to Luminance
 			auto_exposure_speed,
 			auto_exposure_scale);
-	emit_changed();
 }
 
 void CameraAttributesPhysical::_validate_property(PropertyInfo &property) const {
@@ -501,8 +515,9 @@ void CameraAttributesPhysical::_bind_methods() {
 CameraAttributesPhysical::CameraAttributesPhysical() {
 	_update_exposure();
 	_update_frustum();
-	set_auto_exposure_min_exposure_value(-8);
-	set_auto_exposure_max_exposure_value(10); // Use a wide range by default to feel more like a real camera.
+	auto_exposure_min = -8;
+	auto_exposure_min = 10; // Use a wide range by default to feel more like a real camera.
+	_update_auto_exposure();
 	notify_property_list_changed();
 }
 
