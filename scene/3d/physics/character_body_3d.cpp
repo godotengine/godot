@@ -681,6 +681,10 @@ const Vector3 &CharacterBody3D::get_wall_normal() const {
 	return wall_normal;
 }
 
+const Vector3 &CharacterBody3D::get_ceiling_normal() const {
+	return ceiling_normal;
+}
+
 const Vector3 &CharacterBody3D::get_last_motion() const {
 	return last_motion;
 }
@@ -909,6 +913,7 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_on_wall_only"), &CharacterBody3D::is_on_wall_only);
 	ClassDB::bind_method(D_METHOD("get_floor_normal"), &CharacterBody3D::get_floor_normal);
 	ClassDB::bind_method(D_METHOD("get_wall_normal"), &CharacterBody3D::get_wall_normal);
+	ClassDB::bind_method(D_METHOD("get_ceiling_normal"), &CharacterBody3D::get_ceiling_normal);
 	ClassDB::bind_method(D_METHOD("get_last_motion"), &CharacterBody3D::get_last_motion);
 	ClassDB::bind_method(D_METHOD("get_position_delta"), &CharacterBody3D::get_position_delta);
 	ClassDB::bind_method(D_METHOD("get_real_velocity"), &CharacterBody3D::get_real_velocity);
