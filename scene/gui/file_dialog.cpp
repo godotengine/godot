@@ -226,6 +226,35 @@ void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> 
 	}
 }
 
+void FileDialog::_show_error(const String &p_error) {
+	if (!error_dialog) {
+		error_dialog = memnew(AcceptDialog);
+		error_dialog->set_title(ETR("Error!"));
+		add_child(error_dialog, false, INTERNAL_MODE_FRONT);
+	}
+	error_dialog->set_text(p_error);
+	error_dialog->popup_centered(Size2(250, 50));
+}
+
+void FileDialog::_show_confirm(const String &p_what, const Callable &p_callback) {
+	if (!confirm_dialog) {
+		confirm_dialog = memnew(ConfirmationDialog);
+		add_child(confirm_dialog, false, INTERNAL_MODE_FRONT);
+		confirm_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &FileDialog::_end_confirm), CONNECT_DEFERRED);
+	}
+	confirm_callback = p_callback;
+	confirm_dialog->set_text(p_what);
+	confirm_dialog->connect(SceneStringName(confirmed), confirm_callback);
+	confirm_dialog->popup_centered(Size2(250, 80));
+}
+
+void FileDialog::_end_confirm() {
+	if (!confirm_dialog->is_visible()) {
+		confirm_dialog->disconnect(SceneStringName(confirmed), confirm_callback);
+		confirm_callback = Callable();
+	}
+}
+
 bool FileDialog::_should_use_native_popup() const {
 	return _can_use_native_popup() && (use_native_dialog || OS::get_singleton()->is_sandboxed());
 }
@@ -515,13 +544,13 @@ void FileDialog::_action_pressed() {
 
 		String file_name = file_text.strip_edges().get_file();
 		if (!valid || file_name.is_empty()) {
-			exterr->popup_centered(Size2(250, 80));
+			_show_error(ETR("Invalid extension, or empty filename."));
 			return;
 		}
 
 		if (customization_flags[CUSTOMIZATION_OVERWRITE_WARNING] && (dir_access->file_exists(f) || dir_access->is_bundle(f))) {
-			confirm_save->set_text(vformat(atr(ETR("File \"%s\" already exists.\nDo you want to overwrite it?")), f));
-			confirm_save->popup_centered(Size2(250, 80));
+			_show_confirm(vformat(atr(ETR("File \"%s\" already exists.\nDo you want to overwrite it?")), f),
+					callable_mp(this, &FileDialog::_save_confirm_pressed));
 		} else {
 			_save_to_recent();
 			hide();
@@ -690,7 +719,8 @@ void FileDialog::_item_menu_id_pressed(int p_option) {
 
 		case ITEM_MENU_DELETE: {
 			if (selected > -1) {
-				delete_dialog->popup_centered(Size2(250, 80));
+				_show_confirm(ETR("Delete the selected file?\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."),
+						callable_mp(this, &FileDialog::_delete_confirm));
 			}
 		} break;
 
@@ -1572,12 +1602,26 @@ void FileDialog::_make_dir_confirm() {
 		update_filters();
 		_push_history();
 	} else {
-		mkdirerr->popup_centered(Size2(250, 50));
+		_show_error(ETR("Could not create folder."));
 	}
 	new_dir_name->set_text(""); // reset label
 }
 
 void FileDialog::_make_dir() {
+	if (!make_dir_dialog) {
+		make_dir_dialog = memnew(ConfirmationDialog);
+		make_dir_dialog->set_title(ETR("Create Folder"));
+		add_child(make_dir_dialog, false, INTERNAL_MODE_FRONT);
+		make_dir_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_make_dir_confirm));
+
+		VBoxContainer *makevb = memnew(VBoxContainer);
+		make_dir_dialog->add_child(makevb);
+
+		new_dir_name = memnew(LineEdit);
+		new_dir_name->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+		makevb->add_margin_child(ETR("Name:"), new_dir_name);
+		make_dir_dialog->register_text_enter(new_dir_name);
+	}
 	make_dir_dialog->popup_centered(Size2(250, 80));
 	new_dir_name->grab_focus();
 }
@@ -2562,36 +2606,6 @@ FileDialog::FileDialog() {
 	grid_select_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	grid_select_options->set_columns(2);
 	main_vbox->add_child(grid_select_options);
-
-	confirm_save = memnew(ConfirmationDialog);
-	add_child(confirm_save, false, INTERNAL_MODE_FRONT);
-	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_save_confirm_pressed));
-
-	delete_dialog = memnew(ConfirmationDialog);
-	delete_dialog->set_text(ETR("Delete the selected file?\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
-	add_child(delete_dialog, false, INTERNAL_MODE_FRONT);
-	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_delete_confirm));
-
-	make_dir_dialog = memnew(ConfirmationDialog);
-	make_dir_dialog->set_title(ETR("Create Folder"));
-	add_child(make_dir_dialog, false, INTERNAL_MODE_FRONT);
-	make_dir_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_make_dir_confirm));
-
-	VBoxContainer *makevb = memnew(VBoxContainer);
-	make_dir_dialog->add_child(makevb);
-
-	new_dir_name = memnew(LineEdit);
-	new_dir_name->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
-	makevb->add_margin_child(ETR("Name:"), new_dir_name);
-	make_dir_dialog->register_text_enter(new_dir_name);
-
-	mkdirerr = memnew(AcceptDialog);
-	mkdirerr->set_text(ETR("Could not create folder."));
-	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
-
-	exterr = memnew(AcceptDialog);
-	exterr->set_text(ETR("Invalid extension, or empty filename."));
-	add_child(exterr, false, INTERNAL_MODE_FRONT);
 
 	item_menu = memnew(PopupMenu);
 	item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileDialog::_item_menu_id_pressed));
