@@ -469,6 +469,12 @@ void PopupMenu::_parent_focused() {
 	}
 }
 
+void PopupMenu::_parent_unfocused() {
+	if (hide_on_parent_unfocused && !is_embedded()) {
+		hide();
+	}
+}
+
 void PopupMenu::_submenu_timeout() {
 	if (mouse_over == submenu_over) {
 		_activate_submenu(mouse_over);
@@ -1229,6 +1235,10 @@ void PopupMenu::_notification(int p_what) {
 			if (system_menu_id != NativeMenu::INVALID_MENU_ID) {
 				unbind_global_menu();
 			}
+
+			if (Window *p = get_transient_parent()) {
+				p->disconnect(SceneStringName(focus_exited), callable_mp(this, &PopupMenu::_parent_unfocused));
+			}
 			[[fallthrough]];
 		}
 
@@ -1319,6 +1329,10 @@ void PopupMenu::_notification(int p_what) {
 			}
 			if (system_menu_id != NativeMenu::INVALID_MENU_ID) {
 				bind_global_menu();
+			}
+
+			if (Window *p = get_transient_parent()) {
+				p->connect(SceneStringName(focus_exited), callable_mp(this, &PopupMenu::_parent_unfocused));
 			}
 		} break;
 
@@ -3031,6 +3045,14 @@ bool PopupMenu::is_hide_on_checkable_item_selection() const {
 	return hide_on_checkable_item_selection;
 }
 
+void PopupMenu::set_hide_on_parent_unfocused(bool p_enabled) {
+	hide_on_parent_unfocused = p_enabled;
+}
+
+bool PopupMenu::is_hide_on_parent_unfocused() const {
+	return hide_on_parent_unfocused;
+}
+
 void PopupMenu::set_hide_on_multistate_item_selection(bool p_enabled) {
 	hide_on_multistate_item_selection = p_enabled;
 }
@@ -3237,6 +3259,9 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hide_on_checkable_item_selection", "enable"), &PopupMenu::set_hide_on_checkable_item_selection);
 	ClassDB::bind_method(D_METHOD("is_hide_on_checkable_item_selection"), &PopupMenu::is_hide_on_checkable_item_selection);
 
+	ClassDB::bind_method(D_METHOD("set_hide_on_parent_unfocused", "enable"), &PopupMenu::set_hide_on_parent_unfocused);
+	ClassDB::bind_method(D_METHOD("is_hide_on_parent_unfocused"), &PopupMenu::is_hide_on_parent_unfocused);
+
 	ClassDB::bind_method(D_METHOD("set_hide_on_state_item_selection", "enable"), &PopupMenu::set_hide_on_multistate_item_selection);
 	ClassDB::bind_method(D_METHOD("is_hide_on_state_item_selection"), &PopupMenu::is_hide_on_multistate_item_selection);
 
@@ -3252,6 +3277,7 @@ void PopupMenu::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_parent_unfocused"), "set_hide_on_parent_unfocused", "is_hide_on_parent_unfocused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "submenu_popup_delay", PROPERTY_HINT_NONE, "suffix:s"), "set_submenu_popup_delay", "get_submenu_popup_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");

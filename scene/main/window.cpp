@@ -727,7 +727,7 @@ void Window::_clear_window() {
 	window_id = DisplayServer::INVALID_WINDOW_ID;
 
 	// If closing window was focused and has a parent, return focus.
-	if (had_focus && transient_parent) {
+	if (return_to_transient && had_focus && transient_parent) {
 		transient_parent->grab_focus();
 	}
 
@@ -1103,6 +1103,16 @@ void Window::set_transient_to_focused(bool p_transient_to_focused) {
 bool Window::is_transient_to_focused() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return transient_to_focused;
+}
+
+void Window::set_return_to_transient(bool p_return_to_transient) {
+	ERR_MAIN_THREAD_GUARD;
+	return_to_transient = p_return_to_transient;
+}
+
+bool Window::is_return_to_transient() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return return_to_transient;
 }
 
 void Window::set_exclusive(bool p_exclusive) {
@@ -1901,6 +1911,10 @@ Window *Window::get_parent_visible_window() const {
 		vp = vp->get_parent()->get_viewport();
 	}
 	return window;
+}
+
+Window *Window::get_transient_parent() const {
+	return transient_parent;
 }
 
 void Window::popup_on_parent(const Rect2i &p_parent_rect) {
@@ -3242,6 +3256,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transient_to_focused", "enable"), &Window::set_transient_to_focused);
 	ClassDB::bind_method(D_METHOD("is_transient_to_focused"), &Window::is_transient_to_focused);
 
+	ClassDB::bind_method(D_METHOD("set_return_to_transient", "enable"), &Window::set_return_to_transient);
+	ClassDB::bind_method(D_METHOD("is_return_to_transient"), &Window::is_return_to_transient);
+
 	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &Window::set_exclusive);
 	ClassDB::bind_method(D_METHOD("is_exclusive"), &Window::is_exclusive);
 
@@ -3392,6 +3409,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_controls"), "set_wrap_controls", "is_wrapping_controls");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient"), "set_transient", "is_transient");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient_to_focused"), "set_transient_to_focused", "is_transient_to_focused");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "return_to_transient"), "set_return_to_transient", "is_return_to_transient");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "is_exclusive");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unresizable"), "set_flag", "get_flag", FLAG_RESIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "borderless"), "set_flag", "get_flag", FLAG_BORDERLESS);
