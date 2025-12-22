@@ -774,74 +774,77 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			UINT32 cur_frames;
 			bool invalidated = false;
 			HRESULT hr = ad->audio_output.audio_client->GetBufferSize(&buffer_size);
-			if (hr != S_OK) {
-				ERR_PRINT("WASAPI: GetBufferSize error");
-			}
-			hr = ad->audio_output.audio_client->GetCurrentPadding(&cur_frames);
 			if (hr == S_OK) {
-				// Check how much frames are available on the WASAPI buffer
-				UINT32 write_frames = MIN(buffer_size - cur_frames, avail_frames);
-				if (write_frames > 0) {
-					BYTE *buffer = nullptr;
-					hr = ad->audio_output.render_client->GetBuffer(write_frames, &buffer);
-					if (hr == S_OK) {
-						// We're using WASAPI Shared Mode so we must convert the buffer
-						if (ad->channels == ad->audio_output.channels) {
-							for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i, ad->samples_in.write[write_ofs++]);
-							}
-						} else if (ad->channels == ad->audio_output.channels + 1) {
-							// Pass all channels except the last two as-is, and then mix the last two
-							// together as one channel. E.g. stereo -> mono, or 3.1 -> 2.1.
-							unsigned int last_chan = ad->audio_output.channels - 1;
-							for (unsigned int i = 0; i < write_frames; i++) {
-								for (unsigned int j = 0; j < last_chan; j++) {
-									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
+				hr = ad->audio_output.audio_client->GetCurrentPadding(&cur_frames);
+				if (hr == S_OK) {
+					// Check how much frames are available on the WASAPI buffer
+					UINT32 write_frames = MIN(buffer_size - cur_frames, avail_frames);
+					if (write_frames > 0) {
+						BYTE *buffer = nullptr;
+						hr = ad->audio_output.render_client->GetBuffer(write_frames, &buffer);
+						if (hr == S_OK) {
+							// We're using WASAPI Shared Mode so we must convert the buffer
+							if (ad->channels == ad->audio_output.channels) {
+								for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
+									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i, ad->samples_in.write[write_ofs++]);
 								}
-								int32_t l = ad->samples_in.write[write_ofs++];
-								int32_t r = ad->samples_in.write[write_ofs++];
-								int32_t c = (int32_t)(((int64_t)l + (int64_t)r) / 2);
-								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + last_chan, c);
-							}
-						} else {
-							for (unsigned int i = 0; i < write_frames; i++) {
-								for (unsigned int j = 0; j < MIN(ad->channels, ad->audio_output.channels); j++) {
-									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
+							} else if (ad->channels == ad->audio_output.channels + 1) {
+								// Pass all channels except the last two as-is, and then mix the last two
+								// together as one channel. E.g. stereo -> mono, or 3.1 -> 2.1.
+								unsigned int last_chan = ad->audio_output.channels - 1;
+								for (unsigned int i = 0; i < write_frames; i++) {
+									for (unsigned int j = 0; j < last_chan; j++) {
+										ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
+									}
+									int32_t l = ad->samples_in.write[write_ofs++];
+									int32_t r = ad->samples_in.write[write_ofs++];
+									int32_t c = (int32_t)(((int64_t)l + (int64_t)r) / 2);
+									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + last_chan, c);
 								}
-								if (ad->audio_output.channels > ad->channels) {
-									for (unsigned int j = ad->channels; j < ad->audio_output.channels; j++) {
-										ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, 0);
+							} else {
+								for (unsigned int i = 0; i < write_frames; i++) {
+									for (unsigned int j = 0; j < MIN(ad->channels, ad->audio_output.channels); j++) {
+										ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
+									}
+									if (ad->audio_output.channels > ad->channels) {
+										for (unsigned int j = ad->channels; j < ad->audio_output.channels; j++) {
+											ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, 0);
+										}
 									}
 								}
 							}
-						}
 
-						hr = ad->audio_output.render_client->ReleaseBuffer(write_frames, 0);
-						if (hr != S_OK) {
-							ERR_PRINT("WASAPI: Release buffer error");
-						}
+							hr = ad->audio_output.render_client->ReleaseBuffer(write_frames, 0);
+							if (hr != S_OK) {
+								ERR_PRINT("WASAPI: Release buffer error");
+							}
 
-						avail_frames -= write_frames;
-						written_frames += write_frames;
-					} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
-						// output_device is not valid anymore, reopen it
+							avail_frames -= write_frames;
+							written_frames += write_frames;
+						} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
+							// output_device is not valid anymore, reopen it
 
-						Error err = ad->finish_output_device();
-						if (err != OK) {
-							ERR_PRINT("WASAPI: finish_output_device error");
+							Error err = ad->finish_output_device();
+							if (err != OK) {
+								ERR_PRINT("WASAPI: finish_output_device error");
+							} else {
+								// We reopened the output device and samples_in may have resized, so invalidate the current avail_frames
+								avail_frames = 0;
+							}
 						} else {
-							// We reopened the output device and samples_in may have resized, so invalidate the current avail_frames
-							avail_frames = 0;
+							ERR_PRINT("WASAPI: Get buffer error");
+							ad->exit_thread.set();
 						}
-					} else {
-						ERR_PRINT("WASAPI: Get buffer error");
-						ad->exit_thread.set();
 					}
+				} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
+					invalidated = true;
+				} else {
+					ERR_PRINT("WASAPI: GetCurrentPadding error");
 				}
 			} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
 				invalidated = true;
-			} else {
-				ERR_PRINT("WASAPI: GetCurrentPadding error");
+			} else if (hr != S_OK) {
+				ERR_PRINT("WASAPI: GetBufferSize error");
 			}
 
 			if (invalidated) {
