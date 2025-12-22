@@ -618,6 +618,11 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 	r_directional_light_soft_shadows = false;
 
+	ShadowAtlas *shadow_atlas = nullptr;
+	if (p_shadow_atlas.is_valid() && p_using_shadows) {
+		shadow_atlas = shadow_atlas_owner.get_or_null(p_shadow_atlas);
+	}
+
 	for (int i = 0; i < (int)p_lights.size(); i++) {
 		LightInstance *light_instance = light_instance_owner.get_or_null(p_lights[i]);
 		if (!light_instance) {
@@ -718,9 +723,19 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						Transform3D modelview = (inverse_transform * light_instance->shadow_transform[j].transform).inverse();
 
 						Projection shadow_mtx = rectm * bias * matrix * modelview;
+
 						light_data.shadow_split_offsets[j] = split;
-						float bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale;
-						light_data.shadow_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
+
+						float bias_scale;
+						if (directional_shadow.size < 4096) {
+							// For shadow map sizes below the default, don't increase bias too much to avoid peter-panning.
+							bias_scale = (1 + light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale * (4096.0 / MAX(256, directional_shadow.size))) * 0.5;
+						} else {
+							// Reduce shadow bias for shadow map sizes higher than the default.
+							bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale * (4096.0 / directional_shadow.size);
+						}
+
+						light_data.shadow_bias[j] = (light->param[RS::LIGHT_PARAM_SHADOW_BIAS] * bias_scale) / 100.0;
 						light_data.shadow_normal_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size;
 						light_data.shadow_transmittance_bias[j] = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] / 100.0 * bias_scale;
 						light_data.shadow_z_range[j] = light_instance->shadow_transform[j].farplane;
@@ -967,13 +982,22 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			float shadow_texel_size = light_instance_get_shadow_texel_size(light_instance->self, p_shadow_atlas);
 			light_data.shadow_normal_bias = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * shadow_texel_size * 10.0;
 
-			if (type == RS::LIGHT_SPOT) {
-				light_data.shadow_bias = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0;
-			} else { //omni
-				light_data.shadow_bias = light->param[RS::LIGHT_PARAM_SHADOW_BIAS];
+			float bias_resolution_factor;
+			if (shadow_atlas->size < 4096) {
+				// For shadow map sizes below the default, don't increase bias too much to avoid peter-panning.
+				bias_resolution_factor = (1 + (4096.0 / MAX(256, shadow_atlas->size))) * 0.5;
+			} else {
+				// Reduce shadow bias for shadow map sizes higher than the default.
+				bias_resolution_factor = (4096.0 / shadow_atlas->size);
 			}
 
-			light_data.transmittance_bias = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
+			if (type == RS::LIGHT_SPOT) {
+				light_data.shadow_bias = (light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0) * bias_resolution_factor;
+			} else { //omni
+				light_data.shadow_bias = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] * bias_resolution_factor;
+			}
+
+			light_data.transmittance_bias = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] * bias_resolution_factor;
 
 			Vector2i omni_offset;
 			Rect2 rect = light_instance_get_shadow_atlas_rect(light_instance->self, p_shadow_atlas, omni_offset);
