@@ -1151,8 +1151,16 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	} else if (p_preset->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES) {
 		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
 		Vector<String> files = p_preset->get_files_to_export();
-		for (int i = 0; i < files.size(); i++) {
-			paths.erase(files[i]);
+		for (const String &file : files) {
+			if (file.ends_with("/")) {
+				HashSet<String> subdir_paths;
+				_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem_path(file), subdir_paths);
+				for (const String &subdir_path : subdir_paths) {
+					paths.erase(subdir_path);
+				}
+			} else {
+				paths.erase(file);
+			}
 		}
 	} else if (p_preset->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED) {
 		_export_find_customized_resources(p_preset, EditorFileSystem::get_singleton()->get_filesystem(), p_preset->get_file_export_mode("res://"), paths);
@@ -1160,6 +1168,20 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		bool scenes_only = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_SCENES;
 
 		Vector<String> files = p_preset->get_files_to_export();
+		int f = 0;
+		while (f < files.size()) {
+			const String &file = files[f];
+			if (file.ends_with("/")) {
+				HashSet<String> subdir_paths;
+				_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem_path(file), subdir_paths);
+				for (const String &subdir_path : subdir_paths) {
+					files.push_back(subdir_path);
+				}
+				files.erase(file);
+				f--;
+			}
+			f++;
+		}
 		for (int i = 0; i < files.size(); i++) {
 			if (scenes_only && ResourceLoader::get_resource_type(files[i]) != "PackedScene") {
 				continue;
