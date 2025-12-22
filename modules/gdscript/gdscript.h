@@ -683,13 +683,21 @@ public:
 	virtual String get_resource_type(const String &p_path) const override;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
+
+	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
+	virtual bool has_custom_uid_support() const override;
 };
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {
 	GDSOFTCLASS(ResourceFormatSaverGDScript, ResourceFormatSaver);
 
+private:
+	bool add_uid_to_source(String &p_r_source, const String &p_path, ResourceUID::ID p_uid = ResourceUID::INVALID_ID) const;
+
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
+
+	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
 };
