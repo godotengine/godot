@@ -688,6 +688,12 @@ void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position)
 	_vertices_changed();
 }
 
+uint32_t JoltSoftBody3D::get_vertex_count() const {
+	ERR_FAIL_COND_V_MSG(!in_space(), false, vformat("Failed to retrieve vertex count for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+
+	return mesh_to_physics.size();
+}
+
 void JoltSoftBody3D::pin_vertex(int p_index) {
 	pinned_vertices.insert(p_index);
 
