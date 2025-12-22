@@ -486,7 +486,7 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	return shortcut_item;
 }
 
-bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const {
+bool EditorSettingsDialog::_should_display_shortcut(const String &p_section, const String &p_section_tr, const String &p_name, const Array &p_events, bool p_match_localized_name) const {
 	const Ref<InputEvent> search_ev = shortcut_search_bar->get_event();
 	if (search_ev.is_valid()) {
 		bool event_match = false;
@@ -509,7 +509,12 @@ bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const 
 	if (search_text.is_subsequence_ofn(p_name)) {
 		return true;
 	}
+	// print_line("Got ", p_section, " and ", p_section_tr);
 	if (p_match_localized_name && search_text.is_subsequence_ofn(TTR(p_name))) {
+		return true;
+	}
+	// Always match translated section name.
+	if (search_text.is_subsequence_ofn(p_section) || search_text.is_subsequence_ofn(p_section_tr)) {
 		return true;
 	}
 
@@ -557,10 +562,15 @@ void EditorSettingsDialog::_update_shortcuts() {
 	TreeItem *root = shortcuts->create_item();
 	HashMap<String, TreeItem *> sections;
 
+	const EditorPropertyNameProcessor::Style name_style = EditorPropertyNameProcessor::get_settings_style();
+	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(name_style);
+
 	// Set up section for Common/Built-in actions
 	TreeItem *common_section = shortcuts->create_item(root);
 	sections["Common"] = common_section;
-	common_section->set_text(0, TTRC("Common"));
+	common_section->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED); // Already translated manually.
+	common_section->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name("Common", name_style));
+	common_section->set_tooltip_text(0, EditorPropertyNameProcessor::get_singleton()->process_name("Common", tooltip_style));
 	common_section->set_selectable(0, false);
 	common_section->set_selectable(1, false);
 	if (collapsed.has("Common")) {
@@ -581,7 +591,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 		const List<Ref<InputEvent>> &all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name)->value;
 		Array action_events = _event_list_to_array_helper(action.inputs);
-		if (!_should_display_shortcut(action_name, action_events, false)) {
+		if (!_should_display_shortcut(common_section->get_text(0), common_section->get_tooltip_text(0), action_name, action_events, false)) {
 			continue;
 		}
 
@@ -601,9 +611,6 @@ void EditorSettingsDialog::_update_shortcuts() {
 	List<String> slist;
 	EditorSettings::get_singleton()->get_shortcut_list(&slist);
 	slist.sort(); // Sort alphabetically.
-
-	const EditorPropertyNameProcessor::Style name_style = EditorPropertyNameProcessor::get_settings_style();
-	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(name_style);
 
 	// Create all sections first.
 	for (const String &E : slist) {
@@ -644,7 +651,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		String section_name = E.get_slicec('/', 0);
 		TreeItem *section = sections[section_name];
 
-		if (!_should_display_shortcut(sc->get_name(), sc->get_events(), true)) {
+		if (!_should_display_shortcut(section->get_text(0), section->get_tooltip_text(0), sc->get_name(), sc->get_events(), true)) {
 			continue;
 		}
 
