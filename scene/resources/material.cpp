@@ -662,6 +662,8 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->texture_names[TEXTURE_DETAIL_NORMAL] = "texture_detail_normal";
 	shader_names->texture_names[TEXTURE_ORM] = "texture_orm";
 
+	shader_names->affine_mapping = "affine_mapping";
+
 	shader_names->alpha_scissor_threshold = "alpha_scissor_threshold";
 	shader_names->alpha_hash_scale = "alpha_hash_scale";
 
@@ -1211,6 +1213,10 @@ uniform vec3 uv2_offset;
 		code += "uniform float fov_override : hint_range(1.0, 179.0, 0.1);\n";
 	}
 
+	if (affine) {
+		code += "varying noperspective vec2 uv_affine;\n";
+	}
+
 	// Generate vertex shader.
 	code += R"(
 void vertex() {)";
@@ -1472,6 +1478,12 @@ void vertex() {)";
 )";
 	}
 
+	if (affine) {
+		code += R"(
+	uv_affine = UV;
+)";
+	}
+
 	// End of the vertex shader function.
 	code += "}\n";
 
@@ -1500,9 +1512,15 @@ vec4 triplanar_texture(sampler2D p_sampler, vec3 p_weights, vec3 p_triplanar_pos
 void fragment() {)";
 
 	if (!flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += R"(
+		if (affine) {
+			code += R"(
+	vec2 base_uv = uv_affine;
+)";
+		} else {
+			code += R"(
 	vec2 base_uv = UV;
 )";
+		}
 	}
 
 	if ((features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) || (features[FEATURE_AMBIENT_OCCLUSION] && flags[FLAG_AO_ON_UV2]) || (features[FEATURE_EMISSION] && flags[FLAG_EMISSION_ON_UV2])) {
@@ -2904,6 +2922,16 @@ bool BaseMaterial3D::is_grow_enabled() const {
 	return grow_enabled;
 }
 
+void BaseMaterial3D::set_affine_mapping_enabled(bool p_enable) {
+	affine = p_enable;
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+bool BaseMaterial3D::is_affine_mapping_enabled() const {
+	return affine;
+}
+
 void BaseMaterial3D::set_alpha_scissor_threshold(float p_threshold) {
 	alpha_scissor_threshold = p_threshold;
 	_material_set_param(shader_names->alpha_scissor_threshold, p_threshold);
@@ -3519,6 +3547,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_grow_enabled", "enable"), &BaseMaterial3D::set_grow_enabled);
 	ClassDB::bind_method(D_METHOD("is_grow_enabled"), &BaseMaterial3D::is_grow_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_affine_mapping_enabled", "enable"), &BaseMaterial3D::set_affine_mapping_enabled);
+	ClassDB::bind_method(D_METHOD("is_affine_mapping_enabled"), &BaseMaterial3D::is_affine_mapping_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_metallic_texture_channel", "channel"), &BaseMaterial3D::set_metallic_texture_channel);
 	ClassDB::bind_method(D_METHOD("get_metallic_texture_channel"), &BaseMaterial3D::get_metallic_texture_channel);
 
@@ -3723,6 +3754,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Sampling", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "texture_repeat"), "set_flag", "get_flag", FLAG_USE_TEXTURE_REPEAT);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "texture_affine_mapping"), "set_affine_mapping_enabled", "is_affine_mapping_enabled");
 
 	ADD_GROUP("Shadows", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_receive_shadows"), "set_flag", "get_flag", FLAG_DONT_RECEIVE_SHADOWS);
@@ -3981,6 +4013,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	set_grow(0.0);
 
+	set_affine_mapping_enabled(false);
+
 	set_msdf_pixel_range(4.0);
 	set_msdf_outline_size(0.0);
 
@@ -4100,6 +4134,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "depth_texture", "heightmap_texture" },
 
 			{ "emission_energy", "emission_energy_multiplier" },
+			{ "texture_affine_mapping", "texture_affine_mapping" },
 
 			{ nullptr, nullptr },
 		};
