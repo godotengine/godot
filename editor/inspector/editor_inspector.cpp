@@ -5009,6 +5009,16 @@ void EditorInspector::set_show_categories(bool p_show_standard, bool p_show_cust
 	update_tree();
 }
 
+void EditorInspector::set_show_standard_categories(bool p_show) {
+	show_standard_categories = p_show;
+	update_tree();
+}
+
+void EditorInspector::set_show_custom_categories(bool p_show) {
+	show_custom_categories = p_show;
+	update_tree();
+}
+
 void EditorInspector::set_use_doc_hints(bool p_enable) {
 	use_doc_hints = p_enable;
 	update_tree();
@@ -5042,6 +5052,11 @@ void EditorInspector::set_use_folding(bool p_use_folding, bool p_update_tree) {
 	if (p_update_tree) {
 		update_tree();
 	}
+}
+
+void EditorInspector::_set_use_folding_property(bool p_use_folding) {
+	use_folding = p_use_folding;
+	update_tree();
 }
 
 bool EditorInspector::is_using_folding() {
@@ -5886,7 +5901,25 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("get_selected_path", &EditorInspector::get_selected_path);
 	ClassDB::bind_method("get_edited_object", &EditorInspector::get_edited_object);
 
+	ClassDB::bind_method(D_METHOD("set_show_categories", "show_standard", "show_custom"), &EditorInspector::set_show_categories);
+	ClassDB::bind_method(D_METHOD("set_show_standard_categories", "show"), &EditorInspector::set_show_standard_categories);
+	ClassDB::bind_method(D_METHOD("set_show_custom_categories", "show"), &EditorInspector::set_show_custom_categories);
+	ClassDB::bind_method("is_showing_standard_categories", &EditorInspector::is_showing_standard_categories);
+	ClassDB::bind_method("is_showing_custom_categories", &EditorInspector::is_showing_custom_categories);
+	ClassDB::bind_method(D_METHOD("set_use_folding", "use_folding"), &EditorInspector::_set_use_folding_property);
+	ClassDB::bind_method("is_using_folding", &EditorInspector::is_using_folding);
+	ClassDB::bind_method(D_METHOD("set_hide_script", "hide_script"), &EditorInspector::set_hide_script);
+	ClassDB::bind_method("is_hiding_script", &EditorInspector::is_hiding_script);
+	ClassDB::bind_method(D_METHOD("set_hide_metadata", "hide_metadata"), &EditorInspector::set_hide_metadata);
+	ClassDB::bind_method("is_hiding_metadata", &EditorInspector::is_hiding_metadata);
+
 	ClassDB::bind_static_method("EditorInspector", D_METHOD("instantiate_property_editor", "object", "type", "path", "hint", "hint_text", "usage", "wide"), &EditorInspector::instantiate_property_editor, DEFVAL(false));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_standard_categories"), "set_show_standard_categories", "is_showing_standard_categories");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_custom_categories"), "set_show_custom_categories", "is_showing_custom_categories");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_folding"), "set_use_folding", "is_using_folding");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_script"), "set_hide_script", "is_hiding_script");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_metadata"), "set_hide_metadata", "is_hiding_metadata");
 
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "advance")));

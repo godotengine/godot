@@ -800,6 +800,8 @@ class EditorInspector : public ScrollContainer {
 	void _set_property_favorited(const String &p_path, bool p_favorited);
 	void _clear_current_favorites();
 
+	void _set_use_folding_property(bool p_use_folding);
+
 	void _node_removed(Node *p_node);
 
 	HashMap<StringName, int> per_array_page;
@@ -869,9 +871,16 @@ public:
 	void set_autoclear(bool p_enable);
 
 	void set_show_categories(bool p_show_standard, bool p_show_custom);
+	void set_show_standard_categories(bool p_show);
+	void set_show_custom_categories(bool p_show);
+	bool is_showing_standard_categories() { return show_standard_categories; }
+	bool is_showing_custom_categories() { return show_custom_categories; }
 	void set_use_doc_hints(bool p_enable);
+	bool is_using_doc_hints() { return use_doc_hints; }
 	void set_hide_script(bool p_hide);
+	bool is_hiding_script() { return hide_script; }
 	void set_hide_metadata(bool p_hide);
+	bool is_hiding_metadata() { return hide_metadata; }
 
 	void set_use_filter(bool p_use);
 	void register_text_enter(Node *p_line_edit);
