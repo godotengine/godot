@@ -69,12 +69,37 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
 				double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
+
+				bool highlighted = mouse_inside || has_focus(true);
+				Ref<StyleBox> grabber_area = highlighted ? theme_cache.grabber_area_hl_style : theme_cache.grabber_area_style;
+				Size2i min_size = grabber_area->get_minimum_size();
+
 				set_block_signals(true);
 				if (orientation == VERTICAL) {
-					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
+					int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
+					double areasize = get_size().height - grab_height;
+					double effective_areasize = areasize - min_size.height + grabber->get_height() / 2 + grabber_shift;
+
+					if (respect_grabber_area_min_size && effective_areasize > 0) {
+						double click_pos_from_bottom = get_size().height - (double)grab.pos;
+						double ratio = (click_pos_from_bottom - min_size.height) / effective_areasize;
+						set_as_ratio(CLAMP(ratio, 0.0, 1.0));
+					} else {
+						set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
+					}
 				} else {
-					double v = ((double)grab.pos - (grab_width / 2.0)) / max;
-					set_as_ratio(is_layout_rtl() ? 1 - v : v);
+					int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
+					double areasize = get_size().width - grab_width;
+					double effective_areasize = areasize - min_size.width + grabber->get_width() / 2 + grabber_shift;
+
+					if (respect_grabber_area_min_size && effective_areasize > 0) {
+						double click_pos = (double)grab.pos;
+						double ratio = (click_pos - min_size.width) / effective_areasize;
+						set_as_ratio(CLAMP(is_layout_rtl() ? 1 - ratio : ratio, 0.0, 1.0));
+					} else {
+						double v = ((double)grab.pos - (grab_width / 2.0)) / max;
+						set_as_ratio(is_layout_rtl() ? 1 - v : v);
+					}
 				}
 				set_block_signals(false);
 				grab.active = true;
@@ -111,17 +136,32 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
 			double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
-			if (orientation == VERTICAL) {
-				motion = -motion;
-			} else if (is_layout_rtl()) {
+			if (orientation == VERTICAL || is_layout_rtl()) {
 				motion = -motion;
 			}
 			double areasize = orientation == VERTICAL ? size.height - grab_height : size.width - grab_width;
 			if (areasize <= 0) {
 				return;
 			}
-			double umotion = motion / double(areasize);
-			set_as_ratio(grab.uvalue + umotion);
+
+			double effective_areasize = areasize;
+			if (respect_grabber_area_min_size) {
+				Ref<StyleBox> grabber_area = theme_cache.grabber_area_hl_style;
+				Size2i min_size = grabber_area->get_minimum_size();
+
+				if (orientation == VERTICAL) {
+					int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
+					effective_areasize = areasize - min_size.height + grabber->get_height() / 2 + grabber_shift;
+				} else {
+					int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
+					effective_areasize = areasize - min_size.width + grabber->get_width() / 2 + grabber_shift;
+				}
+			}
+
+			if (effective_areasize > 0) {
+				double umotion = motion / effective_areasize;
+				set_as_ratio(grab.uvalue + umotion);
+			}
 		}
 	}
 
@@ -299,7 +339,19 @@ void Slider::_notification(int p_what) {
 				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
 				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift)), Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift))));
+
+				Size2i grabber_area_size;
+				double grabber_area_y_pos;
+				Size2i min_size = grabber_area->get_minimum_size();
+				double effective_areasize = areasize - min_size.height + grabber->get_height() / 2 + grabber_shift;
+				if (respect_grabber_area_min_size && effective_areasize > 0) {
+					grabber_area_size = Size2i(MAX(widget_width, min_size.width), Math::round(min_size.height + effective_areasize * ratio));
+					grabber_area_y_pos = size.height - min_size.height - effective_areasize * ratio;
+				} else {
+					grabber_area_size = Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift));
+					grabber_area_y_pos = size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift;
+				}
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(grabber_area_y_pos)), grabber_area_size));
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
@@ -331,12 +383,32 @@ void Slider::_notification(int p_what) {
 				bool rtl = is_layout_rtl();
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
-				int p = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
-				if (rtl) {
-					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
+
+				int p;
+				Rect2i grabber_draw_area;
+				Size2i min_size = grabber_area->get_minimum_size();
+				double effective_areasize = areasize - min_size.width + grabber->get_width() / 2 + grabber_shift;
+
+				if (respect_grabber_area_min_size && effective_areasize > 0) {
+					double current_width = min_size.width + effective_areasize * ratio;
+					if (rtl) {
+						grabber_draw_area.size = Size2i(Math::round(current_width), MAX(widget_height, min_size.height));
+						grabber_draw_area.position = Point2i(size.width - Math::round(current_width), (size.height - widget_height) / 2);
+					} else {
+						grabber_draw_area.size = Size2i(Math::round(current_width), MAX(widget_height, min_size.height));
+						grabber_draw_area.position = Point2i(0, (size.height - widget_height) / 2);
+					}
 				} else {
-					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
+					p = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
+					if (rtl) {
+						grabber_draw_area.size = Size2i(size.width - p, widget_height);
+						grabber_draw_area.position = Point2i(p, (size.height - widget_height) / 2);
+					} else {
+						grabber_draw_area.size = Size2i(p, widget_height);
+						grabber_draw_area.position = Point2i(0, (size.height - widget_height) / 2);
+					}
 				}
+				grabber_area->draw(ci, grabber_draw_area);
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_width() / 2 - tick->get_width() / 2);
@@ -444,6 +516,18 @@ bool Slider::is_scrollable() const {
 	return scrollable;
 }
 
+void Slider::set_respect_grabber_area_min_size(bool p_respect) {
+	if (respect_grabber_area_min_size == p_respect) {
+		return;
+	}
+	respect_grabber_area_min_size = p_respect;
+	queue_redraw();
+}
+
+bool Slider::is_respecting_grabber_area_min_size() const {
+	return respect_grabber_area_min_size;
+}
+
 void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ticks", "count"), &Slider::set_ticks);
 	ClassDB::bind_method(D_METHOD("get_ticks"), &Slider::get_ticks);
@@ -459,11 +543,15 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
 	ClassDB::bind_method(D_METHOD("is_scrollable"), &Slider::is_scrollable);
 
+	ClassDB::bind_method(D_METHOD("set_respect_grabber_area_min_size", "respect"), &Slider::set_respect_grabber_area_min_size);
+	ClassDB::bind_method(D_METHOD("is_respecting_grabber_area_min_size"), &Slider::is_respecting_grabber_area_min_size);
+
 	ADD_SIGNAL(MethodInfo("drag_started"));
 	ADD_SIGNAL(MethodInfo("drag_ended", PropertyInfo(Variant::BOOL, "value_changed")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "respect_grabber_area_min_size"), "set_respect_grabber_area_min_size", "is_respecting_grabber_area_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ticks_position", PROPERTY_HINT_ENUM), "set_ticks_position", "get_ticks_position");
