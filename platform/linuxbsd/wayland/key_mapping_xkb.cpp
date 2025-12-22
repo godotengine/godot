@@ -367,6 +367,43 @@ void KeyMappingXKB::initialize() {
 	// Meta.
 	location_map[0x85] = KeyLocation::LEFT;
 	location_map[0x86] = KeyLocation::RIGHT;
+
+	// TODO: Doublecheck
+	dead_keysym_unicode_map[XKB_KEY_dead_grave] = U'\u0300'; // COMBINING GRAVE ACCENT
+	dead_keysym_unicode_map[XKB_KEY_dead_acute] = U'\u0301'; // COMBINING ACUTE ACCENT
+	dead_keysym_unicode_map[XKB_KEY_dead_circumflex] = U'\u0302'; // COMBINING CIRCUMFLEX ACCENT
+	dead_keysym_unicode_map[XKB_KEY_dead_tilde] = U'\u0303'; // TODO LABEL
+	dead_keysym_unicode_map[XKB_KEY_dead_perispomeni] = U'\u0304';
+	dead_keysym_unicode_map[XKB_KEY_dead_macron] = U'\u0305';
+	dead_keysym_unicode_map[XKB_KEY_dead_breve] = U'\u0306';
+	dead_keysym_unicode_map[XKB_KEY_dead_abovedot] = U'\u0307';
+	dead_keysym_unicode_map[XKB_KEY_dead_diaeresis] = U'\u0308';
+	dead_keysym_unicode_map[XKB_KEY_dead_abovering] = U'\u0309';
+	dead_keysym_unicode_map[XKB_KEY_dead_doubleacute] = U'\u030A';
+	dead_keysym_unicode_map[XKB_KEY_dead_caron] = U'\u030B';
+	dead_keysym_unicode_map[XKB_KEY_dead_cedilla] = U'\u030C';
+	dead_keysym_unicode_map[XKB_KEY_dead_ogonek] = U'\u030D';
+	dead_keysym_unicode_map[XKB_KEY_dead_iota] = U'\u030E';
+	dead_keysym_unicode_map[XKB_KEY_dead_voiced_sound] = U'\u030F';
+	dead_keysym_unicode_map[XKB_KEY_dead_semivoiced_sound] = U'\u0310';
+	dead_keysym_unicode_map[XKB_KEY_dead_belowdot] = U'\u0311';
+	dead_keysym_unicode_map[XKB_KEY_dead_hook] = U'\u0312';
+	dead_keysym_unicode_map[XKB_KEY_dead_horn] = U'\u0313';
+	dead_keysym_unicode_map[XKB_KEY_dead_stroke] = U'\u0314';
+	dead_keysym_unicode_map[XKB_KEY_dead_abovecomma] = U'\u0315';
+	dead_keysym_unicode_map[XKB_KEY_dead_psili] = U'\u0316';
+	dead_keysym_unicode_map[XKB_KEY_dead_abovereversedcomma] = U'\u0317';
+	dead_keysym_unicode_map[XKB_KEY_dead_dasia] = U'\u0318';
+	dead_keysym_unicode_map[XKB_KEY_dead_doublegrave] = U'\u0319';
+	dead_keysym_unicode_map[XKB_KEY_dead_belowring] = U'\u031A';
+	dead_keysym_unicode_map[XKB_KEY_dead_belowmacron] = U'\u031B';
+	dead_keysym_unicode_map[XKB_KEY_dead_belowcircumflex] = U'\u031C';
+	dead_keysym_unicode_map[XKB_KEY_dead_belowtilde] = U'\u031D';
+	dead_keysym_unicode_map[XKB_KEY_dead_belowbreve] = U'\u031E';
+	dead_keysym_unicode_map[XKB_KEY_dead_belowdiaeresis] = U'\u031F';
+	dead_keysym_unicode_map[XKB_KEY_dead_invertedbreve] = U'\u0320';
+	dead_keysym_unicode_map[XKB_KEY_dead_belowcomma] = U'\u0321';
+	dead_keysym_unicode_map[XKB_KEY_dead_currency] = U'\u00A4'; // CURRENCY SIGN
 }
 
 Key KeyMappingXKB::get_keycode(xkb_keycode_t p_keysym) {
@@ -408,4 +445,12 @@ KeyLocation KeyMappingXKB::get_location(unsigned int p_code) {
 		return *location;
 	}
 	return KeyLocation::UNSPECIFIED;
+}
+
+char32_t KeyMappingXKB::dead_keysym_get_ucode(xkb_keysym_t p_keysym) {
+	const char32_t *ucode = dead_keysym_unicode_map.getptr(p_keysym);
+	if (ucode) {
+		return *ucode;
+	}
+	return 0x00;
 }
