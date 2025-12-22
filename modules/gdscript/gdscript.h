@@ -681,7 +681,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
-	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
+	virtual void get_dependencies(const String &p_path, List<String> *r_dependencies, bool p_add_types = false) override;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
 };
 

@@ -2051,6 +2051,22 @@ void EditorFileSystem::_save_late_updated_files() {
 	}
 }
 
+void EditorFileSystem::_update_deferred_script_dependencies() {
+	for (const String &path : deferred_script_deps) {
+		int file_idx;
+		EditorFileSystemDirectory *dir = find_file(path, &file_idx);
+		if (dir && file_idx >= 0) {
+			List<String> deps;
+			ResourceLoader::get_dependencies(path, &deps);
+			dir->files[file_idx]->deps.clear();
+			for (const String &dep : deps) {
+				dir->files[file_idx]->deps.push_back(dep);
+			}
+		}
+	}
+	deferred_script_deps.clear();
+}
+
 Vector<String> EditorFileSystem::_get_dependencies(const String &p_path) {
 	// Avoid error spam on first opening of a not yet imported project by treating the following situation
 	// as a benign one, not letting the file open error happen: the resource is of an importable type but
@@ -2060,6 +2076,11 @@ Vector<String> EditorFileSystem::_get_dependencies(const String &p_path) {
 		if (!internal_path.is_empty() && !FileAccess::exists(internal_path)) { // If path is empty (error), keep the code flow to the error.
 			return Vector<String>();
 		}
+	}
+
+	if (ClassDB::is_parent_class(ResourceLoader::get_resource_type(p_path), SNAME("Script"))) {
+		deferred_script_deps.insert(p_path);
+		return Vector<String>();
 	}
 
 	List<String> deps;
@@ -2290,6 +2311,7 @@ void EditorFileSystem::_process_update_pending() {
 		_update_script_documentation();
 		_update_pending_scene_groups();
 	}
+	_update_deferred_script_dependencies();
 }
 
 void EditorFileSystem::_queue_update_script_class(const String &p_path, const ScriptClassInfoUpdate &p_script_update) {
