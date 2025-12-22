@@ -4608,6 +4608,15 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 	}
 }
 
+void WaylandThread::pointer_override_position(const Point2i &p_pos) {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	if (!ss) {
+		return;
+	}
+
+	ss->pointer_data_buffer.position = p_pos;
+}
+
 WaylandThread::PointerConstraint WaylandThread::pointer_get_constraint() const {
 	return pointer_constraint;
 }
