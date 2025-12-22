@@ -59,6 +59,27 @@ AddMetadataDialog::AddMetadataDialog() {
 	vbc->add_child(spacing);
 	spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
 
+	HBoxContainer *typed_container = memnew(HBoxContainer);
+	typed_container->hide();
+
+	Label *key_label = memnew(Label);
+	typed_container->add_child(key_label);
+
+	add_meta_key_type = memnew(EditorVariantTypeOptionButton);
+	typed_container->add_child(add_meta_key_type);
+
+	Label *value_label = memnew(Label(TTR("Value:")));
+	typed_container->add_child(value_label);
+
+	add_meta_value_type = memnew(EditorVariantTypeOptionButton);
+	typed_container->add_child(add_meta_value_type);
+
+	vbc->add_child(typed_container);
+
+	Control *spacing2 = memnew(Control);
+	vbc->add_child(spacing2);
+	spacing2->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
+
 	set_ok_button_text(TTR("Add"));
 	register_text_enter(add_meta_name);
 
@@ -69,6 +90,7 @@ AddMetadataDialog::AddMetadataDialog() {
 	validation_panel->set_accept_button(get_ok_button());
 
 	add_meta_name->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	add_meta_type->connect(SceneStringName(item_selected), callable_mp(this, &AddMetadataDialog::_update_controls).bind(typed_container, key_label, value_label).unbind(1));
 }
 
 void AddMetadataDialog::_complete_init(const StringName &p_title) {
@@ -79,6 +101,25 @@ void AddMetadataDialog::_complete_init(const StringName &p_title) {
 
 	if (add_meta_type->get_item_count() == 0) {
 		add_meta_type->populate({ Variant::NIL }, { { Variant::OBJECT, "Resource" } });
+		add_meta_key_type->populate({ Variant::NIL }, { { Variant::OBJECT, "Resource" } });
+		add_meta_value_type->populate({ Variant::NIL }, { { Variant::OBJECT, "Resource" } });
+	}
+}
+
+// Parameters bound in init to prevent needing extra private variables just for this purpose.
+void AddMetadataDialog::_update_controls(HBoxContainer *p_typed_container, Label *p_key_label, Label *p_value_label) {
+	if (add_meta_type->get_selected_id() == Variant::DICTIONARY) {
+		p_value_label->show();
+		add_meta_value_type->show();
+		p_key_label->set_text(TTR("Key:"));
+		p_typed_container->show();
+	} else if (add_meta_type->get_selected_id() == Variant::ARRAY) {
+		p_value_label->hide();
+		add_meta_value_type->hide();
+		p_key_label->set_text(TTR("Element:"));
+		p_typed_container->show();
+	} else {
+		p_typed_container->hide();
 	}
 }
 
@@ -94,9 +135,31 @@ StringName AddMetadataDialog::get_meta_name() {
 }
 
 Variant AddMetadataDialog::get_meta_defval() {
+	const int type_id = add_meta_type->get_selected_id();
+
+	if (type_id == Variant::ARRAY) {
+		const int elem_type_id = add_meta_key_type->get_selected_id();
+
+		Array defarray = Array();
+		// Do not set Array[Variant] in metadata since untyped Array serves same purpose.
+		if (elem_type_id != Variant::NIL) {
+			defarray.set_typed(elem_type_id, elem_type_id == Variant::OBJECT ? "Resource" : "", Variant());
+		}
+		return defarray;
+	} else if (type_id == Variant::DICTIONARY) {
+		const int key_type_id = add_meta_key_type->get_selected_id();
+		const int value_type_id = add_meta_value_type->get_selected_id();
+
+		Dictionary defdict = Dictionary();
+		// Can set a Variant here if the other is typed.
+		if (key_type_id != Variant::NIL || value_type_id != Variant::NIL) {
+			defdict.set_typed(key_type_id, key_type_id == Variant::OBJECT ? "Resource" : "", Variant(), value_type_id, value_type_id == Variant::OBJECT ? "Resource" : "", Variant());
+		}
+		return defdict;
+	}
 	Variant defval;
 	Callable::CallError ce;
-	Variant::construct(add_meta_type->get_selected_type(), defval, nullptr, 0, ce);
+	Variant::construct(Variant::Type(type_id), defval, nullptr, 0, ce);
 	return defval;
 }
 
