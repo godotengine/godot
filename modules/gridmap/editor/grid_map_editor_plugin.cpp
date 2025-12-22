@@ -38,16 +38,20 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
 #include "scene/main/window.h"
 
 void GridMapEditor::_configure() {
@@ -970,17 +974,6 @@ void GridMapEditor::_text_changed(const String &p_text) {
 	update_palette();
 }
 
-void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the item list.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			mesh_library_palette->gui_input(key);
-			search_box->accept_event();
-		}
-	}
-}
-
 void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
 	const Ref<InputEventMouseButton> mb = p_ie;
 
@@ -1233,7 +1226,6 @@ void GridMapEditor::_update_theme() {
 	rotate_x_button->set_button_icon(get_theme_icon(SNAME("RotateLeft"), EditorStringName(EditorIcons)));
 	rotate_y_button->set_button_icon(get_theme_icon(SNAME("ToolRotate"), EditorStringName(EditorIcons)));
 	rotate_z_button->set_button_icon(get_theme_icon(SNAME("RotateRight"), EditorStringName(EditorIcons)));
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), EditorStringName(EditorIcons)));
 	mode_thumbnail->set_button_icon(get_theme_icon(SNAME("FileThumbnail"), EditorStringName(EditorIcons)));
 	mode_list->set_button_icon(get_theme_icon(SNAME("FileList"), EditorStringName(EditorIcons)));
 	options->set_button_icon(get_theme_icon(SNAME("Tools"), EditorStringName(EditorIcons)));
@@ -1603,14 +1595,13 @@ GridMapEditor::GridMapEditor() {
 	floor->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 	floor->get_line_edit()->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 
-	search_box = memnew(LineEdit);
+	search_box = memnew(FilterLineEdit);
 	search_box->add_theme_constant_override("minimum_character_width", 10);
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter Meshes"));
 	search_box->set_accessibility_name(TTRC("Filter Meshes"));
-	search_box->set_clear_button_enabled(true);
 	toolbar->add_child(search_box);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &GridMapEditor::_text_changed));
-	search_box->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_sbox_input));
 
 	zoom_widget = memnew(EditorZoomWidget);
 	toolbar->add_child(zoom_widget);
@@ -1644,6 +1635,7 @@ GridMapEditor::GridMapEditor() {
 	add_child(mc);
 
 	mesh_library_palette = memnew(ItemList);
+	search_box->set_forward_control(mesh_library_palette);
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	mc->add_child(mesh_library_palette);
