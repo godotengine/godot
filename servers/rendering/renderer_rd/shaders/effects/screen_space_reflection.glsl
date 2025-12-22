@@ -29,6 +29,7 @@ layout(push_constant, std430) uniform Params {
 	float depth_tolerance;
 	bool orthogonal;
 	int view_index;
+	ivec3 pad;
 }
 params;
 

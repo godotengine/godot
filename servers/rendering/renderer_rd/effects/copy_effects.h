@@ -237,7 +237,7 @@ private:
 
 	struct CopyToOctmapPushConstant {
 		float border_size;
-		float pad[3];
+		uint32_t pad[3];
 	};
 
 	struct CopyToOctmap {
@@ -280,8 +280,8 @@ private:
 
 	struct OctmapFilterPushConstant {
 		float border_size[2];
-		uint32_t size;
-		uint32_t pad;
+		uint32_t pad1;
+		uint32_t pad2;
 	};
 
 	struct OctmapFilterRasterPushConstant {

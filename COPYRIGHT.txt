@@ -574,6 +574,11 @@ Comment: SPIRV-Cross
 Copyright: 2015-2021, Arm Limited
 License: Apache-2.0 or Expat
 
+Files: thirdparty/spirv-headers/*
+Comment: SPIRV-Headers
+Copyright: 2015-2024, The Khronos Group Inc.
+License: Expat
+
 Files: thirdparty/spirv-reflect/*
 Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.
@@ -608,19 +613,19 @@ License: BSD-3-clause
 
 Files: thirdparty/volk/*
 Comment: volk
-Copyright: 2018-2024, Arseny Kapoulkine
+Copyright: 2018-2025, Arseny Kapoulkine
 License: Expat
 
 Files: thirdparty/vulkan/*
 Comment: Vulkan Headers
-Copyright: 2014-2024, The Khronos Group Inc.
-  2014-2024, Valve Corporation
-  2014-2024, LunarG, Inc.
+Copyright: 2015-2025, The Khronos Group Inc.
+  2015-2025, Valve Corporation
+  2015-2025, LunarG, Inc.
 License: Apache-2.0
 
 Files: thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2024, Advanced Micro Devices, Inc.
+Copyright: 2017-2025, Advanced Micro Devices, Inc.
 License: Expat
 
 Files: thirdparty/wayland/*
