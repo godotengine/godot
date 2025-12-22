@@ -68,12 +68,12 @@ Ref<AudioStream> AudioStreamSynchronized::get_sync_stream(int p_stream_index) co
 
 void AudioStreamSynchronized::set_sync_stream_volume(int p_stream_index, float p_db) {
 	ERR_FAIL_INDEX(p_stream_index, MAX_STREAMS);
-	audio_stream_volume_db[p_stream_index] = p_db;
+	audio_stream_volume_linear[p_stream_index] = Math::db_to_linear(p_db);
 }
 
 float AudioStreamSynchronized::get_sync_stream_volume(int p_stream_index) const {
 	ERR_FAIL_INDEX_V(p_stream_index, MAX_STREAMS, 0);
-	return audio_stream_volume_db[p_stream_index];
+	return Math::linear_to_db(audio_stream_volume_linear[p_stream_index]);
 }
 
 double AudioStreamSynchronized::get_bpm() const {
@@ -202,6 +202,7 @@ void AudioStreamPlaybackSynchronized::start(double p_from_pos) {
 		if (playback[i].is_valid()) {
 			playback[i]->start(p_from_pos);
 			active = true;
+			stream_volume_linear_previous[i] = stream->audio_stream_volume_linear[i];
 		}
 	}
 }
@@ -221,6 +222,16 @@ int AudioStreamPlaybackSynchronized::mix(AudioFrame *p_buffer, float p_rate_scal
 
 	int todo = p_frames;
 
+	float stream_volume_linear_increment[AudioStreamSynchronized::MAX_STREAMS]{};
+	float stream_volume_linear_accumulated[AudioStreamSynchronized::MAX_STREAMS]{};
+
+	for (int i = 0; i < stream->stream_count; i++) {
+		if (playback[i].is_valid() && playback[i]->is_playing()) {
+			stream_volume_linear_increment[i] = (stream->audio_stream_volume_linear[i] - stream_volume_linear_previous[i]) / p_frames;
+			stream_volume_linear_accumulated[i] = stream_volume_linear_previous[i];
+		}
+	}
+
 	bool any_active = false;
 	while (todo) {
 		int to_mix = MIN(todo, MIX_BUFFER_SIZE);
@@ -228,18 +239,19 @@ int AudioStreamPlaybackSynchronized::mix(AudioFrame *p_buffer, float p_rate_scal
 		bool first = true;
 		for (int i = 0; i < stream->stream_count; i++) {
 			if (playback[i].is_valid() && playback[i]->is_playing()) {
-				float volume = Math::db_to_linear(stream->audio_stream_volume_db[i]);
 				if (first) {
 					playback[i]->mix(p_buffer, p_rate_scale, to_mix);
 					for (int j = 0; j < to_mix; j++) {
-						p_buffer[j] *= volume;
+						stream_volume_linear_accumulated[i] += stream_volume_linear_increment[i];
+						p_buffer[j] *= stream_volume_linear_accumulated[i];
 					}
 					first = false;
 					any_active = true;
 				} else {
 					playback[i]->mix(mix_buffer, p_rate_scale, to_mix);
 					for (int j = 0; j < to_mix; j++) {
-						p_buffer[j] += mix_buffer[j] * volume;
+						stream_volume_linear_accumulated[i] += stream_volume_linear_increment[i];
+						p_buffer[j] += mix_buffer[j] * stream_volume_linear_accumulated[i];
 					}
 				}
 			}
@@ -254,6 +266,12 @@ int AudioStreamPlaybackSynchronized::mix(AudioFrame *p_buffer, float p_rate_scal
 
 		p_buffer += to_mix;
 		todo -= to_mix;
+	}
+
+	for (int i = 0; i < stream->stream_count; i++) {
+		if (playback[i].is_valid() && playback[i]->is_playing()) {
+			stream_volume_linear_previous[i] = stream->audio_stream_volume_linear[i];
+		}
 	}
 
 	if (!any_active) {
