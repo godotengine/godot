@@ -94,6 +94,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	float text_shader_zoom_factor = 1.0f;
 	bool restoring_layout = false;
+	bool selected_changed = false;
 
 	Ref<Resource> _get_current_shader();
 	void _update_shader_list();
