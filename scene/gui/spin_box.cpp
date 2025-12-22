@@ -630,6 +630,7 @@ bool SpinBox::is_custom_arrow_rounding() const {
 
 void SpinBox::_value_changed(double p_value) {
 	_update_buttons_state_for_current_value();
+	Range::_value_changed(p_value);
 }
 
 void SpinBox::_update_buttons_state_for_current_value() {
