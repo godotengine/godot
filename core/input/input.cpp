@@ -147,12 +147,29 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
 	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	ClassDB::bind_method(D_METHOD("is_joy_accelerometer_enabled", "device"), &Input::is_joy_accelerometer_enabled);
+	ClassDB::bind_method(D_METHOD("is_joy_gyroscope_enabled", "device"), &Input::is_joy_gyroscope_enabled);
+	ClassDB::bind_method(D_METHOD("get_joy_accelerometer", "device"), &Input::get_joy_accelerometer);
+	ClassDB::bind_method(D_METHOD("get_joy_gravity", "device"), &Input::get_joy_gravity);
+	ClassDB::bind_method(D_METHOD("get_joy_gyroscope", "device"), &Input::get_joy_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_sensor_rate", "device"), &Input::get_joy_sensor_rate);
+	ClassDB::bind_method(D_METHOD("start_joy_motion_calibration", "device"), &Input::start_joy_motion_calibration);
+	ClassDB::bind_method(D_METHOD("stop_joy_motion_calibration", "device"), &Input::stop_joy_motion_calibration);
+	ClassDB::bind_method(D_METHOD("clear_joy_motion_calibration", "device"), &Input::clear_joy_motion_calibration);
+	ClassDB::bind_method(D_METHOD("get_joy_motion_calibration", "device"), &Input::get_joy_motion_calibration);
+	ClassDB::bind_method(D_METHOD("set_joy_motion_calibration", "device", "calibration_info"), &Input::set_joy_motion_calibration);
+	ClassDB::bind_method(D_METHOD("is_joy_motion_calibrated", "device"), &Input::is_joy_motion_calibrated);
+	ClassDB::bind_method(D_METHOD("is_joy_motion_calibrating", "device"), &Input::is_joy_motion_calibrating);
 	ClassDB::bind_method(D_METHOD("set_gravity", "value"), &Input::set_gravity);
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
 	ClassDB::bind_method(D_METHOD("set_joy_light", "device", "color"), &Input::set_joy_light);
 	ClassDB::bind_method(D_METHOD("has_joy_light", "device"), &Input::has_joy_light);
+	ClassDB::bind_method(D_METHOD("set_joy_accelerometer_enabled", "device", "enable"), &Input::set_joy_accelerometer_enabled);
+	ClassDB::bind_method(D_METHOD("set_joy_gyroscope_enabled", "device", "enable"), &Input::set_joy_gyroscope_enabled);
+	ClassDB::bind_method(D_METHOD("has_joy_accelerometer", "device"), &Input::has_joy_accelerometer);
+	ClassDB::bind_method(D_METHOD("has_joy_gyroscope", "device"), &Input::has_joy_gyroscope);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_screen_velocity"), &Input::get_last_mouse_screen_velocity);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
@@ -684,6 +701,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		for (int i = 0; i < (int)JoyAxis::MAX; i++) {
 			set_joy_axis(p_idx, (JoyAxis)i, 0.0f);
 		}
+		joy_motion.erase(p_idx);
 	}
 	joy_names[p_idx] = js;
 
@@ -737,6 +755,199 @@ Vector3 Input::get_gyroscope() const {
 #endif
 
 	return gyroscope;
+}
+
+bool Input::is_joy_accelerometer_enabled(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	return motion && motion->accelerometer_enabled;
+}
+
+bool Input::is_joy_gyroscope_enabled(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	return motion && motion->gyroscope_enabled;
+}
+
+Vector3 Input::get_joy_accelerometer(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return Vector3();
+	}
+
+	if (!motion->calibration.calibrated) {
+		return motion->accelerometer;
+	}
+
+	Vector3 value = (motion->accelerometer - motion->gravity) - motion->calibration.accelerometer_offset;
+	if (Math::abs(value.x) < motion->calibration.accelerometer_deadzone) {
+		value.x = 0;
+	}
+	if (Math::abs(value.y) < motion->calibration.accelerometer_deadzone) {
+		value.y = 0;
+	}
+	if (Math::abs(value.z) < motion->calibration.accelerometer_deadzone) {
+		value.z = 0;
+	}
+	return value + motion->gravity;
+}
+
+Vector3 Input::get_joy_gravity(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return Vector3();
+	}
+
+	return motion->gravity;
+}
+
+Vector3 Input::get_joy_gyroscope(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return Vector3();
+	}
+
+	if (!motion->calibration.calibrated) {
+		return motion->gyroscope;
+	}
+
+	Vector3 value = motion->gyroscope - motion->calibration.gyroscope_offset;
+	if (Math::abs(value.x) < motion->calibration.gyroscope_deadzone) {
+		value.x = 0;
+	}
+	if (Math::abs(value.y) < motion->calibration.gyroscope_deadzone) {
+		value.y = 0;
+	}
+	if (Math::abs(value.z) < motion->calibration.gyroscope_deadzone) {
+		value.z = 0;
+	}
+	return value;
+}
+
+float Input::get_joy_sensor_rate(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return 0.0f;
+	}
+	return motion->sensor_data_rate;
+}
+
+void Input::start_joy_motion_calibration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	if (!joy_motion.has(p_device)) {
+		return;
+	}
+	MotionCalibrationInfo &calibration = joy_motion[p_device].calibration;
+
+	ERR_FAIL_COND_MSG(calibration.in_progress, "Calibration already in progress.");
+
+	clear_joy_motion_calibration(p_device);
+	calibration.in_progress = true;
+}
+
+#define JOY_CALIBRATE_SENSOR(m_sensor)                          \
+	vector_sum = Vector3();                                     \
+	for (Vector3 step : calibration.m_sensor##_steps) {         \
+		vector_sum += step;                                     \
+	}                                                           \
+	vector_sum /= calibration.m_sensor##_steps.size();          \
+                                                                \
+	deadzone = 0.0f;                                            \
+	for (Vector3 step : calibration.m_sensor##_steps) {         \
+		deadzone = MAX(deadzone, (step - vector_sum).length()); \
+	}                                                           \
+                                                                \
+	calibration.m_sensor##_offset = vector_sum;                 \
+	calibration.m_sensor##_deadzone = deadzone;                 \
+	calibration.m_sensor##_steps.clear();
+
+void Input::stop_joy_motion_calibration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	if (!joy_motion.has(p_device)) {
+		return;
+	}
+	MotionCalibrationInfo &calibration = joy_motion[p_device].calibration;
+
+	ERR_FAIL_COND_MSG(!calibration.in_progress, "Calibration hasn't been started.");
+
+	Vector3 vector_sum;
+	float deadzone = 0.0f;
+
+	JOY_CALIBRATE_SENSOR(accelerometer);
+	JOY_CALIBRATE_SENSOR(gyroscope);
+
+	calibration.in_progress = false;
+	calibration.calibrated = true;
+}
+
+void Input::clear_joy_motion_calibration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	if (!joy_motion.has(p_device)) {
+		return;
+	}
+	MotionCalibrationInfo &calibration = joy_motion[p_device].calibration;
+
+	// Calibration might be in progress and the developer or the user might want to reset it,
+	// so no need to stop the calibration.
+	bool in_progress = calibration.in_progress;
+	calibration = MotionCalibrationInfo();
+	calibration.in_progress = in_progress;
+}
+
+Dictionary Input::get_joy_motion_calibration(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	if (!joy_motion.has(p_device)) {
+		return Dictionary();
+	}
+	const MotionCalibrationInfo &calibration = joy_motion[p_device].calibration;
+
+	if (!calibration.calibrated) {
+		return Dictionary();
+	}
+
+	Dictionary result;
+	result["accelerometer_offset"] = calibration.accelerometer_offset;
+	result["accelerometer_deadzone"] = calibration.accelerometer_deadzone;
+	result["gyroscope_offset"] = calibration.gyroscope_offset;
+	result["gyroscope_deadzone"] = calibration.gyroscope_deadzone;
+	return result;
+}
+
+void Input::set_joy_motion_calibration(int p_device, const Dictionary &p_calibration_info) {
+	_THREAD_SAFE_METHOD_
+	if (!joy_motion.has(p_device)) {
+		return;
+	}
+	MotionCalibrationInfo &calibration = joy_motion[p_device].calibration;
+
+	ERR_FAIL_COND_MSG(calibration.in_progress, "Calibration is currently in progress.");
+
+	calibration.accelerometer_offset = p_calibration_info["accelerometer_offset"];
+	calibration.accelerometer_deadzone = p_calibration_info["accelerometer_deadzone"];
+	calibration.gyroscope_offset = p_calibration_info["gyroscope_offset"];
+	calibration.gyroscope_deadzone = p_calibration_info["gyroscope_deadzone"];
+	calibration.in_progress = false;
+	calibration.calibrated = true;
+}
+
+bool Input::is_joy_motion_calibrated(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	if (!joy_motion.has(p_device)) {
+		return false;
+	}
+	return joy_motion[p_device].calibration.calibrated;
+}
+
+bool Input::is_joy_motion_calibrating(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	if (!joy_motion.has(p_device)) {
+		return false;
+	}
+	return joy_motion[p_device].calibration.in_progress;
 }
 
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
@@ -1015,6 +1226,109 @@ bool Input::set_joy_light(int p_device, const Color &p_color) {
 bool Input::has_joy_light(int p_device) const {
 	const Joypad *joypad = joy_names.getptr(p_device);
 	return joypad && joypad->has_light;
+}
+
+bool Input::set_joy_accelerometer_enabled(int p_device, bool p_enable) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return false;
+	}
+
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return false;
+	}
+
+	bool success = joypad->features->set_joy_accelerometer_enabled(p_enable);
+	if (success) {
+		if (!p_enable) {
+			motion->accelerometer = Vector3();
+		}
+		motion->accelerometer_enabled = p_enable;
+	}
+	return success;
+}
+
+bool Input::set_joy_gyroscope_enabled(int p_device, bool p_enable) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return false;
+	}
+
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return false;
+	}
+
+	bool success = joypad->features->set_joy_gyroscope_enabled(p_enable);
+	if (success) {
+		if (!p_enable) {
+			motion->gyroscope = Vector3();
+		}
+		motion->gyroscope_enabled = p_enable;
+	}
+	return success;
+}
+
+void Input::set_joy_accelerometer(int p_device, const Vector3 &p_value) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	motion->accelerometer = p_value;
+
+	// Make sure to only save the values if the gravity part is already calculated well enough.
+	if (motion->calibration.in_progress && motion->gravity.length() > 9.7) {
+		motion->calibration.accelerometer_steps.push_back(p_value - motion->gravity);
+	}
+}
+
+void Input::set_joy_gravity(int p_device, const Vector3 &p_value) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	motion->gravity = p_value;
+}
+
+void Input::set_joy_gyroscope(int p_device, const Vector3 &p_value) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	motion->gyroscope = p_value;
+
+	if (motion->calibration.in_progress) {
+		motion->calibration.gyroscope_steps.push_back(p_value);
+	}
+}
+
+void Input::set_joy_sensor_rate(int p_device, float p_rate) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	motion->sensor_data_rate = p_rate;
+}
+
+bool Input::has_joy_accelerometer(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	return joy_motion.has(p_device) && joy_motion[p_device].has_accelerometer;
+}
+
+bool Input::has_joy_gyroscope(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	return joy_motion.has(p_device) && joy_motion[p_device].has_gyroscope;
 }
 
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
@@ -1516,6 +1830,12 @@ void Input::_update_joypad_features(int p_device) {
 	}
 	if (joypad->features->has_joy_light()) {
 		joypad->has_light = true;
+	}
+	if (joypad->features->has_joy_accelerometer()) {
+		joy_motion[p_device].has_accelerometer = true;
+	}
+	if (joypad->features->has_joy_gyroscope()) {
+		joy_motion[p_device].has_gyroscope = true;
 	}
 }
 
