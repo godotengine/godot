@@ -47,6 +47,13 @@ void TranslationServer::init_locale_info() {
 		idx++;
 	}
 
+	native_locale_map.clear();
+	idx = 0;
+	while (native_locale_list[idx][0] != nullptr) {
+		native_locale_map[native_locale_list[idx][0]] = native_locale_list[idx][1];
+		idx++;
+	}
+
 	// Init locale-script map.
 	locale_script_info.clear();
 	idx = 0;
@@ -374,7 +381,7 @@ int TranslationServer::compare_locales(const String &p_locale_a, const String &p
 	return score;
 }
 
-String TranslationServer::get_locale_name(const String &p_locale) const {
+String TranslationServer::_get_locale_name(const String &p_locale, bool p_native) const {
 	String lang_name, script_name, country_name;
 	Vector<String> locale_elements = standardize_locale(p_locale).split("_");
 	lang_name = locale_elements[0];
@@ -392,14 +399,43 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 		}
 	}
 
-	String name = get_language_name(lang_name);
-	if (!script_name.is_empty()) {
-		name = name + " (" + get_script_name(script_name) + ")";
+	if (p_native) {
+		String name;
+		if (!country_name.is_empty()) {
+			lang_name = lang_name + "_" + country_name;
+		}
+		const String *name_ptr = native_locale_map.getptr(lang_name);
+		if (name_ptr != nullptr) {
+			name = *name_ptr;
+		} else {
+			WARN_PRINT(vformat("Native locale name not found: %s.", lang_name));
+			name = get_locale_name(p_locale);
+		}
+
+		if (!script_name.is_empty()) {
+			name = name + " (" + get_script_name(script_name) + ")";
+		}
+
+		return name;
+	} else {
+		String name = get_language_name(lang_name);
+		if (!script_name.is_empty()) {
+			name = name + ", " + get_script_name(script_name);
+		}
+		if (!country_name.is_empty()) {
+			name = name + " (" + get_country_name(country_name) + ")";
+		}
+
+		return name;
 	}
-	if (!country_name.is_empty()) {
-		name = name + ", " + get_country_name(country_name);
-	}
-	return name;
+}
+
+String TranslationServer::get_locale_name(const String &p_locale) const {
+	return _get_locale_name(p_locale, false);
+}
+
+String TranslationServer::get_native_locale_name(const String &p_locale) const {
+	return _get_locale_name(p_locale, true);
 }
 
 String TranslationServer::get_plural_rules(const String &p_locale) const {
@@ -435,9 +471,9 @@ Vector<String> TranslationServer::get_all_languages() const {
 String TranslationServer::get_language_name(const String &p_language) const {
 	if (language_map.has(p_language)) {
 		return language_map[p_language];
-	} else {
-		return p_language;
 	}
+
+	return p_language;
 }
 
 Vector<String> TranslationServer::get_all_scripts() const {
@@ -683,6 +719,8 @@ void TranslationServer::get_argument_options(const StringName &p_function, int p
 		HashMap<String, String> *target_hash_map = nullptr;
 		if (pf == "get_language_name") {
 			target_hash_map = &language_map;
+		} else if (pf == "get_native_locale_name") {
+			target_hash_map = &native_locale_map;
 		} else if (pf == "get_script_name") {
 			target_hash_map = &script_map;
 		} else if (pf == "get_country_name") {
@@ -717,6 +755,7 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_country_name", "country"), &TranslationServer::get_country_name);
 
 	ClassDB::bind_method(D_METHOD("get_locale_name", "locale"), &TranslationServer::get_locale_name);
+	ClassDB::bind_method(D_METHOD("get_native_locale_name", "locale"), &TranslationServer::get_native_locale_name);
 	ClassDB::bind_method(D_METHOD("get_plural_rules", "locale"), &TranslationServer::get_plural_rules);
 
 	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(StringName()));
