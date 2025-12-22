@@ -1657,6 +1657,26 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the cubic root of <paramref name="s"/>.
+        /// </summary>
+        /// <param name="s">The input number.</param>
+        /// <returns>The cubic root of <paramref name="s"/>.</returns>
+        public static float Cbrt(float s)
+        {
+            return MathF.Cbrt(s);
+        }
+
+        /// <summary>
+        /// Returns the cubic root of <paramref name="s"/>.
+        /// </summary>
+        /// <param name="s">The input number.</param>
+        /// <returns>The cubic root of <paramref name="s"/>.</returns>
+        public static double Cbrt(double s)
+        {
+            return Math.Cbrt(s);
+        }
+
+        /// <summary>
         /// Returns the position of the first non-zero digit, after the
         /// decimal point. Note that the maximum return value is 10,
         /// which is a design decision in the implementation.
