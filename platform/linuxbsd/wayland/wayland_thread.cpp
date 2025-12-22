@@ -1348,6 +1348,13 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 	// Expect the window to be in a plain state. It will get properly set if the
 	// compositor reports otherwise below.
 	ws->mode = DisplayServer::WINDOW_MODE_WINDOWED;
+	ws->maximized = false;
+	ws->fullscreen = false;
+	ws->resizing = false;
+	ws->tiled_left = false;
+	ws->tiled_right = false;
+	ws->tiled_top = false;
+	ws->tiled_bottom = false;
 	ws->suspended = false;
 
 	uint32_t *state = nullptr;
@@ -1355,10 +1362,32 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 		switch (*state) {
 			case XDG_TOPLEVEL_STATE_MAXIMIZED: {
 				ws->mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+				ws->maximized = true;
 			} break;
 
 			case XDG_TOPLEVEL_STATE_FULLSCREEN: {
 				ws->mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+				ws->fullscreen = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_RESIZING: {
+				ws->resizing = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_LEFT: {
+				ws->tiled_left = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_RIGHT: {
+				ws->tiled_right = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_TOP: {
+				ws->tiled_top = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_BOTTOM: {
+				ws->tiled_bottom = true;
 			} break;
 
 			case XDG_TOPLEVEL_STATE_SUSPENDED: {
@@ -1537,15 +1566,42 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 	// Expect the window to be in a plain state. It will get properly set if the
 	// compositor reports otherwise below.
 	ws->mode = DisplayServer::WINDOW_MODE_WINDOWED;
+	ws->maximized = false;
+	ws->fullscreen = false;
+	ws->resizing = false;
+	ws->tiled_left = false;
+	ws->tiled_right = false;
+	ws->tiled_top = false;
+	ws->tiled_bottom = false;
 	ws->suspended = false;
 
 	if (libdecor_configuration_get_window_state(configuration, &window_state)) {
 		if (window_state & LIBDECOR_WINDOW_STATE_MAXIMIZED) {
 			ws->mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+			ws->maximized = true;
 		}
 
 		if (window_state & LIBDECOR_WINDOW_STATE_FULLSCREEN) {
 			ws->mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+			ws->fullscreen = true;
+		}
+
+		// libdecor doesn't have the resizing state for whatever reason.
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_LEFT) {
+			ws->tiled_left = true;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_RIGHT) {
+			ws->tiled_right = true;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_TOP) {
+			ws->tiled_top = true;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_BOTTOM) {
+			ws->tiled_bottom = true;
 		}
 
 		if (window_state & LIBDECOR_WINDOW_STATE_SUSPENDED) {
@@ -3976,6 +4032,58 @@ const WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer:
 	return windows.getptr(p_window_id);
 }
 
+Size2i WaylandThread::window_set_size(DisplayServer::WindowID p_window_id, const Size2i &p_size) {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), p_size);
+	WindowState &ws = windows[p_window_id];
+
+	double window_scale = window_state_get_scale_factor(&ws);
+
+	if (ws.maximized) {
+		// Can't do anything.
+		return scale_vector2i(ws.rect.size, window_scale);
+	}
+
+	Size2i new_size = scale_vector2i(p_size, 1 / window_scale);
+
+	if (ws.tiled_left && ws.tiled_right) {
+		// Tiled left and right, we shouldn't change from our current width or else
+		// it'll look wonky.
+		new_size.width = ws.rect.size.width;
+	}
+
+	if (ws.tiled_top && ws.tiled_bottom) {
+		// Tiled top and bottom. Same as above, but for the height.
+		new_size.height = ws.rect.size.height;
+	}
+
+	if (ws.resizing && ws.rect.size.width > 0 && ws.rect.size.height > 0) {
+		// The spec says that we shall not resize further than the config size. We can
+		// resize less than that though.
+		new_size = new_size.min(ws.rect.size);
+	}
+
+	// NOTE: Older versions of libdecor (~2022) do not have a way to get the max
+	// content size. Let's also check for its pointer so that we can preserve
+	// compatibility with older distros.
+	if (ws.libdecor_frame && libdecor_frame_get_max_content_size) {
+		int max_width = new_size.width;
+		int max_height = new_size.height;
+
+		// NOTE: Max content size is dynamic on libdecor, as plugins can override it
+		// to accommodate their decorations.
+		libdecor_frame_get_max_content_size(ws.libdecor_frame, &max_width, &max_height);
+
+		if (max_width > 0 && max_height > 0) {
+			new_size.width = MIN(new_size.width, max_width);
+			new_size.height = MIN(new_size.height, max_height);
+		}
+	}
+
+	window_state_update_size(&ws, new_size.width, new_size.height);
+
+	return scale_vector2i(new_size, window_scale);
+}
+
 void WaylandThread::beep() const {
 	if (registry.xdg_system_bell) {
 		xdg_system_bell_v1_ring(registry.xdg_system_bell, nullptr);
@@ -4156,8 +4264,12 @@ bool WaylandThread::window_can_set_mode(DisplayServer::WindowID p_window_id, Dis
 		};
 
 		case DisplayServer::WINDOW_MODE_MAXIMIZED: {
-			// NOTE: libdecor doesn't seem to have a maximize capability query?
-			// The fact that there's a fullscreen one makes me suspicious.
+			if (ws.libdecor_frame) {
+				// NOTE: libdecor doesn't seem to have a maximize capability query?
+				// The fact that there's a fullscreen one makes me suspicious. Anyways,
+				// let's act as if we always can.
+				return true;
+			}
 			return ws.can_maximize;
 		};
 
@@ -5421,7 +5533,9 @@ void WaylandThread::destroy() {
 			zwp_tablet_tool_v2_destroy(tool);
 		}
 
-		zwp_text_input_v3_destroy(ss->wp_text_input);
+		if (ss->wp_text_input) {
+			zwp_text_input_v3_destroy(ss->wp_text_input);
+		}
 
 		memdelete(ss);
 	}
