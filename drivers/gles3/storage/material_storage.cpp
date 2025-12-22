@@ -2611,11 +2611,13 @@ void CanvasShaderData::set_code(const String &p_code) {
 	uniforms.clear();
 
 	uses_screen_texture = false;
-	uses_screen_texture_mipmaps = false;
 	uses_sdf = false;
 	uses_time = false;
 	uses_custom0 = false;
 	uses_custom1 = false;
+
+	screen_texture_filter = ShaderLanguage::FILTER_DEFAULT;
+	screen_texture_repeat = ShaderLanguage::REPEAT_DEFAULT;
 
 	if (code.is_empty()) {
 		return; // Just invalid, but no error.
@@ -2653,7 +2655,8 @@ void CanvasShaderData::set_code(const String &p_code) {
 
 	blend_mode = BlendMode(blend_modei);
 	uses_screen_texture = gen_code.uses_screen_texture;
-	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
+	screen_texture_filter = gen_code.screen_texture_filter;
+	screen_texture_repeat = gen_code.screen_texture_repeat;
 
 #if 0
 	print_line("**compiling shader:");
@@ -2722,6 +2725,77 @@ void CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p
 	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, false);
 }
 
+static void bind_screen_texture_generic(ShaderLanguage::TextureFilter p_filter, ShaderLanguage::TextureRepeat p_repeat) {
+	GLES3::Config *config = GLES3::Config::get_singleton();
+
+	GLenum pmin = GL_NEAREST;
+	GLenum pmag = GL_NEAREST;
+	GLfloat anisotropy = 1.0f;
+	bool skip = false;
+
+	switch (p_filter) {
+		case ShaderLanguage::FILTER_NEAREST: {
+			pmin = GL_NEAREST;
+			pmag = GL_NEAREST;
+		} break;
+		case ShaderLanguage::FILTER_LINEAR: {
+			pmin = GL_LINEAR;
+			pmag = GL_LINEAR;
+		} break;
+		case ShaderLanguage::FILTER_NEAREST_MIPMAP_ANISOTROPIC: {
+			anisotropy = config->anisotropic_level;
+		};
+			[[fallthrough]];
+		case ShaderLanguage::FILTER_NEAREST_MIPMAP: {
+			pmag = GL_NEAREST;
+			if (config->use_nearest_mip_filter) {
+				pmin = GL_NEAREST_MIPMAP_NEAREST;
+			} else {
+				pmin = GL_NEAREST_MIPMAP_LINEAR;
+			}
+		} break;
+		case ShaderLanguage::FILTER_LINEAR_MIPMAP_ANISOTROPIC: {
+			anisotropy = config->anisotropic_level;
+		};
+			[[fallthrough]];
+		case ShaderLanguage::FILTER_LINEAR_MIPMAP: {
+			pmag = GL_LINEAR;
+			if (config->use_nearest_mip_filter) {
+				pmin = GL_LINEAR_MIPMAP_NEAREST;
+			} else {
+				pmin = GL_LINEAR_MIPMAP_LINEAR;
+			}
+		} break;
+		default: {
+			skip = true;
+		} break;
+	}
+
+	if (!skip) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, pmin);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, pmag);
+		if (config->support_anisotropic_filter) {
+			glTexParameterf(GL_TEXTURE_2D, _GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+		}
+	}
+
+	GLenum prep = GL_CLAMP_TO_EDGE;
+	switch (p_repeat) {
+		case ShaderLanguage::REPEAT_DISABLE: {
+			prep = GL_CLAMP_TO_EDGE;
+		} break;
+		case ShaderLanguage::REPEAT_ENABLE: {
+			prep = GL_REPEAT;
+		} break;
+		default: {
+			return;
+		} break;
+	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, prep);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, prep);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, prep);
+}
+
 static void bind_uniforms_generic(const Vector<RID> &p_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, int texture_offset = 0, const RS::CanvasItemTextureFilter *filter_mapping = filter_from_uniform, const RS::CanvasItemTextureRepeat *repeat_mapping = repeat_from_uniform) {
 	const RID *textures = p_textures.ptr();
 	const ShaderCompiler::GeneratedCode::Texture *texture_uniforms = p_texture_uniforms.ptr();
@@ -2754,6 +2828,13 @@ static void bind_uniforms_generic(const Vector<RID> &p_textures, const Vector<Sh
 }
 
 void CanvasMaterialData::bind_uniforms() {
+	if (shader_data->uses_screen_texture) {
+		GLES3::Config *config = GLES3::Config::get_singleton();
+
+		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
+		bind_screen_texture_generic(shader_data->screen_texture_filter, shader_data->screen_texture_repeat);
+	}
+
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, RasterizerCanvasGLES3::MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
@@ -2940,7 +3021,6 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_sss = false;
 	uses_transmittance = false;
 	uses_screen_texture = false;
-	uses_screen_texture_mipmaps = false;
 	uses_depth_texture = false;
 	uses_normal_texture = false;
 	uses_bent_normal_texture = false;
@@ -2959,6 +3039,11 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_custom3 = false;
 	uses_bones = false;
 	uses_weights = false;
+
+	screen_texture_filter = ShaderLanguage::FILTER_DEFAULT;
+	screen_texture_repeat = ShaderLanguage::REPEAT_DEFAULT;
+	depth_texture_filter = ShaderLanguage::FILTER_DEFAULT;
+	depth_texture_repeat = ShaderLanguage::REPEAT_DEFAULT;
 
 	if (code.is_empty()) {
 		return; // Just invalid, but no error.
@@ -3097,11 +3182,15 @@ void SceneShaderData::set_code(const String &p_code) {
 	vertex_input_mask |= uses_weights << RS::ARRAY_WEIGHTS;
 
 	uses_screen_texture = gen_code.uses_screen_texture;
-	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 	uses_depth_texture = gen_code.uses_depth_texture;
 	uses_normal_texture = gen_code.uses_normal_roughness_texture;
 	uses_vertex_time = gen_code.uses_vertex_time;
 	uses_fragment_time = gen_code.uses_fragment_time;
+
+	screen_texture_filter = gen_code.screen_texture_filter;
+	screen_texture_repeat = gen_code.screen_texture_repeat;
+	depth_texture_filter = gen_code.depth_texture_filter;
+	depth_texture_repeat = gen_code.depth_texture_repeat;
 
 	stencil_enabled = stencil_referencei != -1;
 	stencil_flags = stencil_readi | stencil_writei | stencil_write_depth_faili;
@@ -3220,6 +3309,19 @@ GLES3::MaterialData *GLES3::_create_scene_material_func(ShaderData *p_shader) {
 }
 
 void SceneMaterialData::bind_uniforms() {
+	if (shader_data->uses_screen_texture) {
+		GLES3::Config *config = GLES3::Config::get_singleton();
+
+		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
+		bind_screen_texture_generic(shader_data->screen_texture_filter, shader_data->screen_texture_repeat);
+	}
+	if (shader_data->uses_depth_texture) {
+		GLES3::Config *config = GLES3::Config::get_singleton();
+
+		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 7);
+		bind_screen_texture_generic(shader_data->depth_texture_filter, shader_data->depth_texture_repeat);
+	}
+
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
