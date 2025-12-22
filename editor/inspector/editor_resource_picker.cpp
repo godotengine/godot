@@ -515,14 +515,22 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				duplicate_resources_tree = memnew(Tree);
 				duplicate_resources_tree->set_accessibility_name(TTRC("Duplicate resources"));
 				duplicate_resources_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-				vb->add_child(duplicate_resources_tree);
 				duplicate_resources_tree->set_columns(2);
+				duplicate_resources_tree->set_column_titles_visible(true);
+				duplicate_resources_tree->set_column_title(0, TTR("Resource"));
+				duplicate_resources_tree->set_column_title(1, TTR("Property Name"));
 				duplicate_resources_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+				vb->add_child(duplicate_resources_tree);
 			}
 
 			duplicate_resources_tree->clear();
+			EditorProperty *editor_property = Object::cast_to<EditorProperty>(get_parent());
+			String root_property_name;
+			if (editor_property) {
+				root_property_name = editor_property->get_edited_property();
+			}
 			TreeItem *root = duplicate_resources_tree->create_item();
-			_gather_resources_to_duplicate(edited_resource, root);
+			_gather_resources_to_duplicate(edited_resource, root, root_property_name);
 
 			duplicate_resources_dialog->reset_size();
 			duplicate_resources_dialog->popup_centered(Vector2(500, 400) * EDSCALE);
@@ -1251,8 +1259,9 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 		p_item->set_text(0, vformat("%s (%s)", _get_resource_type(p_resource), res_name));
 	}
 
+	bool can_duplicate = EditorNode::get_singleton()->get_resource_count(p_resource) > 1 || !EditorNode::get_singleton()->is_resource_internal_to_scene(p_resource);
 	p_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(p_resource.ptr()));
-	p_item->set_editable(0, true);
+	p_item->set_editable(0, can_duplicate);
 
 	Array meta = { p_resource };
 	p_item->set_metadata(0, meta);
@@ -1262,16 +1271,20 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 	}
 
 	static Vector<String> unique_exceptions = { "Image", "Shader", "Mesh", "FontFile" };
-	if (!unique_exceptions.has(p_resource->get_class())) {
+	if (can_duplicate && !unique_exceptions.has(p_resource->get_class())) {
 		// Automatically select resource, unless it's something that shouldn't be duplicated.
 		p_item->set_checked(0, true);
+	}
+
+	if (!can_duplicate) {
+		p_item->set_tooltip_text(0, TTR("Resource is already unique."));
 	}
 
 	List<PropertyInfo> plist;
 	p_resource->get_property_list(&plist);
 
 	for (const PropertyInfo &E : plist) {
-		if (!(E.usage & PROPERTY_USAGE_STORAGE) || (E.type != Variant::OBJECT && E.type != Variant::ARRAY && E.type != Variant::DICTIONARY)) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE) || (E.type != Variant::OBJECT && E.type != Variant::ARRAY && E.type != Variant::DICTIONARY) || Object::cast_to<Script>(p_resource->get(E.name))) {
 			continue;
 		}
 
@@ -1326,9 +1339,10 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 		meta.push_back(E.name);
 
 		if ((E.usage & PROPERTY_USAGE_NEVER_DUPLICATE)) {
-			// The resource can't be duplicated, but make it appear on the list anyway.
+			// The resource can't be duplicated, but make it appear on the list if it's not a script file.
 			child->set_checked(0, false);
 			child->set_editable(0, false);
+			child->set_tooltip_text(0, TTR("This property is set to never be duplicated."));
 		}
 	}
 }
