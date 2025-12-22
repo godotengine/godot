@@ -6403,12 +6403,19 @@ void TileData::remove_collision_polygon(int p_layer_id, int p_polygon_index) {
 void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
-	ERR_FAIL_COND_MSG(p_polygon.size() != 0 && p_polygon.size() < 3, "Invalid polygon. Needs either 0 or at least 3 points.");
 
 	TileData::PhysicsLayerTileData::PolygonShapeTileData &polygon_shape_tile_data = physics.write[p_layer_id].polygons.write[p_polygon_index];
 
-	if (p_polygon.is_empty()) {
-		polygon_shape_tile_data.shapes.clear();
+	if (p_polygon.size() < 3) {
+		// Keep a single shape for this polygon.
+		// NOTE: This might cause errors somewhere down the line where a shape
+		// is expected to have 3 or more points; I'm not sure if that should be
+		// considered the expected behavior at that point?
+		polygon_shape_tile_data.shapes.resize(1);
+		Ref<ConvexPolygonShape2D> shape;
+		shape.instantiate();
+		shape->set_points(p_polygon);
+		polygon_shape_tile_data.shapes[0] = shape;
 	} else {
 		// Decompose into convex shapes.
 		Vector<Vector<Vector2>> decomp = Geometry2D::decompose_polygon_in_convex(p_polygon);
