@@ -57,6 +57,14 @@ private:
 	ColorRect *bg_rect = nullptr;
 	TextureRect *checkerboard = nullptr;
 	Label *metadata_label = nullptr;
+	HBoxContainer *right_upper_corner_container = nullptr;
+	Button *zoom_out_button = nullptr;
+	Button *zoom_reset_button = nullptr;
+	Button *zoom_in_button = nullptr;
+	Button *popout_button = nullptr;
+	Vector2 drag_start;
+	Vector2 pan;
+	bool panning = false;
 
 	static inline Ref<ShaderMaterial> texture_material;
 
@@ -64,19 +72,30 @@ private:
 
 	void _draw_outline();
 	void _update_metadata_label_text();
+	void _update_pan();
 
 protected:
+	virtual void _texture_display_gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	void _update_texture_display_ratio();
 
 	void on_selected_channels_changed();
+	void on_popout_pressed();
+	void on_popout_closed(AcceptDialog *p_dialog);
+
+	void on_zoom_out_pressed();
+	void on_zoom_reset_pressed();
+	void on_zoom_in_pressed();
+
+	float zoom_level = 1.0;
 
 public:
 	static void init_shaders();
 	static void finish_shaders();
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	TextureRect *get_texture_display();
-	TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata);
+	TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata, bool p_popout);
 };
 
 class EditorInspectorPluginTexture : public EditorInspectorPlugin {
