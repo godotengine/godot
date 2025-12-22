@@ -295,12 +295,11 @@ void CodeEdit::_draw_guidelines() {
 	const bool rtl = is_layout_rtl();
 
 	Ref<StyleBox> style = is_editable() ? theme_cache.style_normal : theme_cache.style_readonly;
-	const int xmargin_beg = style->get_margin(SIDE_LEFT) + get_total_gutter_width();
-	const int xmargin_end = size.width - style->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
-
+	const float xmargin_beg = style->get_margin(SIDE_LEFT) + get_total_gutter_width();
+	const float xmargin_end = size.width - style->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
 	for (int i = 0; i < line_length_guideline_columns.size(); i++) {
-		const int column_pos = theme_cache.font->get_string_size(String("0").repeat((int)line_length_guideline_columns[i]), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
-		const int xoffset = xmargin_beg + column_pos - get_h_scroll();
+		const float column_pos = theme_cache.font->get_string_size(String("0").repeat((int)line_length_guideline_columns[i]), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
+		const float xoffset = xmargin_beg + column_pos - get_h_scroll();
 		if (xoffset > xmargin_beg && xoffset < xmargin_end) {
 			Color guideline_color = (i == 0) ? theme_cache.line_length_guideline_color : theme_cache.line_length_guideline_color * Color(1, 1, 1, 0.5);
 			if (rtl) {
@@ -422,7 +421,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		set_code_hint("");
 
 		if (mb->is_pressed()) {
-			Vector2i mpos = mb->get_position();
+			Vector2 mpos = mb->get_position();
 			if (is_layout_rtl()) {
 				mpos.x = get_size().x - mpos.x;
 			}
@@ -447,7 +446,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		} else {
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (mb->is_command_or_control_pressed() && !symbol_lookup_word.is_empty()) {
-					Vector2i mpos = mb->get_position();
+					Vector2 mpos = mb->get_position();
 					if (is_layout_rtl()) {
 						mpos.x = get_size().x - mpos.x;
 					}
@@ -467,7 +466,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	Ref<InputEventMouseMotion> mm = p_gui_input;
 	if (mm.is_valid()) {
-		Vector2i mpos = mm->get_position();
+		Vector2 mpos = mm->get_position();
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
@@ -2516,8 +2515,7 @@ bool CodeEdit::is_symbol_lookup_on_click_enabled() const {
 }
 
 String CodeEdit::get_text_for_symbol_lookup() const {
-	Point2i mp = get_local_mouse_pos();
-	Point2i pos = get_line_column_at_pos(mp, false, false);
+	Point2i pos = get_line_column_at_pos(get_local_mouse_pos(), false, false);
 	int line = pos.y;
 	int col = pos.x;
 
