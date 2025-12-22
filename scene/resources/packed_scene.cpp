@@ -1195,7 +1195,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 				}
 
 				// The source object may already be bound, ignore it to avoid saving the source object.
-				if ((c.flags & CONNECT_APPEND_SOURCE_OBJECT) && (p_node == binds[0])) {
+				if ((c.flags & CONNECT_APPEND_SOURCE_OBJECT) && (p_node == static_cast<Object *>(binds[0]))) {
 					binds.remove_at(0);
 				}
 			} else {
