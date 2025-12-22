@@ -352,6 +352,20 @@
 				Converts from decibels to linear energy (audio).
 			</description>
 		</method>
+		<method name="deep_equals">
+			<return type="bool" />
+			<param index="0" name="a" type="Variant" />
+			<param index="1" name="b" type="Variant" />
+			<description>
+				Performs a deep recursive equality check between two Variant values, [param a] and [param b].
+
+				Returns [code]true[/code] if the Variants are considered equal based on their type and content, [code]false[/code] otherwise.
+				- Basic types (non-Array/Dictionary/Object) use standard [code]==[/code] comparison.
+				- Arrays are equal if sizes match and all elements are recursively equal.
+				- Dictionaries are equal if keys match and all corresponding values are recursively equal (order doesn't matter).
+				- Objects are equal if both are [code]nullptr[/code], or if both are valid Objects with matching property lists and recursively equal property values (order doesn't matter).
+			</description>
+		</method>
 		<method name="deg_to_rad">
 			<return type="float" />
 			<param index="0" name="deg" type="float" />
