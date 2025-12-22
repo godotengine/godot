@@ -353,6 +353,28 @@ public:
 		CONFINED,
 	};
 
+	struct TouchPoint {
+		Point2 position;
+		Point2 last_position;
+
+		Vector2 relative;
+		uint32_t index = 0;
+
+		uint32_t time = 0;
+		uint32_t last_time = 0;
+
+		bool pressed = false;
+		bool canceled = false;
+		bool double_tap = false;
+		bool is_activing = false;
+	};
+
+	struct TouchData {
+		AHashMap<int32_t, TouchPoint> touchs;
+		DisplayServer::WindowID touched_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServer::WindowID last_touched_id = DisplayServer::INVALID_WINDOW_ID;
+	};
+
 	struct PointerData {
 		Point2 position;
 		uint32_t motion_time = 0;
@@ -426,6 +448,10 @@ public:
 
 		struct wl_seat *wl_seat = nullptr;
 		uint32_t wl_seat_name = 0;
+
+		// Touch.
+		struct wl_touch *wl_touch = nullptr;
+		TouchData touch_data_buffer;
 
 		// Pointer.
 		struct wl_pointer *wl_pointer = nullptr;
@@ -671,6 +697,14 @@ private:
 
 	static void _cursor_frame_callback_on_done(void *data, struct wl_callback *wl_callback, uint32_t time_ms);
 
+	static void _wl_touch_on_down(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, struct wl_surface *surface, int32_t id, wl_fixed_t x, wl_fixed_t y);
+	static void _wl_touch_on_up(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, int32_t id);
+	static void _wl_touch_on_motion(void *data, struct wl_touch *wl_touch, uint32_t time, int32_t id, wl_fixed_t x_w, wl_fixed_t y_w);
+	static void _wl_touch_on_frame(void *data, struct wl_touch *wl_touch);
+	static void _wl_touch_on_cancel(void *data, struct wl_touch *wl_touch);
+	static void _wl_touch_on_shape(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t major, wl_fixed_t minor);
+	static void _wl_touch_on_orientation(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t orientation);
+
 	static void _wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
 	static void _wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface);
 	static void _wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
@@ -819,6 +853,16 @@ private:
 
 	static constexpr struct wl_callback_listener cursor_frame_callback_listener = {
 		.done = _cursor_frame_callback_on_done,
+	};
+
+	static constexpr struct wl_touch_listener wl_touch_listener = {
+		.down = _wl_touch_on_down,
+		.up = _wl_touch_on_up,
+		.motion = _wl_touch_on_motion,
+		.frame = _wl_touch_on_frame,
+		.cancel = _wl_touch_on_cancel,
+		.shape = _wl_touch_on_shape,
+		.orientation = _wl_touch_on_orientation,
 	};
 
 	static constexpr struct wl_pointer_listener wl_pointer_listener = {
