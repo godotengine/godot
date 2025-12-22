@@ -2757,6 +2757,18 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/reset_fov", event_mod)) {
 			reset_fov();
 		}
+
+		
+		if (ED_IS_SHORTCUT("spatial_editor/decrease_zoom", event_mod)) {
+			const real_t zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1);
+			scale_cursor_distance(zoom_factor);
+		}
+
+		if (ED_IS_SHORTCUT("spatial_editor/increase_zoom", event_mod)) {
+			const real_t zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1);
+			scale_cursor_distance(1.0 / zoom_factor);
+		}
+
 	}
 
 	// freelook uses most of the useful shortcuts, like save, so its ok
@@ -9914,6 +9926,10 @@ Node3DEditor::Node3DEditor() {
 	ED_SHORTCUT("spatial_editor/freelook_toggle", TTRC("Toggle Freelook"), KeyModifierMask::SHIFT + Key::F);
 	ED_SHORTCUT("spatial_editor/decrease_fov", TTRC("Decrease Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::EQUAL); // Usually direct access key for `KEY_PLUS`.
 	ED_SHORTCUT("spatial_editor/increase_fov", TTRC("Increase Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::MINUS);
+
+	ED_SHORTCUT("spatial_editor/decrease_zoom", TTRC("Decrease Zoom"), KeyModifierMask::ALT + Key::MINUS); // Usually direct access key for `KEY_PLUS`.
+	ED_SHORTCUT("spatial_editor/increase_zoom", TTRC("Increase Zoom"), KeyModifierMask::ALT + Key::EQUAL);
+
 	ED_SHORTCUT("spatial_editor/reset_fov", TTRC("Reset Field of View to Default"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_0);
 
 	PopupMenu *p;
