@@ -4550,7 +4550,10 @@ uint32_t TextureStorage::render_target_get_color_usage_bits(bool p_msaa) {
 	if (p_msaa) {
 		return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	} else {
-		// FIXME: Storage bit should only be requested when FSR is required.
-		return RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+			usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+		}
+		return usage_bits;
 	}
 }
