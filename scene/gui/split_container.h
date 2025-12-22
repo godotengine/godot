@@ -35,7 +35,7 @@
 class TextureRect;
 
 class SplitContainerDragger : public Control {
-	GDCLASS(SplitContainerDragger, Control);
+	GDSOFTCLASS(SplitContainerDragger, Control);
 	friend class SplitContainer;
 
 	Rect2 split_bar_rect;
