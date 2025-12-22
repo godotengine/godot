@@ -41,9 +41,7 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != '2') {
+	if (f->get_32() != FOURCC) {
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is corrupt (Bad header).");
 	}
 
@@ -507,10 +505,7 @@ Image::Format CompressedTexture3D::get_format() const {
 Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
-
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	ERR_FAIL_COND_V(header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != 'L', ERR_FILE_UNRECOGNIZED);
+	ERR_FAIL_COND_V_MSG(f->get_32() != FOURCC, ERR_FILE_CORRUPT, "Compressed texture 3D file is corrupt (Bad header).");
 
 	//stored as compressed textures (used for lossless and lossy compression)
 	uint32_t version = f->get_32();
@@ -693,12 +688,7 @@ Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Imag
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
-
-	uint8_t header[4];
-	f->get_buffer(header, 4);
-	if (header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != 'L') {
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture layered file is corrupt (Bad header).");
-	}
+	ERR_FAIL_COND_V_MSG(f->get_32() != FOURCC, ERR_FILE_CORRUPT, "Compressed texture layered file is corrupt (Bad header).");
 
 	uint32_t version = f->get_32();
 
