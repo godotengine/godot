@@ -4510,6 +4510,7 @@ void DisplayServerX11::_set_input_focus(Window p_window, int p_revert_to) {
 }
 
 void DisplayServerX11::_poll_events_thread(void *ud) {
+	Thread::set_name("X11 events");
 	DisplayServerX11 *display_server = static_cast<DisplayServerX11 *>(ud);
 	display_server->_poll_events();
 }
