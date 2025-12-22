@@ -78,6 +78,7 @@ class MeshInstance3DEditor : public Control {
 	};
 
 	MeshInstance3D *node = nullptr;
+	Object *selected_meshes = nullptr;
 
 	MenuButton *options = nullptr;
 
@@ -103,6 +104,7 @@ class MeshInstance3DEditor : public Control {
 	void _shape_dialog_about_to_popup();
 	void _shape_type_selected(int p_option);
 	void _create_collision_shape();
+	void _create_mesh_collision_shape(MeshInstance3D *p_instance, bool p_verbose);
 	Vector<Ref<Shape3D>> create_shape_from_mesh(Ref<Mesh> p_mesh, int p_option, bool p_verbose);
 	void _menu_option(int p_option);
 	void _create_outline_mesh();
@@ -120,6 +122,7 @@ protected:
 
 public:
 	void edit(MeshInstance3D *p_mesh);
+	void multi_edit(Object *p_meshes);
 	MeshInstance3DEditor();
 };
 
