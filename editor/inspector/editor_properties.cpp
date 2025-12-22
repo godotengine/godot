@@ -2587,7 +2587,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 	g->set_columns(p_include_origin ? 3 : 2);
 	add_child(g);
 
-	static const char *desc[6] = { "xx", "xy", "xo", "yx", "yy", "yo" };
+	static const char *desc[6] = { "xx", "yx", "ox", "xy", "yy", "oy" };
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -2671,7 +2671,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 	g->set_columns(3);
 	add_child(g);
 
-	static const char *desc[9] = { "xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz" };
+	static const char *desc[9] = { "xx", "yx", "zx", "xy", "yy", "zy", "xz", "yz", "zz" };
 	for (int i = 0; i < 9; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -2762,7 +2762,7 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 	g->set_columns(4);
 	add_child(g);
 
-	static const char *desc[12] = { "xx", "xy", "xz", "xo", "yx", "yy", "yz", "yo", "zx", "zy", "zz", "zo" };
+	static const char *desc[12] = { "xx", "yx", "zx", "ox", "xy", "yy", "zy", "oy", "xz", "yz", "zz", "oz" };
 	for (int i = 0; i < 12; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -2787,20 +2787,20 @@ void EditorPropertyProjection::_set_read_only(bool p_read_only) {
 void EditorPropertyProjection::_value_changed(double val, const String &p_name) {
 	Projection p;
 	p.columns[0][0] = spin[0]->get_value();
-	p.columns[0][1] = spin[1]->get_value();
-	p.columns[0][2] = spin[2]->get_value();
-	p.columns[0][3] = spin[3]->get_value();
-	p.columns[1][0] = spin[4]->get_value();
+	p.columns[1][0] = spin[1]->get_value();
+	p.columns[2][0] = spin[2]->get_value();
+	p.columns[3][0] = spin[3]->get_value();
+	p.columns[0][1] = spin[4]->get_value();
 	p.columns[1][1] = spin[5]->get_value();
-	p.columns[1][2] = spin[6]->get_value();
-	p.columns[1][3] = spin[7]->get_value();
-	p.columns[2][0] = spin[8]->get_value();
-	p.columns[2][1] = spin[9]->get_value();
+	p.columns[2][1] = spin[6]->get_value();
+	p.columns[3][1] = spin[7]->get_value();
+	p.columns[0][2] = spin[8]->get_value();
+	p.columns[1][2] = spin[9]->get_value();
 	p.columns[2][2] = spin[10]->get_value();
-	p.columns[2][3] = spin[11]->get_value();
-	p.columns[3][0] = spin[12]->get_value();
-	p.columns[3][1] = spin[13]->get_value();
-	p.columns[3][2] = spin[14]->get_value();
+	p.columns[3][2] = spin[11]->get_value();
+	p.columns[0][3] = spin[12]->get_value();
+	p.columns[1][3] = spin[13]->get_value();
+	p.columns[2][3] = spin[14]->get_value();
 	p.columns[3][3] = spin[15]->get_value();
 
 	emit_changed(get_edited_property(), p, p_name);
@@ -2812,20 +2812,20 @@ void EditorPropertyProjection::update_property() {
 
 void EditorPropertyProjection::update_using_transform(Projection p_transform) {
 	spin[0]->set_value_no_signal(p_transform.columns[0][0]);
-	spin[1]->set_value_no_signal(p_transform.columns[0][1]);
-	spin[2]->set_value_no_signal(p_transform.columns[0][2]);
-	spin[3]->set_value_no_signal(p_transform.columns[0][3]);
-	spin[4]->set_value_no_signal(p_transform.columns[1][0]);
+	spin[1]->set_value_no_signal(p_transform.columns[1][0]);
+	spin[2]->set_value_no_signal(p_transform.columns[2][0]);
+	spin[3]->set_value_no_signal(p_transform.columns[3][0]);
+	spin[4]->set_value_no_signal(p_transform.columns[0][1]);
 	spin[5]->set_value_no_signal(p_transform.columns[1][1]);
-	spin[6]->set_value_no_signal(p_transform.columns[1][2]);
-	spin[7]->set_value_no_signal(p_transform.columns[1][3]);
-	spin[8]->set_value_no_signal(p_transform.columns[2][0]);
-	spin[9]->set_value_no_signal(p_transform.columns[2][1]);
+	spin[6]->set_value_no_signal(p_transform.columns[2][1]);
+	spin[7]->set_value_no_signal(p_transform.columns[3][1]);
+	spin[8]->set_value_no_signal(p_transform.columns[0][2]);
+	spin[9]->set_value_no_signal(p_transform.columns[1][2]);
 	spin[10]->set_value_no_signal(p_transform.columns[2][2]);
-	spin[11]->set_value_no_signal(p_transform.columns[2][3]);
-	spin[12]->set_value_no_signal(p_transform.columns[3][0]);
-	spin[13]->set_value_no_signal(p_transform.columns[3][1]);
-	spin[14]->set_value_no_signal(p_transform.columns[3][2]);
+	spin[11]->set_value_no_signal(p_transform.columns[3][2]);
+	spin[12]->set_value_no_signal(p_transform.columns[0][3]);
+	spin[13]->set_value_no_signal(p_transform.columns[1][3]);
+	spin[14]->set_value_no_signal(p_transform.columns[2][3]);
 	spin[15]->set_value_no_signal(p_transform.columns[3][3]);
 }
 
@@ -2861,7 +2861,7 @@ EditorPropertyProjection::EditorPropertyProjection() {
 	g->set_columns(4);
 	add_child(g);
 
-	static const char *desc[16] = { "xx", "xy", "xz", "xw", "yx", "yy", "yz", "yw", "zx", "zy", "zz", "zw", "wx", "wy", "wz", "ww" };
+	static const char *desc[16] = { "xx", "yx", "zx", "wx", "xy", "yy", "zy", "wy", "xz", "yz", "zz", "wz", "xw", "yw", "zw", "ww" };
 	for (int i = 0; i < 16; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
