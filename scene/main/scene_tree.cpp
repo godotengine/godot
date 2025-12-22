@@ -204,6 +204,7 @@ void SceneTree::flush_transform_notifications() {
 }
 
 bool SceneTree::is_accessibility_enabled() const {
+#ifdef ACCESSKIT_ENABLED
 	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ACCESSIBILITY_SCREEN_READER)) {
 		return false;
 	}
@@ -214,9 +215,13 @@ bool SceneTree::is_accessibility_enabled() const {
 		return false;
 	}
 	return true;
+#else
+	return false;
+#endif // ACCESSKIT_ENABLED
 }
 
 bool SceneTree::is_accessibility_supported() const {
+#ifdef ACCESSKIT_ENABLED
 	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ACCESSIBILITY_SCREEN_READER)) {
 		return false;
 	}
@@ -226,6 +231,9 @@ bool SceneTree::is_accessibility_supported() const {
 		return false;
 	}
 	return true;
+#else
+	return false;
+#endif // ACCESSKIT_ENABLED
 }
 
 void SceneTree::_accessibility_force_update() {
@@ -233,6 +241,7 @@ void SceneTree::_accessibility_force_update() {
 }
 
 void SceneTree::_accessibility_notify_change(const Node *p_node, bool p_remove) {
+#ifdef ACCESSKIT_ENABLED
 	if (p_node) {
 		if (p_remove) {
 			accessibility_change_queue.erase(p_node->get_instance_id());
@@ -240,9 +249,11 @@ void SceneTree::_accessibility_notify_change(const Node *p_node, bool p_remove) 
 			accessibility_change_queue.insert(p_node->get_instance_id());
 		}
 	}
+#endif // ACCESSKIT_ENABLED
 }
 
 void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_id) {
+#ifdef ACCESSKIT_ENABLED
 	// Process NOTIFICATION_ACCESSIBILITY_UPDATE.
 	Vector<ObjectID> processed;
 	for (const ObjectID &id : accessibility_change_queue) {
@@ -292,9 +303,11 @@ void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_
 	for (const ObjectID &id : processed) {
 		accessibility_change_queue.erase(id);
 	}
+#endif // ACCESSKIT_ENABLED
 }
 
 void SceneTree::_flush_accessibility_changes() {
+#ifdef ACCESSKIT_ENABLED
 	if (is_accessibility_enabled()) {
 		uint64_t time = OS::get_singleton()->get_ticks_msec();
 		if (!accessibility_force_update) {
@@ -308,6 +321,7 @@ void SceneTree::_flush_accessibility_changes() {
 		// Push update to the accessibility driver.
 		DisplayServer::get_singleton()->accessibility_update_if_active(callable_mp(this, &SceneTree::_process_accessibility_changes));
 	}
+#endif // ACCESSKIT_ENABLED
 }
 
 void SceneTree::_flush_ugc() {
