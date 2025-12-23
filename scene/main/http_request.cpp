@@ -229,7 +229,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		response_headers.push_back(E);
 	}
 
-	if (response_code == 301 || response_code == 302) {
+	if (response_code >= 301 && response_code <= 399) {
 		// Handle redirect.
 
 		if (max_redirects >= 0 && redirections >= max_redirects) {
