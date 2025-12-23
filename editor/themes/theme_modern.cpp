@@ -356,7 +356,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_config.window_style->set_corner_radius_all(0);
 
 			p_config.window_complex_style = p_config.window_style->duplicate();
-			p_config.window_complex_style->set_bg_color(p_config.surface_popup_color);
+			p_config.window_complex_style->set_bg_color(p_config.surface_lowest_color);
 
 			p_config.dialog_style = p_config.base_style->duplicate();
 			p_config.dialog_style->set_content_margin_all(p_config.popup_margin);
