@@ -387,6 +387,22 @@ bool OptionButton::get_allow_reselect() const {
 	return allow_reselect;
 }
 
+void OptionButton::set_search_bar_enabled(bool p_enable) {
+	popup->set_search_bar_enabled(p_enable);
+}
+
+bool OptionButton::is_search_bar_enabled() const {
+	return popup->is_search_bar_enabled();
+}
+
+void OptionButton::set_search_bar_enabled_on_item_count(int p_count) {
+	popup->set_search_bar_enabled_on_item_count(p_count);
+}
+
+int OptionButton::get_search_bar_enabled_on_item_count() const {
+	return popup->get_search_bar_enabled_on_item_count();
+}
+
 void OptionButton::add_separator(const String &p_text) {
 	popup->add_separator(p_text);
 }
@@ -566,6 +582,8 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("set_item_auto_translate_mode", "idx", "mode"), &OptionButton::set_item_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("set_search_bar_enabled", "enabled"), &OptionButton::set_search_bar_enabled);
+	ClassDB::bind_method(D_METHOD("set_search_bar_enabled_on_item_count", "counts"), &OptionButton::set_search_bar_enabled_on_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
@@ -575,6 +593,8 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_auto_translate_mode", "idx"), &OptionButton::get_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &OptionButton::is_item_separator);
+	ClassDB::bind_method(D_METHOD("is_search_bar_enabled"), &OptionButton::is_search_bar_enabled);
+	ClassDB::bind_method(D_METHOD("get_search_bar_enabled_on_item_count"), &OptionButton::get_search_bar_enabled_on_item_count);
 	ClassDB::bind_method(D_METHOD("add_separator", "text"), &OptionButton::add_separator, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
 	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
