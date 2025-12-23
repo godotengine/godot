@@ -426,7 +426,7 @@ void ItemList::select(int p_idx, bool p_single) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (p_single || select_mode == SELECT_SINGLE) {
-		if (!items[p_idx].selectable || items[p_idx].disabled) {
+		if (!items[p_idx].selectable) {
 			return;
 		}
 
@@ -440,7 +440,7 @@ void ItemList::select(int p_idx, bool p_single) {
 		current = p_idx;
 		ensure_selected_visible = false;
 	} else {
-		if (items[p_idx].selectable && !items[p_idx].disabled) {
+		if (items[p_idx].selectable) {
 			items.write[p_idx].selected = true;
 			items.write[p_idx].accessibility_item_dirty = true;
 		}
@@ -734,7 +734,7 @@ void ItemList::set_fixed_tag_icon_size(const Size2i &p_size) {
 void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-#define CAN_SELECT(i) (items[i].selectable && !items[i].disabled)
+#define CAN_SELECT(i) (items[i].selectable)
 #define IS_SAME_ROW(i, row) (i / current_columns == row)
 
 	double prev_scroll_v = scroll_bar_v->get_value();
@@ -779,11 +779,6 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (closest != -1 && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT))) {
 			int i = closest;
-
-			if (items[i].disabled) {
-				// Don't emit any signal or do any action with clicked item when disabled.
-				return;
-			}
 
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
 				deselect(i);
@@ -845,16 +840,14 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
-				if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+				if (!items[i].disabled && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
 					emit_signal(SNAME("item_activated"), i);
 				}
 			}
 
 			return;
 		} else if (closest != -1) {
-			if (!items[closest].disabled) {
-				emit_signal(SNAME("item_clicked"), closest, get_local_mouse_position(), mb->get_button_index());
-			}
+			emit_signal(SNAME("item_clicked"), closest, get_local_mouse_position(), mb->get_button_index());
 		} else {
 			// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
 			emit_signal(SNAME("empty_clicked"), get_local_mouse_position(), mb->get_button_index());
@@ -910,11 +903,6 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		if (p_event->is_action("ui_menu", true)) {
 			if (current != -1 && allow_rmb_select) {
 				int i = current;
-
-				if (items[i].disabled) {
-					// Don't emit any signal or do any action with clicked item when disabled.
-					return;
-				}
 
 				emit_signal(SNAME("item_clicked"), i, get_item_rect(i).position, MouseButton::RIGHT);
 
