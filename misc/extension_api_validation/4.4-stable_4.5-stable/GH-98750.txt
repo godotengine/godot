@@ -136,3 +136,10 @@ Validate extension JSON: Error: Field 'classes/InputMap/methods/add_action/argum
 Validate extension JSON: Error: Field 'global_enums/KeyModifierMask/values/KEY_MODIFIER_MASK': value changed value in new API, from 532676600.0 to 2130706432.
 
 Precision of string-serialized Variant constants increased.
+
+GH-109004
+---------
+Validate extension JSON: API was removed: classes/ImageTexture/methods/get_format
+Validate extension JSON: API was removed: classes/PortableCompressedTexture2D/methods/get_format
+
+The above are now members of the base class Texture2D.

@@ -1793,14 +1793,22 @@ void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_textur
 	rd_view.swizzle_a = imfmt.swizzle_a;
 
 	texture.rd_type = tf.texture_type;
-	texture.rd_view = rd_view;
 	texture.rd_format = imfmt.rd_format;
+	texture.rd_format_srgb = imfmt.rd_format_srgb;
+	texture.rd_view = rd_view;
+
+	if (imfmt.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		// Allow creating a shared sRGB texture even if users didn't explicitly add them.
+		RD::get_singleton()->_texture_ensure_shareable_format(p_rd_texture, texture.rd_format);
+		RD::get_singleton()->_texture_ensure_shareable_format(p_rd_texture, texture.rd_format_srgb);
+	}
+
 	// We create a shared texture here even if our view matches, so we don't obtain ownership.
 	texture.rd_texture = RD::get_singleton()->texture_create_shared(rd_view, p_rd_texture);
 	if (imfmt.rd_format_srgb != RD::DATA_FORMAT_MAX) {
-		rd_view.format_override = imfmt.rd_format_srgb == tf.format ? RD::DATA_FORMAT_MAX : imfmt.rd_format;
+		// The texture supports sRGB override, create it for 3D usage.
+		rd_view.format_override = imfmt.rd_format_srgb == tf.format ? RD::DATA_FORMAT_MAX : imfmt.rd_format_srgb;
 		texture.rd_format_srgb = imfmt.rd_format_srgb;
-		// We create a shared texture here even if our view matches, so we don't obtain ownership.
 		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, p_rd_texture);
 	}
 

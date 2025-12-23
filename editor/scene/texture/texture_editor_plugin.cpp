@@ -36,19 +36,24 @@
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/label.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/animated_texture.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/dpi_texture.h"
+#include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/portable_compressed_texture.h"
+#include "scene/resources/style_box_flat.h"
+#include "scene/resources/texture_rd.h"
 
 constexpr const char *texture_2d_shader_code = R"(
 shader_type canvas_item;
 render_mode blend_mix;
 
 instance uniform vec4 u_channel_factors = vec4(1.0);
+instance uniform float lod = 0.0;
 
 vec4 filter_preview_colors(vec4 input_color, vec4 factors) {
 	// Filter RGB.
@@ -69,7 +74,7 @@ vec4 filter_preview_colors(vec4 input_color, vec4 factors) {
 }
 
 void fragment() {
-	COLOR = filter_preview_colors(texture(TEXTURE, UV), u_channel_factors);
+	COLOR = filter_preview_colors(textureLod(TEXTURE, UV, lod), u_channel_factors);
 }
 )";
 
@@ -142,6 +147,11 @@ static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
 		return portable_compressed_texture->get_format();
 	}
 
+	const Ref<Texture2DRD> rd_texture = p_texture;
+	if (rd_texture.is_valid() && RD::get_singleton()->texture_is_valid(rd_texture->get_texture_rd_rid())) {
+		return rd_texture->get_image()->get_format();
+	}
+
 	// AtlasTexture?
 
 	// Unknown
@@ -154,6 +164,8 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 	// We are having to download the image only to get its mipmaps count. It would be nice if we didn't have to.
 	Ref<Image> image;
 	Ref<AtlasTexture> at = p_texture;
+	Ref<Texture2DRD> rd_texture = p_texture;
+
 	if (at.is_valid()) {
 		// The AtlasTexture tries to obtain the region from the atlas as an image,
 		// which will fail if it is a compressed format.
@@ -161,6 +173,11 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 		if (atlas.is_valid()) {
 			image = atlas->get_image();
 		}
+	} else if (rd_texture.is_valid()) {
+		if (RD::get_singleton()->texture_is_valid(rd_texture->get_texture_rd_rid())) {
+			return -1;
+		}
+		image = p_texture->get_image();
 	} else {
 		image = p_texture->get_image();
 	}
@@ -175,12 +192,21 @@ void TexturePreview::_update_metadata_label_text() {
 	const Ref<Texture2D> texture = texture_display->get_texture();
 	ERR_FAIL_COND(texture.is_null());
 
-	const Image::Format format = get_texture_2d_format(texture.ptr());
+	Image::Format format;
+	int mipmaps;
+
+	Ref<Image> image = texture->get_image();
+	if (image.is_valid()) {
+		format = image->get_format();
+		mipmaps = image->get_mipmap_count();
+	} else {
+		format = get_texture_2d_format(texture.ptr());
+		mipmaps = get_texture_mipmaps_count(texture);
+	}
 
 	const String format_name = format != Image::FORMAT_MAX ? Image::get_format_name(format) : texture->get_class();
 
 	const Vector2i resolution = texture->get_size();
-	const int mipmaps = get_texture_mipmaps_count(texture);
 
 	if (format != Image::FORMAT_MAX) {
 		// Avoid signed integer overflow that could occur with huge texture sizes by casting everything to uint64_t.
@@ -227,6 +253,10 @@ void TexturePreview::_update_metadata_label_text() {
 
 void TexturePreview::on_selected_channels_changed() {
 	texture_display->set_instance_shader_parameter("u_channel_factors", channel_selector->get_selected_channel_factors());
+}
+
+void TexturePreview::on_selected_mipmap_changed(double p_value) {
+	texture_display->set_instance_shader_parameter("lod", mipmap_spinbox->get_value());
 }
 
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
@@ -276,6 +306,22 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	const Image::Format format = p_texture.is_valid() ? get_texture_2d_format(p_texture.ptr()) : Image::FORMAT_MAX;
 	const uint32_t components_mask = format != Image::FORMAT_MAX ? Image::get_format_component_mask(format) : 0xf;
 
+	// Setup Mipmap selector
+	const int mipmaps = get_texture_mipmaps_count(p_texture);
+	if (mipmaps > 0) {
+		mipmap_spinbox = memnew(SpinBox);
+		mipmap_spinbox->set_tooltip_text(TTRC("Mipmap level index selector."));
+		mipmap_spinbox->set_step(1);
+		mipmap_spinbox->set_max(mipmaps);
+		mipmap_spinbox->set_modulate(Color(1, 1, 1, 0.8));
+		mipmap_spinbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+		mipmap_spinbox->set_h_size_flags(Control::SIZE_SHRINK_END);
+		mipmap_spinbox->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+		mipmap_spinbox->set_anchors_preset(Control::PRESET_TOP_RIGHT);
+		mipmap_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &TexturePreview::on_selected_mipmap_changed));
+		add_child(mipmap_spinbox);
+	}
+
 	// Add color channel selector at the bottom left if more than 1 channel is available.
 	if (p_show_metadata && !is_power_of_2(components_mask)) {
 		channel_selector = memnew(ColorChannelSelector);
@@ -311,7 +357,27 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<DPITexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
+	if (Object::cast_to<GradientTexture1D>(p_object) || Object::cast_to<GradientTexture2D>(p_object)) {
+		return false;
+	}
+
+	if (Object::cast_to<Image>(p_object) != nullptr ||
+			Object::cast_to<ImageTexture>(p_object) != nullptr ||
+			Object::cast_to<AtlasTexture>(p_object) != nullptr ||
+			Object::cast_to<CompressedTexture2D>(p_object) != nullptr ||
+			Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr ||
+			Object::cast_to<AnimatedTexture>(p_object) != nullptr ||
+			Object::cast_to<DPITexture>(p_object) != nullptr ||
+			Object::cast_to<Texture2DRD>(p_object) != nullptr) {
+		return true;
+	}
+
+	Ref<Texture2D> texture_2d(Object::cast_to<Texture2D>(p_object));
+	if (texture_2d.is_valid()) {
+		this_image = texture_2d->get_image();
+		return this_image.is_valid();
+	}
+	return false;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
