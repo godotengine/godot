@@ -6675,13 +6675,13 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
 	}
 
-	VideoCodingSessionInfo *video_session_info = VersatileResource::allocate<VideoCodingSessionInfo>(resources_allocator);
+	VideoSessionInfo *video_session_info = VersatileResource::allocate<VideoSessionInfo>(resources_allocator);
 	video_session_info->vk_session = video_session;
 	video_session_info->vk_session_create_info = session_info;
 
 	video_session_info->video_operation = p_profile.operation;
 
-	video_session_info->current_dpb_index = 0;
+	video_session_info->target_dpb_index = 0;
 	video_session_info->dpb_views = dpb_textures;
 
 	video_session_info->std_reference_infos.reserve(session_info.maxDpbSlots);
@@ -6692,13 +6692,8 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	return RDD::VideoSessionID(video_session_info);
 }
 
-void RenderingDeviceDriverVulkan::video_session_add_query_pool(VideoSessionID p_video_session, RDD::QueryPoolID p_query_pool) {
-	VideoCodingSessionInfo *video_session = (VideoCodingSessionInfo *)p_video_session.id;
-	video_session->vk_query_pool = (VkQueryPool)p_query_pool.id;
-}
-
 void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) {
-	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+	VideoSessionInfo *video_session_info = (VideoSessionInfo *)p_video_session.id;
 
 	TightLocalVector<StdVideoH264SequenceParameterSet> sps_sets;
 	for (VideoCodingH264SequenceParameterSet rd_sps : p_sps_sets) {
@@ -6951,7 +6946,7 @@ void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSession
 }
 
 void RenderingDeviceDriverVulkan::video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) {
-	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+	VideoSessionInfo *video_session_info = (VideoSessionInfo *)p_video_session.id;
 
 	StdVideoAV1SequenceHeader av1_sequence_header = {};
 	av1_sequence_header.flags.still_picture = p_sequence_header.still_picture_flag;
@@ -7031,7 +7026,7 @@ void RenderingDeviceDriverVulkan::video_session_add_av1_parameters(VideoSessionI
 }
 
 void RenderingDeviceDriverVulkan::video_session_free(VideoSessionID p_video_session) {
-	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+	VideoSessionInfo *video_session_info = (VideoSessionInfo *)p_video_session.id;
 
 	if (video_session_info->vk_session_parameters != VK_NULL_HANDLE) {
 		vkDestroyVideoSessionParametersKHR(vk_device, video_session_info->vk_session_parameters, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR));
@@ -7044,297 +7039,275 @@ void RenderingDeviceDriverVulkan::video_session_free(VideoSessionID p_video_sess
 	VersatileResource::free(resources_allocator, video_session_info);
 }
 
-void RenderingDeviceDriverVulkan::command_video_session_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, bool p_reset, Vector<VideoDecodeH264SliceHeader> p_frame_slices) {
+// TODO: [1] manage DPB views from rendering device
+// TODO: [2] allow for decoding several frame slices in one vkCmdDecodeVideo
+// TODO: [3] allow for decoding several frames within one video session
+void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header) {
 	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
-	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+	VideoSessionInfo *video_session_info = (VideoSessionInfo *)p_video_session.id;
+	BufferInfo *src_buffer_info = (BufferInfo *)p_src_buffer.id;
+	TextureInfo *dst_texture_info = (TextureInfo *)p_dst_texture.id;
 
-	VkExtent2D extent = video_session_info->vk_session_create_info.maxCodedExtent;
+	// TODO: is offset ever not (0, 0)? (Maybe interlaced video?)
+	// TODO: is extend ever not maxExtent? (Maybe interlaced video?)
+	VkOffset2D frame_offset = { 0, 0 };
+	VkExtent2D frame_extent = video_session_info->vk_session_create_info.maxCodedExtent;
 
-	if (p_reset) {
-		video_session_info->current_dpb_index = 0;
-		video_session_info->active_reference_pictures = 0;
-		for (size_t i = 0; i < video_session_info->std_reference_infos.size(); i++) {
+	bool is_key_frame = false;
+	bool is_reference_frame = false;
+	void *video_header = nullptr;
+	void *video_slot_info = nullptr;
+	void *std_reference_info = nullptr;
+
+	// TODO: clean up
+	uint32_t offsets = 0;
+
+	VkVideoDecodeH264PictureInfoKHR h264_video_header = {};
+	VkVideoDecodeH264DpbSlotInfoKHR h264_slot_info = {};
+	StdVideoDecodeH264PictureInfo h264_picture_info = {};
+	if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_H264) {
+		VideoDecodeH264SliceHeader *rd_slice_header = (VideoDecodeH264SliceHeader *)p_video_header;
+
+		is_key_frame = rd_slice_header->is_intra;
+		is_reference_frame = rd_slice_header->is_reference;
+
+		h264_picture_info.flags.field_pic_flag = rd_slice_header->field_pic_flag;
+		h264_picture_info.flags.is_intra = rd_slice_header->is_intra;
+		h264_picture_info.flags.IdrPicFlag = rd_slice_header->is_intra;
+		h264_picture_info.flags.bottom_field_flag = rd_slice_header->bottom_field_flag;
+		h264_picture_info.flags.is_reference = rd_slice_header->is_reference;
+		h264_picture_info.flags.complementary_field_pair = rd_slice_header->complementary_field_pair;
+
+		h264_picture_info.seq_parameter_set_id = rd_slice_header->seq_parameter_set_id;
+		h264_picture_info.pic_parameter_set_id = rd_slice_header->pic_parameter_set_id;
+
+		h264_picture_info.frame_num = rd_slice_header->frame_num;
+		h264_picture_info.idr_pic_id = rd_slice_header->idr_pic_id;
+
+		h264_picture_info.PicOrderCnt[0] = rd_slice_header->pic_order_cnt_top_field;
+		h264_picture_info.PicOrderCnt[1] = rd_slice_header->pic_order_cnt_bottom_field;
+
+		StdVideoDecodeH264ReferenceInfo *h264_reference_info;
+		if (is_reference_frame) {
+			h264_reference_info = (StdVideoDecodeH264ReferenceInfo *)malloc(sizeof(StdVideoDecodeH264ReferenceInfo));
+		} else {
+			h264_reference_info = ALLOCA_SINGLE(StdVideoDecodeH264ReferenceInfo);
+		}
+
+		// TODO: support interlaced video
+		h264_reference_info->flags.bottom_field_flag = 0;
+		h264_reference_info->flags.top_field_flag = 0;
+		h264_reference_info->flags.is_non_existing = 0;
+		h264_reference_info->flags.used_for_long_term_reference = 0;
+		h264_reference_info->FrameNum = rd_slice_header->frame_num;
+		h264_reference_info->PicOrderCnt[0] = rd_slice_header->pic_order_cnt_top_field;
+		h264_reference_info->PicOrderCnt[1] = rd_slice_header->pic_order_cnt_bottom_field;
+
+		h264_video_header.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR;
+		h264_video_header.pNext = nullptr;
+		h264_video_header.pStdPictureInfo = &h264_picture_info;
+		// TODO: [3] could interlaced video decode several slices at once?
+		// (non-reference frames would all decode to the same target frame)
+		h264_video_header.sliceCount = 1;
+		h264_video_header.pSliceOffsets = &offsets;
+
+		h264_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
+		h264_slot_info.pNext = nullptr;
+		h264_slot_info.pStdReferenceInfo = h264_reference_info;
+
+		video_header = &h264_video_header;
+		video_slot_info = &h264_slot_info;
+		std_reference_info = h264_reference_info;
+	}
+
+	VkVideoDecodeAV1PictureInfoKHR av1_video_header = {};
+	VkVideoDecodeAV1DpbSlotInfoKHR av1_slot_info = {};
+	StdVideoDecodeAV1PictureInfo av1_picture_info = {};
+	if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
+		VideoDecodeAV1Frame *rd_frame_header = (VideoDecodeAV1Frame *)p_video_header;
+
+		// TODO
+		is_key_frame = rd_frame_header->frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY;
+		is_reference_frame = true;
+
+		// TODO fill in
+		av1_picture_info.delta_lf_res = 8;
+
+		StdVideoDecodeAV1ReferenceInfo *av1_reference_info;
+		if (is_reference_frame) {
+			av1_reference_info = (StdVideoDecodeAV1ReferenceInfo *)malloc(sizeof(StdVideoDecodeAV1ReferenceInfo));
+		} else {
+			av1_reference_info = ALLOCA_SINGLE(StdVideoDecodeAV1ReferenceInfo);
+		}
+
+		// TODO fill in
+		av1_reference_info->flags.disable_frame_end_update_cdf = true;
+
+		av1_video_header.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PICTURE_INFO_KHR;
+		av1_video_header.pNext = nullptr;
+		av1_video_header.pStdPictureInfo = &av1_picture_info;
+		// TODO: what?
+		av1_video_header.referenceNameSlotIndices[0] = 1;
+		av1_video_header.frameHeaderOffset = offsets;
+		av1_video_header.tileCount = 1;
+		av1_video_header.pTileOffsets = nullptr;
+		av1_video_header.pTileSizes = nullptr;
+
+		av1_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR;
+		av1_slot_info.pNext = nullptr;
+		av1_slot_info.pStdReferenceInfo = av1_reference_info;
+
+		video_header = &av1_video_header;
+		video_slot_info = &av1_slot_info;
+		std_reference_info = av1_reference_info;
+	}
+
+	// If the current frame is an IDR/key frame, previous references are cleared.
+	if (is_key_frame) {
+		video_session_info->target_dpb_index = 0;
+
+		for (uint32_t i = 0; i < video_session_info->vk_session_create_info.maxDpbSlots; i++) {
 			if (video_session_info->std_reference_infos[i] != nullptr) {
-				void *std_reference = video_session_info->std_reference_infos[i];
-				free(std_reference);
+				// TODO: is there a more Godot-style API than malloc/free?
+				free(video_session_info->std_reference_infos[i]);
 			}
 
 			video_session_info->std_reference_infos.set(i, nullptr);
 		}
 	}
 
-	size_t target_dpb_slot = video_session_info->current_dpb_index;
-	TightLocalVector<VkVideoReferenceSlotInfoKHR> reference_slot_infos = {};
-	TightLocalVector<VkVideoPictureResourceInfoKHR> reference_slot_pictures = {};
-	TightLocalVector<VkVideoDecodeH264DpbSlotInfoKHR> h264_dpb_slots = {};
+	VkVideoPictureResourceInfoKHR setup_picture_resource_info = {};
+	setup_picture_resource_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+	setup_picture_resource_info.pNext = nullptr;
+	setup_picture_resource_info.codedOffset = frame_offset;
+	setup_picture_resource_info.codedExtent = frame_extent;
+	setup_picture_resource_info.baseArrayLayer = 0; // TODO: is this ever useful?
+	setup_picture_resource_info.imageViewBinding = video_session_info->dpb_views[video_session_info->target_dpb_index]->vk_view;
 
-	reference_slot_infos.resize(video_session_info->active_reference_pictures + p_frame_slices.size());
-	reference_slot_pictures.resize(video_session_info->active_reference_pictures + p_frame_slices.size());
-	h264_dpb_slots.resize(video_session_info->active_reference_pictures + p_frame_slices.size());
+	VkVideoReferenceSlotInfoKHR setup_reference_slot = {};
+	setup_reference_slot.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
+	setup_reference_slot.pNext = video_slot_info;
+	setup_reference_slot.slotIndex = -1;
+	setup_reference_slot.pPictureResource = &setup_picture_resource_info;
 
-	// Rebuild previous references
-	for (size_t i = 0; i < video_session_info->active_reference_pictures; i++) {
-		VkVideoReferenceSlotInfoKHR &reference_slot_info = reference_slot_infos[i];
-		VkVideoPictureResourceInfoKHR &reference_slot_picture = reference_slot_pictures[i];
-		VkVideoDecodeH264DpbSlotInfoKHR &h264_dpb_slot = h264_dpb_slots[i];
+	// Rebuild previous references.
+	// The setup target slot will always be at [0].
+	Vector<VkVideoReferenceSlotInfoKHR> reference_slots;
+	reference_slots.push_back(setup_reference_slot);
 
-		size_t index = (target_dpb_slot + 1 + i) % (video_session_info->active_reference_pictures + 1);
-		if (video_session_info->std_reference_infos[index] != nullptr) {
-			// Insert existing DPB slot + video reference.
-			h264_dpb_slot.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
-			h264_dpb_slot.pNext = nullptr;
-			h264_dpb_slot.pStdReferenceInfo = (StdVideoDecodeH264ReferenceInfo *)video_session_info->std_reference_infos[index];
-
-			reference_slot_picture.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
-			reference_slot_picture.pNext = nullptr;
-			reference_slot_picture.codedOffset.x = 0;
-			reference_slot_picture.codedOffset.y = 0;
-			reference_slot_picture.codedExtent = extent;
-			reference_slot_picture.baseArrayLayer = 0;
-			reference_slot_picture.imageViewBinding = video_session_info->dpb_views[index]->vk_view;
-
-			reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
-			reference_slot_info.pNext = &h264_dpb_slot;
-			reference_slot_info.slotIndex = index;
-			reference_slot_info.pPictureResource = &reference_slot_picture;
-		} else {
-			// Insert invalid slot (for padding)
-			print_line("Adding padding");
-			reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
-			reference_slot_info.pNext = nullptr;
-			reference_slot_info.slotIndex = -1;
-			reference_slot_info.pPictureResource = nullptr;
-		}
-	}
-
-	// Insert target DPB slots + video references.
-	for (size_t i = 0; i < p_frame_slices.size(); i++) {
-		VkVideoReferenceSlotInfoKHR &reference_slot_info = reference_slot_infos[video_session_info->active_reference_pictures + i];
-		VkVideoPictureResourceInfoKHR &reference_slot_picture = reference_slot_pictures[video_session_info->active_reference_pictures + i];
-		VkVideoDecodeH264DpbSlotInfoKHR &h264_dpb_slot = h264_dpb_slots[video_session_info->active_reference_pictures + i];
-		//TODO collect garbage
-		StdVideoDecodeH264ReferenceInfo *h264_reference_slot = (StdVideoDecodeH264ReferenceInfo *)malloc(sizeof(StdVideoDecodeH264ReferenceInfo));
-
-		h264_reference_slot->flags.bottom_field_flag = 0;
-		h264_reference_slot->flags.top_field_flag = 0;
-		h264_reference_slot->flags.is_non_existing = 0;
-		h264_reference_slot->flags.used_for_long_term_reference = 0;
-		h264_reference_slot->FrameNum = p_frame_slices[i].frame_num;
-		h264_reference_slot->PicOrderCnt[0] = p_frame_slices[i].pic_order_cnt_top_field;
-		h264_reference_slot->PicOrderCnt[1] = p_frame_slices[i].pic_order_cnt_bottom_field;
-
-		h264_dpb_slot.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
-		h264_dpb_slot.pNext = nullptr;
-		h264_dpb_slot.pStdReferenceInfo = h264_reference_slot;
-
-		reference_slot_picture.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
-		reference_slot_picture.pNext = nullptr;
-		reference_slot_picture.codedOffset.x = 0;
-		reference_slot_picture.codedOffset.y = 0;
-		reference_slot_picture.codedExtent = extent;
-		reference_slot_picture.baseArrayLayer = 0;
-		reference_slot_picture.imageViewBinding = video_session_info->dpb_views[target_dpb_slot]->vk_view;
-
-		reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
-		reference_slot_info.pNext = &h264_dpb_slot;
-		reference_slot_info.slotIndex = -1;
-		reference_slot_info.pPictureResource = &reference_slot_picture;
-	}
-
-	VkVideoBeginCodingInfoKHR begin_cmd = {};
-	begin_cmd.sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR;
-	begin_cmd.pNext = nullptr;
-	begin_cmd.flags = 0;
-	begin_cmd.videoSession = video_session_info->vk_session;
-	begin_cmd.videoSessionParameters = video_session_info->vk_session_parameters;
-	begin_cmd.referenceSlotCount = reference_slot_infos.size();
-	begin_cmd.pReferenceSlots = reference_slot_infos.ptr();
-
-	vkCmdBeginVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &begin_cmd);
-
-	if (p_reset) {
-		VkVideoCodingControlInfoKHR cmd_control;
-		cmd_control.sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR;
-		cmd_control.pNext = nullptr;
-		cmd_control.flags = VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR;
-
-		vkCmdControlVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &cmd_control);
-	}
-}
-
-void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture) {
-	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
-	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
-	BufferInfo *src_buffer_info = (BufferInfo *)p_src_buffer.id;
-	TextureInfo *dst_texture_info = (TextureInfo *)p_dst_texture.id;
-
-	VkExtent2D extent = video_session_info->vk_session_create_info.maxCodedExtent;
-
-	size_t target_dpb_slot = video_session_info->current_dpb_index;
-	TightLocalVector<VkVideoReferenceSlotInfoKHR> reference_slot_infos = {};
-	TightLocalVector<VkVideoPictureResourceInfoKHR> reference_slot_pictures = {};
-	TightLocalVector<VkVideoDecodeH264DpbSlotInfoKHR> h264_dpb_slots = {};
-
-	reference_slot_infos.resize(video_session_info->active_reference_pictures);
-	reference_slot_pictures.resize(video_session_info->active_reference_pictures);
-	h264_dpb_slots.resize(video_session_info->active_reference_pictures);
-
-	// Rebuild previous references
-	for (size_t i = 0; i < video_session_info->active_reference_pictures; i++) {
-		VkVideoReferenceSlotInfoKHR &reference_slot_info = reference_slot_infos[i];
-		VkVideoPictureResourceInfoKHR &reference_slot_picture = reference_slot_pictures[i];
-		VkVideoDecodeH264DpbSlotInfoKHR &h264_dpb_slot = h264_dpb_slots[i];
-
-		size_t index = (target_dpb_slot + 1 + i) % (video_session_info->active_reference_pictures + 1);
-		if (video_session_info->std_reference_infos[index] != nullptr) {
-			// Insert existing DPB slot + video reference.
-			h264_dpb_slot.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
-			h264_dpb_slot.pNext = nullptr;
-			h264_dpb_slot.pStdReferenceInfo = (StdVideoDecodeH264ReferenceInfo *)video_session_info->std_reference_infos[index];
-
-			reference_slot_picture.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
-			reference_slot_picture.pNext = nullptr;
-			reference_slot_picture.codedOffset.x = 0;
-			reference_slot_picture.codedOffset.y = 0;
-			reference_slot_picture.codedExtent = extent;
-			reference_slot_picture.baseArrayLayer = 0;
-			reference_slot_picture.imageViewBinding = video_session_info->dpb_views[index]->vk_view;
-
-			reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
-			reference_slot_info.pNext = &h264_dpb_slot;
-			reference_slot_info.slotIndex = index;
-			reference_slot_info.pPictureResource = &reference_slot_picture;
-		} else {
-			// Insert invalid slot (for padding)
-			print_line("Adding padding");
-			reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
-			reference_slot_info.pNext = nullptr;
-			reference_slot_info.slotIndex = -1;
-			reference_slot_info.pPictureResource = nullptr;
-		}
-	}
-
-	// Create target DPB information
-	VkVideoReferenceSlotInfoKHR target_reference_slot_info = {};
-	VkVideoPictureResourceInfoKHR reference_slot_picture = {};
-	VkVideoDecodeH264DpbSlotInfoKHR h264_dpb_slot = {};
-	StdVideoDecodeH264ReferenceInfo *h264_reference_slot = (StdVideoDecodeH264ReferenceInfo *)malloc(sizeof(StdVideoDecodeH264ReferenceInfo));
-
-	h264_reference_slot->flags.bottom_field_flag = 0;
-	h264_reference_slot->flags.top_field_flag = 0;
-	h264_reference_slot->flags.is_non_existing = 0;
-	h264_reference_slot->flags.used_for_long_term_reference = 0;
-	h264_reference_slot->FrameNum = p_std_h264_info.frame_num;
-	h264_reference_slot->PicOrderCnt[0] = p_std_h264_info.pic_order_cnt_top_field;
-	h264_reference_slot->PicOrderCnt[1] = p_std_h264_info.pic_order_cnt_bottom_field;
-
-	h264_dpb_slot.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
-	h264_dpb_slot.pNext = nullptr;
-	h264_dpb_slot.pStdReferenceInfo = h264_reference_slot;
-
-	reference_slot_picture.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
-	reference_slot_picture.pNext = nullptr;
-	reference_slot_picture.codedOffset.x = 0;
-	reference_slot_picture.codedOffset.y = 0;
-	reference_slot_picture.codedExtent = extent;
-	reference_slot_picture.baseArrayLayer = 0;
-	reference_slot_picture.imageViewBinding = video_session_info->dpb_views[target_dpb_slot]->vk_view;
-
-	target_reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
-	target_reference_slot_info.pNext = &h264_dpb_slot;
-	target_reference_slot_info.slotIndex = target_dpb_slot;
-	target_reference_slot_info.pPictureResource = &reference_slot_picture;
-
-	// Prepare to decode this image
-	StdVideoDecodeH264PictureInfo std_h264_info = {};
-	std_h264_info.flags.field_pic_flag = p_std_h264_info.field_pic_flag;
-	std_h264_info.flags.is_intra = p_std_h264_info.is_intra;
-	std_h264_info.flags.IdrPicFlag = p_std_h264_info.is_intra;
-	std_h264_info.flags.bottom_field_flag = p_std_h264_info.bottom_field_flag;
-	std_h264_info.flags.is_reference = p_std_h264_info.is_reference;
-	std_h264_info.flags.complementary_field_pair = p_std_h264_info.complementary_field_pair;
-
-	std_h264_info.seq_parameter_set_id = p_std_h264_info.seq_parameter_set_id;
-	std_h264_info.pic_parameter_set_id = p_std_h264_info.pic_parameter_set_id;
-
-	std_h264_info.frame_num = p_std_h264_info.frame_num;
-	std_h264_info.idr_pic_id = p_std_h264_info.idr_pic_id;
-
-	std_h264_info.PicOrderCnt[0] = p_std_h264_info.pic_order_cnt_top_field;
-	std_h264_info.PicOrderCnt[1] = p_std_h264_info.pic_order_cnt_bottom_field;
-
-	// TODO: consider using for interlaced video.
-	uint32_t slice_offset = 0;
-	VkVideoDecodeH264PictureInfoKHR h264_picture_info = {};
-	h264_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR;
-	h264_picture_info.pNext = nullptr;
-	h264_picture_info.pStdPictureInfo = &std_h264_info;
-	h264_picture_info.sliceCount = 1;
-	h264_picture_info.pSliceOffsets = &slice_offset;
-
-	if (video_session_info->vk_query_pool != VK_NULL_HANDLE) {
-		VkVideoInlineQueryInfoKHR *inline_query = ALLOCA_SINGLE(VkVideoInlineQueryInfoKHR);
-		inline_query->sType = VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR;
-		inline_query->pNext = nullptr;
-		inline_query->queryPool = video_session_info->vk_query_pool;
-		inline_query->firstQuery = 0;
-		inline_query->queryCount = 1;
-
-		//TODO: do queries better
-		h264_picture_info.pNext = nullptr;
-	}
-
-	VkVideoPictureResourceInfoKHR picture_info = {};
-	picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
-	picture_info.pNext = nullptr;
-	picture_info.codedOffset.x = 0;
-	picture_info.codedOffset.y = 0;
-	picture_info.codedExtent = extent;
-	picture_info.baseArrayLayer = 0;
-	picture_info.imageViewBinding = dst_texture_info->vk_view;
-
-	VkVideoDecodeInfoKHR decode_info = {};
-	decode_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
-	decode_info.pNext = &h264_picture_info;
-	decode_info.flags = 0;
-	decode_info.srcBuffer = src_buffer_info->vk_buffer;
-	decode_info.srcBufferOffset = 0;
-	decode_info.srcBufferRange = src_buffer_info->size;
-	decode_info.dstPictureResource = picture_info;
-	decode_info.pSetupReferenceSlot = &target_reference_slot_info;
-	decode_info.referenceSlotCount = video_session_info->active_reference_pictures;
-	decode_info.pReferenceSlots = reference_slot_infos.ptr();
-
-	vkCmdDecodeVideoKHR(cmd_buffer_info->vk_command_buffer, &decode_info);
-
-	if (p_std_h264_info.is_reference) {
-		if (video_session_info->std_reference_infos[target_dpb_slot] != nullptr) {
-			void *std_reference = video_session_info->std_reference_infos[target_dpb_slot];
-			free(std_reference);
-		} else {
-			video_session_info->active_reference_pictures += 1;
-			video_session_info->active_reference_pictures = MIN(video_session_info->active_reference_pictures, 16);
+	for (uint32_t i = 0; i < video_session_info->vk_session_create_info.maxDpbSlots; i++) {
+		if (video_session_info->std_reference_infos[i] == nullptr) {
+			break;
 		}
 
-		video_session_info->std_reference_infos.set(target_dpb_slot, h264_reference_slot);
-		video_session_info->current_dpb_index = (target_dpb_slot + 1) % video_session_info->dpb_views.size();
+		if (i == video_session_info->target_dpb_index) {
+			continue;
+		}
+
+		void *next_dpb_info = nullptr;
+
+		VkVideoDecodeH264DpbSlotInfoKHR *h264_dpb_info = nullptr;
+		if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_H264) {
+			h264_dpb_info = ALLOCA_SINGLE(VkVideoDecodeH264DpbSlotInfoKHR);
+			h264_dpb_info->sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
+			h264_dpb_info->pNext = nullptr;
+			h264_dpb_info->pStdReferenceInfo = (StdVideoDecodeH264ReferenceInfo *)video_session_info->std_reference_infos[i];
+
+			next_dpb_info = h264_dpb_info;
+		}
+
+		VkVideoDecodeAV1DpbSlotInfoKHR *av1_dpb_info = nullptr;
+		if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
+			av1_dpb_info = ALLOCA_SINGLE(VkVideoDecodeAV1DpbSlotInfoKHR);
+			av1_dpb_info->sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR;
+			av1_dpb_info->pNext = nullptr;
+			av1_dpb_info->pStdReferenceInfo = (StdVideoDecodeAV1ReferenceInfo *)video_session_info->std_reference_infos[i];
+
+			next_dpb_info = av1_dpb_info;
+		}
+
+		VkVideoPictureResourceInfoKHR *picture_resource_info = ALLOCA_SINGLE(VkVideoPictureResourceInfoKHR);
+		picture_resource_info->sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+		picture_resource_info->pNext = nullptr;
+		picture_resource_info->codedOffset = frame_offset;
+		picture_resource_info->codedExtent = frame_extent;
+		picture_resource_info->baseArrayLayer = 0; // TODO: is this ever useful?
+		picture_resource_info->imageViewBinding = video_session_info->dpb_views[i]->vk_view;
+
+		VkVideoReferenceSlotInfoKHR reference_slot = {};
+		reference_slot.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
+		reference_slot.pNext = next_dpb_info;
+		reference_slot.slotIndex = i;
+		reference_slot.pPictureResource = picture_resource_info;
+		reference_slots.push_back(reference_slot);
 	}
-}
 
-void RenderingDeviceDriverVulkan::command_video_session_decode_av1(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeAV1Frame p_std_av1_info, TextureID p_dst_texture) {
-}
+	VkVideoBeginCodingInfoKHR video_begin_info = {};
+	video_begin_info.sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR;
+	video_begin_info.pNext = nullptr;
+	video_begin_info.flags = 0;
+	video_begin_info.videoSession = video_session_info->vk_session;
+	video_begin_info.videoSessionParameters = video_session_info->vk_session_parameters;
+	video_begin_info.referenceSlotCount = reference_slots.size();
+	video_begin_info.pReferenceSlots = reference_slots.ptr();
 
-void RenderingDeviceDriverVulkan::command_video_session_submit(CommandBufferID p_cmd_buffer) {
-	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	// TODO: [2] non-reference frames do not change the video begin info
+	// Could we execute several vkCmdVideoDecodes within one video session?
+	vkCmdBeginVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &video_begin_info);
 
-	VkVideoEndCodingInfoKHR end_coding;
-	end_coding.sType = VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR;
-	end_coding.pNext = nullptr;
-	end_coding.flags = 0;
+	if (is_key_frame) {
+		VkVideoCodingControlInfoKHR video_control_info = {};
+		video_control_info.sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR;
+		video_control_info.pNext = nullptr;
+		video_control_info.flags = VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR;
 
-	vkCmdEndVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &end_coding);
+		vkCmdControlVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &video_control_info);
+	}
 
-	// TODO use semaphores for synchronization
+	VkVideoPictureResourceInfoKHR dst_picture_resource_info = {};
+	dst_picture_resource_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+	dst_picture_resource_info.pNext = nullptr;
+	dst_picture_resource_info.codedOffset = frame_offset;
+	dst_picture_resource_info.codedExtent = frame_extent;
+	dst_picture_resource_info.baseArrayLayer = 0; // TODO: is this ever useful?
+	dst_picture_resource_info.imageViewBinding = dst_texture_info->vk_view;
+
+	VkVideoReferenceSlotInfoKHR target_reference_slot = {};
+	target_reference_slot.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
+	target_reference_slot.pNext = video_slot_info;
+	target_reference_slot.slotIndex = video_session_info->target_dpb_index;
+	target_reference_slot.pPictureResource = &setup_picture_resource_info;
+
+	VkVideoDecodeInfoKHR video_decode_info = {};
+	video_decode_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
+	video_decode_info.pNext = video_header;
+	video_decode_info.flags = 0;
+	video_decode_info.srcBuffer = src_buffer_info->vk_buffer;
+	video_decode_info.srcBufferOffset = 0;
+	video_decode_info.srcBufferRange = src_buffer_info->size;
+	video_decode_info.dstPictureResource = dst_picture_resource_info;
+	video_decode_info.pSetupReferenceSlot = &target_reference_slot;
+	video_decode_info.referenceSlotCount = reference_slots.size() - 1;
+	video_decode_info.pReferenceSlots = reference_slots.ptr() + 1;
+
+	vkCmdDecodeVideoKHR(cmd_buffer_info->vk_command_buffer, &video_decode_info);
+
+	if (is_reference_frame) {
+		if (video_session_info->std_reference_infos[video_session_info->target_dpb_index] != nullptr) {
+			// TODO: is there a more Godot-style API than malloc/free?
+			free(video_session_info->std_reference_infos[video_session_info->target_dpb_index]);
+		}
+
+		video_session_info->std_reference_infos.set(video_session_info->target_dpb_index, std_reference_info);
+		video_session_info->target_dpb_index = (video_session_info->target_dpb_index + 1) % video_session_info->vk_session_create_info.maxDpbSlots;
+	}
+
+	VkVideoEndCodingInfoKHR video_end_info = {};
+	video_end_info.sType = VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR;
+	video_end_info.pNext = nullptr;
+	video_end_info.flags = 0;
+
+	vkCmdEndVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &video_end_info);
 }
 
 /**************/
@@ -7379,7 +7352,7 @@ void RenderingDeviceDriverVulkan::set_object_name(ObjectType p_type, ID p_driver
 			_set_object_name(VK_OBJECT_TYPE_PIPELINE, (uint64_t)p_driver_id.id, p_name);
 		} break;
 		case OBJECT_TYPE_VIDEO_SESSION: {
-			const VideoCodingSessionInfo *video_session = (const VideoCodingSessionInfo *)p_driver_id.id;
+			const VideoSessionInfo *video_session = (const VideoSessionInfo *)p_driver_id.id;
 			_set_object_name(VK_OBJECT_TYPE_VIDEO_SESSION_KHR, (uint64_t)video_session->vk_session, p_name + " Video Session");
 		} break;
 		default: {

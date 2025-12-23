@@ -1501,8 +1501,7 @@ public:
 	void video_session_add_av1_parameters(RID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header);
 
 	void video_session_begin(RID p_video_session);
-	void video_session_decode_h264(RID p_video_session, Span<uint8_t> p_nal_unit, VideoDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture);
-	void video_session_decode_av1(RID p_video_session, Span<uint8_t> p_obu, VideoDecodeAV1Frame p_std_av1_info, RID p_dst_texture);
+	void video_session_decode(RID p_video_session, Span<uint8_t> p_video_data, RID p_dst_texture, void *p_video_header);
 	void video_session_end(RID p_video_session);
 
 private:

@@ -728,33 +728,26 @@ public:
 	/**********************/
 	/**** VIDEO CODING ****/
 	/**********************/
-	struct VideoCodingSessionInfo {
+	struct VideoSessionInfo {
 		VkVideoSessionKHR vk_session;
-		VkVideoSessionCreateInfoKHR vk_session_create_info;
 		VkVideoSessionParametersKHR vk_session_parameters;
+		VkVideoSessionCreateInfoKHR vk_session_create_info;
 
 		VideoCodingOperation video_operation;
-		VkQueryPool vk_query_pool = VK_NULL_HANDLE;
 
-		uint64_t current_dpb_index;
+		uint64_t target_dpb_index;
 		Vector<TextureInfo *> dpb_views;
-
 		Vector<void *> std_reference_infos;
-		uint64_t active_reference_pictures;
 	};
 
 	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);
 
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) override final;
-	virtual void video_session_add_query_pool(VideoSessionID p_video_session, QueryPoolID p_query_pool) override final;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) override final;
 	virtual void video_session_free(VideoSessionID p_video_session) override final;
 
-	virtual void command_video_session_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, bool p_reset, Vector<VideoDecodeH264SliceHeader> p_frame_slices) override final;
-	virtual void command_video_session_decode_h264(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture) override final;
-	virtual void command_video_session_decode_av1(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeAV1Frame p_std_av1_info, TextureID p_dst_texture) override final;
-	virtual void command_video_session_submit(CommandBufferID p_cmd_buffer) override final;
+	virtual void command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header) override final;
 
 	/**************/
 	/**** MISC ****/
@@ -792,7 +785,7 @@ private:
 			RenderPassInfo,
 			CommandBufferInfo,
 			SamplerInfo,
-			VideoCodingSessionInfo>;
+			VideoSessionInfo>;
 	PagedAllocator<VersatileResource, true> resources_allocator;
 
 	/******************/

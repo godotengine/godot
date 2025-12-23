@@ -56,7 +56,7 @@ private:
 
 	int64_t read_delta_q();
 
-	bool parse_open_bitstream_unit(VideoDecodeAV1Frame *r_av1_frame);
+	bool parse_open_bitstream_unit();
 	VideoCodingAV1SequenceHeader parse_sequence_header();
 	VideoDecodeAV1Frame parse_frame_header();
 	VideoDecodeAV1Frame parse_frame();

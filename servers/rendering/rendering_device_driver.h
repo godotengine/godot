@@ -782,15 +782,11 @@ public:
 	DEFINE_ID(VideoSession);
 
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) = 0;
-	virtual void video_session_add_query_pool(VideoSessionID p_video_session, QueryPoolID p_query_pool) = 0;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) = 0;
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) = 0;
 	virtual void video_session_free(VideoSessionID p_video_session) = 0;
 
-	virtual void command_video_session_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, bool p_reset, Vector<VideoDecodeH264SliceHeader> p_frame_slices) = 0;
-	virtual void command_video_session_decode_h264(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture) = 0;
-	virtual void command_video_session_decode_av1(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeAV1Frame p_std_av1_info, TextureID p_dst_texture) = 0;
-	virtual void command_video_session_submit(CommandBufferID p_cmd_buffer) = 0;
+	virtual void command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header) = 0;
 
 	/**************/
 	/**** MISC ****/

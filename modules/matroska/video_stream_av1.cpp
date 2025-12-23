@@ -107,14 +107,26 @@ uint64_t VideoStreamAV1::read_leb128() {
 }
 
 int64_t VideoStreamAV1::read_su(uint8_t p_bits) {
-	return 0;
+	int64_t value = read_bits(p_bits);
+	uint64_t sign_mask = 1 << (p_bits - 1);
+	if (value & sign_mask) {
+		value -= 2 * sign_mask;
+	}
+
+	return value;
 }
 
 int64_t VideoStreamAV1::read_delta_q() {
-	return 0;
+	int64_t delta_q = 0;
+	bool delta_coded = read_bits(1);
+	if (delta_coded) {
+		delta_q = read_su(7);
+	}
+
+	return delta_q;
 }
 
-bool VideoStreamAV1::parse_open_bitstream_unit(VideoDecodeAV1Frame *r_av1_frame) {
+bool VideoStreamAV1::parse_open_bitstream_unit() {
 	read_bits(1); // obu_forbidden_bit
 	uint8_t obu_type = read_bits(4);
 	bool obu_extension_flag = read_bits(1) > 0;
@@ -133,7 +145,7 @@ bool VideoStreamAV1::parse_open_bitstream_unit(VideoDecodeAV1Frame *r_av1_frame)
 	if (obu_has_size_field) {
 		obu_size = read_leb128();
 	} else {
-		ERR_FAIL_V_MSG(false, "CANNOT DECODE");
+		ERR_FAIL_V_MSG(false, "Unknown OBU size, refusing to decode");
 	}
 
 	const uint8_t *obu_start = src;
@@ -147,13 +159,11 @@ bool VideoStreamAV1::parse_open_bitstream_unit(VideoDecodeAV1Frame *r_av1_frame)
 
 		case VIDEO_CODING_AV1_OBU_TYPE_FRAME_HEADER: {
 			print_line(vformat("OBU Frame Header [%d]", obu_size));
-			*r_av1_frame = parse_frame_header();
 		} break;
 
 		case VIDEO_CODING_AV1_OBU_TYPE_FRAME: {
 			is_frame = true;
 			print_line(vformat("OBU Frame [%d]", obu_size));
-			*r_av1_frame = parse_frame();
 		} break;
 
 		default: {
@@ -864,7 +874,7 @@ Error VideoStreamAV1::parse_container_metadata(const uint8_t *p_stream, uint64_t
 	}
 
 	while (src < p_stream + p_size) {
-		parse_open_bitstream_unit(0);
+		parse_open_bitstream_unit();
 	}
 
 	return OK;
@@ -875,15 +885,11 @@ Error VideoStreamAV1::parse_container_block(const uint8_t *p_stream, size_t p_si
 	shift = 0;
 
 	while (src < p_stream + p_size) {
-		VideoDecodeAV1Frame av1_frame_header = {};
-
 		const uint8_t *obu_start = src;
-		bool is_frame = parse_open_bitstream_unit(&av1_frame_header);
-		uint64_t obu_size = src - obu_start;
-
+		bool is_frame = parse_open_bitstream_unit();
 		if (is_frame) {
-			Span<uint8_t> frame_span = Span(obu_start, obu_size);
-			//local_device->video_session_decode_av1(video_session, frame_span, av1_frame_header, p_dst_texture);
+			*r_size = src - obu_start;
+			*r_offset = obu_start - p_stream;
 		}
 	}
 
@@ -895,7 +901,14 @@ void VideoStreamAV1::set_rendering_device(RenderingDevice *p_local_device) {
 }
 
 RID VideoStreamAV1::create_video_session(RD::VideoSessionInfo p_session_template) {
-	return RID();
+	p_session_template.profile = video_profile;
+	p_session_template.width = av1_sequence_header.max_frame_width_minus_1 + 1;
+	p_session_template.height = av1_sequence_header.max_frame_height_minus_1 + 1;
+	p_session_template.max_active_reference_pictures = VIDEO_CODING_AV1_NUM_REF_FRAMES;
+
+	video_session = local_device->video_session_create(p_session_template);
+	local_device->video_session_add_av1_parameters(video_session, av1_sequence_header);
+	return video_session;
 }
 
 RID VideoStreamAV1::create_texture_sampler(RD::SamplerState p_sampler_template) {
@@ -918,6 +931,30 @@ RID VideoStreamAV1::create_texture(RD::TextureFormat p_texture_template) {
 }
 
 void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) {
+	read_bits(1); // obu_forbidden_bit
+	uint8_t obu_type = read_bits(4);
+	bool obu_extension_flag = read_bits(1) > 0;
+	bool obu_has_size_field = read_bits(1) > 0;
+	read_bits(1); // obu_reserved_1bit
+
+	if (obu_extension_flag) {
+		uint8_t temporal_id = read_bits(3);
+		uint8_t spacial_id = read_bits(2);
+		read_bits(3); // extension_header_reserved_3bits
+		print_line("temporal_id", temporal_id);
+		print_line("spacial_id", spacial_id);
+	}
+
+	uint64_t obu_size;
+	if (obu_has_size_field) {
+		obu_size = read_leb128();
+	} else {
+		ERR_FAIL_MSG("Unknown OBU size, refusing to decode");
+	}
+
+	const uint8_t *obu_start = src;
+	VideoDecodeAV1Frame frame_header = parse_frame();
+	local_device->video_session_decode(video_session, p_frame_data, p_dst_texture, &frame_header);
 }
 
 VideoStreamAV1::VideoStreamAV1() {

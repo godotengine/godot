@@ -757,7 +757,6 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 
 		if (id == MATROSKA_ID_CLUSTER_TIMESTAMP) {
 			r_cluster->time = read_uint();
-			print_line(vformat("-------Cluster Time [%d]-------", r_cluster->time));
 			continue;
 		}
 
@@ -809,7 +808,6 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 
 	Cluster::Block *blocks = r_cluster->blocks.ptrw();
 	for (KeyValue<uint64_t, size_t> node : r_cluster->present_order) {
-		print_line(vformat("[%d] (%d)", node.value, r_cluster->time + node.key));
 		blocks->present_order = node.value;
 		blocks++;
 	}

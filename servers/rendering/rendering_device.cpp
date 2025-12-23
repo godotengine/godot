@@ -5906,11 +5906,6 @@ RID RenderingDevice::video_session_create(const VideoSessionInfo &p_session_info
 		video_session.compute_signal_semaphores.push_back(driver->semaphore_create());
 	}
 
-	// TODO: do this different
-	// TODO: also timeline queries
-	RDD::QueryPoolID query_pool = driver->video_query_pool_create(1, p_session_info.profile);
-	driver->video_session_add_query_pool(video_session.driver_id, query_pool);
-
 	// Transition all textures into the correct layout
 	// TODO: do all of this within the draw graph
 	Vector<RDD::TextureBarrier> texture_barriers;
@@ -5992,7 +5987,7 @@ void RenderingDevice::video_session_begin(RID p_video_session) {
 	driver->command_pool_reset(video_session->decode_pool);
 }
 
-void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_t> p_nal_unit, VideoDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture) {
+void RenderingDevice::video_session_decode(RID p_video_session, Span<uint8_t> p_video_data, RID p_dst_texture, void *p_video_header) {
 	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
 	ERR_FAIL_NULL(video_session);
 
@@ -6007,12 +6002,12 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
 
-	RDD::BufferID src_buffer = driver->buffer_create(p_nal_unit.size() + 4, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
+	RDD::BufferID src_buffer = driver->buffer_create(p_video_data.size() + 4, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
 	uint8_t *write_ptr = driver->buffer_map(src_buffer);
 
 	uint8_t start_code[4] = { 0, 0, 0, 1 };
 	memcpy(write_ptr, start_code, sizeof(start_code));
-	memcpy(write_ptr + sizeof(start_code), p_nal_unit.begin(), p_nal_unit.size());
+	memcpy(write_ptr + sizeof(start_code), p_video_data.begin(), p_video_data.size());
 	driver->buffer_unmap(src_buffer);
 
 	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
@@ -6031,14 +6026,10 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 	dst_decode_tb.subresources.layer_count = 1;
 	///driver->command_pipeline_barrier(cmd_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE_BIT, {}, {}, dst_decode_tb);
 
-	Vector<VideoDecodeH264SliceHeader> slices;
-	slices.push_back(p_std_h264_info);
-
+	// TODO: validate the video header
 	// TODO: timeline queries
 	// TODO: status resuly queries
-	driver->command_video_session_begin(cmd_buffer, video_session->driver_id, p_std_h264_info.is_intra, slices);
-	driver->command_video_session_decode_h264(cmd_buffer, video_session->driver_id, src_buffer, p_std_h264_info, dst_texture->driver_id);
-	driver->command_video_session_submit(cmd_buffer);
+	driver->command_video_session_decode(cmd_buffer, video_session->driver_id, src_buffer, dst_texture->driver_id, p_video_header);
 	driver->command_buffer_end(cmd_buffer);
 
 	if (video_session->final_fence) {
@@ -6070,30 +6061,6 @@ void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_
 
 	video_session->last_cmd_buffer += 1;
 	video_session->semaphore_index = (video_session->semaphore_index + 1) % video_session->decode_signal_semaphores.size();
-}
-
-void RenderingDevice::video_session_decode_av1(RID p_video_session, Span<uint8_t> p_obu, VideoDecodeAV1Frame p_std_av1_info, RID p_dst_texture) {
-	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
-	ERR_FAIL_NULL(video_session);
-
-	uint64_t buffer_size = p_obu.size() + 128 - (p_obu.size() % 128);
-
-	BitField<RDD::BufferUsageBits> buffer_usage = {};
-	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
-	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
-
-	RDD::BufferID src_buffer = driver->buffer_create(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
-
-	uint8_t *write_ptr = driver->buffer_map(src_buffer);
-	memcpy(write_ptr, p_obu.begin(), p_obu.size());
-	driver->buffer_unmap(src_buffer);
-
-	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
-	ERR_FAIL_NULL(dst_texture);
-
-	RDD::CommandBufferID cmd_buffer = video_session->cmd_buffers[video_session->last_cmd_buffer];
-	driver->command_video_session_decode_av1(cmd_buffer, video_session->driver_id, src_buffer, p_std_av1_info, dst_texture->driver_id);
-	driver->buffer_free(src_buffer);
 }
 
 void RenderingDevice::video_session_end(RID p_video_session) {

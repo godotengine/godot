@@ -661,7 +661,7 @@ void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture
 	bool is_idr = nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR;
 	VideoDecodeH264SliceHeader slice_header = parse_slice_header(p_frame_data.size(), is_reference, is_idr);
 
-	coding_device->video_session_decode_h264(video_session, p_frame_data, slice_header, p_dst_texture);
+	coding_device->video_session_decode(video_session, p_frame_data, p_dst_texture, &slice_header);
 }
 
 VideoStreamH264::VideoStreamH264() {
