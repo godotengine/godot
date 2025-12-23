@@ -844,6 +844,19 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot open unknown dock '%s'.", p_dock->get_display_title()));
 
 	if (p_dock->is_open) {
+		// Show the dock if it is already open.
+		if (p_set_current) {
+			if (p_dock->dock_window) {
+				p_dock->get_window()->grab_focus();
+				return;
+			}
+
+			TabContainer *dock_tab_container = get_dock_tab_container(p_dock);
+			if (dock_tab_container) {
+				int tab_index = dock_tab_container->get_tab_idx_from_control(p_dock);
+				dock_tab_container->set_current_tab(tab_index);
+			}
+		}
 		return;
 	}
 
