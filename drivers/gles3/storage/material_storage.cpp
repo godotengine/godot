@@ -1137,12 +1137,14 @@ MaterialStorage::MaterialStorage() {
 	shader_data_request_func[RS::SHADER_CANVAS_ITEM] = _create_canvas_shader_func;
 	shader_data_request_func[RS::SHADER_PARTICLES] = _create_particles_shader_func;
 	shader_data_request_func[RS::SHADER_SKY] = _create_sky_shader_func;
+	shader_data_request_func[RS::SHADER_TEXTURE_BLIT] = _create_tex_blit_shader_func;
 	shader_data_request_func[RS::SHADER_FOG] = nullptr;
 
 	material_data_request_func[RS::SHADER_SPATIAL] = _create_scene_material_func;
 	material_data_request_func[RS::SHADER_CANVAS_ITEM] = _create_canvas_material_func;
 	material_data_request_func[RS::SHADER_PARTICLES] = _create_particles_material_func;
 	material_data_request_func[RS::SHADER_SKY] = _create_sky_material_func;
+	material_data_request_func[RS::SHADER_TEXTURE_BLIT] = _create_tex_blit_material_func;
 	material_data_request_func[RS::SHADER_FOG] = nullptr;
 
 	static_assert(sizeof(GlobalShaderUniforms::Value) == 16);
@@ -1547,6 +1549,28 @@ MaterialStorage::MaterialStorage() {
 		actions.global_buffer_array_variable = "global_shader_uniforms";
 
 		shaders.compiler_sky.initialize(actions);
+	}
+
+	{
+		// Setup TextureBlit compiler
+		ShaderCompiler::DefaultIdentifierActions actions;
+
+		actions.renames["TIME"] = "time";
+		actions.renames["PI"] = _MKSTR(Math_PI);
+		actions.renames["TAU"] = _MKSTR(Math_TAU);
+		actions.renames["E"] = _MKSTR(Math_E);
+
+		actions.renames["FRAGCOORD"] = "gl_FragCoord";
+
+		actions.renames["UV"] = "uv";
+		actions.renames["MODULATE"] = "modulate";
+
+		actions.renames["COLOR0"] = "color0";
+		actions.renames["COLOR1"] = "color1";
+		actions.renames["COLOR2"] = "color2";
+		actions.renames["COLOR3"] = "color3";
+
+		shaders.compiler_tex_blit.initialize(actions);
 	}
 }
 
@@ -2232,6 +2256,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 		new_mode = RS::SHADER_SKY;
 		//} else if (mode_string == "fog") {
 		//	new_mode = RS::SHADER_FOG;
+	} else if (mode_string == "texture_blit") {
+		new_mode = RS::SHADER_TEXTURE_BLIT;
 	} else {
 		new_mode = RS::SHADER_MAX;
 		ERR_PRINT("shader type " + mode_string + " not supported in OpenGL renderer");
@@ -3326,6 +3352,121 @@ void ParticleProcessMaterialData::bind_uniforms() {
 	glBindBufferBase(GL_UNIFORM_BUFFER, GLES3::PARTICLES_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
 	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 1); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
+}
+
+/* TextureBlit SHADER */
+
+void TexBlitShaderData::set_code(const String &p_code) {
+	// Initialize and compile the shader.
+
+	code = p_code;
+	valid = false;
+	ubo_size = 0;
+	uniforms.clear();
+
+	if (code.is_empty()) {
+		return; // Just invalid, but no error.
+	}
+
+	ShaderCompiler::GeneratedCode gen_code;
+
+	// Actual enum set further down after compilation.
+	int blend_modei = BLEND_MODE_MIX;
+
+	ShaderCompiler::IdentifierActions actions;
+	actions.entry_point_stages["blit"] = ShaderCompiler::STAGE_FRAGMENT;
+
+	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_modei, BLEND_MODE_ADD);
+	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MIX);
+	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
+	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
+	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
+
+	actions.uniforms = &uniforms;
+	Error err = MaterialStorage::get_singleton()->shaders.compiler_tex_blit.compile(RS::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
+	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+
+	if (version.is_null()) {
+		version = MaterialStorage::get_singleton()->shaders.tex_blit_shader.version_create();
+	}
+
+	blend_mode = BlendMode(blend_modei);
+
+#if 0
+	print_line("**compiling shader:");
+	print_line("**defines:\n");
+	for (int i = 0; i < gen_code.defines.size(); i++) {
+		print_line(gen_code.defines[i]);
+	}
+
+	HashMap<String, String>::Iterator el = gen_code.code.begin();
+	while (el) {
+		print_line("\n**code " + el->key + ":\n" + el->value);
+		++el;
+	}
+
+	print_line("\n**uniforms:\n" + gen_code.uniforms);
+	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
+	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
+#endif
+
+	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
+
+	MaterialStorage::get_singleton()->shaders.tex_blit_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
+	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.tex_blit_shader.version_is_valid(version));
+
+	ubo_size = gen_code.uniform_total_size;
+	ubo_offsets = gen_code.uniform_offsets;
+	texture_uniforms = gen_code.texture_uniforms;
+
+	valid = true;
+}
+
+bool TexBlitShaderData::is_animated() const {
+	return false;
+}
+
+bool TexBlitShaderData::casts_shadows() const {
+	return false;
+}
+
+RS::ShaderNativeSourceCode TexBlitShaderData::get_native_source_code() const {
+	return MaterialStorage::get_singleton()->shaders.tex_blit_shader.version_get_native_source_code(version);
+}
+
+TexBlitShaderData::TexBlitShaderData() {
+	valid = false;
+}
+
+TexBlitShaderData::~TexBlitShaderData() {
+	if (version.is_valid()) {
+		MaterialStorage::get_singleton()->shaders.tex_blit_shader.version_free(version);
+	}
+}
+
+GLES3::ShaderData *GLES3::_create_tex_blit_shader_func() {
+	TexBlitShaderData *shader_data = memnew(TexBlitShaderData);
+	return shader_data;
+}
+
+void TexBlitMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, false);
+}
+
+void TexBlitMaterialData::bind_uniforms() {
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniform_buffer);
+
+	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 1);
+}
+
+TexBlitMaterialData::~TexBlitMaterialData() {
+}
+
+GLES3::MaterialData *GLES3::_create_tex_blit_material_func(ShaderData *p_shader) {
+	TexBlitMaterialData *material_data = memnew(TexBlitMaterialData);
+	material_data->shader_data = static_cast<TexBlitShaderData *>(p_shader);
+	//update will happen later anyway so do nothing.
+	return material_data;
 }
 
 #endif // !GLES3_ENABLED
