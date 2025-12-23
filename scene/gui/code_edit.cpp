@@ -3222,7 +3222,7 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 			code_action_popup->add_item(action.description);
 		}
 		code_action_popup->set_position(get_global_mouse_position() + Vector2(0, 20));
-		code_action_popup->show();
+		code_action_popup->popup();
 		return;
 	}
 
