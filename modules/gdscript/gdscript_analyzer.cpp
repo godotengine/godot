@@ -462,7 +462,6 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 				Vector<ScriptLanguage::CodeActionOperation> actions;
 				actions.append(add_tool_action);
-				actions.append(GDScriptWarning::get_ignore_code_action_from_code(1, GDScriptWarning::MISSING_TOOL));
 
 				parser->push_warning(p_class, GDScriptWarning::MISSING_TOOL, actions);
 			}
@@ -1141,7 +1140,6 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 							Vector<ScriptLanguage::CodeActionOperation> actions;
 							actions.append(append_action);
-							actions.append(GDScriptWarning::get_ignore_code_action_from_code(p_source->start_line, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY));
 
 							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, symbols, actions);
 						}
@@ -1485,8 +1483,38 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 #ifdef DEBUG_ENABLED
+			// In this case, we check if the name DOES start with an underscore.
+			// If it doesn't, then it's intended to be public, and may not be used
+			// inside the class but somewhere outside it.
+			// If it DOES start with an underscore, then it's intended to be private,
+			// so it shouldn't be accessed outside the class, and if it's not accessed
+			// inside, then it's entirely unused.
 			if (member.variable->usages == 0 && String(member.variable->identifier->name).begins_with("_")) {
-				parser->push_warning(member.variable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, {}, member.variable->identifier->name);
+				ScriptLanguage::CodeActionOperation append_action;
+				ScriptLanguage::TextEditOperation append_op;
+				append_op.start_line = member.variable->identifier->start_line;
+				append_op.start_col = member.variable->identifier->start_column;
+				append_op.end_line = member.variable->identifier->start_line;
+				append_op.end_col = member.variable->identifier->start_column + 1;
+				append_op.new_text = "";
+				append_action.description = "Remove underscore from class variable name";
+				append_action.edits.append(append_op);
+
+				ScriptLanguage::CodeActionOperation del_action;
+				ScriptLanguage::TextEditOperation del_op;
+				del_op.start_line = member.variable->start_line;
+				del_op.start_col = 0;
+				del_op.end_line = member.variable->start_line + 1;
+				del_op.end_col = 0;
+				del_op.new_text = "";
+				del_action.description = "Remove class variable declaration";
+				del_action.edits.append(del_op);
+
+				Vector<ScriptLanguage::CodeActionOperation> actions;
+				actions.append(append_action);
+				actions.append(del_action);
+
+				parser->push_warning(member.variable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, actions, member.variable->identifier->name);
 			}
 #endif // DEBUG_ENABLED
 
@@ -1838,7 +1866,6 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			Vector<ScriptLanguage::CodeActionOperation> actions;
 			actions.append(append_action);
-			actions.append(GDScriptWarning::get_ignore_code_action_from_code(p_source->start_line, GDScriptWarning::UNUSED_PARAMETER));
 
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, actions, function_visible_name, p_function->parameters[i]->identifier->name);
 		}
@@ -1874,7 +1901,21 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			inferred_type.builtin_type = Variant::ARRAY;
 			p_function->rest_parameter->set_datatype(inferred_type);
 #ifdef DEBUG_ENABLED
-			parser->push_warning(p_function->rest_parameter, GDScriptWarning::UNTYPED_DECLARATION, {}, "Parameter", p_function->rest_parameter->identifier->name);
+			GDScriptParser::ParameterNode *identifier = p_function->rest_parameter;
+			ScriptLanguage::CodeActionOperation append_action;
+			ScriptLanguage::TextEditOperation append_op;
+			append_op.start_line = identifier->end_line;
+			append_op.start_col = identifier->end_column;
+			append_op.end_line = identifier->end_line;
+			append_op.end_col = identifier->end_column;
+			append_op.new_text = vformat(": %s", p_function->rest_parameter->get_datatype().to_string());
+			append_action.description = vformat("Add type specifier \"%s\"", p_function->rest_parameter->get_datatype().to_string());
+			append_action.edits.append(append_op);
+
+			Vector<ScriptLanguage::CodeActionOperation> actions;
+			actions.append(append_action);
+
+			parser->push_warning(p_function->rest_parameter, GDScriptWarning::UNTYPED_DECLARATION, actions, "Parameter", p_function->rest_parameter->identifier->name);
 #endif
 		}
 #ifdef DEBUG_ENABLED
@@ -1892,7 +1933,6 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			Vector<ScriptLanguage::CodeActionOperation> actions;
 			actions.append(append_action);
-			actions.append(GDScriptWarning::get_ignore_code_action_from_code(p_source->start_line, GDScriptWarning::UNUSED_PARAMETER));
 
 			parser->push_warning(p_function->rest_parameter->identifier, GDScriptWarning::UNUSED_PARAMETER, actions, function_visible_name, p_function->rest_parameter->identifier->name);
 		}
@@ -2256,7 +2296,21 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			// And removing the metatype makes it impossible to use the constant as a type hint (especially for enums).
 			const bool is_type_import = is_constant && p_assignable->initializer != nullptr && p_assignable->initializer->datatype.is_meta_type;
 			if (!is_type_import) {
-				parser->push_warning(p_assignable, GDScriptWarning::INFERRED_DECLARATION, {}, declaration_type, p_assignable->identifier->name);
+				GDScriptParser::IdentifierNode *identifier = p_assignable->identifier;
+				ScriptLanguage::CodeActionOperation append_action;
+				ScriptLanguage::TextEditOperation append_op;
+				append_op.start_line = identifier->end_line;
+				append_op.start_col = identifier->end_column;
+				append_op.end_line = identifier->end_line;
+				append_op.end_col = identifier->end_column;
+				append_op.new_text = vformat(": %s", p_assignable->initializer->get_datatype().to_string());
+				append_action.description = vformat("Add type specifier \"%s\"", p_assignable->initializer->get_datatype().to_string());
+				append_action.edits.append(append_op);
+
+				Vector<ScriptLanguage::CodeActionOperation> actions;
+				actions.append(append_action);
+
+				parser->push_warning(p_assignable, GDScriptWarning::INFERRED_DECLARATION, actions, declaration_type, p_assignable->identifier->name);
 			}
 		} else {
 			parser->push_warning(p_assignable, GDScriptWarning::UNTYPED_DECLARATION, {}, declaration_type, p_assignable->identifier->name);
@@ -2311,7 +2365,6 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 			Vector<ScriptLanguage::CodeActionOperation> actions;
 			actions.append(append_action);
 			actions.append(del_action);
-			actions.append(GDScriptWarning::get_ignore_code_action_from_code(p_variable->start_line, GDScriptWarning::UNUSED_VARIABLE));
 
 			parser->push_warning(p_variable, GDScriptWarning::UNUSED_VARIABLE, actions, p_variable->identifier->name);
 		}
@@ -2327,7 +2380,31 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 #ifdef DEBUG_ENABLED
 	if (p_is_local) {
 		if (p_constant->usages == 0 && !String(p_constant->identifier->name).begins_with("_")) {
-			parser->push_warning(p_constant, GDScriptWarning::UNUSED_LOCAL_CONSTANT, {}, p_constant->identifier->name);
+			ScriptLanguage::CodeActionOperation append_action;
+			ScriptLanguage::TextEditOperation append_op;
+			append_op.start_line = p_constant->identifier->start_line;
+			append_op.start_col = p_constant->identifier->start_column;
+			append_op.end_line = p_constant->identifier->start_line;
+			append_op.end_col = p_constant->identifier->start_column;
+			append_op.new_text = "_";
+			append_action.description = "Add underscore to constant name";
+			append_action.edits.append(append_op);
+
+			ScriptLanguage::CodeActionOperation del_action;
+			ScriptLanguage::TextEditOperation del_op;
+			del_op.start_line = p_constant->start_line;
+			del_op.start_col = 0;
+			del_op.end_line = p_constant->start_line + 1;
+			del_op.end_col = 0;
+			del_op.new_text = "";
+			del_action.description = "Remove constant declaration";
+			del_action.edits.append(del_op);
+
+			Vector<ScriptLanguage::CodeActionOperation> actions;
+			actions.append(append_action);
+			actions.append(del_action);
+
+			parser->push_warning(p_constant, GDScriptWarning::UNUSED_LOCAL_CONSTANT, actions, p_constant->identifier->name);
 		}
 	}
 	is_shadowing(p_constant->identifier, kind, p_is_local);
@@ -2455,7 +2532,21 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			p_for->variable->set_datatype(variable_type);
 #ifdef DEBUG_ENABLED
 			if (variable_type.is_hard_type()) {
-				parser->push_warning(p_for->variable, GDScriptWarning::INFERRED_DECLARATION, {}, R"("for" iterator variable)", p_for->variable->name);
+				GDScriptParser::IdentifierNode *identifier = p_for->variable;
+				ScriptLanguage::CodeActionOperation append_action;
+				ScriptLanguage::TextEditOperation append_op;
+				append_op.start_line = identifier->end_line;
+				append_op.start_col = identifier->end_column;
+				append_op.end_line = identifier->end_line;
+				append_op.end_col = identifier->end_column;
+				append_op.new_text = vformat(": %s", identifier->get_datatype().to_string());
+				append_action.description = vformat("Add type specifier \"%s\"", identifier->get_datatype().to_string());
+				append_action.edits.append(append_op);
+
+				Vector<ScriptLanguage::CodeActionOperation> actions;
+				actions.append(append_action);
+
+				parser->push_warning(p_for->variable, GDScriptWarning::INFERRED_DECLARATION, actions, R"("for" iterator variable)", p_for->variable->name);
 			} else {
 				parser->push_warning(p_for->variable, GDScriptWarning::UNTYPED_DECLARATION, {}, R"("for" iterator variable)", p_for->variable->name);
 			}
@@ -2493,7 +2584,21 @@ void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
 #ifdef DEBUG_ENABLED
 	if (p_assert->condition->is_constant) {
 		if (p_assert->condition->reduced_value.booleanize()) {
-			parser->push_warning(p_assert->condition, GDScriptWarning::ASSERT_ALWAYS_TRUE);
+			GDScriptParser::Node *identifier = p_assert;
+			ScriptLanguage::CodeActionOperation append_action;
+			ScriptLanguage::TextEditOperation append_op;
+			append_op.start_line = identifier->start_line;
+			append_op.start_col = 0;
+			append_op.end_line = identifier->start_line + 1;
+			append_op.end_col = 0;
+			append_op.new_text = "";
+			append_action.description = "Remove assert statement";
+			append_action.edits.append(append_op);
+
+			Vector<ScriptLanguage::CodeActionOperation> actions;
+			actions.append(append_action);
+
+			parser->push_warning(p_assert->condition, GDScriptWarning::ASSERT_ALWAYS_TRUE, actions);
 		} else if (!(p_assert->condition->type == GDScriptParser::Node::LITERAL && static_cast<GDScriptParser::LiteralNode *>(p_assert->condition)->value.get_type() == Variant::BOOL)) {
 			parser->push_warning(p_assert->condition, GDScriptWarning::ASSERT_ALWAYS_FALSE);
 		}
@@ -3179,7 +3284,21 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 #ifdef DEBUG_ENABLED
 	GDScriptParser::DataType to_await_type = p_await->to_await->get_datatype();
 	if (!to_await_type.is_coroutine && !to_await_type.is_variant() && to_await_type.builtin_type != Variant::SIGNAL) {
-		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
+		GDScriptParser::Node *identifier = p_await;
+		ScriptLanguage::CodeActionOperation append_action;
+		ScriptLanguage::TextEditOperation append_op;
+		append_op.start_line = identifier->start_line;
+		append_op.start_col = identifier->start_column;
+		append_op.end_line = identifier->end_line;
+		append_op.end_col = p_await->to_await->start_column;
+		append_op.new_text = "";
+		append_action.description = "Remove \"await\"";
+		append_action.edits.append(append_op);
+
+		Vector<ScriptLanguage::CodeActionOperation> actions;
+		actions.append(append_action);
+
+		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT, actions);
 	}
 #endif // DEBUG_ENABLED
 }
@@ -3790,7 +3909,22 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		if (method_flags.has_flag(METHOD_FLAG_STATIC) && !is_constructor && !base_type.is_meta_type && !is_self) {
 			String caller_type = base_type.to_string();
 
-			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, {}, p_call->function_name, caller_type);
+			// TODO: Figure out how to replace instance name with type.
+			GDScriptParser::Node *identifier = p_call->callee;
+			ScriptLanguage::CodeActionOperation append_action;
+			ScriptLanguage::TextEditOperation append_op;
+			append_op.start_line = identifier->start_line;
+			append_op.start_col = identifier->start_column;
+			append_op.end_line = identifier->end_line;
+			append_op.end_col = identifier->end_column;
+			append_op.new_text = vformat("%s.%s", caller_type, p_call->function_name);
+			append_action.description = vformat("Call from type \"%s\"", caller_type);
+			append_action.edits.append(append_op);
+
+			Vector<ScriptLanguage::CodeActionOperation> actions;
+			actions.append(append_action);
+
+			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, actions, p_call->function_name, caller_type);
 		}
 
 		// Consider `emit_signal()`, `connect()`, and `disconnect()` as implicit uses of the signal.
@@ -3867,7 +4001,21 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	if (call_type.is_coroutine && !p_is_await) {
 		if (p_is_root) {
 #ifdef DEBUG_ENABLED
-			parser->push_warning(p_call, GDScriptWarning::MISSING_AWAIT);
+			GDScriptParser::Node *identifier = p_call->callee;
+			ScriptLanguage::CodeActionOperation append_action;
+			ScriptLanguage::TextEditOperation append_op;
+			append_op.start_line = identifier->start_line;
+			append_op.start_col = identifier->start_column;
+			append_op.end_line = identifier->start_line;
+			append_op.end_col = identifier->start_column;
+			append_op.new_text = "await ";
+			append_action.description = "Add \"await\"";
+			append_action.edits.append(append_op);
+
+			Vector<ScriptLanguage::CodeActionOperation> actions;
+			actions.append(append_action);
+
+			parser->push_warning(p_call, GDScriptWarning::MISSING_AWAIT, actions);
 #endif // DEBUG_ENABLED
 		} else {
 			push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call);
@@ -6242,7 +6390,22 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 	if (p_source_node) {
 		if (p_target.kind == GDScriptParser::DataType::ENUM) {
 			if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
-				parser->push_warning(p_source_node, GDScriptWarning::INT_AS_ENUM_WITHOUT_CAST);
+				// TODO: Get the node that p_source came from, and use it for the warning's Code Action.
+				// This code intended to do that, but p_source_node apparently is for the whole line(???)
+				// ScriptLanguage::CodeActionOperation append_action;
+				// ScriptLanguage::TextEditOperation append_op;
+				// append_op.start_line = p_source_node->start_line;
+				// append_op.start_col = p_source_node->start_column;
+				// append_op.end_line = p_source_node->end_line;
+				// append_op.end_col = p_source_node->end_column;
+				// append_op.new_text = vformat("as %s", p_target.enum_type);
+				// append_action.description = vformat("Cast to enum type \"%s\"", p_target.enum_type);
+				// append_action.edits.append(append_op);
+
+				Vector<ScriptLanguage::CodeActionOperation> actions;
+				// actions.append(append_action);
+
+				parser->push_warning(p_source_node, GDScriptWarning::INT_AS_ENUM_WITHOUT_CAST, actions);
 			}
 		}
 	}

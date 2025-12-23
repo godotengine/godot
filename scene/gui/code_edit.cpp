@@ -3217,6 +3217,7 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	if (p_gutter == code_action_gutter) {
 		code_action_popup->clear();
 		current_code_action_line = p_line;
+		// TODO: Crashed on the line below, not sure why
 		for (const ScriptLanguage::CodeActionOperation &action : code_actions.get(current_code_action_line)) {
 			code_action_popup->add_item(action.description);
 		}

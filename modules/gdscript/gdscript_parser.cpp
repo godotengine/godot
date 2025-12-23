@@ -256,12 +256,16 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 		return;
 	}
 
+	Vector<ScriptLanguage::CodeActionOperation> actions;
+	actions.append_array(p_code_actions);
+	actions.append(GDScriptWarning::get_ignore_code_action_from_code(p_source->start_line, p_code));
+
 	PendingWarning pw;
 	pw.source = p_source;
 	pw.code = p_code;
 	pw.treated_as_error = warn_level == GDScriptWarning::ERROR;
 	pw.symbols = p_symbols;
-	pw.code_actions = p_code_actions;
+	pw.code_actions = actions;
 
 	pending_warnings.push_back(pw);
 }
