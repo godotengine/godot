@@ -1946,6 +1946,14 @@ uint32_t RenderingDevice::_texture_vrs_method_to_usage_bits() const {
 	}
 }
 
+void RenderingDevice::_texture_ensure_shareable_format(RID p_texture, const DataFormat &p_shareable_format) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(texture);
+	if (!texture->allowed_shared_formats.has(p_shareable_format)) {
+		texture->allowed_shared_formats.push_back(p_shareable_format);
+	}
+}
+
 void RenderingDevice::_texture_check_pending_clear(RID p_texture_rid, Texture *p_texture) {
 	DEV_ASSERT(p_texture != nullptr);
 
