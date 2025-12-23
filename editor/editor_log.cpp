@@ -140,7 +140,6 @@ void EditorLog::_editor_settings_changed() {
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			set_process(true);
 			_update_theme();
 			_load_state();
 		} break;
@@ -387,12 +386,16 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
-	if (unlikely(log->is_updating()) || flushing) {
+	if (unlikely(log->is_updating())) {
 		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
-		_try_flush();
-		pending_messages.push_back(p_message);
 		return;
 	}
+
+	ScrollBar *v_scroll = log->get_v_scroll_bar();
+
+	const double prev_scroll = v_scroll->get_value();
+	const double prev_scroll_max = v_scroll->get_max();
+	const bool was_at_bottom = prev_scroll >= prev_scroll_max - 2.0;
 
 	// Only add the message to the log if it passes the filters.
 	if (!_check_display_message(p_message)) {
@@ -464,24 +467,11 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->remove_paragraph(0, true);
 	}
 
-	_try_flush();
-}
-
-void EditorLog::_try_flush() {
-	if (log->is_updating() || flushing || pending_messages.is_empty()) {
-		return;
+	if (was_at_bottom) {
+		v_scroll->set_value(v_scroll->get_max());
+	} else {
+		v_scroll->set_value(prev_scroll);
 	}
-
-	flushing = true;
-
-	Vector<LogMessage> to_flush = pending_messages;
-	pending_messages.clear();
-
-	for (LogMessage &msg : to_flush) {
-		_add_log_line(msg, false);
-	}
-
-	flushing = false;
 }
 
 void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
