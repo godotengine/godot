@@ -100,7 +100,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case OBJECT_REQUEST_HELP: {
 			if (current) {
-				EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+				ScriptEditor::get_singleton()->make_visible();
 				emit_signal(SNAME("request_help"), current->get_class());
 			}
 		} break;

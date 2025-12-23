@@ -39,6 +39,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/run/editor_run_bar.h"
+#include "editor/run/game_view_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -104,7 +105,7 @@ void EditorSceneTabs::_scene_tab_hovered(int p_tab) {
 	// Currently the tab previews are displayed under the running game process when embed.
 	// Right now, the easiest technique to fix that is to prevent displaying the tab preview
 	// when the user is in the Game View.
-	if (EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index() == EditorMainScreen::EDITOR_GAME && EditorRunBar::get_singleton()->is_playing()) {
+	if (EditorNode::get_singleton()->get_editor_main_screen()->get_current_tab_control() == GameView::get_singleton() && EditorRunBar::get_singleton()->is_playing()) {
 		return;
 	}
 

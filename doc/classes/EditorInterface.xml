@@ -490,7 +490,7 @@
 				[b]Note:[/b] The feature profile that gets activated must be located in the [code]feature_profiles[/code] directory, as a file with the [code].profile[/code] extension. If a profile could not be found, an error occurs. The editor configuration folder can be found by using [method EditorPaths.get_config_dir].
 			</description>
 		</method>
-		<method name="set_main_screen_editor">
+		<method name="set_main_screen_editor" deprecated="Use [method EditorDock.make_visible] directly on the main screen control.">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
