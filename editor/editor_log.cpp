@@ -140,6 +140,7 @@ void EditorLog::_editor_settings_changed() {
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			set_process(true);
 			_update_theme();
 			_load_state();
 		} break;
@@ -386,8 +387,10 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
-	if (unlikely(log->is_updating())) {
+	if (unlikely(log->is_updating()) || flushing) {
 		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
+		_try_flush();
+		pending_messages.push_back(p_message);
 		return;
 	}
 
