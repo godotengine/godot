@@ -117,7 +117,7 @@
 #define SDL_INPUT_LINUXEV 1
 #define SDL_THREAD_PTHREAD 1
 
-// MacOS defines
+// macOS defines
 #elif defined(SDL_PLATFORM_MACOS)
 
 #define SDL_PLATFORM_PRIVATE_NAME "macOS"
@@ -131,6 +131,23 @@
 #define SDL_TIMER_UNIX 1
 #define SDL_THREAD_PTHREAD 1
 #define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
+
+// iOS/visionOS defines
+#elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_VISIONOS)
+
+#ifdef SDL_PLATFORM_IOS
+#define SDL_PLATFORM_PRIVATE_NAME "iOS"
+#else
+#define SDL_PLATFORM_PRIVATE_NAME "visionOS"
+#endif
+
+#define SDL_PLATFORM_UNIX 1
+#define HAVE_STDIO_H 1
+#define HAVE_LIBC 1
+#define SDL_JOYSTICK_MFI 1
+#define SDL_HAPTIC_DUMMY 1
+#define SDL_TIMER_UNIX 1
+#define SDL_THREAD_PTHREAD 1
 
 // Other platforms are not supported (for now)
 #else

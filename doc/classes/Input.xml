@@ -130,14 +130,14 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns a dictionary with extra platform-specific information about the device, e.g. the raw gamepad name from the OS or the Steam Input index.
-				On Windows, Linux, and macOS, the dictionary contains the following fields:
+				On Windows, Linux, macOS, iOS and visionOS, the dictionary contains the following fields:
 				[code]raw_name[/code]: The name of the controller as it came from the OS, before getting renamed by the controller database.
 				[code]vendor_id[/code]: The USB vendor ID of the device.
 				[code]product_id[/code]: The USB product ID of the device.
-				[code]steam_input_index[/code]: The Steam Input gamepad index, if the device is not a Steam Input device this key won't be present.
-				On Windows, the dictionary can have an additional field:
-				[code]xinput_index[/code]: The index of the controller in the XInput system. This key won't be present for devices not handled by XInput.
-				[b]Note:[/b] The returned dictionary is always empty on Android, iOS, visionOS, and Web.
+				The dictionary can also include the following fields under selected platforms:
+				[code]steam_input_index[/code]: The Steam Input gamepad index (Windows, Linux, and macOS only). If the device is not a Steam Input device this key won't be present.
+				[code]xinput_index[/code]: The index of the controller in the XInput system (Windows only). This key won't be present for devices not handled by XInput.
+				[b]Note:[/b] The returned dictionary is always empty on Android and Web.
 			</description>
 		</method>
 		<method name="get_joy_name">
