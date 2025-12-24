@@ -398,6 +398,7 @@ public:
 	void add_code_action_group(int p_line, const ScriptLanguage::CodeActionGroup &p_code_actions);
 	void set_draw_code_actions(bool p_draw);
 	bool is_draw_code_actions_enabled() const;
+	void show_code_actions(int p_line);
 	HashMap<int, Vector<ScriptLanguage::CodeActionGroup>> code_action_groups;
 	int current_code_action_line = -1; // The last selected line to use code actions from.
 

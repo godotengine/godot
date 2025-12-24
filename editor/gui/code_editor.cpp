@@ -968,6 +968,11 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 				return;
 			}
+			if (ED_IS_SHORTCUT("script_editor/code_actions", p_event)) {
+				text_editor->show_code_actions(text_editor->get_caret_line());
+				accept_event();
+				return;
+			}
 		}
 	}
 }
@@ -1899,6 +1904,7 @@ CodeTextEditor::CodeTextEditor() {
 	ED_SHORTCUT("script_editor/zoom_out", TTRC("Zoom Out"), KeyModifierMask::CMD_OR_CTRL | Key::MINUS);
 	ED_SHORTCUT_ARRAY("script_editor/reset_zoom", TTRC("Reset Zoom"),
 			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KEY_0), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_0) });
+	ED_SHORTCUT("script_editor/code_actions", TTRC("View Code Actions"), KeyModifierMask::ALT | Key::ENTER);
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);

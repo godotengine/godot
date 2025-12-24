@@ -1556,6 +1556,27 @@ bool CodeEdit::is_draw_code_actions_enabled() const {
 	return is_gutter_drawn(code_action_gutter);
 }
 
+void CodeEdit::show_code_actions(int p_line) {
+	code_action_popup->clear();
+	current_code_action_line = p_line;
+
+	int action_index = 0;
+	for (const ScriptLanguage::CodeActionGroup &action_group : code_action_groups.get(current_code_action_line)) {
+		code_action_popup->add_separator(action_group.title, 0);
+		for (const ScriptLanguage::CodeActionOperation &action : action_group.actions) {
+			code_action_popup->add_item(action.description, action_index);
+			action_index++;
+		}
+	}
+
+	if (action_index == 0) {
+		return;
+	}
+
+	code_action_popup->set_position(get_global_mouse_position() + Vector2(0, 20));
+	code_action_popup->popup();
+}
+
 void CodeEdit::_code_action_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
 	RID ci = get_text_canvas_item();
 	bool hovering = get_hovered_gutter() == Vector2i(code_action_gutter, p_line);
@@ -3221,19 +3242,7 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	}
 
 	if (p_gutter == code_action_gutter) {
-		code_action_popup->clear();
-		current_code_action_line = p_line;
-
-		int action_index = 0;
-		for (const ScriptLanguage::CodeActionGroup &action_group : code_action_groups.get(current_code_action_line)) {
-			code_action_popup->add_separator(action_group.title, 0);
-			for (const ScriptLanguage::CodeActionOperation &action : action_group.actions) {
-				code_action_popup->add_item(action.description, action_index);
-				action_index++;
-			}
-		}
-		code_action_popup->set_position(get_global_mouse_position() + Vector2(0, 20));
-		code_action_popup->popup();
+		show_code_actions(p_line);
 		return;
 	}
 
