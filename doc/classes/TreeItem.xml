@@ -419,12 +419,27 @@
 				If [param only_visible] is [code]true[/code] it ignores non-visible [TreeItem]s.
 			</description>
 		</method>
+		<method name="is_button_visible" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="button_index" type="int" />
+			<description>
+				Returns [code]true[/code] if the button at index [param button_index] for the given [param column] is visible.
+			</description>
+		</method>
 		<method name="is_button_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="button_index" type="int" />
 			<description>
 				Returns [code]true[/code] if the button at index [param button_index] for the given [param column] is disabled.
+			</description>
+		</method>
+		<method name="is_cell_visible" qualifiers="const">
+			<return type="bool"/>
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns [code]true[/code] if the given [param column] is visible.
 			</description>
 		</method>
 		<method name="is_checked" qualifiers="const">
@@ -565,6 +580,15 @@
 				Sets the given column's button description at index [param button_index] for assistive apps.
 			</description>
 		</method>
+		<method name="set_button_visible">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="button_index" type="int" />
+			<param index="2" name="visible" type="bool" />
+			<description>
+				Sets the visibility of the button at index [param button_index] in the given [param column].
+			</description>
+		</method>
 		<method name="set_button_disabled">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
@@ -589,6 +613,14 @@
 			<param index="1" name="mode" type="int" enum="TreeItem.TreeCellMode" />
 			<description>
 				Sets the given column's cell mode to [param mode]. This determines how the cell is displayed and edited.
+			</description>
+		</method>
+		<method name="set_cell_visible">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="visible" type="bool"/>
+			<description>
+				Sets the given column's visibility to [param visible].
 			</description>
 		</method>
 		<method name="set_checked">

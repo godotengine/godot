@@ -464,6 +464,13 @@
 				Emitted when an item is edited.
 			</description>
 		</signal>
+		<signal name="item_hovered">
+			<param index="0" name="item" type="TreeItem" />
+			<param index="1" name="column" type="int" />
+			<description>
+				Emitted when an item is hovered. If no item is hovered, [param item] will be [code]null[/code] and [param column] will be -1.
+			</description>
+		</signal>
 		<signal name="item_icon_double_clicked">
 			<description>
 				Emitted when an item's icon is double-clicked. For a signal that emits when any part of the item is double-clicked, see [signal item_activated].
