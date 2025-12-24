@@ -309,6 +309,13 @@ def configure(env: "SConsEnvironment"):
     if env["wasm_simd"]:
         env.Append(CCFLAGS=["-msimd128"])
 
+    if env["sdl"]:
+        if env["builtin_sdl"]:
+            env.Append(CPPDEFINES=["SDL_ENABLED"])
+        else:
+            print_warning("`builtin_sdl` was explicitly disabled. Disabling SDL input driver support.")
+            env["sdl"] = False
+
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-sENVIRONMENT=web,worker"])
 

@@ -132,6 +132,21 @@
 #define SDL_THREAD_PTHREAD 1
 #define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
 
+// Emscripten (web) defines
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
+
+#define SDL_PLATFORM_PRIVATE_NAME "Emscripten"
+#define SDL_PLATFORM_UNIX 1
+#define HAVE_STDIO_H 1
+#define HAVE_LIBC 1
+
+#define SDL_HAPTIC_DUMMY 1
+#define SDL_JOYSTICK_EMSCRIPTEN 1
+
+#define SDL_LOADSO_DUMMY 1
+#define SDL_THREADS_DISABLED 1
+#define SDL_TIMER_UNIX 1
+
 // Other platforms are not supported (for now)
 #else
 #error "No SDL build config was found for this platform. Setup one before compiling the engine."

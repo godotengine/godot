@@ -52,24 +52,22 @@ rm -f $target/core/windows/version.rc
 rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme}.*
 
 mkdir $target/haptic
-cp -rv haptic/{*.{c,h},darwin,linux,windows} $target/haptic
+cp -rv haptic/{*.{c,h},darwin,dummy,linux,windows} $target/haptic
 
 mkdir $target/joystick
-cp -rv joystick/{*.{c,h},apple,darwin,hidapi,linux,windows} $target/joystick
+cp -rv joystick/{*.{c,h},apple,darwin,emscripten,hidapi,linux,windows} $target/joystick
 
 mkdir $target/loadso
-cp -rv loadso/dlopen $target/loadso
+cp -rv loadso/{dlopen,dummy} $target/loadso
 
 mkdir $target/sensor
 cp -rv sensor/{*.{c,h},dummy,windows} $target/sensor
 
-mkdir $target/thread
-cp -rv thread/{*.{c,h},pthread,windows} $target/thread
 # Despite being 'generic', syssem.c is included in the Unix driver for macOS,
 # and syscond/sysrwlock are used by the Windows driver.
 # systhread_c.h is included by all these, but we should NOT compile the matching .c file.
-mkdir $target/thread/generic
-cp -v thread/generic/SDL_{syssem.c,{syscond,sysrwlock}*.{c,h},systhread_c.h} $target/thread/generic
+mkdir $target/thread
+cp -rv thread/{*.{c,h},generic,pthread,windows} $target/thread
 
 mkdir $target/timer
 cp -rv timer/{*.{c,h},unix,windows} $target/timer

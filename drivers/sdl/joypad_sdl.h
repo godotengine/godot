@@ -71,4 +71,5 @@ private:
 	HashMap<SDL_JoystickID, int> sdl_instance_id_to_joypad_id;
 
 	void close_joypad(int p_pad_idx);
+	bool should_ignore_joypad(SDL_JoystickID p_joy_id);
 };

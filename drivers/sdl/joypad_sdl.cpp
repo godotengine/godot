@@ -43,6 +43,10 @@
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_joystick.h>
 
+#ifdef WEB_ENABLED
+#include <emscripten/html5.h>
+#endif
+
 JoypadSDL *JoypadSDL::singleton = nullptr;
 
 // Macro to skip the SDL joystick event handling if the device is an SDL gamepad, because
@@ -172,6 +176,11 @@ void JoypadSDL::process_events() {
 
 				sdl_instance_id_to_joypad_id.insert(sdl_event.jdevice.which, joy_id);
 
+				if (should_ignore_joypad(sdl_event.jdevice.which)) {
+					close_joypad(joy_id);
+					continue;
+				}
+
 				Dictionary joypad_info;
 				// Skip Godot's mapping system if SDL already handles the joypad's mapping.
 				joypad_info["mapping_handled"] = SDL_IsGamepad(sdl_event.jdevice.which);
@@ -179,6 +188,8 @@ void JoypadSDL::process_events() {
 				joypad_info["vendor_id"] = itos(SDL_GetJoystickVendor(joy));
 				joypad_info["product_id"] = itos(SDL_GetJoystickProduct(joy));
 
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED) || defined(MACOS_ENABLED)
+				// These properties only make sense on desktop platforms.
 				const uint64_t steam_handle = SDL_GetGamepadSteamHandle(gamepad);
 				if (steam_handle != 0) {
 					joypad_info["steam_input_index"] = itos(steam_handle);
@@ -189,6 +200,7 @@ void JoypadSDL::process_events() {
 					// For XInput controllers SDL_GetJoystickPlayerIndex returns the XInput user index.
 					joypad_info["xinput_index"] = itos(player_index);
 				}
+#endif
 
 				Input::get_singleton()->joy_connection_changed(
 						joy_id,
@@ -197,7 +209,9 @@ void JoypadSDL::process_events() {
 						joypads[joy_id].guid,
 						joypad_info);
 
+#ifndef WEB_ENABLED // Joypad features are not supported on the web.
 				Input::get_singleton()->set_joy_features(joy_id, &joypads[joy_id]);
+#endif
 			}
 			// An event for an attached joypad
 		} else if (sdl_event.type >= SDL_EVENT_JOYSTICK_AXIS_MOTION && sdl_event.type < SDL_EVENT_FINGER_DOWN && sdl_instance_id_to_joypad_id.has(sdl_event.jdevice.which)) {
@@ -308,6 +322,22 @@ SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
 
 SDL_Gamepad *JoypadSDL::Joypad::get_sdl_gamepad() const {
 	return SDL_GetGamepadFromID(sdl_instance_idx);
+}
+
+bool JoypadSDL::should_ignore_joypad(SDL_JoystickID p_joy_id) {
+	SDL_Joystick *joy = SDL_GetJoystickFromID(p_joy_id);
+	String joy_name_lower = String(SDL_GetJoystickName(joy)).to_lower();
+
+#ifdef WEB_ENABLED
+	// DualSense on Firefox works very badly (input lag, no dpad, wrong face buttons, no vibration),
+	// I'm not sure it's fixable in Godot, so we just ignore it.
+	bool is_firefox = EM_ASM_INT({ return navigator.userAgent.toLowerCase().includes('firefox') });
+	if (is_firefox && joy_name_lower.contains("dualsense")) {
+		return true;
+	}
+#endif
+
+	return false;
 }
 
 #endif // SDL_ENABLED
