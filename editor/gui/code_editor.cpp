@@ -1822,8 +1822,8 @@ void CodeTextEditor::clear_code_actions() {
 	text_editor->clear_code_actions();
 }
 
-void CodeTextEditor::add_code_actions(int p_start_line, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions) {
-	text_editor->add_code_actions(p_start_line, p_code_actions);
+void CodeTextEditor::add_code_action_group(int p_start_line, const ScriptLanguage::CodeActionGroup &p_code_actions) {
+	text_editor->add_code_action_group(p_start_line, p_code_actions);
 }
 
 void CodeTextEditor::_zoom_in() {

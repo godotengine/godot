@@ -942,8 +942,8 @@ void ScriptTextEditor::_update_warnings() {
 	}
 
 	for (const ScriptLanguage::Warning &warning : warnings) {
-		if (warning.code_actions.size() > 0) {
-			code_editor->add_code_actions(warning.start_line - 1, warning.code_actions);
+		if (warning.code_actions.actions.size() > 0) {
+			code_editor->add_code_action_group(warning.start_line - 1, warning.code_actions);
 		}
 	}
 	code_editor->set_warning_count(warning_nb);
@@ -1006,8 +1006,8 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->add_newline();
 		errors_panel->pop(); // Cell.
 
-		if (err.code_actions.size() > 0) {
-			code_editor->add_code_actions(err.line - 1, err.code_actions);
+		if (err.code_actions.actions.size() > 0) {
+			code_editor->add_code_action_group(err.line - 1, err.code_actions);
 		}
 	}
 	errors_panel->pop(); // Table
@@ -1043,8 +1043,8 @@ void ScriptTextEditor::_update_errors() {
 			errors_panel->add_text(err.message);
 			errors_panel->pop(); // Cell.
 
-			if (err.code_actions.size() > 0) {
-				code_editor->add_code_actions(err.line - 1, err.code_actions);
+			if (err.code_actions.actions.size() > 0) {
+				code_editor->add_code_action_group(err.line - 1, err.code_actions);
 			}
 		}
 		errors_panel->pop(); // Table

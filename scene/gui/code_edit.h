@@ -323,7 +323,7 @@ private:
 	void _apply_project_settings();
 
 	PopupMenu *code_action_popup = nullptr;
-	void _on_code_action_index_pressed(int index);
+	void _on_code_action_id_pressed(int p_id);
 
 protected:
 	void _notification(int p_what);
@@ -395,10 +395,10 @@ public:
 	void apply_text_edit(const ScriptLanguage::TextEditOperation &p_edit);
 	void apply_code_action(const ScriptLanguage::CodeActionOperation &p_code_action);
 	void clear_code_actions();
-	void add_code_actions(int p_line, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions);
+	void add_code_action_group(int p_line, const ScriptLanguage::CodeActionGroup &p_code_actions);
 	void set_draw_code_actions(bool p_draw);
 	bool is_draw_code_actions_enabled() const;
-	HashMap<int, Vector<ScriptLanguage::CodeActionOperation>> code_actions;
+	HashMap<int, Vector<ScriptLanguage::CodeActionGroup>> code_action_groups;
 	int current_code_action_line = -1; // The last selected line to use code actions from.
 
 	/* Main Gutter */

@@ -234,13 +234,18 @@ public:
 		Vector<TextEditOperation> edits;
 	};
 
+	struct CodeActionGroup {
+		String title;
+		Vector<CodeActionOperation> actions;
+	};
+
 	/* EDITOR FUNCTIONS */
 	struct Warning {
 		int start_line = -1, end_line = -1;
 		int code;
 		String string_code;
 		String message;
-		Vector<CodeActionOperation> code_actions;
+		CodeActionGroup code_actions;
 	};
 
 	struct ScriptError {
@@ -248,7 +253,7 @@ public:
 		int line = -1;
 		int column = -1;
 		String message;
-		Vector<CodeActionOperation> code_actions;
+		CodeActionGroup code_actions;
 	};
 
 	enum TemplateLocation {

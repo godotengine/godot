@@ -1346,19 +1346,25 @@ void CodeEdit::apply_code_action(const ScriptLanguage::CodeActionOperation &p_co
 }
 
 void CodeEdit::clear_code_actions() {
-	code_actions.clear();
+	code_action_groups.clear();
 }
 
-void CodeEdit::add_code_actions(int p_line, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions) {
-	if (code_actions.has(p_line)) {
-		code_actions.get(p_line).append_array(p_code_actions);
+void CodeEdit::add_code_action_group(int p_line, const ScriptLanguage::CodeActionGroup &p_code_actions) {
+	if (!code_action_groups.has(p_line)) {
+		code_action_groups.insert(p_line, { p_code_actions });
 	} else {
-		code_actions.insert(p_line, p_code_actions);
+		code_action_groups.get(p_line).append(p_code_actions);
 	}
 }
 
-void CodeEdit::_on_code_action_index_pressed(int index) {
-	apply_code_action(code_actions.get(current_code_action_line)[index]);
+void CodeEdit::_on_code_action_id_pressed(int p_id) {
+	// While this vector could be pre-calculated, there should not be enough
+	// code actions loaded at a time that this would be any kind of bottleneck.
+	Vector<ScriptLanguage::CodeActionOperation> all_ops;
+	for (const ScriptLanguage::CodeActionGroup &g : code_action_groups.get(current_code_action_line)) {
+		all_ops.append_array(g.actions);
+	}
+	apply_code_action(all_ops[p_id]);
 }
 
 /* Main Gutter */
@@ -1553,7 +1559,7 @@ bool CodeEdit::is_draw_code_actions_enabled() const {
 void CodeEdit::_code_action_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
 	RID ci = get_text_canvas_item();
 	bool hovering = get_hovered_gutter() == Vector2i(code_action_gutter, p_line);
-	if (theme_cache.code_action_icon.is_valid() && code_actions.has(p_line)) {
+	if (theme_cache.code_action_icon.is_valid() && code_action_groups.has(p_line)) {
 		Rect2 icon_region = p_region;
 
 		// Keep icon square and respect the size of the line.
@@ -3217,9 +3223,14 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	if (p_gutter == code_action_gutter) {
 		code_action_popup->clear();
 		current_code_action_line = p_line;
-		// TODO: Crashed on the line below, not sure why
-		for (const ScriptLanguage::CodeActionOperation &action : code_actions.get(current_code_action_line)) {
-			code_action_popup->add_item(action.description);
+
+		int action_index = 0;
+		for (const ScriptLanguage::CodeActionGroup &action_group : code_action_groups.get(current_code_action_line)) {
+			code_action_popup->add_separator(action_group.title, 0);
+			for (const ScriptLanguage::CodeActionOperation &action : action_group.actions) {
+				code_action_popup->add_item(action.description, action_index);
+				action_index++;
+			}
 		}
 		code_action_popup->set_position(get_global_mouse_position() + Vector2(0, 20));
 		code_action_popup->popup();
@@ -4071,7 +4082,7 @@ CodeEdit::CodeEdit() {
 
 	// Popup for Code Actions
 	code_action_popup = memnew(PopupMenu);
-	code_action_popup->connect("index_pressed", callable_mp(this, &CodeEdit::_on_code_action_index_pressed));
+	code_action_popup->connect("id_pressed", callable_mp(this, &CodeEdit::_on_code_action_id_pressed));
 	add_child(code_action_popup);
 }
 

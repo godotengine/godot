@@ -161,7 +161,7 @@ public:
 	Code code = WARNING_MAX;
 	int start_line = -1, end_line = -1;
 	Vector<String> symbols;
-	Vector<ScriptLanguage::CodeActionOperation> code_actions;
+	ScriptLanguage::CodeActionGroup code_actions;
 
 	String get_name() const;
 	String get_message() const;

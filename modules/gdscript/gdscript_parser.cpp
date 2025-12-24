@@ -230,7 +230,7 @@ void GDScriptParser::clear() {
 	*this = GDScriptParser();
 }
 
-void GDScriptParser::push_error(const String &p_message, const Node *p_origin, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions) {
+void GDScriptParser::push_error(const String &p_message, const Node *p_origin, const ScriptLanguage::CodeActionGroup &p_code_actions) {
 	// TODO: Improve error reporting by pointing at source code.
 	// TODO: Errors might point at more than one place at once (e.g. show previous declaration).
 	panic_mode = true;
@@ -256,16 +256,17 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 		return;
 	}
 
-	Vector<ScriptLanguage::CodeActionOperation> actions;
-	actions.append_array(p_code_actions);
-	actions.append(GDScriptWarning::get_ignore_code_action_from_code(p_source->start_line, p_code));
+	ScriptLanguage::CodeActionGroup action_group;
+	action_group.title = GDScriptWarning::get_name_from_code(p_code);
+	action_group.actions.append_array(p_code_actions);
+	action_group.actions.append(GDScriptWarning::get_ignore_code_action_from_code(p_source->start_line, p_code));
 
 	PendingWarning pw;
 	pw.source = p_source;
 	pw.code = p_code;
 	pw.treated_as_error = warn_level == GDScriptWarning::ERROR;
 	pw.symbols = p_symbols;
-	pw.code_actions = actions;
+	pw.code_actions = action_group;
 
 	pending_warnings.push_back(pw);
 }

@@ -270,7 +270,7 @@ public:
 		// Type type = NO_ERROR;
 		String message;
 		int line = 0, column = 0;
-		Vector<ScriptLanguage::CodeActionOperation> code_actions;
+		ScriptLanguage::CodeActionGroup code_actions;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -1368,7 +1368,7 @@ private:
 		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
 		bool treated_as_error = false;
 		Vector<String> symbols;
-		Vector<ScriptLanguage::CodeActionOperation> code_actions;
+		ScriptLanguage::CodeActionGroup code_actions;
 	};
 
 	static bool is_project_ignoring_warnings;
@@ -1493,7 +1493,7 @@ private:
 
 	void clear();
 
-	void push_error(const String &p_message, const Node *p_origin = nullptr, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions = {});
+	void push_error(const String &p_message, const Node *p_origin = nullptr, const ScriptLanguage::CodeActionGroup &p_code_actions = {});
 #ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions = {});
 	template <typename... Symbols>

@@ -290,7 +290,7 @@ public:
 	void remove_all_bookmarks();
 
 	void clear_code_actions();
-	void add_code_actions(int p_start_line, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions);
+	void add_code_action_group(int p_start_line, const ScriptLanguage::CodeActionGroup &p_code_actions);
 
 	void set_zoom_factor(float p_zoom_factor);
 	float get_zoom_factor();
