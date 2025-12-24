@@ -437,6 +437,10 @@ Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	Point *begin_point = a;
 	Point *end_point = b;
 
+	if (!begin_point->enabled) {
+		return Vector<Vector3>();
+	}
+	
 	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
@@ -745,6 +749,10 @@ Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
+
+	if (!begin_point->enabled) {
+		return Vector<Vector2>();
+	}
 
 	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
