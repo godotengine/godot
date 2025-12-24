@@ -78,6 +78,7 @@ private:
 		Array st_args;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
 		TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
+		BitField<TextServer::LineBreakFlag> autowrap_trim_flags = TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES;
 		bool dirty = true;
 		double min = 0.0;
 		double max = 100.0;
@@ -283,6 +284,9 @@ public:
 
 	void set_autowrap_mode(int p_column, TextServer::AutowrapMode p_mode);
 	TextServer::AutowrapMode get_autowrap_mode(int p_column) const;
+
+	void set_autowrap_trim_flags(int p_column, BitField<TextServer::LineBreakFlag> p_flags);
+	BitField<TextServer::LineBreakFlag> get_autowrap_trim_flags(int p_column) const;
 
 	void set_text_overrun_behavior(int p_column, TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior(int p_column) const;
