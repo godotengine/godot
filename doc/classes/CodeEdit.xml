@@ -553,6 +553,9 @@
 		<member name="gutters_draw_breakpoints_gutter" type="bool" setter="set_draw_breakpoints_gutter" getter="is_drawing_breakpoints_gutter" default="false">
 			If [code]true[/code], breakpoints are drawn in the gutter. This gutter is shared with bookmarks and executing lines. Clicking the gutter will toggle the breakpoint for the line, see [method set_line_as_breakpoint].
 		</member>
+		<member name="gutters_draw_code_actions" type="bool" setter="set_draw_code_actions" getter="is_draw_code_actions_enabled" default="false">
+			If [code]true[/code], lines where a Code Action is offered (such as to fix a warning) are marked in the gutter.
+		</member>
 		<member name="gutters_draw_executing_lines" type="bool" setter="set_draw_executing_lines_gutter" getter="is_drawing_executing_lines_gutter" default="false">
 			If [code]true[/code], executing lines are marked in the gutter. This gutter is shared with breakpoints and bookmarks. See [method set_line_as_executing].
 		</member>
@@ -686,6 +689,9 @@
 		<theme_item name="breakpoint_color" data_type="color" type="Color" default="Color(0.9, 0.29, 0.3, 1)">
 			[Color] of the breakpoint icon for bookmarked lines.
 		</theme_item>
+		<theme_item name="code_action_color" data_type="color" type="Color" default="Color(0.98, 0.89, 0.27, 1)">
+			[Color] of the icon displayed to indicate that a Code Action is offered for a given line.
+		</theme_item>
 		<theme_item name="code_folding_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 0.8)">
 			[Color] for all icons related to line folding.
 		</theme_item>
@@ -736,6 +742,9 @@
 		</theme_item>
 		<theme_item name="can_fold_code_region" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] to draw in the line folding gutter when a code region can be folded.
+		</theme_item>
+		<theme_item name="code_action" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the Code Action gutter when a line has a Code Action available.
 		</theme_item>
 		<theme_item name="completion_color_bg" data_type="icon" type="Texture2D">
 			Background panel for the color preview box in autocompletion (visible when the color is translucent).

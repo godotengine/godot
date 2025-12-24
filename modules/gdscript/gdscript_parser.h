@@ -270,6 +270,7 @@ public:
 		// Type type = NO_ERROR;
 		String message;
 		int line = 0, column = 0;
+		ScriptLanguage::CodeActionGroup code_actions;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -1367,6 +1368,7 @@ private:
 		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
 		bool treated_as_error = false;
 		Vector<String> symbols;
+		ScriptLanguage::CodeActionGroup code_actions;
 	};
 
 	static bool is_project_ignoring_warnings;
@@ -1491,12 +1493,12 @@ private:
 
 	void clear();
 
-	void push_error(const String &p_message, const Node *p_origin = nullptr);
+	void push_error(const String &p_message, const Node *p_origin = nullptr, const ScriptLanguage::CodeActionGroup &p_code_actions = {});
 #ifdef DEBUG_ENABLED
-	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
+	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions = {});
 	template <typename... Symbols>
-	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
-		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
+	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions = {}, const Symbols &...p_symbols) {
+		push_warning(p_source, p_code, Vector<String>{ p_symbols... }, p_code_actions);
 	}
 	void apply_pending_warnings();
 	void evaluate_warning_directory_rules_for_script_path();

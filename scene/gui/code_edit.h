@@ -108,6 +108,10 @@ private:
 	// executing lines
 	bool draw_executing_lines = false;
 
+	/* Code Action Gutter */
+	int code_action_gutter = -1;
+	void _code_action_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
+
 	/* Line numbers */
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
@@ -267,6 +271,9 @@ private:
 		Color executing_line_color = Color(1, 1, 1);
 		Ref<Texture2D> executing_line_icon;
 
+		Color code_action_color = Color(1, 1, 1);
+		Ref<Texture2D> code_action_icon;
+
 		Color line_number_color = Color(1, 1, 1);
 
 		/* Code Completion */
@@ -314,6 +321,9 @@ private:
 	void _text_changed();
 
 	void _apply_project_settings();
+
+	PopupMenu *code_action_popup = nullptr;
+	void _on_code_action_id_pressed(int p_id);
 
 protected:
 	void _notification(int p_what);
@@ -380,6 +390,17 @@ public:
 	bool has_auto_brace_completion_close_key(const String &p_close_key) const;
 
 	String get_auto_brace_completion_close_key(const String &p_open_key) const;
+
+	/* Code Actions */
+	void apply_text_edit(const ScriptLanguage::TextEditOperation &p_edit);
+	void apply_code_action(const ScriptLanguage::CodeActionOperation &p_code_action);
+	void clear_code_actions();
+	void add_code_action_group(int p_line, const ScriptLanguage::CodeActionGroup &p_code_actions);
+	void set_draw_code_actions(bool p_draw);
+	bool is_draw_code_actions_enabled() const;
+	void show_code_actions(int p_line);
+	HashMap<int, Vector<ScriptLanguage::CodeActionGroup>> code_action_groups;
+	int current_code_action_line = -1; // The last selected line to use code actions from.
 
 	/* Main Gutter */
 	void set_draw_breakpoints_gutter(bool p_draw);
