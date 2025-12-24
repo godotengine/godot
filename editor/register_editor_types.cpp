@@ -281,7 +281,7 @@ void register_editor_types() {
 #endif
 
 	// For correct doc generation.
-	GLOBAL_DEF("editor/run/main_run_args", "");
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/run/main_run_args", PROPERTY_HINT_NONE, "monospace"), "");
 
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR), "res://script_templates");
 

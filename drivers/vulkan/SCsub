@@ -6,6 +6,8 @@ Import("env")
 thirdparty_obj = []
 thirdparty_dir = "#thirdparty/vulkan"
 thirdparty_volk_dir = "#thirdparty/volk"
+thirdparty_spirv_headers_dir = "#thirdparty/spirv-headers"
+thirdparty_respirv_dir = "#thirdparty/re-spirv"
 
 # Use bundled Vulkan headers
 env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
@@ -50,6 +52,12 @@ elif env["platform"] == "macos" or env["platform"] == "ios":
 
 env_thirdparty_vma.add_source_files(thirdparty_obj, thirdparty_sources_vma)
 
+# Build re-spirv
+env_thirdparty_respirv = env.Clone()
+env_thirdparty_respirv.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "/include"])
+env_thirdparty_respirv.disable_warnings()
+thirdparty_sources_respirv = [thirdparty_respirv_dir + "/re-spirv.cpp"]
+env_thirdparty_respirv.add_source_files(thirdparty_obj, thirdparty_sources_respirv)
 
 env.drivers_sources += thirdparty_obj
 

@@ -34,6 +34,7 @@
 #include "openxr_api_extension.compat.inc"
 
 void OpenXRAPIExtension::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_openxr_version"), &OpenXRAPIExtension::get_openxr_version);
 	ClassDB::bind_method(D_METHOD("get_instance"), &OpenXRAPIExtension::get_instance);
 	ClassDB::bind_method(D_METHOD("get_system_id"), &OpenXRAPIExtension::get_system_id);
 	ClassDB::bind_method(D_METHOD("get_session"), &OpenXRAPIExtension::get_session);
@@ -95,9 +96,16 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emulate_environment_blend_mode_alpha_blend", "enabled"), &OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend);
 	ClassDB::bind_method(D_METHOD("is_environment_blend_mode_alpha_supported"), &OpenXRAPIExtension::is_environment_blend_mode_alpha_blend_supported);
 
+	ClassDB::bind_method(D_METHOD("update_main_swapchain_size"), &OpenXRAPIExtension::update_main_swapchain_size);
+
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE);
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL);
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING);
+}
+
+uint64_t OpenXRAPIExtension::get_openxr_version() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (uint64_t)OpenXRAPI::get_singleton()->get_openxr_version();
 }
 
 uint64_t OpenXRAPIExtension::get_instance() {
@@ -346,6 +354,11 @@ uint64_t OpenXRAPIExtension::get_projection_layer() {
 void OpenXRAPIExtension::set_render_region(const Rect2i &p_render_region) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->set_render_region(p_render_region);
+}
+
+void OpenXRAPIExtension::update_main_swapchain_size() {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->update_main_swapchain_size();
 }
 
 void OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend(bool p_enabled) {

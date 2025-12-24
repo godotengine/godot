@@ -621,14 +621,16 @@
 				[/codeblock]
 			</description>
 		</annotation>
-		<annotation name="@export_multiline">
+		<annotation name="@export_multiline" qualifiers="vararg">
 			<return type="void" />
+			<param index="0" name="hint" type="String" default="&quot;&quot;" />
 			<description>
 				Export a [String], [Array][lb][String][rb], [PackedStringArray], [Dictionary] or [Array][lb][Dictionary][rb] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
 				See also [constant PROPERTY_HINT_MULTILINE_TEXT].
 				[codeblock]
 				@export_multiline var character_biography
 				@export_multiline var npc_dialogs: Array[String]
+				@export_multiline("monospace", "no_wrap") var favorite_ascii_art: String
 				[/codeblock]
 			</description>
 		</annotation>

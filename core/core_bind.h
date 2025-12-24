@@ -109,7 +109,7 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags);
+	Error save(RequiredParam<Resource> p_resource, const String &p_path, BitField<SaverFlags> p_flags);
 	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
@@ -559,9 +559,6 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
-
-	ClassDB() {}
-	~ClassDB() {}
 };
 
 } // namespace Special

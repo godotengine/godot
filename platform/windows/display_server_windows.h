@@ -393,7 +393,7 @@ class DisplayServerWindows : public DisplayServer {
 	void _destroy_window(WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
 
 #ifdef RD_ENABLED
-	Error _create_rendering_context_window(WindowID p_window_id);
+	Error _create_rendering_context_window(WindowID p_window_id, const String &p_rendering_driver);
 	void _destroy_rendering_context_window(WindowID p_window_id);
 #endif
 
@@ -505,6 +505,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	LRESULT _handle_early_window_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	Point2i _get_screens_origin() const;
+
+	Vector2i _get_screen_expand_offset(int p_screen) const;
 
 	enum class WinKeyModifierMask {
 		ALT_GR = (1 << 1),

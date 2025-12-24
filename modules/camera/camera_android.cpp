@@ -489,33 +489,36 @@ void CameraFeedAndroid::onSessionClosed(void *context, ACameraCaptureSession *se
 }
 
 void CameraFeedAndroid::deactivate_feed() {
+	// First, remove image listener to prevent new callbacks.
+	if (reader != nullptr) {
+		AImageReader_setImageListener(reader, nullptr);
+	}
+
+	// Stop and close capture session.
+	// These calls may wait for pending callbacks to complete.
 	if (session != nullptr) {
 		ACameraCaptureSession_stopRepeating(session);
 		ACameraCaptureSession_close(session);
 		session = nullptr;
 	}
 
-	if (reader != nullptr) {
-		AImageReader_setImageListener(reader, nullptr);
+	// Now safe to acquire lock and clean up resources.
+	// No new callbacks will be triggered after this point.
+	MutexLock lock(callback_mutex);
+
+	if (device != nullptr) {
+		ACameraDevice_close(device);
+		device = nullptr;
 	}
 
-	{
-		MutexLock lock(callback_mutex);
+	if (reader != nullptr) {
+		AImageReader_delete(reader);
+		reader = nullptr;
+	}
 
-		if (device != nullptr) {
-			ACameraDevice_close(device);
-			device = nullptr;
-		}
-
-		if (reader != nullptr) {
-			AImageReader_delete(reader);
-			reader = nullptr;
-		}
-
-		if (request != nullptr) {
-			ACaptureRequest_free(request);
-			request = nullptr;
-		}
+	if (request != nullptr) {
+		ACaptureRequest_free(request);
+		request = nullptr;
 	}
 }
 
@@ -619,7 +622,7 @@ void CameraAndroid::set_monitoring_feeds(bool p_monitoring_feeds) {
 	}
 }
 
-void CameraAndroid::handle_pause() {
+void CameraAndroid::handle_application_pause() {
 	for (int i = 0; i < feeds.size(); i++) {
 		Ref<CameraFeedAndroid> feed = feeds[i];
 		if (feed.is_valid()) {
@@ -628,7 +631,7 @@ void CameraAndroid::handle_pause() {
 	}
 }
 
-void CameraAndroid::handle_resume() {
+void CameraAndroid::handle_application_resume() {
 	for (int i = 0; i < feeds.size(); i++) {
 		Ref<CameraFeedAndroid> feed = feeds[i];
 		if (feed.is_valid()) {
@@ -637,7 +640,7 @@ void CameraAndroid::handle_resume() {
 	}
 }
 
-void CameraAndroid::handle_rotation_change() {
+void CameraAndroid::handle_display_rotation_change(int) {
 	for (int i = 0; i < feeds.size(); i++) {
 		Ref<CameraFeedAndroid> feed = feeds[i];
 		if (feed.is_valid()) {

@@ -388,7 +388,6 @@ MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control 
 	l->set_text(p_label);
 	add_child(l);
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->add_theme_constant_override("margin_left", 0);
 	mc->add_child(p_control, true);
 	add_child(mc);
 	if (p_expand) {

@@ -342,6 +342,7 @@ public:
 
 	SceneForwardClusteredShaderRD shader;
 	ShaderCompiler compiler;
+	bool emulate_point_size = false;
 
 	RID default_shader;
 	RID default_material;

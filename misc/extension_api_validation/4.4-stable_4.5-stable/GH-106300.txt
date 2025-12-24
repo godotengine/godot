@@ -1,0 +1,6 @@
+GH-106300
+---------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RichTextLabel/methods/push_strikethrough': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RichTextLabel/methods/push_underline': arguments
+
+Optional "color" argument added. Compatibility methods registered.

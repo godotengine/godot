@@ -40,6 +40,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/timer.h"
@@ -343,6 +344,13 @@ void SceneImportSettingsDialog::_fill_animation(Tree *p_tree, const Ref<Animatio
 		ad.animation = p_anim;
 
 		_load_default_subresource_settings(ad.settings, "animations", p_name, ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION);
+		Animation::LoopMode loop_mode = p_anim->get_loop_mode();
+		if (!ad.settings.has("settings/loop_mode") && loop_mode != Animation::LoopMode::LOOP_NONE) {
+			// Update the loop mode to match detected mode (from import hints).
+			// This is necessary on the first import of a scene, otherwise the
+			// default (0/NONE) is set when filling out defaults.
+			ad.settings["settings/loop_mode"] = loop_mode;
+		}
 
 		animation_map[p_name] = ad;
 	}
@@ -468,6 +476,12 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_fill_scene(p_node->get_child(i), item);
 	}
+	Transform3D accum_xform;
+	Node3D *base = Object::cast_to<Node3D>(p_node);
+	while (base) {
+		accum_xform = base->get_transform() * accum_xform;
+		base = Object::cast_to<Node3D>(base->get_parent());
+	}
 	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
 		// This controls the display of mesh resources in the import settings dialog tree (the white mesh icon).
@@ -483,15 +497,23 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		mesh_node->add_child(collider_view, true);
 		collider_view->set_owner(mesh_node);
 
-		Transform3D accum_xform;
-		Node3D *base = mesh_node;
-		while (base) {
-			accum_xform = base->get_transform() * accum_xform;
-			base = Object::cast_to<Node3D>(base->get_parent());
-		}
-
 		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
 
+		if (first_aabb) {
+			contents_aabb = aabb;
+			first_aabb = false;
+		} else {
+			contents_aabb.merge_with(aabb);
+		}
+	}
+	MultiMeshInstance3D *multi_mesh_node = Object::cast_to<MultiMeshInstance3D>(p_node);
+	if (multi_mesh_node && multi_mesh_node->get_multimesh().is_valid()) {
+		const Ref<MultiMesh> multi_mesh = multi_mesh_node->get_multimesh();
+		const Ref<Mesh> mm_mesh = multi_mesh->get_mesh();
+		if (mm_mesh.is_valid()) {
+			_fill_mesh(scene_tree, mm_mesh, item);
+		}
+		const AABB aabb = accum_xform.xform(multi_mesh->get_aabb());
 		if (first_aabb) {
 			contents_aabb = aabb;
 			first_aabb = false;
@@ -505,14 +527,6 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		Ref<ArrayMesh> bones_mesh = Skeleton3DGizmoPlugin::get_bones_mesh(skeleton, -1, true);
 
 		bones_mesh_preview->set_mesh(bones_mesh);
-
-		Transform3D accum_xform;
-		Node3D *base = skeleton;
-		while (base) {
-			accum_xform = base->get_transform() * accum_xform;
-			base = Object::cast_to<Node3D>(base->get_parent());
-		}
-
 		bones_mesh_preview->set_transform(accum_xform * skeleton->get_transform());
 
 		AABB aabb = accum_xform.xform(bones_mesh->get_aabb());
@@ -1125,7 +1139,9 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 
 void SceneImportSettingsDialog::_skeleton_tree_entered(Skeleton3D *p_skeleton) {
 	bones_mesh_preview->set_skeleton_path(p_skeleton->get_path());
-	bones_mesh_preview->set_skin(p_skeleton->register_skin(p_skeleton->create_skin_from_rest_transforms()));
+	Ref<Skin> skin = p_skeleton->create_skin_from_rest_transforms();
+	p_skeleton->register_skin(skin);
+	bones_mesh_preview->set_skin(skin);
 }
 
 void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
@@ -1929,6 +1945,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	// Display the same tooltips as in the Import dock.
 	inspector->set_object_class(ResourceImporterScene::get_class_static());
 	inspector->set_use_doc_hints(true);
+	inspector->set_theme_type_variation(SNAME("EditorInspectorForeground"));
 
 	property_split->add_child(inspector);
 

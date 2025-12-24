@@ -103,7 +103,7 @@ public:
 	virtual real_t get_step() const override { return 0; }
 	virtual void integrate_forces() override {}
 
-	virtual PhysicsDirectSpaceState2D *get_space_state() override { return space_state_dummy; }
+	virtual RequiredResult<PhysicsDirectSpaceState2D> get_space_state() override { return space_state_dummy; }
 
 	PhysicsDirectBodyState2DDummy(PhysicsDirectSpaceState2D *p_space_state_dummy) {
 		space_state_dummy = p_space_state_dummy;

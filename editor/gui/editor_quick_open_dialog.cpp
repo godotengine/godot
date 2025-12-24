@@ -235,11 +235,13 @@ void EditorQuickOpenDialog::preview_property() {
 	// MultiNodeEdit has adding to the undo/redo stack baked into its set function.
 	// As such, we have to specifically call a version of its setter that doesn't
 	// create undo/redo actions.
+	property_object->set_block_signals(true);
 	if (Object::cast_to<MultiNodeEdit>(property_object)) {
 		Object::cast_to<MultiNodeEdit>(property_object)->_set_impl(property_path, loaded_resource, "", false);
 	} else {
 		property_object->set(property_path, loaded_resource);
 	}
+	property_object->set_block_signals(false);
 }
 
 void EditorQuickOpenDialog::update_property() {
@@ -252,6 +254,15 @@ void EditorQuickOpenDialog::update_property() {
 			property_object->set(property_path, initial_property_value);
 		}
 	}
+
+	if (!item_selected_callback.is_valid()) {
+		String err_msg = "The callback provided to the Quick Open dialog was invalid.";
+		if (_is_instant_preview_active()) {
+			err_msg += " Try disabling \"Instant Preview\" as a workaround.";
+		}
+		ERR_FAIL_MSG(err_msg);
+	}
+
 	item_selected_callback.call(container->get_selected());
 }
 
@@ -306,11 +317,16 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		}
 
 		{
+			MarginContainer *mc = memnew(MarginContainer);
+			mc->set_theme_type_variation("NoBorderHorizontalWindow");
+			mc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			panel_container->add_child(mc);
+
 			// Search results
 			scroll_container = memnew(ScrollContainer);
-			scroll_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			scroll_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 			scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+			scroll_container->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 			scroll_container->hide();
 			panel_container->add_child(scroll_container);
 
@@ -998,6 +1014,9 @@ void QuickOpenResultContainer::_notification(int p_what) {
 			Color text_color = get_theme_color("font_readonly_color", EditorStringName(Editor));
 			file_details_path->add_theme_color_override(SceneStringName(font_color), text_color);
 			no_results_label->add_theme_color_override(SceneStringName(font_color), text_color);
+
+			file_context_menu->set_item_icon(FILE_SHOW_IN_FILESYSTEM, get_editor_theme_icon(SNAME("ShowInFileSystem")));
+			file_context_menu->set_item_icon(FILE_SHOW_IN_FILE_MANAGER, get_editor_theme_icon(SNAME("Filesystem")));
 
 			panel_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 

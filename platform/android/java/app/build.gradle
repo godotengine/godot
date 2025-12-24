@@ -249,9 +249,9 @@ android {
 
     sourceSets {
         main.res.srcDirs += ['res']
-        debug.jniLibs.srcDirs += ['libs/debug', 'libs/debug/vulkan_validation_layers']
-        dev.jniLibs.srcDirs += ['libs/dev']
-        release.jniLibs.srcDirs += ['libs/release']
+        debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
+        dev.jniLibs.srcDirs = ['libs/dev']
+        release.jniLibs.srcDirs = ['libs/release']
     }
 
     applicationVariants.all { variant ->
@@ -296,6 +296,29 @@ task copyAndRenameBinary(type: Copy) {
 task validateJavaVersion {
     if (!JavaVersion.current().isCompatibleWith(versions.javaVersion)) {
         throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the minimum supported Java version for Godot gradle builds.")
+    }
+}
+
+/*
+ * Older versions of our vendor plugin include a loader that we no longer need.
+ * This code ensures those are removed.
+ */
+tasks.withType( com.android.build.gradle.internal.tasks.MergeNativeLibsTask) {
+    doFirst {
+        externalLibNativeLibs.each { jniDir ->
+            if (jniDir.getCanonicalPath().contains("godot-openxr-") || jniDir.getCanonicalPath().contains("godotopenxr")) {
+                // Delete the 'libopenxr_loader.so' files from the vendors plugin so we only use the version from the
+                // openxr loader dependency.
+                File armFile = new File(jniDir, "arm64-v8a/libopenxr_loader.so")
+                if (armFile.exists()) {
+                    armFile.delete()
+                }
+                File x86File = new File(jniDir, "x86_64/libopenxr_loader.so")
+                if (x86File.exists()) {
+                    x86File.delete()
+                }
+            }
+        }
     }
 }
 

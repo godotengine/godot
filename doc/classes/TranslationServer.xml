@@ -33,6 +33,14 @@
 				Compares two locales and returns a similarity score between [code]0[/code] (no match) and [code]10[/code] (full match).
 			</description>
 		</method>
+		<method name="find_translations" qualifiers="const">
+			<return type="Translation[]" />
+			<param index="0" name="locale" type="String" />
+			<param index="1" name="exact" type="bool" />
+			<description>
+				Returns the [Translation] instances in the main translation domain that match [param locale] (see [method compare_locales]). If [param exact] is [code]true[/code], only instances whose locale exactly equals [param locale] will be returned.
+			</description>
+		</method>
 		<method name="format_number" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="number" type="String" />
@@ -128,11 +136,17 @@
 				[b]Note:[/b] When called from an exported project returns the same value as [method get_locale].
 			</description>
 		</method>
-		<method name="get_translation_object">
+		<method name="get_translation_object" deprecated="Use [method find_translations] instead.">
 			<return type="Translation" />
 			<param index="0" name="locale" type="String" />
 			<description>
 				Returns the [Translation] instance that best matches [param locale] in the main translation domain. Returns [code]null[/code] if there are no matches.
+			</description>
+		</method>
+		<method name="get_translations" qualifiers="const">
+			<return type="Translation[]" />
+			<description>
+				Returns all available [Translation] instances in the main translation domain as added by [method add_translation].
 			</description>
 		</method>
 		<method name="has_domain" qualifiers="const">
@@ -140,6 +154,21 @@
 			<param index="0" name="domain" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a translation domain with the specified name exists.
+			</description>
+		</method>
+		<method name="has_translation" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="translation" type="Translation" />
+			<description>
+				Returns [code]true[/code] if the main translation domain contains the given [param translation].
+			</description>
+		</method>
+		<method name="has_translation_for_locale" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="locale" type="String" />
+			<param index="1" name="exact" type="bool" />
+			<description>
+				Returns [code]true[/code] if there are any [Translation] instances in the main translation domain that match [param locale] (see [method compare_locales]). If [param exact] is [code]true[/code], only instances whose locale exactly equals [param locale] are considered.
 			</description>
 		</method>
 		<method name="parse_number" qualifiers="const">

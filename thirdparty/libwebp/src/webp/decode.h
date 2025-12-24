@@ -14,13 +14,15 @@
 #ifndef WEBP_WEBP_DECODE_H_
 #define WEBP_WEBP_DECODE_H_
 
+#include <stddef.h>
+
 #include "./types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define WEBP_DECODER_ABI_VERSION 0x0209    // MAJOR(8b) + MINOR(8b)
+#define WEBP_DECODER_ABI_VERSION 0x0210    // MAJOR(8b) + MINOR(8b)
 
 // Note: forward declaring enumerations is not allowed in (strict) C and C++,
 // the types are left here for reference.
@@ -451,7 +453,9 @@ struct WebPDecoderOptions {
                                       // Will be snapped to even values.
   int crop_width, crop_height;        // dimension of the cropping area
   int use_scaling;                    // if true, scaling is applied _afterward_
-  int scaled_width, scaled_height;    // final resolution
+  int scaled_width, scaled_height;    // final resolution. if one is 0, it is
+                                      // guessed from the other one to keep the
+                                      // original ratio.
   int use_threads;                    // if true, use multi-threaded decoding
   int dithering_strength;             // dithering strength (0=Off, 100=full)
   int flip;                           // if true, flip output vertically
@@ -478,6 +482,11 @@ WEBP_NODISCARD static WEBP_INLINE int WebPInitDecoderConfig(
     WebPDecoderConfig* config) {
   return WebPInitDecoderConfigInternal(config, WEBP_DECODER_ABI_VERSION);
 }
+
+// Returns true if 'config' is non-NULL and all configuration parameters are
+// within their valid ranges.
+WEBP_NODISCARD WEBP_EXTERN int WebPValidateDecoderConfig(
+    const WebPDecoderConfig* config);
 
 // Instantiate a new incremental decoder object with the requested
 // configuration. The bitstream can be passed using 'data' and 'data_size'

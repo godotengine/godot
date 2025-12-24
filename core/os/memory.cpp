@@ -110,9 +110,9 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 	} else {
 		mem = malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
 	}
-	GodotProfileAlloc(mem, p_bytes + (prepad ? DATA_OFFSET : 0));
 
 	ERR_FAIL_NULL_V(mem, nullptr);
+	GodotProfileAlloc(mem, p_bytes + (prepad ? DATA_OFFSET : 0));
 
 	if (prepad) {
 		uint8_t *s8 = (uint8_t *)mem;
@@ -180,9 +180,9 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 	} else {
 		GodotProfileFree(mem);
 		mem = (uint8_t *)realloc(mem, p_bytes);
-		GodotProfileAlloc(mem, p_bytes);
 
 		ERR_FAIL_COND_V(mem == nullptr && p_bytes > 0, nullptr);
+		GodotProfileAlloc(mem, p_bytes);
 
 		return mem;
 	}

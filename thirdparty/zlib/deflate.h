@@ -271,6 +271,9 @@ typedef struct internal_state {
     /* Number of valid bits in bi_buf.  All bits above the last valid bit
      * are always zero.
      */
+    int bi_used;
+    /* Last number of used bits when going to a byte boundary.
+     */
 
     ulg high_water;
     /* High water mark offset in window for initialized bytes -- bytes above

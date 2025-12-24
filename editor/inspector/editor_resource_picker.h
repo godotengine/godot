@@ -49,6 +49,7 @@ class EditorResourcePicker : public HBoxContainer {
 
 	bool editable = true;
 	bool dropping = false;
+	bool force_allow_unique = false;
 
 	Vector<String> inheritors_array;
 	mutable HashSet<StringName> allowed_types_without_convert;
@@ -142,6 +143,7 @@ public:
 	void set_edited_resource(Ref<Resource> p_resource);
 	void set_edited_resource_no_check(Ref<Resource> p_resource);
 	Ref<Resource> get_edited_resource();
+	void set_force_allow_unique(bool p_force) { force_allow_unique = p_force; }
 
 	void set_toggle_mode(bool p_enable);
 	bool is_toggle_mode() const;

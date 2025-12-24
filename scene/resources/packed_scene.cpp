@@ -78,18 +78,28 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 	return pinned;
 }
 
-Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene) {
+Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene) {
 	ERR_FAIL_COND_V(p_resource.is_null(), Ref<Resource>());
 
-	Ref<Resource> remap_resource;
-
 	// Find the shared copy of the source resource.
-	HashMap<Ref<Resource>, Ref<Resource>>::Iterator R = remap_cache.find(p_resource);
+	HashMap<Ref<Resource>, Ref<Resource>>::Iterator R = remap_cache[p_for_scene].find(p_resource);
 	if (R) {
-		remap_resource = R->value;
-	} else if (p_fallback.is_valid() && p_fallback->is_local_to_scene() && p_fallback->get_class() == p_resource->get_class()) {
-		// Simply copy the data from the source resource to update the fallback resource that was previously set.
+		return R->value;
+	}
 
+	bool reuse_fallback = p_fallback.is_valid() && p_fallback->is_local_to_scene() && p_fallback->get_class_name() == p_resource->get_class_name();
+
+	if (reuse_fallback) {
+		// The fallback resource can only be mapped at most once when it is valid.
+		for (const KeyValue<Ref<Resource>, Ref<Resource>> &E : remap_cache[p_for_scene]) {
+			if (E.value == p_fallback) {
+				reuse_fallback = false;
+				break;
+			}
+		}
+	}
+
+	if (reuse_fallback) { // Simply copy the data from the source resource to update the fallback resource that was previously set.
 		p_fallback->reset_state(); // May want to reset state.
 
 		List<PropertyInfo> pi;
@@ -113,18 +123,14 @@ Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, Ha
 
 			p_fallback->set(E.name, value);
 		}
-
-		p_fallback->set_scene_unique_id(p_resource->get_scene_unique_id()); // Get the id from the main scene, in case the id changes again when saving the scene.
-
-		remap_cache[p_resource] = p_fallback;
-		remap_resource = p_fallback;
-	} else { // A copy of the source resource is required to overwrite the previous one.
-		Ref<Resource> local_dupe = p_resource->duplicate_for_local_scene(p_for_scene, remap_cache);
-		remap_cache[p_resource] = local_dupe;
-		remap_resource = local_dupe;
+		remap_cache[p_for_scene][p_resource] = p_fallback;
+		return p_fallback;
 	}
 
-	return remap_resource;
+	// A copy of the source resource is required to overwrite the previous one.
+	Ref<Resource> local_dupe = p_resource->duplicate_for_local_scene(p_for_scene, remap_cache[p_for_scene]);
+	remap_cache[p_for_scene][p_resource] = local_dupe;
+	return local_dupe;
 }
 
 static Node *_find_node_by_id(Node *p_owner, Node *p_node, int32_t p_id) {
@@ -185,7 +191,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
 
-	HashMap<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
+	HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> resources_local_to_scenes; // Record the mappings in sub-scenes.
 
 	LocalVector<DeferredNodePathProperties> deferred_node_paths;
 
@@ -359,7 +365,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				const NodeData::Property *nprops = &n.properties[0];
 
 				Dictionary missing_resource_properties;
-				HashMap<Ref<Resource>, Ref<Resource>> resources_local_to_sub_scene; // Record the mappings in the sub-scene.
 
 				for (int j = 0; j < nprop_count; j++) {
 					bool valid;
@@ -430,7 +435,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							//handle resources that are local to scene by duplicating them if needed
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
-								value = make_local_resource(value, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
+								value = make_local_resource(value, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
 							}
 						} else {
 							// Making sure that instances of inherited scenes don't share the same
@@ -454,7 +459,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								}
 							}
 
-							value = setup_resources_in_array(set_array, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
+							value = setup_resources_in_array(set_array, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
 						}
 
 						if (value.get_type() == Variant::DICTIONARY) {
@@ -471,7 +476,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								}
 							}
 
-							value = setup_resources_in_dictionary(set_dict, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
+							value = setup_resources_in_dictionary(set_dict, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
 						}
 
 						bool set_valid = true;
@@ -493,12 +498,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				}
 				if (!missing_resource_properties.is_empty()) {
 					node->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
-				}
-
-				for (KeyValue<Ref<Resource>, Ref<Resource>> &E : resources_local_to_sub_scene) {
-					if (E.value->get_local_scene() == node) {
-						E.value->setup_local_to_scene(); // Setup may be required for the resource to work properly.
-					}
 				}
 			}
 
@@ -639,9 +638,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 	}
 
-	for (KeyValue<Ref<Resource>, Ref<Resource>> &E : resources_local_to_scene) {
-		if (E.value->get_local_scene() == ret_nodes[0]) {
-			E.value->setup_local_to_scene();
+	for (KeyValue<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &E : resources_local_to_scenes) {
+		for (KeyValue<Ref<Resource>, Ref<Resource>> &R : E.value) {
+			R.value->setup_local_to_scene(); // Setup may be required for the resource to work properly.
 		}
 	}
 
@@ -702,41 +701,46 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	return ret_nodes[0];
 }
 
-Variant SceneState::make_local_resource(Variant &p_value, const SceneState::NodeData &p_node_data, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
+Variant SceneState::make_local_resource(Variant &p_value, const SceneState::NodeData &p_node_data, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
 	Ref<Resource> res = p_value;
 	if (res.is_null() || !res->is_local_to_scene()) {
 		return p_value;
 	}
 
-	if (p_node_data.instance >= 0) { // For the root node of a sub-scene, treat it as part of the sub-scene.
-		return get_remap_resource(res, p_resources_local_to_sub_scene, p_node->get(p_sname), p_node);
-	} else {
-		HashMap<Ref<Resource>, Ref<Resource>>::Iterator E = p_resources_local_to_scene.find(res);
-		Node *base = p_i == 0 ? p_node : p_ret_nodes[0];
-		if (E) {
-			return E->value;
-		} else if (p_edit_state == GEN_EDIT_STATE_MAIN) { // For the main scene, use the resource as is
-			res->configure_for_local_scene(base, p_resources_local_to_scene);
-			p_resources_local_to_scene[res] = res;
-			return res;
-		} else { // For instances, a copy must be made.
-			Ref<Resource> local_dupe = res->duplicate_for_local_scene(base, p_resources_local_to_scene);
-			p_resources_local_to_scene[res] = local_dupe;
-			return local_dupe;
-		}
+	Node *base = (p_i == 0 || p_node->is_instance()) ? p_node : (p_node->get_owner() ? p_node->get_owner() : p_ret_nodes[0]);
+
+	if (p_node_data.type == TYPE_INSTANTIATED) { // For the (root) nodes of sub-scenes, treat them as parts of the sub-scenes.
+		return get_remap_resource(res, p_resources_local_to_scenes, p_node->get(p_sname), base);
 	}
+
+	// Find the shared copy of the source resource.
+	HashMap<Ref<Resource>, Ref<Resource>>::Iterator R = p_resources_local_to_scenes[base].find(res);
+	if (R) {
+		return R->value;
+	}
+
+	if (p_edit_state == GEN_EDIT_STATE_MAIN) { // For the main scene, use the resource as is
+		res->configure_for_local_scene(base, p_resources_local_to_scenes[base]);
+		p_resources_local_to_scenes[base][res] = res;
+		return res;
+	}
+
+	// For instances, a copy must be made.
+	Ref<Resource> local_dupe = res->duplicate_for_local_scene(base, p_resources_local_to_scenes[base]);
+	p_resources_local_to_scenes[base][res] = local_dupe;
+	return local_dupe;
 }
 
-Array SceneState::setup_resources_in_array(Array &p_array_to_scan, const SceneState::NodeData &p_n, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
+Array SceneState::setup_resources_in_array(Array &p_array_to_scan, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
 	for (int i = 0; i < p_array_to_scan.size(); i++) {
 		if (p_array_to_scan[i].get_type() == Variant::OBJECT) {
-			p_array_to_scan[i] = make_local_resource(p_array_to_scan[i], p_n, p_resources_local_to_sub_scene, p_node, p_sname, p_resources_local_to_scene, p_i, p_ret_nodes, p_edit_state);
+			p_array_to_scan[i] = make_local_resource(p_array_to_scan[i], p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
 		}
 	}
 	return p_array_to_scan;
 }
 
-Dictionary SceneState::setup_resources_in_dictionary(Dictionary &p_dictionary_to_scan, const SceneState::NodeData &p_n, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
+Dictionary SceneState::setup_resources_in_dictionary(Dictionary &p_dictionary_to_scan, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
 	const Array keys = p_dictionary_to_scan.keys();
 	const Array values = p_dictionary_to_scan.values();
 
@@ -744,8 +748,8 @@ Dictionary SceneState::setup_resources_in_dictionary(Dictionary &p_dictionary_to
 		Array duplicated_keys = keys.duplicate(true);
 		Array duplicated_values = values.duplicate(true);
 
-		duplicated_keys = setup_resources_in_array(duplicated_keys, p_n, p_resources_local_to_sub_scene, p_node, p_sname, p_resources_local_to_scene, p_i, p_ret_nodes, p_edit_state);
-		duplicated_values = setup_resources_in_array(duplicated_values, p_n, p_resources_local_to_sub_scene, p_node, p_sname, p_resources_local_to_scene, p_i, p_ret_nodes, p_edit_state);
+		duplicated_keys = setup_resources_in_array(duplicated_keys, p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
+		duplicated_values = setup_resources_in_array(duplicated_values, p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
 		p_dictionary_to_scan.clear();
 
 		for (int i = 0; i < keys.size(); i++) {

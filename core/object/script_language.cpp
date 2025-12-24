@@ -460,6 +460,15 @@ void ScriptServer::get_inheriters_list(const StringName &p_base_type, List<Strin
 	}
 }
 
+void ScriptServer::get_indirect_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes) {
+	List<StringName> direct_inheritors;
+	get_inheriters_list(p_base_type, &direct_inheritors);
+	for (const StringName &inheritor : direct_inheritors) {
+		r_classes->push_back(inheritor);
+		get_indirect_inheriters_list(inheritor, r_classes);
+	}
+}
+
 void ScriptServer::remove_global_class_by_path(const String &p_path) {
 	for (const KeyValue<StringName, GlobalScriptClass> &kv : global_classes) {
 		if (kv.value.path == p_path) {

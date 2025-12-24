@@ -587,12 +587,7 @@ void TwoBoneIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 	if (setting->root_bone.bone == -1 || setting->middle_bone.bone == -1 || !setting->is_end_valid()) {
 		return;
 	}
-	setting->mid_joint_solver_info = memnew(IKModifier3DSolverInfo);
-	setting->root_joint_solver_info = memnew(IKModifier3DSolverInfo);
 	_update_bone_axis(p_skeleton, p_index);
-
-	setting->init_current_joint_rotations(p_skeleton);
-
 	setting->simulation_dirty = false;
 }
 
@@ -616,8 +611,14 @@ void TwoBoneIK3D::_clear_joints(int p_index) {
 
 void TwoBoneIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
 	TwoBoneIK3DSetting *setting = tb_settings[p_index];
-	if (!setting || !setting->mid_joint_solver_info || !setting->root_joint_solver_info) {
+	if (!setting) {
 		return;
+	}
+	if (!setting->mid_joint_solver_info) {
+		setting->mid_joint_solver_info = memnew(IKModifier3DSolverInfo);
+	}
+	if (!setting->root_joint_solver_info) {
+		setting->root_joint_solver_info = memnew(IKModifier3DSolverInfo);
 	}
 #ifdef TOOLS_ENABLED
 	Vector3 old_mv = setting->mid_joint_solver_info->forward_vector;
@@ -645,7 +646,6 @@ void TwoBoneIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
 	global_rest_origin = orig;
 	if (!axis.is_zero_approx()) {
 		setting->mid_pos = p_skeleton->get_bone_global_pose(setting->middle_bone.bone).origin;
-		setting->mid_joint_solver_info = memnew(IKModifier3DSolverInfo);
 		setting->mid_joint_solver_info->forward_vector = p_skeleton->get_bone_global_rest(setting->middle_bone.bone).basis.get_rotation_quaternion().xform_inv(axis).normalized();
 		setting->mid_joint_solver_info->length = axis.length();
 	} else {
@@ -656,16 +656,16 @@ void TwoBoneIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
 	// Root bone.
 	orig = _get_bone_global_rest(p_skeleton, setting->root_bone.bone, setting->root_bone.bone).origin;
 	axis = global_rest_origin - orig;
-	global_rest_origin = orig;
 	if (!axis.is_zero_approx()) {
 		setting->root_pos = p_skeleton->get_bone_global_pose(setting->root_bone.bone).origin;
-		setting->root_joint_solver_info = memnew(IKModifier3DSolverInfo);
 		setting->root_joint_solver_info->forward_vector = p_skeleton->get_bone_global_rest(setting->root_bone.bone).basis.get_rotation_quaternion().xform_inv(axis).normalized();
 		setting->root_joint_solver_info->length = axis.length();
 	} else {
 		_clear_joints(p_index);
 		return;
 	}
+
+	setting->init_current_joint_rotations(p_skeleton);
 
 	double total_length = setting->root_joint_solver_info->length + setting->mid_joint_solver_info->length;
 	setting->cached_length_sq = total_length * total_length;
@@ -733,7 +733,8 @@ Transform3D TwoBoneIK3D::_get_bone_global_rest(Skeleton3D *p_skeleton, int p_bon
 	if (!mutable_bone_axes) {
 		return p_skeleton->get_bone_global_rest(p_bone);
 	}
-	Transform3D tr = Transform3D(p_skeleton->get_bone_rest(p_root).basis, p_skeleton->get_bone_pose(p_root).origin);
+	Transform3D tr = p_skeleton->get_bone_global_rest(p_root);
+	tr.origin = tr.origin - p_skeleton->get_bone_rest(p_root).origin + p_skeleton->get_bone_pose(p_root).origin;
 	LocalVector<int> path;
 	for (int bone = p_bone; bone != p_root && bone != -1; bone = p_skeleton->get_bone_parent(bone)) {
 		path.push_back(bone);

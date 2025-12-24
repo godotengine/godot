@@ -113,9 +113,9 @@ private:
 
 public:
 	void set_monitoring_feeds(bool p_monitoring_feeds) override;
-	void handle_pause();
-	void handle_resume();
-	void handle_rotation_change();
+	void handle_application_pause() override;
+	void handle_application_resume() override;
+	void handle_display_rotation_change(int p_orientation) override;
 
 	~CameraAndroid();
 };

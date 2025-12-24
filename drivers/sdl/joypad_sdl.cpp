@@ -56,19 +56,6 @@ JoypadSDL::JoypadSDL() {
 	singleton = this;
 }
 
-#ifdef WINDOWS_ENABLED
-extern "C" {
-HWND SDL_HelperWindow;
-}
-
-// Required for DInput joypads to work
-// TODO: remove this workaround when we update to newer version of SDL
-JoypadSDL::JoypadSDL(HWND p_helper_window) :
-		JoypadSDL() {
-	SDL_HelperWindow = p_helper_window;
-}
-#endif
-
 JoypadSDL::~JoypadSDL() {
 	// Process any remaining input events
 	process_events();

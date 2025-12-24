@@ -65,6 +65,6 @@ public:
 	virtual real_t get_inverse_mass() const;
 
 	TypedArray<PhysicsBody3D> get_collision_exceptions();
-	void add_collision_exception_with(Node *p_node); //must be physicsbody
-	void remove_collision_exception_with(Node *p_node);
+	void add_collision_exception_with(RequiredParam<Node> rp_node); //must be physicsbody
+	void remove_collision_exception_with(RequiredParam<Node> rp_node);
 };

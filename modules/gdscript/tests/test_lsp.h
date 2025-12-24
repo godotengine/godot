@@ -54,6 +54,17 @@
 
 #include "thirdparty/doctest/doctest.h"
 
+class TestGDScriptLanguageProtocolInitializer {
+public:
+	static void setup_client() {
+		GDScriptLanguageProtocol *proto = GDScriptLanguageProtocol::get_singleton();
+		Ref<GDScriptLanguageProtocol::LSPeer> peer = memnew(GDScriptLanguageProtocol::LSPeer);
+		proto->clients.insert(proto->next_client_id, peer);
+		proto->latest_client_id = proto->next_client_id;
+		proto->next_client_id++;
+	}
+};
+
 template <>
 struct doctest::StringMaker<LSP::Position> {
 	static doctest::String convert(const LSP::Position &p_val) {
@@ -96,6 +107,7 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 	init_language(absolute_root);
 
 	GDScriptLanguageProtocol *proto = memnew(GDScriptLanguageProtocol);
+	TestGDScriptLanguageProtocolInitializer::setup_client();
 
 	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 	workspace->root = absolute_root;
@@ -502,8 +514,7 @@ func f():
 
 			for (const String &path : paths) {
 				assert_no_errors_in(path);
-				GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
-				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
+				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 				REQUIRE(parser);
 				LSP::DocumentSymbol cls = parser->get_symbols();
 
@@ -515,8 +526,7 @@ func f():
 		SUBCASE("Documentation is correctly set") {
 			String path = "res://lsp/doc_comments.gd";
 			assert_no_errors_in(path);
-			GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
-			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
+			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 			REQUIRE(parser);
 			LSP::DocumentSymbol cls = parser->get_symbols();
 			REQUIRE(cls.documentation.contains("brief"));
@@ -529,6 +539,69 @@ func f():
 		memdelete(proto);
 		memdelete(efs);
 		finish_language();
+	}
+
+	TEST_CASE("BBCode to markdown conversion") {
+		// This tests the conversion from BBCode docstrings to the markdown markup sent to
+		// the LSP client on documentation requests
+
+		// Basic formatting
+		CHECK_EQ(LSP::marked_documentation("[b]bold[/b]"), "**bold**");
+		CHECK_EQ(LSP::marked_documentation("[i]italic[/i]"), "*italic*");
+		CHECK_EQ(LSP::marked_documentation("[u]underline[/u]"), "__underline__");
+		CHECK_EQ(LSP::marked_documentation("[s]strikethrough[/s]"), "~~strikethrough~~");
+		CHECK_EQ(LSP::marked_documentation("[code]code[/code]"), "`code`");
+		CHECK_EQ(LSP::marked_documentation("[kbd]Ctrl + S[/kbd]"), "`Ctrl + S`");
+
+		// Line breaks. We insert paragraphs for [br] because the BBCode to
+		// markdown conversion function simply makes the conversion line-wise and
+		// we don't distinguish markdown inline elements and blocks.
+		CHECK_EQ(LSP::marked_documentation("Line1[br]Line2"), "Line1\n\nLine2");
+
+		// These tags (center, color, font) aren't supported in markdown and should be stripped.
+		CHECK_EQ(LSP::marked_documentation("[center]Centered text[/center]"), "Centered text");
+		CHECK_EQ(LSP::marked_documentation("[color=red]red text[/color]"), "red text");
+		CHECK_EQ(LSP::marked_documentation("[font=Arial]Arial text[/font]"), "Arial text");
+
+		// The following tests are for all the link patterns specific to Godot's built-in docs that we render as inline code.
+		CHECK_EQ(LSP::marked_documentation("Class link: [Node2D], [Sprite2D]"), "Class link: `Node2D`, `Sprite2D`");
+		CHECK_EQ(LSP::marked_documentation("Single class [RigidBody2D]"), "Single class `RigidBody2D`");
+		CHECK_EQ(LSP::marked_documentation("[method Node2D.set_position]"), "`Node2D.set_position`");
+		CHECK_EQ(LSP::marked_documentation("[member Node2D.position]"), "`Node2D.position`");
+		CHECK_EQ(LSP::marked_documentation("[signal Node.ready]"), "`Node.ready`");
+		CHECK_EQ(LSP::marked_documentation("[constant Color.RED]"), "`Color.RED`");
+		CHECK_EQ(LSP::marked_documentation("[enum Node.ProcessMode]"), "`Node.ProcessMode`");
+		CHECK_EQ(LSP::marked_documentation("[annotation @GDScript.@export]"), "`@GDScript.@export`");
+		CHECK_EQ(LSP::marked_documentation("[constructor Vector2.Vector2]"), "`Vector2.Vector2`");
+		CHECK_EQ(LSP::marked_documentation("[operator Vector2.operator +]"), "`Vector2.operator +`");
+		CHECK_EQ(LSP::marked_documentation("[theme_item Button.font]"), "`Button.font`");
+		CHECK_EQ(LSP::marked_documentation("[param delta]"), "`delta`");
+
+		// Markdown links
+		CHECK_EQ(LSP::marked_documentation("[url=https://godotengine.org]link to Godot Engine[/url]"),
+				"[link to Godot Engine](https://godotengine.org)");
+		CHECK_EQ(LSP::marked_documentation("[url]https://godotengine.org/[/url]"),
+				"[https://godotengine.org/](https://godotengine.org/)");
+
+		// Code listings
+		CHECK_EQ(LSP::marked_documentation("[codeblock]\nfunc test():\n    print(\"Hello, Godot!\")\n[/codeblock]"),
+				"```gdscript\nfunc test():\n    print(\"Hello, Godot!\")\n```");
+		CHECK_EQ(LSP::marked_documentation("[codeblock lang=csharp]\npublic void Test()\n{\n    GD.Print(\"Hello, Godot!\");\n}\n[/codeblock]"),
+				"```csharp\npublic void Test()\n{\n    GD.Print(\"Hello, Godot!\");\n}\n```");
+		// Code listings with multiple languages (the codeblocks tag is used in the built-in reference)
+		// When [codeblocks] is used, we only convert the [gdscript] tag to a code block like the built-in editor.
+		// NOTE: There is always a GDScript code listing in the built-in class reference.
+		CHECK_EQ(LSP::marked_documentation("[codeblocks]\n[gdscript]\nprint(hash(\"a\")) # Prints 177670\n[/gdscript]\n[csharp]\nGD.Print(GD.Hash(\"a\")); // Prints 177670\n[/csharp]\n[/codeblocks]"),
+				"```gdscript\nprint(hash(\"a\")) # Prints 177670\n```\n");
+
+		// lb and rb are used to insert literal square brackets in markdown.
+		CHECK_EQ(LSP::marked_documentation("[lb]literal brackets[rb]"), "\\[literal brackets\\]");
+		CHECK_EQ(LSP::marked_documentation("[lb]literal[rb] with [ClassName]"), "\\[literal\\] with `ClassName`");
+
+		// We have to be careful that different patterns don't conflict with each
+		// other, especially with urls that use brackets in markdown.
+		CHECK_EQ(LSP::marked_documentation("Class [Sprite2D] with [url=https://godotengine.org]link[/url]"),
+				"Class `Sprite2D` with [link](https://godotengine.org)");
 	}
 }
 

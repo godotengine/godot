@@ -1,0 +1,6 @@
+GH-74671
+--------
+Validate extension JSON: Error: Field 'native_structures/PhysicsServer3DExtensionMotionCollision': format changed value in new API, from "Vector3 position;Vector3 normal;Vector3 collider_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape" to "Vector3 position;Vector3 normal;Vector3 collider_velocity;Vector3 collider_angular_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape".
+Validate extension JSON: Error: Field 'native_structures/PhysicsServer3DExtensionMotionResult': format changed value in new API, from "Vector3 travel;Vector3 remainder;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count" to "Vector3 travel;Vector3 remainder;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count".
+
+The previous type was simply wrong and didn't match the actual C++ definition. Code targeting previous versions should use the updated definition as well.

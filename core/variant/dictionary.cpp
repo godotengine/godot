@@ -133,7 +133,7 @@ const Variant &Dictionary::operator[](const Variant &p_key) const {
 	} else {
 		static Variant empty;
 		const Variant *value = _p->variant_map.getptr(key);
-		ERR_FAIL_COND_V_MSG(!value, empty, "Bug: Dictionary::operator[] used when there was no value for the given key, please report.");
+		ERR_FAIL_COND_V_MSG(!value, empty, vformat(R"(Bug: Dictionary::operator[] used when there was no value for the given key "%s". Please report.)", key));
 		return *value;
 	}
 }

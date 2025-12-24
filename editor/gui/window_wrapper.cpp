@@ -236,6 +236,11 @@ void WindowWrapper::restore_window_from_saved_position(const Rect2 p_window_rect
 	int screen = p_screen;
 	Rect2 restored_screen_rect = p_screen_rect;
 
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+		window_rect = Rect2i();
+		restored_screen_rect = Rect2i();
+	}
+
 	if (screen < 0 || screen >= DisplayServer::get_singleton()->get_screen_count()) {
 		// Fallback to the main window screen if the saved screen is not available.
 		screen = get_window()->get_window_id();

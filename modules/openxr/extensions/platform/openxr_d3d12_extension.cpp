@@ -37,7 +37,7 @@
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-HashMap<String, bool *> OpenXRD3D12Extension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRD3D12Extension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_D3D12_ENABLE_EXTENSION_NAME] = nullptr;

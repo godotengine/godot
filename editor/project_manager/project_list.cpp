@@ -62,10 +62,10 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_title->begin_bulk_theme_override();
 			project_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title"), EditorStringName(EditorFonts)));
 			project_title->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
-			project_title->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
+			project_title->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("ProjectList")));
 			project_title->end_bulk_theme_override();
 
-			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
+			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("ProjectList")));
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_focus_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -136,17 +136,19 @@ void ProjectListItemControl::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (is_selected) {
-				draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			if (is_selected && is_hovering) {
+				draw_style_box(get_theme_stylebox(SNAME("hover_pressed"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
+			} else if (is_selected) {
+				draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
+			} else if (is_hovering) {
+				draw_style_box(get_theme_stylebox(SNAME("hovered"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
 			}
-			if (is_hovering) {
-				draw_style_box(get_theme_stylebox(SNAME("hovered"), SNAME("Tree")), Rect2(Point2(), get_size()));
-			}
-			if (has_focus()) {
-				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			// Due to how this control works, we can't rely on the built-in way of checking for focus visibility.
+			if (has_focus() && !is_focus_hidden) {
+				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
 			}
 
-			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
+			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("ProjectList")));
 		} break;
 	}
 }
@@ -296,8 +298,9 @@ bool ProjectListItemControl::should_load_project_icon() const {
 	return icon_needs_reload;
 }
 
-void ProjectListItemControl::set_selected(bool p_selected) {
+void ProjectListItemControl::set_selected(bool p_selected, bool p_hide_focus) {
 	is_selected = p_selected;
+	is_focus_hidden = is_selected && p_hide_focus;
 	queue_redraw();
 	queue_accessibility_update();
 }
@@ -306,8 +309,10 @@ void ProjectListItemControl::set_is_favorite(bool p_favorite) {
 	is_favorite = p_favorite;
 	if (p_favorite) {
 		favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
+		favorite_button->set_accessibility_name(TTRC("Remove from Favorites"));
 	} else {
 		favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Unfavorite")));
+		favorite_button->set_accessibility_name(TTRC("Add to Favorites"));
 	}
 }
 
@@ -1017,7 +1022,7 @@ int ProjectList::get_index(const ProjectListItemControl *p_control) const {
 void ProjectList::ensure_project_visible(int p_index) {
 	const Item &item = _projects[p_index];
 	// Since follow focus is enabled.
-	item.control->grab_focus();
+	item.control->grab_focus(true);
 }
 
 void ProjectList::_create_project_item_control(int p_index) {
@@ -1111,7 +1116,7 @@ void ProjectList::_list_item_input(const Ref<InputEvent> &p_ev, Control *p_hb) {
 
 			} else {
 				_last_clicked = clicked_project.path;
-				select_project(clicked_index);
+				select_project(clicked_index, true);
 			}
 
 			emit_signal(SNAME(SIGNAL_SELECTION_CHANGED));
@@ -1255,10 +1260,10 @@ void ProjectList::_clear_project_selection() {
 	queue_accessibility_update();
 }
 
-void ProjectList::_select_project_nocheck(int p_index) {
+void ProjectList::_select_project_nocheck(int p_index, bool p_hide_focus) {
 	Item &item = _projects.write[p_index];
 	_selected_project_paths.insert(item.path);
-	item.control->set_selected(true);
+	item.control->set_selected(true, p_hide_focus);
 	queue_accessibility_update();
 }
 
@@ -1286,10 +1291,10 @@ void ProjectList::_select_project_range(int p_begin, int p_end) {
 	}
 }
 
-void ProjectList::select_project(int p_index) {
+void ProjectList::select_project(int p_index, bool p_hide_focus) {
 	// This method keeps only one project selected.
 	_clear_project_selection();
-	_select_project_nocheck(p_index);
+	_select_project_nocheck(p_index, p_hide_focus);
 }
 
 void ProjectList::deselect_project(int p_index) {
@@ -1303,6 +1308,22 @@ void ProjectList::select_first_visible_project() {
 		if (_projects[i].control->is_visible()) {
 			_select_project_nocheck(i);
 			break;
+		}
+	}
+}
+
+void ProjectList::deselect_all_visible_projects() {
+	for (int i = 0; i < _projects.size(); i++) {
+		if (_projects[i].control->is_visible()) {
+			_deselect_project_nocheck(i);
+		}
+	}
+}
+
+void ProjectList::select_all_visible_projects() {
+	for (int i = 0; i < _projects.size(); i++) {
+		if (_projects[i].control->is_visible()) {
+			_select_project_nocheck(i);
 		}
 	}
 }
