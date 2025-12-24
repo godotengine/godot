@@ -221,7 +221,11 @@ void (*XRRFreeMonitors_dylibloader_wrapper_xrandr)(XRRMonitorInfo *);
 int initialize_xrandr(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  handle = dlopen("libXrandr.so", RTLD_LAZY);
+#else
   handle = dlopen("libXrandr.so.2", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
