@@ -40,6 +40,7 @@ class Mesh;
 class OpenXRAPI;
 class OpenXRCompositionLayerExtension;
 class SubViewport;
+class XRCamera3D;
 
 class OpenXRCompositionLayer : public Node3D {
 	GDCLASS(OpenXRCompositionLayer, Node3D);
@@ -124,6 +125,8 @@ private:
 	void _clear_composition_layer();
 
 	void _viewport_size_changed();
+
+	XRCamera3D *_get_xrcamera3d_ancestor() const;
 
 protected:
 	OpenXRAPI *openxr_api = nullptr;
