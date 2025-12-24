@@ -491,6 +491,8 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	}
 #endif
 
+	extension->gdextension.create_gdtype();
+
 	ClassDB::register_extension_class(&extension->gdextension);
 
 	if (p_extension_funcs->icon_path != nullptr) {
@@ -802,9 +804,6 @@ void GDExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_EDITOR);
 }
 
-GDExtension::GDExtension() {
-}
-
 GDExtension::~GDExtension() {
 	if (is_library_open()) {
 		close_library();
@@ -973,6 +972,8 @@ void GDExtension::_clear_extension(Extension *p_extension) {
 
 		obj->clear_internal_extension();
 	}
+
+	p_extension->gdextension.destroy_gdtype();
 }
 
 void GDExtension::track_instance_binding(Object *p_object) {

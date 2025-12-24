@@ -40,6 +40,8 @@
 #include "openxr_extension_wrapper.h"
 #include "openxr_fb_update_swapchain_extension.h"
 
+#include "../openxr_platform_inc.h"
+
 class OpenXRFBFoveationExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRFBFoveationExtension, OpenXRExtensionWrapper);
 
@@ -52,11 +54,12 @@ public:
 	OpenXRFBFoveationExtension(const String &p_rendering_driver);
 	virtual ~OpenXRFBFoveationExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;
 
+	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) override;
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) override;
 
 	virtual void on_main_swapchains_created() override;
@@ -69,6 +72,9 @@ public:
 	XrFoveationDynamicFB get_foveation_dynamic() const;
 	void set_foveation_dynamic(XrFoveationDynamicFB p_foveation_dynamic);
 
+	bool is_foveation_eye_tracked_enabled() const;
+	void get_fragment_density_offsets(LocalVector<Vector2i> &r_offsets);
+
 private:
 	static OpenXRFBFoveationExtension *singleton;
 
@@ -77,26 +83,36 @@ private:
 	bool fb_foveation_ext = false;
 	bool fb_foveation_configuration_ext = false;
 	bool fb_foveation_vulkan_ext = false;
+	bool meta_foveation_eye_tracked_ext = false;
+	bool meta_vulkan_swapchain_create_info_ext = false;
 
 	// Configuration
 	XrFoveationLevelFB foveation_level = XR_FOVEATION_LEVEL_NONE_FB;
 	XrFoveationDynamicFB foveation_dynamic = XR_FOVEATION_DYNAMIC_DISABLED_FB;
 
-	static void _update_profile();
+	void _update_profile_rt();
 
 	void update_profile() {
 		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRFBFoveationExtension::_update_profile));
+		rendering_server->call_on_render_thread(callable_mp(this, &OpenXRFBFoveationExtension::_update_profile_rt));
 	}
 
 	// Enable foveation on this swapchain
 	XrSwapchainCreateInfoFoveationFB swapchain_create_info_foveation_fb;
 	OpenXRFBUpdateSwapchainExtension *swapchain_update_state_ext = nullptr;
 
+	// Enable eye tracked foveation
+	XrSystemFoveationEyeTrackedPropertiesMETA meta_foveation_eye_tracked_properties;
+	XrFoveationEyeTrackedProfileCreateInfoMETA meta_foveation_eye_tracked_create_info;
+#ifdef VULKAN_ENABLED
+	XrVulkanSwapchainCreateInfoMETA meta_vulkan_swapchain_create_info;
+#endif
+
 	// OpenXR API call wrappers
 	EXT_PROTO_XRRESULT_FUNC3(xrCreateFoveationProfileFB, (XrSession), session, (const XrFoveationProfileCreateInfoFB *), create_info, (XrFoveationProfileFB *), profile);
 	EXT_PROTO_XRRESULT_FUNC1(xrDestroyFoveationProfileFB, (XrFoveationProfileFB), profile);
+	EXT_PROTO_XRRESULT_FUNC2(xrGetFoveationEyeTrackedStateMETA, (XrSession), session, (XrFoveationEyeTrackedStateMETA *), foveationState);
 };

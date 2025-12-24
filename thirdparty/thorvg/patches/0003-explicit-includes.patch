@@ -1,0 +1,36 @@
+diff --git a/thirdparty/thorvg/src/common/tvgCompressor.cpp b/thirdparty/thorvg/src/common/tvgCompressor.cpp
+index 714f21e07c..d97ae85705 100644
+--- a/thirdparty/thorvg/src/common/tvgCompressor.cpp
++++ b/thirdparty/thorvg/src/common/tvgCompressor.cpp
+@@ -57,6 +57,7 @@
+ 
+ 
+ 
++#include <cstdlib>
+ #include <string>
+ #include <memory.h>
+ #include "tvgCompressor.h"
+diff --git a/thirdparty/thorvg/src/common/tvgStr.cpp b/thirdparty/thorvg/src/common/tvgStr.cpp
+index 957fe18d53..fe2e13bc71 100644
+--- a/thirdparty/thorvg/src/common/tvgStr.cpp
++++ b/thirdparty/thorvg/src/common/tvgStr.cpp
+@@ -22,6 +22,7 @@
+ 
+ #include "config.h"
+ #include <cmath>
++#include <cstdlib>
+ #include <cstring>
+ #include <memory.h>
+ #include "tvgMath.h"
+diff --git a/thirdparty/thorvg/src/loaders/svg/tvgSvgUtil.cpp b/thirdparty/thorvg/src/loaders/svg/tvgSvgUtil.cpp
+index 542cd17e56..45fdc9cf0d 100644
+--- a/thirdparty/thorvg/src/loaders/svg/tvgSvgUtil.cpp
++++ b/thirdparty/thorvg/src/loaders/svg/tvgSvgUtil.cpp
+@@ -20,6 +20,7 @@
+  * SOFTWARE.
+  */
+ 
++#include <cstdlib>
+ #include <cstring>
+ #include "tvgSvgUtil.h"
+ 

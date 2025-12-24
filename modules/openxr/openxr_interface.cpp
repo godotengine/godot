@@ -1408,8 +1408,32 @@ void OpenXRInterface::on_state_exiting() {
 	emit_signal(SNAME("instance_exiting"));
 }
 
-void OpenXRInterface::on_reference_space_change_pending() {
+void OpenXRInterface::on_reference_space_change_pending(XrReferenceSpaceType p_type) {
 	reference_stage_changing = true;
+
+	// Emit play area bounds changed signal when the reference space changes.
+	PlayAreaMode mode = XR_PLAY_AREA_UNKNOWN;
+
+	switch (p_type) {
+		case XR_REFERENCE_SPACE_TYPE_VIEW:
+			mode = XR_PLAY_AREA_3DOF;
+			break;
+		case XR_REFERENCE_SPACE_TYPE_LOCAL:
+			mode = XR_PLAY_AREA_SITTING;
+			break;
+		case XR_REFERENCE_SPACE_TYPE_STAGE:
+			mode = XR_PLAY_AREA_STAGE;
+			break;
+		case XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR:
+			mode = XR_PLAY_AREA_ROOMSCALE;
+			break;
+		default:
+			mode = XR_PLAY_AREA_UNKNOWN;
+			break;
+	}
+
+	print_verbose("OpenXR Interface: Play area changed, emitting signal.");
+	emit_signal(SNAME("play_area_changed"), mode);
 }
 
 void OpenXRInterface::on_refresh_rate_changes(float p_new_rate) {

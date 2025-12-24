@@ -416,7 +416,7 @@ void EmbeddedProcess::_check_focused_process_id() {
 			if (modal_window->get_mode() == Window::MODE_MINIMIZED) {
 				modal_window->set_mode(Window::MODE_WINDOWED);
 			}
-			callable_mp(modal_window, &Window::grab_focus).call_deferred(false);
+			callable_mp(modal_window, &Window::grab_focus).call_deferred();
 		}
 	}
 }

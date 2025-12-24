@@ -71,8 +71,6 @@ public:
 	_ALWAYS_INLINE_ uint64_t get_id() const { return _id; }
 
 	uint32_t hash() const { return HashMapHasherDefault::hash(_id); }
-
-	_ALWAYS_INLINE_ RID() {}
 };
 
 template <>

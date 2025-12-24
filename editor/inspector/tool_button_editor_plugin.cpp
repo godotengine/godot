@@ -30,6 +30,9 @@
 
 #include "tool_button_editor_plugin.h"
 
+#include "editor/editor_node.h"
+#include "editor/inspector/multi_node_edit.h"
+
 void EditorInspectorToolButtonPlugin::_call_action(const Variant &p_object, const StringName &p_property) {
 	Object *object = p_object.get_validated_object();
 	ERR_FAIL_NULL_MSG(object, vformat(R"(Failed to get property "%s" on a previously freed instance.)", p_property));
@@ -40,10 +43,26 @@ void EditorInspectorToolButtonPlugin::_call_action(const Variant &p_object, cons
 	const Callable callable = value;
 	ERR_FAIL_COND_MSG(!callable.is_valid(), vformat(R"(Tool button action "%s" is an invalid callable.)", callable));
 
+	Ref<MultiNodeEdit> multinode = p_object;
+	if (multinode.is_valid()) {
+		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+		if (edited_scene) {
+			const StringName method = callable.get_method();
+			for (int i = 0; i < multinode->get_node_count(); i++) {
+				Callable retarget(edited_scene->get_node(multinode->get_node(i)), method);
+				_invoke_callable(retarget);
+			}
+		}
+	} else {
+		_invoke_callable(callable);
+	}
+}
+
+void EditorInspectorToolButtonPlugin::_invoke_callable(const Callable &p_callable) {
 	Variant ret;
 	Callable::CallError ce;
-	callable.callp(nullptr, 0, ret, ce);
-	ERR_FAIL_COND_MSG(ce.error != Callable::CallError::CALL_OK, vformat(R"(Error calling tool button action "%s": %s)", callable, Variant::get_call_error_text(callable.get_method(), nullptr, 0, ce)));
+	p_callable.callp(nullptr, 0, ret, ce);
+	ERR_FAIL_COND_MSG(ce.error != Callable::CallError::CALL_OK, vformat(R"(Error calling tool button action "%s": %s)", p_callable, Variant::get_call_error_text(p_callable.get_method(), nullptr, 0, ce)));
 }
 
 bool EditorInspectorToolButtonPlugin::can_handle(Object *p_object) {
@@ -61,7 +80,16 @@ bool EditorInspectorToolButtonPlugin::parse_property(Object *p_object, const Var
 
 	EditorInspectorActionButton *action_button = memnew(EditorInspectorActionButton(hint_text, hint_icon));
 	action_button->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
-	action_button->set_disabled(p_usage & PROPERTY_USAGE_READ_ONLY);
+	bool is_multinode = Object::cast_to<MultiNodeEdit>(p_object);
+	if (p_usage & PROPERTY_USAGE_READ_ONLY) {
+		action_button->set_disabled(true);
+	} else if (is_multinode) {
+		const Callable callback = p_object->get(p_path);
+		if (callback.is_custom()) {
+			action_button->set_disabled(true);
+			action_button->set_tooltip_text(TTR("The assigned tool button callback can't be used with multiple nodes."));
+		}
+	}
 	action_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorToolButtonPlugin::_call_action).bind(p_object, p_path));
 
 	add_custom_control(action_button);

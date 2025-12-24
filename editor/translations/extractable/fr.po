@@ -18,11 +18,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "All Recognized"
-msgstr "Tous les types de fichiers reconnus"
-
 msgid "New Code Region"
 msgstr "Nouvelle section de code"
+
+msgid "Linear"
+msgstr "Linéaire"
 
 msgid "Pick a color from the screen."
 msgstr "Échantillonner une couleur depuis l'écran."
@@ -30,11 +30,26 @@ msgstr "Échantillonner une couleur depuis l'écran."
 msgid "Pick a color from the application window."
 msgstr "Échantillonner une couleur depuis la fenêtre de l'application."
 
+msgid "Alpha"
+msgstr "Alpha"
+
+msgid "Intensity"
+msgstr "Intensité"
+
+msgid "Expr"
+msgstr "Expr"
+
 msgid "Hex"
 msgstr "Hex"
 
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "Entrez un code hexadécimal («#ff0000») ou le nom d'une couleur («red»)."
+
+msgid "Load Color Palette"
+msgstr "Charger une palette de couleurs"
+
+msgid "Save Color Palette"
+msgstr "Enregistrer une palette de couleurs"
 
 msgid "The changes to this palette have not been saved to a file."
 msgstr ""
@@ -47,10 +62,16 @@ msgid "Save the current color palette to reuse later."
 msgstr ""
 "Enregistrer la palette de couleurs actuelle pour la réutiliser ultérieurement."
 
+msgid "Save As"
+msgstr "Enregistrer sous"
+
 msgid "Save the current color palette as a new to reuse later."
 msgstr ""
 "Enregistrer la palette de couleurs actuelle en tant que nouvelle palette pour "
 "la réutiliser ultérieurement."
+
+msgid "Load"
+msgstr "Charger"
 
 msgid "Load existing color palette."
 msgstr "Charger une palette de couleurs existante."
@@ -62,6 +83,9 @@ msgid "Clear the currently loaded color palettes in the picker."
 msgstr ""
 "Effacer les palettes de couleurs actuellement chargées dans le sélecteur."
 
+msgid "Pick"
+msgstr "Sélectionner"
+
 msgid "Select a picker shape."
 msgstr "Sélectionnez une forme de sélection."
 
@@ -70,6 +94,9 @@ msgstr "Sélectionnez un mode de sélection."
 
 msgid "Colorized Sliders"
 msgstr "Curseurs colorés"
+
+msgid "Hexadecimal Values"
+msgstr "Valeurs hexadécimales"
 
 msgid "Hex code or named color"
 msgstr "Code hexadécimal ou nom de couleur"
@@ -85,6 +112,43 @@ msgstr "Couleurs récentes"
 
 msgid "Add current color as a preset."
 msgstr "Ajouter la couleur courante comme préréglage."
+
+msgid ""
+"Color: %s\n"
+"LMB: Apply color"
+msgstr ""
+"Couleur : %s\n"
+"Clic gauche : Appliquer la couleur"
+
+msgid ""
+"Color: %s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"Couleur : %s\n"
+"Clic gauche : Appliquer la couleur\n"
+"Clic droit : Supprimer le préréglage"
+
+msgid "Color: %s"
+msgstr "Couleur : %s"
+
+msgid "HSV Rectangle"
+msgstr "Rectangle TSV"
+
+msgid "OK HS Rectangle"
+msgstr "Rectangle OK TS"
+
+msgid "OK HL Rectangle"
+msgstr "Rectangle OK TL"
+
+msgid "HSV Wheel"
+msgstr "Roue TSV"
+
+msgid "VHS Circle"
+msgstr "Cercle VTS"
+
+msgid "OKHSL Circle"
+msgstr "Cercle OK TSL"
 
 msgid "Cancel"
 msgstr "Annuler"
@@ -117,14 +181,32 @@ msgstr "Sélectionner le dossier courant"
 msgid "Select This Folder"
 msgstr "Sélectionner ce dossier"
 
+msgid "Copy Path"
+msgstr "Copier le chemin"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "New Folder..."
+msgstr "Créer un dossier..."
+
+msgid "Refresh"
+msgstr "Rafraîchir"
+
 msgid "Open in File Manager"
 msgstr "Ouvrir dans le gestionnaire de fichiers"
+
+msgid "Show in File Manager"
+msgstr "Voir dans le gestionnaire de fichiers"
 
 msgid "Show Package Contents"
 msgstr "Voir le contenu du paquet"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "Vous n'avez pas l'autorisation d'accéder au contenu de ce dossier."
+
+msgid "All Recognized"
+msgstr "Tous les types de fichiers reconnus"
 
 msgid "All Files"
 msgstr "Tous les fichiers"
@@ -156,11 +238,23 @@ msgstr "Aller au dossier parent."
 msgid "Path:"
 msgstr "Chemin :"
 
+msgid "Drive"
+msgstr "Disque"
+
 msgid "Refresh files."
 msgstr "Rafraîchir les fichiers."
 
+msgid "(Un)favorite current folder."
+msgstr "(Dé)favoriser le dossier courant."
+
 msgid "Create a new folder."
 msgstr "Créer un nouveau dossier."
+
+msgid "Favorites:"
+msgstr "Favoris :"
+
+msgid "Recent:"
+msgstr "Récent :"
 
 msgid "Directories & Files:"
 msgstr "Répertoires et fichiers :"
@@ -168,8 +262,53 @@ msgstr "Répertoires et fichiers :"
 msgid "Toggle the visibility of hidden files."
 msgstr "Activer / désactiver la visibilité des fichiers cachés."
 
+msgid "View items as a grid of thumbnails."
+msgstr "Afficher les éléments sous forme de grille d'aperçus."
+
+msgid "View items as a list."
+msgstr "Afficher les éléments sous forme de liste."
+
+msgid "Toggle the visibility of the filter for file names."
+msgstr "Activer / désactiver la visibilité du filtre pour les noms de fichiers."
+
+msgid "Sort files"
+msgstr "Trier les fichiers"
+
+msgid "Sort by Name (Ascending)"
+msgstr "Trier par nom (ascendant)"
+
+msgid "Sort by Name (Descending)"
+msgstr "Trier par nom (descendant)"
+
+msgid "Sort by Type (Ascending)"
+msgstr "Trier par type (ascendant)"
+
+msgid "Sort by Type (Descending)"
+msgstr "Trier par type (descendant)"
+
+msgid "Sort by Modified Time (Newest First)"
+msgstr "Trier par date de modification (plus récents d'abord)"
+
+msgid "Sort by Modified Time (Oldest First)"
+msgstr "Trier par date de modification (plus anciens d'abord)"
+
+msgid "Filter:"
+msgstr "Filtrer :"
+
+msgid "Filename Filter:"
+msgstr "Nom de fichier :"
+
 msgid "File:"
 msgstr "Fichier :"
+
+msgid ""
+"Delete the selected file?\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"Supprimer le fichier sélectionné ?\n"
+"Selon la configuration de votre système de fichier, les fichiers seront soit "
+"déplacés dans la corbeille système soit supprimés définitivement."
 
 msgid "Create Folder"
 msgstr "Créer un dossier"
@@ -182,6 +321,12 @@ msgstr "Impossible de créer le dossier."
 
 msgid "Invalid extension, or empty filename."
 msgstr "Extension invalide ou nom de fichier manquant."
+
+msgid "connection to %s (%s) port %d"
+msgstr "connexion à %s (%s) port %d"
+
+msgid "connection from %s (%s) port %d"
+msgstr "connexion depuis %s (%s) port %d"
 
 msgid "Zoom Out"
 msgstr "Dézoomer"
@@ -206,6 +351,48 @@ msgstr "Activer/Désactiver la mini-carte du graphe."
 
 msgid "Automatically arrange selected nodes."
 msgstr "Réarrangement automatique des nœuds sélectionnés."
+
+msgid "graph node %s (%s)"
+msgstr "nœud de graphe %s (%s)"
+
+msgid "slot %d of %d"
+msgstr "emplacement %d de %d"
+
+msgid "input port, type: %s"
+msgstr "port d'entrée, type : %s"
+
+msgid "input port, type: %d"
+msgstr "port d'entrée, type : %d"
+
+msgid "no connections"
+msgstr "aucune connexion"
+
+msgid "output port, type: %s"
+msgstr "port de sortie, type : %s"
+
+msgid "output port, type: %d"
+msgstr "port de sortie, type : %d"
+
+msgid "currently selecting target port"
+msgstr "en train de sélectionner le port cible"
+
+msgid "has %d slots"
+msgstr "a %d emplacements"
+
+msgid "Edit Input Port Connection"
+msgstr "Éditer la connexion du port d'entrée"
+
+msgid "Edit Output Port Connection"
+msgstr "Éditer la connexion du port de sortie"
+
+msgid "Follow Input Port Connection"
+msgstr "Suivre la connexion du port d'entrée"
+
+msgid "Follow Output Port Connection"
+msgstr "Suivre la connexion du port de sortie"
+
+msgid ", in slot %d of graph node %s (%s)"
+msgstr ", à l'emplacement %d du nœud de graphe %s (%s)"
 
 msgid "Same as Layout Direction"
 msgstr "Même direction que la disposition"

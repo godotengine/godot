@@ -41,6 +41,7 @@
 #define _DEBUG
 #endif
 #endif
+#include "thirdparty/re-spirv/re-spirv.h"
 #include "thirdparty/vulkan/vk_mem_alloc.h"
 
 #include "drivers/vulkan/godot_vulkan.h"
@@ -137,6 +138,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	bool vulkan_memory_model_device_scope_support = false;
 	bool pipeline_cache_control_support = false;
 	bool device_fault_support = false;
+	bool framebuffer_depth_resolve = false;
 #if defined(VK_TRACK_DEVICE_MEMORY)
 	bool device_memory_report_support = false;
 #endif
@@ -154,6 +156,13 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	};
 
 	PendingFlushes pending_flushes;
+
+	struct PipelineStatistics {
+		Ref<FileAccess> file_access;
+		Mutex file_access_mutex;
+	};
+
+	PipelineStatistics pipeline_statistics;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
 	Error _initialize_device_extensions();
@@ -259,8 +268,6 @@ public:
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) override final;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) override final;
 	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) override final;
-	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
-	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
 	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
@@ -438,9 +445,13 @@ public:
 	/****************/
 private:
 	struct ShaderInfo {
+		String name;
 		VkShaderStageFlags vk_push_constant_stages = 0;
 		TightLocalVector<VkPipelineShaderStageCreateInfo> vk_stages_create_info;
 		TightLocalVector<VkDescriptorSetLayout> vk_descriptor_set_layouts;
+		TightLocalVector<respv::Shader> respv_stage_shaders;
+		TightLocalVector<Vector<uint8_t>> spirv_stage_bytes;
+		TightLocalVector<uint64_t> original_stage_size;
 		VkPipelineLayout vk_pipeline_layout = VK_NULL_HANDLE;
 	};
 
@@ -575,7 +586,7 @@ private:
 
 	struct RenderPassInfo {
 		VkRenderPass vk_render_pass = VK_NULL_HANDLE;
-		bool uses_fragment_density_map_offsets = false;
+		bool uses_fragment_density_map = false;
 	};
 
 public:

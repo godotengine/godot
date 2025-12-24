@@ -30,6 +30,8 @@
 
 #include "look_at_modifier_3d.h"
 
+#include "scene/resources/animation.h"
+
 void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && (p_property.name == "bone_name" || p_property.name == "origin_bone_name")) {
 		Skeleton3D *skeleton = get_skeleton();
@@ -595,7 +597,7 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 			// Interpolate through the rest same as AnimationTree blending for preventing to penetrate the bone into the body.
 			Quaternion rest = skeleton->get_bone_rest(bone).basis.get_rotation_quaternion();
 			float weight = Tween::run_equation(transition_type, ease_type, 1 - remaining, 0.0, 1.0, 1.0);
-			destination = rest * Quaternion().slerp(rest.inverse() * from_q, 1 - weight) * Quaternion().slerp(rest.inverse() * destination, weight);
+			destination = Animation::interpolate_via_rest(Animation::interpolate_via_rest(rest, from_q, 1 - weight, rest), destination, weight, rest);
 		} else {
 			destination = from_q.slerp(destination, Tween::run_equation(transition_type, ease_type, 1 - remaining, 0.0, 1.0, 1.0));
 		}

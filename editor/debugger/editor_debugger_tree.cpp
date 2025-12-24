@@ -73,7 +73,7 @@ void EditorDebuggerTree::_notification(int p_what) {
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			update_icon_max_width();
 		} break;
 	}

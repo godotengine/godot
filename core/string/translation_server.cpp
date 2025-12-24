@@ -36,6 +36,7 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/locales.h"
+#include "core/variant/typed_array.h"
 
 void TranslationServer::init_locale_info() {
 	// Init locale info.
@@ -84,6 +85,18 @@ void TranslationServer::init_locale_info() {
 	while (locale_renames[idx][0] != nullptr) {
 		if (!String(locale_renames[idx][1]).is_empty()) {
 			locale_rename_map[locale_renames[idx][0]] = locale_renames[idx][1];
+		}
+		idx++;
+	}
+
+	// Init locale scripts.
+	language_script_map.clear();
+	idx = 0;
+	while (language_script_list[idx][0] != nullptr) {
+		HashSet<String> &set = language_script_map[language_script_list[idx][0]];
+		Vector<String> scripts = String(language_script_list[idx][1]).split(" ");
+		for (const String &s : scripts) {
+			set.insert(s);
 		}
 		idx++;
 	}
@@ -464,6 +477,8 @@ String TranslationServer::get_country_name(const String &p_country) const {
 }
 
 void TranslationServer::set_locale(const String &p_locale) {
+	ERR_FAIL_COND_MSG(p_locale.is_empty(), "Locale cannot be an empty string.");
+
 	String new_locale = standardize_locale(p_locale);
 	if (locale == new_locale) {
 		return;
@@ -489,6 +504,17 @@ String TranslationServer::get_fallback_locale() const {
 	return fallback;
 }
 
+bool TranslationServer::is_script_suppored_by_locale(const String &p_locale, const String &p_script) const {
+	Locale l = Locale(*this, p_locale, true);
+	if (l.script == p_script) {
+		return true;
+	}
+	if (!language_script_map.has(l.language)) {
+		return false;
+	}
+	return language_script_map[l.language].has(p_script);
+}
+
 PackedStringArray TranslationServer::get_loaded_locales() const {
 	return main_domain->get_loaded_locales();
 }
@@ -501,8 +527,26 @@ void TranslationServer::remove_translation(const Ref<Translation> &p_translation
 	main_domain->remove_translation(p_translation);
 }
 
+#ifndef DISABLE_DEPRECATED
 Ref<Translation> TranslationServer::get_translation_object(const String &p_locale) {
 	return main_domain->get_translation_object(p_locale);
+}
+#endif
+
+TypedArray<Translation> TranslationServer::get_translations() const {
+	return main_domain->get_translations_bind();
+}
+
+TypedArray<Translation> TranslationServer::find_translations(const String &p_locale, bool p_exact) const {
+	return main_domain->find_translations_bind(p_locale, p_exact);
+}
+
+bool TranslationServer::has_translation(const Ref<Translation> &p_translation) const {
+	return main_domain->has_translation(p_translation);
+}
+
+bool TranslationServer::has_translation_for_locale(const String &p_locale, bool p_exact) const {
+	return main_domain->has_translation_for_locale(p_locale, p_exact);
 }
 
 void TranslationServer::clear() {
@@ -574,21 +618,27 @@ void TranslationServer::setup() {
 String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		if (editor_domain->has_translation_for_locale(locale)) {
+		if (editor_domain->has_translation_for_locale(locale, true)) {
 			return locale;
 		}
 		return "en";
-	} else {
-#else
-	{
-#endif
-		// Look for best matching loaded translation.
-		Ref<Translation> t = main_domain->get_translation_object(locale);
-		if (t.is_null()) {
-			return fallback;
-		}
-		return t->get_locale();
 	}
+#endif
+
+	Ref<Translation> res;
+	int best_score = 0;
+
+	for (const Ref<Translation> &E : main_domain->get_translations()) {
+		int score = TranslationServer::get_singleton()->compare_locales(locale, E->get_locale());
+		if (score > 0 && score >= best_score) {
+			res = E;
+			best_score = score;
+			if (score == 10) {
+				return locale; // Exact match.
+			}
+		}
+	}
+	return res.is_valid() ? res->get_locale() : fallback;
 }
 
 bool TranslationServer::is_pseudolocalization_enabled() const {
@@ -674,7 +724,15 @@ void TranslationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationServer::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_translation_object", "locale"), &TranslationServer::get_translation_object);
+#endif
+
+	ClassDB::bind_method(D_METHOD("get_translations"), &TranslationServer::get_translations);
+	ClassDB::bind_method(D_METHOD("find_translations", "locale", "exact"), &TranslationServer::find_translations);
+	ClassDB::bind_method(D_METHOD("has_translation_for_locale", "locale", "exact"), &TranslationServer::has_translation_for_locale);
+	ClassDB::bind_method(D_METHOD("has_translation", "translation"), &TranslationServer::has_translation);
 
 	ClassDB::bind_method(D_METHOD("has_domain", "domain"), &TranslationServer::has_domain);
 	ClassDB::bind_method(D_METHOD("get_or_add_domain", "domain"), &TranslationServer::get_or_add_domain);

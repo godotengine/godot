@@ -32,9 +32,10 @@
 
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "editor/docks/editor_dock.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -140,13 +141,9 @@ void Polygon2DEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				dock_button->show();
-				EditorNode::get_bottom_panel()->make_item_visible(polygon_edit);
+				polygon_edit->make_visible();
 			} else {
-				dock_button->hide();
-				if (polygon_edit->is_visible_in_tree()) {
-					EditorNode::get_bottom_panel()->hide_bottom_panel();
-				}
+				polygon_edit->close();
 			}
 		} break;
 	}
@@ -1337,7 +1334,21 @@ Polygon2DEditor::Polygon2DEditor() {
 	snap_show_grid = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "show_grid", false);
 
 	selected_action = ACTION_EDIT_POINT;
-	polygon_edit = memnew(VBoxContainer);
+
+	polygon_edit = memnew(EditorDock);
+	polygon_edit->set_name(TTRC("Polygon"));
+	polygon_edit->set_icon_name("PolygonDock");
+	polygon_edit->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTRC("Toggle Polygon Dock")));
+	polygon_edit->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	polygon_edit->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	polygon_edit->set_global(false);
+	polygon_edit->set_transient(true);
+	EditorDockManager::get_singleton()->add_dock(polygon_edit);
+	polygon_edit->close();
+
+	VBoxContainer *edit_vbox = memnew(VBoxContainer);
+	polygon_edit->add_child(edit_vbox);
+
 	HBoxContainer *toolbar = memnew(HBoxContainer);
 
 	Ref<ButtonGroup> mode_button_group;
@@ -1356,7 +1367,7 @@ Polygon2DEditor::Polygon2DEditor() {
 
 	toolbar->add_child(memnew(VSeparator));
 
-	polygon_edit->add_child(toolbar);
+	edit_vbox->add_child(toolbar);
 	for (int i = 0; i < ACTION_MAX; i++) {
 		action_buttons[i] = memnew(Button);
 		action_buttons[i]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1414,7 +1425,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	bone_paint_radius->set_accessibility_name(TTRC("Radius:"));
 
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
-	polygon_edit->add_child(uv_main_hsc);
+	edit_vbox->add_child(uv_main_hsc);
 	uv_main_hsc->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	canvas_background = memnew(Panel);
@@ -1555,9 +1566,6 @@ Polygon2DEditor::Polygon2DEditor() {
 
 	error = memnew(AcceptDialog);
 	add_child(error);
-
-	dock_button = EditorNode::get_bottom_panel()->add_item(TTRC("Polygon"), polygon_edit, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTR("Toggle Polygon Bottom Panel")));
-	dock_button->hide();
 }
 
 Polygon2DEditorPlugin::Polygon2DEditorPlugin() :

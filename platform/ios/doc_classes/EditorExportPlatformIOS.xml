@@ -662,16 +662,16 @@
 		<member name="privacy/collected_data/purchase_history/used_for_tracking" type="bool" setter="" getter="">
 			Indicates whether your app uses purchase history for tracking.
 		</member>
-		<member name="privacy/collected_data/search_hhistory/collected" type="bool" setter="" getter="">
+		<member name="privacy/collected_data/search_history/collected" type="bool" setter="" getter="">
 			Indicates whether your app collects search history.
 		</member>
-		<member name="privacy/collected_data/search_hhistory/collection_purposes" type="int" setter="" getter="">
+		<member name="privacy/collected_data/search_history/collection_purposes" type="int" setter="" getter="">
 			The reasons your app collects search history. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
 		</member>
-		<member name="privacy/collected_data/search_hhistory/linked_to_user" type="bool" setter="" getter="">
+		<member name="privacy/collected_data/search_history/linked_to_user" type="bool" setter="" getter="">
 			Indicates whether your app links search history to the user's identity.
 		</member>
-		<member name="privacy/collected_data/search_hhistory/used_for_tracking" type="bool" setter="" getter="">
+		<member name="privacy/collected_data/search_history/used_for_tracking" type="bool" setter="" getter="">
 			Indicates whether your app uses search history for tracking.
 		</member>
 		<member name="privacy/collected_data/sensitive_info/collected" type="bool" setter="" getter="">
@@ -730,6 +730,7 @@
 		</member>
 		<member name="shader_baker/enabled" type="bool" setter="" getter="">
 			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
+			[b]Note:[/b] When exporting as a dedicated server, the shader baker is always disabled since no rendering is performed.
 		</member>
 		<member name="storyboard/custom_bg_color" type="Color" setter="" getter="">
 			A custom background color of the storyboard launch screen.

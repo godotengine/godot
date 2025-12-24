@@ -117,7 +117,6 @@ private:
 	mutable const HashMap<StringName, Variant> *current_options = nullptr;
 	mutable const Dictionary *current_options_dict = nullptr;
 	List<ResourceImporter::ImportOption> *current_option_list = nullptr;
-	InternalImportCategory current_category = INTERNAL_IMPORT_CATEGORY_MAX;
 
 protected:
 	GDVIRTUAL1(_get_internal_import_options, int)

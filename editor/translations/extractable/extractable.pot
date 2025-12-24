@@ -14,10 +14,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 
-#: editor/gui/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "All Recognized"
-msgstr ""
-
 #: scene/gui/code_edit.cpp
 msgid "New Code Region"
 msgstr ""
@@ -229,7 +225,27 @@ msgid "Select This Folder"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
+msgid "Copy Path"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Delete"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "New Folder..."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Refresh"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
 msgid "Open in File Manager"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Show in File Manager"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
@@ -238,6 +254,10 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp
 msgid "You don't have permission to access contents of this folder."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "All Recognized"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
@@ -362,6 +382,13 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp
 msgid "File:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid ""
+"Delete the selected file?\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
 msgstr ""
 
 #: scene/gui/file_dialog.cpp

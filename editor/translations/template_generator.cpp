@@ -47,6 +47,9 @@ TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(con
 
 		for (const Vector<String> &entry : parsed_from_file) {
 			ERR_CONTINUE(entry.is_empty());
+			if (entry[0].is_empty()) {
+				continue;
+			}
 
 			const String &msgctxt = (entry.size() > 1) ? entry[1] : String();
 			const String &msgid_plural = (entry.size() > 2) ? entry[2] : String();

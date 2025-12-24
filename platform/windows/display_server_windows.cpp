@@ -97,8 +97,6 @@
 
 #define WM_INDICATOR_CALLBACK_MESSAGE (WM_USER + 1)
 
-int constexpr FS_TRANSP_BORDER = 2;
-
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -170,6 +168,49 @@ String DisplayServerWindows::get_name() const {
 	return "Windows";
 }
 
+Vector2i _logical_to_physical(const Vector2i &p_point) {
+	POINT p1;
+	p1.x = p_point.x;
+	p1.y = p_point.y;
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+	return Vector2i(p1.x, p1.y);
+}
+
+Vector2i DisplayServerWindows::_get_screen_expand_offset(int p_screen) const {
+	Vector2i p1 = _logical_to_physical(screen_get_position(p_screen));
+	Vector2i p2 = _logical_to_physical(screen_get_position(p_screen) + screen_get_size(p_screen));
+
+	int screen_down = -1;
+	int screen_right = -1;
+	for (int i = 0; i < get_screen_count(); i++) {
+		if (i == p_screen) {
+			continue;
+		}
+		Vector2i sp1 = _logical_to_physical(screen_get_position(i));
+		Vector2i sp2 = _logical_to_physical(screen_get_position(i) + screen_get_size(i));
+		if (sp1.y >= p2.y - 5 && sp1.y <= p2.y + 5 && sp1.x <= p2.x && p1.x <= sp2.x) {
+			screen_down = i;
+		}
+		if (sp1.x >= p2.x - 5 && sp1.x <= p2.x + 5 && sp1.y <= p2.y && p1.y <= sp2.y) {
+			screen_right = i;
+		}
+	}
+
+	if (screen_down == -1) {
+		return Vector2i(0, 2);
+	} else if (screen_right == -1) {
+		return Vector2i(2, 0);
+	} else {
+		int diff_d = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_down);
+		int diff_r = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_right);
+		if (diff_d < diff_r) {
+			return Vector2i(0, 2);
+		} else {
+			return Vector2i(2, 0);
+		}
+	}
+}
+
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 	if (p_mode == MOUSE_MODE_HIDDEN || p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		// Hide cursor before moving.
@@ -189,11 +230,12 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 
 		WindowData &wd = windows[window_id];
 
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(window_id)) : Vector2i();
 
 		RECT clipRect;
 		GetClientRect(wd.hWnd, &clipRect);
-		clipRect.right -= off_x;
+		clipRect.right -= off.x;
+		clipRect.bottom -= off.y;
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.left);
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.right);
 		ClipCursor(&clipRect);
@@ -1625,7 +1667,7 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 #ifdef RD_ENABLED
 	if (rendering_context != nullptr) {
-		_create_rendering_context_window(window_id);
+		_create_rendering_context_window(window_id, rendering_driver);
 	}
 #endif
 #ifdef GLES3_ENABLED
@@ -2030,16 +2072,16 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	if (wd.fullscreen) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(p_screen) : Vector2i();
 
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 	} else if (wd.maximized) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(p_screen) : Vector2i();
 
 		ShowWindow(wd.hWnd, SW_RESTORE);
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 	} else {
 		Rect2i srect = screen_get_usable_rect(p_screen);
@@ -2288,8 +2330,8 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 
 	RECT r;
 	if (GetClientRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		return Size2(r.right - r.left - off_x, r.bottom - r.top);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		return Size2(r.right - r.left - off.x, r.bottom - r.top - off.y);
 	}
 	return Size2();
 }
@@ -2307,8 +2349,8 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 
 	RECT r;
 	if (GetWindowRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		return Size2(r.right - r.left - off_x, r.bottom - r.top);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		return Size2(r.right - r.left - off.x, r.bottom - r.top - off.y);
 	}
 	return Size2();
 }
@@ -2418,8 +2460,8 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left + off_x, rect.bottom - rect.top, TRUE);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left + off.x, rect.bottom - rect.top - off.y, TRUE);
 	}
 }
 
@@ -2558,8 +2600,8 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 
 		_update_window_style(p_window, false);
 
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(cs) : Vector2i();
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 
 		// If the user has mouse trails enabled in windows, then sometimes the cursor disappears in fullscreen mode.
 		// Save number of trails so we can restore when exiting, then turn off mouse trails
@@ -4773,9 +4815,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			// if the same nIDEvent is passed, the timer is replaced and the same timer_id is returned.
 			// The problem with the timer is that the window cannot be resized or the buttons cannot be used correctly
 			// if the window is not activated first. This happens because the code in the activation process runs
-			// after the mouse click is handled. To address this, the timer is now used only when the window is created.
+			// after the mouse click is handled. To address this, the timer is now used only during the window creation,
+			// and only as part of the activation process. We don't want 'Input::release_pressed_events()'
+			// to be called immediately in '_process_activate_event' when the window is not yet activated,
+			// as it would reset the currently pressed keys when hiding a window, which is incorrect behavior.
 			windows[window_id].activate_state = GET_WM_ACTIVATE_STATE(wParam, lParam);
-			if (windows[window_id].first_activation_done) {
+			if (windows[window_id].first_activation_done && (windows[window_id].activate_state == WA_ACTIVE || windows[window_id].activate_state == WA_CLICKACTIVE)) {
 				_process_activate_event(window_id);
 			} else {
 				windows[window_id].activate_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_WINDOW_ACTIVATION, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
@@ -5747,7 +5792,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_WINDOWPOSCHANGED: {
 			WindowData &window = windows[window_id];
 
-			int off_x = (window.multiwindow_fs || (!window.fullscreen && window.borderless && IsZoomed(hWnd))) ? FS_TRANSP_BORDER : 0;
+			Vector2i off = (window.multiwindow_fs || (!window.fullscreen && window.borderless && window.maximized)) ? _get_screen_expand_offset(window_get_current_screen(window_id)) : Vector2i();
 			Rect2i window_client_rect;
 			Rect2i window_rect;
 			{
@@ -5755,12 +5800,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				GetClientRect(hWnd, &rect);
 				ClientToScreen(hWnd, (POINT *)&rect.left);
 				ClientToScreen(hWnd, (POINT *)&rect.right);
-				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left - off_x, rect.bottom - rect.top);
+				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left - off.x, rect.bottom - rect.top - off.y);
 				window_client_rect.position -= _get_screens_origin();
 
 				RECT wrect;
 				GetWindowRect(hWnd, &wrect);
-				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left - off_x, wrect.bottom - wrect.top);
+				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left - off.x, wrect.bottom - wrect.top - off.y);
 				window_rect.position -= _get_screens_origin();
 			}
 
@@ -5816,15 +5861,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 #if defined(RD_ENABLED)
 				if (window.create_completed && rendering_context && window.rendering_context_window_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
-					rendering_context->window_set_size(window_id, window.width, window.height);
+					rendering_context->window_set_size(window_id, window.width + off.x, window.height + off.y);
 				}
 #endif
 #if defined(GLES3_ENABLED)
 				if (window.create_completed && gl_manager_native && window.gl_native_window_created) {
-					gl_manager_native->window_resize(window_id, window.width, window.height);
+					gl_manager_native->window_resize(window_id, window.width + off.x, window.height + off.y);
 				}
 				if (window.create_completed && gl_manager_angle && window.gl_angle_window_created) {
-					gl_manager_angle->window_resize(window_id, window.width, window.height);
+					gl_manager_angle->window_resize(window_id, window.width + off.x, window.height + off.y);
 				}
 #endif
 			}
@@ -5843,7 +5888,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 					RECT crect;
 					GetClientRect(window.hWnd, &crect);
-					crect.right -= off_x;
+					crect.right -= off.x;
+					crect.bottom -= off.y;
 					ClientToScreen(window.hWnd, (POINT *)&crect.left);
 					ClientToScreen(window.hWnd, (POINT *)&crect.right);
 					ClipCursor(&crect);
@@ -6340,21 +6386,21 @@ Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mo
 
 	RECT WindowRect;
 
-	int off_x = (p_mode == WINDOW_MODE_FULLSCREEN || ((p_flags & WINDOW_FLAG_BORDERLESS_BIT) && p_mode == WINDOW_MODE_MAXIMIZED)) ? FS_TRANSP_BORDER : 0;
+	Vector2i off = (p_mode == WINDOW_MODE_FULLSCREEN || ((p_flags & WINDOW_FLAG_BORDERLESS_BIT) && p_mode == WINDOW_MODE_MAXIMIZED)) ? _get_screen_expand_offset(rq_screen) : Vector2i();
 
 	WindowRect.left = p_rect.position.x;
-	WindowRect.right = p_rect.position.x + p_rect.size.x + off_x;
+	WindowRect.right = p_rect.position.x + p_rect.size.x + off.x;
 	WindowRect.top = p_rect.position.y;
-	WindowRect.bottom = p_rect.position.y + p_rect.size.y;
+	WindowRect.bottom = p_rect.position.y + p_rect.size.y + off.y;
 
 	if (!p_parent_hwnd) {
 		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			Rect2i screen_rect = Rect2i(screen_get_position(rq_screen), screen_get_size(rq_screen));
 
 			WindowRect.left = screen_rect.position.x;
-			WindowRect.right = screen_rect.position.x + screen_rect.size.x + off_x;
+			WindowRect.right = screen_rect.position.x + screen_rect.size.x + off.x;
 			WindowRect.top = screen_rect.position.y;
-			WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
+			WindowRect.bottom = screen_rect.position.y + screen_rect.size.y + off.y;
 		} else {
 			Rect2i srect = screen_get_usable_rect(rq_screen);
 			Point2i wpos = p_rect.position;
@@ -6363,9 +6409,9 @@ Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mo
 			}
 
 			WindowRect.left = wpos.x;
-			WindowRect.right = wpos.x + p_rect.size.x + off_x;
+			WindowRect.right = wpos.x + p_rect.size.x + off.x;
 			WindowRect.top = wpos.y;
-			WindowRect.bottom = wpos.y + p_rect.size.y;
+			WindowRect.bottom = wpos.y + p_rect.size.y + off.y;
 		}
 	}
 
@@ -6555,8 +6601,8 @@ Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mo
 			ClientToScreen(wd.hWnd, (POINT *)&r.left);
 			ClientToScreen(wd.hWnd, (POINT *)&r.right);
 			wd.last_pos = Point2i(r.left, r.top) - _get_screens_origin();
-			wd.width = r.right - r.left - off_x;
-			wd.height = r.bottom - r.top;
+			wd.width = r.right - r.left - off.x;
+			wd.height = r.bottom - r.top - off.y;
 		} else {
 			wd.last_pos = p_rect.position;
 			wd.width = p_rect.size.width;
@@ -6568,7 +6614,7 @@ Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mo
 		wd.create_completed = true;
 		// Set size of maximized borderless window (by default it covers the entire screen).
 		if (!p_parent_hwnd && p_mode == WINDOW_MODE_MAXIMIZED && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
-			SetWindowPos(wd.hWnd, HWND_TOP, usable_rect.position.x - off_x, usable_rect.position.y, usable_rect.size.width + off_x, usable_rect.size.height, SWP_NOZORDER | SWP_NOACTIVATE);
+			SetWindowPos(wd.hWnd, HWND_TOP, usable_rect.position.x - off.x, usable_rect.position.y - off.y, usable_rect.size.width + off.x, usable_rect.size.height + off.y, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 		_update_window_mouse_passthrough(id);
 	}
@@ -6603,7 +6649,7 @@ void DisplayServerWindows::_destroy_window(WindowID p_window_id) {
 }
 
 #ifdef RD_ENABLED
-Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id) {
+Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id, const String &p_rendering_driver) {
 	DEV_ASSERT(rendering_context != nullptr);
 
 	WindowData &wd = windows[p_window_id];
@@ -6617,21 +6663,22 @@ Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_i
 #endif
 	} wpd;
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (p_rendering_driver == "vulkan") {
 		wpd.vulkan.window = wd.hWnd;
 		wpd.vulkan.instance = hInstance;
 	}
 #endif
 #ifdef D3D12_ENABLED
-	if (rendering_driver == "d3d12") {
+	if (p_rendering_driver == "d3d12") {
 		wpd.d3d12.window = wd.hWnd;
 	}
 #endif
 
 	Error err = rendering_context->window_create(p_window_id, &wpd);
-	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", rendering_driver));
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", p_rendering_driver));
 
-	rendering_context->window_set_size(p_window_id, wd.width, wd.height);
+	Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window_id)) : Vector2i();
+	rendering_context->window_set_size(p_window_id, wd.width + off.x, wd.height + off.y);
 	wd.rendering_context_window_created = true;
 
 	return OK;
@@ -7221,7 +7268,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 					main_window_created = true;
 				}
 
-				if (_create_rendering_context_window(MAIN_WINDOW_ID) == OK) {
+				if (_create_rendering_context_window(MAIN_WINDOW_ID, tested_rendering_driver) == OK) {
 					rendering_device = memnew(RenderingDevice);
 					if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) == OK) {
 #ifdef VULKAN_ENABLED
@@ -7435,7 +7482,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	window_set_vsync_mode(p_vsync_mode, MAIN_WINDOW_ID);
 
 #ifdef SDL_ENABLED
-	joypad_sdl = memnew(JoypadSDL(windows[MAIN_WINDOW_ID].hWnd));
+	joypad_sdl = memnew(JoypadSDL);
 	if (joypad_sdl->initialize() != OK) {
 		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
 		memdelete(joypad_sdl);

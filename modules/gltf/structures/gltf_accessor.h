@@ -95,9 +95,9 @@ private:
 	int64_t _get_bytes_per_vector() const;
 
 	// Private decode functions.
-	PackedInt64Array _decode_sparse_indices(const Ref<GLTFState> &p_gltf_state, const TypedArray<GLTFBufferView> &p_buffer_views) const;
+	PackedInt64Array _decode_sparse_indices(const Ref<GLTFState> &p_gltf_state, const Vector<Ref<GLTFBufferView>> &p_buffer_views) const;
 	template <typename T>
-	Vector<T> _decode_raw_numbers(const Ref<GLTFState> &p_gltf_state, const TypedArray<GLTFBufferView> &p_buffer_views, bool p_sparse_values) const;
+	Vector<T> _decode_raw_numbers(const Ref<GLTFState> &p_gltf_state, const Vector<Ref<GLTFBufferView>> &p_buffer_views, bool p_sparse_values) const;
 	template <typename T>
 	Vector<T> _decode_as_numbers(const Ref<GLTFState> &p_gltf_state) const;
 

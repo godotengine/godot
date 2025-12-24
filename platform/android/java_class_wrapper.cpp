@@ -393,7 +393,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			} break;
 			case ARG_TYPE_CLASS: {
 				if (p_args[i]->get_type() == Variant::DICTIONARY) {
-					argv[i].l = _variant_to_jvalue(env, Variant::DICTIONARY, p_args[i]).l;
+					argv[i].l = _variant_to_jobject(env, Variant::DICTIONARY, p_args[i]);
 				} else {
 					Ref<JavaObject> jo = *p_args[i];
 					if (jo.is_valid()) {
@@ -1657,7 +1657,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 		String str_field = jstring_to_string(name, env);
 		env->DeleteLocalRef(name);
 		int mods = env->CallIntMethod(obj, Field_getModifiers);
-		if ((mods & 0x8) && (mods & 0x10) && (mods & 0x1)) { //static final public!
+		if ((mods & 0x8) && (mods & 0x1)) { //static public!
 
 			jobject objc = env->CallObjectMethod(obj, Field_get, nullptr);
 			if (objc) {

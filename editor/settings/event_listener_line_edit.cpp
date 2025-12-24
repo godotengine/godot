@@ -94,7 +94,7 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		}
 
 		if (text.is_empty()) {
-			text = "(" + TTR("Unset") + ")";
+			text = "(" + TTR("unset") + ")";
 		}
 	} else {
 		text = p_event->as_text();

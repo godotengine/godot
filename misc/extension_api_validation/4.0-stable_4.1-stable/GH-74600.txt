@@ -1,0 +1,33 @@
+GH-74600
+--------
+Validate extension JSON: Error: Hash changed for 'classes/AnimatedSprite2D/methods/play', from 57037631 to 8D62DD1B. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AnimatedSprite3D/methods/play', from 57037631 to 8D62DD1B. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Animation/methods/compress', from 6B87C27F to D713F035. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AnimationPlayer/methods/play', from 846788DD to B9DCE17F. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AudioStreamPlayer/methods/play', from B54BA998 to 74B7272C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AudioStreamPlayer2D/methods/play', from B54BA998 to 74B7272C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/AudioStreamPlayer3D/methods/play', from B54BA998 to 74B7272C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/CanvasItem/methods/draw_set_transform', from F93CB735 to C3BC1B8B. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve2D/methods/sample_baked', from DF8CB3E7 to CE7C60AA. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve2D/methods/sample_baked_with_rotation', from 0F34F230 to C475D415. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve2D/methods/tessellate_even_length', from FC150C61 to 8A44C0E5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve3D/methods/sample_baked', from FCBE3242 to 5078AD06. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve3D/methods/sample_baked_with_rotation', from 9431C26F to 7398459B. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Curve3D/methods/tessellate_even_length', from E96241BB to 07F10939. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/DisplayServer/methods/tts_speak', from DDE9B9D7 to DEFE6FA5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Font/methods/find_variation', from DCDAC3C2 to 44828B18. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/GridMap/methods/make_baked_meshes', from 43AF36C6 to D72155A9. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Image/methods/bump_map_to_normal_map', from 1412C0CC to CC0E637C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Image/methods/save_jpg_to_buffer', from 1285A12B to 234CCB09. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Image/methods/save_webp_to_buffer', from 49A857C1 to 4865C18E. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/PhysicsBody2D/methods/move_and_collide', from BE9F4C70 to 5B315D1A. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/PhysicsBody3D/methods/move_and_collide', from 44022073 to A86CD3DE. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/PhysicsBody3D/methods/test_move', from 7C246CBB to 288C8CC1. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RandomNumberGenerator/methods/randfn', from 839678C5 to 31E8912C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RenderingServer/methods/canvas_item_set_canvas_group_mode', from 5D7655F8 to 0280768A. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RenderingServer/methods/environment_set_ambient_light', from 159C6D6E to 1D4E1F3F. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RenderingServer/methods/force_draw', from 359658A7 to 40254980. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Window/methods/popup_centered_clamped', from DE3D691D to 9BCAB29D. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Window/methods/popup_centered_ratio', from 71F7FFC1 to 3C7CD915. This means that the function has changed and no compatibility function was provided.
+
+None of these methods were actually changed, the hash changes only affects GDExtensions binary compatibility.

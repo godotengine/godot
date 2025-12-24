@@ -86,16 +86,20 @@ public:
 		2, // SHADER_STAGE_COMPUTE
 	};
 
-	struct RootSignatureLocation {
-		uint32_t root_param_index = UINT32_MAX;
-		uint32_t range_index = UINT32_MAX;
+	struct ReflectionBindingSetDataD3D12 {
+		uint32_t resource_root_param_idx = UINT32_MAX;
+		uint32_t resource_descriptor_count = 0;
+		uint32_t sampler_root_param_idx = UINT32_MAX;
+		uint32_t sampler_descriptor_count = 0;
 	};
 
 	struct ReflectionBindingDataD3D12 {
 		uint32_t resource_class = 0;
 		uint32_t has_sampler = 0;
 		uint32_t dxil_stages = 0;
-		RootSignatureLocation root_signature_locations[2];
+		uint32_t resource_descriptor_offset = UINT32_MAX;
+		uint32_t sampler_descriptor_offset = UINT32_MAX;
+		uint32_t root_param_idx = UINT32_MAX; // Root descriptor only.
 	};
 
 	struct ReflectionSpecializationDataD3D12 {
@@ -116,6 +120,7 @@ protected:
 
 	void *lib_d3d12 = nullptr;
 	ReflectionDataD3D12 reflection_data_d3d12;
+	Vector<ReflectionBindingSetDataD3D12> reflection_binding_set_data_d3d12;
 	Vector<ReflectionBindingDataD3D12> reflection_binding_set_uniforms_data_d3d12;
 	Vector<ReflectionSpecializationDataD3D12> reflection_specialization_data_d3d12;
 	Vector<uint8_t> root_signature_bytes;
@@ -154,6 +159,7 @@ public:
 		uint32_t spirv_specialization_constants_ids_mask = 0;
 		uint32_t dxil_push_constant_stages = 0;
 		uint32_t nir_runtime_data_root_param_idx = 0;
+		Vector<ReflectionBindingSetDataD3D12> reflection_binding_sets_d3d12;
 		Vector<Vector<ReflectionBindingDataD3D12>> reflection_binding_set_uniforms_d3d12;
 		Vector<ReflectionSpecializationDataD3D12> reflection_specialization_data_d3d12;
 		Vector<uint8_t> root_signature_bytes;

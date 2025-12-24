@@ -4,10 +4,11 @@
 # the Unicode Character Database to the `ucaps.h` file.
 # NOTE: This script is deliberately not integrated into the build system;
 # you should run it manually whenever you want to update the data.
+from __future__ import annotations
 
 import os
 import sys
-from typing import Final, List, Tuple
+from typing import Final
 from urllib.request import urlopen
 
 if __name__ == "__main__":
@@ -18,15 +19,15 @@ from methods import generate_copyright_header
 URL: Final[str] = "https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt"
 
 
-lower_to_upper: List[Tuple[str, str]] = []
-upper_to_lower: List[Tuple[str, str]] = []
+lower_to_upper: list[tuple[str, str]] = []
+upper_to_lower: list[tuple[str, str]] = []
 
 
 def parse_unicode_data() -> None:
-    lines: List[str] = [line.decode("utf-8") for line in urlopen(URL)]
+    lines: list[str] = [line.decode("utf-8") for line in urlopen(URL)]
 
     for line in lines:
-        split_line: List[str] = line.split(";")
+        split_line: list[str] = line.split(";")
 
         code_value: str = split_line[0].strip()
         uppercase_mapping: str = split_line[12].strip()
@@ -38,7 +39,7 @@ def parse_unicode_data() -> None:
             upper_to_lower.append((f"0x{code_value}", f"0x{lowercase_mapping}"))
 
 
-def make_cap_table(table_name: str, len_name: str, table: List[Tuple[str, str]]) -> str:
+def make_cap_table(table_name: str, len_name: str, table: list[tuple[str, str]]) -> str:
     result: str = f"static const int {table_name}[{len_name}][2] = {{\n"
 
     for first, second in table:

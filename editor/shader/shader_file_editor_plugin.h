@@ -30,20 +30,20 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "servers/rendering/rendering_device_binds.h"
 
+class HFlowContainer;
 class ItemList;
 
-class ShaderFileEditor : public PanelContainer {
-	GDCLASS(ShaderFileEditor, PanelContainer);
+class ShaderFileEditor : public EditorDock {
+	GDCLASS(ShaderFileEditor, EditorDock);
 
 	Ref<RDShaderFile> shader_file;
 
-	HBoxContainer *stage_hb = nullptr;
+	HFlowContainer *stage_hb = nullptr;
 	ItemList *versions = nullptr;
 	Button *stages[RD::SHADER_STAGE_MAX];
 	RichTextLabel *error_text = nullptr;
@@ -69,7 +69,6 @@ class ShaderFileEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderFileEditorPlugin, EditorPlugin);
 
 	ShaderFileEditor *shader_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "ShaderFile"; }

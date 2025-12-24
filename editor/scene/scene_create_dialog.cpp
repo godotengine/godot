@@ -90,7 +90,7 @@ void SceneCreateDialog::browse_types() {
 }
 
 void SceneCreateDialog::on_type_picked() {
-	other_type_display->set_text(select_node_dialog->get_selected_type().get_slicec(' ', 0));
+	other_type_display->set_text(select_node_dialog->get_selected_type());
 	if (node_type_other->is_pressed()) {
 		validation_panel->update();
 	} else {

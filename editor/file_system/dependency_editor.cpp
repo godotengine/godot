@@ -403,9 +403,21 @@ void DependencyEditorOwners::show(const String &p_path) {
 	editing = p_path;
 	owners->clear();
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
-	popup_centered_ratio(0.3);
 
-	set_title(vformat(TTR("Owners of: %s (Total: %d)"), p_path.get_file(), owners->get_item_count()));
+	int count = owners->get_item_count();
+	if (count > 0) {
+		empty->hide();
+		owners_count->set_text(vformat(TTR("Owners of: %s (Total: %d)"), p_path.get_file(), count));
+		owners_count->show();
+		owners_mc->show();
+	} else {
+		owners_count->hide();
+		owners_mc->hide();
+		empty->set_text(vformat(TTR("No owners found for: %s"), p_path.get_file()));
+		empty->show();
+	}
+
+	popup_centered_ratio(0.3);
 }
 
 DependencyEditorOwners::DependencyEditorOwners() {
@@ -413,14 +425,41 @@ DependencyEditorOwners::DependencyEditorOwners() {
 	add_child(file_options);
 	file_options->connect(SceneStringName(id_pressed), callable_mp(this, &DependencyEditorOwners::_file_option));
 
+	VBoxContainer *vbox = memnew(VBoxContainer);
+	add_child(vbox);
+
+	owners_count = memnew(Label);
+	owners_count->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	owners_count->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	owners_count->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	vbox->add_child(owners_count);
+
+	empty = memnew(Label);
+	empty->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	empty->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	empty->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	empty->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	empty->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	empty->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	empty->hide();
+	vbox->add_child(empty);
+
+	owners_mc = memnew(MarginContainer);
+	owners_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	owners_mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	vbox->add_child(owners_mc);
+
 	owners = memnew(ItemList);
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_select_mode(ItemList::SELECT_MULTI);
+	owners->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
 	owners->connect("empty_clicked", callable_mp(this, &DependencyEditorOwners::_empty_clicked));
 	owners->set_allow_rmb_select(true);
-	add_child(owners);
+	owners_mc->add_child(owners);
+
+	set_title(TTRC("Owners List"));
 }
 
 ///////////////////////
@@ -702,12 +741,16 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	files_to_delete_label->set_text(TTR("Files to be deleted:"));
 	vb->add_child(files_to_delete_label);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(mc);
+
 	files_to_delete_list = memnew(ItemList);
-	files_to_delete_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	files_to_delete_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	files_to_delete_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	files_to_delete_list->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
 	files_to_delete_list->set_accessibility_name(TTRC("Files to be deleted:"));
-	vb->add_child(files_to_delete_list);
+	mc->add_child(files_to_delete_list);
 
 	vb_owners = memnew(VBoxContainer);
 	vb_owners->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -719,12 +762,18 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners_label->set_text(TTR("Dependencies of files to be deleted:"));
 	vb_owners->add_child(owners_label);
 
+	mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb_owners->add_child(mc);
+
 	owners = memnew(Tree);
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	owners->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	owners->set_hide_root(true);
 	owners->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
 	owners->set_accessibility_name(TTRC("Dependencies"));
-	vb_owners->add_child(owners);
+	mc->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	List<PropertyInfo> property_list;
@@ -1040,6 +1089,10 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	files->set_column_title(0, TTR("Resource"));
 	files->set_column_title(1, TTR("Owns"));
 	files->set_hide_root(true);
-	vbc->add_margin_child(TTR("Resources Without Explicit Ownership:"), files, true);
+	files->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
 	files->connect("button_clicked", callable_mp(this, &OrphanResourcesDialog::_button_pressed));
+
+	MarginContainer *mc = vbc->add_margin_child(TTRC("Resources Without Explicit Ownership:"), files, true);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 }

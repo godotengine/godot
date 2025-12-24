@@ -603,6 +603,59 @@ TEST_SUITE("[TextServer]") {
 
 				ts->free_rid(ctx);
 
+				String test_2 = U"Word Wrap";
+				//                   5^
+
+				ctx = ts->create_shaped_text();
+				CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
+				ok = ts->shaped_text_add_string(ctx, test_2, font, 16);
+				CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
+
+				brks = ts->shaped_text_get_line_breaks(ctx, 43);
+				CHECK_FALSE_MESSAGE(brks.size() != 4, "Invalid line breaks number.");
+				if (brks.size() == 4) {
+					CHECK_FALSE_MESSAGE(brks[0] != 0, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[1] != 5, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[2] != 5, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[3] != 9, "Invalid line break position.");
+				}
+
+				brks = ts->shaped_text_get_line_breaks(ctx, 43.0, 0, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
+				CHECK_FALSE_MESSAGE(brks.size() != 4, "Invalid line breaks number.");
+				if (brks.size() == 4) {
+					CHECK_FALSE_MESSAGE(brks[0] != 0, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[1] != 4, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[2] != 5, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[3] != 9, "Invalid line break position.");
+				}
+
+				brks = ts->shaped_text_get_line_breaks(ctx, 43.0, 0, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
+				CHECK_FALSE_MESSAGE(brks.size() != 4, "Invalid line breaks number.");
+				if (brks.size() == 4) {
+					CHECK_FALSE_MESSAGE(brks[0] != 0, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[1] != 4, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[2] != 5, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[3] != 9, "Invalid line break position.");
+				}
+
+				brks = ts->shaped_text_get_line_breaks(ctx, 43.0, 0, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY);
+				CHECK_FALSE_MESSAGE(brks.size() != 6, "Invalid line breaks number.");
+				if (brks.size() == 6) {
+					CHECK_FALSE_MESSAGE(brks[0] != 0, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[1] != 4, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[2] != 4, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[3] != 5, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[4] != 5, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[5] != 9, "Invalid line break position.");
+				}
+
+				ts->free_rid(ctx);
+
 				for (int j = 0; j < font.size(); j++) {
 					ts->free_rid(font[j]);
 				}

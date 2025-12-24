@@ -1,0 +1,12 @@
+GH-76082
+--------
+Validate extension JSON: Error: Hash changed for 'builtin_classes/Basis/methods/looking_at', from 19076B74 to DE3FF159. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/Transform3D/methods/looking_at', from 3018C31C to 056ADC36. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Node3D/methods/look_at', from 3BC64EA6 to BA2B4FA9. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Node3D/methods/look_at_from_position', from 2BD0F953 to F2739FA7. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'builtin_classes/Basis/methods/looking_at/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'builtin_classes/Transform3D/methods/looking_at/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Node3D/methods/look_at/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Node3D/methods/look_at_from_position/arguments': size changed value in new API, from 3 to 4.
+
+Added an optional parameter with a default value. No adjustments should be necessary.

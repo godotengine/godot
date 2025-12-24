@@ -199,6 +199,10 @@ Size2 LinkButton::get_minimum_size() const {
 	return minsize;
 }
 
+Control::CursorShape LinkButton::get_cursor_shape(const Point2 &p_pos) const {
+	return is_disabled() ? CURSOR_ARROW : get_default_cursor_shape();
+}
+
 void LinkButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -209,6 +213,8 @@ void LinkButton::_notification(int p_what) {
 			const String &ac_name = get_accessibility_name();
 			if (!xl_text.is_empty() && ac_name.is_empty()) {
 				DisplayServer::get_singleton()->accessibility_update_set_name(ae, xl_text);
+			} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, ac_name + ": " + xl_text);
 			} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
 				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
 			}

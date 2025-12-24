@@ -290,6 +290,8 @@ class VisualShaderEditor : public ShaderEditor {
 	VBoxContainer *param_vbox = nullptr;
 	VBoxContainer *param_vbox2 = nullptr;
 
+	float cached_theme_base_scale = 1.0f;
+
 	enum ShaderModeFlags {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
 		MODE_FLAGS_SKY = 2,
@@ -652,7 +654,7 @@ protected:
 
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) override;
-	virtual void use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) override;
+	virtual void use_menu_bar(MenuButton *p_file_menu) override;
 	virtual void apply_shaders() override;
 	virtual bool is_unsaved() const override;
 	virtual void save_external_data(const String &p_str = "") override;

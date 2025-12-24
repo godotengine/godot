@@ -1603,7 +1603,7 @@ struct graph_t
         count++;
         const uint32_t *v;
         if (!id_map.has (link.objidx, &v)) continue;
-        if (only_wide && !(link.width == 4 && !link.is_signed)) continue;
+        if (only_wide && (link.is_signed || (link.width != 4 && link.width != 3))) continue;
 
         reassign_link (link, i, *v, count > num_real);
       }

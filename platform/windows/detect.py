@@ -24,6 +24,8 @@ def try_cmd(test, prefix, arch, check_clang=False):
     archs = ["x86_64", "x86_32", "arm64", "arm32"]
     if arch:
         archs = [arch]
+    if os.name == "nt":
+        archs += [""]
 
     for a in archs:
         try:
@@ -233,6 +235,7 @@ def get_flags():
 
     return {
         "arch": arch,
+        "d3d12": True,
         "supported": ["d3d12", "dcomp", "library", "mono", "xaudio2"],
     }
 
@@ -404,6 +407,7 @@ def configure_msvc(env: "SConsEnvironment"):
         "dwrite",
         "wbemuuid",
         "ntdll",
+        "hid",
     ]
 
     if env.debug_features:
@@ -777,6 +781,7 @@ def configure_mingw(env: "SConsEnvironment"):
             "dwrite",
             "wbemuuid",
             "ntdll",
+            "hid",
         ]
     )
 
@@ -921,7 +926,8 @@ def check_d3d12_installed(env, suffix):
         print_error(
             "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
             "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
-            "See the documentation for more information:\n\t"
-            "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html"
+            "See the documentation for more information:\n"
+            "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
+            "Alternatively, disable this driver by compiling with `d3d12=no` explicitly."
         )
         sys.exit(255)

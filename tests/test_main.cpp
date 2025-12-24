@@ -122,6 +122,7 @@
 #include "tests/core/variant/test_variant_utility.h"
 #include "tests/scene/test_animation.h"
 #include "tests/scene/test_animation_blend_tree.h"
+#include "tests/scene/test_animation_player.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_button.h"
@@ -174,7 +175,10 @@
 #include "tests/scene/test_camera_3d.h"
 #include "tests/scene/test_convert_transform_modifier_3d.h"
 #include "tests/scene/test_copy_transform_modifier_3d.h"
+#include "tests/scene/test_decal.h"
+#ifdef MODULE_GLTF_ENABLED
 #include "tests/scene/test_gltf_document.h"
+#endif
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"

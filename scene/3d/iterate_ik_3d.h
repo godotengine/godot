@@ -149,31 +149,6 @@ public:
 
 		bool simulated = false;
 
-		bool is_penetrated(const Vector3 &p_destination) {
-			bool ret = false;
-			Vector3 chain_dir = (chain[chain.size() - 1] - chain[0]).normalized();
-			bool is_straight = true;
-			for (uint32_t i = 1; i < chain.size() - 1; i++) {
-				Vector3 dir = (chain[i] - chain[0]).normalized();
-				if (!dir.is_equal_approx(chain_dir)) {
-					is_straight = false;
-					break;
-				}
-			}
-			if (is_straight) {
-				Vector3 to_target = (p_destination - chain[0]);
-				double proj = to_target.dot(chain_dir);
-				double total_length = 0;
-				for (uint32_t i = 0; i < solver_info_list.size(); i++) {
-					if (solver_info_list[i]) {
-						total_length += solver_info_list[i]->length;
-					}
-				}
-				ret = proj >= 0 && proj <= total_length && (to_target.normalized().is_equal_approx(chain_dir));
-			}
-			return ret;
-		}
-
 		// Make rotation as bone pose from chain coordinates.
 		// p_extra is delta angle limitation.
 		void cache_current_joint_rotations(Skeleton3D *p_skeleton, double p_angular_delta_limit = Math::PI) {
@@ -279,6 +254,8 @@ protected:
 	double min_distance_squared = min_distance * min_distance; // For cache.
 	double angular_delta_limit = Math::deg_to_rad(2.0); // If the delta is too large, the results before and after iterating can change significantly, and divergence of calculations can easily occur.
 
+	bool deterministic = false;
+
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -324,6 +301,9 @@ public:
 	double get_min_distance() const;
 	void set_angular_delta_limit(double p_angular_delta_limit);
 	double get_angular_delta_limit() const;
+
+	void set_deterministic(bool p_deterministic);
+	bool is_deterministic() const;
 
 	// Setting.
 	void set_target_node(int p_index, const NodePath &p_target_node);

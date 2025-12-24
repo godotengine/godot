@@ -253,8 +253,8 @@ struct PtrToArg<T *> {
 		return likely(p_ptr) ? *reinterpret_cast<T *const *>(p_ptr) : nullptr;
 	}
 	typedef Object *EncodeT;
-	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
-		*((T **)p_ptr) = p_var;
+	_FORCE_INLINE_ static void encode(const T *p_var, void *p_ptr) {
+		*((T **)p_ptr) = const_cast<T *>(p_var);
 	}
 };
 
@@ -264,8 +264,44 @@ struct PtrToArg<const T *> {
 		return likely(p_ptr) ? *reinterpret_cast<T *const *>(p_ptr) : nullptr;
 	}
 	typedef const Object *EncodeT;
-	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
-		*((T **)p_ptr) = p_var;
+	_FORCE_INLINE_ static void encode(const T *p_var, void *p_ptr) {
+		*((T **)p_ptr) = const_cast<T *>(p_var);
+	}
+};
+
+// This is for RequiredParam.
+
+template <class T>
+struct PtrToArg<RequiredParam<T>> {
+	typedef typename RequiredParam<T>::persistent_type EncodeT;
+
+	_FORCE_INLINE_ static RequiredParam<T> convert(const void *p_ptr) {
+		if (p_ptr == nullptr) {
+			return RequiredParam<T>::_err_return_dont_use();
+		}
+		return RequiredParam<T>(*reinterpret_cast<T *const *>(p_ptr));
+	}
+
+	_FORCE_INLINE_ static void encode(const RequiredParam<T> &p_var, void *p_ptr) {
+		*((typename RequiredParam<T>::persistent_type *)p_ptr) = p_var._internal_ptr_dont_use();
+	}
+};
+
+// This is for RequiredResult.
+
+template <class T>
+struct PtrToArg<RequiredResult<T>> {
+	typedef typename RequiredResult<T>::ptr_type EncodeT;
+
+	_FORCE_INLINE_ static RequiredResult<T> convert(const void *p_ptr) {
+		if (p_ptr == nullptr) {
+			return RequiredResult<T>::_err_return_dont_use();
+		}
+		return RequiredResult<T>(*reinterpret_cast<T *const *>(p_ptr));
+	}
+
+	_FORCE_INLINE_ static void encode(const RequiredResult<T> &p_var, void *p_ptr) {
+		*((typename RequiredResult<T>::ptr_type *)p_ptr) = p_var._internal_ptr_dont_use();
 	}
 };
 

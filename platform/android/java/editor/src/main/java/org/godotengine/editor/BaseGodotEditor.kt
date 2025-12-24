@@ -53,11 +53,12 @@ import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.isVisible
 import androidx.window.layout.WindowMetricsCalculator
+import org.godotengine.editor.buildprovider.GradleBuildProvider
 import org.godotengine.editor.embed.EmbeddedGodotGame
 import org.godotengine.editor.embed.GameMenuFragment
 import org.godotengine.editor.utils.signApk
 import org.godotengine.editor.utils.verifyApk
-import org.godotengine.godot.BuildConfig
+import org.godotengine.godot.BuildProvider
 import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotActivity
 import org.godotengine.godot.GodotLib
@@ -171,6 +172,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 	}
 
+	internal val gradleBuildProvider: GradleBuildProvider = GradleBuildProvider(this, this)
 	internal val editorMessageDispatcher = EditorMessageDispatcher(this)
 	private val editorLoadingIndicator: View? by lazy { findViewById(R.id.editor_loading_indicator) }
 
@@ -262,6 +264,11 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		setupGameMenuBar()
 	}
 
+	override fun onDestroy() {
+		gradleBuildProvider.buildEnvDisconnect()
+		super.onDestroy()
+	}
+
 	override fun onNewIntent(newIntent: Intent) {
 		if (newIntent.hasCategory(HYBRID_APP_PANEL_CATEGORY) || newIntent.hasCategory(HYBRID_APP_IMMERSIVE_CATEGORY)) {
 			val params = retrieveCommandLineParamsFromLaunchIntent(newIntent)
@@ -270,10 +277,11 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			newIntent.putExtra(EXTRA_NEW_LAUNCH, false)
 
 			godot?.runOnRenderThread {
-				// Look for the scene and xr-mode arguments
+				// Look for the scene, XR-mode, and hybrid data arguments.
 				var scene = ""
 				var xrMode = XR_MODE_DEFAULT
 				var path = ""
+				var base64HybridData = ""
 				if (params.isNotEmpty()) {
 					val sceneIndex = params.indexOf(SCENE_ARG)
 					if (sceneIndex != -1 && sceneIndex + 1 < params.size) {
@@ -289,9 +297,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 					if (pathIndex != -1 && pathIndex + 1 < params.size) {
 						path = params[pathIndex + 1]
 					}
+
+					val hybridDataIndex = params.indexOf(HYBRID_DATA_ARG)
+					if (hybridDataIndex != -1 && hybridDataIndex + 1 < params.size) {
+						base64HybridData = params[hybridDataIndex + 1]
+					}
 				}
 
-				val sceneArgs = mutableSetOf(XR_MODE_ARG, xrMode).apply {
+				val sceneArgs = mutableSetOf(XR_MODE_ARG, xrMode, HYBRID_DATA_ARG, base64HybridData).apply {
 					if (path.isNotEmpty() && scene.isEmpty()) {
 						add(PATH_ARG)
 						add(path)
@@ -962,4 +975,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun isGameEmbeddingSupported() = !isNativeXRDevice(applicationContext)
+
+	override fun getBuildProvider(): BuildProvider? {
+		return gradleBuildProvider
+	}
 }

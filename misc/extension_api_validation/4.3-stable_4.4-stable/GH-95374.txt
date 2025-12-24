@@ -1,0 +1,6 @@
+GH-95374
+--------
+Validate extension JSON: Error: Field 'classes/ShapeCast2D/properties/collision_result': getter changed value in new API, from "_get_collision_result" to &"get_collision_result".
+Validate extension JSON: Error: Field 'classes/ShapeCast3D/properties/collision_result': getter changed value in new API, from "_get_collision_result" to &"get_collision_result".
+
+These getters have been renamed to expose them. GDExtension language bindings couldn't have exposed these properties before.

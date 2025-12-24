@@ -95,12 +95,16 @@ class EditorPropertyText : public EditorProperty {
 	GDCLASS(EditorPropertyText, EditorProperty);
 	LineEdit *text = nullptr;
 
+	bool monospaced = false;
 	bool updating = false;
 	bool string_name = false;
 	void _text_changed(const String &p_string);
 	void _text_submitted(const String &p_string);
+	void _update_theme();
 
 protected:
+	void _notification(int p_what);
+
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
@@ -108,21 +112,27 @@ public:
 	virtual void update_property() override;
 	void set_placeholder(const String &p_string);
 	void set_secret(bool p_enabled);
+	void set_monospaced(bool p_monospaced);
 	EditorPropertyText();
 };
 
 class EditorPropertyMultilineText : public EditorProperty {
 	GDCLASS(EditorPropertyMultilineText, EditorProperty);
+
 	TextEdit *text = nullptr;
 
 	AcceptDialog *big_text_dialog = nullptr;
 	TextEdit *big_text = nullptr;
 	Button *open_big_text = nullptr;
 
+	bool expression = false;
+	bool monospaced = false;
+	bool wrap_lines = true;
+
 	void _big_text_changed();
 	void _text_changed();
 	void _open_big_text();
-	bool expression = false;
+	void _update_theme();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -130,6 +140,13 @@ protected:
 
 public:
 	virtual void update_property() override;
+
+	void set_monospaced(bool p_monospaced);
+	bool get_monospaced();
+
+	void set_wrap_lines(bool p_wrap_lines);
+	bool get_wrap_lines();
+
 	EditorPropertyMultilineText(bool p_expression = false);
 };
 
@@ -652,7 +669,6 @@ class EditorPropertyColor : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
-	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;

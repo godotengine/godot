@@ -40,7 +40,8 @@
 #include "modules/mono/csharp_script.h"
 #endif
 #include "editor/docks/editor_dock_manager.h"
-#include "editor/docks/node_dock.h"
+#include "editor/docks/groups_dock.h"
+#include "editor/docks/signals_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -200,16 +201,14 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 		set_selected(n);
 
-		EditorDockManager::get_singleton()->focus_dock(NodeDock::get_singleton());
-		NodeDock::get_singleton()->show_connections();
+		EditorDockManager::get_singleton()->focus_dock(SignalsDock::get_singleton());
 	} else if (p_id == BUTTON_GROUPS) {
 		editor_selection->clear();
 		editor_selection->add_node(n);
 
 		set_selected(n);
 
-		EditorDockManager::get_singleton()->focus_dock(NodeDock::get_singleton());
-		NodeDock::get_singleton()->show_groups();
+		EditorDockManager::get_singleton()->focus_dock(GroupsDock::get_singleton());
 	} else if (p_id == BUTTON_UNIQUE) {
 		bool ask_before_revoking_unique_name = EDITOR_GET("docks/scene_tree/ask_before_revoking_unique_name");
 		revoke_node = n;
@@ -329,8 +328,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			item = tree->get_root();
 			if (!item) {
 				item = tree->create_item(nullptr);
-				index = 0;
 			}
+			index = 0;
 		} else {
 			index = p_node->get_index(false);
 			item = tree->create_item(p_parent, index);
@@ -954,17 +953,17 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		return;
 	}
 
-	Node *scene_node = get_scene_node();
-
-	if (node_cache.current_scene_node != scene_node) {
-		_reset();
-		marked.clear();
-		node_cache.current_scene_node = scene_node;
-		node_cache.force_update = true;
-	}
-
 	if (!update_when_invisible && !is_visible_in_tree()) {
 		return;
+	}
+
+	Node *scene_node = get_scene_node();
+	const ObjectID scene_id = scene_node ? scene_node->get_instance_id() : ObjectID();
+	if (node_cache.current_scene_id != scene_id) {
+		_reset();
+		marked.clear();
+		node_cache.current_scene_id = scene_id;
+		node_cache.force_update = true;
 	}
 
 	if (tree->is_editing()) {
@@ -975,7 +974,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	last_hash = hash_djb2_one_64(0);
 
-	if (node_cache.current_scene_node) {
+	if (node_cache.current_scene_id.is_valid()) {
 		// Handle pinning/unpinning the animation player only do this once per iteration.
 		Node *pinned_node = AnimationPlayerEditor::get_singleton()->get_editing_node();
 		// If pinned state changed, update the currently pinned node.
@@ -2518,7 +2517,7 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 			}
 		}
 
-		if (current_scene_node != p_node) {
+		if (current_scene_id != p_node->get_instance_id()) {
 			// Do not remove from the Tree control here. See delete_pending below.
 			I->value.item->deselect(0);
 			I->value.delete_serial = delete_serial;

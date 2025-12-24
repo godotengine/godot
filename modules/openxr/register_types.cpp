@@ -30,6 +30,8 @@
 
 #include "register_types.h"
 
+#include "modules/modules_enabled.gen.h"
+
 #include "action_map/openxr_action.h"
 #include "action_map/openxr_action_map.h"
 #include "action_map/openxr_action_set.h"
@@ -48,10 +50,13 @@
 #include "scene/openxr_composition_layer_cylinder.h"
 #include "scene/openxr_composition_layer_equirect.h"
 #include "scene/openxr_composition_layer_quad.h"
+#ifdef MODULE_GLTF_ENABLED
 #include "scene/openxr_render_model.h"
 #include "scene/openxr_render_model_manager.h"
+#endif
 #include "scene/openxr_visibility_mask.h"
 
+#include "extensions/openxr_android_thread_settings_extension.h"
 #include "extensions/openxr_composition_layer_depth_extension.h"
 #include "extensions/openxr_composition_layer_extension.h"
 #include "extensions/openxr_debug_utils_extension.h"
@@ -72,8 +77,11 @@
 #include "extensions/openxr_palm_pose_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
+#ifdef MODULE_GLTF_ENABLED
 #include "extensions/openxr_render_model_extension.h"
+#endif
 #include "extensions/openxr_valve_analog_threshold_extension.h"
+#include "extensions/openxr_valve_controller_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
 #include "extensions/spatial_entities/openxr_spatial_entity_extension.h"
@@ -108,17 +116,15 @@ static Ref<OpenXRInterface> openxr_interface;
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
 	if (OpenXRAPI::openxr_is_enabled(false)) {
-		// Only add our OpenXR action map editor if OpenXR is enabled for our project
-
 		if (openxr_interaction_profile_metadata == nullptr) {
 			// If we didn't initialize our actionmap metadata at startup, we initialize it now.
 			openxr_interaction_profile_metadata = memnew(OpenXRInteractionProfileMetadata);
 			ERR_FAIL_NULL(openxr_interaction_profile_metadata);
 		}
-
-		OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
-		EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 	}
+
+	OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
+	EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 }
 #endif
 
@@ -132,7 +138,10 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRFrameSynthesisExtension);
 		GDREGISTER_CLASS(OpenXRFutureExtension);
 		GDREGISTER_CLASS(OpenXRAPIExtension);
+#ifdef MODULE_GLTF_ENABLED
 		GDREGISTER_CLASS(OpenXRRenderModelExtension);
+#endif
+		GDREGISTER_CLASS(OpenXRAndroidThreadSettingsExtension);
 
 		// Note, we're not registering all wrapper classes here, there is no point in exposing them
 		// if there isn't specific logic to expose.
@@ -164,6 +173,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMxInkExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRValveControllerExtension));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
 			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);
@@ -171,9 +181,11 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRFutureExtension", future_extension));
 
 			// Register render model extension as a singleton.
+#ifdef MODULE_GLTF_ENABLED
 			OpenXRRenderModelExtension *render_model_extension = memnew(OpenXRRenderModelExtension);
 			OpenXRAPI::register_extension_wrapper(render_model_extension);
 			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRRenderModelExtension", render_model_extension));
+#endif
 
 			// Register spatial entity extensions
 			OpenXRSpatialEntityExtension *spatial_entity_extension = memnew(OpenXRSpatialEntityExtension);
@@ -196,6 +208,11 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRFrameSynthesisExtension *frame_synthesis_extension = memnew(OpenXRFrameSynthesisExtension);
 			OpenXRAPI::register_extension_wrapper(frame_synthesis_extension);
 			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRFrameSynthesisExtension", frame_synthesis_extension));
+
+			// Register android thread settings extension as a singleton.
+			OpenXRAndroidThreadSettingsExtension *android_thread_settings = memnew(OpenXRAndroidThreadSettingsExtension);
+			OpenXRAPI::register_extension_wrapper(android_thread_settings);
+			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRAndroidThreadSettingsExtension", android_thread_settings));
 
 			// register gated extensions
 			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {
@@ -272,8 +289,10 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 #endif
 
 		GDREGISTER_CLASS(OpenXRVisibilityMask);
+#ifdef MODULE_GLTF_ENABLED
 		GDREGISTER_CLASS(OpenXRRenderModel);
 		GDREGISTER_CLASS(OpenXRRenderModelManager);
+#endif
 
 		GDREGISTER_CLASS(OpenXRSpatialEntityExtension);
 		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialEntityTracker);

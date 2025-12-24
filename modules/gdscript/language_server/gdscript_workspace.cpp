@@ -45,13 +45,16 @@
 
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_new_signal"), &GDScriptWorkspace::apply_new_signal);
-	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::didDeleteFiles);
-	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
-	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
 	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
 	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
 	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
 	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::didDeleteFiles);
+	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
+	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_script);
+#endif
 }
 
 void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
@@ -106,37 +109,6 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 	GDScriptLanguageProtocol::get_singleton()->request_client("workspace/applyEdit", params.to_json());
 }
 
-void GDScriptWorkspace::didDeleteFiles(const Dictionary &p_params) {
-	Array files = p_params["files"];
-	for (int i = 0; i < files.size(); ++i) {
-		Dictionary file = files[i];
-		String uri = file["uri"];
-		String path = get_file_path(uri);
-		parse_script(path, "");
-	}
-}
-
-void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
-	HashMap<String, ExtendGDScriptParser *>::Iterator parser = parse_results.find(p_path);
-	HashMap<String, ExtendGDScriptParser *>::Iterator scr = scripts.find(p_path);
-	if (parser && scr) {
-		if (scr->value && scr->value == parser->value) {
-			memdelete(scr->value);
-		} else {
-			memdelete(scr->value);
-			memdelete(parser->value);
-		}
-		parse_results.erase(p_path);
-		scripts.erase(p_path);
-	} else if (parser) {
-		memdelete(parser->value);
-		parse_results.erase(p_path);
-	} else if (scr) {
-		memdelete(scr->value);
-		scripts.erase(p_path);
-	}
-}
-
 const LSP::DocumentSymbol *GDScriptWorkspace::get_native_symbol(const String &p_class, const String &p_member) const {
 	StringName class_name = p_class;
 	StringName empty;
@@ -168,9 +140,9 @@ const LSP::DocumentSymbol *GDScriptWorkspace::get_native_symbol(const String &p_
 }
 
 const LSP::DocumentSymbol *GDScriptWorkspace::get_script_symbol(const String &p_path) const {
-	HashMap<String, ExtendGDScriptParser *>::ConstIterator S = scripts.find(p_path);
-	if (S) {
-		return &(S->value->get_symbols());
+	ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(p_path);
+	if (parser) {
+		return &(parser->get_symbols());
 	}
 	return nullptr;
 }
@@ -219,18 +191,13 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 	List<String> paths;
 	list_script_files("res://", paths);
 	for (const String &path : paths) {
-		Error err;
-		String content = FileAccess::get_file_as_string(path, &err);
-		ERR_CONTINUE(err != OK);
-		err = parse_script(path, content);
-
-		if (err != OK) {
-			HashMap<String, ExtendGDScriptParser *>::Iterator S = parse_results.find(path);
-			String err_msg = "Failed parse script " + path;
-			if (S) {
-				err_msg += "\n" + S->value->get_errors().front()->get().message;
+		ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+		if (parser == nullptr || parser->parse_result != OK) {
+			String err_msg = "LSP: Failed to parse script: " + path;
+			if (parser) {
+				err_msg += "\n" + parser->get_errors().front()->get().message;
 			}
-			ERR_CONTINUE_MSG(err != OK, err_msg);
+			ERR_PRINT(err_msg);
 		}
 	}
 }
@@ -258,30 +225,6 @@ void GDScriptWorkspace::list_script_files(const String &p_root_dir, List<String>
 		}
 		file_name = dir->get_next();
 	}
-}
-
-ExtendGDScriptParser *GDScriptWorkspace::get_parse_successed_script(const String &p_path) {
-	HashMap<String, ExtendGDScriptParser *>::Iterator S = scripts.find(p_path);
-	if (!S) {
-		parse_local_script(p_path);
-		S = scripts.find(p_path);
-	}
-	if (S) {
-		return S->value;
-	}
-	return nullptr;
-}
-
-ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) {
-	HashMap<String, ExtendGDScriptParser *>::Iterator S = parse_results.find(p_path);
-	if (!S) {
-		parse_local_script(p_path);
-		S = parse_results.find(p_path);
-	}
-	if (S) {
-		return S->value;
-	}
-	return nullptr;
 }
 
 #define HANDLE_DOC(m_string) ((is_native ? DTR(m_string) : (m_string)).strip_edges())
@@ -427,40 +370,12 @@ Error GDScriptWorkspace::initialize() {
 			}
 			native_members.insert(E.key, members);
 		}
-
-		// Cache member completions.
-		for (const KeyValue<String, ExtendGDScriptParser *> &S : scripts) {
-			S.value->get_member_completions();
-		}
 	}
 
 	EditorNode *editor_node = EditorNode::get_singleton();
 	editor_node->connect("script_add_function_request", callable_mp(this, &GDScriptWorkspace::apply_new_signal));
 
 	return OK;
-}
-
-Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_content) {
-	ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
-	Error err = parser->parse(p_content, p_path);
-	HashMap<String, ExtendGDScriptParser *>::Iterator last_parser = parse_results.find(p_path);
-	HashMap<String, ExtendGDScriptParser *>::Iterator last_script = scripts.find(p_path);
-
-	if (err == OK) {
-		remove_cache_parser(p_path);
-		parse_results[p_path] = parser;
-		scripts[p_path] = parser;
-
-	} else {
-		if (last_parser && last_script && last_parser->value != last_script->value) {
-			memdelete(last_parser->value);
-		}
-		parse_results[p_path] = parser;
-	}
-
-	publish_diagnostics(p_path);
-
-	return err;
 }
 
 static bool is_valid_rename_target(const LSP::DocumentSymbol *p_symbol) {
@@ -505,8 +420,8 @@ bool GDScriptWorkspace::can_rename(const LSP::TextDocumentPositionParams &p_doc_
 	}
 
 	String path = get_file_path(p_doc_pos.textDocument.uri);
-	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
-		// We only care about the range.
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+	if (parser) {
 		_ALLOW_DISCARD_ parser->get_identifier_under_position(p_doc_pos.position, r_range);
 		r_symbol = *reference_symbol;
 		return true;
@@ -519,7 +434,8 @@ Vector<LSP::Location> GDScriptWorkspace::find_usages_in_file(const LSP::Document
 	Vector<LSP::Location> usages;
 
 	String identifier = p_symbol.name;
-	if (const ExtendGDScriptParser *parser = get_parse_result(p_file_path)) {
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(p_file_path);
+	if (parser) {
 		const PackedStringArray &content = parser->get_lines();
 		for (int i = 0; i < content.size(); ++i) {
 			String line = content[i];
@@ -568,15 +484,6 @@ Vector<LSP::Location> GDScriptWorkspace::find_all_usages(const LSP::DocumentSymb
 		usages.append_array(find_usages_in_file(p_symbol, path));
 	}
 	return usages;
-}
-
-Error GDScriptWorkspace::parse_local_script(const String &p_path) {
-	Error err;
-	String content = FileAccess::get_file_as_string(p_path, &err);
-	if (err == OK) {
-		err = parse_script(p_path, content);
-	}
-	return err;
 }
 
 String GDScriptWorkspace::get_file_path(const String &p_uri) {
@@ -671,9 +578,10 @@ String GDScriptWorkspace::get_file_uri(const String &p_path) const {
 void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	Dictionary params;
 	Array errors;
-	HashMap<String, ExtendGDScriptParser *>::ConstIterator ele = parse_results.find(p_path);
-	if (ele) {
-		const Vector<LSP::Diagnostic> &list = ele->value->get_diagnostics();
+
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(p_path);
+	if (parser) {
+		const Vector<LSP::Diagnostic> &list = parser->get_diagnostics();
 		errors.resize(list.size());
 		for (int i = 0; i < list.size(); ++i) {
 			errors[i] = list[i].to_json();
@@ -734,7 +642,8 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<S
 	String call_hint;
 	bool forced = false;
 
-	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+	if (parser) {
 		Node *owner_scene_node = _get_owner_scene_node(path);
 
 		Array stack;
@@ -771,7 +680,9 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocu
 	const LSP::DocumentSymbol *symbol = nullptr;
 
 	String path = get_file_path(p_doc_pos.textDocument.uri);
-	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
+
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+	if (parser) {
 		String symbol_identifier = p_symbol_name;
 		if (symbol_identifier.get_slice_count("(") > 0) {
 			symbol_identifier = symbol_identifier.get_slicec('(', 0);
@@ -803,7 +714,8 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocu
 							target_script_path = ret.script_path;
 						}
 
-						if (const ExtendGDScriptParser *target_parser = get_parse_result(target_script_path)) {
+						const ExtendGDScriptParser *target_parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(target_script_path);
+						if (target_parser) {
 							symbol = target_parser->get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(ret.location), symbol_identifier);
 
 							if (symbol) {
@@ -836,37 +748,6 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocu
 	return symbol;
 }
 
-void GDScriptWorkspace::resolve_related_symbols(const LSP::TextDocumentPositionParams &p_doc_pos, List<const LSP::DocumentSymbol *> &r_list) {
-	String path = get_file_path(p_doc_pos.textDocument.uri);
-	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
-		String symbol_identifier;
-		LSP::Range range;
-		symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, range);
-
-		for (const KeyValue<StringName, ClassMembers> &E : native_members) {
-			const ClassMembers &members = native_members.get(E.key);
-			if (const LSP::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
-				r_list.push_back(*symbol);
-			}
-		}
-
-		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
-			const ExtendGDScriptParser *scr = E.value;
-			const ClassMembers &members = scr->get_members();
-			if (const LSP::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
-				r_list.push_back(*symbol);
-			}
-
-			for (const KeyValue<String, ClassMembers> &F : scr->get_inner_classes()) {
-				const ClassMembers *inner_class = &F.value;
-				if (const LSP::DocumentSymbol *const *symbol = inner_class->getptr(symbol_identifier)) {
-					r_list.push_back(*symbol);
-				}
-			}
-		}
-	}
-}
-
 const LSP::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const LSP::NativeSymbolInspectParams &p_params) {
 	if (HashMap<StringName, LSP::DocumentSymbol>::Iterator E = native_symbols.find(p_params.native_class)) {
 		const LSP::DocumentSymbol &symbol = E->value;
@@ -885,7 +766,8 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const LSP::N
 }
 
 void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<LSP::DocumentLink> &r_list) {
-	if (const ExtendGDScriptParser *parser = get_parse_successed_script(get_file_path(p_uri))) {
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(get_file_path(p_uri));
+	if (parser && parser->parse_result == Error::OK) {
 		const List<LSP::DocumentLink> &links = parser->get_document_links();
 		for (const LSP::DocumentLink &E : links) {
 			r_list.push_back(E);
@@ -895,14 +777,17 @@ void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<LSP::Do
 
 Dictionary GDScriptWorkspace::generate_script_api(const String &p_path) {
 	Dictionary api;
-	if (const ExtendGDScriptParser *parser = get_parse_successed_script(p_path)) {
+
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(p_path);
+	if (parser) {
 		api = parser->generate_api();
 	}
 	return api;
 }
 
 Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::SignatureHelp &r_signature) {
-	if (const ExtendGDScriptParser *parser = get_parse_result(get_file_path(p_doc_pos.textDocument.uri))) {
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(get_file_path(p_doc_pos.textDocument.uri));
+	if (parser) {
 		LSP::TextDocumentPositionParams text_pos;
 		text_pos.textDocument = p_doc_pos.textDocument;
 
@@ -912,7 +797,7 @@ Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams
 			if (const LSP::DocumentSymbol *symbol = resolve_symbol(text_pos)) {
 				symbols.push_back(symbol);
 			} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-				GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(text_pos, symbols);
+				GDScriptLanguageProtocol::get_singleton()->resolve_related_symbols(text_pos, symbols);
 			}
 
 			for (const LSP::DocumentSymbol *const &symbol : symbols) {
@@ -942,18 +827,4 @@ Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams
 
 GDScriptWorkspace::GDScriptWorkspace() {}
 
-GDScriptWorkspace::~GDScriptWorkspace() {
-	HashSet<String> cached_parsers;
-
-	for (const KeyValue<String, ExtendGDScriptParser *> &E : parse_results) {
-		cached_parsers.insert(E.key);
-	}
-
-	for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
-		cached_parsers.insert(E.key);
-	}
-
-	for (const String &E : cached_parsers) {
-		remove_cache_parser(E);
-	}
-}
+GDScriptWorkspace::~GDScriptWorkspace() {}

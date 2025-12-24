@@ -16,7 +16,7 @@
 			<param index="2" name="saturation" type="float" default="1.0" />
 			<param index="3" name="color_map" type="Dictionary" default="{}" />
 			<description>
-				Creates a new [DPITexture] and initializes it by allocating and setting the SVG data from string.
+				Creates a new [DPITexture] and initializes it by allocating and setting the SVG data to [param source].
 			</description>
 		</method>
 		<method name="get_scaled_rid" qualifiers="const">
@@ -28,7 +28,7 @@
 		<method name="get_source" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns SVG source code.
+				Returns this SVG texture's source code.
 			</description>
 		</method>
 		<method name="set_size_override">
@@ -42,7 +42,7 @@
 			<return type="void" />
 			<param index="0" name="source" type="String" />
 			<description>
-				Sets SVG source code.
+				Sets this SVG texture's source code.
 			</description>
 		</method>
 	</methods>
