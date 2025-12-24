@@ -3943,6 +3943,25 @@ bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
 	return rt->use_hdr;
 }
 
+void TextureStorage::render_target_set_preserve_alpha(RID p_render_target, bool p_enable) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	if (p_enable == rt->preserve_alpha) {
+		return;
+	}
+
+	rt->preserve_alpha = p_enable;
+	_update_render_target(rt);
+}
+
+bool TextureStorage::render_target_get_preserve_alpha(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->preserve_alpha;
+}
+
 void TextureStorage::render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
@@ -4367,12 +4386,12 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	// TODO figure out stereo support here
 
 	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-		copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, !rt->use_hdr, true);
+		copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, !rt->use_hdr, !rt->preserve_alpha);
 	} else {
 		Rect2 src_rect = Rect2(region);
 		src_rect.position /= Size2(rt->size);
 		src_rect.size /= Size2(rt->size);
-		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, true, false, false, src_rect);
+		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, !rt->preserve_alpha, false, false, src_rect);
 	}
 
 	if (!p_gen_mipmaps) {

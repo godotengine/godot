@@ -263,6 +263,7 @@ private:
 
 	bool transparent_bg = false;
 	bool use_hdr_2d = false;
+	bool preserve_alpha = false;
 
 	bool snap_controls_to_pixels = true;
 	bool snap_2d_transforms_to_pixel = false;
@@ -549,6 +550,9 @@ public:
 
 	void set_use_hdr_2d(bool p_enable);
 	bool is_using_hdr_2d() const;
+
+	void set_preserve_alpha(bool p_enable);
+	bool get_preserve_alpha() const;
 
 	Ref<ViewportTexture> get_texture() const;
 

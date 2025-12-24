@@ -2969,6 +2969,28 @@ bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
 	return rt->hdr;
 }
 
+void TextureStorage::render_target_set_preserve_alpha(RID p_render_target, bool p_enable) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+	ERR_FAIL_COND(rt->direct_to_screen);
+	if (p_enable == rt->preserve_alpha) {
+		return;
+	}
+
+	if (rt->overridden.color.is_null()) {
+		_clear_render_target(rt);
+		rt->preserve_alpha = p_enable;
+		_update_render_target_color(rt);
+	}
+}
+
+bool TextureStorage::render_target_get_preserve_alpha(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->preserve_alpha;
+}
+
 GLuint TextureStorage::render_target_get_color_internal_format(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, GL_RGBA8);

@@ -1392,6 +1392,25 @@ bool RendererViewport::viewport_is_using_hdr_2d(RID p_viewport) const {
 	return viewport->use_hdr_2d;
 }
 
+void RendererViewport::viewport_set_preserve_alpha(RID p_viewport, bool p_enable) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+
+	if (viewport->preserve_alpha == p_enable) {
+		return;
+	}
+	viewport->preserve_alpha = p_enable;
+	RSG::texture_storage->render_target_set_preserve_alpha(viewport->render_target, p_enable);
+	_configure_3d_render_buffers(viewport);
+}
+
+bool RendererViewport::viewport_get_preserve_alpha(RID p_viewport) const {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL_V(viewport, false);
+
+	return viewport->preserve_alpha;
+}
+
 void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
