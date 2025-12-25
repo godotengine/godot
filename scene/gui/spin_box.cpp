@@ -426,6 +426,29 @@ inline int SpinBox::_get_widest_button_icon_width() {
 	return max;
 }
 
+void SpinBox::_adjust_character_count() {
+	if (minimum_character_count >= 0) {
+		line_edit->add_theme_constant_override(SNAME("minimum_character_width"), minimum_character_count);
+	} else {
+		int character_count = 0;
+
+		character_count = MAX(character_count, String::num(get_max(), Math::range_step_decimals(get_step())).length());
+		character_count = MAX(character_count, String::num(get_max() - get_step(), Math::range_step_decimals(get_step())).length());
+		character_count = MAX(character_count, String::num(get_min(), Math::range_step_decimals(get_step())).length());
+		character_count = MAX(character_count, String::num(get_min() + get_step(), Math::range_step_decimals(get_step())).length());
+
+		if (!prefix.is_empty()) {
+			character_count += prefix.length() + 1;
+		}
+		if (!suffix.is_empty()) {
+			character_count += suffix.length() + 1;
+		}
+
+		line_edit->add_theme_constant_override(SNAME("minimum_character_width"), character_count);
+	}
+	update_minimum_size();
+}
+
 void SpinBox::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -507,6 +530,7 @@ void SpinBox::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_compute_sizes();
 			_update_text();
+			_adjust_character_count();
 			_update_buttons_state_for_current_value();
 		} break;
 
@@ -554,6 +578,7 @@ void SpinBox::set_suffix(const String &p_suffix) {
 
 	suffix = p_suffix;
 	_update_text();
+	_adjust_character_count();
 }
 
 String SpinBox::get_suffix() const {
@@ -567,10 +592,20 @@ void SpinBox::set_prefix(const String &p_prefix) {
 
 	prefix = p_prefix;
 	_update_text();
+	_adjust_character_count();
 }
 
 String SpinBox::get_prefix() const {
 	return prefix;
+}
+
+void SpinBox::set_minimum_character_count(int p_count) {
+	minimum_character_count = p_count;
+	_adjust_character_count();
+}
+
+int SpinBox::get_minimum_character_count() const {
+	return minimum_character_count;
 }
 
 void SpinBox::set_update_on_text_changed(bool p_enabled) {
@@ -657,11 +692,13 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
 	ClassDB::bind_method(D_METHOD("get_prefix"), &SpinBox::get_prefix);
-	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
+	ClassDB::bind_method(D_METHOD("set_minimum_character_count", "count"), &SpinBox::set_minimum_character_count);
+	ClassDB::bind_method(D_METHOD("get_minimum_character_count"), &SpinBox::get_minimum_character_count);
 	ClassDB::bind_method(D_METHOD("set_custom_arrow_step", "arrow_step"), &SpinBox::set_custom_arrow_step);
 	ClassDB::bind_method(D_METHOD("get_custom_arrow_step"), &SpinBox::get_custom_arrow_step);
 	ClassDB::bind_method(D_METHOD("set_custom_arrow_round", "round"), &SpinBox::set_custom_arrow_round);
 	ClassDB::bind_method(D_METHOD("is_custom_arrow_rounding"), &SpinBox::is_custom_arrow_rounding);
+	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
 	ClassDB::bind_method(D_METHOD("set_update_on_text_changed", "enabled"), &SpinBox::set_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("get_update_on_text_changed"), &SpinBox::get_update_on_text_changed);
@@ -677,6 +714,7 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_arrow_round"), "set_custom_arrow_round", "is_custom_arrow_rounding");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimum_character_count", PROPERTY_HINT_RANGE, "-1,100,1,or_greater"), "set_minimum_character_count", "get_minimum_character_count");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_vertical_separation);
@@ -737,4 +775,6 @@ SpinBox::SpinBox() {
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));
 	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
+
+	connect(SNAME("changed"), callable_mp(this, &SpinBox::_adjust_character_count));
 }
