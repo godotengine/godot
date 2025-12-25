@@ -4529,11 +4529,16 @@ bool DisplayServerX11::_wait_for_events(int timeout_seconds, int timeout_microse
 	FD_SET(x11_fd, &in_fds);
 
 	struct timeval tv;
-	tv.tv_sec = timeout_seconds;
-	tv.tv_usec = timeout_microseconds;
+	struct timeval *tv_ptr = nullptr;
+
+	if (timeout_seconds >= 0 && timeout_microseconds >= 0) {
+		tv.tv_sec = timeout_seconds;
+		tv.tv_usec = timeout_microseconds;
+		tv_ptr = &tv;
+	}
 
 	// Wait for next event or timeout.
-	int num_ready_fds = select(x11_fd + 1, &in_fds, nullptr, nullptr, &tv);
+	int num_ready_fds = select(x11_fd + 1, &in_fds, nullptr, nullptr, tv_ptr);
 
 	if (num_ready_fds > 0) {
 		// Event received.
@@ -4549,8 +4554,13 @@ bool DisplayServerX11::_wait_for_events(int timeout_seconds, int timeout_microse
 
 void DisplayServerX11::_poll_events() {
 	while (!events_thread_done.is_set()) {
-		// Wait with a shorter timeout from the events thread to avoid delayed inputs.
-		_wait_for_events(0, 1000);
+		if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
+			// Using infinite sleep in low processor mode to reduce CPU usage.
+			_wait_for_events(-1, -1);
+		} else {
+			// Wait with a shorter timeout from the events thread to avoid delayed inputs.
+			_wait_for_events(0, 1000);
+		}
 
 		// Process events from the queue.
 		{
