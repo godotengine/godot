@@ -586,12 +586,22 @@ public:
 		SHADER_STAGE_TESSELATION_CONTROL,
 		SHADER_STAGE_TESSELATION_EVALUATION,
 		SHADER_STAGE_COMPUTE,
+		SHADER_STAGE_RAYGEN,
+		SHADER_STAGE_ANY_HIT,
+		SHADER_STAGE_CLOSEST_HIT,
+		SHADER_STAGE_MISS,
+		SHADER_STAGE_INTERSECTION,
 		SHADER_STAGE_MAX,
 		SHADER_STAGE_VERTEX_BIT = (1 << SHADER_STAGE_VERTEX),
 		SHADER_STAGE_FRAGMENT_BIT = (1 << SHADER_STAGE_FRAGMENT),
 		SHADER_STAGE_TESSELATION_CONTROL_BIT = (1 << SHADER_STAGE_TESSELATION_CONTROL),
 		SHADER_STAGE_TESSELATION_EVALUATION_BIT = (1 << SHADER_STAGE_TESSELATION_EVALUATION),
 		SHADER_STAGE_COMPUTE_BIT = (1 << SHADER_STAGE_COMPUTE),
+		SHADER_STAGE_RAYGEN_BIT = (1 << SHADER_STAGE_RAYGEN),
+		SHADER_STAGE_ANY_HIT_BIT = (1 << SHADER_STAGE_ANY_HIT),
+		SHADER_STAGE_CLOSEST_HIT_BIT = (1 << SHADER_STAGE_CLOSEST_HIT),
+		SHADER_STAGE_MISS_BIT = (1 << SHADER_STAGE_MISS),
+		SHADER_STAGE_INTERSECTION_BIT = (1 << SHADER_STAGE_INTERSECTION),
 	};
 
 	enum ShaderLanguage {
@@ -644,6 +654,7 @@ public:
 		UNIFORM_TYPE_INPUT_ATTACHMENT, // Used for sub-pass read/write, for mobile mostly.
 		UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, // Same as UNIFORM but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
 		UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, // Same as STORAGE but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
+		UNIFORM_TYPE_ACCELERATION_STRUCTURE, // Bounding Volume Hierarchy (Top + Bottom Level acceleration structures), for raytracing only.
 		UNIFORM_TYPE_MAX
 	};
 
@@ -672,6 +683,13 @@ public:
 	/*******************/
 
 	// ----- PIPELINE -----
+
+	// Rendering Shader Container expects this type to be 4 bytes for proper alignment with the shaders.
+	enum PipelineType : uint32_t {
+		PIPELINE_TYPE_RASTERIZATION,
+		PIPELINE_TYPE_COMPUTE,
+		PIPELINE_TYPE_RAYTRACING,
+	};
 
 	enum RenderPrimitive {
 		RENDER_PRIMITIVE_POINTS,
@@ -974,6 +992,8 @@ public:
 		SUPPORTS_VULKAN_MEMORY_MODEL,
 		SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE,
 		SUPPORTS_POINT_SIZE,
+		SUPPORTS_RAY_QUERY,
+		SUPPORTS_RAYTRACING_PIPELINE,
 	};
 
 	enum SubgroupOperations {
@@ -1080,7 +1100,7 @@ public:
 	struct ShaderReflection {
 		uint64_t vertex_input_mask = 0;
 		uint32_t fragment_output_mask = 0;
-		bool is_compute = false;
+		PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
 		bool has_multiview = false;
 		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};

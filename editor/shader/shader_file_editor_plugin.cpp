@@ -274,7 +274,12 @@ ShaderFileEditor::ShaderFileEditor() {
 		"Fragment",
 		"TessControl",
 		"TessEval",
-		"Compute"
+		"Compute",
+		"Raygen",
+		"AnyHit",
+		"ClosestHit",
+		"Miss",
+		"Intersection",
 	};
 
 	stage_hb = memnew(HFlowContainer);
