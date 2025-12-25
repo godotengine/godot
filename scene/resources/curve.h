@@ -102,15 +102,22 @@ public:
 	real_t get_max_value() const { return _max_value; }
 	void set_max_value(real_t p_max);
 	real_t get_value_range() const { return _max_value - _min_value; }
+	String get_value_label() const { return _value_label; }
+	void set_value_label(String p_label);
 
 	real_t get_min_domain() const { return _min_domain; }
 	void set_min_domain(real_t p_min);
 	real_t get_max_domain() const { return _max_domain; }
 	void set_max_domain(real_t p_max);
 	real_t get_domain_range() const { return _max_domain - _min_domain; }
+	String get_domain_label() const { return _domain_label; }
+	void set_domain_label(String p_label);
 
 	Array get_limits() const;
 	void set_limits(const Array &p_input);
+
+	Array get_labels() const;
+	void set_labels(const Array &p_input);
 
 	real_t sample(real_t p_offset) const;
 	real_t sample_local_nocheck(int p_index, real_t p_local_offset) const;
@@ -165,6 +172,8 @@ private:
 	real_t _max_value = 1.0;
 	real_t _min_domain = 0.0;
 	real_t _max_domain = 1.0;
+	String _value_label = "Value";
+	String _domain_label = "Domain";
 };
 
 VARIANT_ENUM_CAST(Curve::TangentMode)
@@ -202,6 +211,7 @@ class Curve2D : public Resource {
 		int idx;
 		real_t frac;
 	};
+
 	Interval _find_interval(real_t p_offset) const;
 	Vector2 _sample_baked(Interval p_interval, bool p_cubic) const;
 	Transform2D _sample_posture(Interval p_interval) const;
@@ -289,6 +299,7 @@ class Curve3D : public Resource {
 		int idx;
 		real_t frac;
 	};
+
 	Interval _find_interval(real_t p_offset) const;
 	Vector3 _sample_baked(Interval p_interval, bool p_cubic) const;
 	real_t _sample_baked_tilt(Interval p_interval) const;

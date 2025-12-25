@@ -674,17 +674,20 @@ void CurveEdit::update_view_transform() {
 	float min_y = curve.is_valid() ? curve->get_min_value() : 0.0;
 	float max_y = curve.is_valid() ? curve->get_max_value() : 1.0;
 
+	const Vector2 full_size = get_rect().size;
+	const Vector2 layout_size(full_size.x - margin, full_size.y - margin);
+
+	Rect2 view_rect(Vector2(margin, 0.0), layout_size);
+	view_rect = view_rect.grow(-margin);
 	const Rect2 world_rect = Rect2(min_x, min_y, max_x - min_x, max_y - min_y);
-	const Size2 view_margin(margin, margin);
-	const Size2 view_size = get_size() - view_margin * 2;
-	const Vector2 scale = view_size / world_rect.size;
+	const Vector2 scale = view_rect.size / world_rect.size;
 
 	Transform2D world_trans;
 	world_trans.translate_local(-world_rect.position - Vector2(0, world_rect.size.y));
 	world_trans.scale(Vector2(scale.x, -scale.y));
 
 	Transform2D view_trans;
-	view_trans.translate_local(view_margin);
+	view_trans.translate_local(view_rect.position);
 
 	_world_to_view = view_trans * world_trans;
 }
@@ -779,16 +782,29 @@ void CurveEdit::_redraw() {
 
 	update_view_transform();
 
-	// Draw background.
-
 	Vector2 view_size = get_rect().size;
+
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	float font_height = font->get_height(font_size);
+	Color text_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+
+	int pad = Math::round(2 * EDSCALE);
+
+	const real_t axis_margin_bottom = font_height + pad;
+	const real_t axis_margin_left = font_height + pad;
+
+	// Curve drawing rect (content area)
+	Rect2 content_rect(Vector2(axis_margin_left, 0), Vector2(view_size.x - axis_margin_left, view_size.y - axis_margin_bottom));
+
+	// Draw background.
 	draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("Tree")), Rect2(Point2(), view_size));
 
 	// Draw primary grid.
 	draw_set_transform_matrix(_world_to_view);
 
-	Vector2 min_edge = get_world_pos(Vector2(0, view_size.y));
-	Vector2 max_edge = get_world_pos(Vector2(view_size.x, 0));
+	Vector2 min_edge = get_world_pos(Vector2(0, content_rect.size.y));
+	Vector2 max_edge = get_world_pos(Vector2(content_rect.size.x, 0));
 
 	const Color grid_color_primary = get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.25);
 	const Color grid_color = get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.1);
@@ -814,12 +830,22 @@ void CurveEdit::_redraw() {
 	// Draw number markings.
 	draw_set_transform_matrix(Transform2D());
 
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-	float font_height = font->get_height(font_size);
-	Color text_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+	// Draw Axis Labels
+	{
+		Vector2 label_size = font->get_string_size(curve->get_domain_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+		Vector2 pos(content_rect.position.x + (content_rect.size.x - label_size.x) * 0.5f, content_rect.position.y + content_rect.size.y + axis_margin_bottom);
 
-	int pad = Math::round(2 * EDSCALE);
+		draw_string(font, pos, curve->get_domain_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+	}
+
+	{
+		Vector2 label_size = font->get_string_size(curve->get_value_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+		Vector2 center(content_rect.position.x - axis_margin_left * 0.5f, content_rect.position.y + content_rect.size.y * 0.5f);
+
+		draw_set_transform(center, -Math::PI / 2.0f, Vector2(1, 1));
+		draw_string(font, Vector2(-label_size.x * 0.5f, label_size.y), curve->get_value_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		draw_set_transform(Vector2(), 0);
+	}
 
 	for (int i = 0; i <= grid_steps.x; ++i) {
 		real_t x = curve->get_min_domain() + i * step_size.x;
@@ -906,20 +932,20 @@ void CurveEdit::_redraw() {
 	// Draw help text.
 
 	if (selected_index > 0 && selected_index < curve->get_point_count() - 1 && selected_tangent_index == TANGENT_NONE && hovered_tangent_index != TANGENT_NONE && !shift_pressed) {
-		float width = view_size.x - 50 * EDSCALE;
+		float width = content_rect.size.x - 50 * EDSCALE;
 		text_color.a *= 0.4;
 
 		draw_multiline_string(font, Vector2(25 * EDSCALE, font_height - Math::round(2 * EDSCALE)), TTR("Hold Shift to edit tangents individually"), HORIZONTAL_ALIGNMENT_CENTER, width, font_size, -1, text_color);
 
 	} else if (selected_index != -1 && selected_tangent_index == TANGENT_NONE) {
 		const Vector2 point_pos = curve->get_point_position(selected_index);
-		float width = view_size.x - 50 * EDSCALE;
+		float width = content_rect.size.x - 50 * EDSCALE;
 		text_color.a *= 0.8;
 
 		draw_string(font, Vector2(25 * EDSCALE, font_height - Math::round(2 * EDSCALE)), vformat("(%.2f, %.2f)", point_pos.x, point_pos.y), HORIZONTAL_ALIGNMENT_CENTER, width, font_size, text_color);
 
 	} else if (selected_index != -1 && selected_tangent_index != TANGENT_NONE) {
-		float width = view_size.x - 50 * EDSCALE;
+		float width = content_rect.size.x - 50 * EDSCALE;
 		text_color.a *= 0.8;
 		real_t theta = Math::rad_to_deg(Math::atan(selected_tangent_index == TANGENT_LEFT ? -1 * curve->get_point_left_tangent(selected_index) : curve->get_point_right_tangent(selected_index)));
 
