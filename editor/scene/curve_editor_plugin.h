@@ -77,6 +77,8 @@ private:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _curve_changed();
 
+	void update_curve_labels();
+
 	int get_point_at(const Vector2 &p_pos) const;
 	TangentIndex get_tangent_at(const Vector2 &p_pos) const;
 
@@ -143,6 +145,8 @@ private:
 
 	bool snap_enabled = false;
 	int snap_count = 10;
+	String domain_label = "Domain";
+	String value_label = "Value";
 };
 
 // CurveEdit + toolbar

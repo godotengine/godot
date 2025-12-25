@@ -479,7 +479,6 @@ class EditorPropertyEasing : public EditorProperty {
 		EASING_IN_OUT,
 		EASING_OUT_IN,
 		EASING_MAX
-
 	};
 
 	void _drag_easing(const Ref<InputEvent> &p_ev);
@@ -742,6 +741,11 @@ class EditorPropertyResource : public EditorProperty {
 	EditorInspector *sub_inspector = nullptr;
 	bool opened_editor = false;
 	bool use_filter = false;
+	String raw_hint_string = "";
+	HashMap<String, String> type_metadata_map;
+
+	String _get_clean_class_type_and_cache_meta(const String &p_hint_text_raw);
+	void _apply_metadata_to_resource(const Ref<Resource> &p_res);
 
 	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
 	void _resource_changed(const Ref<Resource> &p_resource);

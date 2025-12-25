@@ -3312,6 +3312,47 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 	resource_picker->set_editable(!p_read_only);
 }
 
+String EditorPropertyResource::_get_clean_class_type_and_cache_meta(const String &p_hint_text_raw) {
+	type_metadata_map.clear();
+	String clean_class_name_hint = "";
+
+	PackedStringArray raw_types = p_hint_text_raw.split(",");
+
+	for (int i = 0; i < raw_types.size(); i++) {
+		String segment = raw_types[i].strip_edges();
+		String class_name = segment;
+
+		int open_pos = segment.find("[");
+		int close_pos = segment.find("]");
+
+		if (open_pos != -1 && close_pos != -1 && close_pos > open_pos) {
+			class_name = segment.substr(0, open_pos).strip_edges();
+			type_metadata_map[class_name] = segment.substr(open_pos + 1, close_pos - open_pos - 1);
+		}
+
+		if (i > 0) {
+			clean_class_name_hint += ",";
+		}
+		clean_class_name_hint += class_name;
+	}
+
+	return clean_class_name_hint;
+}
+
+void EditorPropertyResource::_apply_metadata_to_resource(const Ref<Resource> &p_res) {
+	if (p_res.is_null()) {
+		return;
+	}
+
+	String res_class = p_res->get_class();
+
+	if (type_metadata_map.has(res_class)) {
+		String meta_content = type_metadata_map[res_class];
+		// Force update metadata every time to ensure hint_string, if changed, is updated
+		p_res->set_meta("_custom_resource_hint_string", meta_content);
+	}
+}
+
 void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_inspect) {
 	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
 		String parent = p_resource->get_path().get_slice("::", 0);
@@ -3559,23 +3600,26 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		resource_picker = nullptr;
 	}
 
-	if (p_path == "script" && p_base_type == "Script" && Object::cast_to<Node>(p_object)) {
+	raw_hint_string = p_base_type;
+	String base_type = _get_clean_class_type_and_cache_meta(raw_hint_string);
+
+	if (p_path == "script" && base_type == "Script" && Object::cast_to<Node>(p_object)) {
 		EditorScriptPicker *script_picker = memnew(EditorScriptPicker);
 		script_picker->set_script_owner(Object::cast_to<Node>(p_object));
 		resource_picker = script_picker;
-	} else if (p_path == "shader" && p_base_type == "Shader" && Object::cast_to<ShaderMaterial>(p_object)) {
+	} else if (p_path == "shader" && base_type == "Shader" && Object::cast_to<ShaderMaterial>(p_object)) {
 		EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
 		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
 		resource_picker = shader_picker;
 		connect(SceneStringName(ready), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
-	} else if (ClassDB::is_parent_class(p_base_type, "AudioStream")) {
+	} else if (ClassDB::is_parent_class(base_type, "AudioStream")) {
 		EditorAudioStreamPicker *astream_picker = memnew(EditorAudioStreamPicker);
 		resource_picker = astream_picker;
 	} else {
 		resource_picker = memnew(EditorResourcePicker);
 	}
 
-	resource_picker->set_base_type(p_base_type);
+	resource_picker->set_base_type(base_type);
 	resource_picker->set_resource_owner(p_object);
 	resource_picker->set_property_path(p_path);
 	resource_picker->set_editable(true);
@@ -3595,6 +3639,34 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 
 void EditorPropertyResource::update_property() {
 	Ref<Resource> res = get_edited_property_display_value();
+
+	// Apply the metadata anytime the update_property is triggered
+	// This ensures if the Hint was updated recently and setup was triggered, the updated hint_string is available
+	_apply_metadata_to_resource(res);
+
+	// Check for hint_string update
+	if (get_edited_object()) {
+		List<PropertyInfo> p_list;
+		get_edited_object()->get_property_list(&p_list);
+
+		for (const PropertyInfo &p_info : p_list) {
+			if (p_info.name == get_edited_property()) {
+				if (p_info.hint_string != raw_hint_string) {
+					raw_hint_string = p_info.hint_string;
+
+					// Cache the new hint_string against type
+					// ideally base_type should not change here.
+					String base_type = _get_clean_class_type_and_cache_meta(raw_hint_string);
+					if (resource_picker) {
+						resource_picker->set_base_type(base_type);
+					}
+
+					_apply_metadata_to_resource(res);
+				}
+				break;
+			}
+		}
+	}
 
 	if (use_sub_inspector) {
 		if (res.is_valid() != resource_picker->is_toggle_mode()) {
