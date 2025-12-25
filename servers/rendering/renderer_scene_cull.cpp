@@ -3157,11 +3157,13 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	cull.frustum = Frustum(planes);
 
 	Vector<RID> directional_lights;
+	directional_lights.reserve(scenario->directional_lights.size());
 	// directional lights
 	{
 		cull.shadow_count = 0;
 
 		Vector<Instance *> lights_with_shadow;
+		lights_with_shadow.reserve(scenario->directional_lights.size());
 
 		for (Instance *E : scenario->directional_lights) {
 			if (!E->visible || !(E->layer_mask & p_visible_layers)) {
