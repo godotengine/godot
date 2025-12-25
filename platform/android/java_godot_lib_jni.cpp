@@ -429,12 +429,26 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv *env, jclass clazz, jint p_device, jboolean p_connected, jstring p_name) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv *env, jclass clazz, jint p_device, jboolean p_connected, jstring p_name, jint p_vendor_id, jint p_product_id, jint p_button_mask, jint p_axis_mask) {
 	if (os_android) {
 		String name = jstring_to_string(p_name, env);
 		Input *input = Input::get_singleton();
 		if (input) {
-			input->joy_connection_changed(p_device, p_connected, name);
+			char uid[128] = "";
+			Dictionary joypad_info;
+
+			if (p_connected) {
+				if (p_vendor_id != 0 && p_product_id != 0) {
+					// Generate GUID for compatibility with SDL controller mappings.
+					input_handler->generate_joy_guid(uid, 128, p_vendor_id, p_product_id, p_button_mask, p_axis_mask);
+				}
+
+				joypad_info["raw_name"] = name;
+				joypad_info["vendor_id"] = itos(p_vendor_id);
+				joypad_info["product_id"] = itos(p_product_id);
+			}
+
+			input->joy_connection_changed(p_device, p_connected, name, uid, joypad_info);
 		}
 	}
 }
