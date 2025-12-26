@@ -1051,7 +1051,17 @@
 			Reference-counted connections can be assigned to the same [Callable] multiple times. Each disconnection decreases the internal counter. The signal fully disconnects only when the counter reaches 0.
 		</constant>
 		<constant name="CONNECT_APPEND_SOURCE_OBJECT" value="16" enum="ConnectFlags">
-			The source object is automatically bound when a [PackedScene] is instantiated. If this flag bit is enabled, the source object will be appended right after the original arguments of the signal.
+			On signal emission, the source object is automatically appended after the original arguments of the signal, regardless of the connected [Callable]'s unbinds which affect only the original arguments of the signal (see [method Callable.unbind], [method Callable.get_unbound_arguments_count]).
+			[codeblock]
+			extends Object
+
+			signal test_signal
+
+			func test():
+				print(self) # Prints e.g. &lt;Object#35332818393&gt;
+				test_signal.connect(prints.unbind(1), CONNECT_APPEND_SOURCE_OBJECT)
+				test_signal.emit("emit_arg_1", "emit_arg_2") # Prints emit_arg_1 &lt;Object#35332818393&gt;
+			[/codeblock]
 		</constant>
 	</constants>
 </class>

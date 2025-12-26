@@ -1340,6 +1340,9 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	Error err = OK;
 
+	Vector<const Variant *> append_source_mem;
+	Variant source = this;
+
 	for (uint32_t i = 0; i < slot_count; ++i) {
 		const Callable &callable = slot_callables[i];
 		const uint32_t &flags = slot_flags[i];
@@ -1351,6 +1354,31 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 		const Variant **args = p_args;
 		int argc = p_argcount;
+
+		if (flags & CONNECT_APPEND_SOURCE_OBJECT) {
+			// Source is being appended regardless of unbinds.
+			// Implemented by inserting before the first to-be-unbinded arg.
+			int source_index = p_argcount - callable.get_unbound_arguments_count();
+			if (source_index >= 0) {
+				append_source_mem.resize(p_argcount + 1);
+				const Variant **args_mem = append_source_mem.ptrw();
+
+				for (int j = 0; j < source_index; j++) {
+					args_mem[j] = p_args[j];
+				}
+				args_mem[source_index] = &source;
+				for (int j = source_index; j < p_argcount; j++) {
+					args_mem[j + 1] = p_args[j];
+				}
+
+				args = args_mem;
+				argc = p_argcount + 1;
+			} else {
+				// More args unbound than provided, call will fail.
+				// Since appended source is non-unbindable, the error
+				// about too many unbinds should be correct as is.
+			}
+		}
 
 		if (flags & CONNECT_DEFERRED) {
 			MessageQueue::get_singleton()->push_callablep(callable, args, argc, true);
