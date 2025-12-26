@@ -664,9 +664,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		Callable callable(cto, snames[c.method]);
 
 		Array binds;
-		if (c.flags & CONNECT_APPEND_SOURCE_OBJECT) {
-			binds.push_back(cfrom);
-		}
 
 		for (int bind : c.binds) {
 			binds.push_back(props[bind]);
@@ -1192,11 +1189,6 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 					ccu->get_bound_arguments(binds);
 					unbinds = ccu->get_unbinds();
 					base_callable = ccu->get_callable();
-				}
-
-				// The source object may already be bound, ignore it to avoid saving the source object.
-				if ((c.flags & CONNECT_APPEND_SOURCE_OBJECT) && (p_node == binds[0])) {
-					binds.remove_at(0);
 				}
 			} else {
 				base_callable = c.callable;
