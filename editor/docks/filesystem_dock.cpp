@@ -758,7 +758,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	if (p_path.is_empty()) {
 		target_path = "res://";
 		is_directory = true;
-	} else if (p_path != "Favorites") {
+	} else if (p_path != "Favorites" && p_path.begins_with("res://")) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->dir_exists(p_path)) {
 			is_directory = true;

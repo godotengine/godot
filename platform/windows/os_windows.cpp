@@ -273,10 +273,12 @@ void OS_Windows::initialize() {
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
+	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_EDITOR_RESOURCES);
 	FileAccess::make_default<FileAccessWindowsPipe>(FileAccess::ACCESS_PIPE);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
+	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_EDITOR_RESOURCES);
 
 	NetSocketWinSock::make_default();
 

@@ -33,6 +33,7 @@
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/string/ustring.h"
+#include "core/version.h"
 
 class EditorPaths : public Object {
 	GDCLASS(EditorPaths, Object)
@@ -49,6 +50,7 @@ class EditorPaths : public Object {
 	String text_editor_themes_folder = "text_editor_themes";
 	String script_templates_folder = "script_templates";
 	String feature_profiles_folder = "feature_profiles";
+	String editor_resources_folder = "editor_resources";
 
 	static EditorPaths *singleton;
 

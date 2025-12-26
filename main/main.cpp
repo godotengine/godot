@@ -1723,6 +1723,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
 			goto error;
 #endif // defined(OVERRIDE_PATH_ENABLED)
+		} else if (arg == "--editor_resource_path") { // Set the editor resource path
+			if (N) {
+				ProjectSettings::get_singleton()->set_editor_resource_path(N->get());
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing editor resource path.\n");
+			}
 		} else if (arg == "--quit") { // Auto quit at the end of the first main loop iteration
 			quit_after = 1;
 #ifdef TOOLS_ENABLED

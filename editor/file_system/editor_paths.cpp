@@ -205,6 +205,10 @@ EditorPaths::EditorPaths() {
 		if (!dir->dir_exists(export_templates_folder)) {
 			dir->make_dir(export_templates_folder);
 		}
+
+		if (!dir->dir_exists(editor_resources_folder.path_join(vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR)))) {
+			dir->make_dir_recursive(editor_resources_folder.path_join(vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR)));
+		}
 	}
 
 	// Config dir.
