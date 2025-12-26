@@ -4892,7 +4892,16 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 
 	for (const PropertyInfo &E : pinfo) {
 		if (E.name == leftover_path[leftover_path.size() - 1]) {
-			return E;
+			PropertyInfo pi = E;
+
+			// See `PropertySelector::_update_search()`. `PropertySelector` makes an exception for script variables,
+			// displaying them even if `PROPERTY_USAGE_EDITOR` is not set. So, we need to compensate for this here
+			// to ensure the property is visible in the Inspector.
+			if (pi.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) {
+				pi.usage |= PROPERTY_USAGE_EDITOR;
+			}
+
+			return pi;
 		}
 	}
 
