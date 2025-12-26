@@ -99,8 +99,6 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 }
 
 void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-	uint64_t time = OS::get_singleton()->get_ticks_usec();
-
 	//copy everything over first, since this only really does capture
 	for (int i = 0; i < p_frame_count; i++) {
 		p_dst_frames[i] = p_src_frames[i];
@@ -143,10 +141,6 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 			temporal_fft_pos = 0;
 		}
 	}
-
-	//determine time of capture
-	double remainder_sec = (temporal_fft_pos / mix_rate); //subtract remainder from mix time
-	last_fft_time = time - uint64_t(remainder_sec * 1000000.0);
 }
 
 void AudioEffectSpectrumAnalyzerInstance::_bind_methods() {
@@ -156,23 +150,7 @@ void AudioEffectSpectrumAnalyzerInstance::_bind_methods() {
 }
 
 Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(float p_begin, float p_end, MagnitudeMode p_mode) const {
-	if (last_fft_time == 0) {
-		return Vector2();
-	}
-	uint64_t time = OS::get_singleton()->get_ticks_usec();
-	float diff = double(time - last_fft_time) / 1000000.0 + base->get_tap_back_pos();
-	diff -= AudioServer::get_singleton()->get_output_latency();
-	float fft_time_size = float(fft_size) / mix_rate;
-
 	int fft_index = fft_pos;
-
-	while (diff > fft_time_size) {
-		diff -= fft_time_size;
-		fft_index -= 1;
-		if (fft_index < 0) {
-			fft_index = fft_count - 1;
-		}
-	}
 
 	int begin_pos = p_begin * fft_size / (mix_rate * 0.5);
 	int end_pos = p_end * fft_size / (mix_rate * 0.5);
@@ -216,7 +194,6 @@ Ref<AudioEffectInstance> AudioEffectSpectrumAnalyzer::instantiate() {
 	ins->mix_rate = AudioServer::get_singleton()->get_mix_rate();
 	ins->fft_count = (buffer_length / (float(ins->fft_size) / ins->mix_rate)) + 1;
 	ins->fft_pos = 0;
-	ins->last_fft_time = 0;
 	ins->fft_history.resize(ins->fft_count);
 	ins->temporal_fft.resize(ins->fft_size * 8); //x2 stereo, x2 amount of samples for freqs, x2 for input
 	ins->temporal_fft_pos = 0;
@@ -237,14 +214,6 @@ float AudioEffectSpectrumAnalyzer::get_buffer_length() const {
 	return buffer_length;
 }
 
-void AudioEffectSpectrumAnalyzer::set_tap_back_pos(float p_seconds) {
-	tapback_pos = p_seconds;
-}
-
-float AudioEffectSpectrumAnalyzer::get_tap_back_pos() const {
-	return tapback_pos;
-}
-
 void AudioEffectSpectrumAnalyzer::set_fft_size(FFTSize p_fft_size) {
 	ERR_FAIL_INDEX(p_fft_size, FFT_SIZE_MAX);
 	fft_size = p_fft_size;
@@ -258,14 +227,10 @@ void AudioEffectSpectrumAnalyzer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_buffer_length", "seconds"), &AudioEffectSpectrumAnalyzer::set_buffer_length);
 	ClassDB::bind_method(D_METHOD("get_buffer_length"), &AudioEffectSpectrumAnalyzer::get_buffer_length);
 
-	ClassDB::bind_method(D_METHOD("set_tap_back_pos", "seconds"), &AudioEffectSpectrumAnalyzer::set_tap_back_pos);
-	ClassDB::bind_method(D_METHOD("get_tap_back_pos"), &AudioEffectSpectrumAnalyzer::get_tap_back_pos);
-
 	ClassDB::bind_method(D_METHOD("set_fft_size", "size"), &AudioEffectSpectrumAnalyzer::set_fft_size);
 	ClassDB::bind_method(D_METHOD("get_fft_size"), &AudioEffectSpectrumAnalyzer::get_fft_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.1,4,0.1,suffix:s"), "set_buffer_length", "get_buffer_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tap_back_pos", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_tap_back_pos", "get_tap_back_pos");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fft_size", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096"), "set_fft_size", "get_fft_size");
 
 	BIND_ENUM_CONSTANT(FFT_SIZE_256);
@@ -278,6 +243,5 @@ void AudioEffectSpectrumAnalyzer::_bind_methods() {
 
 AudioEffectSpectrumAnalyzer::AudioEffectSpectrumAnalyzer() {
 	buffer_length = 2;
-	tapback_pos = 0.01;
 	fft_size = FFT_SIZE_1024;
 }
