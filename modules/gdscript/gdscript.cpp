@@ -556,12 +556,26 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 				switch (member.type) {
 					case GDScriptParser::ClassNode::Member::VARIABLE: {
-						if (!member.variable->exported) {
-							continue;
-						}
+						// See `GDScriptCompiler::_prepare_compilation()`. The `PROPERTY_USAGE_SCRIPT_VARIABLE` flag
+						// isn't stored in `export_info`, but is set separately in the compiler. We need to replicate
+						// the same logic for placeholders.
+						PropertyInfo prop_info = member.variable->get_datatype().to_property_info(member.variable->identifier->name);
+						PropertyInfo export_info = member.variable->export_info;
 
-						members_cache.push_back(member.variable->export_info);
+						if (member.variable->exported) {
+							if (member.variable->get_datatype().is_variant()) {
+								prop_info.type = export_info.type;
+								prop_info.class_name = export_info.class_name;
+							}
+							prop_info.hint = export_info.hint;
+							prop_info.hint_string = export_info.hint_string;
+							prop_info.usage = export_info.usage;
+						}
+						prop_info.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+
 						Variant default_value = analyzer.make_variable_default_value(member.variable);
+
+						members_cache.push_back(prop_info);
 						member_default_values_cache[member.variable->identifier->name] = default_value;
 					} break;
 					case GDScriptParser::ClassNode::Member::SIGNAL: {
