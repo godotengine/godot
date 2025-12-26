@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_effect_spectrum_analyzer.h                                      */
+/*  audio_effect_spectrum_analyzer.compat.inc                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,79 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
-
-#include "servers/audio/audio_effect.h"
-
-class AudioEffectSpectrumAnalyzer;
-
-class AudioEffectSpectrumAnalyzerInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectSpectrumAnalyzerInstance, AudioEffectInstance);
-
-public:
-	enum MagnitudeMode {
-		MAGNITUDE_AVERAGE,
-		MAGNITUDE_MAX,
-	};
-
-private:
-	friend class AudioEffectSpectrumAnalyzer;
-	Ref<AudioEffectSpectrumAnalyzer> base;
-
-	Vector<Vector<AudioFrame>> fft_history;
-	Vector<float> temporal_fft;
-	int temporal_fft_pos;
-	int fft_size;
-	int fft_count;
-	int fft_pos;
-	float mix_rate;
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
-	Vector2 get_magnitude_for_frequency_range(float p_begin, float p_end, MagnitudeMode p_mode = MAGNITUDE_MAX) const;
-};
-
-VARIANT_ENUM_CAST(AudioEffectSpectrumAnalyzerInstance::MagnitudeMode)
-
-class AudioEffectSpectrumAnalyzer : public AudioEffect {
-	GDCLASS(AudioEffectSpectrumAnalyzer, AudioEffect);
-
-public:
-	enum FFTSize {
-		FFT_SIZE_256,
-		FFT_SIZE_512,
-		FFT_SIZE_1024,
-		FFT_SIZE_2048,
-		FFT_SIZE_4096,
-		FFT_SIZE_MAX
-	};
-
-public:
-	friend class AudioEffectSpectrumAnalyzerInstance;
-	float buffer_length;
-	FFTSize fft_size;
-
-protected:
-	static void _bind_methods();
-
 #ifndef DISABLE_DEPRECATED
-	void _set_tap_back_pos_bind_compat_114355(float p_seconds);
-	float _get_tap_back_pos_bind_compat_114355();
-	static void _bind_compatibility_methods();
-#endif
 
-public:
-	Ref<AudioEffectInstance> instantiate() override;
-	void set_buffer_length(float p_seconds);
-	float get_buffer_length() const;
+void AudioEffectSpectrumAnalyzer::_set_tap_back_pos_bind_compat_114355(float p_seconds) {
+	WARN_PRINT_ONCE("AudioEffectSpectrumAnalyzer.set_tap_back_pos() is deprecated and the value will be discarded.");
+}
 
-	void set_fft_size(FFTSize);
-	FFTSize get_fft_size() const;
+float AudioEffectSpectrumAnalyzer::_get_tap_back_pos_bind_compat_114355() {
+	WARN_PRINT_ONCE("AudioEffectSpectrumAnalyzer.get_tap_back_pos() is deprecated and will only return the original default value.");
+	return 0.01;
+}
 
-	AudioEffectSpectrumAnalyzer();
-};
+void AudioEffectSpectrumAnalyzer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_tap_back_pos", "seconds"), &AudioEffectSpectrumAnalyzer::_set_tap_back_pos_bind_compat_114355);
+	ClassDB::bind_compatibility_method(D_METHOD("get_tap_back_pos"), &AudioEffectSpectrumAnalyzer::_get_tap_back_pos_bind_compat_114355);
+}
 
-VARIANT_ENUM_CAST(AudioEffectSpectrumAnalyzer::FFTSize);
+#endif // DISABLE_DEPRECATED
