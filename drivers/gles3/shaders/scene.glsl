@@ -56,7 +56,7 @@ RENDER_MOTION_VECTORS = false
 
 #include "stdlib_inc.glsl"
 
-#if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) ||defined(LIGHT_CLEARCOAT_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) || defined(LIGHT_CLEARCOAT_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
@@ -511,7 +511,7 @@ out vec2 uv_interp;
 out vec2 uv2_interp;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 out vec3 tangent_interp;
 out vec3 binormal_interp;
 #endif
@@ -604,7 +604,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 		model_normal_matrix = mat3(model_matrix);
 	}
 
-#if defined(NORMAL_USED) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if defined(NORMAL_USED) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 
 	vec3 binormal;
 	float binormal_sign;
@@ -679,7 +679,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	normal = model_normal_matrix * normal;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 
 	tangent = model_normal_matrix * tangent;
 	binormal = model_normal_matrix * binormal;
@@ -712,7 +712,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	normal = modelview_normal * normal;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 
 	binormal = modelview_normal * binormal;
 	tangent = modelview_normal * tangent;
@@ -727,7 +727,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	normal = (scene_data_input.view_matrix * vec4(normal, 0.0)).xyz;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	binormal = (scene_data_input.view_matrix * vec4(binormal, 0.0)).xyz;
 	tangent = (scene_data_input.view_matrix * vec4(tangent, 0.0)).xyz;
 #endif
@@ -741,7 +741,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	normal_interp = normalize(normal);
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	tangent_interp = normalize(tangent);
 	binormal_interp = normalize(binormal);
 #endif
@@ -984,7 +984,7 @@ void main() {
 #define SPECULAR_SCHLICK_GGX
 #endif
 
-#if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) ||defined(LIGHT_CLEARCOAT_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) ||defined(LIGHT_CLEARCOAT_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
@@ -1053,7 +1053,7 @@ in vec2 uv2_interp;
 #endif
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 in vec3 tangent_interp;
 in vec3 binormal_interp;
 #endif
@@ -2029,7 +2029,7 @@ void main() {
 
 	float alpha = 1.0;
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	vec3 binormal = binormal_interp;
 	vec3 tangent = tangent_interp;
 #else
@@ -2064,6 +2064,7 @@ void main() {
 #endif
 
 #if defined(BENT_NORMAL_MAP_USED)
+	vec3 bent_normal_vector;
 	vec3 bent_normal_map = vec3(0.5);
 #endif
 
@@ -2145,6 +2146,13 @@ void main() {
 
 #endif // !USE_SHADOW_TO_OPACITY
 
+#ifdef BENT_NORMAL_MAP_USED
+	bent_normal_map.xy = bent_normal_map.xy * 2.0 - 1.0;
+	bent_normal_map.z = sqrt(max(0.0, 1.0 - dot(bent_normal_map.xy, bent_normal_map.xy)));
+
+	bent_normal_vector = normalize(tangent * bent_normal_map.x + binormal * bent_normal_map.y + normal * bent_normal_map.z);
+#endif
+
 #if defined(NORMAL_MAP_USED)
 	normal_map.xy = normal_map.xy * 2.0 - 1.0;
 	normal_map.z = sqrt(max(0.0, 1.0 - dot(normal_map.xy, normal_map.xy))); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
@@ -2199,8 +2207,13 @@ void main() {
 	/////////////////////// LIGHTING //////////////////////////////
 
 #ifndef AMBIENT_LIGHT_DISABLED
+#ifdef BENT_NORMAL_MAP_USED
+	vec3 indirect_normal = bent_normal_vector;
+#else
+	vec3 indirect_normal = normal;
+#endif // BENT_NORMAL_MAP_USED
 	// IBL precalculations
-	float ndotv = clamp(dot(normal, view), 0.0, 1.0);
+	float ndotv = clamp(dot(indirect_normal, view), 0.0, 1.0);
 	vec3 F = f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - ndotv, 5.0);
 
 #ifdef USE_RADIANCE_MAP
@@ -2210,13 +2223,13 @@ void main() {
 		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
 		vec3 anisotropic_tangent = cross(anisotropic_direction, view);
 		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+		vec3 bent_normal = normalize(mix(indirect_normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
 		vec3 ref_vec = reflect(-view, bent_normal);
 #else
-		vec3 ref_vec = reflect(-view, normal);
+		vec3 ref_vec = reflect(-view, indirect_normal);
 #endif
-		ref_vec = mix(ref_vec, normal, roughness * roughness);
-		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
+		ref_vec = mix(ref_vec, indirect_normal, roughness * roughness);
+		float horizon = min(1.0 + dot(ref_vec, indirect_normal), 1.0);
 		ref_vec = mat3(scene_data_block.data.radiance_inverse_xform) * ref_vec;
 		specular_light = textureLod(radiance_map, ref_vec, sqrt(roughness) * RADIANCE_MAX_LOD).rgb;
 		specular_light = srgb_to_linear(specular_light);
@@ -2231,14 +2244,14 @@ void main() {
 	{
 		vec4 reflection_accum = vec4(0.0);
 
-		reflection_process(refprobe1_texture, normal, vertex_interp, refprobe1_local_matrix,
+		reflection_process(refprobe1_texture, indirect_normal, vertex_interp, refprobe1_local_matrix,
 				refprobe1_use_box_project, refprobe1_box_extents, refprobe1_box_offset,
 				refprobe1_exterior, refprobe1_intensity, refprobe1_blend_distance, refprobe1_ambient_mode, refprobe1_ambient_color,
 				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
 
 #ifdef SECOND_REFLECTION_PROBE
 
-		reflection_process(refprobe2_texture, normal, vertex_interp, refprobe2_local_matrix,
+		reflection_process(refprobe2_texture, indirect_normal, vertex_interp, refprobe2_local_matrix,
 				refprobe2_use_box_project, refprobe2_box_extents, refprobe2_box_offset,
 				refprobe2_exterior, refprobe2_intensity, refprobe2_blend_distance, refprobe2_ambient_mode, refprobe2_ambient_color,
 				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
@@ -2262,7 +2275,7 @@ void main() {
 
 #ifdef USE_RADIANCE_MAP
 		if (scene_data_block.data.use_ambient_cubemap) {
-			vec3 ambient_dir = mat3(scene_data_block.data.radiance_inverse_xform) * normal;
+			vec3 ambient_dir = mat3(scene_data_block.data.radiance_inverse_xform) * indirect_normal;
 			vec3 cubemap_ambient = textureLod(radiance_map, ambient_dir, RADIANCE_MAX_LOD).rgb;
 			cubemap_ambient = srgb_to_linear(cubemap_ambient);
 			ambient_light = mix(ambient_light, cubemap_ambient * scene_data_block.data.ambient_light_color_energy.a, scene_data_block.data.ambient_color_sky_mix);
@@ -2285,7 +2298,7 @@ void main() {
 #ifdef USE_LIGHTMAP_CAPTURE
 	{
 		// The world normal.
-		vec3 wnormal = mat3(scene_data_block.data.inv_view_matrix) * normal;
+		vec3 wnormal = mat3(scene_data_block.data.inv_view_matrix) * indirect_normal;
 
 		// The SH coefficients used for evaluating diffuse data from SH probes.
 		const float c0 = 0.886227; // l0				sqrt(1.0/(4.0*PI)) 	* PI
@@ -2327,7 +2340,7 @@ void main() {
 		vec3 lm_light_l1p1 = (textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb - vec3(0.5)) * 2.0;
 #endif
 
-		vec3 n = normalize(lightmap_normal_xform * normal);
+		vec3 n = normalize(lightmap_normal_xform * indirect_normal);
 
 		ambient_light += lm_light_l0 * lightmap_exposure_normalization;
 		ambient_light += lm_light_l1n1 * n.y * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
@@ -2347,6 +2360,12 @@ void main() {
 
 	ambient_light *= ao;
 #ifndef SPECULAR_OCCLUSION_DISABLED
+#ifdef BENT_NORMAL_MAP_USED
+	float cos_b = max(dot(reflect(-view, normal), bent_normal_vector), 0.0);
+	float specular_occlusion = clamp((ao - (1.0 - cos_b)) / roughness, 0.0, 1.0);
+	specular_occlusion = mix(specular_occlusion, cos_b * (1.0 - ao), roughness);
+	specular_light *= specular_occlusion;
+#else // BENT_NORMAL_MAP_USED
 	float specular_occlusion = (ambient_light.r * 0.3 + ambient_light.g * 0.59 + ambient_light.b * 0.11) * 2.0; // Luminance of ambient light.
 	specular_occlusion = min(specular_occlusion * 4.0, 1.0); // This multiplication preserves speculars on bright areas.
 
@@ -2355,6 +2374,7 @@ void main() {
 	// Low enough for occlusion, high enough for reaction to lights and shadows.
 	specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
 	specular_light *= specular_occlusion;
+#endif // BENT_NORMAL_MAP_USED
 #endif // !SPECULAR_OCCLUSION_DISABLED
 	ambient_light *= albedo.rgb;
 
@@ -2376,7 +2396,7 @@ void main() {
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
 		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
 		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(normal, view), 0.0, 1.0);
+		float ndotv = clamp(dot(indirect_normal, view), 0.0, 1.0);
 
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
 		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
