@@ -1340,14 +1340,24 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	Error err = OK;
 
+	// Temporary used for binding source with CONNECT_APPEND_SOURCE_OBJECT.
+	// Fine when combined with CONNECT_DEFERRED as the Callable is copied when enqueued.
+	Callable callable_with_source_object_binded;
+
 	for (uint32_t i = 0; i < slot_count; ++i) {
-		const Callable &callable = slot_callables[i];
+		const Callable *callable_ptr = &slot_callables[i];
 		const uint32_t &flags = slot_flags[i];
 
-		if (!callable.is_valid()) {
+		if (!callable_ptr->is_valid()) {
 			// Target might have been deleted during signal callback, this is expected and OK.
 			continue;
 		}
+
+		if (flags & CONNECT_APPEND_SOURCE_OBJECT) {
+			callable_with_source_object_binded = callable_ptr->bind(this);
+			callable_ptr = &callable_with_source_object_binded;
+		}
+		const Callable &callable = *callable_ptr;
 
 		const Variant **args = p_args;
 		int argc = p_argcount;
