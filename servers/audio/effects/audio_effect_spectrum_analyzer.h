@@ -54,7 +54,6 @@ private:
 	int fft_count;
 	int fft_pos;
 	float mix_rate;
-	uint64_t last_fft_time;
 
 protected:
 	static void _bind_methods();
@@ -82,7 +81,6 @@ public:
 public:
 	friend class AudioEffectSpectrumAnalyzerInstance;
 	float buffer_length;
-	float tapback_pos;
 	FFTSize fft_size;
 
 protected:
@@ -92,8 +90,6 @@ public:
 	Ref<AudioEffectInstance> instantiate() override;
 	void set_buffer_length(float p_seconds);
 	float get_buffer_length() const;
-	void set_tap_back_pos(float p_seconds);
-	float get_tap_back_pos() const;
 
 	void set_fft_size(FFTSize);
 	FFTSize get_fft_size() const;
