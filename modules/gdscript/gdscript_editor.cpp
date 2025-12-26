@@ -524,31 +524,53 @@ void GDScriptLanguage::get_public_annotations(List<MethodInfo> *p_annotations) c
 
 String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 #ifdef TOOLS_ENABLED
-	const bool type_hints = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
+	const bool use_type_hints = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
+	String param_prefix = GLOBAL_GET("editor/naming/function_parameter_prefix");
+	if (!param_prefix.is_empty() && !param_prefix.is_valid_unicode_identifier()) {
+		param_prefix = String();
+	}
 #else
-	const bool type_hints = true;
+	const bool use_type_hints = false;
+	const String param_prefix;
 #endif
 
 	String result = "func " + p_name + "(";
-	if (p_args.size()) {
-		for (int i = 0; i < p_args.size(); i++) {
-			if (i > 0) {
-				result += ", ";
-			}
 
-			const String name_unstripped = p_args[i].get_slicec(':', 0);
-			result += name_unstripped.strip_edges();
+	for (int i = 0; i < p_args.size(); i++) {
+		if (i > 0) {
+			result += ", ";
+		}
 
-			if (type_hints) {
-				const String type_stripped = p_args[i].substr(name_unstripped.length() + 1).strip_edges();
-				if (!type_stripped.is_empty()) {
-					result += ": " + type_stripped;
-				}
+		const Vector<String> param_data = p_args[i].split(":", true, 1);
+
+		String param_name = param_data[0].strip_edges(); // Safe since `param_data` cannot be empty.
+		if (param_prefix.is_empty()) {
+			if (is_reserved_word(param_name)) {
+				param_name = "p_" + param_name;
 			}
+		} else if (!param_name.begins_with(param_prefix)) {
+			param_name = param_prefix + param_name;
+		}
+		result += param_name;
+
+		if (use_type_hints) {
+			String param_type;
+			if (param_data.size() > 1) {
+				param_type = param_data[1].strip_edges();
+			}
+			if (param_type.is_empty()) {
+				param_type = "Variant";
+			}
+			result += ": " + param_type;
 		}
 	}
-	result += String(")") + (type_hints ? " -> void" : "") + ":\n" +
-			_get_indentation() + "pass # Replace with function body.\n";
+
+	result += ")";
+	if (use_type_hints) {
+		result += " -> void";
+	}
+
+	result += ":\n" + _get_indentation() + "pass # Replace with function body.\n";
 
 	return result;
 }
@@ -3724,8 +3746,6 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				break;
 			}
 
-			const bool type_hints = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
-
 			List<MethodInfo> virtual_methods;
 			if (is_static) {
 				// Not truly a virtual method, but can also be "overridden".
@@ -3737,6 +3757,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				ClassDB::get_virtual_methods(class_name, &virtual_methods);
 			}
 
+			const bool use_type_hints = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
+			String param_prefix = GLOBAL_GET("editor/naming/function_parameter_prefix");
+			if (!param_prefix.is_empty() && !param_prefix.is_valid_unicode_identifier()) {
+				param_prefix = String();
+			}
+
 			for (const MethodInfo &mi : virtual_methods) {
 				if (options.has(mi.name)) {
 					continue;
@@ -3744,36 +3770,41 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				if (completion_context.current_class->has_function(mi.name) && completion_context.current_class->get_member(mi.name).function != function_node) {
 					continue;
 				}
-				String method_hint = mi.name;
-				if (method_hint.contains_char(':')) {
-					method_hint = method_hint.get_slicec(':', 0);
-				}
-				method_hint += "(";
+
+				String method_hint = mi.name + "(";
 
 				for (int64_t i = 0; i < mi.arguments.size(); ++i) {
 					if (i > 0) {
 						method_hint += ", ";
 					}
-					String arg = mi.arguments[i].name;
-					if (arg.contains_char(':')) {
-						arg = arg.substr(0, arg.find_char(':'));
+
+					String param_name = mi.arguments[i].name;
+					if (param_prefix.is_empty()) {
+						if (is_reserved_word(param_name)) {
+							param_name = "p_" + param_name;
+						}
+					} else if (!param_name.begins_with(param_prefix)) {
+						param_name = param_prefix + param_name;
 					}
-					method_hint += arg;
-					if (type_hints) {
+					method_hint += param_name;
+
+					if (use_type_hints) {
 						method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
 					}
 				}
+
 				if (mi.flags & METHOD_FLAG_VARARG) {
 					if (!mi.arguments.is_empty()) {
 						method_hint += ", ";
 					}
 					method_hint += "...args"; // `MethodInfo` does not support the rest parameter name.
-					if (type_hints) {
+					if (use_type_hints) {
 						method_hint += ": Array";
 					}
 				}
+
 				method_hint += ")";
-				if (type_hints) {
+				if (use_type_hints) {
 					method_hint += " -> " + _get_visual_datatype(mi.return_val, false, class_name);
 				}
 				method_hint += ":";
