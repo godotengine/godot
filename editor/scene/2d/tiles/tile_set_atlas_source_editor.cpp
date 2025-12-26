@@ -2576,6 +2576,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_inspector->set_show_categories(false, true);
 	tile_inspector->set_use_doc_hints(true);
 	tile_inspector->set_use_folding(true);
+	tile_inspector->set_theme_type_variation("ScrollContainerSecondary");
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
 	middle_vbox_container->add_child(tile_inspector);
 
@@ -2591,6 +2592,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_data_editors_scroll = memnew(ScrollContainer);
 	tile_data_editors_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	tile_data_editors_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	tile_data_editors_scroll->set_theme_type_variation("ScrollContainerSecondary");
 	middle_vbox_container->add_child(tile_data_editors_scroll);
 
 	VBoxContainer *tile_data_editors_vbox = memnew(VBoxContainer);
@@ -2630,6 +2632,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(false, true);
 	atlas_source_inspector->set_use_doc_hints(true);
+	atlas_source_inspector->set_theme_type_variation("ScrollContainerSecondary");
 	middle_vbox_container->add_child(atlas_source_inspector);
 
 	// -- Right side --
