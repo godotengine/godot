@@ -107,7 +107,7 @@ void PhysicalBone2D::_find_joint_child() {
 }
 
 PackedStringArray PhysicalBone2D::get_configuration_warnings() const {
-	PackedStringArray warnings = RigidBody2D::get_configuration_warnings();
+	PackedStringArray warnings = PhysicsBody2D::get_configuration_warnings();
 
 	if (!parent_skeleton) {
 		warnings.push_back(RTR("A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a parent node!"));
