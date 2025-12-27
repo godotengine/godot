@@ -1,0 +1,7 @@
+GH-114355
+---------
+Validate extension JSON: API was removed: classes/AudioEffectSpectrumAnalyzer/methods/set_tap_back_pos
+Validate extension JSON: API was removed: classes/AudioEffectSpectrumAnalyzer/methods/get_tap_back_pos
+Validate extension JSON: API was removed: classes/AudioEffectSpectrumAnalyzer/properties/tap_back_pos
+
+Removed undocumented property that led to errors. Nothing was done to prevent breakage, since this was an undocumented property that made little change, and only made matters worse.
