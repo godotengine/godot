@@ -262,8 +262,9 @@ DockTabContainer::DockTabContainer(EditorDock::DockSlot p_slot) {
 	get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &DockTabContainer::_tab_rmb_clicked));
 }
 
-SideDockTabContainer::SideDockTabContainer(EditorDock::DockSlot p_slot) :
+SideDockTabContainer::SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect) :
 		DockTabContainer(p_slot) {
+	grid_rect = p_slot_rect;
 	set_custom_minimum_size(Size2(170 * EDSCALE, 0));
 	set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	set_use_hidden_tabs_for_min_size(true);
