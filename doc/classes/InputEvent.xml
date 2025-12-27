@@ -120,6 +120,7 @@
 		<member name="device" type="int" setter="set_device" getter="get_device" default="0">
 			The event's device ID.
 			[b]Note:[/b] [member device] can be negative for special use cases that don't refer to devices physically present on the system. See [constant DEVICE_ID_EMULATION].
+			[b]Note:[/b] Unless [member device] value is [constant DEVICE_ID_EMULATION], [member device] is only used for joypad events to represent the event's joypad ID, in other cases it's always [code]0[/code] or [constant DEVICE_ID_EMULATION].
 		</member>
 	</members>
 	<constants>
