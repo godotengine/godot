@@ -35,6 +35,35 @@
 #include "platform/android/java_godot_io_wrapper.h"
 #include "platform/android/os_android.h"
 
+// Scope guard to ensure AImage instances are always deleted.
+class ScopedAImage {
+	AImage *image = nullptr;
+
+public:
+	ScopedAImage() = default;
+	~ScopedAImage() {
+		reset();
+	}
+
+	ScopedAImage(const ScopedAImage &) = delete;
+	ScopedAImage &operator=(const ScopedAImage &) = delete;
+
+	AImage **out() {
+		return &image;
+	}
+
+	AImage *get() const {
+		return image;
+	}
+
+	void reset(AImage *p_image = nullptr) {
+		if (image != nullptr) {
+			AImage_delete(image);
+		}
+		image = p_image;
+	}
+};
+
 //////////////////////////////////////////////////////////////////////////
 // Helper functions
 //
@@ -367,6 +396,22 @@ void CameraFeedAndroid::handle_rotation_change() {
 	_set_rotation();
 }
 
+// In-place stride compaction (handles row padding).
+void CameraFeedAndroid::compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride) {
+	if (stride <= width) {
+		return;
+	}
+
+	uint8_t *src_row = data + stride;
+	uint8_t *dst_row = data + width;
+
+	for (int y = 1; y < height; y++) {
+		memmove(dst_row, src_row, width);
+		src_row += stride;
+		dst_row += width;
+	}
+}
+
 void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
 
@@ -380,15 +425,14 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 		return;
 	}
 
-	Vector<uint8_t> data_y = feed->data_y;
-	Vector<uint8_t> data_uv = feed->data_uv;
-	Ref<Image> image_y = feed->image_y;
-	Ref<Image> image_uv = feed->image_uv;
+	Vector<uint8_t> data_y;
+	Vector<uint8_t> data_uv;
 
 	// Get image
-	AImage *image = nullptr;
-	media_status_t status = AImageReader_acquireNextImage(p_reader, &image);
+	ScopedAImage image_guard;
+	media_status_t status = AImageReader_acquireNextImage(p_reader, image_guard.out());
 	ERR_FAIL_COND(status != AMEDIA_OK);
+	AImage *image = image_guard.get();
 
 	// Get image data
 	uint8_t *data = nullptr;
@@ -397,65 +441,148 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	FeedFormat format = feed->get_format();
 	int width = format.width;
 	int height = format.height;
+
 	switch (format.pixel_format) {
-		case AIMAGE_FORMAT_YUV_420_888:
+		case AIMAGE_FORMAT_YUV_420_888: {
+			int32_t y_row_stride;
+			AImage_getPlaneRowStride(image, 0, &y_row_stride);
 			AImage_getPlaneData(image, 0, &data, &len);
+
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
-				data_y.resize(len > size ? len : size);
+
+			int64_t y_size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
+
+			if (y_row_stride == width && len == y_size) {
+				data_y.resize(y_size);
+				memcpy(data_y.ptrw(), data, y_size);
+			} else {
+				// Validate buffer size before compaction to prevent out-of-bounds read.
+				int64_t required_y_len = (int64_t)y_row_stride * (height - 1) + width;
+				if (len < required_y_len) {
+					return;
+				}
+				if (feed->scratch_y.size() < len) {
+					feed->scratch_y.resize(len);
+				}
+				memcpy(feed->scratch_y.ptrw(), data, len);
+				CameraFeedAndroid::compact_stride_inplace(feed->scratch_y.ptrw(), width, height, y_row_stride);
+				data_y.resize(y_size);
+				memcpy(data_y.ptrw(), feed->scratch_y.ptr(), y_size);
 			}
-			memcpy(data_y.ptrw(), data, len);
 
 			AImage_getPlanePixelStride(image, 1, &pixel_stride);
 			AImage_getPlaneRowStride(image, 1, &row_stride);
 			AImage_getPlaneData(image, 1, &data, &len);
+
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_uv.size()) {
-				int64_t size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
-				data_uv.resize(len > size ? len : size);
+
+			int64_t uv_size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
+
+			int uv_width = width / 2;
+			int uv_height = height / 2;
+
+			uint8_t *data_v = nullptr;
+			int32_t v_pixel_stride = 0;
+			int32_t v_row_stride = 0;
+			int len_v = 0;
+
+			if (pixel_stride != 2) {
+				AImage_getPlanePixelStride(image, 2, &v_pixel_stride);
+				AImage_getPlaneRowStride(image, 2, &v_row_stride);
+				AImage_getPlaneData(image, 2, &data_v, &len_v);
+				if (len_v <= 0) {
+					return;
+				}
 			}
-			memcpy(data_uv.ptrw(), data, len);
 
-			image_y->initialize_data(width, height, false, Image::FORMAT_R8, data_y);
-			image_uv->initialize_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
+			if (pixel_stride == 2 && row_stride == uv_width * 2 && len == uv_size) {
+				data_uv.resize(uv_size);
+				memcpy(data_uv.ptrw(), data, uv_size);
+			} else if (pixel_stride == 2) {
+				// Allow 1-2 byte tolerance for UV buffer (some devices omit final bytes).
+				int64_t required_uv_len = (int64_t)row_stride * (uv_height - 1) + uv_width * 2;
+				const int64_t UV_TOLERANCE = 2;
+				if (len < required_uv_len - UV_TOLERANCE) {
+					return;
+				}
 
-			feed->set_ycbcr_images(image_y, image_uv);
+				if (feed->scratch_uv.size() < required_uv_len) {
+					feed->scratch_uv.resize(required_uv_len);
+				}
+				if (len < required_uv_len) {
+					memset(feed->scratch_uv.ptrw() + len, 128, required_uv_len - len);
+				}
+				memcpy(feed->scratch_uv.ptrw(), data, len);
+				if (row_stride != uv_width * 2) {
+					CameraFeedAndroid::compact_stride_inplace(feed->scratch_uv.ptrw(), uv_width * 2, uv_height, row_stride);
+				}
+				data_uv.resize(uv_size);
+				memcpy(data_uv.ptrw(), feed->scratch_uv.ptr(), uv_size);
+			} else {
+				if (data_v && len_v > 0) {
+					data_uv.resize(uv_size);
+					uint8_t *dst = data_uv.ptrw();
+					uint8_t *src_u = data;
+					uint8_t *src_v = data_v;
+					for (int row = 0; row < uv_height; row++) {
+						for (int col = 0; col < uv_width; col++) {
+							dst[col * 2] = src_u[col * pixel_stride];
+							dst[col * 2 + 1] = src_v[col * v_pixel_stride];
+						}
+						dst += uv_width * 2;
+						src_u += row_stride;
+						src_v += v_row_stride;
+					}
+				} else {
+					data_uv.resize(uv_size);
+					memset(data_uv.ptrw(), 128, uv_size);
+				}
+			}
+
+			// Defer to main thread to avoid race conditions with RenderingServer.
+			feed->image_y.instantiate();
+			feed->image_y->initialize_data(width, height, false, Image::FORMAT_R8, data_y);
+
+			feed->image_uv.instantiate();
+			feed->image_uv->initialize_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
+
+			feed->call_deferred("set_ycbcr_images", feed->image_y, feed->image_uv);
 			break;
-		case AIMAGE_FORMAT_RGBA_8888:
+		}
+		case AIMAGE_FORMAT_RGBA_8888: {
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGBA8, false);
-				data_y.resize(len > size ? len : size);
-			}
+			int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGBA8, false);
+			data_y.resize(len > size ? len : size);
 			memcpy(data_y.ptrw(), data, len);
 
-			image_y->initialize_data(width, height, false, Image::FORMAT_RGBA8, data_y);
+			feed->image_y.instantiate();
+			feed->image_y->initialize_data(width, height, false, Image::FORMAT_RGBA8, data_y);
 
-			feed->set_rgb_image(image_y);
+			feed->call_deferred("set_rgb_image", feed->image_y);
 			break;
-		case AIMAGE_FORMAT_RGB_888:
+		}
+		case AIMAGE_FORMAT_RGB_888: {
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGB8, false);
-				data_y.resize(len > size ? len : size);
-			}
+			int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGB8, false);
+			data_y.resize(len > size ? len : size);
 			memcpy(data_y.ptrw(), data, len);
 
-			image_y->initialize_data(width, height, false, Image::FORMAT_RGB8, data_y);
+			feed->image_y.instantiate();
+			feed->image_y->initialize_data(width, height, false, Image::FORMAT_RGB8, data_y);
 
-			feed->set_rgb_image(image_y);
+			feed->call_deferred("set_rgb_image", feed->image_y);
 			break;
+		}
 		default:
 			return;
 	}
@@ -472,8 +599,7 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 		}
 	}
 
-	// Release image
-	AImage_delete(image);
+	// Release image happens automatically via ScopedAImage.
 }
 
 void CameraFeedAndroid::onSessionReady(void *context, ACameraCaptureSession *session) {
