@@ -3094,7 +3094,10 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 	if (!skip && p_pos.y < item_h) {
 		// Check event!
 		if (range_click_timer->get_time_left() > 0 && p_item != range_item_last) {
-			return -1;
+			// Cancel ongoing range click when clicking a different item.
+			range_click_timer->stop();
+			range_item_last = nullptr;
+			range_click_start_pos = Point2();
 		}
 
 		if (!p_item->disable_folding && !hide_folding && p_item->first_child && (p_pos.x < (x_ofs + theme_cache.item_margin))) {
