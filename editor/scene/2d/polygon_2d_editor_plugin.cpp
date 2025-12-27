@@ -1339,7 +1339,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	polygon_edit->set_name(TTRC("Polygon"));
 	polygon_edit->set_icon_name("PolygonDock");
 	polygon_edit->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTRC("Toggle Polygon Dock")));
-	polygon_edit->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	polygon_edit->set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	polygon_edit->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	polygon_edit->set_global(false);
 	polygon_edit->set_transient(true);

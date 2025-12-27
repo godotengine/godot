@@ -42,7 +42,9 @@ class HBoxContainer;
 class MenuButton;
 class RenameDialog;
 class ReparentDialog;
+class Shader;
 class ShaderCreateDialog;
+class ShaderMaterial;
 class TextureRect;
 class VBoxContainer;
 

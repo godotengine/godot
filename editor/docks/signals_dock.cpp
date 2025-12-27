@@ -46,7 +46,7 @@ SignalsDock::SignalsDock() {
 	set_name(TTRC("Signals"));
 	set_icon_name("Signals");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_signals", TTRC("Open Signals Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
+	set_default_slot(EditorDock::DOCK_SLOT_RIGHT_UL);
 
 	connections = memnew(ConnectionsDock);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);

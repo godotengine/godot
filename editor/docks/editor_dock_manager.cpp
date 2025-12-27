@@ -934,7 +934,7 @@ void EditorDockManager::add_dock(EditorDock *p_dock) {
 	p_dock->connect("_tab_style_changed", callable_mp(this, &EditorDockManager::_queue_update_tab_style).bind(p_dock));
 	p_dock->connect("renamed", callable_mp(this, &EditorDockManager::_queue_update_tab_style).bind(p_dock));
 
-	if (p_dock->default_slot != DockConstants::DOCK_SLOT_NONE) {
+	if (p_dock->default_slot != EditorDock::DOCK_SLOT_NONE) {
 		open_dock(p_dock, false);
 	} else {
 		closed_dock_parent->add_child(p_dock);

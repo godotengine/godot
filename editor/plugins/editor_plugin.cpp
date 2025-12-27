@@ -94,7 +94,7 @@ void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, cons
 	EditorDock *dock = memnew(EditorDock);
 	dock->set_title(p_control->get_name());
 	dock->set_dock_shortcut(p_shortcut);
-	dock->set_default_slot((DockConstants::DockSlot)p_slot);
+	dock->set_default_slot((EditorDock::DockSlot)p_slot);
 	dock->add_child(p_control);
 	legacy_docks[p_control] = dock;
 

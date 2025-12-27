@@ -34,6 +34,7 @@
 
 #include "core/os/mutex.h"
 
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

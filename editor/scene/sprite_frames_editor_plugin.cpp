@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -2121,7 +2122,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	set_name(TTRC("SpriteFrames"));
 	set_icon_name("SpriteFrames");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Open SpriteFrames Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_global(false);
 	set_transient(true);

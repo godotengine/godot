@@ -1373,7 +1373,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	set_name(TTRC("Audio"));
 	set_icon_name("AudioStreamPlayer");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Dock"), KeyModifierMask::ALT | Key::A));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
