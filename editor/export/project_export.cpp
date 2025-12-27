@@ -1425,8 +1425,12 @@ void ProjectExportDialog::_export_project() {
 		export_project->add_filter("*." + extension, vformat(TTR("%s Export"), platform->get_name()));
 	}
 
-	if (!current->get_export_path().is_empty()) {
-		export_project->set_current_path(current->get_export_path());
+	String path = current->get_export_path();
+	if (!path.is_empty()) {
+		if (extension_list.find(path.get_extension()) == nullptr && extension_list.size() >= 1) {
+			path = path.get_basename() + "." + extension_list.front()->get();
+		}
+		export_project->set_current_path(path);
 	} else {
 		if (extension_list.size() >= 1) {
 			export_project->set_current_file(default_filename + "." + extension_list.front()->get());
