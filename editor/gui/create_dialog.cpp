@@ -614,6 +614,7 @@ void CreateDialog::select_base() {
 
 String CreateDialog::get_selected_type() {
 	TreeItem *selected = search_options->get_selected();
+
 	if (!selected) {
 		return String();
 	}
