@@ -3958,6 +3958,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				project_path,
 				build_path.substr(project_path.length()),
 				export_path.path_join(export_filename),
+				export_format_arg,
 				cmdline,
 				copy_args);
 #else
