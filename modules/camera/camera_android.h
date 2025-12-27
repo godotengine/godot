@@ -71,8 +71,17 @@ private:
 	AImageReader *reader = nullptr;
 	ACameraCaptureSession *session = nullptr;
 	ACaptureRequest *request = nullptr;
+	ACaptureSessionOutput *session_output = nullptr;
+	ACaptureSessionOutputContainer *session_output_container = nullptr;
+	ACameraOutputTarget *camera_output_target = nullptr;
 	Mutex callback_mutex;
 	bool was_active_before_pause = false;
+
+	// Callback structures - must be instance members, not static, to ensure
+	// correct 'this' pointer is captured for each camera feed instance.
+	ACameraDevice_stateCallbacks device_callbacks = {};
+	AImageReader_ImageListener image_listener = {};
+	ACameraCaptureSession_stateCallbacks session_callbacks = {};
 
 	void _add_formats();
 	void _set_rotation();

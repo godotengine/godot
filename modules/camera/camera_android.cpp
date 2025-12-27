@@ -238,14 +238,15 @@ bool CameraFeedAndroid::activate_feed() {
 	}
 
 	// Open device
-	static ACameraDevice_stateCallbacks deviceCallbacks = {
+	device_callbacks = {
 		.context = this,
 		.onDisconnected = onDisconnected,
 		.onError = onError,
 	};
-	camera_status_t c_status = ACameraManager_openCamera(manager, camera_id.utf8().get_data(), &deviceCallbacks, &device);
+	camera_status_t c_status = ACameraManager_openCamera(manager, camera_id.utf8().get_data(), &device_callbacks, &device);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to open camera (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
@@ -253,18 +254,20 @@ bool CameraFeedAndroid::activate_feed() {
 	const FeedFormat &feed_format = formats[selected_format];
 	media_status_t m_status = AImageReader_new(feed_format.width, feed_format.height, feed_format.pixel_format, 1, &reader);
 	if (m_status != AMEDIA_OK) {
-		onError(this, device, m_status);
+		print_error(vformat("Camera %s: Failed to create image reader (status: %d)", camera_id, m_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Get image listener
-	static AImageReader_ImageListener listener{
+	image_listener = {
 		.context = this,
 		.onImageAvailable = onImage,
 	};
-	m_status = AImageReader_setImageListener(reader, &listener);
+	m_status = AImageReader_setImageListener(reader, &image_listener);
 	if (m_status != AMEDIA_OK) {
-		onError(this, device, m_status);
+		print_error(vformat("Camera %s: Failed to set image listener (status: %d)", camera_id, m_status));
+		deactivate_feed();
 		return false;
 	}
 
@@ -272,69 +275,75 @@ bool CameraFeedAndroid::activate_feed() {
 	ANativeWindow *surface;
 	m_status = AImageReader_getWindow(reader, &surface);
 	if (m_status != AMEDIA_OK) {
-		onError(this, device, m_status);
+		print_error(vformat("Camera %s: Failed to get image surface (status: %d)", camera_id, m_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Prepare session outputs
-	ACaptureSessionOutput *output = nullptr;
-	c_status = ACaptureSessionOutput_create(surface, &output);
+	c_status = ACaptureSessionOutput_create(surface, &session_output);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create session output (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
-	ACaptureSessionOutputContainer *outputs = nullptr;
-	c_status = ACaptureSessionOutputContainer_create(&outputs);
+	c_status = ACaptureSessionOutputContainer_create(&session_output_container);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create session output container (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
-	c_status = ACaptureSessionOutputContainer_add(outputs, output);
+	c_status = ACaptureSessionOutputContainer_add(session_output_container, session_output);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to add session output to container (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Create capture session
-	static ACameraCaptureSession_stateCallbacks sessionStateCallbacks{
+	session_callbacks = {
 		.context = this,
 		.onClosed = onSessionClosed,
 		.onReady = onSessionReady,
 		.onActive = onSessionActive
 	};
-	c_status = ACameraDevice_createCaptureSession(device, outputs, &sessionStateCallbacks, &session);
+	c_status = ACameraDevice_createCaptureSession(device, session_output_container, &session_callbacks, &session);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create capture session (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Create capture request
 	c_status = ACameraDevice_createCaptureRequest(device, TEMPLATE_PREVIEW, &request);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create capture request (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Set capture target
-	ACameraOutputTarget *imageTarget = nullptr;
-	c_status = ACameraOutputTarget_create(surface, &imageTarget);
+	c_status = ACameraOutputTarget_create(surface, &camera_output_target);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create camera output target (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
-	c_status = ACaptureRequest_addTarget(request, imageTarget);
+	c_status = ACaptureRequest_addTarget(request, camera_output_target);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to add target to capture request (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Start capture
 	c_status = ACameraCaptureSession_setRepeatingRequest(session, nullptr, 1, &request, nullptr);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to start repeating request (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
@@ -645,6 +654,21 @@ void CameraFeedAndroid::deactivate_feed() {
 	if (request != nullptr) {
 		ACaptureRequest_free(request);
 		request = nullptr;
+	}
+
+	if (camera_output_target != nullptr) {
+		ACameraOutputTarget_free(camera_output_target);
+		camera_output_target = nullptr;
+	}
+
+	if (session_output_container != nullptr) {
+		ACaptureSessionOutputContainer_free(session_output_container);
+		session_output_container = nullptr;
+	}
+
+	if (session_output != nullptr) {
+		ACaptureSessionOutput_free(session_output);
+		session_output = nullptr;
 	}
 }
 
