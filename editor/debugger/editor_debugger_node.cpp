@@ -65,7 +65,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	set_icon_name("Debug");
 	set_layout_key("Debugger");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Dock"), KeyModifierMask::ALT | Key::D));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL);
 	set_global(false);
 	set_transient(true);

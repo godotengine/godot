@@ -207,7 +207,7 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 	dock->set_dock_shortcut(p_shortcut);
 	dock->set_global(false);
 	dock->set_transient(true);
-	dock->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	dock->set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL);
 	EditorDockManager::get_singleton()->add_dock(dock);
 	bottom_docks.push_back(dock);

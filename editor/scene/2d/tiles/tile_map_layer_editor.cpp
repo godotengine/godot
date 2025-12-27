@@ -4449,7 +4449,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	set_name(TTRC("TileMap"));
 	set_icon_name("TileMapDock");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTRC("Open TileMap Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_ALL);
 	set_global(false);
 	set_transient(true);
