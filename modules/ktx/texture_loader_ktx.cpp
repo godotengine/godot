@@ -80,8 +80,7 @@ void ktx_destruct(ktxStream *stream) {
 	(void)stream;
 }
 
-static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
-	ktxStream ktx_stream;
+static void init_ktx_stream(ktxStream &ktx_stream, Ref<FileAccess> *f) {
 	ktx_stream.read = ktx_read;
 	ktx_stream.skip = ktx_skip;
 	ktx_stream.write = ktx_write;
@@ -90,11 +89,16 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 	ktx_stream.getsize = ktx_getsize;
 	ktx_stream.destruct = ktx_destruct;
 	ktx_stream.type = eStreamTypeCustom;
-	ktx_stream.data.custom_ptr.address = &f;
+	ktx_stream.data.custom_ptr.address = f;
 	ktx_stream.data.custom_ptr.allocatorAddress = nullptr;
 	ktx_stream.data.custom_ptr.size = 0;
 	ktx_stream.readpos = 0;
 	ktx_stream.closeOnDestruct = false;
+}
+
+static Ref<Resource> load_from_file_access(Ref<FileAccess> f, bool p_load_as_image, Error *r_error) {
+	ktxStream ktx_stream;
+	init_ktx_stream(ktx_stream, &f);
 	ktxTexture *ktx_texture;
 	KTX_error_code result = ktxTexture_CreateFromStream(&ktx_stream,
 			KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
@@ -103,30 +107,38 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 		ERR_FAIL_V_MSG(Ref<Resource>(), "Invalid or unsupported KTX texture file.");
 	}
 
-	if (ktx_texture->numDimensions != 2) {
+	if (p_load_as_image && (ktx_texture->numDimensions != 2u || ktx_texture->isCubemap || ktx_texture->isArray)) {
 		ktxTexture_Destroy(ktx_texture);
-		ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported non-2D KTX texture file.");
+		ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported non-2D KTX image file.");
 	}
 
-	if (ktx_texture->isCubemap || ktx_texture->numFaces != 1) {
+	if (ktx_texture->numDimensions < 2u || ktx_texture->numDimensions > 3u) {
+		uint32_t dimensions = ktx_texture->numDimensions;
+		ktxTexture_Destroy(ktx_texture);
+		ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported " + itos(dimensions) + "-dimensional KTX texture file.");
+	}
+
+	if (ktx_texture->numFaces != (ktx_texture->isCubemap ? 6u : 1u)) {
 		ktxTexture_Destroy(ktx_texture);
 		ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported cube map KTX texture file.");
 	}
 
-	if (ktx_texture->isArray) {
+	if (ktx_texture->isArray && ktx_texture->numDimensions != 2u) {
 		ktxTexture_Destroy(ktx_texture);
-		ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported array KTX texture file.");
+		ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported non-2D array KTX texture file.");
 	}
 
 	uint32_t width = ktx_texture->baseWidth;
 	uint32_t height = ktx_texture->baseHeight;
+	uint32_t slices_or_faces = ktx_texture->isCubemap ? ktx_texture->numFaces : ktx_texture->baseDepth;
+	uint32_t layers = ktx_texture->numLayers;
 	uint32_t mipmaps = ktx_texture->numLevels;
 	Image::Format format;
-	bool srgb = false;
 
 	switch (ktx_texture->classId) {
-		case ktxTexture1_c:
-			switch (((ktxTexture1 *)ktx_texture)->glInternalformat) {
+		case ktxTexture1_c: {
+			ktxTexture1 *ktx_texture1 = reinterpret_cast<ktxTexture1 *>(ktx_texture);
+			switch (ktx_texture1->glInternalformat) {
 				case GL_LUMINANCE:
 					format = Image::FORMAT_L8;
 					break;
@@ -135,11 +147,9 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					break;
 				case GL_SRGB8:
 					format = Image::FORMAT_RGB8;
-					srgb = true;
 					break;
 				case GL_SRGB8_ALPHA8:
 					format = Image::FORMAT_RGBA8;
-					srgb = true;
 					break;
 				case GL_R8:
 				case GL_R8UI:
@@ -212,13 +222,17 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					format = Image::FORMAT_RGBA16I;
 					break;
 				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+				case GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:
 				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+				case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
 					format = Image::FORMAT_DXT1;
 					break;
 				case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+				case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
 					format = Image::FORMAT_DXT3;
 					break;
 				case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+				case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
 					format = Image::FORMAT_DXT5;
 					break;
 				case GL_COMPRESSED_RED_RGTC1:
@@ -231,6 +245,7 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					format = Image::FORMAT_BPTC_RGBFU;
 					break;
 				case GL_COMPRESSED_RGBA_BPTC_UNORM:
+				case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
 					format = Image::FORMAT_BPTC_RGBA;
 					break;
 				case GL_ETC1_RGB8_OES:
@@ -264,19 +279,23 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					format = Image::FORMAT_ASTC_4x4;
 					break;
 				case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
-					format = Image::FORMAT_ASTC_4x4_HDR;
+					format = ktx_texture1->glType == GL_UNSIGNED_BYTE ? Image::FORMAT_ASTC_4x4 : Image::FORMAT_ASTC_4x4_HDR;
 					break;
 				case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
 					format = Image::FORMAT_ASTC_8x8;
 					break;
 				case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
-					format = Image::FORMAT_ASTC_8x8_HDR;
+					format = ktx_texture1->glType == GL_UNSIGNED_BYTE ? Image::FORMAT_ASTC_8x8 : Image::FORMAT_ASTC_8x8_HDR;
 					break;
-				default:
+				default: {
+					uint32_t gl_format = ktx_texture1->glInternalformat;
 					ktxTexture_Destroy(ktx_texture);
-					ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported format " + itos(((ktxTexture1 *)ktx_texture)->glInternalformat) + " of KTX1 texture file.");
+					ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported format " + itos(gl_format) + " of KTX1 texture file.");
+					break;
+				}
 			}
 			break;
+		}
 		case ktxTexture2_c: {
 			ktxTexture2 *ktx_texture2 = reinterpret_cast<ktxTexture2 *>(ktx_texture);
 			if (ktx_texture2->vkFormat == VK_FORMAT_UNDEFINED) {
@@ -287,7 +306,8 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 				ktx_transcode_fmt_e ktxfmt;
 				switch (ktxTexture2_GetNumComponents(ktx_texture2)) {
 					case 1: {
-						if (ktxTexture2_GetOETF_e(ktx_texture2) == KHR_DF_TRANSFER_SRGB) { // TODO srgb native support
+						if (ktxTexture2_GetOETF_e(ktx_texture2) == KHR_DF_TRANSFER_SRGB) {
+							// sRGB isn't used by Godot in any 1-channel format
 							ktxfmt = KTX_TTF_RGBA32;
 						} else if (RS::get_singleton()->has_os_feature("rgtc")) {
 							ktxfmt = KTX_TTF_BC4_R;
@@ -297,7 +317,8 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 						break;
 					}
 					case 2: {
-						if (ktxTexture2_GetOETF_e(ktx_texture2) == KHR_DF_TRANSFER_SRGB) { // TODO srgb native support
+						if (ktxTexture2_GetOETF_e(ktx_texture2) == KHR_DF_TRANSFER_SRGB) {
+							// sRGB isn't used by Godot in any 2-channel format
 							ktxfmt = KTX_TTF_RGBA32;
 						} else if (RS::get_singleton()->has_os_feature("rgtc")) {
 							ktxfmt = KTX_TTF_BC5_RG;
@@ -307,9 +328,9 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 						break;
 					}
 					case 3: {
-						if (ktxTexture2_GetOETF_e(ktx_texture2) == KHR_DF_TRANSFER_SRGB) { // TODO: srgb native support
-							ktxfmt = KTX_TTF_RGBA32;
-						} else if (RS::get_singleton()->has_os_feature("bptc")) {
+						// Assume that sRGB textures have color information and non-sRGB textures have non-color information.
+						// Godot doesn't handle color space per-texture, but rather per-use (albedo is treated as sRGB, normal maps aren't, for example).
+						if (RS::get_singleton()->has_os_feature("bptc")) {
 							ktxfmt = KTX_TTF_BC7_RGBA;
 						} else if (RS::get_singleton()->has_os_feature("s3tc")) {
 							ktxfmt = KTX_TTF_BC1_RGB;
@@ -321,9 +342,9 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 						break;
 					}
 					case 4: {
-						if (ktxTexture2_GetOETF_e(ktx_texture2) == KHR_DF_TRANSFER_SRGB) { // TODO srgb native support
-							ktxfmt = KTX_TTF_RGBA32;
-						} else if (RS::get_singleton()->has_os_feature("astc")) {
+						// Assume that sRGB textures have color information and non-sRGB textures have non-color information.
+						// Godot doesn't handle color space per-texture, but rather per-use (albedo is treated as sRGB, normal maps aren't, for example).
+						if (RS::get_singleton()->has_os_feature("astc")) {
 							ktxfmt = KTX_TTF_ASTC_4x4_RGBA;
 						} else if (RS::get_singleton()->has_os_feature("bptc")) {
 							ktxfmt = KTX_TTF_BC7_RGBA;
@@ -337,8 +358,10 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 						break;
 					}
 					default: {
+						uint32_t components = ktxTexture2_GetNumComponents(ktx_texture2);
 						ktxTexture_Destroy(ktx_texture);
-						ERR_FAIL_V_MSG(Ref<Resource>(), "Invalid components of KTX2 texture file.");
+						ERR_FAIL_V_MSG(Ref<Resource>(), "Invalid " + itos(components) + "-component of KTX2 texture file.");
+						break;
 					}
 				}
 				result = ktxTexture2_TranscodeBasis(ktx_texture2, ktxfmt, 0);
@@ -356,11 +379,9 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					break;
 				case VK_FORMAT_R8G8B8_SRGB:
 					format = Image::FORMAT_RGB8;
-					srgb = true;
 					break;
 				case VK_FORMAT_R8G8B8A8_SRGB:
 					format = Image::FORMAT_RGBA8;
-					srgb = true;
 					break;
 				case VK_FORMAT_R8_UINT:
 					format = Image::FORMAT_R8;
@@ -432,13 +453,17 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					format = Image::FORMAT_RGBA16I;
 					break;
 				case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
+				case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
 				case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
+				case VK_FORMAT_BC1_RGBA_SRGB_BLOCK:
 					format = Image::FORMAT_DXT1;
 					break;
 				case VK_FORMAT_BC2_UNORM_BLOCK:
+				case VK_FORMAT_BC2_SRGB_BLOCK:
 					format = Image::FORMAT_DXT3;
 					break;
 				case VK_FORMAT_BC3_UNORM_BLOCK:
+				case VK_FORMAT_BC3_SRGB_BLOCK:
 					format = Image::FORMAT_DXT5;
 					break;
 				case VK_FORMAT_BC4_UNORM_BLOCK:
@@ -454,6 +479,7 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					format = Image::FORMAT_BPTC_RGBF;
 					break;
 				case VK_FORMAT_BC7_UNORM_BLOCK:
+				case VK_FORMAT_BC7_SRGB_BLOCK:
 					format = Image::FORMAT_BPTC_RGBA;
 					break;
 				case VK_FORMAT_EAC_R11_UNORM_BLOCK:
@@ -471,41 +497,47 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					format = Image::FORMAT_ETC2_RG11S;
 					break;*/
 				case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+				case VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
 					format = Image::FORMAT_ETC2_RGB8;
 					break;
 				case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
+				case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
 					format = Image::FORMAT_ETC2_RGBA8;
 					break;
 				// Decompression is not supported for this format.
 				/*case VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
 					format = Image::FORMAT_ETC2_RGB8A1;
 					break;*/
+				case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
 				case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
 					format = Image::FORMAT_ASTC_4x4;
 					break;
-				case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
+				case VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK:
 					format = Image::FORMAT_ASTC_4x4_HDR;
 					break;
+				case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
 				case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
 					format = Image::FORMAT_ASTC_8x8;
 					break;
-				case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
+				case VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK:
 					format = Image::FORMAT_ASTC_8x8_HDR;
 					break;
-				default:
+				default: {
+					uint32_t vk_format = ktx_texture2->vkFormat;
 					ktxTexture_Destroy(ktx_texture);
-					ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported format " + itos(((ktxTexture2 *)ktx_texture)->vkFormat) + " of KTX2 texture file.");
+					ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported Vulkan format " + itos(vk_format) + " of KTX2 texture file.");
 					break;
+				}
 			}
 			break;
 		}
-		default:
+		default: {
+			uint32_t version = ktx_texture->classId;
 			ktxTexture_Destroy(ktx_texture);
-			ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported version KTX texture file.");
+			ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported version " + itos(version) + " KTX texture file.");
 			break;
+		}
 	}
-
-	Vector<uint8_t> src_data;
 
 	// KTX use 4-bytes padding, don't use mipmaps if padding is effective
 	// TODO: unpad dynamically
@@ -516,6 +548,7 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 	Image::get_format_min_pixel_size(format, minw, minh);
 	int w = width;
 	int h = height;
+	int all_mipmaps_size = 0;
 	for (uint32_t i = 0; i < mipmaps; ++i) {
 		ktx_size_t mip_size = ktxTexture_GetImageSize(ktx_texture, i);
 		size_t bw = w % block != 0 ? w + (block - w % block) : w;
@@ -523,71 +556,141 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 		size_t s = bw * bh;
 		s *= pixel_size;
 		s >>= pixel_rshift;
+		all_mipmaps_size += s;
 		if (mip_size != static_cast<ktx_size_t>(s)) {
 			if (!i) {
 				ktxTexture_Destroy(ktx_texture);
 				ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported padded KTX texture file.");
 			}
 			mipmaps = 1;
+			all_mipmaps_size = ktxTexture_GetImageSize(ktx_texture, 0);
 			break;
 		}
 		w = MAX(minw, w >> 1);
 		h = MAX(minh, h >> 1);
 	}
 
-	for (uint32_t i = 0; i < mipmaps; ++i) {
-		ktx_size_t mip_size = ktxTexture_GetImageSize(ktx_texture, i);
-		ktx_size_t offset;
-		if (ktxTexture_GetImageOffset(ktx_texture, i, 0, 0, &offset) != KTX_SUCCESS) {
-			ktxTexture_Destroy(ktx_texture);
-			ERR_FAIL_V_MSG(Ref<Resource>(), "Invalid KTX texture file.");
-		}
-		int prev_size = src_data.size();
-		src_data.resize(prev_size + mip_size);
-		memcpy(src_data.ptrw() + prev_size, ktxTexture_GetData(ktx_texture) + offset, mip_size);
-	}
+	Vector<Ref<Image>> layers_slices_faces;
+	layers_slices_faces.reserve(layers * slices_or_faces);
+	for (uint32_t layer = 0; layer < layers; ++layer) {
+		for (uint32_t face_slice = 0; face_slice < slices_or_faces; ++face_slice) {
+			Vector<uint8_t> src_data;
+			src_data.reserve(all_mipmaps_size);
 
-	Ref<Image> img = memnew(Image(width, height, mipmaps - 1, format, src_data));
-	if (srgb) {
-		img->srgb_to_linear();
+			for (uint32_t i = 0; i < mipmaps; ++i) {
+				ktx_size_t mip_size = ktxTexture_GetImageSize(ktx_texture, i);
+				ktx_size_t offset;
+				if (ktxTexture_GetImageOffset(ktx_texture, i, layer, face_slice, &offset) != KTX_SUCCESS) {
+					ktxTexture_Destroy(ktx_texture);
+					ERR_FAIL_V_MSG(Ref<Resource>(), "Invalid KTX texture file.");
+				}
+				int prev_size = src_data.size();
+				src_data.resize(prev_size + mip_size);
+				memcpy(src_data.ptrw() + prev_size, ktxTexture_GetData(ktx_texture) + offset, mip_size);
+			}
+
+			Ref<Image> img = memnew(Image(width, height, mipmaps > 1u, format, src_data));
+
+			layers_slices_faces.append(img);
+		}
 	}
 
 	if (r_error) {
 		*r_error = OK;
 	}
 
+	if (p_load_as_image) {
+		ktxTexture_Destroy(ktx_texture);
+		return layers_slices_faces[0];
+	}
+
+	if (ktx_texture->numDimensions == 3) {
+		ktxTexture_Destroy(ktx_texture);
+
+		Ref<ImageTexture3D> texture;
+		texture.instantiate();
+
+		Error err = texture->create(format, width, height, slices_or_faces, mipmaps > 1u, layers_slices_faces);
+		if (r_error) {
+			*r_error = err;
+		}
+
+		return texture;
+	}
+
+	if (ktx_texture->isCubemap && ktx_texture->isArray) {
+		ktxTexture_Destroy(ktx_texture);
+
+		Ref<CubemapArray> texture;
+		texture.instantiate();
+
+		Error err = texture->create_from_images(layers_slices_faces);
+		if (r_error) {
+			*r_error = err;
+		}
+
+		return texture;
+	}
+
+	if (ktx_texture->isArray) {
+		ktxTexture_Destroy(ktx_texture);
+
+		Ref<Texture2DArray> texture;
+		texture.instantiate();
+
+		Error err = texture->create_from_images(layers_slices_faces);
+		if (r_error) {
+			*r_error = err;
+		}
+
+		return texture;
+	}
+
+	if (ktx_texture->isCubemap) {
+		ktxTexture_Destroy(ktx_texture);
+
+		Ref<Cubemap> texture;
+		texture.instantiate();
+
+		Error err = texture->create_from_images(layers_slices_faces);
+		if (r_error) {
+			*r_error = err;
+		}
+
+		return texture;
+	}
+
+	DEV_ASSERT(layers_slices_faces.size() == 1);
 	ktxTexture_Destroy(ktx_texture);
-	return img;
+	return ImageTexture::create_from_image(layers_slices_faces[0]);
 }
 
 Ref<Resource> ResourceFormatKTX::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	if (r_error) {
-		*r_error = ERR_CANT_OPEN;
-	}
-
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (f.is_null()) {
+		if (r_error) {
+			*r_error = err;
+		}
+
 		return Ref<Resource>();
 	}
 
-	Ref<FileAccess> fref(f);
 	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
 	}
 
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Unable to open KTX texture file '" + p_path + "'.");
-	Ref<Image> img = load_from_file_access(f, r_error);
-	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
-	return texture;
+	return load_from_file_access(f, false, r_error);
 }
 
 static Ref<Image> _ktx_mem_loader_func(const uint8_t *p_ktx, int p_size) {
 	Ref<FileAccessMemory> f;
 	f.instantiate();
 	f->open_custom(p_ktx, p_size);
+
 	Error err;
-	Ref<Image> img = load_from_file_access(f, &err);
+	Ref<Image> img = load_from_file_access(f, true, &err);
 	ERR_FAIL_COND_V(err, Ref<Image>());
 	return img;
 }
@@ -598,13 +701,44 @@ void ResourceFormatKTX::get_recognized_extensions(List<String> *p_extensions) co
 }
 
 bool ResourceFormatKTX::handles_type(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Texture2D");
+	return ClassDB::is_parent_class(p_type, "Texture");
 }
 
 String ResourceFormatKTX::get_resource_type(const String &p_path) const {
 	if (p_path.has_extension("ktx") || p_path.has_extension("ktx2")) {
-		return "ImageTexture";
+		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+		if (unlikely(f.is_null())) {
+			return "Texture";
+		}
+
+		ktxStream ktx_stream;
+		init_ktx_stream(ktx_stream, &f);
+
+		ktxTexture *ktx_texture;
+		ktx_error_code_e err = ktxTexture_CreateFromStream(&ktx_stream, KTX_TEXTURE_CREATE_SKIP_KVDATA_BIT, &ktx_texture);
+		if (unlikely(err != KTX_SUCCESS)) {
+			return "Texture";
+		}
+
+		uint32_t dimensions = ktx_texture->numDimensions;
+		bool array = ktx_texture->isArray;
+		bool cubemap = ktx_texture->isCubemap;
+
+		ktxTexture_Destroy(ktx_texture);
+
+		if (dimensions == 3 && !array && !cubemap) {
+			return "ImageTexture3D";
+		}
+
+		ERR_FAIL_COND_V_MSG(dimensions != 2, "Texture", "Unhandled " + itos(dimensions) + " dimensional KTX texture: " + p_path);
+
+		if (cubemap) {
+			return array ? "CubemapArray" : "Cubemap";
+		}
+
+		return array ? "Texture2DArray" : "ImageTexture";
 	}
+
 	return "";
 }
 
