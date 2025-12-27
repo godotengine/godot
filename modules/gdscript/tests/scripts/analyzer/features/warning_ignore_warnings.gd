@@ -151,6 +151,30 @@ func test_unsafe_void_return() -> void:
 func get_class():
 	pass
 
+class PrivA:
+	var _t = 1
+
+	func _priv_method():
+		_t = 5
+
+class PrivB:
+	var a = PrivA.new()
+
+	func _foo():
+		@warning_ignore("access_private_member")
+		a._t = 2
+		@warning_ignore("call_private_method")
+		a._priv_method()
+
+class PrivC extends PrivA:
+	var a = PrivA.new()
+
+	func _foo():
+		@warning_ignore("access_private_member")
+		a._t = 2
+		@warning_ignore("call_private_method")
+		a._priv_method()
+
 # We don't want to execute it because of errors, just analyze.
 func test():
 	pass
