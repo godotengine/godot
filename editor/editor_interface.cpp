@@ -633,7 +633,18 @@ void EditorInterface::_create_dialog_item_selected(bool p_is_canceled, const Cal
 	const Callable callback = callable_mp(this, &EditorInterface::_create_dialog_item_selected);
 	create_dialog->disconnect(SNAME("create"), callback);
 	create_dialog->disconnect(SNAME("canceled"), callback);
-	_call_dialog_callback(p_callback, p_is_canceled ? "" : create_dialog->get_selected_type(), "create dialog");
+
+	String result = create_dialog->get_selected_type();
+
+	// Custom types added via EditorPlugin::add_custom_type() returns the class name, so we need to get the script path.
+	if (!ClassDB::class_exists(result)) {
+		const EditorData::CustomType *addon_custom_type = EditorNode::get_editor_data().get_custom_type_by_name(result);
+		if (addon_custom_type) {
+			result = addon_custom_type->script->get_path();
+		}
+	}
+
+	_call_dialog_callback(p_callback, p_is_canceled ? "" : result, "create dialog");
 }
 
 void EditorInterface::_call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context) {
