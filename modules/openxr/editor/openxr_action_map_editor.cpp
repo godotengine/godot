@@ -437,7 +437,7 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	set_name(TTRC("OpenXR Action Map"));
 	set_icon_name("OpenXRActionMap");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTRC("Toggle OpenXR Action Map Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_custom_minimum_size(Size2(0.0, 300.0 * EDSCALE));
 

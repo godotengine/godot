@@ -1151,7 +1151,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_commit_dock->set_layout_key("VersionCommit");
 	version_commit_dock->set_icon_name("VcsBranches");
 	version_commit_dock->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_version_control", TTRC("Open Version Control Dock")));
-	version_commit_dock->set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
+	version_commit_dock->set_default_slot(EditorDock::DOCK_SLOT_RIGHT_UL);
 
 	VBoxContainer *dock_vb = memnew(VBoxContainer);
 	version_commit_dock->add_child(dock_vb);
