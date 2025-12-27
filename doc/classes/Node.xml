@@ -78,6 +78,7 @@
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
+				[b]Note:[/b] If you want to check if a specific action is being pressed inside this method, you should use [method InputEvent.is_action_pressed] instead of [method Input.is_action_just_pressed] to avoid unexpected behavior, such as the code running several times per frame upon a single action press, since [method _input] method can be called multiple times in a single frame by the engine, while the return value of [method Input.is_action_just_pressed] only changes once per frame.
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
