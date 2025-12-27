@@ -979,6 +979,7 @@ void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, in
 		item->set_editable(0, true);
 		item->add_button(1, replace_texture, FIND_BUTTON_REPLACE, false, TTR("Replace"));
 		item->add_button(1, remove_texture, FIND_BUTTON_REMOVE, false, TTR("Remove result"));
+		_replace_container->show();
 	} else {
 		item->add_button(0, remove_texture, FIND_BUTTON_REMOVE, false, TTR("Remove result"));
 	}
@@ -1076,6 +1077,9 @@ void FindInFilesPanel::_on_close_button_clicked() {
 
 void FindInFilesPanel::_on_result_selected() {
 	TreeItem *item = _results_display->get_selected();
+	if (_results_display->get_selected_column() == 0) {
+		return;
+	}
 	HashMap<TreeItem *, Result>::Iterator E = _result_items.find(item);
 
 	if (!E) {
@@ -1111,6 +1115,7 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 			HashMap<TreeItem *, Result>::Iterator F = _result_items.find(item);
 			ERR_FAIL_COND(!F);
 			locations.push_back(F->value);
+			remove_result(item);
 		}
 
 		if (locations.size() != 0) {
@@ -1120,8 +1125,9 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 		}
 	}
 
-	// Hide replace bar so we can't trigger the action twice without doing a new search.
-	_replace_container->hide();
+	if (_file_items.is_empty()) {
+		_replace_container->hide();
+	}
 
 	emit_signal(SNAME(SIGNAL_FILES_MODIFIED), modified_files);
 }
@@ -1150,32 +1156,11 @@ void FindInFilesPanel::_on_button_clicked(TreeItem *p_item, int p_column, int p_
 		emit_signal(SNAME(SIGNAL_FILES_MODIFIED), modified_files);
 	}
 
-	_result_items.erase(p_item);
-	if (_file_items_results_count.has(p_item)) {
-		int match_count = p_item->get_child_count();
+	remove_result(p_item);
 
-		for (int i = 0; i < match_count; i++) {
-			TreeItem *child_item = p_item->get_child(i);
-			_result_items.erase(child_item);
-		}
-
-		p_item->clear_children();
-		_file_items.erase(file_path);
-		_file_items_results_count.erase(p_item);
+	if (_file_items.is_empty()) {
+		_replace_container->hide();
 	}
-
-	TreeItem *item_parent = p_item->get_parent();
-	if (item_parent) {
-		if (_file_items_results_count.has(item_parent)) {
-			_file_items_results_count[item_parent]--;
-		}
-		if (item_parent->get_child_count() < 2 && item_parent != _results_display->get_root()) {
-			_file_items.erase(item_parent->get_metadata(0));
-			get_tree()->queue_delete(item_parent);
-		}
-	}
-	get_tree()->queue_delete(p_item);
-	update_matches_text();
 }
 
 // Same as get_line, but preserves line ending characters.
@@ -1266,6 +1251,36 @@ void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<
 	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + fpath + "'.");
 
 	f->store_string(buffer);
+}
+
+void FindInFilesPanel::remove_result(TreeItem *p_item) {
+	const String file_path = p_item->get_metadata(0);
+	_result_items.erase(p_item);
+	if (_file_items_results_count.has(p_item)) {
+		int match_count = p_item->get_child_count();
+
+		for (int i = 0; i < match_count; i++) {
+			TreeItem *child_item = p_item->get_child(i);
+			_result_items.erase(child_item);
+		}
+
+		p_item->clear_children();
+		_file_items.erase(file_path);
+		_file_items_results_count.erase(p_item);
+	}
+
+	TreeItem *item_parent = p_item->get_parent();
+	if (item_parent) {
+		if (_file_items_results_count.has(item_parent)) {
+			_file_items_results_count[item_parent]--;
+		}
+		if (item_parent->get_child_count() < 2 && item_parent != _results_display->get_root()) {
+			_file_items.erase(item_parent->get_metadata(0));
+			get_tree()->queue_delete(item_parent);
+		}
+	}
+	get_tree()->queue_delete(p_item);
+	update_matches_text();
 }
 
 String FindInFilesPanel::get_replace_text() {
