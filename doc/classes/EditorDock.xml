@@ -88,7 +88,7 @@
 		<member name="closable" type="bool" setter="set_closable" getter="is_closable" default="false">
 			If [code]true[/code], the dock can be closed with the Close button in the context popup. Docks with [member global] enabled are always closable.
 		</member>
-		<member name="default_slot" type="int" setter="set_default_slot" getter="get_default_slot" enum="EditorPlugin.DockSlot" default="-1">
+		<member name="default_slot" type="int" setter="set_default_slot" getter="get_default_slot" enum="EditorDock.DockSlot" default="-1">
 			The default dock slot used when adding the dock with [method EditorPlugin.add_dock].
 			After the dock is added, it can be moved to a different slot and the editor will automatically remember its position between sessions. If you remove and re-add the dock, it will be reset to default.
 		</member>
@@ -139,6 +139,39 @@
 		</constant>
 		<constant name="DOCK_LAYOUT_ALL" value="7" enum="DockLayout" is_bitfield="true">
 			Allows placing the dock in all available slots.
+		</constant>
+		<constant name="DOCK_SLOT_NONE" value="-1" enum="DockSlot">
+			The dock is closed.
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
+			Dock slot, left side, upper-left (empty in default layout).
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_BL" value="1" enum="DockSlot">
+			Dock slot, left side, bottom-left (empty in default layout).
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_UR" value="2" enum="DockSlot">
+			Dock slot, left side, upper-right (in default layout includes Scene and Import docks).
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_BR" value="3" enum="DockSlot">
+			Dock slot, left side, bottom-right (in default layout includes FileSystem and History docks).
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_UL" value="4" enum="DockSlot">
+			Dock slot, right side, upper-left (in default layout includes Inspector, Signal, and Group docks).
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_BL" value="5" enum="DockSlot">
+			Dock slot, right side, bottom-left (empty in default layout).
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_UR" value="6" enum="DockSlot">
+			Dock slot, right side, upper-right (empty in default layout).
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
+			Dock slot, right side, bottom-right (empty in default layout).
+		</constant>
+		<constant name="DOCK_SLOT_BOTTOM" value="8" enum="DockSlot">
+			Bottom panel.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="9" enum="DockSlot">
+			Represents the size of the [enum DockSlot] enum.
 		</constant>
 	</constants>
 </class>
