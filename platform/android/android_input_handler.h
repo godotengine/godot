@@ -32,6 +32,8 @@
 
 #include "core/input/input.h"
 
+#include <stdio.h>
+
 // This class encapsulates all the handling of input events that come from the Android UI thread.
 // Remarks:
 // - It's not thread-safe by itself, so its functions must only be called on a single thread, which is the Android UI thread.
@@ -103,4 +105,8 @@ public:
 	void process_pan(Point2 p_pos, Vector2 p_delta);
 	void process_joy_event(JoypadEvent p_event);
 	void process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed, bool p_echo);
+
+	void generate_joy_guid(char *p_buf, int p_buf_len, int p_vendor_id, int p_product_id, int p_button_mask, int p_axis_mask) {
+		snprintf(p_buf, p_buf_len, "05000000%04x0000%04x0000%04x%04x", BSWAP16(p_vendor_id), BSWAP16(p_product_id), BSWAP16(p_button_mask), BSWAP16(p_axis_mask));
+	}
 };

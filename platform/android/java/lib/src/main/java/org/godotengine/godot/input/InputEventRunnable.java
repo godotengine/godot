@@ -223,11 +223,19 @@ final class InputEventRunnable implements Runnable {
 	// Joystick connection changed event fields and setter
 	private boolean connected;
 	private String joystickName;
-	void setJoystickConnectionChangedEvent(int device, boolean connected, String name) {
+	private int vendorId;
+	private int productId;
+	private int buttonMask;
+	private int axisMask;
+	void setJoystickConnectionChangedEvent(int device, boolean connected, String name, int vendorId, int productId, int buttonMask, int axisMask) {
 		this.currentEventType = EventType.JOYSTICK_CONNECTION_CHANGED;
 		this.joystickDevice = device;
 		this.connected = connected;
 		this.joystickName = name;
+		this.vendorId = vendorId;
+		this.productId = productId;
+		this.buttonMask = buttonMask;
+		this.axisMask = axisMask;
 	}
 
 	// Key event fields and setter
@@ -311,7 +319,7 @@ final class InputEventRunnable implements Runnable {
 					break;
 
 				case JOYSTICK_CONNECTION_CHANGED:
-					GodotLib.joyconnectionchanged(joystickDevice, connected, joystickName);
+					GodotLib.joyconnectionchanged(joystickDevice, connected, joystickName, vendorId, productId, buttonMask, axisMask);
 					break;
 
 				case KEY:

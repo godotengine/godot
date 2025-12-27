@@ -120,6 +120,7 @@
 #include "tests/core/variant/test_dictionary.h"
 #include "tests/core/variant/test_variant.h"
 #include "tests/core/variant/test_variant_utility.h"
+#include "tests/platform/android/test_android_input_handler.h"
 #include "tests/scene/test_animation.h"
 #include "tests/scene/test_animation_blend_tree.h"
 #include "tests/scene/test_animation_player.h"
