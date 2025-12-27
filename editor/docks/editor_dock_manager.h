@@ -81,6 +81,7 @@ private:
 	friend class DockContextPopup;
 	friend class EditorDockDragHint;
 	friend class DockShortcutHandler;
+	friend class DockSlotGrid;
 
 	static inline EditorDockManager *singleton = nullptr;
 
@@ -92,6 +93,7 @@ private:
 		TabContainer *container = nullptr;
 		EditorDockDragHint *drag_hint = nullptr;
 		DockConstants::DockLayout layout = DockConstants::DOCK_LAYOUT_VERTICAL;
+		Rect2i grid_rect;
 	};
 
 	DockSlot dock_slots[DockConstants::DOCK_SLOT_MAX];
@@ -137,7 +139,7 @@ public:
 
 	void add_vsplit(DockSplitContainer *p_split);
 	void set_hsplit(DockSplitContainer *p_split);
-	void register_dock_slot(DockConstants::DockSlot p_dock_slot, TabContainer *p_tab_container, DockConstants::DockLayout p_layout);
+	void register_dock_slot(DockConstants::DockSlot p_dock_slot, TabContainer *p_tab_container, DockConstants::DockLayout p_layout, const Rect2i &p_grid_rect);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 
@@ -191,6 +193,31 @@ public:
 	EditorDockDragHint();
 };
 
+class DockSlotGrid : public Control {
+	GDCLASS(DockSlotGrid, Control);
+
+	static constexpr Vector2i GRID_SIZE = Vector2i(6, 6);
+	static constexpr Vector2i MARGINS = Vector2i(4, 8);
+	static constexpr Vector2i CELL_SIZE = Vector2i(24, 12);
+	static constexpr int TABS_PER_CELL = 3;
+	static constexpr int TAB_MARGIN = 2;
+
+	int hovered_slot = -1;
+
+	Rect2 _get_slot_rect(DockConstants::DockSlot p_slot) const;
+	bool _is_slot_available(int p_slot) const;
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual Size2 get_minimum_size() const override;
+
+public:
+	EditorDock *context_dock = nullptr;
+};
+
 class DockContextPopup : public PopupPanel {
 	GDCLASS(DockContextPopup, PopupPanel);
 
@@ -202,23 +229,17 @@ private:
 	Button *tab_move_right_button = nullptr;
 	Button *close_button = nullptr;
 
-	Control *dock_select = nullptr;
-	Rect2 dock_select_rects[DockConstants::DOCK_SLOT_MAX];
-	int dock_select_rect_over_idx = -1;
+	DockSlotGrid *dock_select = nullptr;
 
 	EditorDock *context_dock = nullptr;
 
 	EditorDockManager *dock_manager = nullptr;
 
+	void _slot_clicked(int p_slot);
 	void _tab_move_left();
 	void _tab_move_right();
 	void _close_dock();
 	void _float_dock();
-	bool _is_slot_available(int p_slot) const;
-
-	void _dock_select_input(const Ref<InputEvent> &p_input);
-	void _dock_select_mouse_exited();
-	void _dock_select_draw();
 
 	void _update_buttons();
 
