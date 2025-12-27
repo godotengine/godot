@@ -3116,8 +3116,12 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 
 List<String> EditorExportPlatformAndroid::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
-	list.push_back("apk");
-	list.push_back("aab");
+	int export_format = int(p_preset->get("gradle_build/export_format"));
+	if (export_format == EXPORT_FORMAT_AAB) {
+		list.push_back("aab");
+	} else {
+		list.push_back("apk");
+	}
 	return list;
 }
 
