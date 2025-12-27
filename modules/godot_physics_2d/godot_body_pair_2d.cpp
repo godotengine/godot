@@ -45,8 +45,8 @@ void GodotBodyPair2D::_add_contact(const Vector2 &p_point_A, const Vector2 &p_po
 }
 
 void GodotBodyPair2D::_contact_added_callback(const Vector2 &p_point_A, const Vector2 &p_point_B) {
-	Vector2 local_A = A->get_inv_transform().basis_xform(p_point_A);
-	Vector2 local_B = B->get_inv_transform().basis_xform(p_point_B - offset_B);
+	Vector2 local_A = A->get_inv_transform().xform(p_point_A);
+	Vector2 local_B = B->get_transform().translated(offset_B).affine_inverse().xform(p_point_B);
 
 	int new_index = contact_count;
 
@@ -79,15 +79,15 @@ void GodotBodyPair2D::_contact_added_callback(const Vector2 &p_point_A, const Ve
 		// Remove the contact with the minimum depth.
 
 		const Transform2D &transform_A = A->get_transform();
-		const Transform2D &transform_B = B->get_transform();
+		const Transform2D &transform_B = B->get_transform().translated(offset_B);
 
 		int least_deep = -1;
 		real_t min_depth;
 
 		// Start with depth for new contact.
 		{
-			Vector2 global_A = transform_A.basis_xform(contact.local_A);
-			Vector2 global_B = transform_B.basis_xform(contact.local_B) + offset_B;
+			Vector2 global_A = transform_A.xform(contact.local_A);
+			Vector2 global_B = transform_B.xform(contact.local_B);
 
 			Vector2 axis = global_A - global_B;
 			min_depth = axis.dot(contact.normal);
@@ -95,8 +95,8 @@ void GodotBodyPair2D::_contact_added_callback(const Vector2 &p_point_A, const Ve
 
 		for (int i = 0; i < contact_count; i++) {
 			const Contact &c = contacts[i];
-			Vector2 global_A = transform_A.basis_xform(c.local_A);
-			Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
+			Vector2 global_A = transform_A.xform(c.local_A);
+			Vector2 global_B = transform_B.xform(c.local_B);
 
 			Vector2 axis = global_A - global_B;
 			real_t depth = axis.dot(c.normal);
@@ -125,7 +125,7 @@ void GodotBodyPair2D::_validate_contacts() {
 	real_t max_separation2 = max_separation * max_separation;
 
 	const Transform2D &transform_A = A->get_transform();
-	const Transform2D &transform_B = B->get_transform();
+	const Transform2D &transform_B = B->get_transform().translated(offset_B);
 
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
@@ -137,8 +137,8 @@ void GodotBodyPair2D::_validate_contacts() {
 		} else {
 			c.used = false;
 
-			Vector2 global_A = transform_A.basis_xform(c.local_A);
-			Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
+			Vector2 global_A = transform_A.xform(c.local_A);
+			Vector2 global_B = transform_B.xform(c.local_B);
 			Vector2 axis = global_A - global_B;
 			real_t depth = axis.dot(c.normal);
 
@@ -407,7 +407,7 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 
 	const Vector2 &offset_A = A->get_transform().get_origin();
 	const Transform2D &transform_A = A->get_transform();
-	const Transform2D &transform_B = B->get_transform();
+	const Transform2D &transform_B = B->get_transform().translated(offset_B);
 
 	real_t inv_inertia_A = collide_A ? A->get_inv_inertia() : 0.0;
 	real_t inv_inertia_B = collide_B ? B->get_inv_inertia() : 0.0;
@@ -419,8 +419,8 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 		Contact &c = contacts[i];
 		c.active = false;
 
-		Vector2 global_A = transform_A.basis_xform(c.local_A);
-		Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
+		Vector2 global_A = transform_A.xform(c.local_A);
+		Vector2 global_B = transform_B.xform(c.local_B);
 
 		Vector2 axis = global_A - global_B;
 		real_t depth = axis.dot(c.normal);
