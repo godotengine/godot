@@ -558,6 +558,7 @@ private:
 	Timer *range_click_timer = nullptr;
 	TreeItem *range_item_last = nullptr;
 	bool range_up_last = false;
+	Point2 range_click_start_pos;
 	void _range_click_timeout();
 
 	int compute_item_height(TreeItem *p_item) const;
