@@ -282,7 +282,7 @@ task copyAndRenameBinary(type: Copy) {
         filenameSuffix = isAab ? "${exportEdition}-${exportBuildType}" : "${exportEdition}${exportBuildTypeCapitalized}"
     }
 
-    String sourceFilename = isAab ? "build-${filenameSuffix}.aab" : "android_${filenameSuffix}.apk"
+    String sourceFilename = isAab ? "${project.name}-${filenameSuffix}.aab" : "android_${filenameSuffix}.apk"
     String sourceFilepath = isAab ? "$buildDir/outputs/bundle/${exportEdition}${exportBuildTypeCapitalized}/$sourceFilename" : "$buildDir/outputs/apk/$exportEdition/$exportBuildType/$sourceFilename"
 
     from sourceFilepath
