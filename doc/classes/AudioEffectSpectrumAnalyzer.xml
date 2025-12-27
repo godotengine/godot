@@ -18,8 +18,6 @@
 		<member name="fft_size" type="int" setter="set_fft_size" getter="get_fft_size" enum="AudioEffectSpectrumAnalyzer.FFTSize" default="2">
 			The size of the [url=https://en.wikipedia.org/wiki/Fast_Fourier_transform]Fast Fourier transform[/url] buffer. Higher values smooth out the spectrum analysis over time, but have greater latency. The effects of this higher latency are especially noticeable with sudden amplitude changes.
 		</member>
-		<member name="tap_back_pos" type="float" setter="set_tap_back_pos" getter="get_tap_back_pos" default="0.01">
-		</member>
 	</members>
 	<constants>
 		<constant name="FFT_SIZE_256" value="0" enum="FFTSize">
