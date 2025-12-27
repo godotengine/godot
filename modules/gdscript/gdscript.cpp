@@ -1056,6 +1056,7 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 	for (const List<const GDScript *>::Element *E = classes.back(); E; E = E->prev()) {
 		Vector<_GDScriptMemberSort> msort;
+		msort.reserve(E->get()->static_variables_indices.size());
 		for (const KeyValue<StringName, MemberInfo> &F : E->get()->static_variables_indices) {
 			_GDScriptMemberSort ms;
 			ms.index = F.value.index;
@@ -1440,6 +1441,7 @@ void GDScript::_save_orphaned_subclasses(ClearData *p_clear_data) {
 		String fully_qualified_name;
 	};
 	Vector<ClassRefWithName> weak_subclasses;
+	weak_subclasses.reserve(subclasses.size());
 	// collect subclasses ObjectID and name
 	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
 		E.value->_owner = nullptr; //bye, you are no longer owned cause I died

@@ -376,6 +376,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		ScriptLanguage *script = GDScriptLanguage::get_singleton();
 		TypedArray<Dictionary> ret;
+		ret.reserve(script->debug_get_stack_level_count());
 		for (int i = 0; i < script->debug_get_stack_level_count(); i++) {
 			Dictionary frame;
 			frame["source"] = script->debug_get_stack_level_source(i);

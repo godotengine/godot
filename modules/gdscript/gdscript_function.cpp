@@ -85,7 +85,8 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 		}
 	}
 
-	List<_GDFKCS> stackpositions;
+	LocalVector<_GDFKCS> stackpositions;
+	stackpositions.reserve(sdmap.size());
 	for (const KeyValue<StringName, _GDFKC> &E : sdmap) {
 		_GDFKCS spp;
 		spp.id = E.key;
@@ -148,6 +149,7 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 		arg = *p_args[0];
 	} else {
 		Array extra_args;
+		extra_args.reserve(p_argcount - 1);
 		for (int i = 0; i < p_argcount - 1; i++) {
 			extra_args.push_back(*p_args[i]);
 		}
