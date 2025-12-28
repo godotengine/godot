@@ -813,6 +813,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(localization_editor);
 
 	TabContainer *globals_container = memnew(TabContainer);
+	globals_container->set_theme_type_variation("TabContainerInner");
 	globals_container->set_name(TTRC("Globals"));
 	tab_container->add_child(globals_container);
 

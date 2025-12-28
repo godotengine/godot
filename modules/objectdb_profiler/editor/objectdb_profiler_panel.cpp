@@ -404,6 +404,7 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 
 	// Tabs of various views right for each snapshot.
 	view_tabs = memnew(TabContainer);
+	view_tabs->set_theme_type_variation("TabContainerInner");
 	root_container->add_child(view_tabs);
 	view_tabs->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	view_tabs->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);

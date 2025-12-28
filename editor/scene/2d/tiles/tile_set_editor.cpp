@@ -824,6 +824,7 @@ TileSetEditor::TileSetEditor() {
 
 	// TabBar.
 	tabs_bar = memnew(TabBar);
+	tabs_bar->set_theme_type_variation("TabBarInner");
 	tabs_bar->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tabs_bar->set_clip_tabs(false);
 	tabs_bar->add_tab(TTR("Tile Sources"));
@@ -832,7 +833,11 @@ TileSetEditor::TileSetEditor() {
 
 	tile_set_toolbar = memnew(HBoxContainer);
 	tile_set_toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
-	tile_set_toolbar->add_child(tabs_bar);
+
+	PanelContainer *tabs_panel = memnew(PanelContainer);
+	tabs_panel->set_theme_type_variation("PanelContainerTabbarInner");
+	tabs_panel->add_child(tabs_bar);
+	tile_set_toolbar->add_child(tabs_panel);
 	main_vb->add_child(tile_set_toolbar);
 
 	//// Tiles ////
