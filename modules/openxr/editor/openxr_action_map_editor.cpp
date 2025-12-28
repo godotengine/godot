@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
 HashMap<String, String> OpenXRActionMapEditor::interaction_profile_editors;
@@ -59,6 +60,9 @@ void OpenXRActionMapEditor::_bind_methods() {
 void OpenXRActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			const String theme_style = EDITOR_GET("interface/theme/style");
+			tabs->set_theme_type_variation(theme_style == "Classic" ? "TabContainerOdd" : "TabContainerInner");
+
 			for (int i = 0; i < tabs->get_child_count(); i++) {
 				Control *tab = Object::cast_to<Control>(tabs->get_child(i));
 				if (tab) {
@@ -481,7 +485,6 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	tabs = memnew(TabContainer);
 	tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
-	tabs->set_theme_type_variation("TabContainerOdd");
 	tabs->connect("tab_changed", callable_mp(this, &OpenXRActionMapEditor::_on_tabs_tab_changed));
 	tabs->connect("tab_button_pressed", callable_mp(this, &OpenXRActionMapEditor::_on_tab_button_pressed));
 	main_vb->add_child(tabs);
