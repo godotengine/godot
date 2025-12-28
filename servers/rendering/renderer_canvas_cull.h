@@ -124,6 +124,18 @@ public:
 		}
 	};
 
+	struct ItemInverseYSort {
+		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
+			const real_t left_y = p_left->ysort_xform.columns[2].y;
+			const real_t right_y = p_right->ysort_xform.columns[2].y;
+			if (Math::is_equal_approx(left_y, right_y)) {
+				return p_left->ysort_index < p_right->ysort_index;
+			}
+
+			return left_y > right_y;
+		}
+	};
+
 	struct LightOccluderPolygon {
 		bool active;
 		Rect2 aabb;
