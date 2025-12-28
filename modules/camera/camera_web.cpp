@@ -37,10 +37,7 @@ const String KEY_WIDTH("width");
 
 void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const char *p_error) {
 	// Validate context first to avoid dereferencing null on error paths.
-	if (p_context == nullptr) {
-		ERR_PRINT("Camera feed error: Null context received.");
-		return;
-	}
+	ERR_FAIL_NULL_MSG(p_context, "Camera feed error: Null context received.");
 
 	CameraFeedWeb *feed = reinterpret_cast<CameraFeedWeb *>(p_context);
 
@@ -84,11 +81,16 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 }
 
 void CameraFeedWeb::_on_denied_callback(void *p_context) {
+	ERR_FAIL_NULL_MSG(p_context, "Camera feed error: Null context received in denied callback.");
 	CameraFeedWeb *feed = reinterpret_cast<CameraFeedWeb *>(p_context);
 	feed->deactivate_feed();
 }
 
 bool CameraFeedWeb::activate_feed() {
+	if (is_active()) {
+		WARN_PRINT("Camera feed is already active.");
+		return true;
+	}
 	ERR_FAIL_COND_V_MSG(selected_format == -1, false, "CameraFeed format needs to be set before activating.");
 
 	// Initialize image when activating the feed.
@@ -104,12 +106,16 @@ bool CameraFeedWeb::activate_feed() {
 		width = width > 0 ? width : f.width;
 		height = height > 0 ? height : f.height;
 	}
-	CameraDriverWeb::get_singleton()->get_pixel_data(this, device_id, width, height, &_on_get_pixel_data, &_on_denied_callback);
+	CameraDriverWeb *driver = CameraDriverWeb::get_singleton();
+	ERR_FAIL_NULL_V_MSG(driver, false, "CameraDriverWeb singleton is not initialized.");
+	driver->get_pixel_data(this, device_id, width, height, &_on_get_pixel_data, &_on_denied_callback);
 	return true;
 }
 
 void CameraFeedWeb::deactivate_feed() {
-	CameraDriverWeb::get_singleton()->stop_stream(device_id);
+	CameraDriverWeb *driver = CameraDriverWeb::get_singleton();
+	ERR_FAIL_NULL_MSG(driver, "CameraDriverWeb singleton is not initialized.");
+	driver->stop_stream(device_id);
 	// Release the image when deactivating the feed.
 	image.unref();
 	data.clear();
@@ -138,7 +144,10 @@ Array CameraFeedWeb::get_formats() const {
 
 CameraFeed::FeedFormat CameraFeedWeb::get_format() const {
 	CameraFeed::FeedFormat feed_format = {};
-	return selected_format == -1 ? feed_format : formats[selected_format];
+	if (selected_format < 0 || selected_format >= formats.size()) {
+		return feed_format;
+	}
+	return formats[selected_format];
 }
 
 CameraFeedWeb::CameraFeedWeb(const CameraInfo &info) {

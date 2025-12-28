@@ -282,9 +282,9 @@ const GodotCamera = {
 						camera.video.srcObject = camera.stream;
 						await camera.video.play();
 					} else {
-						// Use requested dimensions when stream already exists.
-						_width = width;
-						_height = height;
+						// Get actual dimensions from existing stream.
+						const [videoTrack] = camera.stream.getVideoTracks();
+						({ width: _width, height: _height } = videoTrack.getSettings());
 					}
 
 					if (camera.canvas.width !== _width || camera.canvas.height !== _height) {
