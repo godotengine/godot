@@ -46,6 +46,37 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> b = p_event;
 
+	Ref<InputEventPanGesture> pg = p_event;
+
+	if (pg.is_valid()) {
+		accept_event();
+
+		if (orientation == HORIZONTAL) {
+			if (pg->get_delta().x != 0) {
+				if (pg->get_delta().x < 0) {
+					scroll(-MAX(fabsf(pg->get_delta().x), get_step()));
+				}
+				if (pg->get_delta().x > 0) {
+					scroll(MAX(pg->get_delta().x, get_step()));
+				}
+			} else if (pg->get_delta().y != 0) {
+				if (pg->get_delta().y < 0) {
+					scroll(-MAX(fabsf(pg->get_delta().y), get_step()));
+				}
+				if (pg->get_delta().y > 0) {
+					scroll(MAX(pg->get_delta().y, get_step()));
+				}
+			}
+		} else {
+			if (pg->get_delta().y < 0) {
+				scroll(-MAX(fabsf(pg->get_delta().y), get_step()));
+			}
+			if (pg->get_delta().y > 0) {
+				scroll(MAX(pg->get_delta().y, get_step()));
+			}
+		}
+	}
+
 	if (b.is_valid()) {
 		accept_event();
 
