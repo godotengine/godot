@@ -2157,6 +2157,9 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		}
 		p_theme->set_stylebox("bg", "EditorInspectorCategory", category_bg);
 
+		// EditorInspectorArray.
+		p_theme->set_color("bg", "EditorInspectorArray", p_config.surface_base_color);
+
 		p_theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);
 
 		// Colored EditorProperty.
