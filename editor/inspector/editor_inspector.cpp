@@ -2664,7 +2664,7 @@ void EditorInspectorArray::_panel_draw(int p_index) {
 	if (style.is_null()) {
 		return;
 	}
-	if (array_elements[p_index].panel->has_focus()) {
+	if (array_elements[p_index].panel->has_focus(true)) {
 		array_elements[p_index].panel->draw_style_box(style, Rect2(Vector2(), array_elements[p_index].panel->get_size()));
 	}
 }
@@ -3280,9 +3280,9 @@ void EditorInspectorArray::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			Color color = get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor));
-			odd_style->set_bg_color(color.darkened(-0.08));
-			even_style->set_bg_color(color.darkened(0.08));
+			Color color = get_theme_color(SNAME("bg"), SNAME("EditorInspectorArray"));
+			odd_style->set_bg_color(color.darkened(-0.1));
+			even_style->set_bg_color(color.darkened(0.1));
 
 			for (ArrayElement &ae : array_elements) {
 				if (ae.move_texture_rect) {
