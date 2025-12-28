@@ -3287,6 +3287,15 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 #ifdef THREADS_ENABLED
 	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
+#ifdef WEB_ENABLED
+	// The Web platform may have threading compiled in, but with only 1 available thread (the main thread).
+	// Using threaded imports with a single thread causes a deadlock as the main thread waits in a busy-loop
+	// while the import tasks can't execute. Disable threaded imports when insufficient threads are available.
+	// See GH-112072 for details.
+	if (WorkerThreadPool::get_singleton()->get_thread_count() <= 1) {
+		use_multiple_threads = false;
+	}
+#endif
 #else
 	bool use_multiple_threads = false;
 #endif
