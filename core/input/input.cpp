@@ -432,8 +432,17 @@ bool Input::is_action_just_pressed_by_event(const StringName &p_action, Required
 		return false;
 	}
 
-	if (E->value.pressed_event_id != p_event->get_instance_id()) {
+	if (!E->value.pressed_event.is_valid()) {
 		return false;
+	}
+
+	// Mouse input events are transformed before they get here and so will have different instance IDs.
+	// As such, we need to check if the InputEventMouseButton is a "match" instead.
+	if (E->value.pressed_event->get_instance_id() != p_event->get_instance_id()) {
+		Ref<InputEventMouseButton> mb = p_event;
+		if (!mb.is_valid() || !p_event->is_match(E->value.pressed_event, false)) {
+			return false;
+		}
 	}
 
 	// Backward compatibility for legacy behavior, only return true if currently pressed.
@@ -489,8 +498,17 @@ bool Input::is_action_just_released_by_event(const StringName &p_action, Require
 		return false;
 	}
 
-	if (E->value.released_event_id != p_event->get_instance_id()) {
+	if (!E->value.released_event.is_valid()) {
 		return false;
+	}
+
+	// Mouse input events are transformed before they get here and so will have different instance IDs.
+	// As such, we need to check if the InputEventMouseButton is a "match" instead.
+	if (E->value.released_event->get_instance_id() != p_event->get_instance_id()) {
+		Ref<InputEventMouseButton> mb = p_event;
+		if (!mb.is_valid() || !p_event->is_match(E->value.released_event, false)) {
+			return false;
+		}
 	}
 
 	// Backward compatibility for legacy behavior, only return true if currently released.
@@ -971,12 +989,12 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		_update_action_cache(E.key, action_state);
 		// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 		if (action_state.cache.pressed && !was_pressed) {
-			action_state.pressed_event_id = p_event->get_instance_id();
+			action_state.pressed_event = p_event;
 			action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 		}
 		if (!action_state.cache.pressed && was_pressed) {
-			action_state.released_event_id = p_event->get_instance_id();
+			action_state.released_event = p_event;
 			action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.released_process_frame = Engine::get_singleton()->get_process_frames();
 		}
@@ -1127,7 +1145,7 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 
 	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 	if (!action_state.cache.pressed) {
-		action_state.pressed_event_id = ObjectID();
+		action_state.pressed_event = Ref<InputEvent>();
 		action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 		action_state.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 	}
@@ -1146,7 +1164,7 @@ void Input::action_release(const StringName &p_action) {
 	action_state.cache.strength = 0.0;
 	action_state.cache.raw_strength = 0.0;
 	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
-	action_state.released_event_id = ObjectID();
+	action_state.released_event = Ref<InputEvent>();
 	action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 	action_state.released_process_frame = Engine::get_singleton()->get_process_frames();
 	action_state.device_states.clear();
