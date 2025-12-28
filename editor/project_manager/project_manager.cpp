@@ -1096,7 +1096,7 @@ void ProjectManager::_set_new_tag_name(const String p_name) {
 
 	for (const String &c : forbidden_tag_characters) {
 		if (p_name.contains(c)) {
-			tag_error->set_text(vformat(TTRC("These characters are not allowed in tags: %s."), String(" ").join(forbidden_tag_characters)));
+			tag_error->set_text(vformat(TTR("These characters are not allowed in tags: %s."), String(" ").join(forbidden_tag_characters)));
 			return;
 		}
 	}

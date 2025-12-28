@@ -88,7 +88,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		partial_snapshots[request_id] = PartialSnapshot();
 		partial_snapshots[request_id].total_size = total_size;
 		Array args = { request_id, 0, SNAPSHOT_CHUNK_SIZE };
-		take_snapshot->set_text(vformat(TTRC("Receiving Snapshot (0/%s MiB)"), _to_mb(total_size)));
+		take_snapshot->set_text(vformat(TTR("Receiving Snapshot (0/%s MiB)"), _to_mb(total_size)));
 		EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);
 		return true;
 	}
@@ -96,7 +96,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		int request_id = p_data[0];
 		PartialSnapshot &chunk = partial_snapshots[request_id];
 		chunk.data.append_array(p_data[1]);
-		take_snapshot->set_text(vformat(TTRC("Receiving Snapshot (%s/%s MiB)"), _to_mb(chunk.data.size()), _to_mb(chunk.total_size)));
+		take_snapshot->set_text(vformat(TTR("Receiving Snapshot (%s/%s MiB)"), _to_mb(chunk.data.size()), _to_mb(chunk.total_size)));
 		if (chunk.data.size() != chunk.total_size) {
 			Array args = { request_id, chunk.data.size(), chunk.data.size() + SNAPSHOT_CHUNK_SIZE };
 			EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);

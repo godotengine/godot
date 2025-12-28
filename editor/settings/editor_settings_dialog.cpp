@@ -784,7 +784,7 @@ Variant EditorSettingsDialog::get_drag_data_fw(const Point2 &p_point, Control *p
 		return Variant();
 	}
 
-	String label_text = vformat(TTRC("Event %d"), selected->get_meta("event_index"));
+	String label_text = vformat(TTR("Event %d"), selected->get_meta("event_index"));
 	Label *label = memnew(Label(label_text));
 	label->set_modulate(Color(1, 1, 1, 1.0f));
 	shortcuts->set_drag_preview(label);
