@@ -40,7 +40,11 @@ class JointLimitationKusudama3D : public JointLimitation3D {
 	// Note: tangents are swapped in storage (+1 stores tan2, +2 stores tan1) to match shader expectations
 	// cone2 of group i is the same as cone1 of group i+1 (or stored separately for the last group)
 	// Each Vector4 is (x, y, z, radius)
-	Vector<Vector4> cones;
+	LocalVector<Vector4> cones;
+
+#ifdef TOOLS_ENABLED
+	typedef Pair<Vector3, Vector3> Segment;
+#endif // TOOLS_ENABLED
 
 protected:
 	static void _bind_methods();
@@ -63,7 +67,10 @@ public:
 	real_t get_cone_radius(int p_index) const;
 
 #ifdef TOOLS_ENABLED
+	LocalVector<Segment> get_icosahedron_sphere(int p_subdiv) const;
+	LocalVector<Segment> cull_lines_by_boundary(const LocalVector<Segment> &p_segments, LocalVector<Vector3> &r_crossed_points) const;
+	bool is_in_boundary(const Vector3 &p_point, Vector3 &r_solved) const;
+	LocalVector<Vector3> sort_by_nearest_point(const LocalVector<Vector3> &p_points) const;
 	virtual void draw_shape(Ref<SurfaceTool> &p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color, int p_bone_index = -1) const override;
-	virtual void add_gizmo_mesh(EditorNode3DGizmo *p_gizmo, const Transform3D &p_transform, float p_bone_length, const Color &p_color, int p_bone_index = -1) const override;
 #endif // TOOLS_ENABLED
 };

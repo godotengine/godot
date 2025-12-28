@@ -52,6 +52,5 @@ public:
 
 #ifdef TOOLS_ENABLED
 	virtual void draw_shape(Ref<SurfaceTool> &p_surface_tool, const Transform3D &p_transform, float p_bone_length, const Color &p_color, int p_bone_index = -1) const; // For drawing gizmo.
-	virtual void add_gizmo_mesh(EditorNode3DGizmo *p_gizmo, const Transform3D &p_transform, float p_bone_length, const Color &p_color, int p_bone_index = -1) const; // For adding gizmo mesh directly.
 #endif // TOOLS_ENABLED
 };
