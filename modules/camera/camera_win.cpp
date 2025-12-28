@@ -374,82 +374,92 @@ bool CameraFeedWindows::activate_feed() {
 	ERR_FAIL_INDEX_V_MSG(selected_format, formats.size(), false, "Invalid format index for CameraFeed.");
 	ERR_FAIL_NULL_V_MSG(imf_activate, false, "IMFActivate is null, cannot activate camera feed.");
 
-	bool result = false;
 	HRESULT hr;
 
-	// Create media source.
+	// Step 1: Create media source.
 	hr = imf_activate->ActivateObject(IID_PPV_ARGS(&imf_media_source));
-	if (SUCCEEDED(hr)) {
-		bool media_type_set = IMFMediaSource_set_media_type(imf_media_source, format_mediatypes[selected_format]);
-
-		if (media_type_set) {
-			// Create media imf_source_reader.
-			IMFAttributes *reader_attributes = nullptr;
-			hr = MFCreateAttributes(&reader_attributes, 2);
-			if (SUCCEEDED(hr)) {
-				// Enable hardware acceleration if available.
-				hr = reader_attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
-				// Hint to disconnect media source on shutdown to help unblock.
-				reader_attributes->SetUINT32(MF_SOURCE_READER_DISCONNECT_MEDIASOURCE_ON_SHUTDOWN, TRUE);
-
-				hr = MFCreateSourceReaderFromMediaSource(imf_media_source, reader_attributes, &imf_source_reader);
-				reader_attributes->Release();
-
-				if (SUCCEEDED(hr)) {
-					// Ensure we are reading the first video stream.
-					imf_source_reader->SetStreamSelection(MF_SOURCE_READER_FIRST_VIDEO_STREAM, TRUE);
-
-					// Configure source reader to convert to RGB24.
-					IMFMediaType *output_type = nullptr;
-					hr = MFCreateMediaType(&output_type);
-					if (SUCCEEDED(hr)) {
-						hr = output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-						hr = output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB24);
-
-						// Try to set RGB24 as output format.
-						hr = imf_source_reader->SetCurrentMediaType(
-								MF_SOURCE_READER_FIRST_VIDEO_STREAM,
-								nullptr,
-								output_type);
-
-						if (SUCCEEDED(hr)) {
-							result = true;
-							use_mf_conversion = true;
-							// Windows RGB24 uses BGR byte order. See:
-							// https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
-							buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::BGR));
-						} else {
-							// Fallback to manual conversion for formats that support it.
-							const GUID &video_format = format_guids[selected_format];
-							if (_is_buffer_decoder_format(video_format)) {
-								result = true;
-								use_mf_conversion = false;
-								buffer_decoder = _create_buffer_decoder();
-							} else {
-								ERR_PRINT("Format not supported by Media Foundation conversion or manual decoder.");
-								result = false;
-							}
-						}
-
-						output_type->Release();
-					}
-
-					if (result) {
-						// Start reading.
-						worker = std::thread(capture, this);
-					}
-				}
-			}
-		}
-	} else {
-		ERR_PRINT(vformat("IMFActivate::ActivateObject failed: 0x%08x.", (uint32_t)hr));
-		// If another application is using the device, provide a human-readable hint.
+	if (FAILED(hr)) {
+		print_error(vformat("Failed to activate camera: 0x%08x.", (uint32_t)hr));
 		if (hr == HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION)) {
-			ERR_PRINT("Check that no other applications are currently using the camera.");
+			print_error("Check that no other applications are currently using the camera.");
+		}
+		deactivate_feed();
+		return false;
+	}
+
+	// Step 2: Set media type.
+	if (!IMFMediaSource_set_media_type(imf_media_source, format_mediatypes[selected_format])) {
+		print_error("Failed to set media type.");
+		deactivate_feed();
+		return false;
+	}
+
+	// Step 3: Create reader attributes.
+	IMFAttributes *reader_attributes = nullptr;
+	hr = MFCreateAttributes(&reader_attributes, 2);
+	if (FAILED(hr)) {
+		print_error(vformat("Failed to create reader attributes: 0x%08x.", (uint32_t)hr));
+		deactivate_feed();
+		return false;
+	}
+
+	// Enable hardware acceleration if available.
+	reader_attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
+	// Hint to disconnect media source on shutdown to help unblock.
+	reader_attributes->SetUINT32(MF_SOURCE_READER_DISCONNECT_MEDIASOURCE_ON_SHUTDOWN, TRUE);
+
+	// Step 4: Create source reader.
+	hr = MFCreateSourceReaderFromMediaSource(imf_media_source, reader_attributes, &imf_source_reader);
+	reader_attributes->Release();
+	if (FAILED(hr)) {
+		print_error(vformat("Failed to create source reader: 0x%08x.", (uint32_t)hr));
+		deactivate_feed();
+		return false;
+	}
+
+	// Ensure we are reading the first video stream.
+	imf_source_reader->SetStreamSelection(MF_SOURCE_READER_FIRST_VIDEO_STREAM, TRUE);
+
+	// Step 5: Create output media type.
+	IMFMediaType *output_type = nullptr;
+	hr = MFCreateMediaType(&output_type);
+	if (FAILED(hr)) {
+		print_error(vformat("Failed to create output media type: 0x%08x.", (uint32_t)hr));
+		deactivate_feed();
+		return false;
+	}
+
+	output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+	output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB24);
+
+	// Step 6: Try to set RGB24 as output format.
+	hr = imf_source_reader->SetCurrentMediaType(
+			MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+			nullptr,
+			output_type);
+	output_type->Release();
+
+	if (SUCCEEDED(hr)) {
+		use_mf_conversion = true;
+		// Windows RGB24 uses BGR byte order. See:
+		// https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
+		buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::BGR));
+	} else {
+		// Fallback to manual conversion for formats that support it.
+		const GUID &video_format = format_guids[selected_format];
+		if (_is_buffer_decoder_format(video_format)) {
+			use_mf_conversion = false;
+			buffer_decoder = _create_buffer_decoder();
+		} else {
+			print_error("Format not supported by Media Foundation conversion or manual decoder.");
+			deactivate_feed();
+			return false;
 		}
 	}
 
-	return result;
+	// Step 7: Start capture thread.
+	worker = std::thread(capture, this);
+	return true;
 }
 
 void CameraFeedWindows::deactivate_feed() {
