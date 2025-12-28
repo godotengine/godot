@@ -634,7 +634,7 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	real_t angle_delta = total_angular_velocity * p_step;
 	Transform2D rot = Transform2D(angle_delta, Vector2());
 	Vector2 pos_delta = total_linear_velocity * p_step;
-	
+
 	if (center_of_mass.length_squared() > CMP_EPSILON2) {
 		// Calculate displacement due to center of mass offset.
 		pos_delta += center_of_mass - rot.xform(center_of_mass);
