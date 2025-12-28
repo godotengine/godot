@@ -75,10 +75,6 @@ void GodotBodyPair2D::_contact_added_callback(const Vector2 &p_point_A, const Ve
 	// Figure out if the contact amount must be reduced to fit the new contact.
 	if (new_index == MAX_CONTACTS) {
 		// Remove the contact with the minimum depth.
-
-		const Transform2D &transform_A = A->get_transform();
-		const Transform2D &transform_B = B->get_transform().translated(offset_B);
-
 		int least_deep = -1;
 		real_t min_depth;
 
@@ -113,9 +109,6 @@ void GodotBodyPair2D::_validate_contacts() {
 	// Make sure to erase contacts that are no longer valid.
 	real_t max_separation = space->get_contact_max_separation();
 	real_t max_separation2 = max_separation * max_separation;
-
-	const Transform2D &transform_A = A->get_transform();
-	const Transform2D &transform_B = B->get_transform().translated(offset_B);
 
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
@@ -393,9 +386,6 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 	bool do_process = false;
 
 	const Vector2 &offset_A = A->get_transform().get_origin();
-	const Transform2D &transform_A = A->get_transform();
-	const Transform2D &transform_B = B->get_transform().translated(offset_B);
-
 	real_t inv_inertia_A = collide_A ? A->get_inv_inertia() : 0.0;
 	real_t inv_inertia_B = collide_B ? B->get_inv_inertia() : 0.0;
 
