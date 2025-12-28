@@ -623,6 +623,7 @@ CameraFeed::FeedFormat CameraFeedWindows::get_format() const {
 }
 
 bool CameraFeedWindows::set_format(int p_index, const Dictionary &p_parameters) {
+	ERR_FAIL_INDEX_V_MSG(p_index, formats.size(), false, "Invalid format index.");
 	selected_format = p_index;
 	parameters = p_parameters.duplicate();
 
