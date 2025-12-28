@@ -389,12 +389,15 @@ ExtendGDScriptParser *GDScriptLanguageProtocol::LSPeer::parse_script(const Strin
 	}
 
 	ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
+	parse_results[p_path] = parser;
+
 	parser->parse(content, p_path);
 
 	if (document != nullptr) {
-		parse_results[p_path] = parser;
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->publish_diagnostics(p_path);
 	} else {
+		// Don't keep cached for further requests since we can't invalidate the cache properly.
+		parse_results.erase(p_path);
 		stale_parsers[p_path] = parser;
 	}
 
