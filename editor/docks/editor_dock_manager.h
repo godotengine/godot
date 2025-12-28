@@ -92,6 +92,7 @@ private:
 		TabContainer *container = nullptr;
 		EditorDockDragHint *drag_hint = nullptr;
 		DockConstants::DockLayout layout = DockConstants::DOCK_LAYOUT_VERTICAL;
+		int previous_non_transient_tab = -1;
 	};
 
 	DockSlot dock_slots[DockConstants::DOCK_SLOT_MAX];
@@ -127,6 +128,8 @@ private:
 	void _queue_update_tab_style(EditorDock *p_dock);
 	void _update_dirty_dock_tabs();
 	void _update_tab_style(EditorDock *p_dock);
+
+	void _restore_first_non_transient_tab(TabContainer *p_tab_container);
 
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
