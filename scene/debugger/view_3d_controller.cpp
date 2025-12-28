@@ -619,6 +619,8 @@ void View3DController::scale_cursor_distance(const float p_scale) {
 	} else {
 		zoom_failed_attempts_count = 0;
 	}
+
+	emit_signal(SNAME("cursor_zoomed"));
 }
 
 void View3DController::set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut) {
@@ -791,6 +793,7 @@ void View3DController::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("freelook_speed_scaled"));
 
 	ADD_SIGNAL(MethodInfo("cursor_panned"));
+	ADD_SIGNAL(MethodInfo("cursor_zoomed"));
 	ADD_SIGNAL(MethodInfo("cursor_interpolated"));
 }
 

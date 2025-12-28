@@ -503,7 +503,7 @@ public:
 	Vector3 get_ray(const Vector2 &p_pos) const;
 	Point2 point_to_screen(const Vector3 &p_point);
 
-	void focus_selection();
+	void focus_selection(bool p_fit_distance = true);
 
 	void assign_pending_data_pointers(
 			Node3D *p_preview_node,
