@@ -145,7 +145,7 @@ String EditorQuickOpenDialog::get_dialog_title(const Vector<StringName> &p_base_
 		return TTR("Select Scene");
 	}
 
-	return TTR("Select") + " " + p_base_types[0];
+	return vformat(TTR("Select %s"), p_base_types[0]);
 }
 
 void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback) {
