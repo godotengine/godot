@@ -107,27 +107,27 @@ void SnapshotSummaryView::show_snapshot(GameStateSnapshot *p_data, GameStateSnap
 	SnapshotView::show_snapshot(p_data, p_diff_data);
 	explainer_text->set_visible(false);
 
-	String snapshot_a_name = diff_data == nullptr ? TTRC("Snapshot") : TTRC("Snapshot A");
-	String snapshot_b_name = TTRC("Snapshot B");
+	String snapshot_a_name = diff_data == nullptr ? TTR("Snapshot") : TTR("Snapshot A");
+	String snapshot_b_name = TTR("Snapshot B");
 
-	_push_overview_blurb(snapshot_a_name + " " + TTRC("Overview"), snapshot_data);
+	_push_overview_blurb(snapshot_a_name + " " + TTR("Overview"), snapshot_data);
 	if (diff_data) {
-		_push_overview_blurb(snapshot_b_name + " " + TTRC("Overview"), diff_data);
+		_push_overview_blurb(snapshot_b_name + " " + TTR("Overview"), diff_data);
 	}
 
-	_push_node_blurb(snapshot_a_name + " " + TTRC("Nodes"), snapshot_data);
+	_push_node_blurb(snapshot_a_name + " " + TTR("Nodes"), snapshot_data);
 	if (diff_data) {
-		_push_node_blurb(snapshot_b_name + " " + TTRC("Nodes"), diff_data);
+		_push_node_blurb(snapshot_b_name + " " + TTR("Nodes"), diff_data);
 	}
 
-	_push_refcounted_blurb(snapshot_a_name + " " + TTRC("RefCounteds"), snapshot_data);
+	_push_refcounted_blurb(snapshot_a_name + " " + TTR("RefCounteds"), snapshot_data);
 	if (diff_data) {
-		_push_refcounted_blurb(snapshot_b_name + " " + TTRC("RefCounteds"), diff_data);
+		_push_refcounted_blurb(snapshot_b_name + " " + TTR("RefCounteds"), diff_data);
 	}
 
-	_push_object_blurb(snapshot_a_name + " " + TTRC("Objects"), snapshot_data);
+	_push_object_blurb(snapshot_a_name + " " + TTR("Objects"), snapshot_data);
 	if (diff_data) {
-		_push_object_blurb(snapshot_b_name + " " + TTRC("Objects"), diff_data);
+		_push_object_blurb(snapshot_b_name + " " + TTR("Objects"), diff_data);
 	}
 }
 
@@ -214,7 +214,7 @@ void SnapshotSummaryView::_push_node_blurb(const String &p_title, GameStateSnaps
 		return;
 	}
 
-	String c = TTRC("Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')[/i]\n");
+	String c = TTR("Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')[/i]") + "\n";
 	c += "[ul]\n";
 	for (const String &node : nodes) {
 		c += " " + node + "\n";
@@ -243,7 +243,7 @@ void SnapshotSummaryView::_push_refcounted_blurb(const String &p_title, GameStat
 		return;
 	}
 
-	String c = TTRC("RefCounted objects only referenced in cycles [i](cycles often indicate a memory leaks)[/i]\n");
+	String c = TTR("RefCounted objects only referenced in cycles [i](cycles often indicate a memory leaks)[/i]") + "\n";
 	c += "[ul]\n";
 	for (const String &rc : rcs) {
 		c += " " + rc + "\n";
@@ -273,7 +273,7 @@ void SnapshotSummaryView::_push_object_blurb(const String &p_title, GameStateSna
 		return;
 	}
 
-	String c = TTRC("Scripted objects not referenced by any other objects [i](unreferenced objects may indicate a memory leak)[/i]\n");
+	String c = TTR("Scripted objects not referenced by any other objects [i](unreferenced objects may indicate a memory leak)[/i]") + "\n";
 	c += "[ul]\n";
 	for (const String &object : objects) {
 		c += " " + object + "\n";
