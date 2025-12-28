@@ -71,7 +71,7 @@ void CollisionShape2D::_notification(int p_what) {
 			if (collision_object) {
 				_update_in_shape_owner(true);
 			}
-		}break;
+		} break;
 		case NOTIFICATION_UNPARENTED: {
 			if (collision_object) {
 				collision_object->remove_shape_owner(owner_id);

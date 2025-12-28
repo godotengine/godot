@@ -62,7 +62,7 @@ void GodotBodyPair2D::_contact_added_callback(const Vector2 &p_point_A, const Ve
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
 		if (c.position_A.distance_squared_to(p_point_A) < (recycle_radius_2) &&
-			c.position_B.distance_squared_to(p_point_B) < (recycle_radius_2)) {
+				c.position_B.distance_squared_to(p_point_B) < (recycle_radius_2)) {
 			contact.acc_normal_impulse = c.acc_normal_impulse;
 			contact.acc_tangent_impulse = c.acc_tangent_impulse;
 			contact.acc_bias_impulse = c.acc_bias_impulse;
