@@ -40,7 +40,6 @@ BufferDecoder::BufferDecoder(CameraFeed *p_camera_feed) {
 	camera_feed = p_camera_feed;
 	width = camera_feed->get_format().width;
 	height = camera_feed->get_format().height;
-	image.instantiate();
 }
 
 AbstractYuyvBufferDecoder::AbstractYuyvBufferDecoder(CameraFeed *p_camera_feed) :
@@ -75,8 +74,6 @@ SeparateYuyvBufferDecoder::SeparateYuyvBufferDecoder(CameraFeed *p_camera_feed) 
 		AbstractYuyvBufferDecoder(p_camera_feed) {
 	y_image_data.resize(width * height);
 	cbcr_image_data.resize(width * height);
-	y_image.instantiate();
-	cbcr_image.instantiate();
 }
 
 void SeparateYuyvBufferDecoder::decode(StreamingBuffer p_buffer) {
@@ -100,18 +97,14 @@ void SeparateYuyvBufferDecoder::decode(StreamingBuffer p_buffer) {
 		v_src += 4;
 	}
 
-	if (y_image.is_valid()) {
-		y_image->set_data(width, height, false, Image::FORMAT_L8, y_image_data);
-	} else {
-		y_image.instantiate(width, height, false, Image::FORMAT_L8, y_image_data);
-	}
-	if (cbcr_image.is_valid()) {
-		cbcr_image->set_data(width / 2, height, false, Image::FORMAT_RG8, cbcr_image_data);
-	} else {
-		cbcr_image.instantiate(width / 2, height, false, Image::FORMAT_RG8, cbcr_image_data);
-	}
+	// Defer to main thread to avoid race conditions with RenderingServer.
+	y_image.instantiate();
+	y_image->set_data(width, height, false, Image::FORMAT_L8, y_image_data);
 
-	camera_feed->set_ycbcr_images(y_image, cbcr_image);
+	cbcr_image.instantiate();
+	cbcr_image->set_data(width / 2, height, false, Image::FORMAT_RG8, cbcr_image_data);
+
+	camera_feed->call_deferred("set_ycbcr_images", y_image, cbcr_image);
 }
 
 YuyvToGrayscaleBufferDecoder::YuyvToGrayscaleBufferDecoder(CameraFeed *p_camera_feed) :
@@ -133,13 +126,11 @@ void YuyvToGrayscaleBufferDecoder::decode(StreamingBuffer p_buffer) {
 		y1_src += 4;
 	}
 
-	if (image.is_valid()) {
-		image->set_data(width, height, false, Image::FORMAT_L8, image_data);
-	} else {
-		image.instantiate(width, height, false, Image::FORMAT_RGB8, image_data);
-	}
+	// Defer to main thread to avoid race conditions with RenderingServer.
+	image.instantiate();
+	image->set_data(width, height, false, Image::FORMAT_L8, image_data);
 
-	camera_feed->set_rgb_image(image);
+	camera_feed->call_deferred("set_rgb_image", image);
 }
 
 YuyvToRgbBufferDecoder::YuyvToRgbBufferDecoder(CameraFeed *p_camera_feed) :
@@ -176,13 +167,11 @@ void YuyvToRgbBufferDecoder::decode(StreamingBuffer p_buffer) {
 		v_src += 4;
 	}
 
-	if (image.is_valid()) {
-		image->set_data(width, height, false, Image::FORMAT_RGB8, image_data);
-	} else {
-		image.instantiate(width, height, false, Image::FORMAT_RGB8, image_data);
-	}
+	// Defer to main thread to avoid race conditions with RenderingServer.
+	image.instantiate();
+	image->set_data(width, height, false, Image::FORMAT_RGB8, image_data);
 
-	camera_feed->set_rgb_image(image);
+	camera_feed->call_deferred("set_rgb_image", image);
 }
 
 CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, const CopyFormat &p_format) :
@@ -232,13 +221,11 @@ void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
 		}
 	}
 
-	if (image.is_valid()) {
-		image->set_data(width, height, false, format, image_data);
-	} else {
-		image.instantiate(width, height, false, format, image_data);
-	}
+	// Defer to main thread to avoid race conditions with RenderingServer.
+	image.instantiate();
+	image->set_data(width, height, false, format, image_data);
 
-	camera_feed->set_rgb_image(image);
+	camera_feed->call_deferred("set_rgb_image", image);
 }
 
 JpegBufferDecoder::JpegBufferDecoder(CameraFeed *p_camera_feed) :
@@ -249,8 +236,11 @@ void JpegBufferDecoder::decode(StreamingBuffer p_buffer) {
 	image_data.resize(p_buffer.length);
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
 	memcpy(dst, p_buffer.start, p_buffer.length);
+
+	// Defer to main thread to avoid race conditions with RenderingServer.
+	image.instantiate();
 	if (image->load_jpg_from_buffer(image_data) == OK) {
-		camera_feed->set_rgb_image(image);
+		camera_feed->call_deferred("set_rgb_image", image);
 	}
 }
 
@@ -308,21 +298,14 @@ void Nv12BufferDecoder::decode(StreamingBuffer p_buffer) {
 		}
 	}
 
-	// Create Y image.
-	if (image_y.is_valid()) {
-		image_y->set_data(width, height, false, Image::FORMAT_L8, data_y);
-	} else {
-		image_y.instantiate(width, height, false, Image::FORMAT_L8, data_y);
-	}
+	// Defer to main thread to avoid race conditions with RenderingServer.
+	image_y.instantiate();
+	image_y->set_data(width, height, false, Image::FORMAT_L8, data_y);
 
-	// Create UV image (half resolution).
-	if (image_uv.is_valid()) {
-		image_uv->set_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
-	} else {
-		image_uv.instantiate(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
-	}
+	image_uv.instantiate();
+	image_uv->set_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
 
-	camera_feed->set_ycbcr_images(image_y, image_uv);
+	camera_feed->call_deferred("set_ycbcr_images", image_y, image_uv);
 }
 
 NullBufferDecoder::NullBufferDecoder(CameraFeed *p_camera_feed) :
