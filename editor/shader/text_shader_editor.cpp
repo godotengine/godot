@@ -152,6 +152,7 @@ void ShaderTextEditor::_shader_changed() {
 		return;
 	}
 	dependencies_version++;
+	reload_text();
 	_validate_script();
 }
 

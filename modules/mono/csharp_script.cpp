@@ -1174,6 +1174,8 @@ void CSharpLanguage::release_binding_gchandle_thread_safe(GCHandleIntPtr p_gchan
 CSharpLanguage::CSharpLanguage() {
 	ERR_FAIL_COND_MSG(singleton, "C# singleton already exists.");
 	singleton = this;
+
+	GLOBAL_DEF("filesystem/inline_text_resource_uids/c_sharp_script", true);
 }
 
 CSharpLanguage::~CSharpLanguage() {
@@ -2930,6 +2932,99 @@ String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path)
 	return p_path.has_extension("cs") ? CSharpLanguage::get_singleton()->get_type() : "";
 }
 
+#define UID_COMMENT_PREFIX "// uid://"
+#define UID_COMMENT_SUFFIX "This line is generated, don't modify or remove it."
+static ResourceUID::ID extract_uid_from_line(const String &p_line) {
+	Vector<String> splits = p_line.strip_edges().substr(3).split(" ", false, 1);
+	if (splits.is_empty()) {
+		return ResourceUID::INVALID_ID;
+	}
+	return ResourceUID::get_singleton()->text_to_id(splits[0]);
+}
+
+ResourceUID::ID ResourceFormatLoaderCSharpScript::get_resource_uid(const String &p_path) const {
+	int64_t uid = ResourceUID::INVALID_ID;
+
+	if (FileAccess::exists(p_path + ".uid")) {
+		Ref<FileAccess> file = FileAccess::open(p_path + ".uid", FileAccess::READ);
+		if (file.is_valid()) {
+			uid = ResourceUID::get_singleton()->text_to_id(file->get_line());
+		}
+	} else {
+		const String extension = p_path.get_extension().to_lower();
+		if (extension == "cs") {
+			Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
+			if (file.is_valid()) {
+				while (!file->eof_reached()) {
+					String line = file->get_line().strip_edges();
+					if (!line.is_empty()) {
+						if (line.begins_with(UID_COMMENT_PREFIX)) {
+							uid = extract_uid_from_line(line);
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return uid;
+}
+
+bool ResourceFormatLoaderCSharpScript::has_custom_uid_support() const {
+	return GLOBAL_GET("filesystem/inline_text_resource_uids/c_sharp_script");
+}
+
+bool ResourceFormatSaverCSharpScript::add_uid_to_source(String &p_r_source, const String &p_path, ResourceUID::ID p_uid) const {
+	bool need_update = false;
+	Vector<String> lines = p_r_source.split("\n");
+	bool uid_comment_valid = false;
+	for (Vector<String>::Size i = 0; i < lines.size(); i++) {
+		const String &line = lines[i].strip_edges();
+		if (line.begins_with(UID_COMMENT_PREFIX)) {
+			ResourceUID::ID uid = extract_uid_from_line(line);
+			if (uid == ResourceUID::INVALID_ID || p_uid != uid) {
+				if (p_uid == ResourceUID::INVALID_ID) {
+					p_uid = ResourceSaver::get_resource_id_for_path(p_path, true);
+				}
+
+				if (uid != p_uid) {
+					lines.set(i, vformat("// %s %s", ResourceUID::get_singleton()->id_to_text(uid), UID_COMMENT_SUFFIX));
+					if (ResourceUID::get_singleton()->has_id(uid)) {
+						ResourceUID::get_singleton()->set_id(uid, p_path);
+					} else {
+						ResourceUID::get_singleton()->add_id(uid, p_path);
+					}
+					need_update = true;
+				}
+			}
+
+			uid_comment_valid = true;
+			break;
+		} else if (!line.strip_edges().is_empty()) {
+			break;
+		}
+	}
+
+	if (!uid_comment_valid) {
+		ResourceUID::ID uid = p_uid == ResourceUID::INVALID_ID ? ResourceSaver::get_resource_id_for_path(p_path, true) : p_uid;
+		lines.insert(0, vformat("// %s %s", ResourceUID::get_singleton()->id_to_text(uid), UID_COMMENT_SUFFIX));
+		if (ResourceUID::get_singleton()->has_id(uid)) {
+			ResourceUID::get_singleton()->set_id(uid, p_path);
+		} else {
+			ResourceUID::get_singleton()->add_id(uid, p_path);
+		}
+		need_update = true;
+	}
+
+	if (need_update) {
+		p_r_source = String("\n").join(lines);
+		return true;
+	} else {
+		return false;
+	}
+}
+
 Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<CSharpScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
@@ -2951,10 +3046,30 @@ Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, con
 		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save C# script file '" + p_path + "'.");
 
-		file->store_string(source);
+		bool source_changed = false;
+		if (!FileAccess::exists(p_path + ".uid")) {
+			if (p_path.begins_with("res://addons/") && GLOBAL_GET("filesystem/inline_text_resource_uids/compatibility/no_inline_text_resource_uids_in_addons")) {
+				Ref<FileAccess> f = FileAccess::open(p_path + ".uid", FileAccess::WRITE);
+				if (f.is_valid()) {
+					ResourceUID::ID uid = ResourceUID::get_singleton()->create_id_for_path(p_path);
+					f->store_line(ResourceUID::get_singleton()->id_to_text(uid));
+					f->close();
+				}
+			} else {
+				source_changed = add_uid_to_source(source, p_path);
+			}
+		}
 
+		file->store_string(source);
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 			return ERR_CANT_CREATE;
+		}
+		file->close();
+
+		if (source_changed) {
+			sqscr->set_source_code(source);
+			sqscr->reload(true);
+			sqscr->emit_changed();
 		}
 	}
 
@@ -2975,4 +3090,47 @@ void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resour
 
 bool ResourceFormatSaverCSharpScript::recognize(const Ref<Resource> &p_resource) const {
 	return Object::cast_to<CSharpScript>(p_resource.ptr()) != nullptr;
+}
+
+Error ResourceFormatSaverCSharpScript::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	if (FileAccess::exists(p_path + ".uid") || (p_path.begins_with("res://addons/") && GLOBAL_GET("filesystem/inline_text_resource_uids/compatibility/no_inline_text_resource_uids_in_addons"))) {
+		Ref<FileAccess> f = FileAccess::open(p_path + ".uid", FileAccess::WRITE);
+		if (f.is_valid()) {
+			f->store_line(ResourceUID::get_singleton()->id_to_text(p_uid));
+			return OK;
+		} else {
+			return FileAccess::get_open_error();
+		}
+	} else if (p_path.get_extension().to_lower() == "cs") {
+		Error err = OK;
+		String source = FileAccess::get_file_as_string(p_path, &err);
+		if (err != OK) {
+			return err;
+		}
+
+		const bool source_changed = add_uid_to_source(source, p_path, p_uid);
+		if (source_changed) {
+			Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+			if (f.is_valid()) {
+				f->store_string(source);
+				f->close();
+
+				// Update source code if it's loaded.
+				Ref<CSharpScript> loaded_csharp_script = ResourceCache::get_ref(p_path);
+				if (loaded_csharp_script.is_valid()) {
+					loaded_csharp_script->set_source_code(source);
+					loaded_csharp_script->reload(true);
+					loaded_csharp_script->emit_changed();
+				}
+
+				err = OK;
+			} else {
+				err = FileAccess::get_open_error();
+			}
+		}
+
+		return err;
+	}
+
+	return ERR_FILE_UNRECOGNIZED;
 }
