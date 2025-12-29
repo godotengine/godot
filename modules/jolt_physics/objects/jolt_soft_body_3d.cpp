@@ -693,6 +693,14 @@ void JoltSoftBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant
 	}
 }
 
+PhysicsServer3D::SoftBodyForm JoltSoftBody3D::get_soft_body_form() const {
+	return soft_body_form;
+}
+
+void JoltSoftBody3D::set_soft_body_form(PhysicsServer3D::SoftBodyForm p_soft_body_form) {
+	soft_body_form = p_soft_body_form;
+}
+
 Transform3D JoltSoftBody3D::get_transform() const {
 	// Since any transform gets baked into the vertices anyway we can just return identity here.
 	return Transform3D();

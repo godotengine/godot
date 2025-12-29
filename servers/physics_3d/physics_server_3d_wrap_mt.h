@@ -333,6 +333,9 @@ public:
 
 	FUNC1RC(AABB, soft_body_get_bounds, RID);
 
+	FUNC2(soft_body_set_form, RID, SoftBodyForm);
+	FUNC1RC(SoftBodyForm, soft_body_get_form, RID);
+
 	FUNC3(soft_body_move_point, RID, int, const Vector3 &);
 	FUNC2RC(Vector3, soft_body_get_point_global_position, RID, int);
 

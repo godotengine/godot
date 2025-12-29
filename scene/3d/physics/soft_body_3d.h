@@ -73,8 +73,8 @@ public:
 	};
 
 	enum BodyType {
-		BODY_TYPE_EDGES,
-		BODY_TYPE_TETRAHEDRA,
+		BODY_TYPE_CLOTH,
+		BODY_TYPE_VOLUME,
 	};
 
 	struct PinnedPoint {
@@ -103,7 +103,7 @@ private:
 	bool simulation_started = false;
 	bool pinned_points_cache_dirty = true;
 
-	BodyType body_type = BODY_TYPE_EDGES;
+	BodyType body_type = BODY_TYPE_CLOTH;
 
 	Ref<ArrayMesh> debug_mesh_cache;
 	class MeshInstance3D *debug_mesh = nullptr;

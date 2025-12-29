@@ -1203,6 +1203,21 @@ AABB GodotPhysicsServer3D::soft_body_get_bounds(RID p_body) const {
 	return soft_body->get_bounds();
 }
 
+void GodotPhysicsServer3D::soft_body_set_form(RID p_body, PhysicsServer3D::SoftBodyForm p_form) {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(soft_body);
+
+	ERR_FAIL_COND_MSG(p_form != PhysicsServer3D::SOFT_BODY_FORM_CLOTH, "GodotPhysicsServer3D only handles cloth deformation");
+}
+
+PhysicsServer3D::SoftBodyForm GodotPhysicsServer3D::soft_body_get_form(RID p_body) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, PhysicsServer3D::SOFT_BODY_FORM_CLOTH);
+
+	//For now, GodotPhysicsServer3D only handles cloth deformation
+	return PhysicsServer3D::SOFT_BODY_FORM_CLOTH;
+}
+
 void GodotPhysicsServer3D::soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);

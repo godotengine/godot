@@ -467,6 +467,9 @@ public:
 
 	EXBIND1RC(AABB, soft_body_get_bounds, RID)
 
+	EXBIND2(soft_body_set_form, RID, SoftBodyForm)
+	EXBIND1RC(SoftBodyForm, soft_body_get_form, RID)
+
 	EXBIND3(soft_body_move_point, RID, int, const Vector3 &)
 	EXBIND2RC(Vector3, soft_body_get_point_global_position, RID, int)
 

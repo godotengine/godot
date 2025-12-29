@@ -310,6 +310,9 @@ public:
 
 	virtual AABB soft_body_get_bounds(RID p_body) const override;
 
+	virtual void soft_body_set_form(RID p_body, SoftBodyForm p_form) override;
+	virtual SoftBodyForm soft_body_get_form(RID p_body) const override;
+
 	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) override;
 	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const override;
 

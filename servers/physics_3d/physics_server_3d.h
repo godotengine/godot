@@ -574,6 +574,11 @@ public:
 
 	/* SOFT BODY */
 
+	enum SoftBodyForm {
+		SOFT_BODY_FORM_CLOTH,
+		SOFT_BODY_FORM_VOLUME,
+	};
+
 	virtual RID soft_body_create() = 0;
 
 	virtual void soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) = 0;
@@ -584,6 +589,9 @@ public:
 	virtual void soft_body_set_mesh(RID p_body, RID p_mesh) = 0;
 
 	virtual AABB soft_body_get_bounds(RID p_body) const = 0;
+
+	virtual void soft_body_set_form(RID p_body, SoftBodyForm form) = 0;
+	virtual SoftBodyForm soft_body_get_form(RID p_body) const = 0;
 
 	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer) = 0;
 	virtual uint32_t soft_body_get_collision_layer(RID p_body) const = 0;
@@ -1062,6 +1070,7 @@ VARIANT_ENUM_CAST(PhysicsServer3D::BodyParameter);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyDampMode);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyState);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyAxis);
+VARIANT_ENUM_CAST(PhysicsServer3D::SoftBodyForm);
 VARIANT_ENUM_CAST(PhysicsServer3D::PinJointParam);
 VARIANT_ENUM_CAST(PhysicsServer3D::JointType);
 VARIANT_ENUM_CAST(PhysicsServer3D::HingeJointParam);

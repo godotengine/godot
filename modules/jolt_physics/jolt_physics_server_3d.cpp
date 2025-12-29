@@ -1034,6 +1034,20 @@ AABB JoltPhysicsServer3D::soft_body_get_bounds(RID p_body) const {
 	return body->get_bounds();
 }
 
+void JoltPhysicsServer3D::soft_body_set_form(RID p_body, SoftBodyForm p_form) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->set_soft_body_form(p_form);
+}
+
+JoltPhysicsServer3D::SoftBodyForm JoltPhysicsServer3D::soft_body_get_form(RID p_body) const {
+	const JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, SOFT_BODY_FORM_CLOTH);
+
+	return body->get_soft_body_form();
+}
+
 void JoltPhysicsServer3D::soft_body_set_collision_layer(RID p_body, uint32_t p_layer) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
