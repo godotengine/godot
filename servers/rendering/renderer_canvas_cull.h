@@ -106,33 +106,37 @@ public:
 	void _item_queue_update(Item *p_item, bool p_update_dependencies);
 	SelfList<Item>::List _item_update_list;
 
-	struct ItemIndexSort {
-		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
-			return p_left->index < p_right->index;
-		}
-	};
+	struct ItemAxisSort {
+		private:
+			bool _y_as_main = true;
+			bool _x_ascending = false;
+			bool _y_ascending = false;
 
-	struct ItemYSort {
+		public:
+			ItemAxisSort& y_as_main() { _y_as_main = true; return *this; }
+			ItemAxisSort& x_as_main() { _y_as_main = false; return *this; }
+			ItemAxisSort& x_ascending() { _x_ascending = true; return *this; }
+			ItemAxisSort& x_descending() { _x_ascending = false; return *this; }
+			ItemAxisSort& y_ascending() { _y_ascending = true; return *this; }
+			ItemAxisSort& y_descending() { _y_ascending = false; return *this; }
+
 		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
-			const real_t left_y = p_left->ysort_xform.columns[2].y;
-			const real_t right_y = p_right->ysort_xform.columns[2].y;
-			if (Math::is_equal_approx(left_y, right_y)) {
-				return p_left->ysort_index < p_right->ysort_index;
+			const Vector2 left_pos = p_left->ysort_xform.columns[2];
+			const Vector2 right_pos = p_right->ysort_xform.columns[2];
+			real_t left_main = _y_as_main ? left_pos.y : left_pos.x;
+			real_t right_main = _y_as_main ? right_pos.y : right_pos.x;
+			real_t left_secondary = _y_as_main ? left_pos.x : left_pos.y;
+			real_t right_secondary = _y_as_main ? right_pos.x : right_pos.y;
+			bool main_ascending = _y_as_main ? _y_ascending : _x_ascending;
+			bool secondary_ascending = _y_as_main ? _x_ascending : _y_ascending;
+
+			if (Math::is_equal_approx(left_main, right_main)) {
+				if (Math::is_equal_approx(left_secondary, right_secondary)) {
+					return p_left->axis_sort_index < p_right->axis_sort_index;
+				}
+				return secondary_ascending ? left_secondary < right_secondary : left_secondary > right_secondary;
 			}
-
-			return left_y < right_y;
-		}
-	};
-
-	struct ItemInverseYSort {
-		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
-			const real_t left_y = p_left->ysort_xform.columns[2].y;
-			const real_t right_y = p_right->ysort_xform.columns[2].y;
-			if (Math::is_equal_approx(left_y, right_y)) {
-				return p_left->ysort_index < p_right->ysort_index;
-			}
-
-			return left_y > right_y;
+			return main_ascending ? left_main < right_main : left_main > right_main;
 		}
 	};
 
