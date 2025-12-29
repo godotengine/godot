@@ -253,6 +253,11 @@
 		<member name="application/run/frame_delay_msec" type="int" setter="" getter="" default="0">
 			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
 		</member>
+		<member name="application/run/gdscript_optimization" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], GDScript optimization will be active.
+			[b]Note:[/b] Although GDScript will run faster with optimization, it can be much harder to debug, because the line numbers in the original source code may not match exactly with the optimized instructions.
+			For this reason it is usually best practice to turn off optimization for most of development unless you are working on a bottleneck, then turn it on for final exports.
+		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables low-processor usage mode. This setting only works on desktop platforms. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
 		</member>
@@ -343,6 +348,10 @@
 		</member>
 		<member name="debug/gdscript/completion/autocomplete_setters_and_getters" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], displays getters and setters in autocompletion results in the script editor. This setting is meant to be used when porting old projects (Godot 2), as using member variables is the preferred style from Godot 3 onwards.
+		</member>
+		<member name="debug/gdscript/optimization/logging_level" type="int" setter="" getter="" default="2">
+			Determines the verbosity of logging output during the GDScript optimization phase of compilation.
+			[code]0[/code] produces no logging, [code]5[/code] produces maximum logging.
 		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a constant is used as a function.

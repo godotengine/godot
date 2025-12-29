@@ -43,6 +43,8 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
 
+class RegEx;
+
 class EditorLog : public VBoxContainer {
 	GDCLASS(EditorLog, VBoxContainer);
 
@@ -54,7 +56,29 @@ class EditorLog : public VBoxContainer {
 		Ref<Texture> warning_icon;
 
 		Color message_color;
+
 	} theme_cache;
+
+	struct
+	{
+		Color _default;
+		Color white;
+		Color black;
+		Color red;
+		Color green;
+		Color blue;
+		Color yellow;
+		Color magenta;
+		Color cyan;
+		Color bright_white;
+		Color bright_black;
+		Color bright_red;
+		Color bright_green;
+		Color bright_blue;
+		Color bright_yellow;
+		Color bright_magenta;
+		Color bright_cyan;
+	} terminal_colors;
 
 	Button *clearbutton;
 	Button *copybutton;
@@ -70,10 +94,15 @@ class EditorLog : public VBoxContainer {
 
 	Thread::ID current;
 
+	RegEx *strip_ansi_regex = nullptr;
+
 	//void _dragged(const Point2& p_ofs);
 	void _clear_request();
 	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
+
+	void _log_add_text(const String &p_msg);
+	bool _log_push_terminal_color(TerminalColor::Col p_color);
 
 protected:
 	static void _bind_methods();
