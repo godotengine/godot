@@ -483,7 +483,6 @@ private:
 	void _emit_caret_changed();
 
 	void _show_virtual_keyboard();
-	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
 	int _get_column_x_offset_for_line(int p_char, int p_line, int p_column) const;
@@ -695,6 +694,7 @@ private:
 	bool _clear_carets_and_selection();
 
 protected:
+	void _reset_caret_blink_timer();
 	void _notification(int p_what);
 	static void _bind_methods();
 
