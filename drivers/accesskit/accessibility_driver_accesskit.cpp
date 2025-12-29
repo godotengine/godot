@@ -1640,6 +1640,7 @@ AccessibilityDriverAccessKit::AccessibilityDriverAccessKit() {
 	role_map[DisplayServer::AccessibilityRole::ROLE_COLUMN_HEADER] = ACCESSKIT_ROLE_COLUMN_HEADER;
 	role_map[DisplayServer::AccessibilityRole::ROLE_TREE] = ACCESSKIT_ROLE_TREE;
 	role_map[DisplayServer::AccessibilityRole::ROLE_TREE_ITEM] = ACCESSKIT_ROLE_TREE_ITEM;
+	role_map[DisplayServer::AccessibilityRole::ROLE_TREE_GRID] = ACCESSKIT_ROLE_TREE_GRID;
 	role_map[DisplayServer::AccessibilityRole::ROLE_LIST] = ACCESSKIT_ROLE_LIST;
 	role_map[DisplayServer::AccessibilityRole::ROLE_LIST_ITEM] = ACCESSKIT_ROLE_LIST_ITEM;
 	role_map[DisplayServer::AccessibilityRole::ROLE_LIST_BOX] = ACCESSKIT_ROLE_LIST_BOX;
