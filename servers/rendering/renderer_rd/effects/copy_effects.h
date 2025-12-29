@@ -356,7 +356,7 @@ private:
 public:
 	static CopyEffects *get_singleton();
 
-	CopyEffects(BitField<RasterEffects> p_raster_effects);
+	CopyEffects(BitField<RasterEffects> p_raster_effects, bool p_prefers_rgb10_a2);
 	~CopyEffects();
 
 	BitField<RasterEffects> get_raster_effects() { return raster_effects; }

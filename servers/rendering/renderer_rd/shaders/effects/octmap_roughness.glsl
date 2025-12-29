@@ -10,7 +10,7 @@ layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) i
 
 layout(set = 0, binding = 0) uniform sampler2D source_oct;
 
-layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D dest_octmap;
+layout(OCTMAP_FORMAT, set = 1, binding = 0) uniform restrict writeonly image2D dest_octmap;
 
 #include "../oct_inc.glsl"
 #include "octmap_roughness_inc.glsl"
