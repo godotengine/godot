@@ -39,7 +39,6 @@ class EditorCanvasItemGizmo : public CanvasItemGizmo {
 
 	struct Instance {
 		RID instance;
-		RID handle_multimesh;
 		Transform2D xform;
 
 		void create_instance(CanvasItem *p_base, bool p_hidden = false);
@@ -50,6 +49,8 @@ class EditorCanvasItemGizmo : public CanvasItemGizmo {
 	Vector<Vector2> collision_segments;
 	Vector<Rect2> collision_rects;
 	Vector<Vector<Vector2>> collision_polygons;
+	// TODO: GIZMOS: i think we're going to need exclusion shapes, so plugins can properly model
+	//  selection of 2D shapes with holes that cannot be modeled with simple polygons (e.g. a torus shape)
 
 	Vector<Vector2> handles;
 	Vector<int> handle_ids;
