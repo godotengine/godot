@@ -120,9 +120,10 @@ void CanvasItem::_update_gizmos() {
 	}
 	data.gizmos_dirty = false;
 	for (Ref<CanvasItemGizmo> &gizmo : data.gizmos) {
-		gizmo->clear();
 		if (is_visible_in_tree()) {
 			gizmo->redraw();
+		} else {
+			gizmo->clear();
 		}
 	}
 #endif

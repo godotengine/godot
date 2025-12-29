@@ -68,9 +68,6 @@ public:
 	Ref<EditorCanvasItemGizmo> gizmo;
 	HashMap<int, Transform2D> subgizmos; // Key: Subgizmo ID, Value: Initial subgizmo transform.
 
-	List<real_t> pre_drag_bones_length;
-	List<Dictionary> pre_drag_bones_undo_state;
-
 	Dictionary undo_state;
 };
 
@@ -418,15 +415,16 @@ private:
 	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked = false);
 
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append);
+	bool _select_subgizmos(Point2 p_click_pos, bool p_append);
+	bool _select_click_on_item(CanvasItem *item, bool p_append);
 
 	ConfirmationDialog *snap_dialog = nullptr;
 
 	CanvasItem *ref_item = nullptr;
 
-	void _save_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool save_bones = false);
-	void _restore_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool restore_bones = false);
-	void _commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, const String &action_name, bool commit_bones = false);
+	void _save_drag_selection_state();
+	void _restore_drag_selection_state();
+	void _commit_drag_selection_state(const String &action_name);
 
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);

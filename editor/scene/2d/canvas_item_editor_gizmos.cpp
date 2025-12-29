@@ -61,8 +61,6 @@ void EditorCanvasItemGizmo::clear() {
 		if (instance.instance.is_valid()) {
 			RS::get_singleton()->free_rid(instance.instance);
 			instance.instance = RID();
-			RS::get_singleton()->free_rid(instance.handle_multimesh);
-			instance.handle_multimesh = RID();
 		}
 	}
 
@@ -77,6 +75,8 @@ void EditorCanvasItemGizmo::clear() {
 }
 
 void EditorCanvasItemGizmo::redraw() {
+	clear();
+
 	if (!GDVIRTUAL_CALL(_redraw)) {
 		ERR_FAIL_NULL(gizmo_plugin);
 		gizmo_plugin->redraw(this);
@@ -634,7 +634,7 @@ void EditorCanvasItemGizmoPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_set_handle, "gizmo", "handle_id", "secondary", "position");
 	GDVIRTUAL_BIND(_commit_handle, "gizmo", "handle_id", "secondary", "restore", "cancel");
 
-	GDVIRTUAL_BIND(_subgizmos_intersect_point, "gizmo", "screen_pos");
+	GDVIRTUAL_BIND(_subgizmos_intersect_point, "gizmo", "point");
 	GDVIRTUAL_BIND(_subgizmos_intersect_rect, "gizmo", "rect");
 	GDVIRTUAL_BIND(_get_subgizmo_transform, "gizmo", "subgizmo_id");
 	GDVIRTUAL_BIND(_set_subgizmo_transform, "gizmo", "subgizmo_id", "transform");
@@ -737,7 +737,7 @@ void EditorCanvasItemGizmoPlugin::commit_subgizmos(const EditorCanvasItemGizmo *
 	TypedArray<Transform2D> transforms;
 	transforms.reserve(p_transforms.size());
 	for (int i = 0; i < p_transforms.size(); i++) {
-		transforms[i] = p_transforms[i];
+		transforms.append(p_transforms[i]);
 	}
 
 	GDVIRTUAL_CALL(_commit_subgizmos, Ref<EditorCanvasItemGizmo>(p_gizmo), p_ids, transforms, p_cancel);
