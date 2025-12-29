@@ -1806,7 +1806,7 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 
 	Rect2i tex_blit_rr;
 
-	RD::get_singleton()->draw_command_begin_label("Blit Rect");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Blit Rect");
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(tex_blit_fb, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0u, tex_blit_rr);
 
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(tex_blit_fb);
@@ -1833,7 +1833,6 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 6u);
 
 	RD::get_singleton()->draw_list_end();
-	RD::get_singleton()->draw_command_end_label();
 }
 
 //these two APIs can be used together or in combination with the others.
@@ -5096,7 +5095,7 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	if (!p_gen_mipmaps) {
 		return;
 	}
-	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Gaussian Blur Mipmaps");
 	//then mipmap blur
 	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
 
@@ -5116,7 +5115,6 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 		}
 		prev_texture = mipmap;
 	}
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
@@ -5168,7 +5166,7 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 			return; //nothing to do
 		}
 	}
-	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps Pass 2");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Gaussian Blur Mipmaps Pass 2");
 	//then mipmap blur
 	RID prev_texture = rt->backbuffer_mipmap0;
 	Size2i texture_size = rt->size;
@@ -5188,7 +5186,6 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 		}
 		prev_texture = mipmap;
 	}
-	RD::get_singleton()->draw_command_end_label();
 }
 
 RID TextureStorage::render_target_get_framebuffer_uniform_set(RID p_render_target) {
