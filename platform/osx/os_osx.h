@@ -38,7 +38,6 @@
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
-#include "joypad_osx.h"
 #include "main/input_default.h"
 #include "power_osx.h"
 #include "servers/audio_server.h"
@@ -53,6 +52,8 @@
 
 #undef BitMap
 #undef CursorShape
+
+class JoypadSDL;
 
 class OS_OSX : public OS_Unix {
 public:
@@ -96,7 +97,10 @@ public:
 #endif
 
 	InputDefault *input;
-	JoypadOSX *joypad_osx;
+
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 
 	/* objc */
 

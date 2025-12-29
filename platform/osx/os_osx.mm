@@ -40,6 +40,10 @@
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
 
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
+
 #include <mach-o/dyld.h>
 #include <os/log.h>
 #include <sys/sysctl.h>
@@ -1846,7 +1850,14 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
-	joypad_osx = memnew(JoypadOSX);
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL(input));
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 
 	power_manager = memnew(PowerOSX);
 
@@ -1875,7 +1886,11 @@ void OS_OSX::finalize() {
 
 	delete_main_loop();
 
-	memdelete(joypad_osx);
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
+	}
+#endif
 	memdelete(input);
 
 	cursors_cache.clear();
@@ -3417,7 +3432,11 @@ void OS_OSX::push_input(const Ref<InputEvent> &p_event) {
 
 void OS_OSX::force_process_input() {
 	process_events(); // get rid of pending events
-	joypad_osx->process_joypads();
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		joypad_sdl->process_events();
+	}
+#endif
 }
 
 void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
@@ -3456,7 +3475,11 @@ void OS_OSX::run() {
 	while (!force_quit && !quit) {
 		@try {
 			process_events(); // get rid of pending events
-			joypad_osx->process_joypads();
+#ifdef SDL_ENABLED
+			if (joypad_sdl) {
+				joypad_sdl->process_events();
+			}
+#endif
 
 			if (Main::iteration()) {
 				quit = true;
