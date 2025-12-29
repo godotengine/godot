@@ -117,7 +117,7 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 	RS::ViewportVRSUpdateMode vrs_update_mode = texture_storage->render_target_get_vrs_update_mode(p_render_target);
 
 	if (vrs_mode != RS::VIEWPORT_VRS_DISABLED && vrs_update_mode != RS::VIEWPORT_VRS_UPDATE_DISABLED) {
-		RD::get_singleton()->draw_command_begin_label("VRS Setup");
+		RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("VRS Setup");
 
 		if (vrs_mode == RS::VIEWPORT_VRS_TEXTURE) {
 			RID vrs_texture = texture_storage->render_target_get_vrs_texture(p_render_target);
@@ -150,7 +150,5 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 		if (vrs_update_mode == RS::VIEWPORT_VRS_UPDATE_ONCE) {
 			texture_storage->render_target_set_vrs_update_mode(p_render_target, RS::VIEWPORT_VRS_UPDATE_DISABLED);
 		}
-
-		RD::get_singleton()->draw_command_end_label();
 	}
 }

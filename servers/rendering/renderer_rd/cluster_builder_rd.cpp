@@ -353,12 +353,15 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 	cluster_render_buffer_size = cluster_screen_size.x * cluster_screen_size.y * (element_tag_bits_size + element_tag_depth_bits_size) * 4; // Tag bits (element was used) and tag depth (depth range in which it was used).
 
 	cluster_render_buffer = RD::get_singleton()->storage_buffer_create(cluster_render_buffer_size);
+	RD::get_singleton()->set_resource_name(cluster_render_buffer, "Cluster Render");
 	cluster_buffer = RD::get_singleton()->storage_buffer_create(cluster_buffer_size);
+	RD::get_singleton()->set_resource_name(cluster_buffer, "Cluster");
 
 	render_elements = static_cast<RenderElementData *>(memalloc(sizeof(RenderElementData) * render_element_max));
 	render_element_count = 0;
 
 	element_buffer = RD::get_singleton()->storage_buffer_create(sizeof(RenderElementData) * render_element_max);
+	RD::get_singleton()->set_resource_name(element_buffer, "Element");
 
 	uint32_t div_value = 1 << divisor;
 	if (use_msaa) {
@@ -486,7 +489,7 @@ void ClusterBuilderRD::begin(const Transform3D &p_view_transform, const Projecti
 void ClusterBuilderRD::bake_cluster() {
 	RENDER_TIMESTAMP("> Bake 3D Cluster");
 
-	RD::get_singleton()->draw_command_begin_label("Bake Light Cluster");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Bake Light Cluster");
 
 	// Clear cluster buffer.
 	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size);
@@ -586,7 +589,6 @@ void ClusterBuilderRD::bake_cluster() {
 		}
 	}
 	RENDER_TIMESTAMP("< Bake 3D Cluster");
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void ClusterBuilderRD::debug(ElementType p_element) {
@@ -632,6 +634,7 @@ void ClusterBuilderRD::set_shared(ClusterBuilderSharedDataRD *p_shared) {
 
 ClusterBuilderRD::ClusterBuilderRD() {
 	state_uniform = RD::get_singleton()->uniform_buffer_create(sizeof(StateUniform));
+	RD::get_singleton()->set_resource_name(state_uniform, "Cluster Builder State");
 }
 
 ClusterBuilderRD::~ClusterBuilderRD() {

@@ -3636,11 +3636,15 @@ void RendererSceneCull::render_probes() {
 
 	SelfList<InstanceReflectionProbeData> *ref_probe = reflection_probe_render_list.first();
 	Vector<SelfList<InstanceReflectionProbeData> *> done_list;
+	// TODO(sgc): Must work for OpenGL backend
+	RD::DrawCommandLabel render_probes_label = RD::get_singleton()->draw_command_label("Render Probes");
 
 	bool busy = false;
 
 	if (ref_probe) {
 		RENDER_TIMESTAMP("Render ReflectionProbes");
+		// TODO(sgc): Must work for OpenGL backend
+		RD::DrawCommandLabel reflection_label = RD::get_singleton()->draw_command_label("Render ReflectionProbes");
 
 		while (ref_probe) {
 			SelfList<InstanceReflectionProbeData> *next = ref_probe->next();
@@ -3686,8 +3690,11 @@ void RendererSceneCull::render_probes() {
 
 	SelfList<InstanceVoxelGIData> *voxel_gi = voxel_gi_update_list.first();
 
+	// TODO(sgc): Must work for OpenGL backend
+	RD::DrawCommandLabel voxel_gi_label;
 	if (voxel_gi) {
 		RENDER_TIMESTAMP("Render VoxelGI");
+		voxel_gi_label = RD::get_singleton()->draw_command_label("Render VoxelGI");
 	}
 
 	while (voxel_gi) {

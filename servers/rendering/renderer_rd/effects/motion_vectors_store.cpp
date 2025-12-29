@@ -73,7 +73,7 @@ void MotionVectorsStore::process(Ref<RenderSceneBuffersRD> p_render_buffers,
 
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
-	RD::get_singleton()->draw_command_begin_label("Motion Vector Store");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Motion Vector Store");
 
 	RID shader = motion_shader.version_get_shader(shader_version, 0);
 	ERR_FAIL_COND(shader.is_null());
@@ -94,8 +94,6 @@ void MotionVectorsStore::process(Ref<RenderSceneBuffersRD> p_render_buffers,
 	}
 
 	RD::get_singleton()->compute_list_end();
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 } //namespace RendererRD

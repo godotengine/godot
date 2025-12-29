@@ -4378,7 +4378,7 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	if (!p_gen_mipmaps) {
 		return;
 	}
-	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Gaussian Blur Mipmaps");
 	//then mipmap blur
 	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
 
@@ -4398,7 +4398,6 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 		}
 		prev_texture = mipmap;
 	}
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
@@ -4450,7 +4449,7 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 			return; //nothing to do
 		}
 	}
-	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps Pass 2");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Gaussian Blur Mipmaps Pass 2");
 	//then mipmap blur
 	RID prev_texture = rt->backbuffer_mipmap0;
 	Size2i texture_size = rt->size;
@@ -4470,7 +4469,6 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 		}
 		prev_texture = mipmap;
 	}
-	RD::get_singleton()->draw_command_end_label();
 }
 
 RID TextureStorage::render_target_get_framebuffer_uniform_set(RID p_render_target) {
