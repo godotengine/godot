@@ -89,7 +89,7 @@ void Array::clear() {
 	_p->array.clear();
 }
 
-bool Array::deep_equal(const Array &p_array, int p_recursion_count) const {
+bool Array::deep_equal(const Array &p_array, int p_recursion_count, bool p_approximate) const {
 	// Cheap checks
 	ERR_FAIL_COND_V_MSG(p_recursion_count > MAX_RECURSION, true, "Max recursion reached");
 	if (_p == p_array._p) {
@@ -105,7 +105,7 @@ bool Array::deep_equal(const Array &p_array, int p_recursion_count) const {
 	// Heavy O(n) check
 	p_recursion_count++;
 	for (int i = 0; i < size; i++) {
-		if (!a1[i].deep_equal(a2[i], p_recursion_count)) {
+		if (!a1[i].deep_equal(a2[i], p_recursion_count, p_approximate)) {
 			return false;
 		}
 	}

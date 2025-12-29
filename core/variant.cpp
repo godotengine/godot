@@ -601,35 +601,69 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	return false;
 }
 
-bool Variant::deep_equal(const Variant &p_variant, int p_recursion_count) const {
+template <typename T>
+static bool _equal_approx_recursive(const Variant &p_a, const Variant &p_b, int p_recursion_count, bool p_approximate) {
+	if (p_a.get_type() != p_b.get_type()) {
+		return false;
+	}
+
+	const T &a_as_t = p_a.operator T();
+	const T &b_as_t = p_b.operator T();
+
+	return a_as_t.deep_equal(b_as_t, p_recursion_count + 1, p_approximate);
+}
+
+template <typename T>
+static bool _equal_approx_primitive(const Variant &p_a, const Variant &p_b) {
+	if (p_a.get_type() != p_b.get_type()) {
+		return false;
+	}
+
+	const T &a_as_t = p_a.operator T();
+	const T &b_as_t = p_b.operator T();
+
+	return a_as_t.is_equal_approx(b_as_t);
+}
+
+bool Variant::deep_equal(const Variant &p_variant, int p_recursion_count, bool p_approximate) const {
 	ERR_FAIL_COND_V_MSG(p_recursion_count > MAX_RECURSION, true, "Max recursion reached");
 
 	// Containers must be handled with recursivity checks
-	switch (type) {
-		case Variant::Type::DICTIONARY: {
-			if (p_variant.type != Variant::Type::DICTIONARY) {
-				return false;
+	if (type == ARRAY) {
+		return _equal_approx_recursive<Array>(*this, p_variant, p_recursion_count, p_approximate);
+	} else if (type == DICTIONARY) {
+		return _equal_approx_recursive<Dictionary>(*this, p_variant, p_recursion_count, p_approximate);
+	} else if (p_approximate) {
+		switch (type) {
+			case REAL:
+				return Math::is_equal_approx((double)*this, (double)p_variant);
+			case VECTOR2:
+				return _equal_approx_primitive<Vector2>(*this, p_variant);
+			case RECT2:
+				return _equal_approx_primitive<Rect2>(*this, p_variant);
+			case VECTOR3:
+				return _equal_approx_primitive<Vector3>(*this, p_variant);
+			case TRANSFORM2D:
+				return _equal_approx_primitive<Transform2D>(*this, p_variant);
+			case PLANE:
+				return _equal_approx_primitive<Plane>(*this, p_variant);
+			case QUAT:
+				return _equal_approx_primitive<Quat>(*this, p_variant);
+			case AABB:
+				return _equal_approx_primitive<::AABB>(*this, p_variant);
+			case BASIS:
+				return _equal_approx_primitive<Basis>(*this, p_variant);
+			case TRANSFORM:
+				return _equal_approx_primitive<Transform>(*this, p_variant);
+			case DICTIONARY:
+				return _equal_approx_recursive<Dictionary>(*this, p_variant, p_recursion_count, p_approximate);
+			case ARRAY:
+				return _equal_approx_recursive<Array>(*this, p_variant, p_recursion_count, p_approximate);
+			default: {
 			}
-
-			const Dictionary v1_as_d = Dictionary(*this);
-			const Dictionary v2_as_d = Dictionary(p_variant);
-
-			return v1_as_d.deep_equal(v2_as_d, p_recursion_count + 1);
-		} break;
-		case Variant::Type::ARRAY: {
-			if (p_variant.type != Variant::Type::ARRAY) {
-				return false;
-			}
-
-			const Array v1_as_a = Array(*this);
-			const Array v2_as_a = Array(p_variant);
-
-			return v1_as_a.deep_equal(v2_as_a, p_recursion_count + 1);
-		} break;
-		default: {
-			return *this == p_variant;
-		} break;
+		}
 	}
+	return *this == p_variant;
 }
 
 bool Variant::operator==(const Variant &p_variant) const {

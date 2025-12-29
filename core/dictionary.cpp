@@ -162,7 +162,7 @@ bool Dictionary::erase(const Variant &p_key) {
 	return _p->variant_map.erase(p_key);
 }
 
-bool Dictionary::deep_equal(const Dictionary &p_dictionary, int p_recursion_count) const {
+bool Dictionary::deep_equal(const Dictionary &p_dictionary, int p_recursion_count, bool p_approximate) const {
 	// Cheap checks
 	ERR_FAIL_COND_V_MSG(p_recursion_count > MAX_RECURSION, 0, "Max recursion reached");
 	if (_p == p_dictionary._p) {
@@ -178,8 +178,8 @@ bool Dictionary::deep_equal(const Dictionary &p_dictionary, int p_recursion_coun
 	p_recursion_count++;
 	while (this_E && other_E) {
 		if (
-				!this_E.key().deep_equal(other_E.key(), p_recursion_count) ||
-				!this_E.value().deep_equal(other_E.value(), p_recursion_count)) {
+				!this_E.key().deep_equal(other_E.key(), p_recursion_count, p_approximate) ||
+				!this_E.value().deep_equal(other_E.value(), p_recursion_count, p_approximate)) {
 			return false;
 		}
 
