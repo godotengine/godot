@@ -155,6 +155,12 @@
 				Returns [code]true[/code] if this [SceneTree]'s [member network_peer] is in server mode (listening for connections).
 			</description>
 		</method>
+		<method name="is_physics_interpolation_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member ProjectSettings.physics/common/physics_interpolation] has enabled physics interpolation globally in the project.
+			</description>
+		</method>
 		<method name="notify_group">
 			<return type="void" />
 			<argument index="0" name="group" type="String" />
@@ -263,9 +269,6 @@
 			If [code]true[/code], the [SceneTree] is paused. Doing so will have the following behavior:
 			- 2D and 3D physics will be stopped. This includes signals and collision detection.
 			- [method Node._process], [method Node._physics_process] and [method Node._input] will not be called anymore in nodes.
-		</member>
-		<member name="physics_interpolation" type="bool" setter="set_physics_interpolation_enabled" getter="is_physics_interpolation_enabled" default="false">
-			Although physics interpolation would normally be globally turned on and off using [member ProjectSettings.physics/common/physics_interpolation], this property allows control over interpolation at runtime.
 		</member>
 		<member name="quit_on_go_back" type="bool" setter="set_quit_on_go_back" getter="is_quit_on_go_back" default="true">
 			If [code]true[/code], the application quits automatically on going back (e.g. on Android).
