@@ -3586,31 +3586,42 @@ void Tree::popup_select(int p_option) {
 }
 
 void Tree::_go_left() {
-	if (get_tree()->is_accessibility_enabled() && selected_button >= 0) {
+	if (!selected_item) {
+		return;
+	}
+
+	// Cell-focused treegrid navigation (no row-level focus):
+	// - On button: move to previous button, or back to last cell
+	// - On cell > 0: move to previous cell
+	// - On cell 0 + expanded: collapse, stay on cell 0
+	// - On cell 0 + collapsed (or leaf): stop
+
+	if (selected_col < 0) {
+		selected_col = 0; // Ensure we're on a cell.
+	}
+
+	if (selected_button > 0) {
+		// On a button (not first), move to previous button.
 		selected_button--;
-	} else if (selected_col == 0) {
+	} else if (selected_button == 0) {
+		// On first button, move back to last cell.
 		selected_button = -1;
-		if (selected_item->get_first_child() != nullptr && !selected_item->is_collapsed()) {
-			selected_item->set_collapsed(true);
-		} else {
-			if (columns.size() == 1) { // Goto parent with one column.
-				TreeItem *parent = selected_item->get_parent();
-				if (selected_item != get_root() && parent && parent->is_selectable(selected_col) && !(hide_root && parent == get_root())) {
-					select_single_item(parent, get_root(), selected_col);
-				}
-			} else if (selected_item->get_prev_visible()) {
-				selected_col = columns.size() - 1;
-				_go_up(); // Go to upper column if possible.
-			}
-		}
-	} else {
-		selected_button = -1;
+		selected_col = columns.size() - 1;
+	} else if (selected_col > 0) {
+		// On a cell (not first), move to previous cell.
 		if (select_mode == SELECT_MULTI) {
 			selected_col--;
 			emit_signal(SNAME("cell_selected"));
 		} else {
 			selected_item->select(selected_col - 1);
 		}
+	} else {
+		// On cell 0.
+		if (selected_item->get_first_child() != nullptr && !selected_item->is_collapsed()) {
+			// Collapse expanded item.
+			selected_item->set_collapsed(true);
+		}
+		// If collapsed or no children, stop.
 	}
 	queue_accessibility_update();
 	queue_redraw();
@@ -3619,30 +3630,153 @@ void Tree::_go_left() {
 }
 
 void Tree::_go_right() {
-	int buttons = (selected_item && selected_col >= 0 && selected_col < columns.size()) ? selected_item->cells[selected_col].buttons.size() : 0;
-	if (get_tree()->is_accessibility_enabled() && selected_button < buttons - 1) {
-		selected_button++;
-	} else if (selected_col == (columns.size() - 1)) {
-		selected_button = -1;
-		if (selected_item->get_first_child() != nullptr && selected_item->is_collapsed()) {
-			selected_item->set_collapsed(false);
-		} else if (selected_item->get_next_visible()) {
-			selected_col = 0;
-			_go_down();
+	if (!selected_item) {
+		return;
+	}
+
+	// Cell-focused treegrid navigation (no row-level focus):
+	// - On cell 0 + collapsed: expand, stay on cell 0
+	// - On cell 0 + expanded (or leaf): move to cell 1 (if exists)
+	// - On other cells: move to next cell
+	// - On last cell: move to first button (if any)
+	// - On last button: stop
+
+	if (selected_col < 0) {
+		selected_col = 0; // Ensure we're on a cell.
+	}
+
+	int buttons = selected_item->cells[selected_col].buttons.size();
+
+	if (selected_button >= 0) {
+		// On a button.
+		if (selected_button < buttons - 1) {
+			// Move to next button.
+			selected_button++;
 		}
-	} else {
-		selected_button = -1;
+		// On last button: stop.
+	} else if (selected_col == 0 && selected_item->get_first_child() != nullptr && selected_item->is_collapsed()) {
+		// On cell 0 with collapsed children: expand.
+		selected_item->set_collapsed(false);
+	} else if (selected_col < columns.size() - 1) {
+		// On a cell (not last), move to next cell.
 		if (select_mode == SELECT_MULTI) {
 			selected_col++;
 			emit_signal(SNAME("cell_selected"));
 		} else {
 			selected_item->select(selected_col + 1);
 		}
+	} else {
+		// On last cell.
+		int last_col_buttons = selected_item->cells[selected_col].buttons.size();
+		if (last_col_buttons > 0) {
+			// Move to first button.
+			selected_button = 0;
+		}
+		// No buttons on last cell: stop.
 	}
 	queue_accessibility_update();
 	queue_redraw();
 	ensure_cursor_is_visible();
 	accept_event();
+}
+
+bool Tree::_go_to_next_focusable_in_row(bool p_forward) {
+	// WAI-ARIA treegrid Tab navigation: move between focusable elements (buttons, editable cells) in the row.
+	// Returns true if moved to a focusable element, false if Tab should exit the tree.
+	if (!selected_item) {
+		return false;
+	}
+
+	if (p_forward) {
+		// Forward: find next focusable element.
+		// Starting position: row, cell, or button.
+		int start_col = (selected_col >= 0) ? selected_col : 0;
+		int start_button = selected_button;
+
+		for (int col = start_col; col < columns.size(); col++) {
+			const TreeItem::Cell &cell = selected_item->cells[col];
+
+			// Check buttons in this cell.
+			int button_start = (col == start_col && start_button >= 0) ? start_button + 1 : 0;
+			if (button_start < cell.buttons.size()) {
+				// Found a button.
+				selected_col = col;
+				selected_button = button_start;
+				queue_accessibility_update();
+				queue_redraw();
+				return true;
+			}
+
+			// Check if next cell is editable (skip current cell if we started there).
+			if (col > start_col || (col == start_col && selected_button >= 0)) {
+				// We've moved past start, check if this cell is focusable.
+			}
+			if (col + 1 < columns.size()) {
+				const TreeItem::Cell &next_cell = selected_item->cells[col + 1];
+				if (next_cell.editable || next_cell.buttons.size() > 0) {
+					// Next cell is focusable.
+					selected_col = col + 1;
+					selected_button = -1;
+					queue_accessibility_update();
+					queue_redraw();
+					return true;
+				}
+			}
+		}
+		// No more focusable elements in row.
+		return false;
+	} else {
+		// Backward: find previous focusable element.
+		int start_col = (selected_col >= 0) ? selected_col : columns.size() - 1;
+		int start_button = selected_button;
+
+		for (int col = start_col; col >= 0; col--) {
+			const TreeItem::Cell &cell = selected_item->cells[col];
+
+			// If we're on a button, check previous buttons.
+			if (col == start_col && start_button > 0) {
+				selected_col = col;
+				selected_button = start_button - 1;
+				queue_accessibility_update();
+				queue_redraw();
+				return true;
+			}
+
+			// Check if this cell is focusable (if we've moved back from start).
+			if (col < start_col || (col == start_col && start_button >= 0)) {
+				if (cell.editable || cell.buttons.size() > 0) {
+					// Move to last button if any, else to cell.
+					selected_col = col;
+					if (cell.buttons.size() > 0) {
+						selected_button = cell.buttons.size() - 1;
+					} else {
+						selected_button = -1;
+					}
+					queue_accessibility_update();
+					queue_redraw();
+					return true;
+				}
+			}
+
+			// Check previous cell.
+			if (col > 0) {
+				const TreeItem::Cell &prev_cell = selected_item->cells[col - 1];
+				if (prev_cell.editable || prev_cell.buttons.size() > 0) {
+					selected_col = col - 1;
+					if (prev_cell.buttons.size() > 0) {
+						selected_button = prev_cell.buttons.size() - 1;
+					} else {
+						selected_button = -1;
+					}
+					queue_accessibility_update();
+					queue_redraw();
+					return true;
+				}
+			}
+		}
+		// No more focusable elements in row.
+		return false;
+	}
 }
 
 void Tree::_go_up() {
@@ -3816,11 +3950,10 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 	bool is_command = k.is_valid() && k->is_command_or_control_pressed();
 	if (p_event->is_action(cache.rtl ? "ui_left" : "ui_right") && p_event->is_pressed()) {
-		if (!cursor_can_exit_tree) {
-			accept_event();
-		}
+		// Always accept left/right arrows to prevent focus from leaving tree.
+		accept_event();
 
-		if (!selected_item || selected_col > (columns.size() - 1)) {
+		if (!selected_item) {
 			return;
 		}
 
@@ -3834,11 +3967,10 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			_go_down();
 		}
 	} else if (p_event->is_action(cache.rtl ? "ui_right" : "ui_left") && p_event->is_pressed()) {
-		if (!cursor_can_exit_tree) {
-			accept_event();
-		}
+		// Always accept left/right arrows to prevent focus from leaving tree.
+		accept_event();
 
-		if (!selected_item || selected_col < 0) {
+		if (!selected_item) {
 			return;
 		}
 
@@ -3852,9 +3984,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			_go_up();
 		}
 	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !is_command) {
-		if (!cursor_can_exit_tree) {
-			accept_event();
-		}
+		// Always accept up/down to prevent focus from leaving tree.
+		accept_event();
 		// Shift Up Selection.
 		if (k.is_valid() && k->is_shift_pressed() && selected_item && select_mode == SELECT_MULTI) {
 			TreeItem *new_item = selected_item->get_prev_visible(false);
@@ -3864,9 +3995,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 	} else if (p_event->is_action("ui_down") && p_event->is_pressed() && !is_command) {
-		if (!cursor_can_exit_tree) {
-			accept_event();
-		}
+		// Always accept up/down to prevent focus from leaving tree.
+		accept_event();
 		// Shift Down Selection.
 		if (k.is_valid() && k->is_shift_pressed() && selected_item && select_mode == SELECT_MULTI) {
 			TreeItem *new_item = selected_item->get_next_visible(false);
@@ -3989,6 +4119,26 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 		accept_event();
+	} else if (p_event->is_action("ui_focus_next") && p_event->is_pressed()) {
+		// Tab: move to next focusable element in row, or exit tree.
+		// Per WAI-ARIA treegrid: Tab moves between focusable elements (buttons, editable cells)
+		// within the row, then exits the tree when no more focusables remain.
+		// Skip if this is the same event that caused focus (Tab used to enter tree).
+		if (get_viewport() && get_viewport()->get_processed_events_count() != focus_in_id) {
+			if (_go_to_next_focusable_in_row(true)) {
+				accept_event();
+			}
+		}
+		// If no focusable found, let Tab propagate to exit tree.
+	} else if (p_event->is_action("ui_focus_prev") && p_event->is_pressed()) {
+		// Shift+Tab: move to previous focusable element in row, or exit tree.
+		// Skip if this is the same event that caused focus (Shift+Tab used to enter tree).
+		if (get_viewport() && get_viewport()->get_processed_events_count() != focus_in_id) {
+			if (_go_to_next_focusable_in_row(false)) {
+				accept_event();
+			}
+		}
+		// If no focusable found, let Shift+Tab propagate to exit tree.
 	}
 
 	if (allow_search && k.is_valid()) { // Incremental search.
@@ -4779,14 +4929,12 @@ void Tree::_accessibility_action_button_press(const Variant &p_data, TreeItem *p
 
 RID Tree::get_focused_accessibility_element() const {
 	if (selected_item) {
-		if (selected_col >= 0) {
-			if (selected_button >= 0) {
-				return selected_item->cells[selected_col].buttons[selected_button].accessibility_button_element;
-			} else {
-				return selected_item->cells[selected_col].accessibility_cell_element;
-			}
+		// Always return cell or button (no row-level focus for accessibility).
+		int col = MAX(selected_col, 0);
+		if (selected_button >= 0) {
+			return selected_item->cells[col].buttons[selected_button].accessibility_button_element;
 		} else {
-			return selected_item->accessibility_row_element;
+			return selected_item->cells[col].accessibility_cell_element;
 		}
 	} else {
 		return get_accessibility_element();
@@ -4814,16 +4962,23 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 	// Row.
 	if ((p_item != root || !hide_root) && p_item->is_visible()) {
 		if (p_item->accessibility_row_element.is_null()) {
-			p_item->accessibility_row_element = DisplayServer::get_singleton()->accessibility_create_sub_element(accessibility_scroll_element, DisplayServer::AccessibilityRole::ROLE_TREE_ITEM);
+			p_item->accessibility_row_element = DisplayServer::get_singleton()->accessibility_create_sub_element(accessibility_scroll_element, DisplayServer::AccessibilityRole::ROLE_ROW);
 			p_item->accessibility_row_dirty = true;
 		}
 
 		DisplayServer::get_singleton()->accessibility_update_set_table_row_index(p_item->accessibility_row_element, r_row);
 		DisplayServer::get_singleton()->accessibility_update_set_list_item_level(p_item->accessibility_row_element, p_level);
-		DisplayServer::get_singleton()->accessibility_update_set_list_item_expanded(p_item->accessibility_row_element, !p_item->collapsed);
-		DisplayServer::get_singleton()->accessibility_update_set_flag(p_item->accessibility_row_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && !p_item->parent_visible_in_tree));
-		DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &Tree::_accessibility_action_collapse).bind(p_item));
-		DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &Tree::_accessibility_action_expand).bind(p_item));
+
+		// Only set expanded state on items with children (leaf nodes should not have expanded/collapsed state).
+		if (p_item->get_first_child() != nullptr) {
+			DisplayServer::get_singleton()->accessibility_update_set_list_item_expanded(p_item->accessibility_row_element, !p_item->collapsed);
+			DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &Tree::_accessibility_action_collapse).bind(p_item));
+			DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &Tree::_accessibility_action_expand).bind(p_item));
+		}
+
+		// Add focus action to row element so it shows as focusable in accessibility tree.
+		DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Tree::_accessibility_action_focus).bind(p_item, 0));
+		DisplayServer::get_singleton()->accessibility_update_set_flag(p_item->accessibility_row_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && p_item->parent_visible_in_tree));
 
 		DisplayServer::get_singleton()->accessibility_update_set_list_item_selected(p_item->accessibility_row_element, selected_item == p_item);
 		if (p_item == root && is_root_hidden()) {
@@ -4863,7 +5018,7 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 				}
 
 				DisplayServer::get_singleton()->accessibility_update_set_text_align(cell.accessibility_cell_element, cell.text_alignment);
-				DisplayServer::get_singleton()->accessibility_update_set_flag(cell.accessibility_cell_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && !p_item->parent_visible_in_tree));
+				DisplayServer::get_singleton()->accessibility_update_set_flag(cell.accessibility_cell_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && p_item->parent_visible_in_tree));
 				DisplayServer::get_singleton()->accessibility_update_set_flag(cell.accessibility_cell_element, DisplayServer::AccessibilityFlags::FLAG_READONLY, !cell.editable);
 				DisplayServer::get_singleton()->accessibility_update_set_tooltip(cell.accessibility_cell_element, cell.tooltip);
 				switch (cell.mode) {
@@ -4902,7 +5057,9 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 				Vector2 ofst = Vector2(col_offset + cw, 0);
 				for (int j = cell.buttons.size() - 1; j >= 0; j--) {
 					if (cell.buttons[j].accessibility_button_element.is_null()) {
-						cell.buttons[j].accessibility_button_element = DisplayServer::get_singleton()->accessibility_create_sub_element(cell.accessibility_cell_element, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+						// Create buttons as children of the row, not the cell.
+						// This prevents screen readers from reading button names when focusing cells
+						cell.buttons[j].accessibility_button_element = DisplayServer::get_singleton()->accessibility_create_sub_element(p_item->accessibility_row_element, DisplayServer::AccessibilityRole::ROLE_BUTTON);
 					}
 
 					DisplayServer::get_singleton()->accessibility_update_add_action(cell.buttons[j].accessibility_button_element, DisplayServer::AccessibilityAction::ACTION_CLICK, callable_mp(this, &Tree::_accessibility_action_button_press).bind(p_item, i, j));
@@ -4958,7 +5115,7 @@ void Tree::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_TREE);
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_TREE_GRID);
 
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &Tree::_accessibility_action_scroll_down));
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_LEFT, callable_mp(this, &Tree::_accessibility_action_scroll_left));
@@ -4989,6 +5146,7 @@ void Tree::_notification(int p_what) {
 				}
 				ofs += tbrect.size.width;
 				DisplayServer::get_singleton()->accessibility_update_set_bounds(column.accessibility_col_element, Rect2(tbrect.position, tbrect.size));
+				DisplayServer::get_singleton()->accessibility_update_set_flag(column.accessibility_col_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !show_column_titles);
 			}
 
 			DisplayServer::get_singleton()->accessibility_update_set_table_column_count(ae, cs);
@@ -5011,11 +5169,21 @@ void Tree::_notification(int p_what) {
 			}
 			DisplayServer::get_singleton()->accessibility_update_set_table_row_count(ae, rows);
 
+			// Set active descendant to the focused element so screen readers announce it.
+			RID focused = get_focused_accessibility_element();
+			if (focused.is_valid() && focused != ae) {
+				DisplayServer::get_singleton()->accessibility_update_set_active_descendant(ae, focused);
+			}
+
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
 			if (get_viewport()) {
 				focus_in_id = get_viewport()->get_processed_events_count();
+			}
+			// Ensure cell-level focus (no row-level focus for accessibility).
+			if (selected_col < 0) {
+				selected_col = 0;
 			}
 		} break;
 

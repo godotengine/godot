@@ -615,6 +615,7 @@ public:
 		ROLE_DIALOG,
 		ROLE_TOOLTIP,
 		ROLE_REGION,
+		ROLE_TREE_GRID,
 	};
 
 	enum AccessibilityPopupType {
