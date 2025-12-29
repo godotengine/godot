@@ -3961,7 +3961,7 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 			// Add a last bone if the Bone2D has no Bone2D child
 			BoneKey bk;
 			bk.from = canvas_item->get_instance_id();
-			bk.to = 0;
+			bk.to = ObjectID();
 			if (!bone_list.has(bk)) {
 				BoneList b;
 				b.length = 0;

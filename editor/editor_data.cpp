@@ -153,8 +153,8 @@ bool EditorHistory::is_history_obj_inspector_only(int p_obj) const {
 }
 
 ObjectID EditorHistory::get_history_obj(int p_obj) const {
-	ERR_FAIL_INDEX_V(p_obj, history.size(), 0);
-	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), 0);
+	ERR_FAIL_INDEX_V(p_obj, history.size(), ObjectID());
+	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), ObjectID());
 	return history[p_obj].path[history[p_obj].level].object;
 }
 
@@ -199,13 +199,13 @@ bool EditorHistory::is_current_inspector_only() const {
 }
 ObjectID EditorHistory::get_current() {
 	if (current < 0 || current >= history.size()) {
-		return 0;
+		return ObjectID();
 	}
 
 	History &h = history.write[current];
 	Object *obj = ObjectDB::get_instance(h.path[h.level].object);
 	if (!obj) {
-		return 0;
+		return ObjectID();
 	}
 
 	return obj->get_instance_id();
@@ -222,16 +222,16 @@ int EditorHistory::get_path_size() const {
 
 ObjectID EditorHistory::get_path_object(int p_index) const {
 	if (current < 0 || current >= history.size()) {
-		return 0;
+		return ObjectID();
 	}
 
 	const History &h = history[current];
 
-	ERR_FAIL_INDEX_V(p_index, h.path.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, h.path.size(), ObjectID());
 
 	Object *obj = ObjectDB::get_instance(h.path[p_index].object);
 	if (!obj) {
-		return 0;
+		return ObjectID();
 	}
 
 	return obj->get_instance_id();

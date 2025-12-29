@@ -363,7 +363,7 @@ uint32_t CollisionObject::create_shape_owner(Object *p_owner) {
 		id = shapes.back()->key() + 1;
 	}
 
-	sd.owner_id = p_owner ? p_owner->get_instance_id() : 0;
+	sd.owner_id = p_owner ? p_owner->get_instance_id() : ObjectID();
 
 	shapes[id] = sd;
 
