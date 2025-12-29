@@ -127,10 +127,17 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #define memfree(m_mem) Memory::free_static(m_mem)
 
 _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
+_ALWAYS_INLINE_ void postinitialize_handler_in_editor(void *) {}
+
+template <typename T>
+_ALWAYS_INLINE_ void _post_initialize_in_editor(T *p_obj) {
+	postinitialize_handler_in_editor(p_obj);
+}
 
 template <typename T>
 _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 	postinitialize_handler(p_obj);
+	_post_initialize_in_editor<T>(p_obj);
 	return p_obj;
 }
 

@@ -485,10 +485,21 @@ protected:                                                                      
                                                                                                                  \
 private:
 
+#ifdef TOOLS_ENABLED
+#define GDCLASS_TOOLS_MIXIN                             \
+private:                                                \
+	virtual void _predelete_this_in_editor() override { \
+		_predelete_in_editor(this);                     \
+	}
+#else
+#define GDCLASS_TOOLS_MIXIN
+#endif
+
 /// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
 /// Use this for `Object` subclasses that are registered in `ObjectDB` (use `GDSOFTCLASS` otherwise).
 #define GDCLASS(m_class, m_inherits)                                                                                                        \
 	GDSOFTCLASS(m_class, m_inherits)                                                                                                        \
+	GDCLASS_TOOLS_MIXIN                                                                                                                     \
 private:                                                                                                                                    \
 	void operator=(const m_class &p_rval) {}                                                                                                \
 	friend class ::ClassDB;                                                                                                                 \
@@ -650,6 +661,9 @@ private:
 	bool _predelete();
 	void _initialize();
 	void _postinitialize();
+#ifdef TOOLS_ENABLED
+	virtual void _predelete_this_in_editor() {}
+#endif
 
 	uint32_t _ancestry : 15;
 
@@ -1047,6 +1061,14 @@ public:
 	Object();
 	virtual ~Object();
 };
+
+#ifdef TOOLS_ENABLED
+_ALWAYS_INLINE_ void predelete_handler_in_editor(Object *) {}
+template <typename T>
+_ALWAYS_INLINE_ void _predelete_in_editor(T *p_class) {
+	predelete_handler_in_editor(p_class);
+}
+#endif
 
 bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
