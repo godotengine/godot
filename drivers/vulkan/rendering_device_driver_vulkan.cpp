@@ -1607,6 +1607,14 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION(512u, 671u, 0u);
 		linear_descriptor_pools_enabled = physical_device_properties.driverVersion < reset_descriptor_pool_broken_driver_begin || physical_device_properties.driverVersion > reset_descriptor_pool_fixed_driver_begin;
 	}
+
+	// Workaround a driver bug on Adreno 5XX GPUs that causes a crash when
+	// there are empty descriptor set layouts placed between non-empty ones.
+	adreno_5xx_empty_descriptor_set_layout_workaround =
+			physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			physical_device_properties.deviceID >= 0x5000000 &&
+			physical_device_properties.deviceID < 0x6000000;
+
 	frame_count = p_frame_count;
 
 	// Copy the queue family properties the context already retrieved.
@@ -3973,12 +3981,25 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 
 	// Descriptor sets.
 	if (error_text.is_empty()) {
+		// For Adreno 5XX driver bug.
+		VkDescriptorSetLayoutBinding placeholder_binding = {};
+		placeholder_binding.binding = 0;
+		placeholder_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		placeholder_binding.descriptorCount = 1;
+		placeholder_binding.stageFlags = VK_SHADER_STAGE_ALL;
+
 		for (uint32_t i = 0; i < shader_refl.uniform_sets.size(); i++) {
 			// Empty ones are fine if they were not used according to spec (binding count will be 0).
 			VkDescriptorSetLayoutCreateInfo layout_create_info = {};
 			layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			layout_create_info.bindingCount = vk_set_bindings[i].size();
 			layout_create_info.pBindings = vk_set_bindings[i].ptr();
+
+			// ...not so fine on Adreno 5XX.
+			if (adreno_5xx_empty_descriptor_set_layout_workaround && layout_create_info.bindingCount == 0) {
+				layout_create_info.bindingCount = 1;
+				layout_create_info.pBindings = &placeholder_binding;
+			}
 
 			VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 			res = vkCreateDescriptorSetLayout(vk_device, &layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT), &layout);
