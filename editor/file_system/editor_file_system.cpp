@@ -3285,17 +3285,13 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	// Emit the resource_reimporting signal for the single file before the actual importation.
 	emit_signal(SNAME("resources_reimporting"), reloads);
 
-#ifdef THREADS_ENABLED
-	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
 #ifdef WEB_ENABLED
-	// The Web platform may have threading compiled in, but with only 1 available thread (the main thread).
-	// Using threaded imports with a single thread causes a deadlock as the main thread waits in a busy-loop
-	// while the import tasks can't execute. Disable threaded imports when insufficient threads are available.
+	// On web, busy-wait loops on the main thread block the JavaScript event loop,
+	// causing the browser tab to appear frozen. Disable threaded imports entirely.
 	// See GH-112072 for details.
-	if (WorkerThreadPool::get_singleton()->get_thread_count() <= 1) {
-		use_multiple_threads = false;
-	}
-#endif
+	bool use_multiple_threads = false;
+#elif defined(THREADS_ENABLED)
+	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
 #else
 	bool use_multiple_threads = false;
 #endif
@@ -3759,7 +3755,7 @@ void EditorFileSystem::remove_import_format_support_query(Ref<EditorFileSystemIm
 }
 
 EditorFileSystem::EditorFileSystem() {
-#ifdef THREADS_ENABLED
+#if defined(THREADS_ENABLED) && !defined(WEB_ENABLED)
 	use_threads = true;
 #endif
 
