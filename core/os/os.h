@@ -682,6 +682,10 @@ public:
 	virtual void benchmark_end_measure(const String &p_what);
 	virtual void benchmark_dump();
 
+	// Allow overrides "disable" and can be specified via the command line.
+	virtual bool _is_gdriver_threaded_optimization_allowed() const { return false; }
+	virtual void _set_gdriver_threaded_optimization_allowed(bool p_allow) {}
+
 	virtual void process_and_drop_events() {}
 	OS();
 	virtual ~OS();
