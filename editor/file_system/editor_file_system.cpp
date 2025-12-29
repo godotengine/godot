@@ -3756,6 +3756,8 @@ void EditorFileSystem::remove_import_format_support_query(Ref<EditorFileSystemIm
 
 EditorFileSystem::EditorFileSystem() {
 #if defined(THREADS_ENABLED) && !defined(WEB_ENABLED)
+	// On web, threaded scanning blocks the browser's event loop, causing freezes.
+	// See GH-112072 for details.
 	use_threads = true;
 #endif
 
