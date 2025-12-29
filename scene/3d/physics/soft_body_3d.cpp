@@ -377,8 +377,8 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &SoftBody3D::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &SoftBody3D::is_ray_pickable);
 
-	ClassDB::bind_method(D_METHOD("set_body_type", "body_type"), &SoftBody3D::set_body_type);
-	ClassDB::bind_method(D_METHOD("get_body_type"), &SoftBody3D::get_body_type);
+	ClassDB::bind_method(D_METHOD("set_soft_body_form", "soft_body_form"), &SoftBody3D::set_soft_body_form);
+	ClassDB::bind_method(D_METHOD("get_soft_body_form"), &SoftBody3D::get_soft_body_form);
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
@@ -395,7 +395,7 @@ void SoftBody3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_type", PROPERTY_HINT_ENUM, "Cloth,Tetrahedra"), "set_body_type", "get_body_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "soft_body_form", PROPERTY_HINT_ENUM, "Cloth,Volume"), "set_soft_body_form", "get_soft_body_form");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,KeepActive"), "set_disable_mode", "get_disable_mode");
 
@@ -737,12 +737,14 @@ bool SoftBody3D::is_ray_pickable() const {
 	return ray_pickable;
 }
 
-void SoftBody3D::set_body_type(BodyType p_body_type) {
-	body_type = p_body_type;
+void SoftBody3D::set_soft_body_form(PhysicsServer3D::SoftBodyForm p_soft_body_form) {
+	//soft_body_form = p_soft_body_form;
+
+	return PhysicsServer3D::get_singleton()->soft_body_set_form(physics_rid, p_soft_body_form);
 }
 
-SoftBody3D::BodyType SoftBody3D::get_body_type() const {
-	return body_type;
+PhysicsServer3D::SoftBodyForm SoftBody3D::get_soft_body_form() const {
+	return PhysicsServer3D::get_singleton()->soft_body_get_form(physics_rid);
 }
 
 SoftBody3D::SoftBody3D() :
