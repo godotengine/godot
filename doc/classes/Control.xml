@@ -1004,6 +1004,9 @@
 		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
 			The human-readable node name that is reported to assistive apps.
 		</member>
+		<member name="accessibility_region" type="bool" setter="set_accessibility_region" getter="is_accessibility_region" default="false">
+			If [code]true[/code], this control is marked as a region for accessibility. Use [member accessibility_name] to give the region a descriptive name.
+		</member>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>

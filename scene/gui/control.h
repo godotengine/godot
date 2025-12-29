@@ -262,6 +262,7 @@ private:
 		TypedArray<NodePath> accessibility_described_by_nodes;
 		TypedArray<NodePath> accessibility_labeled_by_nodes;
 		TypedArray<NodePath> accessibility_flow_to_nodes;
+		bool accessibility_region = false;
 
 		// Theming.
 
@@ -644,6 +645,9 @@ public:
 
 	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
 	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
+
+	void set_accessibility_region(bool p_region);
+	bool is_accessibility_region() const;
 
 	// Rendering.
 

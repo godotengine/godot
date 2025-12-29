@@ -2774,6 +2774,9 @@
 		<constant name="ROLE_TOOLTIP" value="45" enum="AccessibilityRole">
 			Tooltip element.
 		</constant>
+		<constant name="ROLE_REGION" value="46" enum="AccessibilityRole">
+			Region/landmark element. Screen readers can navigate between regions using landmark navigation.
+		</constant>
 		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType">
 			Popup menu.
 		</constant>
