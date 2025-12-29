@@ -47,6 +47,7 @@
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			set_accessibility_region(true);
 			layout_popup = get_popup();
 		} break;
 
@@ -60,6 +61,9 @@ void EditorBottomPanel::_notification(int p_what) {
 void EditorBottomPanel::_on_tab_changed(int p_idx) {
 	_update_center_split_offset();
 	_repaint();
+	if (p_idx >= 0 && p_idx < get_tab_count()) {
+		set_accessibility_name(get_tab_title(p_idx));
+	}
 }
 
 void EditorBottomPanel::_theme_changed() {
