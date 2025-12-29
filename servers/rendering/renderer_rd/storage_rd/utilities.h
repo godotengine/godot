@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/storage/utilities.h"
 
 namespace RendererRD {
@@ -98,6 +99,12 @@ public:
 	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const override;
 	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const override;
 	virtual String get_captured_timestamp_name(uint32_t p_index) const override;
+
+	/* DEBUG */
+
+	[[nodiscard]] DebugLabel draw_command_label(const Span<char> p_label_name, const Color &p_color = Color(1, 1, 1, 1)) const final {
+		return DebugLabel(RD::get_singleton()->draw_command_label(p_label_name, p_color));
+	}
 
 	/* MISC */
 

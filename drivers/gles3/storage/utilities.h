@@ -57,6 +57,10 @@ private:
 
 	mutable RID_Owner<VisibilityNotifier> visibility_notifier_owner;
 
+	/* DEBUG */
+
+	[[nodiscard]] DebugLabel draw_command_label(const Span<char>, const Color &) const final { return DebugLabel(); }
+
 	/* MISC */
 
 	struct ResourceAllocation {

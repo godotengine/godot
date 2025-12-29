@@ -168,6 +168,54 @@ public:
 	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const = 0;
 	virtual String get_captured_timestamp_name(uint32_t p_index) const = 0;
 
+	/* DEBUG */
+
+	class DebugLabel {
+		static constexpr size_t BufSize = 16;
+
+		alignas(std::max_align_t) char buf[BufSize];
+		void (*cleanup)(void *) = nullptr;
+
+	public:
+		template <typename T>
+		explicit DebugLabel(T &&obj) {
+			using U = std::decay_t<T>;
+			static_assert(sizeof(U) <= BufSize);
+			static_assert(alignof(U) <= alignof(std::max_align_t));
+			new (buf) U(std::move(obj));
+			cleanup = [](void *p) { static_cast<U *>(p)->~U(); };
+		}
+
+		~DebugLabel() { do_cleanup(); }
+
+		DebugLabel() = default;
+		DebugLabel(const DebugLabel &) = delete;
+		DebugLabel &operator=(const DebugLabel &) = delete;
+
+		DebugLabel(DebugLabel &&o) noexcept
+				: cleanup(o.cleanup) {
+			std::memcpy(buf, o.buf, BufSize);
+			o.cleanup = nullptr;
+		}
+
+		DebugLabel &operator=(DebugLabel &&o) noexcept {
+			do_cleanup();
+			std::memcpy(buf, o.buf, BufSize);
+			cleanup = o.cleanup;
+			o.cleanup = nullptr;
+			return *this;
+		}
+
+		void do_cleanup() {
+			if (cleanup) {
+				cleanup(buf);
+				cleanup = nullptr;
+			}
+		}
+	};
+
+	[[nodiscard]] virtual DebugLabel draw_command_label(const Span<char> p_label_name, const Color &p_color = Color(1, 1, 1, 1)) const = 0;
+
 	/* MISC */
 
 	virtual void update_dirty_resources() = 0;
