@@ -377,6 +377,9 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &SoftBody3D::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &SoftBody3D::is_ray_pickable);
 
+	ClassDB::bind_method(D_METHOD("set_body_type", "body_type"), &SoftBody3D::set_body_type);
+	ClassDB::bind_method(D_METHOD("get_body_type"), &SoftBody3D::get_body_type);
+
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
@@ -391,6 +394,8 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_type", PROPERTY_HINT_ENUM, "Edges,Tetrahedra"), "set_body_type", "get_body_type");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,KeepActive"), "set_disable_mode", "get_disable_mode");
 
@@ -730,6 +735,14 @@ void SoftBody3D::set_ray_pickable(bool p_ray_pickable) {
 
 bool SoftBody3D::is_ray_pickable() const {
 	return ray_pickable;
+}
+
+void SoftBody3D::set_body_type(BodyType p_body_type) {
+	body_type = p_body_type;
+}
+
+SoftBody3D::BodyType SoftBody3D::get_body_type() const {
+	return body_type;
 }
 
 SoftBody3D::SoftBody3D() :
