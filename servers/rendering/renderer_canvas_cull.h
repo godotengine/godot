@@ -46,15 +46,18 @@ public:
 		List<Item *>::Element *E;
 		int z_index;
 		bool z_relative;
-		bool sort_y;
+		bool sort_axis;
+		bool sort_axis_y_as_main;
+		bool sort_axis_x_ascending;
+		bool sort_axis_y_ascending;
 		Color modulate;
 		Color self_modulate;
 		bool use_parent_material;
 		int index;
 		bool children_order_dirty;
-		int ysort_children_count;
-		Color ysort_modulate;
-		Transform2D ysort_xform; // Relative to y-sorted subtree's root item (identity for such root). Its `origin.y` is used for sorting.
+		int axis_sort_children_count;
+		Color axis_sort_modulate;
+		Transform2D axis_sort_xform; // Relative to y-sorted subtree's root item (identity for such root). Its `origin.y` is used for sorting.
 		int ysort_index;
 		int ysort_parent_abs_z_index; // Absolute Z index of parent. Only populated and used when y-sorting.
 		uint32_t visibility_layer = 0xffffffff;
@@ -107,28 +110,19 @@ public:
 	SelfList<Item>::List _item_update_list;
 
 	struct ItemAxisSort {
-		private:
-			bool _y_as_main = true;
-			bool _x_ascending = false;
-			bool _y_ascending = false;
-
-		public:
-			ItemAxisSort& y_as_main() { _y_as_main = true; return *this; }
-			ItemAxisSort& x_as_main() { _y_as_main = false; return *this; }
-			ItemAxisSort& x_ascending() { _x_ascending = true; return *this; }
-			ItemAxisSort& x_descending() { _x_ascending = false; return *this; }
-			ItemAxisSort& y_ascending() { _y_ascending = true; return *this; }
-			ItemAxisSort& y_descending() { _y_ascending = false; return *this; }
+		bool y_as_main = true;
+		bool x_ascending = false;
+		bool y_ascending = false;
 
 		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
 			const Vector2 left_pos = p_left->ysort_xform.columns[2];
 			const Vector2 right_pos = p_right->ysort_xform.columns[2];
-			real_t left_main = _y_as_main ? left_pos.y : left_pos.x;
-			real_t right_main = _y_as_main ? right_pos.y : right_pos.x;
-			real_t left_secondary = _y_as_main ? left_pos.x : left_pos.y;
-			real_t right_secondary = _y_as_main ? right_pos.x : right_pos.y;
-			bool main_ascending = _y_as_main ? _y_ascending : _x_ascending;
-			bool secondary_ascending = _y_as_main ? _x_ascending : _y_ascending;
+			real_t left_main = y_as_main ? left_pos.y : left_pos.x;
+			real_t right_main = y_as_main ? right_pos.y : right_pos.x;
+			real_t left_secondary = y_as_main ? left_pos.x : left_pos.y;
+			real_t right_secondary = y_as_main ? right_pos.x : right_pos.y;
+			bool main_ascending = y_as_main ? y_ascending : x_ascending;
+			bool secondary_ascending = y_as_main ? x_ascending : y_ascending;
 
 			if (Math::is_equal_approx(left_main, right_main)) {
 				if (Math::is_equal_approx(left_secondary, right_secondary)) {

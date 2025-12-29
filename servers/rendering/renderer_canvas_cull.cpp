@@ -150,12 +150,12 @@ void RendererCanvasCull::_collect_axis_sort_children(RendererCanvasCull::Item *p
 
 				r_index++;
 
-				if (child_items[i]->sort_y) {
+				if (child_items[i]->sort_axis) {
 					_collect_axis_sort_children(child_items[i], child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, r_axis_sort_children_count, abs_z, p_canvas_cull_mask);
 				}
 			} else {
 				r_axis_sort_children_count--;
-				if (child_items[i]->sort_y) {
+				if (child_items[i]->sort_axis) {
 					r_axis_sort_children_count -= child_items[i]->axis_sort_children_count;
 				}
 			}
@@ -300,7 +300,7 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 	}
 }
 
-void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_is_already_y_sorted, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times, RendererCanvasRender::Item *p_repeat_source_item) {
+void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_is_already_axis_sorted, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times, RendererCanvasRender::Item *p_repeat_source_item) {
 	Item *ci = p_canvas_item;
 
 	if (!ci->visible) {
@@ -343,7 +343,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	// we can override the transform for rendering purposes for this item only.
 	Transform2D self_xform;
 	Transform2D final_xform;
-	if (p_is_already_y_sorted) {
+	if (p_is_already_axis_sorted) {
 		// Y-sorted item's final transform is calculated before y-sorting,
 		// and is passed as `p_parent_xform` afterwards. No need to recalculate.
 		final_xform = p_parent_xform;
@@ -452,6 +452,9 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			_collect_axis_sort_children(ci, p_material_owner, Color(1, 1, 1, 1), child_items, i, child_item_count, p_z, p_canvas_cull_mask);
 
 			SortArray<Item *, ItemAxisSort> sorter;
+			sorter.compare.y_as_main = ci->sort_axis_y_as_main;
+			sorter.compare.x_ascending = ci->sort_axis_x_ascending;
+			sorter.compare.y_ascending = ci->sort_axis_y_ascending;
 			sorter.sort(child_items, child_item_count);
 
 			for (i = 0; i < child_item_count; i++) {
@@ -588,7 +591,7 @@ void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
 			Item *item_owner = canvas_item_owner.get_or_null(canvas_item->parent);
 			item_owner->child_items.erase(canvas_item);
 
-			if (item_owner->sort_y) {
+			if (item_owner->sort_axis) {
 				_mark_axis_sort_dirty(item_owner);
 			}
 		}
@@ -608,7 +611,7 @@ void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
 			item_owner->child_items.push_back(canvas_item);
 			item_owner->children_order_dirty = true;
 
-			if (item_owner->sort_y) {
+			if (item_owner->sort_axis) {
 				_mark_axis_sort_dirty(item_owner);
 			}
 
@@ -1828,11 +1831,11 @@ void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_an
 	as->offset = p_offset;
 }
 
-void RendererCanvasCull::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
+void RendererCanvasCull::canvas_item_set_sort_children_by_axis(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
-	canvas_item->sort_y = p_enable;
+	canvas_item->sort_axis = p_enable;
 
 	_mark_axis_sort_dirty(canvas_item);
 }
@@ -2604,7 +2607,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 				Item *item_owner = canvas_item_owner.get_or_null(canvas_item->parent);
 				item_owner->child_items.erase(canvas_item);
 
-				if (item_owner->sort_y) {
+				if (item_owner->sort_axis) {
 					_mark_axis_sort_dirty(item_owner);
 				}
 			}
