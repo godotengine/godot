@@ -141,10 +141,10 @@ public:
 	bool is_layer_enabled(int p_layer) const;
 	void set_layer_modulate(int p_layer, Color p_modulate);
 	Color get_layer_modulate(int p_layer) const;
-	void set_layer_y_sort_enabled(int p_layer, bool p_enabled);
-	bool is_layer_y_sort_enabled(int p_layer) const;
-	void set_layer_y_sort_origin(int p_layer, int p_y_sort_origin);
-	int get_layer_y_sort_origin(int p_layer) const;
+	void set_layer_axis_sort_enabled(int p_layer, bool p_enabled);
+	bool is_layer_axis_sort_enabled(int p_layer) const;
+	void set_layer_axis_sort_origin(int p_layer, Vector2i p_axis_sort_origin);
+	Vector2i get_layer_axis_sort_origin(int p_layer) const;
 	void set_layer_z_index(int p_layer, int p_z_index);
 	int get_layer_z_index(int p_layer) const;
 #ifndef NAVIGATION_2D_DISABLED
@@ -198,7 +198,7 @@ public:
 	TileMapCell get_cell(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	int get_effective_quadrant_size(int p_layer) const;
 
-	virtual void set_y_sort_enabled(bool p_enable) override;
+	virtual void set_axis_sort_enabled(bool p_enable) override;
 
 	Vector2 map_to_local(const Vector2i &p_pos) const;
 	Vector2i local_to_map(const Vector2 &p_pos) const;

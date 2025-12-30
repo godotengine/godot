@@ -263,8 +263,8 @@ public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;
 };
 
-class TileDataYSortEditor : public TileDataDefaultEditor {
-	GDCLASS(TileDataYSortEditor, TileDataDefaultEditor);
+class TileDataAxisSortEditor : public TileDataDefaultEditor {
+	GDCLASS(TileDataAxisSortEditor, TileDataDefaultEditor);
 
 public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;

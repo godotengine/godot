@@ -172,7 +172,7 @@ int RendererCanvasCull::_count_axis_sort_children(RendererCanvasCull::Item *p_ca
 			axis_sort_children_count++;
 			if (child_items[i]->sort_axis) {
 				if (child_items[i]->axis_sort_children_count == -1) {
-					child_items[i]->axis_children_count = _count_axis_sort_children(child_items[i]);
+					child_items[i]->axis_sort_children_count = _count_axis_sort_children(child_items[i]);
 				}
 				axis_sort_children_count += child_items[i]->axis_sort_children_count;
 			}

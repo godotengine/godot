@@ -352,8 +352,8 @@ public:
 		DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM,
 		DIRTY_FLAGS_LAYER_VISIBILITY,
 		DIRTY_FLAGS_LAYER_SELF_MODULATE,
-		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
-		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
+		DIRTY_FLAGS_LAYER_axis_sort_ENABLED,
+		DIRTY_FLAGS_LAYER_axis_sort_ORIGIN,
 		DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
 		DIRTY_FLAGS_LAYER_LIGHT_MASK,
@@ -392,7 +392,7 @@ private:
 
 	HighlightMode highlight_mode = HIGHLIGHT_MODE_DEFAULT;
 
-	int y_sort_origin = 0;
+	Vector2i axis_sort_origin = Vector2i(0, 0);
 	bool x_draw_order_reversed = false;
 	int rendering_quadrant_size = 16;
 
@@ -612,9 +612,9 @@ public:
 	HighlightMode get_highlight_mode() const;
 
 	virtual void set_self_modulate(const Color &p_self_modulate) override;
-	virtual void set_y_sort_enabled(bool p_y_sort_enabled) override;
-	void set_y_sort_origin(int p_y_sort_origin);
-	int get_y_sort_origin() const;
+	virtual void set_axis_sort_enabled(bool p_axis_sort_enabled) override;
+	void set_axis_sort_origin(Vector2i p_axis_sort_origin);
+	Vector2i get_axis_sort_origin() const;
 	void set_x_draw_order_reversed(bool p_x_draw_order_reversed);
 	bool is_x_draw_order_reversed() const;
 	virtual void set_z_index(int p_z_index) override;

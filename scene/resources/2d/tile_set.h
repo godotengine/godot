@@ -855,7 +855,7 @@ private:
 	Ref<Material> material;
 	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 	int z_index = 0;
-	int y_sort_origin = 0;
+	Vector2i axis_sort_origin = Vector2i(0, 0);
 	struct OcclusionLayerTileData {
 		struct PolygonOccluderTileData {
 			Ref<OccluderPolygon2D> occluder_polygon;
@@ -965,8 +965,8 @@ public:
 	Color get_modulate() const;
 	void set_z_index(int p_z_index);
 	int get_z_index() const;
-	void set_y_sort_origin(int p_y_sort_origin);
-	int get_y_sort_origin() const;
+	void set_axis_sort_origin(Vector2i p_axis_sort_origin);
+	Vector2i get_axis_sort_origin() const;
 
 #ifndef DISABLE_DEPRECATED
 	void set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon);
