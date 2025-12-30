@@ -33,6 +33,26 @@
 // VideoStreamPlayback starts here.
 
 void VideoStreamPlayback::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("play"), &VideoStreamPlayback::play);
+	ClassDB::bind_method(D_METHOD("stop"), &VideoStreamPlayback::stop);
+	ClassDB::bind_method(D_METHOD("is_playing"), &VideoStreamPlayback::is_playing);
+
+	ClassDB::bind_method(D_METHOD("set_paused", "paused"), &VideoStreamPlayback::set_paused);
+	ClassDB::bind_method(D_METHOD("is_paused"), &VideoStreamPlayback::is_paused);
+
+	ClassDB::bind_method(D_METHOD("get_length"), &VideoStreamPlayback::get_length);
+
+	ClassDB::bind_method(D_METHOD("get_playback_position"), &VideoStreamPlayback::get_playback_position);
+	ClassDB::bind_method(D_METHOD("seek", "time"), &VideoStreamPlayback::seek);
+
+	ClassDB::bind_method(D_METHOD("set_audio_track", "idx"), &VideoStreamPlayback::set_audio_track);
+
+	ClassDB::bind_method(D_METHOD("get_texture"), &VideoStreamPlayback::get_texture);
+	ClassDB::bind_method(D_METHOD("update", "delta"), &VideoStreamPlayback::update);
+
+	ClassDB::bind_method(D_METHOD("get_channels"), &VideoStreamPlayback::get_channels);
+	ClassDB::bind_method(D_METHOD("get_mix_rate"), &VideoStreamPlayback::get_mix_rate);
+
 	ClassDB::bind_method(D_METHOD("mix_audio", "num_frames", "buffer", "offset"), &VideoStreamPlayback::mix_audio, DEFVAL(PackedFloat32Array()), DEFVAL(0));
 	GDVIRTUAL_BIND(_stop);
 	GDVIRTUAL_BIND(_play);
@@ -175,6 +195,8 @@ String VideoStream::get_file() {
 }
 
 void VideoStream::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("instantiate_playback"), &VideoStream::instantiate_playback);
+
 	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStream::set_file);
 	ClassDB::bind_method(D_METHOD("get_file"), &VideoStream::get_file);
 
