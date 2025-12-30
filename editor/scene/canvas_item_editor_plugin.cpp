@@ -1735,7 +1735,15 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				// Remove not movable nodes
 				for (List<CanvasItem *>::Element *E = selection.front(); E;) {
 					List<CanvasItem *>::Element *N = E->next();
-					if (!_is_node_movable(E->get(), true)) {
+					CanvasItem *ci = E->get();
+
+					if (!_is_node_movable(ci, true)) {
+						// but if the node has currently subgizmos selected, we can still rotate these
+						CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
+						if (se->gizmo.is_valid()) {
+							continue;
+						}
+						// otherwise it is out
 						selection.erase(E);
 					}
 					E = N;
@@ -1773,6 +1781,26 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				drag_to = transform.affine_inverse().xform(m->get_position());
 				//Rotate the opposite way if the canvas item's compounded scale has an uneven number of negative elements
 				bool opposite = (ci->get_global_transform().get_scale().sign().dot(ci->get_transform().get_scale().sign()) == 0);
+
+				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
+				if (se->gizmo.is_valid()) {
+					// if we currently have a subgizmo selection, we only rotate this subgizmo selection -
+					// not the node - similar to how this is done in 3D.
+
+					// we rotate around the drag rotation center, so we need the angle drag_from -> drag_rotation_center -> drag_to
+					real_t angle = (opposite ? -1 : 1) * snap_angle((drag_from - drag_rotation_center).angle_to(drag_to - drag_rotation_center));
+
+					for (KeyValue<int, Transform2D> &entry : se->subgizmos) {
+						// since we rotate around the drag rotation center, we move there, rotate and move back
+						Transform2D new_xform = entry.value.translated(-drag_rotation_center).rotated(angle).translated(drag_rotation_center);
+						se->gizmo->set_subgizmo_transform(entry.key, new_xform);
+					}
+					// need a redraw here because moving subgizmos needs to re-draw the canvas item
+					// we modified to view effects.
+					viewport->queue_redraw();
+					continue;
+				}
+				//no subgizmos selected - rotate the canvas item
 				real_t prev_rotation = ci->_edit_get_rotation();
 				real_t new_rotation = snap_angle(ci->_edit_get_rotation() + (opposite ? -1 : 1) * (drag_from - drag_rotation_center).angle_to(drag_to - drag_rotation_center), prev_rotation);
 
