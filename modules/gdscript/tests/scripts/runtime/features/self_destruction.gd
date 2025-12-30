@@ -41,7 +41,7 @@ func test():
 
 	# Signal handling.
 	obj = MyObj.new(nullify_obj)
-	@warning_ignore("return_value_discarded")
+	@warning_ignore("return_value_discarded", "access_private_member")
 	some_signal.connect(obj._on_some_signal)
 	some_signal.emit()
 	print(obj)

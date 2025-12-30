@@ -15,6 +15,7 @@ class SuperMethodsRecognized extends BaseClass:
 		return result
 
 func test():
+	@warning_ignore_start("call_private_method")
 	var test1 = SuperClassMethodsRecognized.new()
 	print(test1._get_property_list()) # Calls base class's method.
 	var test2 = SuperMethodsRecognized.new()
