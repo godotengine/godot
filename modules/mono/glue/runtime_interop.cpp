@@ -1116,6 +1116,9 @@ void godotsharp_array_make_read_only(Array *p_self) {
 }
 
 void godotsharp_array_set_typed(Array *p_self, uint32_t p_elem_type, const StringName *p_elem_class_name, const Ref<CSharpScript> *p_elem_script) {
+	ERR_FAIL_NULL(p_elem_class_name);
+	ERR_FAIL_NULL(p_elem_script);
+	ERR_FAIL_NULL(p_self);
 	Variant elem_script_variant;
 	StringName elem_class_name = *p_elem_class_name;
 	if (p_elem_script && p_elem_script->is_valid()) {
@@ -1280,6 +1283,10 @@ void godotsharp_dictionary_make_read_only(Dictionary *p_self) {
 }
 
 void godotsharp_dictionary_set_typed(Dictionary *p_self, uint32_t p_key_type, const StringName *p_key_class_name, const Ref<CSharpScript> *p_key_script, uint32_t p_value_type, const StringName *p_value_class_name, const Ref<CSharpScript> *p_value_script) {
+	ERR_FAIL_NULL(p_key_class_name);
+	ERR_FAIL_NULL(p_key_script);
+	ERR_FAIL_NULL(p_value_script);
+	ERR_FAIL_NULL(p_value_class_name);
 	Variant key_script_variant;
 	StringName key_class_name = *p_key_class_name;
 	if (p_key_script && p_key_script->is_valid()) {

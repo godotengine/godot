@@ -1241,6 +1241,7 @@ void RenderForwardClustered::_setup_lightmaps(const RenderDataRD *p_render_data,
 /* SDFGI */
 
 void RenderForwardClustered::_update_sdfgi(RenderDataRD *p_render_data) {
+	ERR_FAIL_NULL(p_render_data);
 	if (p_render_data->sdfgi_update_data == nullptr) {
 		return;
 	}

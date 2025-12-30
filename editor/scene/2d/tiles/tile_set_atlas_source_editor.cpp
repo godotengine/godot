@@ -613,7 +613,9 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 
 void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	String previously_selected;
-	if (tile_data_editors_tree && tile_data_editors_tree->get_selected()) {
+	ERR_FAIL_NULL(tile_data_editors_tree);
+
+	if (tile_data_editors_tree->get_selected()) {
 		previously_selected = tile_data_editors_tree->get_selected()->get_metadata(0);
 	}
 
