@@ -68,6 +68,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_texture.h"
+#include "thirdparty/thorvg/inc/thorvg.h"
 
 #define DRAG_THRESHOLD (8 * EDSCALE)
 constexpr real_t SCALE_HANDLE_DISTANCE = 25;
@@ -691,7 +692,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 			if (gizmo.is_null()) {
 				continue;
 			}
-			if (gizmo->intersect_point(point)) {
+			if (gizmo->intersect_point(point, local_grab_distance)) {
 				Node2D *node = Object::cast_to<Node2D>(ci);
 				_SelectResult res;
 				res.item = ci;
@@ -836,7 +837,11 @@ bool CanvasItemEditor::_select_subgizmos(Point2 p_click_pos, bool p_append) {
 					continue;
 				}
 
-				int subgizmo_id = gizmo->subgizmos_intersect_point(p_click_pos);
+				Transform2D xform = selected_canvas_item->get_global_transform().affine_inverse();
+				Point2 local_pos = xform.xform(p_click_pos);
+				const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
+
+				int subgizmo_id = gizmo->subgizmos_intersect_point(local_pos, local_grab_distance);
 				if (subgizmo_id >= 0) {
 					if (p_append) {
 						if (se->subgizmos.has(subgizmo_id)) {
@@ -1859,14 +1864,17 @@ bool CanvasItemEditor::_gui_input_gizmos(const Ref<InputEvent> &p_event) {
 
 		// mouse clicks
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
-			Point2 pos = b->get_position();
+			Point2 click = transform.affine_inverse().xform(b->get_position());
 			for (Ref<EditorCanvasItemGizmo> editor_gizmo : gizmos) {
 				if (editor_gizmo.is_null()) {
 					continue;
 				}
 				int index;
 				bool secondary;
-				editor_gizmo->handles_intersect_point(pos, b->is_shift_pressed(), index, secondary);
+				Transform2D xform = selected_canvas_item->get_global_transform().affine_inverse();
+				const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
+				const Point2 local_pos = xform.xform(click);
+				editor_gizmo->handles_intersect_point(local_pos, local_grab_distance, b->is_shift_pressed(), index, secondary);
 				if (index > -1) {
 					drag_selection = List<CanvasItem *>();
 					drag_selection.push_back(selected_canvas_item);
