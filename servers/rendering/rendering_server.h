@@ -1605,7 +1605,10 @@ public:
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore) = 0;
 	virtual void canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) = 0;
 
-	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) = 0;
+	virtual void canvas_item_set_sort_children_by_axis(RID p_item, bool p_enable) = 0;
+	virtual void canvas_item_set_sort_children_by_axis_y_as_main(RID p_item, bool p_enable) = 0;
+	virtual void canvas_item_set_sort_children_by_axis_x_ascending(RID p_item, bool p_enable) = 0;
+	virtual void canvas_item_set_sort_children_by_axis_y_ascending(RID p_item, bool p_enable) = 0;
 	virtual void canvas_item_set_z_index(RID p_item, int p_z) = 0;
 	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable) = 0;
 	virtual void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect) = 0;

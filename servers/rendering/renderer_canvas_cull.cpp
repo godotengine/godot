@@ -1840,6 +1840,33 @@ void RendererCanvasCull::canvas_item_set_sort_children_by_axis(RID p_item, bool 
 	_mark_axis_sort_dirty(canvas_item);
 }
 
+void RendererCanvasCull::canvas_item_set_sort_children_by_axis_y_as_main(RID p_item, bool p_enable) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->sort_axis_y_as_main = p_enable;
+
+	_mark_axis_sort_dirty(canvas_item);
+}
+
+void RendererCanvasCull::canvas_item_set_sort_children_by_axis_x_ascending(RID p_item, bool p_enable) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->sort_axis_x_ascending = p_enable;
+
+	_mark_axis_sort_dirty(canvas_item);
+}
+
+void RendererCanvasCull::canvas_item_set_sort_children_by_axis_y_ascending(RID p_item, bool p_enable) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->sort_axis_y_ascending = p_enable;
+
+	_mark_axis_sort_dirty(canvas_item);
+}
+
 void RendererCanvasCull::canvas_item_set_z_index(RID p_item, int p_z) {
 	ERR_FAIL_COND(p_z < RS::CANVAS_ITEM_Z_MIN || p_z > RS::CANVAS_ITEM_Z_MAX);
 
