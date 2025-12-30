@@ -1710,6 +1710,12 @@ ProjectSettings::ProjectSettings() {
 	// - Be displayable correctly in windowed mode on a 1366×768 display (tested on Windows 10 with default settings).
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/viewport_width", PROPERTY_HINT_RANGE, "1,7680,1,or_greater"), 1152); // 8K resolution
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/viewport_height", PROPERTY_HINT_RANGE, "1,4320,1,or_greater"), 648); // 8K resolution
+	// Default to a very small minimum window size to prevent bugs such as GH-37242.
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_minimum_viewport_width", PROPERTY_HINT_RANGE, "1,7680,1,or_greater"), 64);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_minimum_viewport_height", PROPERTY_HINT_RANGE, "1,4320,1,or_greater"), 64);
+
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_maximum_viewport_width", PROPERTY_HINT_RANGE, "1,7680,1,or_greater"), 32768);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_maximum_viewport_height", PROPERTY_HINT_RANGE, "1,4320,1,or_greater"), 32768);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), 0);
 

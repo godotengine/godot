@@ -2040,7 +2040,12 @@ SceneTree::SceneTree() {
 	// Create with mainloop.
 
 	root = memnew(Window);
-	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
+	Size2i initial_min_size = Size2i(GLOBAL_GET("display/window/size/initial_minimum_viewport_width"),
+			GLOBAL_GET("display/window/size/initial_minimum_viewport_height"));
+	root->set_min_size(initial_min_size);
+	Size2i initial_max_size = Size2i(GLOBAL_GET("display/window/size/initial_maximum_viewport_width"),
+			GLOBAL_GET("display/window/size/initial_maximum_viewport_height"));
+	root->set_max_size(initial_max_size);
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
 	root->set_name("root");
 
