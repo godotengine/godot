@@ -764,7 +764,7 @@ public:
 	ProcessThreadGroup get_process_thread_group() const;
 
 	static void print_orphan_nodes();
-	static TypedArray<int> get_orphan_node_ids();
+	static TypedArray<ObjectID> get_orphan_node_ids();
 
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);

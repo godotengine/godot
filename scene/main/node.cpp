@@ -3447,8 +3447,8 @@ void Node::print_orphan_nodes() {
 	_print_orphan_nodes_map.clear();
 #endif
 }
-TypedArray<int> Node::get_orphan_node_ids() {
-	TypedArray<int> ret;
+TypedArray<ObjectID> Node::get_orphan_node_ids() {
+	TypedArray<ObjectID> ret;
 #ifdef DEBUG_ENABLED
 	// Make sure it's empty.
 	_print_orphan_nodes_map.clear();
