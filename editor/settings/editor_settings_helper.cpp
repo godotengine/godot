@@ -45,7 +45,6 @@ void EditorSettingsHelper::create() {
 }
 
 EditorSettingsHelper *EditorSettingsHelper::get_singleton() {
-	DEV_ASSERT(singleton.ptr());
 	return singleton.ptr();
 }
 

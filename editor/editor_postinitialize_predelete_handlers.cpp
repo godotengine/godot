@@ -33,29 +33,29 @@
 #include "scene/gui/text_edit.h"
 
 void postinitialize_handler_in_editor(TextEdit *p_text_edit) {
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (EditorSettingsHelper *helper = EditorSettingsHelper::get_singleton()) {
 		_post_initialize_in_editor(static_cast<TextEdit::super_type *>(p_text_edit));
-		EditorSettingsHelper::get_singleton()->postinitialize_text_edit(p_text_edit);
+		helper->postinitialize_text_edit(p_text_edit);
 	}
 }
 
 void predelete_handler_in_editor(TextEdit *p_text_edit) {
-	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorSettingsHelper::get_singleton()->predelete_text_edit(p_text_edit);
+	if (EditorSettingsHelper *helper = EditorSettingsHelper::get_singleton()) {
+		helper->predelete_text_edit(p_text_edit);
 		_predelete_in_editor(static_cast<TextEdit::super_type *>(p_text_edit));
 	}
 }
 
 void postinitialize_handler_in_editor(LineEdit *p_line_edit) {
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (EditorSettingsHelper *helper = EditorSettingsHelper::get_singleton()) {
 		_post_initialize_in_editor(static_cast<LineEdit::super_type *>(p_line_edit));
-		EditorSettingsHelper::get_singleton()->postinitialize_line_edit(p_line_edit);
+		helper->postinitialize_line_edit(p_line_edit);
 	}
 }
 
 void predelete_handler_in_editor(LineEdit *p_line_edit) {
-	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorSettingsHelper::get_singleton()->predelete_line_edit(p_line_edit);
+	if (EditorSettingsHelper *helper = EditorSettingsHelper::get_singleton()) {
+		helper->predelete_line_edit(p_line_edit);
 		_predelete_in_editor(static_cast<LineEdit::super_type *>(p_line_edit));
 	}
 }
