@@ -190,6 +190,7 @@ public:
 				TYPE_TRANSFORM,
 				TYPE_CLIP_IGNORE,
 				TYPE_ANIMATION_SLICE,
+				TYPE_MODULATE
 			};
 
 			Command *next = nullptr;
@@ -305,6 +306,11 @@ public:
 			CommandAnimationSlice() {
 				type = TYPE_ANIMATION_SLICE;
 			}
+		};
+
+		struct CommandModulate : public Command {
+			Color modulate;
+			CommandModulate() { type = TYPE_MODULATE; }
 		};
 
 		struct ViewportRender {
