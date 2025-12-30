@@ -607,9 +607,9 @@ void TabContainer::_on_tab_visibility_changed(Control *p_child) {
 			p_child->show();
 		} else {
 			// Set a different tab to be the current tab.
-			bool selected = select_next_available();
+			bool selected = select_previous_available();
 			if (!selected) {
-				selected = select_previous_available();
+				selected = select_next_available();
 			}
 			if (!selected) {
 				// No available tabs, deselect.

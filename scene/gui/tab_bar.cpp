@@ -840,8 +840,17 @@ int TabBar::get_hovered_tab() const {
 int TabBar::get_previous_available(int p_idx) const {
 	ERR_FAIL_COND_V(p_idx < -1 || p_idx > get_tab_count(), -1);
 	const int idx = p_idx == -1 ? get_current_tab() : p_idx;
-	const int offset_end = idx + 1;
-	for (int i = 1; i < offset_end; i++) {
+	if (idx == -1) {
+		// No tab selected - search all tabs starting from the last.
+		for (int i = get_tab_count() - 1; i >= 0; i--) {
+			if (!is_tab_disabled(i) && !is_tab_hidden(i)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	// Search all tabs except current, wrapping at boundaries per ARIA tab pattern.
+	for (int i = 1; i < get_tab_count(); i++) {
 		int target_tab = idx - i;
 		if (target_tab < 0) {
 			target_tab += get_tab_count();
@@ -856,8 +865,17 @@ int TabBar::get_previous_available(int p_idx) const {
 int TabBar::get_next_available(int p_idx) const {
 	ERR_FAIL_COND_V(p_idx < -1 || p_idx > get_tab_count(), -1);
 	const int idx = p_idx == -1 ? get_current_tab() : p_idx;
-	const int offset_end = get_tab_count() - idx;
-	for (int i = 1; i < offset_end; i++) {
+	if (idx == -1) {
+		// No tab selected - search all tabs starting from 0.
+		for (int i = 0; i < get_tab_count(); i++) {
+			if (!is_tab_disabled(i) && !is_tab_hidden(i)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	// Search all tabs except current, wrapping at boundaries per ARIA tab pattern.
+	for (int i = 1; i < get_tab_count(); i++) {
 		int target_tab = (idx + i) % get_tab_count();
 		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
 			return target_tab;
