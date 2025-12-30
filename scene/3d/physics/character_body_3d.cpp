@@ -131,6 +131,9 @@ bool CharacterBody3D::move_and_slide() {
 		}
 	}
 
+	// Update visual position smoothing for step handling
+	_update_visual_position(delta);
+
 	return motion_results.size() > 0;
 }
 
@@ -212,6 +215,15 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 			// Wall collision checks.
 			if (result_state.wall && (motion_slide_up.dot(wall_normal) <= 0)) {
+				// Try step-up first if enabled and on floor (Unreal Engine 1 style)
+				if (step_enabled && p_was_on_floor && !vel_dir_facing_up) {
+					if (_try_step_up(result.remainder)) {
+						// Step succeeded - character has been moved to stepped position
+						// Break out of loop, snap_on_floor will handle final floor detection
+						break;
+					}
+				}
+
 				// Move on floor only checks.
 				if (floor_block_on_wall) {
 					// Needs horizontal motion from current motion instead of motion_slide_up
@@ -394,6 +406,139 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	if (collision_state.floor && !vel_dir_facing_up) {
 		velocity = velocity.slide(up_direction);
 	}
+}
+
+bool CharacterBody3D::_try_step_up(const Vector3 &p_remainder) {
+	// Unreal Engine 1 style step-up algorithm:
+	// 1. Move UP by step_height
+	// 2. Move FORWARD by remaining motion
+	// 3. Move DOWN by step_height
+	// 4. If we land on walkable floor, accept the step
+
+	if (step_height <= 0) {
+		return false;
+	}
+
+	const int STEP_CHECK_COUNT = 2;
+	const real_t WALL_MARGIN = 0.001;
+
+	Transform3D start_transform = get_global_transform();
+	Vector3 start_position = start_transform.origin;
+
+	// Forward motion is the horizontal component of the remaining motion
+	// p_remainder is already in distance units (motion), not velocity
+	Vector3 forward_motion = p_remainder.slide(up_direction);
+	if (forward_motion.is_zero_approx()) {
+		return false;
+	}
+
+	// Try stepping at decreasing heights (full, then half, etc.)
+	for (int i = 0; i < STEP_CHECK_COUNT; i++) {
+		Vector3 current_step_height = up_direction * (step_height - (step_height / STEP_CHECK_COUNT) * i);
+
+		PhysicsServer3D::MotionParameters params;
+		PhysicsServer3D::MotionResult result;
+
+		// Step 1: Test moving UP
+		Transform3D test_transform = start_transform;
+		params = PhysicsServer3D::MotionParameters(test_transform, current_step_height, margin);
+		params.recovery_as_collision = true;
+
+		bool hit_ceiling = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), params, &result);
+
+		// If we hit a ceiling (normal pointing down), try smaller step
+		if (hit_ceiling && result.collision_count > 0 && result.collisions[0].normal.dot(up_direction) < 0) {
+			continue;
+		}
+
+		// Move test position up
+		test_transform.origin += current_step_height;
+
+		// Step 2: Test moving FORWARD
+		params = PhysicsServer3D::MotionParameters(test_transform, forward_motion, margin);
+		params.recovery_as_collision = true;
+
+		bool hit_wall_forward = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), params, &result);
+
+		if (!hit_wall_forward) {
+			// No collision moving forward - test moving down
+			test_transform.origin += forward_motion;
+
+			// Step 3: Test moving DOWN
+			params = PhysicsServer3D::MotionParameters(test_transform, -current_step_height, margin);
+			params.recovery_as_collision = true;
+
+			bool hit_ground = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), params, &result);
+
+			if (hit_ground && result.collision_count > 0) {
+				// Check if we hit a walkable floor
+				Vector3 ground_normal = result.collisions[0].normal;
+				if (ground_normal.angle_to(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+					// Success! Final position is where we hit the ground
+					Vector3 final_position = test_transform.origin + result.travel;
+
+					// Apply the stepped position
+					Transform3D final_transform = start_transform;
+					final_transform.origin = final_position;
+					set_global_transform(final_transform);
+
+					// Update floor state
+					collision_state.floor = true;
+					floor_normal = ground_normal;
+					last_motion = final_position - start_position;
+
+					return true;
+				}
+			}
+		} else {
+			// Hit a wall while moving forward - try sliding along it
+			if (result.collision_count > 0) {
+				Vector3 wall_normal_fwd = result.collisions[0].normal;
+
+				// Only handle vertical walls
+				if (Math::is_zero_approx(wall_normal_fwd.dot(up_direction))) {
+					// Slide along the wall
+					test_transform.origin += wall_normal_fwd * WALL_MARGIN;
+					Vector3 slide_motion = forward_motion.slide(wall_normal_fwd);
+
+					params = PhysicsServer3D::MotionParameters(test_transform, slide_motion, margin);
+					params.recovery_as_collision = true;
+
+					bool hit_after_slide = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), params, &result);
+
+					if (!hit_after_slide) {
+						// Sliding worked - test moving down
+						test_transform.origin += slide_motion;
+
+						params = PhysicsServer3D::MotionParameters(test_transform, -current_step_height, margin);
+						params.recovery_as_collision = true;
+
+						bool hit_ground = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), params, &result);
+
+						if (hit_ground && result.collision_count > 0) {
+							Vector3 ground_normal = result.collisions[0].normal;
+							if (ground_normal.angle_to(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
+								// Success with wall slide
+								Vector3 final_position = test_transform.origin + result.travel;
+
+								Transform3D final_transform = start_transform;
+								final_transform.origin = final_position;
+								set_global_transform(final_transform);
+
+								collision_state.floor = true;
+								floor_normal = ground_normal;
+								last_motion = final_position - start_position;
+
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 void CharacterBody3D::_move_and_slide_floating(double p_delta) {
@@ -832,6 +977,90 @@ void CharacterBody3D::set_floor_snap_length(real_t p_floor_snap_length) {
 	floor_snap_length = p_floor_snap_length;
 }
 
+bool CharacterBody3D::is_step_enabled() const {
+	return step_enabled;
+}
+
+void CharacterBody3D::set_step_enabled(bool p_enabled) {
+	step_enabled = p_enabled;
+}
+
+real_t CharacterBody3D::get_step_height() const {
+	return step_height;
+}
+
+void CharacterBody3D::set_step_height(real_t p_height) {
+	ERR_FAIL_COND(p_height < 0);
+	step_height = p_height;
+}
+
+bool CharacterBody3D::is_step_smooth_enabled() const {
+	return step_smooth_enabled;
+}
+
+void CharacterBody3D::set_step_smooth_enabled(bool p_enabled) {
+	step_smooth_enabled = p_enabled;
+}
+
+real_t CharacterBody3D::get_step_smooth_speed() const {
+	return step_smooth_speed;
+}
+
+void CharacterBody3D::set_step_smooth_speed(real_t p_speed) {
+	ERR_FAIL_COND(p_speed < 0);
+	step_smooth_speed = p_speed;
+}
+
+void CharacterBody3D::_update_visual_position(double p_delta) {
+	real_t current_y = get_global_transform().origin.y;
+
+	// Initialize on first call
+	if (!visual_position_initialized) {
+		visual_position_y = current_y;
+		visual_position_initialized = true;
+		return;
+	}
+
+	// If smoothing disabled, just track actual position
+	if (!step_smooth_enabled || step_smooth_speed <= 0) {
+		visual_position_y = current_y;
+		return;
+	}
+
+	// Only smooth while grounded - jumping/falling should have no camera lag
+	// This ensures only step-up and floor-snap (step-down) get smoothed
+	if (!collision_state.floor) {
+		visual_position_y = current_y;
+		return;
+	}
+
+	// Calculate the difference between visual and actual Y
+	real_t diff = current_y - visual_position_y;
+
+	// If difference is very small, snap to actual
+	if (Math::abs(diff) < 0.001) {
+		visual_position_y = current_y;
+		return;
+	}
+
+	// Proportional smoothing: move a fraction of the remaining distance each frame
+	// This naturally handles both small and large offsets:
+	// - Small offset (single step): smooth, gradual movement
+	// - Large offset (multiple steps): faster catch-up, no sudden snaps
+	// step_smooth_speed acts as a rate factor (higher = faster catch-up)
+	real_t smooth_factor = step_smooth_speed * p_delta;
+	visual_position_y += diff * MIN(smooth_factor, 1.0);
+}
+
+Vector3 CharacterBody3D::get_visual_position() const {
+	Vector3 pos = get_global_transform().origin;
+	if (step_smooth_enabled && visual_position_initialized) {
+		// Replace actual Y with smoothed Y
+		pos.y = visual_position_y;
+	}
+	return pos;
+}
+
 real_t CharacterBody3D::get_wall_min_slide_angle() const {
 	return wall_min_slide_angle;
 }
@@ -892,6 +1121,15 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_floor_max_angle", "radians"), &CharacterBody3D::set_floor_max_angle);
 	ClassDB::bind_method(D_METHOD("get_floor_snap_length"), &CharacterBody3D::get_floor_snap_length);
 	ClassDB::bind_method(D_METHOD("set_floor_snap_length", "floor_snap_length"), &CharacterBody3D::set_floor_snap_length);
+	ClassDB::bind_method(D_METHOD("is_step_enabled"), &CharacterBody3D::is_step_enabled);
+	ClassDB::bind_method(D_METHOD("set_step_enabled", "enabled"), &CharacterBody3D::set_step_enabled);
+	ClassDB::bind_method(D_METHOD("get_step_height"), &CharacterBody3D::get_step_height);
+	ClassDB::bind_method(D_METHOD("set_step_height", "height"), &CharacterBody3D::set_step_height);
+	ClassDB::bind_method(D_METHOD("is_step_smooth_enabled"), &CharacterBody3D::is_step_smooth_enabled);
+	ClassDB::bind_method(D_METHOD("set_step_smooth_enabled", "enabled"), &CharacterBody3D::set_step_smooth_enabled);
+	ClassDB::bind_method(D_METHOD("get_step_smooth_speed"), &CharacterBody3D::get_step_smooth_speed);
+	ClassDB::bind_method(D_METHOD("set_step_smooth_speed", "speed"), &CharacterBody3D::set_step_smooth_speed);
+	ClassDB::bind_method(D_METHOD("get_visual_position"), &CharacterBody3D::get_visual_position);
 	ClassDB::bind_method(D_METHOD("get_wall_min_slide_angle"), &CharacterBody3D::get_wall_min_slide_angle);
 	ClassDB::bind_method(D_METHOD("set_wall_min_slide_angle", "radians"), &CharacterBody3D::set_wall_min_slide_angle);
 	ClassDB::bind_method(D_METHOD("get_up_direction"), &CharacterBody3D::get_up_direction);
@@ -933,6 +1171,12 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians_as_degrees"), "set_floor_max_angle", "get_floor_max_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_snap_length", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,suffix:m"), "set_floor_snap_length", "get_floor_snap_length");
 
+	ADD_GROUP("Step", "step_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "step_enabled"), "set_step_enabled", "is_step_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step_height", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,suffix:m"), "set_step_height", "get_step_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "step_smooth_enabled"), "set_step_smooth_enabled", "is_step_smooth_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step_smooth_speed", PROPERTY_HINT_RANGE, "1,30,0.5,or_greater"), "set_step_smooth_speed", "get_step_smooth_speed");
+
 	ADD_GROUP("Moving Platform", "platform_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_on_leave", PROPERTY_HINT_ENUM, "Add Velocity,Add Upward Velocity,Do Nothing", PROPERTY_USAGE_DEFAULT), "set_platform_on_leave", "get_platform_on_leave");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_floor_layers", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_platform_floor_layers", "get_platform_floor_layers");
@@ -954,7 +1198,7 @@ void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
 		return;
 	}
 	if (motion_mode == MOTION_MODE_FLOATING) {
-		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
+		if (p_property.name.begins_with("floor_") || p_property.name.begins_with("step_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
