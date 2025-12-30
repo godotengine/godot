@@ -117,8 +117,8 @@ public:
 
 	struct ItemAxisSort {
 		bool y_as_main = true;
-		bool x_ascending = false;
-		bool y_ascending = false;
+		bool x_ascending = true;
+		bool y_ascending = true;
 
 		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
 			const Vector2 left_pos = p_left->axis_sort_xform.columns[2];

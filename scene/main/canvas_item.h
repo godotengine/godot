@@ -101,9 +101,9 @@ private:
 	int z_index = 0;
 	bool z_relative = true;
 	bool axis_sort_enabled = false;
-	bool axis_sort_y_as_main = false;
-	bool axis_sort_x_ascending = false;
-	bool axis_sort_y_ascending = false;
+	bool axis_sort_y_as_main = true;
+	bool axis_sort_x_ascending = true;
+	bool axis_sort_y_ascending = true;
 
 	Window *window = nullptr;
 	bool visible = true;
