@@ -339,14 +339,12 @@ Error DisplayServerWayland::file_dialog_show(const String &p_title, const String
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowID window_id = p_window_id;
-	if (!windows.has(window_id) || window_get_flag(WINDOW_FLAG_POPUP_WM_HINT, window_id)) {
-		window_id = MAIN_WINDOW_ID;
+	while (windows.has(window_id) && window_get_flag(WINDOW_FLAG_POPUP_WM_HINT, window_id)) {
+		window_id = windows[window_id].parent_id;
 	}
 
 	WaylandThread::WindowState *ws = wayland_thread.window_get_state(window_id);
-	ERR_FAIL_NULL_V(ws, ERR_BUG);
-
-	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+	return portal_desktop->file_dialog_show(p_window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
 }
 
 Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
@@ -354,14 +352,12 @@ Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title,
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowID window_id = p_window_id;
-	if (!windows.has(window_id) || window_get_flag(WINDOW_FLAG_POPUP_WM_HINT, window_id)) {
-		window_id = MAIN_WINDOW_ID;
+	while (windows.has(window_id) && window_get_flag(WINDOW_FLAG_POPUP_WM_HINT, window_id)) {
+		window_id = windows[window_id].parent_id;
 	}
 
 	WaylandThread::WindowState *ws = wayland_thread.window_get_state(window_id);
-	ERR_FAIL_NULL_V(ws, ERR_BUG);
-
-	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
+	return portal_desktop->file_dialog_show(p_window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
 }
 
 #endif

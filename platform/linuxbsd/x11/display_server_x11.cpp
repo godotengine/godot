@@ -482,11 +482,7 @@ Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_
 	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id) || windows[window_id].is_popup) {
-		window_id = MAIN_WINDOW_ID;
-	}
-
-	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
+	String xid = (window_id != INVALID_WINDOW_ID) ? vformat("x11:%x", (uint64_t)windows[window_id].x11_window) : String();
 	return portal_desktop->file_dialog_show(p_window_id, xid, p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
 }
 
@@ -494,11 +490,7 @@ Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, con
 	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id) || windows[window_id].is_popup) {
-		window_id = MAIN_WINDOW_ID;
-	}
-
-	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
+	String xid = (window_id != INVALID_WINDOW_ID) ? vformat("x11:%x", (uint64_t)windows[window_id].x11_window) : String();
 	return portal_desktop->file_dialog_show(p_window_id, xid, p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
 }
 

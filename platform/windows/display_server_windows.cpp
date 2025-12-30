@@ -547,34 +547,37 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	int64_t w = fd->wrect.size.x;
 	int64_t h = fd->wrect.size.y;
 
-	WNDCLASSW wc = {};
-	wc.lpfnWndProc = (WNDPROC)::WndProcFileDialog;
-	wc.hInstance = GetModuleHandle(nullptr);
-	wc.lpszClassName = L"Engine File Dialog";
-	RegisterClassW(&wc);
+	HWND hwnd_dialog = 0;
+	if (!fd->hwnd_owner) {
+		WNDCLASSW wc = {};
+		wc.lpfnWndProc = (WNDPROC)::WndProcFileDialog;
+		wc.hInstance = GetModuleHandle(nullptr);
+		wc.lpszClassName = L"Engine File Dialog";
+		RegisterClassW(&wc);
 
-	HWND hwnd_dialog = CreateWindowExW(WS_EX_APPWINDOW, L"Engine File Dialog", L"", WS_OVERLAPPEDWINDOW, x, y, w, h, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
-	if (hwnd_dialog) {
-		{
-			MutexLock lock(ds->file_dialog_mutex);
-			ds->file_dialog_wnd[hwnd_dialog] = fd;
-		}
+		hwnd_dialog = CreateWindowExW(WS_EX_APPWINDOW, L"Engine File Dialog", L"", WS_OVERLAPPEDWINDOW, x, y, w, h, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+		if (hwnd_dialog) {
+			{
+				MutexLock lock(ds->file_dialog_mutex);
+				ds->file_dialog_wnd[hwnd_dialog] = fd;
+			}
 
-		HICON mainwindow_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_SMALL, 0);
-		if (mainwindow_icon) {
-			SendMessage(hwnd_dialog, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
-		}
-		mainwindow_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_BIG, 0);
-		if (mainwindow_icon) {
-			SendMessage(hwnd_dialog, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
-		}
-		IPropertyStore *prop_store;
-		HRESULT hr = SHGetPropertyStoreForWindow(hwnd_dialog, IID_IPropertyStore, (void **)&prop_store);
-		if (hr == S_OK) {
-			PROPVARIANT val;
-			InitPropVariantFromString((PCWSTR)fd->appid.utf16().get_data(), &val);
-			prop_store->SetValue(PKEY_AppUserModel_ID, val);
-			prop_store->Release();
+			HICON mainwindow_icon = (HICON)SendMessage(ds->windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
+			if (mainwindow_icon) {
+				SendMessage(hwnd_dialog, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+			}
+			mainwindow_icon = (HICON)SendMessage(ds->windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_BIG, 0);
+			if (mainwindow_icon) {
+				SendMessage(hwnd_dialog, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
+			}
+			IPropertyStore *prop_store;
+			HRESULT hr = SHGetPropertyStoreForWindow(hwnd_dialog, IID_IPropertyStore, (void **)&prop_store);
+			if (hr == S_OK) {
+				PROPVARIANT val;
+				InitPropVariantFromString((PCWSTR)fd->appid.utf16().get_data(), &val);
+				prop_store->SetValue(PKEY_AppUserModel_ID, val);
+				prop_store->Release();
+			}
 		}
 	}
 
@@ -687,7 +690,11 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 		pfd->SetFileTypes(filters.size(), filters.ptr());
 		pfd->SetFileTypeIndex(0);
 
-		hr = pfd->Show(hwnd_dialog);
+		if (fd->hwnd_owner) {
+			hr = pfd->Show(fd->hwnd_owner);
+		} else {
+			hr = pfd->Show(hwnd_dialog);
+		}
 		pfd->Unadvise(cookie);
 
 		Dictionary options = event_handler->get_selected();
