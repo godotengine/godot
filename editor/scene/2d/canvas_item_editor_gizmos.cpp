@@ -35,8 +35,6 @@
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "scene/resources/mesh.h"
 
-#define HANDLE_HALF_SIZE 9.5
-
 bool EditorCanvasItemGizmo::is_editable() const {
 	ERR_FAIL_NULL_V(canvas_item, false);
 
@@ -144,14 +142,14 @@ void EditorCanvasItemGizmo::commit_handle(int p_id, bool p_secondary, const Vari
 	gizmo_plugin->commit_handle(this, p_id, p_secondary, p_restore, p_cancel);
 }
 
-int EditorCanvasItemGizmo::subgizmos_intersect_point(const Point2 &p_point) const {
+int EditorCanvasItemGizmo::subgizmos_intersect_point(const Point2 &p_point, real_t p_max_distance) const {
 	int id = -1;
-	if (GDVIRTUAL_CALL(_subgizmos_intersect_point, p_point, id)) {
+	if (GDVIRTUAL_CALL(_subgizmos_intersect_point, p_point, p_max_distance, id)) {
 		return id;
 	}
 
 	ERR_FAIL_NULL_V(gizmo_plugin, -1);
-	return gizmo_plugin->subgizmos_intersect_point(this, p_point);
+	return gizmo_plugin->subgizmos_intersect_point(this, p_point, p_max_distance);
 }
 
 Vector<int> EditorCanvasItemGizmo::subgizmos_intersect_rect(const Rect2 &p_rect) const {
@@ -385,7 +383,7 @@ bool EditorCanvasItemGizmo::intersect_rect(const Rect2 &p_rect) const {
 	return false;
 }
 
-void EditorCanvasItemGizmo::handles_intersect_point(const Point2 &p_point, bool p_shift_pressed, int &r_id, bool &r_secondary) {
+void EditorCanvasItemGizmo::handles_intersect_point(const Point2 &p_point, real_t p_max_distance, bool p_shift_pressed, int &r_id, bool &r_secondary) {
 	r_id = -1;
 	r_secondary = false;
 
@@ -396,13 +394,10 @@ void EditorCanvasItemGizmo::handles_intersect_point(const Point2 &p_point, bool 
 		return;
 	}
 
-	Transform2D screen_transform = CanvasItemEditor::get_singleton()->get_canvas_transform() * canvas_item->get_screen_transform();
-	float min_d = 1e20;
-
+	real_t min_d = 1e20;
 	for (int i = 0; i < secondary_handles.size(); i++) {
-		Vector2 screen_pos = screen_transform.xform(secondary_handles[i]);
-		float distance = screen_pos.distance_to(p_point);
-		if (distance < HANDLE_HALF_SIZE && distance < min_d) {
+		real_t distance = secondary_handles[i].distance_to(p_point);
+		if (distance < p_max_distance && distance < min_d) {
 			min_d = distance;
 			if (secondary_handle_ids.is_empty()) {
 				r_id = i;
@@ -418,11 +413,9 @@ void EditorCanvasItemGizmo::handles_intersect_point(const Point2 &p_point, bool 
 	}
 
 	min_d = 1e20;
-
 	for (int i = 0; i < handles.size(); i++) {
-		Vector2 screen_pos = screen_transform.xform(handles[i]);
-		float distance = screen_pos.distance_to(p_point);
-		if (distance < HANDLE_HALF_SIZE && distance < min_d) {
+		real_t distance = handles[i].distance_to(p_point);
+		if (distance < p_max_distance && distance < min_d) {
 			min_d = distance;
 			if (handle_ids.is_empty()) {
 				r_id = i;
@@ -434,7 +427,7 @@ void EditorCanvasItemGizmo::handles_intersect_point(const Point2 &p_point, bool 
 	}
 }
 
-bool EditorCanvasItemGizmo::intersect_point(const Point2 &p_point) const {
+bool EditorCanvasItemGizmo::intersect_point(const Point2 &p_point, const real_t p_max_distance) const {
 	ERR_FAIL_NULL_V(canvas_item, false);
 	ERR_FAIL_COND_V(!valid, false);
 
@@ -442,26 +435,23 @@ bool EditorCanvasItemGizmo::intersect_point(const Point2 &p_point) const {
 		return false;
 	}
 
-	Transform2D to_local = canvas_item->get_global_transform().affine_inverse();
-	Point2 local_point = to_local.xform(p_point);
-
 	for (int i = 0; i < collision_segments.size(); i += 2) {
 		Vector2 a = collision_segments[i];
 		Vector2 b = collision_segments[i + 1];
-		Vector2 closest = Geometry2D::get_closest_point_to_segment(local_point, a, b);
-		if (closest.distance_to(local_point) < 8) { // TODO: GIZMOS 3d uses a magic 8 here, not sure why
+		Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, a, b);
+		if (closest.distance_to(p_point) < p_max_distance) {
 			return true;
 		}
 	}
 
 	for (const Rect2 &collision_rect : collision_rects) {
-		if (collision_rect.has_point(local_point)) {
+		if (collision_rect.has_point(p_point)) {
 			return true;
 		}
 	}
 
 	for (const Vector<Vector2> &collision_polygon : collision_polygons) {
-		if (Geometry2D::is_point_in_polygon(local_point, collision_polygon)) {
+		if (Geometry2D::is_point_in_polygon(p_point, collision_polygon)) {
 			return true;
 		}
 	}
@@ -711,9 +701,9 @@ void EditorCanvasItemGizmoPlugin::commit_handle(const EditorCanvasItemGizmo *p_g
 	GDVIRTUAL_CALL(_commit_handle, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, p_restore, p_cancel);
 }
 
-int EditorCanvasItemGizmoPlugin::subgizmos_intersect_point(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point) const {
+int EditorCanvasItemGizmoPlugin::subgizmos_intersect_point(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point, real_t p_max_distance) const {
 	int ret = -1;
-	GDVIRTUAL_CALL(_subgizmos_intersect_point, Ref<EditorCanvasItemGizmo>(p_gizmo), p_point, ret);
+	GDVIRTUAL_CALL(_subgizmos_intersect_point, Ref<EditorCanvasItemGizmo>(p_gizmo), p_point, p_max_distance, ret);
 	return ret;
 }
 
