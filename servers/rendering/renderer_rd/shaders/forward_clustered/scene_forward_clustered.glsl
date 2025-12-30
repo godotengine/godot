@@ -81,6 +81,13 @@ void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binorm
 	normal = omc_axis.zzz * axis + vec3(-s_axis.y, s_axis.x, c);
 }
 
+mat3 adjoint(in mat4 m) {
+	return mat3(
+			cross(m[1].xyz, m[2].xyz),
+			cross(m[2].xyz, m[0].xyz),
+			cross(m[0].xyz, m[1].xyz));
+}
+
 /* Varyings */
 
 layout(location = 0) out vec3 vertex_interp;
@@ -248,7 +255,8 @@ void vertex_shader(vec3 vertex_input,
 
 	mat3 model_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
-		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
+		float det_sign = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NEGATIVE_DETERMINANT) ? -1.0 : 1.0;
+		model_normal_matrix = det_sign * adjoint(model_matrix);
 	} else {
 		model_normal_matrix = mat3(model_matrix);
 	}
@@ -967,6 +975,13 @@ vec4 textureArray_bicubic(texture2DArray tex, vec3 uv, vec2 texture_size) {
 }
 #endif //USE_LIGHTMAP
 
+mat3 adjoint(in mat4 m) {
+	return mat3(
+			cross(m[1].xyz, m[2].xyz),
+			cross(m[2].xyz, m[0].xyz),
+			cross(m[0].xyz, m[1].xyz));
+}
+
 #ifdef USE_MULTIVIEW
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
@@ -1313,7 +1328,8 @@ void fragment_shader(in SceneData scene_data) {
 
 	mat3 model_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
-		model_normal_matrix = transpose(inverse(mat3(read_model_matrix)));
+		float det_sign = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NEGATIVE_DETERMINANT) ? -1.0 : 1.0;
+		model_normal_matrix = det_sign * adjoint(read_model_matrix);
 	} else {
 		model_normal_matrix = mat3(read_model_matrix);
 	}
