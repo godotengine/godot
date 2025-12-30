@@ -73,6 +73,8 @@ class JoltSoftBody3D final : public JoltObject3D {
 	virtual void _add_to_space() override;
 
 	JPH::SoftBodySharedSettings *_create_shared_settings();
+	JPH::SoftBodySharedSettings *_create_shared_settings_cloth();
+	JPH::SoftBodySharedSettings *_create_shared_settings_volume();
 
 	void _apply_environmental_forces(float p_step, JPH::Body &p_jolt_body);
 

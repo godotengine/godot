@@ -121,6 +121,16 @@ void JoltSoftBody3D::_add_to_space() {
 }
 
 JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
+	switch (soft_body_form) {
+		default:
+		case PhysicsServer3D::SOFT_BODY_FORM_CLOTH:
+			return _create_shared_settings_cloth();
+		case PhysicsServer3D::SOFT_BODY_FORM_VOLUME:
+			return _create_shared_settings_volume();
+	}
+}
+
+JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_cloth() {
 	RenderingServer *rendering = RenderingServer::get_singleton();
 
 	// TODO: calling RenderingServer::mesh_surface_get_arrays() from the physics thread
@@ -307,6 +317,29 @@ void JoltSoftBody3D::_apply_environmental_forces(float p_step, JPH::Body &p_jolt
 			}
 		}
 	}
+}
+
+JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings_volume() {
+	return _create_shared_settings_cloth();
+
+	//RenderingServer *rendering = RenderingServer::get_singleton();
+
+	//const Array mesh_data = rendering->mesh_surface_get_arrays(mesh, 0);
+	//ERR_FAIL_COND_V(mesh_data.is_empty(), nullptr);
+
+	//const PackedInt32Array mesh_indices = mesh_data[RenderingServer::ARRAY_INDEX];
+	//ERR_FAIL_COND_V(mesh_indices.is_empty(), nullptr);
+
+	//const PackedVector3Array mesh_vertices = mesh_data[RenderingServer::ARRAY_VERTEX];
+	//ERR_FAIL_COND_V(mesh_vertices.is_empty(), nullptr);
+
+	//JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
+	//JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = settings->mVertices;
+	//JPH::Array<JPH::SoftBodySharedSettings::Face> &physics_faces = settings->mFaces;
+
+	//settings->Optimize();
+
+	//return settings;
 }
 
 void JoltSoftBody3D::_update_mass() {
@@ -699,6 +732,7 @@ PhysicsServer3D::SoftBodyForm JoltSoftBody3D::get_soft_body_form() const {
 
 void JoltSoftBody3D::set_soft_body_form(PhysicsServer3D::SoftBodyForm p_soft_body_form) {
 	soft_body_form = p_soft_body_form;
+	_try_rebuild();
 }
 
 Transform3D JoltSoftBody3D::get_transform() const {
