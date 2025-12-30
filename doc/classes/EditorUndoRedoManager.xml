@@ -73,7 +73,7 @@
 			<param index="0" name="id" type="int" default="-99" />
 			<param index="1" name="increase_version" type="bool" default="true" />
 			<description>
-				Clears the given undo history. You can clear history for a specific scene, global history, or for all scenes at once if [param id] is [constant INVALID_HISTORY].
+				Clears the given undo history. You can clear history for a specific scene, global history, or for all histories at once (except [constant REMOTE_HISTORY]) if [param id] is [constant INVALID_HISTORY].
 				If [param increase_version] is [code]true[/code], the undo history version will be increased, marking it as unsaved. Useful for operations that modify the scene, but don't support undo.
 				[codeblock]
 				var scene_root = EditorInterface.get_edited_scene_root()

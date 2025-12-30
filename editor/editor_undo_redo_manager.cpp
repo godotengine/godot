@@ -447,8 +447,13 @@ void EditorUndoRedoManager::clear_history(int p_idx, bool p_increase_version) {
 		return;
 	}
 
-	for (const KeyValue<int, History> &E : history_map) {
+	for (KeyValue<int, History> &E : history_map) {
+		if (E.key == REMOTE_HISTORY) {
+			continue;
+		}
 		E.value.undo_redo->clear_history(p_increase_version);
+		E.value.undo_stack.clear();
+		E.value.redo_stack.clear();
 		set_history_as_saved(E.key);
 	}
 	emit_signal(SNAME("history_changed"));
