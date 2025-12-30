@@ -1075,7 +1075,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			}
 		}
 
-		real_t tex_hue_variation = 0.0;
+		real_t tex_hue_variation = 1.0;
 		if (curve_parameters[PARAM_HUE_VARIATION].is_valid()) {
 			tex_hue_variation = curve_parameters[PARAM_HUE_VARIATION]->sample(tv);
 		}
