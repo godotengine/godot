@@ -140,17 +140,24 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			if (stream.is_valid() && autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
 			}
+			RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), true, get_rect(), callable_mp(this, &VideoStreamPlayer::_visibility_enter), callable_mp(this, &VideoStreamPlayer::_visibility_exit));
+
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			stop();
 			AudioServer::get_singleton()->remove_mix_callback(_mix_audios, this);
+			RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), false, Rect2(), Callable(), Callable());
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
 			if (stream.is_null() || paused || playback.is_null() || !playback->is_playing()) {
+				return;
+			}
+
+			if (update_mode == VideoStreamPlayer::UPDATE_DISABLED || (update_mode == VideoStreamPlayer::UPDATE_WHEN_VISIBLE && (!on_screen || !is_visible_in_tree()))) {
 				return;
 			}
 
@@ -181,6 +188,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 
 			Size2 s = expand ? get_size() : texture_size;
 			draw_texture_rect(texture, Rect2(Point2(), s), false);
+
 		} break;
 
 		case NOTIFICATION_SUSPENDED:
@@ -226,6 +234,10 @@ void VideoStreamPlayer::texture_changed(const Ref<Texture2D> &p_texture) {
 
 	if (!expand) {
 		update_minimum_size();
+	}
+
+	if (is_inside_tree()) {
+		RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), true, get_rect(), callable_mp(this, &VideoStreamPlayer::_visibility_enter), callable_mp(this, &VideoStreamPlayer::_visibility_exit));
 	}
 }
 
@@ -503,6 +515,32 @@ StringName VideoStreamPlayer::get_bus() const {
 	return SceneStringName(Master);
 }
 
+void VideoStreamPlayer::set_update_mode(UpdateMode p_mode) {
+	ERR_MAIN_THREAD_GUARD;
+	update_mode = p_mode;
+}
+
+VideoStreamPlayer::UpdateMode VideoStreamPlayer::get_update_mode() const {
+	ERR_READ_THREAD_GUARD_V(UPDATE_DISABLED);
+	return update_mode;
+}
+
+void VideoStreamPlayer::_visibility_enter() {
+	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	on_screen = true;
+}
+
+void VideoStreamPlayer::_visibility_exit() {
+	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	on_screen = false;
+}
+
 void VideoStreamPlayer::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
@@ -566,6 +604,9 @@ void VideoStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &VideoStreamPlayer::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &VideoStreamPlayer::get_bus);
 
+	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &VideoStreamPlayer::set_update_mode);
+	ClassDB::bind_method(D_METHOD("get_update_mode"), &VideoStreamPlayer::get_update_mode);
+
 	ClassDB::bind_method(D_METHOD("get_video_texture"), &VideoStreamPlayer::get_video_texture);
 
 	ADD_SIGNAL(MethodInfo("finished"));
@@ -583,6 +624,11 @@ void VideoStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", PROPERTY_USAGE_NONE), "set_stream_position", "get_stream_position");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_update_mode", PROPERTY_HINT_ENUM, "Disabled,When Visible,Always"), "set_update_mode", "get_update_mode");
+
+	BIND_ENUM_CONSTANT(UPDATE_DISABLED);
+	BIND_ENUM_CONSTANT(UPDATE_WHEN_VISIBLE);
+	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
 }
 
 VideoStreamPlayer::~VideoStreamPlayer() {
