@@ -2440,6 +2440,13 @@ void AnimationPlayerEditorPlugin::_update_dummy_player(AnimationMixer *p_mixer) 
 	}
 	memdelete(default_node);
 
+	// Library list is dynamically added to property list, should be copied explicitly.
+	List<StringName> libraries;
+	p_mixer->get_animation_library_list(&libraries);
+	for (const StringName &K : libraries) {
+		dummy_player->add_animation_library(K, p_mixer->get_animation_library(K));
+	}
+
 	if (anim_editor) {
 		anim_editor->_update_player();
 	}
