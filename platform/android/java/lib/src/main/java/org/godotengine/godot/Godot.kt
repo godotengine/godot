@@ -135,6 +135,8 @@ class Godot private constructor(val context: Context) {
 	private val gyroscopeEnabled = AtomicBoolean(false)
 	private val mGyroscope: Sensor? by lazy { mSensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
 
+	val isXrRuntime: Boolean by lazy { hasFeature("xr_runtime") }
+
 	val tts = GodotTTS(context)
 	val directoryAccessHandler = DirectoryAccessHandler(context)
 	val fileAccessHandler = FileAccessHandler(context)
