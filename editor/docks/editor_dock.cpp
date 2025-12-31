@@ -33,6 +33,9 @@
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
 #include "editor/docks/editor_dock_manager.h"
+#include "editor/editor_node.h"
+#include "editor/gui/editor_bottom_panel.h"
+#include "scene/gui/tab_container.h"
 
 void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
 	ERR_FAIL_COND(p_slot < EditorPlugin::DOCK_SLOT_NONE || p_slot >= EditorPlugin::DOCK_SLOT_MAX);
@@ -116,7 +119,33 @@ void EditorDock::open() {
 }
 
 void EditorDock::make_visible() {
-	EditorDockManager::get_singleton()->open_dock(this, true);
+	if (!enabled) {
+		return;
+	}
+
+	if (!is_open) {
+		EditorDockManager::get_singleton()->open_dock(this, false);
+	}
+
+	// If floating window, it's already visible.
+	if (dock_window) {
+		return;
+	}
+
+	if (get_parent() == EditorNode::get_bottom_panel()) {
+		if (EditorNode::get_bottom_panel()->is_locked()) {
+			return;
+		}
+	} else if (!EditorDockManager::get_singleton()->are_docks_visible()) {
+		return;
+	}
+
+	TabContainer *tab_container = EditorDockManager::get_singleton()->get_dock_tab_container(this);
+	if (!tab_container) {
+		return;
+	}
+	int tab_index = tab_container->get_tab_idx_from_control(this);
+	tab_container->set_current_tab(tab_index);
 }
 
 void EditorDock::close() {
