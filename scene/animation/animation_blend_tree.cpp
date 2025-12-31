@@ -156,9 +156,10 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	// 1. Progress for AnimationNode.
 	bool will_end = Animation::is_greater_or_equal_approx(cur_time + cur_delta, cur_len);
 	bool is_started = p_seek && !p_is_external_seeking && Math::is_zero_approx(cur_time);
+	bool immediately_after_start = is_started && advance_on_start;
 
 	// 1. Progress for AnimationNode.
-	if (is_started && advance_on_start) {
+	if (immediately_after_start) {
 		cur_time = cur_delta;
 	}
 	if (cur_loop_mode != Animation::LOOP_NONE) {
@@ -265,6 +266,21 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	}
 
 	if (!p_test_only) {
+		// Force process first key for Discrete/Method/Audio/AnimationPlayback.
+		if (immediately_after_start) {
+			AnimationMixer::PlaybackInfo pi = p_playback_info;
+			pi.start = 0.0;
+			pi.end = cur_len;
+			if (play_mode == PLAY_MODE_FORWARD) {
+				pi.time = 0;
+			} else {
+				pi.time = anim_size;
+			}
+			pi.delta = 0;
+			pi.weight = CMP_EPSILON;
+			blend_animation(animation, pi);
+		}
+
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
 		pi.start = 0.0;
 		pi.end = cur_len;
@@ -281,9 +297,9 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		pi.weight = 1.0;
 		pi.looped_flag = looped_flag;
 		blend_animation(animation, pi);
-	}
 
-	set_parameter(backward, cur_backward);
+		set_parameter(backward, cur_backward);
+	}
 
 	return nti;
 }
