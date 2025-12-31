@@ -42,15 +42,15 @@
 #include "servers/rendering/renderer_scene_render.h"
 
 #ifdef __OBJC__
-@protocol MTLFXSpatialScaler;
-@protocol MTLFXTemporalScaler;
+@protocol MTLFXSpatialScalerBase;
+@protocol MTLFXTemporalScalerBase;
 #endif
 
 namespace RendererRD {
 
 struct MFXSpatialContext {
 #ifdef __OBJC__
-	id<MTLFXSpatialScaler> scaler = nullptr;
+	id<MTLFXSpatialScalerBase> scaler = nullptr;
 #else
 	void *scaler = nullptr;
 #endif
@@ -99,7 +99,7 @@ public:
 
 struct MFXTemporalContext {
 #ifdef __OBJC__
-	id<MTLFXTemporalScaler> scaler = nullptr;
+	id<MTLFXTemporalScalerBase> scaler = nullptr;
 #else
 	void *scaler = nullptr;
 #endif

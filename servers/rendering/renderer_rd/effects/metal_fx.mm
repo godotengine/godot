@@ -32,7 +32,7 @@
 
 #import "../storage_rd/render_scene_buffers_rd.h"
 #import "drivers/metal/pixel_formats.h"
-#import "drivers/metal/rendering_device_driver_metal.h"
+#import "drivers/metal/rendering_device_driver_metal3.h"
 
 #import <Metal/Metal.h>
 #import <MetalFX/MetalFX.h>
@@ -53,22 +53,18 @@ MFXSpatialEffect::~MFXSpatialEffect() {
 void MFXSpatialEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_buffer, CallbackArgs *p_userdata) {
 	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 
-	MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
+	MTL3::MDCommandBuffer *obj = (MTL3::MDCommandBuffer *)(p_command_buffer.id);
 	obj->end();
 
 	id<MTLTexture> src_texture = rid::get(p_userdata->src);
 	id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
 
-	__block id<MTLFXSpatialScaler> scaler = p_userdata->ctx.scaler;
+	id<MTLFXSpatialScalerBase> scaler = (id<MTLFXSpatialScalerBase>)p_userdata->ctx.scaler;
 	scaler.colorTexture = src_texture;
 	scaler.outputTexture = dst_texture;
-	[scaler encodeToCommandBuffer:obj->get_command_buffer()];
-	// TODO(sgc): add API to retain objects until the command buffer completes
-	[obj->get_command_buffer() addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-		// This block retains a reference to the scaler until the command buffer.
-		// completes.
-		scaler = nil;
-	}];
+	id<MTLFXSpatialScaler> s = (id<MTLFXSpatialScaler>)scaler;
+	[s encodeToCommandBuffer:obj->get_command_buffer()];
+	obj->retain_resource(scaler);
 
 	CallbackArgs::free(&p_userdata);
 
@@ -190,7 +186,7 @@ void MFXTemporalEffect::process(RendererRD::MFXTemporalContext *p_ctx, RendererR
 void MFXTemporalEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_buffer, CallbackArgs *p_userdata) {
 	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 
-	MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
+	MTL3::MDCommandBuffer *obj = (MTL3::MDCommandBuffer *)(p_command_buffer.id);
 	obj->end();
 
 	id<MTLTexture> src_texture = rid::get(p_userdata->src);
@@ -200,7 +196,7 @@ void MFXTemporalEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_b
 
 	id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
 
-	__block id<MTLFXTemporalScaler> scaler = p_userdata->ctx.scaler;
+	id<MTLFXTemporalScalerBase> scaler = (id<MTLFXTemporalScalerBase>)p_userdata->ctx.scaler;
 	scaler.reset = p_userdata->reset;
 	scaler.colorTexture = src_texture;
 	scaler.depthTexture = depth;
@@ -209,13 +205,9 @@ void MFXTemporalEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_b
 	scaler.jitterOffsetX = p_userdata->jitter_offset.x;
 	scaler.jitterOffsetY = p_userdata->jitter_offset.y;
 	scaler.outputTexture = dst_texture;
-	[scaler encodeToCommandBuffer:obj->get_command_buffer()];
-	// TODO(sgc): add API to retain objects until the command buffer completes
-	[obj->get_command_buffer() addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-		// This block retains a reference to the scaler until the command buffer.
-		// completes.
-		scaler = nil;
-	}];
+	id<MTLFXTemporalScaler> s = (id<MTLFXTemporalScaler>)scaler;
+	[s encodeToCommandBuffer:obj->get_command_buffer()];
+	obj->retain_resource(scaler);
 
 	CallbackArgs::free(&p_userdata);
 

@@ -93,19 +93,32 @@ static constexpr uint64_t round_up_to_alignment(uint64_t p_value, uint64_t p_ali
 	return aligned_value;
 }
 
+template <typename F>
 class Defer {
 public:
-	Defer(std::function<void()> func) :
-			func_(func) {}
+	explicit Defer(F &&f) :
+			func_(std::forward<F>(f)) {}
 	~Defer() { func_(); }
 
+	// Non-copyable (correct RAII semantics)
+	Defer(const Defer &) = delete;
+	Defer &operator=(const Defer &) = delete;
+
+	// Movable
+	Defer(Defer &&) = default;
+	Defer &operator=(Defer &&) = default;
+
 private:
-	std::function<void()> func_;
+	F func_;
 };
+
+// C++17 class template argument deduction.
+template <typename F>
+Defer(F &&) -> Defer<std::decay_t<F>>;
 
 #define CONCAT_INTERNAL(x, y) x##y
 #define CONCAT(x, y) CONCAT_INTERNAL(x, y)
-#define DEFER const Defer &CONCAT(defer__, __LINE__) = Defer
+#define DEFER const auto &CONCAT(defer__, __LINE__) = Defer
 
 extern os_log_t LOG_DRIVER;
 // Used for dynamic tracing.
