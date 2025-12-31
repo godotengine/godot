@@ -154,10 +154,15 @@ GLTFBufferViewIndex GLTFBufferView::write_new_buffer_view_into_state(const Ref<G
 	// This is used by accessors. The byte offset of an accessor MUST be a multiple of the accessor's component size.
 	// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#data-alignment
 	int64_t byte_offset = state_buffer.size();
+	int64_t padding_bytes = 0;
 	if (byte_offset % p_alignment != 0) {
-		byte_offset += p_alignment - (byte_offset % p_alignment);
+		padding_bytes = p_alignment - (byte_offset % p_alignment);
+		byte_offset += padding_bytes;
 	}
 	state_buffer.resize(byte_offset + input_data_size);
+	if (padding_bytes > 0) {
+		memset(state_buffer.ptrw() + (byte_offset - padding_bytes), 0, padding_bytes);
+	}
 	uint8_t *buffer_ptr = state_buffer.ptrw();
 	memcpy(buffer_ptr + byte_offset, p_input_data.ptr(), input_data_size);
 	state_buffers.set(p_buffer_index, state_buffer);
