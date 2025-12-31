@@ -247,6 +247,7 @@ public:
 
 	void reset_window();
 	void notify_surface_changed(int p_width, int p_height);
+	void notify_application_paused();
 
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
