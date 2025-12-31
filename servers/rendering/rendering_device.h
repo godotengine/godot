@@ -1215,7 +1215,6 @@ private:
 	WorkerThreadPool::TaskID pipeline_cache_save_task = WorkerThreadPool::INVALID_TASK_ID;
 
 	Vector<uint8_t> _load_pipeline_cache();
-	void _update_pipeline_cache(bool p_closing = false);
 	static void _save_pipeline_cache(void *p_data);
 
 	struct ComputePipeline {
@@ -1236,6 +1235,8 @@ public:
 
 	RID compute_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>());
 	bool compute_pipeline_is_valid(RID p_pipeline);
+
+	void update_pipeline_cache(bool p_closing = false);
 
 private:
 	/****************/

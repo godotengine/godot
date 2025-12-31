@@ -4224,7 +4224,7 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 	ERR_FAIL_COND_V(!pipeline.driver_id, RID());
 
 	if (pipeline_cache_enabled) {
-		_update_pipeline_cache();
+		update_pipeline_cache();
 	}
 
 	pipeline.shader = p_shader;
@@ -4312,7 +4312,7 @@ RID RenderingDevice::compute_pipeline_create(RID p_shader, const Vector<Pipeline
 	ERR_FAIL_COND_V(!pipeline.driver_id, RID());
 
 	if (pipeline_cache_enabled) {
-		_update_pipeline_cache();
+		update_pipeline_cache();
 	}
 
 	pipeline.shader = p_shader;
@@ -7195,7 +7195,7 @@ Vector<uint8_t> RenderingDevice::_load_pipeline_cache() {
 	}
 }
 
-void RenderingDevice::_update_pipeline_cache(bool p_closing) {
+void RenderingDevice::update_pipeline_cache(bool p_closing) {
 	_THREAD_SAFE_METHOD_
 
 	{
@@ -7525,7 +7525,7 @@ void RenderingDevice::finalize() {
 	}
 
 	if (pipeline_cache_enabled) {
-		_update_pipeline_cache(true);
+		update_pipeline_cache(true);
 		driver->pipeline_cache_free();
 	}
 
