@@ -677,4 +677,18 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_hasFeature(JNIEnv
 	}
 	return false;
 }
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onPictureInPictureModeChanged(JNIEnv *env, jclass clazz, jboolean p_is_in_picture_in_picture_mode) {
+	if (step.get() <= STEP_SETUP) {
+		return;
+	}
+
+	if (os_android->get_main_loop()) {
+		if (p_is_in_picture_in_picture_mode) {
+			os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PIP_MODE_ENTERED);
+		} else {
+			os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PIP_MODE_EXITED);
+		}
+	}
+}
 }

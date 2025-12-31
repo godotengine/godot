@@ -1603,6 +1603,13 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
 			</description>
 		</method>
+		<method name="is_in_pip_mode">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the application is in picture-in-picture mode.
+				[b]Note:[/b] This method is implemented on Android.
+			</description>
+		</method>
 		<method name="is_touchscreen_available" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -1692,6 +1699,30 @@
 			<param index="0" name="mouse_mode" type="int" enum="DisplayServer.MouseMode" />
 			<description>
 				Sets the current mouse mode. See also [method mouse_get_mode].
+			</description>
+		</method>
+		<method name="pip_mode_enter">
+			<return type="void" />
+			<description>
+				Enters picture-in-picture mode.
+				[b]Note:[/b] This method is implemented on Android.
+			</description>
+		</method>
+		<method name="pip_mode_set_aspect_ratio">
+			<return type="void" />
+			<param index="0" name="numerator" type="int" />
+			<param index="1" name="denominator" type="int" />
+			<description>
+				Specifies the aspect ratio for picture-in-picture mode.
+				[b]Note:[/b] This method is implemented on Android.
+			</description>
+		</method>
+		<method name="pip_mode_set_auto_enter_on_background">
+			<return type="void" />
+			<param index="0" name="auto_enter_on_background" type="bool" />
+			<description>
+				Specifies whether picture-in-picture mode should be entered automatically when the application goes in the background.
+				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="process_events">
@@ -2635,6 +2666,9 @@
 		</constant>
 		<constant name="FEATURE_ACCESSIBILITY_SCREEN_READER" value="34" enum="Feature">
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
+		</constant>
+		<constant name="FEATURE_PIP_MODE" value="35" enum="Feature">
+			Display server supports putting the application in picture-in-picture mode. [b]Android[/b]
 		</constant>
 		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole">
 			Unknown or custom role.

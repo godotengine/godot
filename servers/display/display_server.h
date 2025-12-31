@@ -169,6 +169,7 @@ public:
 		FEATURE_NATIVE_COLOR_PICKER,
 		FEATURE_SELF_FITTING_WINDOWS,
 		FEATURE_ACCESSIBILITY_SCREEN_READER,
+		FEATURE_PIP_MODE,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -880,6 +881,11 @@ public:
 	void register_additional_output(Object *p_output);
 	void unregister_additional_output(Object *p_output);
 	bool has_additional_outputs() const { return additional_outputs.size() > 0; }
+
+	virtual bool is_in_pip_mode() { return false; }
+	virtual void pip_mode_enter() {}
+	virtual void pip_mode_set_aspect_ratio(int p_numerator, int p_denominator) {}
+	virtual void pip_mode_set_auto_enter_on_background(bool p_auto_enter_on_background) {}
 
 	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers);
 	static int get_create_function_count();

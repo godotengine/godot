@@ -43,6 +43,7 @@ import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.*
 import android.util.Log
+import android.util.Rational
 import android.util.TypedValue
 import android.view.*
 import android.widget.FrameLayout
@@ -57,6 +58,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.google.android.vending.expansion.downloader.*
 import org.godotengine.godot.error.Error
+import org.godotengine.godot.feature.PictureInPictureProvider
 import org.godotengine.godot.input.GodotEditText
 import org.godotengine.godot.input.GodotInputHandler
 import org.godotengine.godot.io.FilePicker
@@ -717,6 +719,13 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
+	internal fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
+		Log.v(TAG, "onPictureInPictureModeChanged: $isInPictureInPictureMode")
+		runOnRenderThread {
+			GodotLib.onPictureInPictureModeChanged(isInPictureInPictureMode)
+		}
+	}
+
 	fun onPause(host: GodotHost) {
 		Log.v(TAG, "OnPause: $host")
 		resumed = false
@@ -1370,6 +1379,54 @@ class Godot private constructor(val context: Context) {
 			buildProvider?.buildEnvCleanProject(projectPath, buildDir, callback)
 		} catch(e: Exception) {
 			Log.e(TAG, "Unable to clean project in build environment", e)
+		}
+	}
+
+	@Keep
+	private fun nativeIsPiPModeSupported(): Boolean {
+		val hostActivity = getActivity()
+		if (hostActivity is PictureInPictureProvider) {
+			return hostActivity.isPiPModeSupported()
+		}
+		return false
+	}
+
+	@Keep
+	private fun nativeIsInPiPMode(): Boolean {
+		val hostActivity = getActivity()
+		if (hostActivity is GodotActivity) {
+			return hostActivity.isInPictureInPictureMode
+		}
+		return false
+	}
+
+	@Keep
+	private fun nativeEnterPiPMode() {
+		val hostActivity = getActivity()
+		if (hostActivity is PictureInPictureProvider) {
+			runOnHostThread {
+				hostActivity.enterPiPMode()
+			}
+		}
+	}
+
+	@Keep
+	private fun nativeSetPiPModeAspectRatio(numerator: Int, denominator: Int) {
+		val hostActivity = getActivity()
+		if (hostActivity is GodotActivity) {
+			runOnHostThread {
+				hostActivity.updatePiPParams(aspectRatio = Rational(numerator, denominator))
+			}
+		}
+	}
+
+	@Keep
+	private fun nativeSetAutoEnterPiPModeOnBackground(autoEnterPiPOnBackground: Boolean) {
+		val hostActivity = getActivity()
+		if (hostActivity is GodotActivity) {
+			runOnHostThread {
+				hostActivity.updatePiPParams(enableAutoEnter = autoEnterPiPOnBackground)
+			}
 		}
 	}
 

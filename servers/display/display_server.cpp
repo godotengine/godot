@@ -1623,6 +1623,11 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_additional_output", "object"), &DisplayServer::unregister_additional_output);
 	ClassDB::bind_method(D_METHOD("has_additional_outputs"), &DisplayServer::has_additional_outputs);
 
+	ClassDB::bind_method(D_METHOD("is_in_pip_mode"), &DisplayServer::is_in_pip_mode);
+	ClassDB::bind_method(D_METHOD("pip_mode_enter"), &DisplayServer::pip_mode_enter);
+	ClassDB::bind_method(D_METHOD("pip_mode_set_aspect_ratio", "numerator", "denominator"), &DisplayServer::pip_mode_set_aspect_ratio);
+	ClassDB::bind_method(D_METHOD("pip_mode_set_auto_enter_on_background", "auto_enter_on_background"), &DisplayServer::pip_mode_set_auto_enter_on_background);
+
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
 #endif
@@ -1659,6 +1664,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_COLOR_PICKER);
 	BIND_ENUM_CONSTANT(FEATURE_SELF_FITTING_WINDOWS);
 	BIND_ENUM_CONSTANT(FEATURE_ACCESSIBILITY_SCREEN_READER);
+	BIND_ENUM_CONSTANT(FEATURE_PIP_MODE);
 
 	BIND_ENUM_CONSTANT(ROLE_UNKNOWN);
 	BIND_ENUM_CONSTANT(ROLE_DEFAULT_BUTTON);
