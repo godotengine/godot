@@ -455,11 +455,6 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			sorter.compare.y_as_main = ci->sort_axis_y_as_main;
 			sorter.compare.x_ascending = ci->sort_axis_x_ascending;
 			sorter.compare.y_ascending = ci->sort_axis_y_ascending;
-			// DELETE BOFORE PULL REQUEST.
-			print_line("sorter.compare.y_as_main = " + String(sorter.compare.y_as_main ? "true" : "false"));
-			print_line("sorter.compare.x_ascending = " + String(sorter.compare.x_ascending ? "true" : "false"));
-			print_line("sorter.compare.y_ascending = " + String(sorter.compare.y_ascending ? "true" : "false"));
-			//
 			sorter.sort(child_items, child_item_count);
 
 			for (i = 0; i < child_item_count; i++) {
