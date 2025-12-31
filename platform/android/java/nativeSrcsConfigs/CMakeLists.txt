@@ -21,4 +21,12 @@ target_include_directories(${PROJECT_NAME}
         ${ANDROID_ROOT_DIR}
         ${OPENXR_INCLUDE_DIR})
 
-add_definitions(-DUNIX_ENABLED -DVULKAN_ENABLED -DANDROID_ENABLED -DGLES3_ENABLED -DTOOLS_ENABLED -DDEBUG_ENABLED)
+add_definitions(
+        -DUNIX_ENABLED
+        -DVULKAN_ENABLED
+        -DANDROID_ENABLED
+        -DGLES3_ENABLED
+        -DTOOLS_ENABLED
+        -DDEBUG_ENABLED
+        -DRD_ENABLED
+)
