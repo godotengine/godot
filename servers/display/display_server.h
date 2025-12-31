@@ -532,6 +532,12 @@ public:
 	void unregister_additional_output(Object *p_output);
 	bool has_additional_outputs() const { return additional_outputs.size() > 0; }
 
+	/* PICTURE_IN_PICTURE */
+	virtual bool is_in_pip_mode(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) { return false; }
+	virtual void pip_mode_enter(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) {}
+	virtual void pip_mode_set_aspect_ratio(int p_numerator, int p_denominator, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) {}
+	virtual void pip_mode_set_auto_enter_on_background(bool p_auto_enter_on_background, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) {}
+
 	/* ACCESSIBILITY */
 
 #ifndef DISABLE_DEPRECATED
