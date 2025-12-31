@@ -243,8 +243,8 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 	// Check if anything changed that might change the quadrant shape.
 	// If so, recreate everything.
-	bool quadrant_shape_changed = dirty.flags[DIRTY_FLAGS_LAYER_axis_sort_ENABLED] || dirty.flags[DIRTY_FLAGS_TILE_SET] ||
-			(is_axis_sort_enabled() && (dirty.flags[DIRTY_FLAGS_LAYER_axis_sort_ORIGIN] || dirty.flags[DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED] || dirty.flags[DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM])) ||
+	bool quadrant_shape_changed = dirty.flags[DIRTY_FLAGS_LAYER_AXIS_SORT_ENABLED] || dirty.flags[DIRTY_FLAGS_TILE_SET] ||
+			(is_axis_sort_enabled() && (dirty.flags[DIRTY_FLAGS_LAYER_AXIS_SORT_ORIGIN] || dirty.flags[DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED] || dirty.flags[DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM])) ||
 			(!is_axis_sort_enabled() && dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE]);
 
 	// Free all quadrants.
@@ -305,7 +305,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 				// Sort the quadrant cells.
 				if (is_axis_sort_enabled() && x_draw_order_reversed) {
-					rendering_quadrant->cells.sort_custom<CellDataYSortedXReversedComparator>();
+					rendering_quadrant->cells.sort_custom<CellDataAxisSortComparator>();
 				} else {
 					rendering_quadrant->cells.sort();
 				}
@@ -3310,7 +3310,7 @@ void TileMapLayer::set_axis_sort_enabled(bool p_axis_sort_enabled) {
 		return;
 	}
 	CanvasItem::set_axis_sort_enabled(p_axis_sort_enabled);
-	dirty.flags[DIRTY_FLAGS_LAYER_axis_sort_ENABLED] = true;
+	dirty.flags[DIRTY_FLAGS_LAYER_AXIS_SORT_ENABLED] = true;
 	_queue_internal_update();
 	emit_signal(CoreStringName(changed));
 
@@ -3323,7 +3323,7 @@ void TileMapLayer::set_axis_sort_origin(Vector2i p_axis_sort_origin) {
 		return;
 	}
 	axis_sort_origin = p_axis_sort_origin;
-	dirty.flags[DIRTY_FLAGS_LAYER_axis_sort_ORIGIN] = true;
+	dirty.flags[DIRTY_FLAGS_LAYER_AXIS_SORT_ORIGIN] = true;
 	_queue_internal_update();
 	emit_signal(CoreStringName(changed));
 }
