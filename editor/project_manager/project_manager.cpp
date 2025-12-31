@@ -39,6 +39,7 @@
 #include "core/version.h"
 #include "editor/asset_library/asset_library_editor_plugin.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
@@ -1755,6 +1756,9 @@ ProjectManager::ProjectManager() {
 		quick_settings_dialog = memnew(QuickSettingsDialog);
 		add_child(quick_settings_dialog);
 		quick_settings_dialog->connect("restart_required", callable_mp(this, &ProjectManager::_restart_confirmed));
+
+		EditorFileSystem *efs = memnew(EditorFileSystem);
+		add_child(efs);
 
 		scan_dir = memnew(EditorFileDialog);
 		scan_dir->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
