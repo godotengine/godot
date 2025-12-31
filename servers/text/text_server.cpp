@@ -2300,16 +2300,17 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_
 	for (int i = 0; i < gl_size; i++) {
 		Dictionary glyph;
 
-		glyph["start"] = glyphs[i].start;
-		glyph["end"] = glyphs[i].end;
-		glyph["repeat"] = glyphs[i].repeat;
-		glyph["count"] = glyphs[i].count;
-		glyph["flags"] = glyphs[i].flags;
-		glyph["offset"] = Vector2(glyphs[i].x_off, glyphs[i].y_off);
-		glyph["advance"] = glyphs[i].advance;
-		glyph["font_rid"] = glyphs[i].font_rid;
-		glyph["font_size"] = glyphs[i].font_size;
-		glyph["index"] = glyphs[i].index;
+		glyph[SNAME("start")] = glyphs[i].start;
+		glyph[SNAME("end")] = glyphs[i].end;
+		glyph[SNAME("repeat")] = glyphs[i].repeat;
+		glyph[SNAME("count")] = glyphs[i].count;
+		glyph[SNAME("flags")] = glyphs[i].flags;
+		glyph[SNAME("offset")] = Vector2(glyphs[i].x_off, glyphs[i].y_off);
+		glyph[SNAME("advance")] = glyphs[i].advance;
+		glyph[SNAME("font_rid")] = glyphs[i].font_rid;
+		glyph[SNAME("font_size")] = glyphs[i].font_size;
+		glyph[SNAME("index")] = glyphs[i].index;
+		glyph[SNAME("span_index")] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}
@@ -2325,16 +2326,17 @@ TypedArray<Dictionary> TextServer::_shaped_text_sort_logical_wrapper(const RID &
 	for (int i = 0; i < gl_size; i++) {
 		Dictionary glyph;
 
-		glyph["start"] = glyphs[i].start;
-		glyph["end"] = glyphs[i].end;
-		glyph["repeat"] = glyphs[i].repeat;
-		glyph["count"] = glyphs[i].count;
-		glyph["flags"] = glyphs[i].flags;
-		glyph["offset"] = Vector2(glyphs[i].x_off, glyphs[i].y_off);
-		glyph["advance"] = glyphs[i].advance;
-		glyph["font_rid"] = glyphs[i].font_rid;
-		glyph["font_size"] = glyphs[i].font_size;
-		glyph["index"] = glyphs[i].index;
+		glyph[SNAME("start")] = glyphs[i].start;
+		glyph[SNAME("end")] = glyphs[i].end;
+		glyph[SNAME("repeat")] = glyphs[i].repeat;
+		glyph[SNAME("count")] = glyphs[i].count;
+		glyph[SNAME("flags")] = glyphs[i].flags;
+		glyph[SNAME("offset")] = Vector2(glyphs[i].x_off, glyphs[i].y_off);
+		glyph[SNAME("advance")] = glyphs[i].advance;
+		glyph[SNAME("font_rid")] = glyphs[i].font_rid;
+		glyph[SNAME("font_size")] = glyphs[i].font_size;
+		glyph[SNAME("index")] = glyphs[i].index;
+		glyph[SNAME("span_index")] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}
@@ -2350,16 +2352,17 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(cons
 	for (int i = 0; i < gl_size; i++) {
 		Dictionary glyph;
 
-		glyph["start"] = glyphs[i].start;
-		glyph["end"] = glyphs[i].end;
-		glyph["repeat"] = glyphs[i].repeat;
-		glyph["count"] = glyphs[i].count;
-		glyph["flags"] = glyphs[i].flags;
-		glyph["offset"] = Vector2(glyphs[i].x_off, glyphs[i].y_off);
-		glyph["advance"] = glyphs[i].advance;
-		glyph["font_rid"] = glyphs[i].font_rid;
-		glyph["font_size"] = glyphs[i].font_size;
-		glyph["index"] = glyphs[i].index;
+		glyph[SNAME("start")] = glyphs[i].start;
+		glyph[SNAME("end")] = glyphs[i].end;
+		glyph[SNAME("repeat")] = glyphs[i].repeat;
+		glyph[SNAME("count")] = glyphs[i].count;
+		glyph[SNAME("flags")] = glyphs[i].flags;
+		glyph[SNAME("offset")] = Vector2(glyphs[i].x_off, glyphs[i].y_off);
+		glyph[SNAME("advance")] = glyphs[i].advance;
+		glyph[SNAME("font_rid")] = glyphs[i].font_rid;
+		glyph[SNAME("font_size")] = glyphs[i].font_size;
+		glyph[SNAME("index")] = glyphs[i].index;
+		glyph[SNAME("span_index")] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}
