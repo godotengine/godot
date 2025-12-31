@@ -304,7 +304,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 				rendering_quadrant->canvas_items.clear();
 
 				// Sort the quadrant cells.
-				if (is_axis_sort_enabled() && x_draw_order_reversed) {
+				if (is_axis_sort_enabled()) {
 					rendering_quadrant->cells.sort_custom<CellDataAxisSortComparator>();
 				} else {
 					rendering_quadrant->cells.sort();
