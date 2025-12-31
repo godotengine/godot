@@ -270,6 +270,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="axis_sort_origin" type="Vector2i" setter="set_axis_sort_origin" getter="get_axis_sort_origin" default="Vector2i(0, 0)">
+		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="get_flip_h" default="false">
 			If [code]true[/code], the tile will have its texture flipped horizontally.
 		</member>
@@ -296,9 +298,6 @@
 		</member>
 		<member name="transpose" type="bool" setter="set_transpose" getter="get_transpose" default="false">
 			If [code]true[/code], the tile will display transposed, i.e. with horizontal and vertical texture UVs swapped.
-		</member>
-		<member name="y_sort_origin" type="int" setter="set_y_sort_origin" getter="get_y_sort_origin" default="0">
-			Vertical point of the tile used for determining y-sorted order.
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
 			Ordering index of this tile, relative to [TileMapLayer].
