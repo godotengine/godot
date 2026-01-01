@@ -89,6 +89,7 @@ ignore-words-list = [
 	"ot",
 	"outin",
 	"parm",
+	"pEvent",
 	"requestor",
 	"streamin",
 	"te",

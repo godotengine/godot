@@ -342,6 +342,7 @@ public:
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
 
+	void _set_text(String p_text, bool p_emit_signal = false);
 	void set_text(String p_text);
 	String get_text() const;
 	void set_text_with_selection(const String &p_text); // Set text, while preserving selection.
