@@ -35,7 +35,7 @@ const String KEY_HEIGHT("height");
 const String KEY_WIDTH("width");
 } //namespace
 
-void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const char *p_error) {
+void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_orientation, const int p_facing_mode, const char *p_error) {
 	// Validate context first to avoid dereferencing null on error paths.
 	ERR_FAIL_NULL_MSG(p_context, "Camera feed error: Null context received.");
 
@@ -57,6 +57,20 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 		ERR_PRINT("Camera feed error: Invalid pixel data received.");
 		return;
 	}
+
+	// Update feed position based on facing mode.
+	// p_facing_mode: 0=unknown, 1=user/front, 2=environment/back
+	if (p_facing_mode == 1) {
+		feed->position = CameraFeed::FEED_FRONT;
+	} else if (p_facing_mode == 2) {
+		feed->position = CameraFeed::FEED_BACK;
+	}
+
+	// Apply rotation based on screen orientation (convert degrees to radians).
+	// Also apply vertical flip for all cameras.
+	feed->transform = Transform2D();
+	feed->transform = feed->transform.rotated(Math::deg_to_rad(static_cast<float>(p_orientation)));
+	feed->transform = feed->transform.scaled(Vector2(1, -1));
 
 	Vector<uint8_t> &data = feed->data;
 	Ref<Image> image = feed->image;

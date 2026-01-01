@@ -106,14 +106,40 @@ const GodotCamera = {
 		 * @param {number} dataLen Length of pixel data
 		 * @param {number} width Image width
 		 * @param {number} height Image height
+		 * @param {number} orientation Screen orientation angle (0, 90, 180, 270)
+		 * @param {number} facingMode Camera facing mode (0=unknown, 1=user/front, 2=environment/back)
 		 * @param {string|null} errorMsg Error message if any
 		 * @returns {void}
 		 */
-		sendGetPixelDataCallback: function (callback, context, dataPtr, dataLen, width, height, errorMsg) {
+		sendGetPixelDataCallback: function (callback, context, dataPtr, dataLen, width, height, orientation, facingMode, errorMsg) {
 			const errorMsgPtr = errorMsg ? GodotRuntime.allocString(errorMsg) : 0;
-			callback(context, dataPtr, dataLen, width, height, errorMsgPtr);
+			callback(context, dataPtr, dataLen, width, height, orientation, facingMode, errorMsgPtr);
 			if (errorMsgPtr) {
 				GodotRuntime.free(errorMsgPtr);
+			}
+		},
+
+		/**
+		 * Converts facingMode string to numeric value.
+		 * @param {MediaStream|null} stream Media stream to get facing mode from
+		 * @returns {number} 0=unknown, 1=user/front, 2=environment/back
+		 */
+		getFacingMode: function (stream) {
+			if (!stream) {
+				return 0;
+			}
+			const [videoTrack] = stream.getVideoTracks();
+			if (!videoTrack) {
+				return 0;
+			}
+			const settings = videoTrack.getSettings();
+			switch (settings.facingMode) {
+			case 'user':
+				return 1; // Front camera
+			case 'environment':
+				return 2; // Back camera
+			default:
+				return 0; // Unknown
 			}
 		},
 
@@ -175,8 +201,8 @@ const GodotCamera = {
 						return videoTrack?.getCapabilities() || GodotCamera.defaultMinimumCapabilities;
 					};
 					const devices = await navigator.mediaDevices.enumerateDevices();
-					result.cameras = devices
-						.filter((device) => device.kind === 'videoinput')
+					const videoDevices = devices.filter((device) => device.kind === 'videoinput');
+					result.cameras = videoDevices
 						.map((device, index) => ({
 							index,
 							id: device.deviceId,
@@ -321,6 +347,11 @@ const GodotCamera = {
 								const dataPtr = GodotRuntime.malloc(pixelData.length);
 								GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
 
+								// Get screen orientation
+
+								const screenOrientation = screen?.orientation?.angle ?? window.orientation ?? 0;
+								const facingMode = GodotCamera.getFacingMode(stream);
+
 								GodotCamera.sendGetPixelDataCallback(
 									callback,
 									context,
@@ -328,11 +359,13 @@ const GodotCamera = {
 									pixelData.length,
 									_width,
 									_height,
+									screenOrientation,
+									facingMode,
 									null);
 
 								GodotRuntime.free(dataPtr);
 							} catch (error) {
-								GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, error.message);
+								GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
 
 								if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
 									GodotRuntime.print('Security error, stopping stream:', error);
@@ -348,7 +381,7 @@ const GodotCamera = {
 
 					camera.animationFrameId = requestAnimationFrame(captureFrame);
 				} catch (error) {
-					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, error.message);
+					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
 					if (error && (error.name === 'SecurityError' || error.name === 'NotAllowedError')) {
 						deniedCallback(context);
 					}
