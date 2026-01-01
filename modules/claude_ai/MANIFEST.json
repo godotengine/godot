@@ -1,0 +1,38 @@
+{
+	"product_name": "DotAI",
+	"product_display_name": "DotAI",
+	"version": "1.0.0",
+	"version_name": "Initial Release",
+	"description": "AI-Powered Game Development Platform - Build games from your ideas",
+	"author": "DotAI Team",
+	"website": "https://dotai.dev",
+	"license": "MIT (Godot Engine) + Proprietary (DotAI)",
+	"base_engine": "Godot Engine",
+	"base_engine_version": "4.x",
+	"features": [
+		"AI-Powered Code Generation",
+		"Natural Language Development",
+		"Claude AI Integration",
+		"Full Game Engine Features",
+		"Production-Ready Code",
+		"Intelligent Codebase Understanding",
+		"Multi-File Generation",
+		"Real-Time AI Assistance"
+	],
+	"requirements": {
+		"claude_api_key": "Required for AI features",
+		"internet": "Required for API requests"
+	},
+	"supported_platforms": [
+		"Windows",
+		"Linux",
+		"macOS"
+	],
+	"build_info": {
+		"module": "claude_ai",
+		"target": "editor",
+		"custom_branding": true,
+		"product_identity": "DotAI"
+	}
+}
+
