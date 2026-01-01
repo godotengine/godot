@@ -4082,21 +4082,7 @@ void RenderingDeviceDriverVulkan::shader_destroy_modules(ShaderID p_shader) {
 /*********************/
 /**** UNIFORM SET ****/
 /*********************/
-VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_create(const DescriptorSetPoolKey &p_key, DescriptorSetPools::Iterator *r_pool_sets_it, int p_linear_pool_index) {
-	bool linear_pool = p_linear_pool_index >= 0;
-	DescriptorSetPools::Iterator pool_sets_it = linear_pool ? linear_descriptor_set_pools[p_linear_pool_index].find(p_key) : descriptor_set_pools.find(p_key);
-
-	if (pool_sets_it) {
-		for (KeyValue<VkDescriptorPool, uint32_t> &E : pool_sets_it->value) {
-			if (E.value < max_descriptor_sets_per_pool) {
-				*r_pool_sets_it = pool_sets_it;
-				return E.key;
-			}
-		}
-	}
-
-	// Create a new one.
-
+VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_create(const DescriptorSetPoolKey &p_key, bool p_linear_pool) {
 	// Here comes more vulkan API strangeness.
 	VkDescriptorPoolSize *vk_sizes = ALLOCA_ARRAY(VkDescriptorPoolSize, UNIFORM_TYPE_MAX);
 	uint32_t vk_sizes_count = 0;
@@ -4184,7 +4170,7 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 
 	VkDescriptorPoolCreateInfo descriptor_set_pool_create_info = {};
 	descriptor_set_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	if (linear_descriptor_pools_enabled && linear_pool) {
+	if (linear_descriptor_pools_enabled && p_linear_pool) {
 		descriptor_set_pool_create_info.flags = 0;
 	} else {
 		descriptor_set_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // Can't think how somebody may NOT need this flag.
@@ -4199,18 +4185,6 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
 	}
 
-	// Bookkeep.
-
-	if (!pool_sets_it) {
-		if (linear_pool) {
-			pool_sets_it = linear_descriptor_set_pools[p_linear_pool_index].insert(p_key, HashMap<VkDescriptorPool, uint32_t>());
-		} else {
-			pool_sets_it = descriptor_set_pools.insert(p_key, HashMap<VkDescriptorPool, uint32_t>());
-		}
-	}
-	HashMap<VkDescriptorPool, uint32_t> &pool_rcs = pool_sets_it->value;
-	pool_rcs.insert(vk_pool, 0);
-	*r_pool_sets_it = pool_sets_it;
 	return vk_pool;
 }
 
@@ -4454,26 +4428,54 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 		writes_amount++;
 	}
 
-	// Need a descriptor pool.
-	DescriptorSetPools::Iterator pool_sets_it;
-	VkDescriptorPool vk_pool = _descriptor_set_pool_find_or_create(pool_key, &pool_sets_it, p_linear_pool_index);
-	DEV_ASSERT(vk_pool);
-	pool_sets_it->value[vk_pool]++;
+	bool linear_pool = p_linear_pool_index >= 0;
+	DescriptorSetPools::Iterator pool_sets_it = linear_pool ? linear_descriptor_set_pools[p_linear_pool_index].find(pool_key) : descriptor_set_pools.find(pool_key);
+	if (!pool_sets_it) {
+		if (linear_pool) {
+			pool_sets_it = linear_descriptor_set_pools[p_linear_pool_index].insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
+		} else {
+			pool_sets_it = descriptor_set_pools.insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
+		}
+	}
 
 	VkDescriptorSetAllocateInfo descriptor_set_allocate_info = {};
 	descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	descriptor_set_allocate_info.descriptorPool = vk_pool;
 	descriptor_set_allocate_info.descriptorSetCount = 1;
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
 	descriptor_set_allocate_info.pSetLayouts = &shader_info->vk_descriptor_set_layouts[p_set_index];
 
 	VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
+	for (KeyValue<VkDescriptorPool, uint32_t> &E : pool_sets_it->value) {
+		if (E.value < max_descriptor_sets_per_pool) {
+			descriptor_set_allocate_info.descriptorPool = E.key;
+			VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
 
-	VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
-	if (res) {
-		_descriptor_set_pool_unreference(pool_sets_it, vk_pool, p_linear_pool_index);
-		ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+			// Break early on success.
+			if (res == VK_SUCCESS) {
+				break;
+			}
+
+			// "Fragmented pool" and "out of memory pool" errors are handled by creating more pools. Any other error is unexpected.
+			if (res != VK_ERROR_FRAGMENTED_POOL && res != VK_ERROR_OUT_OF_POOL_MEMORY) {
+				ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+			}
+		}
 	}
+
+	// Create a new pool when no allocations could be made from the existing pools.
+	if (vk_descriptor_set == VK_NULL_HANDLE) {
+		descriptor_set_allocate_info.descriptorPool = _descriptor_set_pool_create(pool_key, linear_pool);
+		VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
+
+		// All errors are unexpected at this stage.
+		if (res) {
+			vkDestroyDescriptorPool(vk_device, descriptor_set_allocate_info.descriptorPool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
+			ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+		}
+	}
+
+	DEV_ASSERT(descriptor_set_allocate_info.descriptorPool != VK_NULL_HANDLE && vk_descriptor_set != VK_NULL_HANDLE);
+	pool_sets_it->value[descriptor_set_allocate_info.descriptorPool]++;
 
 	for (uint32_t i = 0; i < writes_amount; i++) {
 		vk_writes[i].dstSet = vk_descriptor_set;
@@ -4485,9 +4487,9 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 	UniformSetInfo *usi = VersatileResource::allocate<UniformSetInfo>(resources_allocator);
 	usi->vk_descriptor_set = vk_descriptor_set;
 	if (p_linear_pool_index >= 0) {
-		usi->vk_linear_descriptor_pool = vk_pool;
+		usi->vk_linear_descriptor_pool = descriptor_set_allocate_info.descriptorPool;
 	} else {
-		usi->vk_descriptor_pool = vk_pool;
+		usi->vk_descriptor_pool = descriptor_set_allocate_info.descriptorPool;
 	}
 	usi->pool_sets_it = pool_sets_it;
 	usi->dynamic_buffers.resize(num_dynamic_buffers);
