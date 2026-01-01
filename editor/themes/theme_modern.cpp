@@ -1790,6 +1790,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Launch Pad and Play buttons.
 		Ref<StyleBoxFlat> style_launch_pad_movie = p_config.base_style->duplicate();
+		style_launch_pad_movie->set_content_margin_all(p_config.base_margin * EDSCALE);
 		style_launch_pad_movie->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.2));
 		style_launch_pad_movie->set_border_color(p_config.accent_color * Color(1, 1, 1, 0.8));
 		style_launch_pad_movie->set_border_width_all(Math::round(2 * EDSCALE));
