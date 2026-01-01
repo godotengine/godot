@@ -209,6 +209,28 @@ TEST_CASE("[AStar3D] Add/Remove") {
 			CHECK_FALSE(a.are_points_connected(0, j, true));
 		}
 	}
-	// It's been great work, cheers. \(^ ^)/
+}
+
+TEST_CASE("[AStar3D] Path from disabled point is empty") {
+	AStar3D a;
+	Vector3 p1(0, 0, 0);
+	Vector3 p2(0, 1, 0);
+	a.add_point(1, p1);
+	a.add_point(2, p2);
+	a.connect_points(1, 2);
+
+	CHECK_EQ(a.get_id_path(1, 1), Vector<int64_t>{ 1 });
+	CHECK_EQ(a.get_id_path(1, 2), Vector<int64_t>{ 1, 2 });
+
+	CHECK_EQ(a.get_point_path(1, 1), Vector<Vector3>{ p1 });
+	CHECK_EQ(a.get_point_path(1, 2), Vector<Vector3>{ p1, p2 });
+
+	a.set_point_disabled(1, true);
+
+	CHECK(a.get_id_path(1, 1).is_empty());
+	CHECK(a.get_id_path(1, 2).is_empty());
+
+	CHECK(a.get_point_path(1, 1).is_empty());
+	CHECK(a.get_point_path(1, 2).is_empty());
 }
 } // namespace TestAStar
