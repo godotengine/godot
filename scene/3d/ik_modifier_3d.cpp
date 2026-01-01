@@ -71,17 +71,33 @@ void IKModifier3D::_set_active(bool p_active) {
 }
 
 void IKModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
-	if (p_old && p_old->is_connected(SNAME("rest_updated"), callable_mp(this, &IKModifier3D::_make_all_joints_dirty))) {
-		p_old->disconnect(SNAME("rest_updated"), callable_mp(this, &IKModifier3D::_make_all_joints_dirty));
+	if (p_old && p_old->is_connected(SNAME("rest_updated"), callable_mp(this, &IKModifier3D::_rest_updated))) {
+		p_old->disconnect(SNAME("rest_updated"), callable_mp(this, &IKModifier3D::_rest_updated));
 	}
-	if (p_new && !p_new->is_connected(SNAME("rest_updated"), callable_mp(this, &IKModifier3D::_make_all_joints_dirty))) {
-		p_new->connect(SNAME("rest_updated"), callable_mp(this, &IKModifier3D::_make_all_joints_dirty));
+	if (p_new && !p_new->is_connected(SNAME("rest_updated"), callable_mp(this, &IKModifier3D::_rest_updated))) {
+		p_new->connect(SNAME("rest_updated"), callable_mp(this, &IKModifier3D::_rest_updated));
 	}
 	_make_all_joints_dirty();
 }
 
 void IKModifier3D::_validate_bone_names() {
 	//
+}
+
+void IKModifier3D::_rest_updated() {
+	_make_all_joints_dirty();
+	if (is_inside_tree()) {
+		Skeleton3D *skeleton = get_skeleton();
+		if (skeleton) {
+			for (uint32_t i = 0; i < settings.size(); i++) {
+				_init_joints(skeleton, i);
+			}
+		}
+	}
+#ifdef TOOLS_ENABLED
+	_update_mutable_info();
+	_make_gizmo_dirty();
+#endif // TOOLS_ENABLED
 }
 
 void IKModifier3D::_make_all_joints_dirty() {
