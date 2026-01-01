@@ -345,6 +345,7 @@ private:
 		Ref<StyleBox> mode_button_normal;
 		Ref<StyleBox> mode_button_pressed;
 		Ref<StyleBox> mode_button_hover;
+		Ref<StyleBox> mode_button_hover_pressed;
 	} theme_cache;
 
 	void _copy_normalized_to_hsv_okhsl();
