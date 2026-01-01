@@ -1,78 +1,259 @@
-# Godot Engine
+# DotAI - AI-Powered Game Development Platform
 
-<p align="center">
-  <a href="https://godotengine.org">
-    <img src="logo_outlined.svg" width="400" alt="Godot Engine logo">
-  </a>
-</p>
+**DotAI** is an AI-native game engine built on Godot Engine, enabling developers to create complete games through natural language conversations with Claude AI. Think of it as "Cursor for Game Engines" - an intelligent development environment where AI is a first-class collaborator.
 
-## 2D and 3D cross-platform game engine
+## 🎮 What is DotAI?
 
-**[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
-game engine to create 2D and 3D games from a unified interface.** It provides a
-comprehensive set of [common tools](https://godotengine.org/features), so that
-users can focus on making games without having to reinvent the wheel. Games can
-be exported with one click to a number of platforms, including the major desktop
-platforms (Linux, macOS, Windows), mobile platforms (Android, iOS), as well as
-Web-based platforms and [consoles](https://docs.godotengine.org/en/latest/tutorials/platform/consoles.html).
+DotAI transforms Godot Engine into an AI-powered game development platform where you can:
 
-## Free, open source and community-driven
+- **Build games by describing them** - "Create a 2D platformer with jumping and enemies"
+- **Generate complete, production-ready code** - Not just snippets, but full game systems
+- **Automatic file creation** - AI generates and saves files directly to your project
+- **Codebase awareness** - AI understands your entire project structure and context
+- **Conversational development** - Have a dialogue with AI about your game design
 
-Godot is completely free and open source under the very permissive [MIT license](https://godotengine.org/license).
-No strings attached, no royalties, nothing. The users' games are theirs, down
-to the last line of engine code. Godot's development is fully independent and
-community-driven, empowering users to help shape their engine to match their
-expectations. It is supported by the [Godot Foundation](https://godot.foundation/)
-not-for-profit.
+## ✨ Key Features
 
-Before being open sourced in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
-Godot had been developed by [Juan Linietsky](https://github.com/reduz) and
-[Ariel Manzur](https://github.com/punto-) (both still maintaining the project)
-for several years as an in-house engine, used to publish several work-for-hire
-titles.
+### 🤖 AI-Powered Code Generation
+- Natural language to GDScript conversion
+- Multi-file generation (scripts, scenes, resources)
+- Production-ready code with proper structure
+- Automatic file saving and project integration
 
-![Screenshot of a 3D scene in the Godot Engine editor](https://raw.githubusercontent.com/godotengine/godot-design/master/screenshots/editor_tps_demo_1920x1080.jpg)
+### 📚 Codebase Awareness
+- Full project scanning and indexing
+- Context-aware code generation
+- Dependency tracking
+- Style consistency with existing code
 
-## Getting the engine
+### 💬 Conversational Interface
+- Multi-turn conversations with AI
+- Context memory across requests
+- AI-initiated questions for clarification
+- Cursor-like chat interface
 
-### Binary downloads
+### 🚀 Automatic Project Setup
+- Zero-configuration installation
+- Automatic file copying to new projects
+- Seamless integration with Godot Editor
 
-Official binaries for the Godot editor and the export templates can be found
-[on the Godot website](https://godotengine.org/download).
+## 📋 Requirements
 
-### Compiling from source
+- **Godot Engine 4.x** (source code)
+- **Claude API Key** from Anthropic (https://console.anthropic.com/)
+- **Python 3.x** (for SCons build system)
+- **C++ Compiler** (MSVC on Windows, GCC/Clang on Linux/macOS)
+- **SCons** build system (`pip install scons`)
 
-[See the official docs](https://docs.godotengine.org/en/latest/engine_details/development/compiling)
-for compilation instructions for every supported platform.
+## 🛠️ Building DotAI
 
-## Community and contributing
+### Windows
 
-Godot is not only an engine but an ever-growing community of users and engine
-developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/dotai.git
+   cd dotai
+   ```
 
-The best way to get in touch with the core engine developers is to join the
-[Godot Contributors Chat](https://chat.godotengine.org).
+2. **Install dependencies:**
+   ```bash
+   pip install scons
+   ```
 
-To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
-This document also includes guidelines for reporting bugs.
+3. **Build the editor:**
+   ```bash
+   scons platform=windows target=editor -j8
+   ```
+   
+   The `-j8` flag uses 8 parallel jobs (adjust based on your CPU cores).
 
-## Documentation and demos
+4. **Run the editor:**
+   ```bash
+   bin\godot.windows.editor.x86_64.exe
+   ```
 
-The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
-It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
+### Linux
 
-The [class reference](https://docs.godotengine.org/en/latest/classes/)
-is also accessible from the Godot editor.
+```bash
+scons platform=linuxbsd target=editor -j8
+bin/godot.linuxbsd.editor.x86_64
+```
 
-We also maintain official demos in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
-as well as a list of [awesome Godot community resources](https://github.com/godotengine/awesome-godot).
+### macOS
 
-There are also a number of other
-[learning resources](https://docs.godotengine.org/en/latest/community/tutorials.html)
-provided by the community, such as text and video tutorials, demos, etc.
-Consult the [community channels](https://godotengine.org/community)
-for more information.
+```bash
+scons platform=macos target=editor -j8
+bin/godot.macos.editor.universal
+```
 
-[![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
-[![Translate on Weblate](https://hosted.weblate.org/widgets/godot-engine/-/godot/svg-badge.svg)](https://hosted.weblate.org/engage/godot-engine/?utm_source=widget)
-[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/godotengine/godot)](https://www.tickgit.com/browse?repo=github.com/godotengine/godot)
+## 🚀 Quick Start
+
+### 1. Build DotAI
+
+Follow the build instructions above for your platform.
+
+### 2. Open/Create a Godot Project
+
+- Open an existing project or create a new one
+- DotAI will automatically set up required files on first launch
+
+### 3. Access DotAI Panel
+
+- In the Godot Editor, look for the **"DotAI"** dock panel (usually on the right side)
+- If not visible, go to **Editor → Editor Layout → Default** or check **View → Docks**
+
+### 4. Configure API Key
+
+**API key is required!** Enter your Claude API key in the DotAI panel:
+- Open the DotAI dock panel
+- Enter your API key in the "API Key" field
+- Get your API key from: https://console.anthropic.com/
+
+### 5. Start Building!
+
+Type a prompt like:
+```
+Create a 2D platformer game with a player that can jump and move left/right
+```
+
+The AI will:
+1. Generate complete, production-ready code
+2. Create all necessary files (scripts, scenes, resources)
+3. Automatically save them to your project
+4. Display the generated code in the conversation
+
+## 📁 Project Structure
+
+```
+godot/
+├── modules/
+│   └── claude_ai/              # DotAI module
+│       ├── editor/             # C++ Editor Plugin
+│       │   ├── claude_ai_editor_plugin.cpp
+│       │   ├── claude_ai_editor_plugin.h
+│       │   └── ai_studio_main_ui.*
+│       ├── claude_api_handler.gd      # API communication
+│       ├── codebase_scanner.gd        # Project scanning
+│       ├── file_writer.gd             # File creation
+│       ├── conversation_manager.gd     # Conversation history
+│       ├── register_types.*           # Module registration
+│       ├── SCsub                       # Build script
+│       └── README.md                   # Detailed documentation
+├── bin/                        # Built executables
+└── README.md                   # This file
+```
+
+## 🎯 How It Works
+
+### Architecture Overview
+
+1. **C++ Editor Plugin** - Integrates DotAI into Godot Editor, provides UI dock panel
+2. **API Handler** - Communicates with Claude AI API, builds prompts with codebase context
+3. **Codebase Scanner** - Scans project files, extracts code structure and dependencies
+4. **File Writer** - Parses AI responses, extracts code blocks, creates files
+5. **Conversation Manager** - Maintains conversation history and context
+
+### Workflow
+
+```
+User Prompt → API Handler → Claude AI API
+                ↓
+         AI Response (code + explanation)
+                ↓
+         File Writer (parse & extract)
+                ↓
+         File System (create files)
+                ↓
+         Editor Refresh (show in project)
+```
+
+## 📝 Usage Examples
+
+### Example 1: Create a Player Character
+
+**Prompt:**
+```
+Create a 2D player character that can move left/right with arrow keys and jump with spacebar
+```
+
+**Result:**
+- `scripts/player.gd` - Player movement script
+- `scenes/player.tscn` - Player scene with sprite and collision
+- Complete, production-ready code with proper physics
+
+### Example 2: Build a Complete Game System
+
+**Prompt:**
+```
+Create a complete inventory system with items, UI display, and drag-and-drop functionality
+```
+
+**Result:**
+- `scripts/inventory/inventory.gd` - Core inventory logic
+- `scripts/inventory/item.gd` - Item data structure
+- `scripts/ui/inventory_ui.gd` - UI controller
+- `scenes/ui/inventory_panel.tscn` - UI scene
+- All files properly connected and ready to use
+
+## 🐛 Troubleshooting
+
+### "API handler script not found"
+
+**Solution:** DotAI automatically copies required files to `res://addons/claude_ai/` on first launch. If this fails, manually create the directory and copy files from `modules/claude_ai/`.
+
+### "No code to save" error
+
+**Solution:** 
+1. Check the Output panel (View → Output) for debug messages
+2. Ensure your prompt includes code generation requests
+3. Try being more specific: "Create a script that..." instead of just "How do I..."
+
+### Build Errors
+
+**Common issues:**
+- **Missing SCons:** `pip install scons`
+- **Wrong directory:** Run build from Godot source root (where `SConstruct` is)
+- **Compiler not found:** Install Visual Studio Build Tools (Windows) or build-essential (Linux)
+
+## 📖 Documentation
+
+For detailed documentation, see:
+- **[modules/claude_ai/README.md](modules/claude_ai/README.md)** - Complete DotAI documentation
+- **[Godot Engine Documentation](https://docs.godotengine.org/)** - Godot Engine reference
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is built on Godot Engine, which is licensed under the MIT License. DotAI-specific code follows the same license.
+
+## 🙏 Acknowledgments
+
+- **Godot Engine** - The amazing open-source game engine
+- **Anthropic** - Claude AI API
+- **Godot Community** - For inspiration and support
+
+## 🗺️ Roadmap
+
+- [ ] Enhanced codebase understanding with dependency graphs
+- [ ] Scene file generation (.tscn) support improvements
+- [ ] Resource file generation (.tres) support improvements
+- [ ] Multi-model support (GPT-4, etc.)
+- [ ] Offline mode with local models
+- [ ] Code refactoring and optimization suggestions
+- [ ] Visual scripting integration
+- [ ] Template library for common game patterns
+
+---
+
+**Built with ❤️ for game developers who want to focus on creativity, not syntax.**
+
+For more information, visit the [DotAI module documentation](modules/claude_ai/README.md).
