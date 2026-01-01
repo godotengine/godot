@@ -104,9 +104,10 @@ Follow the build instructions above for your platform.
 
 ### 4. Configure API Key
 
-The API key is hardcoded for convenience, but you can:
-- Modify `DEFAULT_API_KEY` in `modules/claude_ai/claude_api_handler.gd`
-- Or use the API key input field in the DotAI panel (if enabled)
+**API key is required!** Enter your Claude API key in the DotAI panel:
+- Open the DotAI dock panel
+- Enter your API key in the "API Key" field
+- Get your API key from: https://console.anthropic.com/
 
 ### 5. Start Building!
 
@@ -190,11 +191,14 @@ User Prompt → API Handler → Claude AI API
 
 ### API Key
 
-Edit `modules/claude_ai/claude_api_handler.gd`:
+**API key is required!** You must enter your Claude API key in the DotAI panel UI. The API key is not stored in code for security reasons.
 
-```gdscript
-const DEFAULT_API_KEY = "your-api-key-here"
-```
+To get your API key:
+1. Visit https://console.anthropic.com/
+2. Sign up or log in
+3. Navigate to API Keys section
+4. Create a new API key
+5. Copy and paste it into the DotAI panel's "API Key" field
 
 ### Model Selection
 

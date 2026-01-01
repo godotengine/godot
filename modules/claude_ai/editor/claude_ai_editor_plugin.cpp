@@ -187,7 +187,7 @@ ClaudeAIDock::ClaudeAIDock() {
 		api_key_container->add_child(api_key_label);
 
 		api_key_input = memnew(LineEdit);
-		api_key_input->set_placeholder(TTR("API key (optional - default is hardcoded)"));
+		api_key_input->set_placeholder(TTR("Enter your Claude API key (required)"));
 		api_key_input->set_secret(true);
 		api_key_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		api_key_container->add_child(api_key_input);
@@ -320,8 +320,14 @@ void ClaudeAIDock::_send_request() {
 	// 	return;
 	// }
 	
-	// API key is hardcoded in claude_api_handler.gd, so no need to check
-	// User can still override with input if they want
+	// Check if API key is provided (required)
+	if (!use_saas_mode && (!api_key_input || api_key_input->get_text().is_empty())) {
+		if (status_label) {
+			status_label->set_text(TTR("Error: API key is required. Please enter your Claude API key."));
+			status_label->set_visible(true);
+		}
+		return;
+	}
 
 	if (!prompt_input || prompt_input->get_text().is_empty()) {
 		if (status_label) {
@@ -343,11 +349,10 @@ void ClaudeAIDock::_send_request() {
 		}
 
 		Dictionary params;
-		// API key is hardcoded in claude_api_handler.gd, but allow override if user provides one
-		if (!use_saas_mode && api_key_input && !api_key_input->get_text().is_empty()) {
-			params["api_key"] = api_key_input->get_text(); // User override
+		// API key is required - get it from the input field
+		if (!use_saas_mode && api_key_input) {
+			params["api_key"] = api_key_input->get_text();
 		}
-		// If no API key provided, claude_api_handler.gd will use the hardcoded default
 		params["prompt"] = prompt_input->get_text();
 		params["include_codebase"] = true; // Enable codebase awareness
 		params["is_conversation"] = true; // Enable conversation mode

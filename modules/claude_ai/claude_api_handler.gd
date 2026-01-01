@@ -14,9 +14,6 @@ const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages"
 const MODEL = "claude-3-5-sonnet-20240620"  # Using latest Sonnet model for best quality
 const MAX_TOKENS = 32768  # Increased for complete game generation (multiple files, scenes, scripts)
 
-# Hardcoded API Key (for convenience - can be overridden)
-const DEFAULT_API_KEY = "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"
-
 # SaaS mode detection
 const SAAS_API_URL = "https://api.dotai.dev"  # DotAI SaaS API URL
 var use_saas_mode = false  # Set to true to use SaaS backend
@@ -144,12 +141,9 @@ func send_request(params: Dictionary) -> void:
 	var include_codebase: bool = params.get("include_codebase", true)
 	var is_conversation: bool = params.get("is_conversation", true)  # Default to conversation mode
 	
-	# Use hardcoded API key if none provided
+	# API key is required
 	if api_key.is_empty():
-		api_key = DEFAULT_API_KEY
-	
-	if api_key.is_empty():
-		request_error.emit("API key is required (or use SaaS mode)")
+		request_error.emit("API key is required. Please provide your Claude API key in the DotAI panel or use SaaS mode.")
 		return
 	
 	if prompt.is_empty():
