@@ -4071,7 +4071,7 @@ namespace basisu
 				comp_params.m_source_mipmap_images_hdr.resize(1);
 				comp_params.m_source_mipmap_images_hdr[0].resize(pSource_images_hdr->size() - 1);
 
-				for (uint32_t i = 1; i < pSource_images->size(); i++)
+				for (uint32_t i = 1; i < pSource_images_hdr->size(); i++)
 					comp_params.m_source_mipmap_images_hdr[0][i - 1] = (*pSource_images_hdr)[i];
 			}
 		}

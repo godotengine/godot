@@ -1191,6 +1191,7 @@ void ProjectExportDialog::_check_propagated_to_item(Object *p_obj, int column) {
 		return;
 	}
 	TreeItem *item = Object::cast_to<TreeItem>(p_obj);
+	ERR_FAIL_NULL(item);
 	String path = item->get_metadata(0);
 	if (item && !path.ends_with("/")) {
 		bool added = item->is_checked(0);

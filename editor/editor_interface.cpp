@@ -241,6 +241,7 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	ERR_FAIL_NULL_MSG(EditorNode::get_singleton(), "EditorNode doesn't exist.");
 
 	SubViewport *sub_viewport_node = memnew(SubViewport);
+	ERR_FAIL_NULL(sub_viewport_node);
 	AABB scene_aabb;
 	scene_aabb = _calculate_aabb_for_scene(p_scene, scene_aabb);
 

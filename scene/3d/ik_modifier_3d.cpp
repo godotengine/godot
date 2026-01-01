@@ -176,6 +176,7 @@ Quaternion IKModifier3D::get_local_pose_rotation(Skeleton3D *p_skeleton, int p_b
 }
 
 Vector3 IKModifier3D::get_bone_axis(Skeleton3D *p_skeleton, int p_end_bone, BoneDirection p_direction, bool p_mutable_bone_axes) {
+	ERR_FAIL_NULL_V(p_skeleton, Vector3());
 	if (!p_skeleton->is_inside_tree()) {
 		return Vector3();
 	}

@@ -200,6 +200,7 @@ void GridMapEditor::_menu_option(int p_option) {
 }
 
 void GridMapEditor::_update_cursor_transform() {
+	ERR_FAIL_NULL(node);
 	cursor_transform = Transform3D();
 	cursor_transform.origin = cursor_origin;
 	cursor_transform.basis *= node->get_cell_scale();
