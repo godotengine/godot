@@ -222,10 +222,10 @@ void SnapshotRefCountedView::_refcounted_selected() {
 	Array ref_cycles = (Array)d->extra_debug_data["ref_cycles"];
 
 	String count_str = "[ul]\n";
-	count_str += vformat(TTRC("Native References: %d\n"), native_refs);
-	count_str += vformat(TTRC("ObjectDB References: %d\n"), objectdb_refs);
-	count_str += vformat(TTRC("Total References: %d\n"), total_refs);
-	count_str += vformat(TTRC("ObjectDB Cycles: %d\n"), ref_cycles.size());
+	count_str += vformat(TTR("Native References: %d"), native_refs) + "\n";
+	count_str += vformat(TTR("ObjectDB References: %d"), objectdb_refs) + "\n";
+	count_str += vformat(TTR("Total References: %d"), total_refs) + "\n";
+	count_str += vformat(TTR("ObjectDB Cycles: %d"), ref_cycles.size()) + "\n";
 	count_str += "[/ul]\n";
 	RichTextLabel *counts = memnew(RichTextLabel(count_str));
 	counts->set_use_bbcode(true);
