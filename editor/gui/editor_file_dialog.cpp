@@ -99,6 +99,10 @@ void EditorFileDialog::_validate_property(PropertyInfo &p_property) const {
 }
 
 void EditorFileDialog::_dir_contents_changed() {
+	if (!EditorFileSystem::get_singleton()) {
+		return;
+	}
+
 	bool scan_required = false;
 	switch (get_access()) {
 		case FileDialog::ACCESS_RESOURCES: {
