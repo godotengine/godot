@@ -532,8 +532,11 @@ String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 
 Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
 	bool open_folder = false;
-	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
-		open_folder = true;
+	if (p_open_folder) {
+		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (dir->dir_exists(p_path) && !dir->is_bundle(p_path)) {
+			open_folder = true;
+		}
 	}
 
 	if (!p_path.begins_with("file://")) {
