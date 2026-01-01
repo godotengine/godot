@@ -117,21 +117,26 @@ void EditorToaster::_notification(int p_what) {
 			disable_notifications_button->set_button_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 
 			// Styleboxes background.
-			info_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+			const Color base_color = get_theme_color(SNAME("base_color"), EditorStringName(Editor));
+			const Color bg_color = base_color.lerp(get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.08);
 
-			warning_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+			info_panel_style_background->set_bg_color(bg_color);
+
+			warning_panel_style_background->set_bg_color(bg_color);
 			warning_panel_style_background->set_border_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
-			error_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+			error_panel_style_background->set_bg_color(bg_color);
 			error_panel_style_background->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			// Styleboxes progress.
-			info_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
+			const Color bg_progress_color = base_color.lerp(get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.135);
 
-			warning_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
+			info_panel_style_progress->set_bg_color(bg_progress_color);
+
+			warning_panel_style_progress->set_bg_color(bg_progress_color);
 			warning_panel_style_progress->set_border_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
-			error_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
+			error_panel_style_progress->set_bg_color(bg_progress_color);
 			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
