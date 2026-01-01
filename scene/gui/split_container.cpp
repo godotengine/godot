@@ -189,6 +189,7 @@ void SplitContainerDragger::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPLITTER);
+			DisplayServer::get_singleton()->accessibility_update_set_name(ae, RTR("Drag to resize"));
 
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
 			if (sc->collapsed || sc->valid_children.size() < 2u || !sc->dragging_enabled) {
