@@ -355,6 +355,12 @@ bool CameraFeedAndroid::set_format(int p_index, const Dictionary &p_parameters) 
 	ERR_FAIL_INDEX_V_MSG(p_index, formats.size(), false, "Invalid format index.");
 
 	selected_format = p_index;
+
+	// Reset base dimensions to force texture recreation on next frame.
+	// This ensures proper handling when switching between different resolutions.
+	base_width = 0;
+	base_height = 0;
+
 	return true;
 }
 
@@ -619,8 +625,9 @@ void CameraFeedAndroid::onSessionActive(void *context, ACameraCaptureSession *se
 	print_verbose("Capture session active");
 }
 
-void CameraFeedAndroid::onSessionClosed(void *context, ACameraCaptureSession *session) {
-	print_verbose("Capture session closed");
+void CameraFeedAndroid::onSessionClosed(void *context, ACameraCaptureSession *p_session) {
+	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
+	feed->session_closed_semaphore.post();
 }
 
 void CameraFeedAndroid::deactivate_feed() {
@@ -630,10 +637,13 @@ void CameraFeedAndroid::deactivate_feed() {
 	}
 
 	// Stop and close capture session.
-	// These calls may wait for pending callbacks to complete.
+	// Must wait for session to fully close before closing device.
 	if (session != nullptr) {
 		ACameraCaptureSession_stopRepeating(session);
 		ACameraCaptureSession_close(session);
+		// Wait for onSessionClosed callback to ensure session is fully closed
+		// before proceeding to close the device.
+		session_closed_semaphore.wait();
 		session = nullptr;
 	}
 
@@ -678,9 +688,10 @@ void CameraFeedAndroid::onError(void *context, ACameraDevice *p_device, int erro
 }
 
 void CameraFeedAndroid::onDisconnected(void *context, ACameraDevice *p_device) {
-	print_verbose("Camera disconnected");
 	auto *feed = static_cast<CameraFeedAndroid *>(context);
-	feed->set_active(false);
+	// Defer to main thread to avoid reentrancy issues when called from
+	// ACameraDevice_close() during deactivate_feed().
+	feed->call_deferred("set_active", false);
 }
 
 //////////////////////////////////////////////////////////////////////////

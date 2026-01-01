@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/os/semaphore.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 
@@ -75,6 +76,7 @@ private:
 	ACaptureSessionOutputContainer *session_output_container = nullptr;
 	ACameraOutputTarget *camera_output_target = nullptr;
 	Mutex callback_mutex;
+	Semaphore session_closed_semaphore;
 	bool was_active_before_pause = false;
 
 	// Callback structures - must be instance members, not static, to ensure
