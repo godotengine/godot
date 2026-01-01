@@ -784,6 +784,18 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@required">
+			<return type="void" />
+			<description>
+				Marks an exported property with the [constant PROPERTY_USAGE_REQUIRED] flag. This issues a configuration warning automatically if the property's value is null ([constant TYPE_NIL]).
+
+				You still need to export the property, e.g. using [annotation @export].
+				[codeblock]
+				@export @required var a: Node # will issue a configuration warning if null
+				@export @required var x: int # does nothing, as the type will never be null
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@rpc">
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />

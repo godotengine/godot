@@ -3074,6 +3074,9 @@
 		<constant name="PROPERTY_USAGE_SECRET" value="536870912" enum="PropertyUsageFlags" is_bitfield="true">
 			An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 		</constant>
+		<constant name="PROPERTY_USAGE_REQUIRED" value="1073741824" enum="PropertyUsageFlags" is_bitfield="true">
+			An exported property with this flag will issue a configuration warning if its value is not set (Variant::NIL).
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage (storage and editor).
 		</constant>
