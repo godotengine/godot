@@ -2153,6 +2153,10 @@ void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layou
 	tools_settings->set_vertical(is_vertical);
 	tools_settings_vsep->set_vertical(is_vertical);
 	transform_separator->set_vertical(is_vertical);
+
+	wide_toolbar->set_visible(is_vertical);
+	bucket_contiguous_checkbox->reparent(is_vertical ? wide_toolbar : tools_settings);
+	scatter_controls_container->reparent(is_vertical ? wide_toolbar : tools_settings);
 }
 
 TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
@@ -2299,7 +2303,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	bucket_contiguous_checkbox->set_text(TTR("Contiguous"));
 	bucket_contiguous_checkbox->set_pressed(true);
 	bucket_contiguous_checkbox->hide();
-	wide_toolbar->add_child(bucket_contiguous_checkbox);
+	tools_settings->add_child(bucket_contiguous_checkbox);
 
 	// Random tile checkbox.
 	random_tile_toggle = memnew(Button);
@@ -2327,7 +2331,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	scatter_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &TileMapLayerEditorTilesPlugin::_on_scattering_spinbox_changed));
 	scatter_spinbox->set_accessibility_name(TTRC("Scattering:"));
 	scatter_controls_container->add_child(scatter_spinbox);
-	wide_toolbar->add_child(scatter_controls_container);
+	tools_settings->add_child(scatter_controls_container);
 
 	_on_random_tile_checkbox_toggled(false);
 
@@ -3474,6 +3478,9 @@ void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_la
 	tilemap_tiles_tools_buttons->set_vertical(is_vertical);
 	tools_settings->set_vertical(is_vertical);
 	tools_settings_vsep->set_vertical(is_vertical);
+
+	wide_toolbar->set_visible(is_vertical);
+	bucket_contiguous_checkbox->reparent(is_vertical ? wide_toolbar : tools_settings);
 }
 
 TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
@@ -3591,7 +3598,7 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	bucket_contiguous_checkbox->set_text(TTR("Contiguous"));
 	bucket_contiguous_checkbox->set_pressed(true);
 	bucket_contiguous_checkbox->hide();
-	wide_toolbar->add_child(bucket_contiguous_checkbox);
+	tools_settings->add_child(bucket_contiguous_checkbox);
 }
 
 TileMapLayer *TileMapLayerEditor::_get_edited_layer() const {
@@ -3796,6 +3803,8 @@ void TileMapLayerEditor::_update_layers_selector() {
 		select_next_layer->set_disabled(true);
 		select_previous_layer->set_disabled(true);
 	}
+
+	_update_layer_selector_layout(get_current_layout() == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 }
 
 void TileMapLayerEditor::_clear_all_layers_highlighting() {
@@ -4411,32 +4420,36 @@ void TileMapLayerEditor::set_show_layer_selector(bool p_show_layer_selector) {
 	_update_layers_selector();
 }
 
+void TileMapLayerEditor::_update_layer_selector_layout(bool p_is_vertical) {
+	if (p_is_vertical && show_layers_selector) {
+		layer_selection_hbox->reparent(tile_map_wide_toolbar);
+		tile_map_wide_toolbar->move_child(layer_selection_hbox, 1);
+		layer_selection_hbox->set_vertical(false);
+	} else {
+		layer_selection_hbox->reparent(tile_map_toolbar);
+		tile_map_toolbar->move_child(layer_selection_hbox, -5);
+		layer_selection_hbox->set_vertical(p_is_vertical);
+	}
+}
+
 void TileMapLayerEditor::update_layout(DockLayout p_layout) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
-	tabs_bar->get_parent()->remove_child(tabs_bar);
 	tile_map_toolbar->set_vertical(is_vertical);
 	layer_selector_separator->set_vertical(is_vertical);
-	layer_selection_hbox->set_vertical(is_vertical);
 	tile_map_toolbar->set_h_size_flags(is_vertical ? SIZE_SHRINK_BEGIN : SIZE_EXPAND_FILL);
 	tile_map_toolbar->set_v_size_flags(is_vertical ? SIZE_EXPAND_FILL : SIZE_SHRINK_BEGIN);
 
 	main_box_container->move_child(padding_control, is_vertical ? 0 : 2);
 
 	if (is_vertical) {
-		tile_map_wide_toolbar->add_child(tabs_bar);
+		tabs_bar->reparent(tile_map_wide_toolbar);
+		tile_map_wide_toolbar->move_child(tabs_bar, 0);
 	} else {
-		tile_map_toolbar->add_child(tabs_bar);
+		tabs_bar->reparent(tile_map_toolbar);
 		tile_map_toolbar->move_child(tabs_bar, 0);
 	}
 
-	for (TileMapLayerSubEditorPlugin::TabData &tab_data : tabs_data) {
-		tab_data.wide_toolbar->get_parent()->remove_child(tab_data.wide_toolbar);
-		if (is_vertical) {
-			tile_map_wide_toolbar->add_child(tab_data.wide_toolbar);
-		} else {
-			tile_map_toolbar->add_child(tab_data.wide_toolbar);
-		}
-	}
+	_update_layer_selector_layout(is_vertical);
 
 	// Propagate layout change to sub plugins
 	for (TileMapLayerSubEditorPlugin *tab_plugin : tabs_plugins) {
@@ -4504,7 +4517,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 
 		tab_data.wide_toolbar->hide();
 		if (!tab_data.wide_toolbar->get_parent()) {
-			tile_map_toolbar->add_child(tab_data.wide_toolbar);
+			tile_map_wide_toolbar->add_child(tab_data.wide_toolbar);
 		}
 	}
 
