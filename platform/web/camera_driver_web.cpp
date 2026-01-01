@@ -167,7 +167,7 @@ void CameraDriverWeb::get_cameras(void *p_context, CameraDriverWebGetCamerasCall
 	godot_js_camera_get_cameras(p_context, (void *)p_callback, &_on_get_cameras_callback);
 }
 
-void CameraDriverWeb::get_pixel_data(void *p_context, const String &p_device_id, const int p_width, const int p_height, void (*p_callback)(void *, const uint8_t *, const int, const int, const int, const char *), void (*p_denied_callback)(void *)) {
+void CameraDriverWeb::get_pixel_data(void *p_context, const String &p_device_id, const int p_width, const int p_height, void (*p_callback)(void *, const uint8_t *, const int, const int, const int, const int, const int, const char *), void (*p_denied_callback)(void *)) {
 	godot_js_camera_get_pixel_data(p_context, p_device_id.utf8().get_data(), p_width, p_height, p_callback, p_denied_callback);
 }
 

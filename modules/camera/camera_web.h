@@ -40,7 +40,7 @@ class CameraFeedWeb : public CameraFeed {
 	String device_id;
 	Ref<Image> image;
 	Vector<uint8_t> data;
-	static void _on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const char *p_error);
+	static void _on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_orientation, const int p_facing_mode, const char *p_error);
 	static void _on_denied_callback(void *p_context);
 
 public:
