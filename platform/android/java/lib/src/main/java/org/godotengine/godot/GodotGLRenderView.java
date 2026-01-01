@@ -80,13 +80,11 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final GodotInputHandler inputHandler;
 	private final GodotRenderer godotRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
-	private final boolean isXrDevice;
 
 	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
 		super(godot.getContext());
 
 		this.godot = godot;
-		isXrDevice = godot.hasFeature("xr_runtime");
 		this.inputHandler = inputHandler;
 		this.godotRenderer = new GodotRenderer();
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
@@ -177,7 +175,7 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	@Override
 	public boolean canCapturePointer() {
 		// Pointer capture is not supported on XR devices.
-		return !isXrDevice && inputHandler.canCapturePointer();
+		return !godot.isXrRuntime() && inputHandler.canCapturePointer();
 	}
 
 	@Override
