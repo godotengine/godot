@@ -2034,6 +2034,18 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		}
 
 		if (is_moved) {
+			Vector<String> files_to_update;
+			for (KeyValue<String, String> &E : file_renames) {
+				if (!files_to_update.has(E.key)) {
+					files_to_update.push_back(E.key);
+				}
+				if (!files_to_update.has(E.value)) {
+					files_to_update.push_back(E.value);
+				}
+			}
+			print_verbose("FileSystem: updating file infos.");
+			EditorFileSystem::get_singleton()->update_files(files_to_update);
+
 			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 			_update_resource_paths_after_move(file_renames, uids);
 			_update_dependencies_after_move(file_renames, file_owners);
