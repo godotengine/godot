@@ -1976,7 +1976,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// TabContainerOdd variation.
 		{
-			// Can be used on tabs against the base color background (e.g. nested tabs).
+			// Used for tabs against the base color background in the classic theme.
 			p_theme->set_type_variation("TabContainerOdd", "TabContainer");
 
 			Ref<StyleBoxFlat> style_tab_selected_odd = p_theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->duplicate();
@@ -1988,6 +1988,49 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(panel), "TabContainerOdd", style_panel_odd);
 
 			p_theme->set_stylebox("tabbar_background", "TabContainerOdd", p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
+		}
+
+		// TabContainerInner, TabBarInner, PanelContainerTabbarInner variations.
+		{
+			// Used for tabs against the base color background in the modern theme.
+			p_theme->set_type_variation("TabContainerInner", "TabContainer");
+			p_theme->set_type_variation("TabBarInner", "TabBar");
+			p_theme->set_type_variation("PanelContainerTabbarInner", "PanelContainer");
+
+			Ref<StyleBoxFlat> style_tab_selected_inner = p_theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->duplicate();
+			style_tab_selected_inner->set_content_margin_individual(p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE);
+			style_tab_selected_inner->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+			p_theme->set_stylebox("tab_selected", "TabContainerInner", style_tab_selected_inner);
+			p_theme->set_stylebox("tab_selected", "TabBarInner", style_tab_selected_inner);
+
+			Color background_color = p_config.surface_lower_color.lerp(p_config.mono_color_inv, 0.15);
+
+			Ref<StyleBoxFlat> style_tab_unselected_inner = style_tab_selected_inner->duplicate();
+			style_tab_unselected_inner->set_bg_color(background_color);
+			p_theme->set_stylebox("tab_unselected", "TabContainerInner", style_tab_unselected_inner);
+			p_theme->set_stylebox("tab_unselected", "TabBarInner", style_tab_unselected_inner);
+
+			Ref<StyleBoxFlat> style_tab_hovered_inner = style_tab_selected_inner->duplicate();
+			style_tab_hovered_inner->set_bg_color(background_color.lerp(p_config.mono_color, 0.05));
+			p_theme->set_stylebox("tab_hovered", "TabContainerInner", style_tab_hovered_inner);
+			p_theme->set_stylebox("tab_hovered", "TabBarInner", style_tab_hovered_inner);
+
+			Ref<StyleBoxFlat> style_tab_disabled_inner = style_tab_selected_inner->duplicate();
+			style_tab_disabled_inner->set_bg_color(background_color);
+			p_theme->set_stylebox("tab_disabled", "TabContainerInner", style_tab_disabled_inner);
+			p_theme->set_stylebox("tab_disabled", "TabBarInner", style_tab_disabled_inner);
+
+			Ref<StyleBoxFlat> style_tabbar_background_inner = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
+			style_tabbar_background_inner->set_content_margin_all(p_config.base_margin * EDSCALE);
+			style_tabbar_background_inner->set_corner_radius_all(p_config.corner_radius * EDSCALE + p_config.base_margin * EDSCALE);
+			style_tabbar_background_inner->set_bg_color(background_color);
+
+			p_theme->set_stylebox("tabbar_background", "TabContainerInner", style_tabbar_background_inner);
+
+			p_theme->set_constant("tab_separation", "TabContainerInner", p_config.separation_margin);
+			p_theme->set_constant("tab_separation", "TabBarInner", p_config.separation_margin);
+
+			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerTabbarInner", style_tabbar_background_inner);
 		}
 
 		// TreeLineEdit.
