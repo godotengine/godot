@@ -909,11 +909,13 @@ ScrollContainer::ScrollContainer() {
 
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
+	h_scroll->set_use_default_smooth_time();
 	add_child(h_scroll, false, INTERNAL_MODE_BACK);
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
+	v_scroll->set_use_default_smooth_time();
 	add_child(v_scroll, false, INTERNAL_MODE_BACK);
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
 

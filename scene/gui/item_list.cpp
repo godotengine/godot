@@ -1165,8 +1165,8 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() * pan_gesture->get_delta().y / 8);
-		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() * pan_gesture->get_delta().x / 8);
+		scroll_bar_v->set_value(scroll_bar_v->get_target_value() + scroll_bar_v->get_page() * pan_gesture->get_delta().y / 8);
+		scroll_bar_h->set_value(scroll_bar_h->get_target_value() + scroll_bar_h->get_page() * pan_gesture->get_delta().x / 8);
 	}
 
 	if (scroll_value_modified && (scroll_bar_v->get_value() != prev_scroll_v || scroll_bar_h->get_value() != prev_scroll_h)) {
@@ -2468,10 +2468,12 @@ void ItemList::_bind_methods() {
 
 ItemList::ItemList() {
 	scroll_bar_v = memnew(VScrollBar);
+	scroll_bar_v->set_use_default_smooth_time();
 	add_child(scroll_bar_v, false, INTERNAL_MODE_FRONT);
 	scroll_bar_v->connect(SceneStringName(value_changed), callable_mp(this, &ItemList::_scroll_changed));
 
 	scroll_bar_h = memnew(HScrollBar);
+	scroll_bar_h->set_use_default_smooth_time();
 	add_child(scroll_bar_h, false, INTERNAL_MODE_FRONT);
 	scroll_bar_h->connect(SceneStringName(value_changed), callable_mp(this, &ItemList::_scroll_changed));
 

@@ -517,7 +517,7 @@ Size2 ScrollBar::get_minimum_size() const {
 }
 
 void ScrollBar::scroll(double p_amount) {
-	scroll_to(get_value() + p_amount);
+	scroll_to(get_target_value() + p_amount);
 }
 
 void ScrollBar::scroll_to(double p_position) {
@@ -637,7 +637,9 @@ void ScrollBar::set_drag_node_enabled(bool p_enable) {
 }
 
 void ScrollBar::set_smooth_scroll_enabled(bool p_enable) {
-	smooth_scroll_enabled = p_enable;
+	//smooth_scroll_enabled = p_enable;
+	set_use_default_smooth_time(p_enable);
+	//set_smooth_time(p_enable ? GLOBAL_GET_CACHED(double, "gui/common/default_scroll_smooth_time") : 0);
 }
 
 bool ScrollBar::is_smooth_scroll_enabled() const {
