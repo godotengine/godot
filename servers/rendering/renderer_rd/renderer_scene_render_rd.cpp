@@ -1733,8 +1733,14 @@ void RendererSceneRenderRD::init() {
 		raster_effects.set_flag(RendererRD::CopyEffects::RASTER_EFFECT_COPY);
 		raster_effects.set_flag(RendererRD::CopyEffects::RASTER_EFFECT_GAUSSIAN_BLUR);
 
-		// This path can be used in the future to redirect certain devices to use the raster version of the effect, either due to performance or driver errors.
+		// This path can be used to redirect certain devices to use the raster version of the effect, either due to performance, lack of capabilities, or driver errors.
 		bool use_raster_for_octmaps = false;
+
+		// Some devices may not support the A2B10G10R10 format as a storage image on the Mobile renderer.
+		if (!RD::get_singleton()->texture_is_format_supported_for_usage(_render_buffers_get_preferred_color_format(), RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT)) {
+			use_raster_for_octmaps = true;
+		}
+
 		if (use_raster_for_octmaps) {
 			raster_effects.set_flag(RendererRD::CopyEffects::RASTER_EFFECT_OCTMAP);
 		}
