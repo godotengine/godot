@@ -1299,6 +1299,7 @@ void PopupMenu::_notification(int p_what) {
 					DisplayServer::get_singleton()->accessibility_update_set_name(item.accessibility_item_element, item.xl_text);
 					DisplayServer::get_singleton()->accessibility_update_set_flag(item.accessibility_item_element, DisplayServer::AccessibilityFlags::FLAG_DISABLED, item.disabled);
 					DisplayServer::get_singleton()->accessibility_update_set_tooltip(item.accessibility_item_element, item.tooltip);
+					DisplayServer::get_singleton()->accessibility_update_set_shortcut(item.accessibility_item_element, _get_accel_text(item));
 
 					DisplayServer::get_singleton()->accessibility_update_set_bounds(item.accessibility_item_element, Rect2(item_ofs, Size2(display_width, h + theme_cache.v_separation)));
 
@@ -2513,6 +2514,7 @@ void PopupMenu::set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bo
 	items.write[p_idx].shortcut = p_shortcut;
 	items.write[p_idx].shortcut_is_global = p_global;
 	items.write[p_idx].dirty = true;
+	items.write[p_idx].accessibility_item_dirty = true;
 
 	if (items[p_idx].shortcut.is_valid()) {
 		_ref_shortcut(items[p_idx].shortcut);
