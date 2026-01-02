@@ -39,6 +39,7 @@
 #include <camera/NdkCameraManager.h>
 #include <camera/NdkCameraMetadataTags.h>
 #include <media/NdkImageReader.h>
+#include <atomic>
 #include <optional>
 
 enum class CameraFacing {
@@ -77,6 +78,9 @@ private:
 	ACameraOutputTarget *camera_output_target = nullptr;
 	Mutex callback_mutex;
 	Semaphore session_closed_semaphore;
+	std::atomic<bool> is_deactivating{ false };
+	std::atomic<bool> session_close_pending{ false };
+	std::atomic<bool> device_error_occurred{ false };
 	bool was_active_before_pause = false;
 
 	// Callback structures - must be instance members, not static, to ensure

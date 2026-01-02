@@ -232,6 +232,10 @@ bool CameraFeedAndroid::activate_feed() {
 		deactivate_feed();
 	};
 
+	// Clear deactivation and error flags before starting activation.
+	is_deactivating.store(false, std::memory_order_release);
+	device_error_occurred.store(false, std::memory_order_release);
+
 	// Request permission
 	if (!OS::get_singleton()->request_permission("CAMERA")) {
 		return false;
@@ -430,11 +434,31 @@ void CameraFeedAndroid::compact_stride_inplace(uint8_t *data, size_t width, int 
 void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
 
+	// Check deactivation flag before acquiring mutex to avoid using resources
+	// that may be deleted during deactivate_feed(). This is a racy check but
+	// safe because we only transition is_deactivating from false->true during
+	// deactivation, and back to false only at the start of activation.
+	if (feed->is_deactivating.load(std::memory_order_acquire)) {
+		// Don't try to acquire images - the reader may be deleted.
+		// Android will clean up pending images when the reader is deleted.
+		return;
+	}
+
 	MutexLock lock(feed->callback_mutex);
 
+	// Re-check after acquiring mutex in case deactivation started while waiting.
+	if (feed->is_deactivating.load(std::memory_order_acquire)) {
+		return;
+	}
+
+	// If feed is not active, we must still acquire and discard the image to
+	// free the buffer slot. Otherwise, with maxImages=1, the buffer stays full
+	// and no new frames will arrive (onImage won't be called again).
+	// This can happen when a frame arrives between activate_feed() returning
+	// and active=true being set in the base class.
 	if (!feed->is_active()) {
 		AImage *pending_image = nullptr;
-		if (AImageReader_acquireNextImage(p_reader, &pending_image) == AMEDIA_OK) {
+		if (AImageReader_acquireNextImage(p_reader, &pending_image) == AMEDIA_OK && pending_image != nullptr) {
 			AImage_delete(pending_image);
 		}
 		return;
@@ -627,10 +651,19 @@ void CameraFeedAndroid::onSessionActive(void *context, ACameraCaptureSession *se
 
 void CameraFeedAndroid::onSessionClosed(void *context, ACameraCaptureSession *p_session) {
 	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
-	feed->session_closed_semaphore.post();
+	// Only post if deactivate_feed() is waiting for us. This prevents
+	// spurious posts from error-triggered session closes that could
+	// desynchronize the semaphore count.
+	if (feed->session_close_pending.load(std::memory_order_acquire)) {
+		feed->session_closed_semaphore.post();
+	}
 }
 
 void CameraFeedAndroid::deactivate_feed() {
+	// Signal that deactivation is in progress. This prevents onImage callbacks
+	// from using resources that may be deleted during cleanup.
+	is_deactivating.store(true, std::memory_order_release);
+
 	// First, remove image listener to prevent new callbacks.
 	if (reader != nullptr) {
 		AImageReader_setImageListener(reader, nullptr);
@@ -640,10 +673,27 @@ void CameraFeedAndroid::deactivate_feed() {
 	// Must wait for session to fully close before closing device.
 	if (session != nullptr) {
 		ACameraCaptureSession_stopRepeating(session);
+
+		// If an error occurred, the session may have already been closed by
+		// Android. In that case, ACameraCaptureSession_close() may not trigger
+		// onSessionClosed, so we skip waiting to avoid a deadlock.
+		bool skip_wait = device_error_occurred.load(std::memory_order_acquire);
+
+		if (!skip_wait) {
+			// Set flag before closing to indicate we're waiting for the callback.
+			// This ensures we only wait for the post from THIS close operation.
+			session_close_pending.store(true, std::memory_order_release);
+		}
+
 		ACameraCaptureSession_close(session);
-		// Wait for onSessionClosed callback to ensure session is fully closed
-		// before proceeding to close the device.
-		session_closed_semaphore.wait();
+
+		if (!skip_wait) {
+			// Wait for onSessionClosed callback to ensure session is fully closed
+			// before proceeding to close the device.
+			session_closed_semaphore.wait();
+			session_close_pending.store(false, std::memory_order_release);
+		}
+
 		session = nullptr;
 	}
 
@@ -683,7 +733,12 @@ void CameraFeedAndroid::deactivate_feed() {
 }
 
 void CameraFeedAndroid::onError(void *context, ACameraDevice *p_device, int error) {
-	print_error(vformat("Camera error: %d", error));
+	auto *feed = static_cast<CameraFeedAndroid *>(context);
+	print_error(vformat("Camera %s error: %d", feed->camera_id, error));
+	// Mark that an error occurred. This signals to deactivate_feed() that
+	// the session may have been closed by Android, so we shouldn't wait
+	// for onSessionClosed.
+	feed->device_error_occurred.store(true, std::memory_order_release);
 	onDisconnected(context, p_device);
 }
 
