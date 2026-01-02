@@ -384,7 +384,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		linear_velocity = velocity_tracker->get_tracked_linear_velocity();
 	}
 
-	Vector3 global_pos = get_global_transform().origin;
+	const Vector3 global_pos = get_global_transform().origin;
 
 	Ref<World3D> world_3d = get_world_3d();
 	ERR_FAIL_COND_V(world_3d.is_null(), output_volume_vector);
@@ -414,6 +414,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	tmp_reverb_vector.resize(volume_vector_size);
 
 	bool has_any_listener_in_range = false;
+	linear_attenuation = -FLT_MAX;
 	for (Camera3D *camera : cameras) {
 		if (!camera) {
 			continue;
@@ -433,9 +434,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			listener_node = listener;
 		}
 
-		Vector3 local_pos = listener_node->get_global_transform().orthonormalized().affine_inverse().xform(global_pos);
+		const Vector3 local_pos = listener_node->get_global_transform().orthonormalized().affine_inverse().xform(global_pos);
 
-		float dist = local_pos.length();
+		const float dist = local_pos.length();
 
 #ifndef PHYSICS_3D_DISABLED
 		Vector3 area_sound_pos;
@@ -477,10 +478,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			}
 		}
 
-		linear_attenuation = Math::db_to_linear(db_att);
-		for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
-			AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
-		}
+		linear_attenuation = MAX(linear_attenuation, Math::db_to_linear(db_att));
 
 		for (AudioFrame &frame : tmp_volume_vector) {
 			frame = AudioFrame(0, 0);
@@ -492,7 +490,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			// Bake in a constant factor here to allow the project setting defaults for 2d and 3d to be normalized to 1.0.
 			float tightness = cached_global_panning_strength * 2.0f;
 			tightness *= panning_strength;
-			_calc_output_vol(local_pos.normalized(), tightness, tmp_volume_vector);
+			_calc_output_vol(local_pos / dist, tightness, tmp_volume_vector);
 		}
 
 		for (int64_t k = 0; k < volume_vector_size; k++) {
@@ -517,12 +515,11 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				listener_velocity = camera->get_doppler_tracked_velocity();
 			}
 
-			Vector3 local_velocity = listener_node->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - listener_velocity);
-
+			const Vector3 local_velocity = listener_node->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - listener_velocity);
 			if (local_velocity != Vector3()) {
-				float approaching = local_pos.normalized().dot(local_velocity.normalized());
-				float velocity = local_velocity.length();
-				float speed_of_sound = 343.0;
+				const float approaching = (local_pos / dist).dot(local_velocity.normalized());
+				const float velocity = local_velocity.length();
+				static constexpr float speed_of_sound = 343.0;
 
 				float doppler_pitch_scale = internal->pitch_scale * speed_of_sound / (speed_of_sound + velocity * approaching);
 				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1 / 8.0), 8.0); //avoid crazy stuff
@@ -530,6 +527,10 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				actual_pitch_scale = MAX(actual_pitch_scale, doppler_pitch_scale);
 			}
 		}
+	}
+
+	for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
 	}
 
 	HashMap<StringName, Vector<AudioFrame>> bus_volumes;
