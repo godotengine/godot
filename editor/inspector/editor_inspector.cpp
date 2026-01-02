@@ -1107,9 +1107,27 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 					if (new_coords.x < int64_t(object->get("hframes")) && new_coords.y < int64_t(object->get("vframes"))) {
 						callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, new_coords, "", false);
 					}
-				} else {
+				} else if (property == "frame" && (object->is_class("AnimatedSprite2D") || object->is_class("AnimatedSprite3D"))) {
+					Ref<Resource> sprite_frames = object->get("sprite_frames");
+					if (sprite_frames.is_valid()) {
+						StringName animation = object->get("animation");
+						int frame_count = sprite_frames->call("get_frame_count", animation);
+						int64_t current_frame = object->get(property);
+						if (current_frame + 1 < frame_count) {
+							callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, current_frame + 1, "", false);
+						}
+					}
+				} else if (object->is_class("Sprite2D") || object->is_class("Sprite3D")) {
 					if (int64_t(object->get(property)) + 1 < (int64_t(object->get("hframes")) * int64_t(object->get("vframes")))) {
 						callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, object->get(property).operator int64_t() + 1, "", false);
+					}
+				} else {
+					// Generic fallback for any property with PROPERTY_USAGE_KEYING_INCREMENTS.
+					Variant current_value = object->get(property);
+					if (current_value.get_type() == Variant::INT) {
+						callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, current_value.operator int64_t() + 1, "", false);
+					} else if (current_value.get_type() == Variant::FLOAT) {
+						callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, current_value.operator double() + 1.0, "", false);
 					}
 				}
 				callable_mp(this, &EditorProperty::update_property).call_deferred();
