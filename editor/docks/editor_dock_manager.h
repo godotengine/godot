@@ -61,26 +61,15 @@ public:
 	DockSplitContainer();
 };
 
-class DockShortcutHandler : public Node {
-	GDCLASS(DockShortcutHandler, Node);
-
-protected:
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
-
-public:
-	DockShortcutHandler() { set_process_shortcut_input(true); }
-};
-
 class DockContextPopup;
 class EditorDockDragHint;
 
-class EditorDockManager : public Object {
-	GDCLASS(EditorDockManager, Object);
+class EditorDockManager : public Control {
+	GDCLASS(EditorDockManager, Control);
 
 private:
 	friend class DockContextPopup;
 	friend class EditorDockDragHint;
-	friend class DockShortcutHandler;
 
 	static inline EditorDockManager *singleton = nullptr;
 
@@ -127,6 +116,11 @@ private:
 	void _queue_update_tab_style(EditorDock *p_dock);
 	void _update_dirty_dock_tabs();
 	void _update_tab_style(EditorDock *p_dock);
+
+protected:
+	void _notification(int p_notification);
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
