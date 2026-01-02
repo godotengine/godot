@@ -57,11 +57,44 @@ const GodotCamera = {
 		cameras: new Map(),
 		defaultMinimumCapabilities: {
 			'width': {
+				'min': 1,
 				'max': 1280,
 			},
 			'height': {
-				'max': 1080,
+				'min': 1,
+				'max': 720,
 			},
+		},
+
+		/**
+		 * Common resolutions to check against camera capabilities.
+		 */
+		commonResolutions: [
+			{ width: 320, height: 240 }, // QVGA (4:3)
+			{ width: 352, height: 288 }, // CIF (4:3) - Video conferencing
+			{ width: 640, height: 480 }, // VGA (4:3)
+			{ width: 1024, height: 768 }, // XGA (4:3)
+			{ width: 1280, height: 720 }, // HD 720p (16:9)
+			{ width: 1280, height: 960 }, // SXGA- (4:3)
+			{ width: 1600, height: 1200 }, // UXGA (4:3)
+			{ width: 1920, height: 1080 }, // Full HD 1080p (16:9)
+			{ width: 2560, height: 1440 }, // QHD 1440p (16:9)
+			{ width: 3840, height: 2160 }, // 4K UHD 2160p (16:9)
+		],
+
+		/**
+		 * Gets supported formats based on capabilities.
+		 * @param {Object} capabilities MediaTrackCapabilities object
+		 * @returns {Array<{width: number, height: number}>} Supported resolutions
+		 */
+		getSupportedFormats: function (capabilities) {
+			const widthRange = capabilities.width || this.defaultMinimumCapabilities.width;
+			const heightRange = capabilities.height || this.defaultMinimumCapabilities.height;
+
+			return this.commonResolutions.filter((res) => res.width >= (widthRange.min || 1)
+				&& res.width <= (widthRange.max || 9999)
+				&& res.height >= (heightRange.min || 1)
+				&& res.height <= (heightRange.max || 9999));
 		},
 
 		/**
@@ -193,24 +226,39 @@ const GodotCamera = {
 				const result = { error: null, cameras: null };
 
 				try {
-					// request camera access permission.
-					const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-					const getCapabilities = function (deviceId) {
-						const videoTrack = stream.getVideoTracks()
-							.find((track) => track.getSettings().deviceId === deviceId);
-						return videoTrack?.getCapabilities() || GodotCamera.defaultMinimumCapabilities;
-					};
+					// Request camera access permission first.
+					const initialStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+					initialStream.getTracks().forEach((track) => track.stop());
+
 					const devices = await navigator.mediaDevices.enumerateDevices();
 					const videoDevices = devices.filter((device) => device.kind === 'videoinput');
-					result.cameras = videoDevices
-						.map((device, index) => ({
+
+					// Get capabilities for each camera device.
+					const cameraPromises = videoDevices.map(async (device, index) => {
+						let formats = [];
+						try {
+							const stream = await navigator.mediaDevices.getUserMedia({
+								video: { deviceId: { exact: device.deviceId } },
+								audio: false,
+							});
+							const [videoTrack] = stream.getVideoTracks();
+							const capabilities = videoTrack?.getCapabilities() || GodotCamera.defaultMinimumCapabilities;
+							formats = GodotCamera.getSupportedFormats(capabilities);
+							stream.getTracks().forEach((track) => track.stop());
+						} catch (e) {
+							// If we can't get capabilities, use default formats.
+							formats = GodotCamera.getSupportedFormats(GodotCamera.defaultMinimumCapabilities);
+						}
+
+						return {
 							index,
 							id: device.deviceId,
 							label: device.label || `Camera ${index}`,
-							capabilities: getCapabilities(device.deviceId),
-						}));
+							formats,
+						};
+					});
 
-					stream.getTracks().forEach((track) => track.stop());
+					result.cameras = await Promise.all(cameraPromises);
 				} catch (error) {
 					result.error = error.message;
 				}

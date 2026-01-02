@@ -36,13 +36,12 @@
 
 namespace {
 const String KEY_CAMERAS("cameras");
-const String KEY_CAPABILITIES("capabilities");
 const String KEY_ERROR("error");
+const String KEY_FORMATS("formats");
 const String KEY_HEIGHT("height");
 const String KEY_ID("id");
 const String KEY_INDEX("index");
 const String KEY_LABEL("label");
-const String KEY_MAX("max");
 const String KEY_WIDTH("width");
 } //namespace
 
@@ -58,14 +57,9 @@ CameraDriverWeb *CameraDriverWeb::get_singleton() {
 	return singleton;
 }
 
-// Helper to extract 'max' from a capability dictionary or use direct value.
-int CameraDriverWeb::_get_max_or_direct(const Variant &p_val) {
-	if (p_val.get_type() == Variant::DICTIONARY) {
-		Dictionary d = p_val;
-		if (d.has(KEY_MAX)) {
-			return d[KEY_MAX];
-		}
-	} else if (p_val.get_type() == Variant::INT) {
+// Helper to extract integer value from Variant.
+int CameraDriverWeb::_get_int_value(const Variant &p_val) {
+	if (p_val.get_type() == Variant::INT) {
 		return p_val;
 	} else if (p_val.get_type() == Variant::FLOAT) {
 		return static_cast<int>(p_val.operator float());
@@ -118,45 +112,39 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 		info.index = device_dict[KEY_INDEX];
 		info.device_id = device_dict[KEY_ID];
 		info.label = device_dict[KEY_LABEL];
-		// Initialize capability with safe defaults to avoid uninitialized usage downstream.
-		{
-			CapabilityInfo capability = {};
-			capability.width = 0;
-			capability.height = 0;
-			info.capability = capability;
+
+		// Parse formats array.
+		Variant v_formats = device_dict.get(KEY_FORMATS, Variant());
+		if (v_formats.get_type() == Variant::ARRAY) {
+			Array formats_array = v_formats;
+			for (int j = 0; j < formats_array.size(); j++) {
+				Variant format_variant = formats_array.get(j);
+				if (format_variant.get_type() != Variant::DICTIONARY) {
+					continue;
+				}
+
+				Dictionary format_dict = format_variant;
+				if (!format_dict.has(KEY_WIDTH) || !format_dict.has(KEY_HEIGHT)) {
+					continue;
+				}
+
+				int width = _get_int_value(format_dict.get(KEY_WIDTH, Variant()));
+				int height = _get_int_value(format_dict.get(KEY_HEIGHT, Variant()));
+
+				if (width > 0 && height > 0) {
+					FormatInfo format_info;
+					format_info.width = width;
+					format_info.height = height;
+					info.formats.push_back(format_info);
+				}
+			}
 		}
 
-		Variant v_caps_data = device_dict.get(KEY_CAPABILITIES, Variant());
-		if (v_caps_data.get_type() != Variant::DICTIONARY) {
-			WARN_PRINT("Camera info entry has no capabilities or capabilities are not a dictionary.");
-			camera_info.push_back(info);
-			continue;
+		if (info.formats.is_empty()) {
+			WARN_PRINT("Camera info entry has no valid formats.");
 		}
 
-		Dictionary caps_dict = v_caps_data;
-		if (!caps_dict.has(KEY_WIDTH) || !caps_dict.has(KEY_HEIGHT)) {
-			WARN_PRINT("Capabilities object does not directly contain top-level width/height keys.");
-			camera_info.push_back(info);
-			continue;
-		}
-
-		Variant v_width_val = caps_dict.get(KEY_WIDTH, Variant());
-		Variant v_height_val = caps_dict.get(KEY_HEIGHT, Variant());
-
-		int width = _get_max_or_direct(v_width_val);
-		int height = _get_max_or_direct(v_height_val);
-
-		if (width <= 0 || height <= 0) {
-			WARN_PRINT("Could not extract valid width/height from capabilities structure.");
-			// Still include the device in the list; keep zeroed capabilities.
-			camera_info.push_back(info);
-		} else {
-			CapabilityInfo capability;
-			capability.width = width;
-			capability.height = height;
-			info.capability = capability;
-			camera_info.push_back(info);
-		}
+		camera_info.push_back(info);
 	}
 
 	CameraDriverWebGetCamerasCallback on_get_cameras_callback = reinterpret_cast<CameraDriverWebGetCamerasCallback>(callback);

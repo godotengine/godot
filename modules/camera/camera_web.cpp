@@ -168,11 +168,13 @@ CameraFeedWeb::CameraFeedWeb(const CameraInfo &info) {
 	name = info.label;
 	device_id = info.device_id;
 
-	FeedFormat feed_format;
-	feed_format.width = info.capability.width;
-	feed_format.height = info.capability.height;
-	feed_format.format = String("RGBA");
-	formats.append(feed_format);
+	for (int i = 0; i < info.formats.size(); i++) {
+		FeedFormat feed_format;
+		feed_format.width = info.formats[i].width;
+		feed_format.height = info.formats[i].height;
+		feed_format.format = String("RGBA");
+		formats.append(feed_format);
+	}
 }
 
 CameraFeedWeb::~CameraFeedWeb() {
