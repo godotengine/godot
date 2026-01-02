@@ -42,14 +42,6 @@
 #define COLUMN_NUMBER_TO_INDEX(p_column) ((p_column) - 1)
 #endif
 
-#ifndef SYMBOL_SEPARATOR
-#define SYMBOL_SEPARATOR "::"
-#endif
-
-#ifndef JOIN_SYMBOLS
-#define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPARATOR + (name))
-#endif
-
 typedef HashMap<String, const LSP::DocumentSymbol *> ClassMembers;
 
 /**

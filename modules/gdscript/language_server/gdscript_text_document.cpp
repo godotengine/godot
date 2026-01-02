@@ -274,33 +274,6 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	if (data.get_type() == Variant::DICTIONARY) {
 		params.load(p_params["data"]);
 		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params, item.label, item.kind == LSP::CompletionItemKind::Method || item.kind == LSP::CompletionItemKind::Function);
-
-	} else if (data.is_string()) {
-		String query = data;
-
-		Vector<String> param_symbols = query.split(SYMBOL_SEPARATOR, false);
-
-		if (param_symbols.size() >= 2) {
-			StringName class_name = param_symbols[0];
-			const String &member_name = param_symbols[param_symbols.size() - 1];
-			String inner_class_name;
-			if (param_symbols.size() >= 3) {
-				inner_class_name = param_symbols[1];
-			}
-
-			if (const ClassMembers *members = GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members.getptr(class_name)) {
-				if (const LSP::DocumentSymbol *const *member = members->getptr(member_name)) {
-					symbol = *member;
-				}
-			}
-
-			if (!symbol) {
-				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(class_name);
-				if (parser) {
-					symbol = parser->get_member_symbol(member_name, inner_class_name);
-				}
-			}
-		}
 	}
 
 	if (symbol) {
