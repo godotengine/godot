@@ -224,6 +224,9 @@ msgstr "無効なトラックパスを確認"
 msgid "Check Angle Interpolation Type Conflicting"
 msgstr "角度補間タイプの衝突を確認"
 
+msgid "Compatibility"
+msgstr "互換性"
+
 msgid "Audio"
 msgstr "オーディオ"
 
@@ -250,9 +253,6 @@ msgstr "iOS"
 
 msgid "Session Category"
 msgstr "セッションカテゴリー:"
-
-msgid "Mix With Others"
-msgstr "バックグラウンド音声とミックス"
 
 msgid "Subwindows"
 msgstr "サブウィンドウ"
@@ -437,15 +437,6 @@ msgstr "プールあたりの最大記述子数"
 msgid "D3D12"
 msgstr "D3D12"
 
-msgid "Max Resource Descriptors per Frame"
-msgstr "フレームあたりの最大リソース記述子数"
-
-msgid "Max Sampler Descriptors per Frame"
-msgstr "フレームあたりの最大サンプラ記述子数"
-
-msgid "Max Misc Descriptors per Frame"
-msgstr "フレームあたりの最大その他の記述子数"
-
 msgid "Agility SDK Version"
 msgstr "Agility SDKバージョン"
 
@@ -562,9 +553,6 @@ msgstr "タッチでマウス操作をエミュレート"
 
 msgid "Emulate Touch From Mouse"
 msgstr "マウスでタッチ操作をエミュレート"
-
-msgid "Compatibility"
-msgstr "互換性"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "従来の押したときの振る舞い"
@@ -845,9 +833,6 @@ msgstr "疑似ローカライズ"
 msgid "Use Pseudolocalization"
 msgstr "疑似ローカライズを有効化"
 
-msgid "Replace With Accents"
-msgstr "文字列のアクセントの置き換え"
-
 msgid "Double Vowels"
 msgstr "文字列の母音を2倍にする"
 
@@ -922,6 +907,12 @@ msgstr "リクエスト失敗、タイムアウト"
 
 msgid "Sync Breakpoints"
 msgstr "ブレークポイントの同期"
+
+msgid "Title"
+msgstr "タイトル"
+
+msgid "Title Color"
+msgstr "タイトルの色"
 
 msgid "Distraction Free Mode"
 msgstr "集中モード"
@@ -1021,27 +1012,6 @@ msgstr "ETC2 ASTC"
 
 msgid "Export Path"
 msgstr "エクスポート先のパス"
-
-msgid "Access"
-msgstr "アクセス"
-
-msgid "Display Mode"
-msgstr "表示モード"
-
-msgid "File Mode"
-msgstr "ファイルモード"
-
-msgid "Filters"
-msgstr "フィルター"
-
-msgid "Options"
-msgstr "オプション"
-
-msgid "Show Hidden Files"
-msgstr "隠しファイルを表示"
-
-msgid "Disable Overwrite Warning"
-msgstr "上書きの警告を無効化"
 
 msgid "Label"
 msgstr "ラベル"
@@ -1562,12 +1532,6 @@ msgstr "SVG"
 msgid "Editor"
 msgstr "エディター"
 
-msgid "Scale With Editor Scale"
-msgstr "エディタースケールに連動"
-
-msgid "Convert Colors With Editor Theme"
-msgstr "エディタのテーマで色を変える"
-
 msgid "Atlas File"
 msgstr "アトラスファイル"
 
@@ -2028,6 +1992,12 @@ msgstr "パスワード"
 msgid "File Dialog"
 msgstr "ファイルダイアログ"
 
+msgid "Show Hidden Files"
+msgstr "隠しファイルを表示"
+
+msgid "Display Mode"
+msgstr "表示モード"
+
 msgid "Thumbnail Size"
 msgstr "サムネイルのサイズ"
 
@@ -2352,9 +2322,6 @@ msgstr "グリッドマップ"
 msgid "Pick Distance"
 msgstr "距離を選択"
 
-msgid "Palette Min Width"
-msgstr "パレットの最小幅"
-
 msgid "Selection Box Color"
 msgstr "選択ボックスの色"
 
@@ -2438,9 +2405,6 @@ msgstr "ボーン軸の長さ"
 
 msgid "Bone Shape"
 msgstr "ボーン形状"
-
-msgid "Path 3D Tilt Disk Size"
-msgstr "3Dパスの傾き調整ディスクのサイズ"
 
 msgid "Primary Grid Steps"
 msgstr "基本グリッドの分割数"
@@ -2997,9 +2961,6 @@ msgstr "ツールチップ位置のオフセット"
 msgid "Show Image"
 msgstr "画像を表示"
 
-msgid "Fullsize"
-msgstr "フルサイズ"
-
 msgid "Use Filter"
 msgstr "フィルターを使用"
 
@@ -3098,9 +3059,6 @@ msgstr "GDScript"
 
 msgid "Max Call Stack"
 msgstr "最大コールスタック数"
-
-msgid "Exclude Addons"
-msgstr "アドオンを除外"
 
 msgid "Language Server"
 msgstr "言語サーバー"
@@ -3345,18 +3303,6 @@ msgstr "ノイズ除去"
 msgid "Denoiser"
 msgstr "デノイザー"
 
-msgid "BPM"
-msgstr "BPM"
-
-msgid "Beat Count"
-msgstr "拍の回数"
-
-msgid "Bar Beats"
-msgstr "1小節中の拍"
-
-msgid "Loop Offset"
-msgstr "ループのオフセット"
-
 msgid "Eye Height"
 msgstr "目の高さ"
 
@@ -3380,6 +3326,18 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "最小半径"
+
+msgid "BPM"
+msgstr "BPM"
+
+msgid "Beat Count"
+msgstr "拍の回数"
+
+msgid "Bar Beats"
+msgstr "1小節中の拍"
+
+msgid "Loop Offset"
+msgstr "ループのオフセット"
 
 msgid "Allow Object Decoding"
 msgstr "オブジェクトのデコードを許可"
@@ -3425,6 +3383,9 @@ msgstr "ディスプレイリフレッシュレート"
 
 msgid "Render Target Size Multiplier"
 msgstr "レンダーターゲットサイズ倍率"
+
+msgid "Next"
+msgstr "次"
 
 msgid "Layer Viewport"
 msgstr "レイヤービューポート"
@@ -3942,6 +3903,12 @@ msgstr "点"
 msgid "Colors"
 msgstr "カラー"
 
+msgid "Ring Inner Radius"
+msgstr "リングの内半径"
+
+msgid "Ring Radius"
+msgstr "リングの半径"
+
 msgid "Spread"
 msgstr "広がり"
 
@@ -4284,12 +4251,6 @@ msgstr "リング軸"
 msgid "Ring Height"
 msgstr "リングの高さ"
 
-msgid "Ring Radius"
-msgstr "リングの半径"
-
-msgid "Ring Inner Radius"
-msgstr "リングの内半径"
-
 msgid "Ring Cone Angle"
 msgstr "リング円錐角度"
 
@@ -4317,6 +4278,9 @@ msgstr "変調"
 
 msgid "Albedo Mix"
 msgstr "アルベドミックス"
+
+msgid "Deterministic"
+msgstr "決定的"
 
 msgid "Flags"
 msgstr "フラグ"
@@ -4483,9 +4447,6 @@ msgstr "物理ステップの追跡"
 msgid "Sorting"
 msgstr "ソート"
 
-msgid "Use AABB Center"
-msgstr "AABBセンターを使用"
-
 msgid "Custom AABB"
 msgstr "カスタムAABB"
 
@@ -4530,12 +4491,6 @@ msgstr "リクエスト"
 
 msgid "Current State"
 msgstr "現在のステート"
-
-msgid "Libraries"
-msgstr "ライブラリ"
-
-msgid "Deterministic"
-msgstr "決定的"
 
 msgid "Reset on Save"
 msgstr "保存時リセット"
@@ -4633,9 +4588,6 @@ msgstr "ツールチップ"
 msgid "Focus"
 msgstr "フォーカス"
 
-msgid "Next"
-msgstr "次"
-
 msgid "Previous"
 msgstr "前"
 
@@ -4645,8 +4597,17 @@ msgstr "マウス"
 msgid "Default Cursor Shape"
 msgstr "デフォルトのカーソル形状"
 
-msgid "Title"
-msgstr "タイトル"
+msgid "File Mode"
+msgstr "ファイルモード"
+
+msgid "Access"
+msgstr "アクセス"
+
+msgid "Filters"
+msgstr "フィルター"
+
+msgid "Options"
+msgstr "オプション"
 
 msgid "Title Position"
 msgstr "タイトルの位置"
@@ -4819,9 +4780,6 @@ msgstr "スクリーンスペースAA"
 msgid "Use TAA"
 msgstr "TAAを使用"
 
-msgid "Use Debanding"
-msgstr "デバンディングを使用"
-
 msgid "Use Occlusion Culling"
 msgstr "オクルージョンカリングを使用"
 
@@ -4869,6 +4827,9 @@ msgstr "MSAA 2D"
 
 msgid "MSAA 3D"
 msgstr "MSAA 3D"
+
+msgid "Use Debanding"
+msgstr "デバンディングを使用"
 
 msgid "Use HDR 2D"
 msgstr "HDR 2D を使用"
@@ -5554,9 +5515,6 @@ msgstr "タイトルのフォント"
 msgid "Title Font Size"
 msgstr "タイトルのフォントサイズ"
 
-msgid "Title Color"
-msgstr "タイトルの色"
-
 msgid "Title Outline Modulate"
 msgstr "タイトルのアウトライン変調"
 
@@ -5629,11 +5587,32 @@ msgstr "カスタム"
 msgid "Custom Font"
 msgstr "カスタムフォント"
 
+msgid "Enable Input"
+msgstr "音声入力を有効にする"
+
+msgid "Channel Disable Threshold dB"
+msgstr "チャンネルを無効にする音量 (dB)のしきい値"
+
+msgid "Channel Disable Time"
+msgstr "チャンネルを無効にするまでの時間"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "ビデオ再生のオーディオ遅延 (ミリ秒)"
+
+msgid "Bus Count"
+msgstr "バスの数"
+
+msgid "Output Device"
+msgstr "出力デバイス"
+
+msgid "Input Device"
+msgstr "入力デバイス"
+
+msgid "Playback Speed Scale"
+msgstr "再生スピードスケール"
+
 msgid "Playback Mode"
 msgstr "再生モード"
-
-msgid "Random Pitch"
-msgstr "ランダムピッチ"
 
 msgid "Random Volume Offset dB"
 msgstr "ランダム音量オフセット (dB)"
@@ -5707,30 +5686,6 @@ msgstr "タイムプルアウト(ミリ秒)"
 msgid "Surround"
 msgstr "サラウンド"
 
-msgid "Enable Input"
-msgstr "音声入力を有効にする"
-
-msgid "Channel Disable Threshold dB"
-msgstr "チャンネルを無効にする音量 (dB)のしきい値"
-
-msgid "Channel Disable Time"
-msgstr "チャンネルを無効にするまでの時間"
-
-msgid "Video Delay Compensation (ms)"
-msgstr "ビデオ再生のオーディオ遅延 (ミリ秒)"
-
-msgid "Bus Count"
-msgstr "バスの数"
-
-msgid "Output Device"
-msgstr "出力デバイス"
-
-msgid "Input Device"
-msgstr "入力デバイス"
-
-msgid "Playback Speed Scale"
-msgstr "再生スピードスケール"
-
 msgid "Feed"
 msgstr "フィード"
 
@@ -5779,27 +5734,6 @@ msgstr "頂点"
 msgid "Fragment"
 msgstr "フラグメント"
 
-msgid "Cull"
-msgstr "カリング"
-
-msgid "Unshaded"
-msgstr "シェーディングなしで"
-
-msgid "Wireframe"
-msgstr "ワイヤーフレーム"
-
-msgid "Ensure Correct Normals"
-msgstr "正しい法線を確保"
-
-msgid "Vertex Lighting"
-msgstr "頂点ライティング"
-
-msgid "Fog Disabled"
-msgstr "フォグ無効"
-
-msgid "Light Only"
-msgstr "ライトのみ"
-
 msgid "VRAM Compression"
 msgstr "VRAM圧縮"
 
@@ -5808,9 +5742,6 @@ msgstr "S3TC BPTC をインポート"
 
 msgid "Import ETC2 ASTC"
 msgstr "ETC2 ASTC をインポート"
-
-msgid "Compress With GPU"
-msgstr "GPUで圧縮"
 
 msgid "Lossless Compression"
 msgstr "ロスレス圧縮"
@@ -5925,6 +5856,27 @@ msgstr "シェーダー言語"
 
 msgid "Treat Warnings as Errors"
 msgstr "警告をエラーとして扱う"
+
+msgid "Cull"
+msgstr "カリング"
+
+msgid "Unshaded"
+msgstr "シェーディングなしで"
+
+msgid "Wireframe"
+msgstr "ワイヤーフレーム"
+
+msgid "Ensure Correct Normals"
+msgstr "正しい法線を確保"
+
+msgid "Vertex Lighting"
+msgstr "頂点ライティング"
+
+msgid "Fog Disabled"
+msgstr "フォグ無効"
+
+msgid "Light Only"
+msgstr "ライトのみ"
 
 msgid "Include Text Server Data"
 msgstr "テキストサーバーデータを含める"

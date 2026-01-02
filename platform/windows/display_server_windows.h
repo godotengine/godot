@@ -506,6 +506,8 @@ class DisplayServerWindows : public DisplayServer {
 	LRESULT _handle_early_window_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	Point2i _get_screens_origin() const;
 
+	Vector2i _get_screen_expand_offset(int p_screen) const;
+
 	enum class WinKeyModifierMask {
 		ALT_GR = (1 << 1),
 		SHIFT = (1 << 2),

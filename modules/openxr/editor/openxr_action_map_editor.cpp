@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
 HashMap<String, String> OpenXRActionMapEditor::interaction_profile_editors;
@@ -59,6 +60,9 @@ void OpenXRActionMapEditor::_bind_methods() {
 void OpenXRActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			const String theme_style = EDITOR_GET("interface/theme/style");
+			tabs->set_theme_type_variation(theme_style == "Classic" ? "TabContainerOdd" : "TabContainerInner");
+
 			for (int i = 0; i < tabs->get_child_count(); i++) {
 				Control *tab = Object::cast_to<Control>(tabs->get_child(i));
 				if (tab) {
@@ -279,7 +283,7 @@ void OpenXRActionMapEditor::_load_action_map(const String &p_path, bool p_create
 	if (da->file_exists(p_path)) {
 		action_map = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 		if (err != OK) {
-			EditorNode::get_singleton()->show_warning(vformat(TTR("Error loading %s: %s."), edited_path, error_names[err]));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Error loading %s: %s."), edited_path, TTR(error_names[err])));
 
 			edited_path = "";
 			header_label->set_text("");
@@ -293,7 +297,7 @@ void OpenXRActionMapEditor::_load_action_map(const String &p_path, bool p_create
 		err = ResourceSaver::save(action_map, p_path);
 		if (err != OK) {
 			// Show warning but continue.
-			EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file %s: %s"), p_path, error_names[err]));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file %s: %s"), p_path, TTR(error_names[err])));
 		}
 	}
 
@@ -304,7 +308,7 @@ void OpenXRActionMapEditor::_load_action_map(const String &p_path, bool p_create
 void OpenXRActionMapEditor::_on_save_action_map() {
 	Error err = ResourceSaver::save(action_map, edited_path);
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file %s: %s"), edited_path, error_names[err]));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file %s: %s"), edited_path, TTR(error_names[err])));
 		return;
 	}
 
@@ -481,7 +485,6 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	tabs = memnew(TabContainer);
 	tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
-	tabs->set_theme_type_variation("TabContainerOdd");
 	tabs->connect("tab_changed", callable_mp(this, &OpenXRActionMapEditor::_on_tabs_tab_changed));
 	tabs->connect("tab_button_pressed", callable_mp(this, &OpenXRActionMapEditor::_on_tab_button_pressed));
 	main_vb->add_child(tabs);

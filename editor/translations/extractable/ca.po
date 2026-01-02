@@ -18,9 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
-msgid "All Recognized"
-msgstr "Tots Reconeguts"
-
 msgid "Save"
 msgstr "Desa"
 
@@ -38,6 +35,9 @@ msgstr "Selecciona el Directori Actual"
 
 msgid "Select This Folder"
 msgstr "Seleccionar aquest Directori"
+
+msgid "All Recognized"
+msgstr "Tots Reconeguts"
 
 msgid "Open a File"
 msgstr "Obre un Fitxer"

@@ -373,7 +373,7 @@ void TileMapEditorPlugin::_update_tile_map() {
 		Ref<TileSet> tile_set = edited_layer->get_tile_set();
 		if (tile_set.is_valid() && tile_set_id != tile_set->get_instance_id()) {
 			tile_set_plugin_singleton->edit(tile_set.ptr());
-			tile_set_plugin_singleton->make_visible_no_focus();
+			tile_set_plugin_singleton->make_visible(true);
 			tile_set_id = tile_set->get_instance_id();
 		} else if (tile_set.is_null()) {
 			tile_set_plugin_singleton->edit(nullptr);
@@ -410,7 +410,7 @@ void TileMapEditorPlugin::_edit_tile_map_layer(TileMapLayer *p_tile_map_layer, b
 	Ref<TileSet> tile_set = p_tile_map_layer->get_tile_set();
 	if (tile_set.is_valid()) {
 		tile_set_plugin_singleton->edit(tile_set.ptr());
-		tile_set_plugin_singleton->make_visible_no_focus();
+		tile_set_plugin_singleton->make_visible(true);
 		tile_set_id = tile_set->get_instance_id();
 	} else {
 		tile_set_plugin_singleton->edit(nullptr);
@@ -537,10 +537,6 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		editor->close();
 	}
-}
-
-void TileSetEditorPlugin::make_visible_no_focus() {
-	editor->open();
 }
 
 ObjectID TileSetEditorPlugin::get_edited_tileset() const {

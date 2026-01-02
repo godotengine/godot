@@ -4413,20 +4413,20 @@ void TileMapLayerEditor::set_show_layer_selector(bool p_show_layer_selector) {
 
 void TileMapLayerEditor::update_layout(DockLayout p_layout) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
-	tabs_bar->get_parent()->remove_child(tabs_bar);
+	tabs_panel->get_parent()->remove_child(tabs_panel);
 	tile_map_toolbar->set_vertical(is_vertical);
 	layer_selector_separator->set_vertical(is_vertical);
 	layer_selection_hbox->set_vertical(is_vertical);
 	tile_map_toolbar->set_h_size_flags(is_vertical ? SIZE_SHRINK_BEGIN : SIZE_EXPAND_FILL);
 	tile_map_toolbar->set_v_size_flags(is_vertical ? SIZE_EXPAND_FILL : SIZE_SHRINK_BEGIN);
 
-	main_box_container->move_child(padding_control, is_vertical ? 0 : 3);
+	main_box_container->move_child(padding_control, is_vertical ? 0 : 2);
 
 	if (is_vertical) {
-		tile_map_wide_toolbar->add_child(tabs_bar);
+		tile_map_wide_toolbar->add_child(tabs_panel);
 	} else {
-		tile_map_toolbar->add_child(tabs_bar);
-		tile_map_toolbar->move_child(tabs_bar, 0);
+		tile_map_toolbar->add_child(tabs_panel);
+		tile_map_toolbar->move_child(tabs_panel, 0);
 	}
 
 	for (TileMapLayerSubEditorPlugin::TabData &tab_data : tabs_data) {
@@ -4468,6 +4468,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 
 	// TabBar.
 	tabs_bar = memnew(TabBar);
+	tabs_bar->set_theme_type_variation("TabBarInner");
 	tabs_bar->set_clip_tabs(false);
 	for (int plugin_index = 0; plugin_index < tile_map_editor_plugins.size(); plugin_index++) {
 		Vector<TileMapLayerSubEditorPlugin::TabData> tabs_vector = tile_map_editor_plugins[plugin_index]->get_tabs();
@@ -4491,7 +4492,10 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	main_box_container->add_child(padding_control);
 
 	// Tabs.
-	tile_map_toolbar->add_child(tabs_bar);
+	tabs_panel = memnew(PanelContainer);
+	tabs_panel->set_theme_type_variation("PanelContainerTabbarInner");
+	tabs_panel->add_child(tabs_bar);
+	tile_map_toolbar->add_child(tabs_panel);
 
 	// Tabs toolbars.
 	for (TileMapLayerSubEditorPlugin::TabData &tab_data : tabs_data) {

@@ -530,11 +530,14 @@ void EditorProperty::_notification(int p_what) {
 						draw_style_box(theme_cache.hover, check_rect);
 					}
 				}
+
+				Point2 icon_ofs = (Point2(padding, size.height - checkbox->get_height()) / 2).round();
 				if (rtl) {
-					draw_texture(checkbox, rtl_pos + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
+					draw_texture(checkbox, rtl_pos + icon_ofs, color2);
 				} else {
-					draw_texture(checkbox, check_rect.position + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
+					draw_texture(checkbox, check_rect.position + icon_ofs, color2);
 				}
+
 				int check_ofs = checkbox->get_width() + padding + theme_cache.horizontal_separation;
 				ofs += check_ofs;
 				text_limit -= check_ofs;
@@ -564,11 +567,14 @@ void EditorProperty::_notification(int p_what) {
 						draw_style_box(theme_cache.hover, revert_rect);
 					}
 				}
+
+				Point2 icon_ofs = (Point2(padding, size.height - reload_icon->get_height()) / 2).round();
 				if (rtl) {
-					draw_texture(reload_icon, rtl_pos + Point2(padding, size.height - reload_icon->get_height()) / 2, color2);
+					draw_texture(reload_icon, rtl_pos + icon_ofs, color2);
 				} else {
-					draw_texture(reload_icon, revert_rect.position + Point2(padding, size.height - reload_icon->get_height()) / 2, color2);
+					draw_texture(reload_icon, revert_rect.position + icon_ofs, color2);
 				}
+
 				text_limit -= half_padding;
 			} else {
 				revert_rect = Rect2();
@@ -628,10 +634,11 @@ void EditorProperty::_notification(int p_what) {
 					}
 				}
 
+				Point2 icon_ofs = (Point2(padding, size.height - key->get_height()) / 2).round();
 				if (rtl) {
-					draw_texture(key, rtl_pos + Point2(padding, size.height - key->get_height()) / 2, color2);
+					draw_texture(key, rtl_pos + icon_ofs, color2);
 				} else {
-					draw_texture(key, keying_rect.position + Point2(padding, size.height - key->get_height()) / 2, color2);
+					draw_texture(key, keying_rect.position + icon_ofs, color2);
 				}
 
 			} else {
@@ -662,15 +669,17 @@ void EditorProperty::_notification(int p_what) {
 					}
 				}
 
+				Point2 icon_ofs = (Point2(padding, size.height - close->get_height()) / 2).round();
 				if (rtl) {
-					draw_texture(close, rtl_pos + Point2(padding, size.height - close->get_height()) / 2, color2);
+					draw_texture(close, rtl_pos + icon_ofs, color2);
 				} else {
-					draw_texture(close, delete_rect.position + Point2(padding, size.height - close->get_height()) / 2, color2);
+					draw_texture(close, delete_rect.position + icon_ofs, color2);
 				}
 			} else {
 				delete_rect = Rect2();
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			EditorInspector *inspector = get_parent_inspector();
 			if (inspector) {
@@ -683,11 +692,13 @@ void EditorProperty::_notification(int p_what) {
 				_update_property_bg();
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (has_borders) {
 				get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 			}
 		} break;
+
 		case NOTIFICATION_MOUSE_EXIT_SELF:
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (keying_hover || revert_hover || check_hover || delete_hover) {
@@ -2653,7 +2664,7 @@ void EditorInspectorArray::_panel_draw(int p_index) {
 	if (style.is_null()) {
 		return;
 	}
-	if (array_elements[p_index].panel->has_focus()) {
+	if (array_elements[p_index].panel->has_focus(true)) {
 		array_elements[p_index].panel->draw_style_box(style, Rect2(Vector2(), array_elements[p_index].panel->get_size()));
 	}
 }
@@ -3269,9 +3280,9 @@ void EditorInspectorArray::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			Color color = get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor));
-			odd_style->set_bg_color(color.darkened(-0.08));
-			even_style->set_bg_color(color.darkened(0.08));
+			Color color = get_theme_color(SNAME("bg"), SNAME("EditorInspectorArray"));
+			odd_style->set_bg_color(color.darkened(-0.1));
+			even_style->set_bg_color(color.darkened(0.1));
 
 			for (ArrayElement &ae : array_elements) {
 				if (ae.move_texture_rect) {
@@ -3812,7 +3823,7 @@ void EditorInspector::_add_section_in_tree(EditorInspectorSection *p_section, VB
 	}
 	if (!container) {
 		container = memnew(VBoxContainer);
-		container->set_theme_type_variation(SNAME("EditorInspectorContainer"));
+		container->set_theme_type_variation(SNAME("EditorSectionContainer"));
 		p_current_vbox->add_child(container);
 	}
 	container->add_child(p_section);

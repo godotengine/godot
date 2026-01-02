@@ -60,7 +60,7 @@ if env["profiler"]:
         env_tracy = env.Clone()
         env_tracy.Append(CPPDEFINES=["TRACY_ENABLE"])
         if env["profiler_sample_callstack"]:
-            if env["platform"] not in ("windows", "linux", "android"):
+            if env["platform"] not in ("windows", "linuxbsd", "android"):
                 # Reference the feature matrix in the tracy documentation.
                 print("Tracy does not support call stack sampling on this platform. Aborting.")
                 Exit(255)

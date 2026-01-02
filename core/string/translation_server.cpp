@@ -89,6 +89,18 @@ void TranslationServer::init_locale_info() {
 		idx++;
 	}
 
+	// Init locale scripts.
+	language_script_map.clear();
+	idx = 0;
+	while (language_script_list[idx][0] != nullptr) {
+		HashSet<String> &set = language_script_map[language_script_list[idx][0]];
+		Vector<String> scripts = String(language_script_list[idx][1]).split(" ");
+		for (const String &s : scripts) {
+			set.insert(s);
+		}
+		idx++;
+	}
+
 	// Init country names.
 	country_name_map.clear();
 	idx = 0;
@@ -490,6 +502,17 @@ void TranslationServer::set_fallback_locale(const String &p_locale) {
 
 String TranslationServer::get_fallback_locale() const {
 	return fallback;
+}
+
+bool TranslationServer::is_script_suppored_by_locale(const String &p_locale, const String &p_script) const {
+	Locale l = Locale(*this, p_locale, true);
+	if (l.script == p_script) {
+		return true;
+	}
+	if (!language_script_map.has(l.language)) {
+		return false;
+	}
+	return language_script_map[l.language].has(p_script);
 }
 
 PackedStringArray TranslationServer::get_loaded_locales() const {

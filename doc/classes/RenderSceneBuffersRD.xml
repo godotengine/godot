@@ -4,10 +4,10 @@
 		Render scene buffer implementation for the RenderingDevice based renderers.
 	</brief_description>
 	<description>
-		This object manages all 3D rendering buffers for the rendering device based renderers. An instance of this object is created for every viewport that has 3D rendering enabled.
+		This object manages all 3D rendering buffers for the rendering device based renderers. An instance of this object is created for every viewport that has 3D rendering enabled. See also [RenderSceneBuffers].
 		All buffers are organized in [b]contexts[/b]. The default context is called [b]render_buffers[/b] and can contain amongst others the color buffer, depth buffer, velocity buffers, VRS density map and MSAA variants of these buffers.
 		Buffers are only guaranteed to exist during rendering of the viewport.
-		[b]Note:[/b] This is an internal rendering server object, do not instantiate this from script.
+		[b]Note:[/b] This is an internal rendering server object. Do not instantiate this class from a script.
 	</description>
 	<tutorials>
 	</tutorials>

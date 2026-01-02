@@ -133,6 +133,9 @@ extern void WIN_CoUninitialize(void);
 extern HRESULT WIN_RoInitialize(void);
 extern void WIN_RoUninitialize(void);
 
+// Returns true if we're running on Wine
+extern BOOL WIN_IsWine(void);
+
 // Returns true if we're running on Windows XP (any service pack). DOES NOT CHECK XP "OR GREATER"!
 extern BOOL WIN_IsWindowsXP(void);
 

@@ -174,8 +174,8 @@ class TextShaderEditor : public ShaderEditor {
 
 	uint32_t dependencies_version = 0xFFFFFFFF;
 
-	bool trim_trailing_whitespace_on_save;
-	bool trim_final_newlines_on_save;
+	bool trim_trailing_whitespace_on_save = false;
+	bool trim_final_newlines_on_save = false;
 
 protected:
 	void _notification(int p_what);

@@ -488,80 +488,12 @@ constexpr double DEFAULT_LENGTH = 1.0;
  */
 class Quality {
  private:
-  inline static int circularSegments_ = DEFAULT_SEGMENTS;
-  inline static double circularAngle_ = DEFAULT_ANGLE;
-  inline static double circularEdgeLength_ = DEFAULT_LENGTH;
-
  public:
-  /**
-   * Sets an angle constraint the default number of circular segments for the
-   * CrossSection::Circle(), Manifold::Cylinder(), Manifold::Sphere(), and
-   * Manifold::Revolve() constructors. The number of segments will be rounded up
-   * to the nearest factor of four.
-   *
-   * @param angle The minimum angle in degrees between consecutive segments. The
-   * angle will increase if the the segments hit the minimum edge length.
-   * Default is 10 degrees.
-   */
-  static void SetMinCircularAngle(double angle) {
-    if (angle <= 0) return;
-    circularAngle_ = angle;
-  }
-
-  /**
-   * Sets a length constraint the default number of circular segments for the
-   * CrossSection::Circle(), Manifold::Cylinder(), Manifold::Sphere(), and
-   * Manifold::Revolve() constructors. The number of segments will be rounded up
-   * to the nearest factor of four.
-   *
-   * @param length The minimum length of segments. The length will
-   * increase if the the segments hit the minimum angle. Default is 1.0.
-   */
-  static void SetMinCircularEdgeLength(double length) {
-    if (length <= 0) return;
-    circularEdgeLength_ = length;
-  }
-
-  /**
-   * Sets the default number of circular segments for the
-   * CrossSection::Circle(), Manifold::Cylinder(), Manifold::Sphere(), and
-   * Manifold::Revolve() constructors. Overrides the edge length and angle
-   * constraints and sets the number of segments to exactly this value.
-   *
-   * @param number Number of circular segments. Default is 0, meaning no
-   * constraint is applied.
-   */
-  static void SetCircularSegments(int number) {
-    if (number < 3 && number != 0) return;
-    circularSegments_ = number;
-  }
-
-  /**
-   * Determine the result of the SetMinCircularAngle(),
-   * SetMinCircularEdgeLength(), and SetCircularSegments() defaults.
-   *
-   * @param radius For a given radius of circle, determine how many default
-   * segments there will be.
-   */
-  static int GetCircularSegments(double radius) {
-    if (circularSegments_ > 0) return circularSegments_;
-    int nSegA = 360.0 / circularAngle_;
-    int nSegL = 2.0 * radius * kPi / circularEdgeLength_;
-    int nSeg = fmin(nSegA, nSegL) + 3;
-    nSeg -= nSeg % 4;
-    return std::max(nSeg, 4);
-  }
-
-  /**
-   * Resets the circular construction parameters to their defaults if
-   * SetMinCircularAngle, SetMinCircularEdgeLength, or SetCircularSegments have
-   * been called.
-   */
-  static void ResetToDefaults() {
-    circularSegments_ = DEFAULT_SEGMENTS;
-    circularAngle_ = DEFAULT_ANGLE;
-    circularEdgeLength_ = DEFAULT_LENGTH;
-  }
+  static void SetMinCircularAngle(double angle);
+  static void SetMinCircularEdgeLength(double length);
+  static void SetCircularSegments(int number);
+  static int GetCircularSegments(double radius);
+  static void ResetToDefaults();
 };
 /** @} */
 
@@ -600,39 +532,6 @@ struct ExecutionParams {
 /** @} */
 
 #ifdef MANIFOLD_DEBUG
-template <class T>
-std::ostream& operator<<(std::ostream& out, const la::vec<T, 1>& v) {
-  return out << '{' << v[0] << '}';
-}
-template <class T>
-std::ostream& operator<<(std::ostream& out, const la::vec<T, 2>& v) {
-  return out << '{' << v[0] << ',' << v[1] << '}';
-}
-template <class T>
-std::ostream& operator<<(std::ostream& out, const la::vec<T, 3>& v) {
-  return out << '{' << v[0] << ',' << v[1] << ',' << v[2] << '}';
-}
-template <class T>
-std::ostream& operator<<(std::ostream& out, const la::vec<T, 4>& v) {
-  return out << '{' << v[0] << ',' << v[1] << ',' << v[2] << ',' << v[3] << '}';
-}
-
-template <class T, int M>
-std::ostream& operator<<(std::ostream& out, const la::mat<T, M, 1>& m) {
-  return out << '{' << m[0] << '}';
-}
-template <class T, int M>
-std::ostream& operator<<(std::ostream& out, const la::mat<T, M, 2>& m) {
-  return out << '{' << m[0] << ',' << m[1] << '}';
-}
-template <class T, int M>
-std::ostream& operator<<(std::ostream& out, const la::mat<T, M, 3>& m) {
-  return out << '{' << m[0] << ',' << m[1] << ',' << m[2] << '}';
-}
-template <class T, int M>
-std::ostream& operator<<(std::ostream& out, const la::mat<T, M, 4>& m) {
-  return out << '{' << m[0] << ',' << m[1] << ',' << m[2] << ',' << m[3] << '}';
-}
 
 inline std::ostream& operator<<(std::ostream& stream, const Box& box) {
   return stream << "min: " << box.min << ", "

@@ -949,6 +949,7 @@ static int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
 		{ 0x0D8C, 0x0014 },  /* Sharkoon Skiller SGH2 headset - causes deadlock asking for device details */
 		{ 0x1532, 0x0109 },  /* Razer Lycosa Gaming keyboard - causes deadlock asking for device details */
 		{ 0x1532, 0x010B },  /* Razer Arctosa Gaming keyboard - causes deadlock asking for device details */
+		{ 0x1532, 0x0227 },  /* Razer Huntsman Gaming keyboard - long delay asking for device details */
 		{ 0x1B1C, 0x1B3D },  /* Corsair Gaming keyboard - causes deadlock asking for device details */
 		{ 0x1CCF, 0x0000 }  /* All Konami Amusement Devices - causes deadlock asking for device details */
 	};
@@ -1398,6 +1399,11 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 		}
 	}
 	if (!res) {
+		if (GetLastError() == ERROR_OPERATION_ABORTED) {
+			/* The read request was issued on another thread.
+			   This is harmless, so just ignore it. */
+			return 0;
+		}
 		register_winapi_error(dev, L"hid_read_timeout/GetOverlappedResult");
 	}
 

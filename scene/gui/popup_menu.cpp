@@ -719,6 +719,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 
 		if (this_submenu_index != -1) { // Is a submenu.
 			PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
+			ERR_FAIL_NULL(parent_popup);
 			Point2 areas_mouse_pos = get_mouse_position() - parent_popup->panel_offset_start;
 			for (const Rect2 &E : autohide_areas) {
 				if (!scroll_container->get_global_rect().has_point(m->get_position()) && E.has_point(areas_mouse_pos)) {
@@ -1058,6 +1059,7 @@ void PopupMenu::_close_pressed() {
 void PopupMenu::_close_or_suspend() {
 	if (this_submenu_index != -1) { // Is a submenu.
 		PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
+		ERR_FAIL_NULL(parent_popup);
 		Point2 mouse_pos = is_embedded() ? parent_popup->get_mouse_position() : Point2(DisplayServer::get_singleton()->mouse_get_position() - parent_popup->get_position());
 		if (parent_popup->_get_mouse_over(mouse_pos) == this_submenu_index) {
 			parent_popup->submenu_mouse_exited_ticks_msec = -1;
@@ -1467,6 +1469,7 @@ void PopupMenu::_notification(int p_what) {
 			// Only used when using operating system windows, and only on submenus.
 			if (!activated_by_keyboard && !is_embedded() && autohide_areas.size() && this_submenu_index != -1) {
 				PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
+				ERR_FAIL_NULL(parent_popup);
 				const float win_scale = get_content_scale_factor();
 				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position() - get_position();
 				Point2 areas_mouse_pos = mouse_pos - parent_popup->panel_offset_start;
@@ -1481,6 +1484,8 @@ void PopupMenu::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
+				this_submenu_index = -1;
+
 				if (mouse_over >= 0) {
 					prev_mouse_over = mouse_over;
 					mouse_over = -1;
@@ -3387,7 +3392,7 @@ void PopupMenu::_pre_popup() {
 		p = p->get_parent();
 	}
 
-	if (scale_with_parent) {
+	if (scale_with_parent && p) {
 		Size2 scale = get_force_native() ? get_parent_viewport()->get_popup_base_transform_native().get_scale() : get_parent_viewport()->get_popup_base_transform().get_scale();
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
 		if (c) {

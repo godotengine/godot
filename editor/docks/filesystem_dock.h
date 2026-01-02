@@ -154,6 +154,7 @@ private:
 	ProgressBar *scanning_progress = nullptr;
 	SplitContainer *split_box = nullptr;
 	MarginContainer *tree_mc = nullptr;
+	MarginContainer *files_mc = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
 
 	int split_box_offset_h = 0;

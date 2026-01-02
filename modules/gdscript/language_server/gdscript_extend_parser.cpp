@@ -344,8 +344,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					if (res.is_valid() && !res->get_path().is_empty()) {
 						value_text = "preload(\"" + res->get_path() + "\")";
 						if (symbol.documentation.is_empty()) {
-							if (HashMap<String, ExtendGDScriptParser *>::Iterator S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
-								symbol.documentation = S->value->class_symbol.documentation;
+							ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(res->get_path());
+							if (parser) {
+								symbol.documentation = parser->class_symbol.documentation;
 							}
 						}
 					} else {
@@ -1047,18 +1048,17 @@ Dictionary ExtendGDScriptParser::generate_api() const {
 	return api;
 }
 
-Error ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
+void ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
 	path = p_path;
 	lines = p_code.split("\n");
 
-	Error err = GDScriptParser::parse(p_code, p_path, false);
+	parse_result = GDScriptParser::parse(p_code, p_path, false);
 	GDScriptAnalyzer analyzer(this);
 
-	if (err == OK) {
-		err = analyzer.analyze();
+	if (parse_result == OK) {
+		parse_result = analyzer.analyze();
 	}
 	update_diagnostics();
 	update_symbols();
 	update_document_links(p_code);
-	return err;
 }

@@ -26,7 +26,7 @@ extern "C" {
     ((((major) & 0xffffULL) << 48) | (((minor) & 0xffffULL) << 32) | ((patch) & 0xffffffffULL))
 
 // OpenXR current version number.
-#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 53)
+#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 54)
 
 // OpenXR 1.0 version number
 #define XR_API_VERSION_1_0 XR_MAKE_VERSION(1, 0, XR_VERSION_PATCH(XR_CURRENT_API_VERSION))
@@ -684,6 +684,7 @@ typedef enum XrStructureType {
     XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_META = 1000291005,
     XR_TYPE_ENVIRONMENT_DEPTH_HAND_REMOVAL_SET_INFO_META = 1000291006,
     XR_TYPE_SYSTEM_ENVIRONMENT_DEPTH_PROPERTIES_META = 1000291007,
+    XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_TIMESTAMP_META = 1000291008,
     XR_TYPE_RENDER_MODEL_CREATE_INFO_EXT = 1000300000,
     XR_TYPE_RENDER_MODEL_PROPERTIES_GET_INFO_EXT = 1000300001,
     XR_TYPE_RENDER_MODEL_PROPERTIES_EXT = 1000300002,
@@ -3671,6 +3672,7 @@ typedef struct XrSceneMeshBuffersMSFT {
     void* XR_MAY_ALIAS    next;
 } XrSceneMeshBuffersMSFT;
 
+// XrSceneMeshVertexBufferMSFT extends XrSceneMeshBuffersMSFT
 typedef struct XrSceneMeshVertexBufferMSFT {
     XrStructureType       type;
     void* XR_MAY_ALIAS    next;
@@ -3679,6 +3681,7 @@ typedef struct XrSceneMeshVertexBufferMSFT {
     XrVector3f*           vertices;
 } XrSceneMeshVertexBufferMSFT;
 
+// XrSceneMeshIndicesUint32MSFT extends XrSceneMeshBuffersMSFT
 typedef struct XrSceneMeshIndicesUint32MSFT {
     XrStructureType       type;
     void* XR_MAY_ALIAS    next;
@@ -3687,6 +3690,7 @@ typedef struct XrSceneMeshIndicesUint32MSFT {
     uint32_t*             indices;
 } XrSceneMeshIndicesUint32MSFT;
 
+// XrSceneMeshIndicesUint16MSFT extends XrSceneMeshBuffersMSFT
 typedef struct XrSceneMeshIndicesUint16MSFT {
     XrStructureType       type;
     void* XR_MAY_ALIAS    next;
@@ -6012,6 +6016,7 @@ typedef struct XrBoundary2DFB {
     XrVector2f*                 vertices;
 } XrBoundary2DFB;
 
+// XrSemanticLabelsSupportInfoFB extends XrSemanticLabelsFB
 typedef struct XrSemanticLabelsSupportInfoFB {
     XrStructureType                   type;
     const void* XR_MAY_ALIAS          next;
@@ -7657,7 +7662,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrShareSpacesMETA(
 #define XR_META_environment_depth 1
 XR_DEFINE_HANDLE(XrEnvironmentDepthProviderMETA)
 XR_DEFINE_HANDLE(XrEnvironmentDepthSwapchainMETA)
-#define XR_META_environment_depth_SPEC_VERSION 1
+#define XR_META_environment_depth_SPEC_VERSION 2
 #define XR_META_ENVIRONMENT_DEPTH_EXTENSION_NAME "XR_META_environment_depth"
 typedef XrFlags64 XrEnvironmentDepthProviderCreateFlagsMETA;
 
@@ -7708,6 +7713,13 @@ typedef struct XrEnvironmentDepthImageMETA {
     float                              farZ;
     XrEnvironmentDepthImageViewMETA    views[2];
 } XrEnvironmentDepthImageMETA;
+
+// XrEnvironmentDepthImageTimestampMETA extends XrEnvironmentDepthImageMETA
+typedef struct XrEnvironmentDepthImageTimestampMETA {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrTime                      captureTime;
+} XrEnvironmentDepthImageTimestampMETA;
 
 typedef struct XrEnvironmentDepthHandRemovalSetInfoMETA {
     XrStructureType             type;
@@ -8612,6 +8624,7 @@ typedef struct XrFacialSimulationDataBD {
     XrTime                time;
 } XrFacialSimulationDataBD;
 
+// XrLipExpressionDataBD extends XrFacialSimulationDataBD
 typedef struct XrLipExpressionDataBD {
     XrStructureType       type;
     void* XR_MAY_ALIAS    next;
@@ -8740,6 +8753,7 @@ typedef struct XrSpatialEntityComponentDataBaseHeaderBD {
     void* XR_MAY_ALIAS    next;
 } XrSpatialEntityComponentDataBaseHeaderBD;
 
+// XrSpatialEntityLocationGetInfoBD extends XrSpatialEntityComponentGetInfoBD
 typedef struct XrSpatialEntityLocationGetInfoBD {
     XrStructureType             type;
     const void* XR_MAY_ALIAS    next;
@@ -9957,7 +9971,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetTrackableObjectANDROID(
 
 // XR_EXT_future is a preprocessor guard. Do not pass it to API calls.
 #define XR_EXT_future 1
-#define XR_EXT_future_SPEC_VERSION        1
+#define XR_EXT_future_SPEC_VERSION        2
 #define XR_EXT_FUTURE_EXTENSION_NAME      "XR_EXT_future"
 #define XR_NULL_FUTURE_EXT                0
 
@@ -10598,6 +10612,7 @@ typedef struct XrShareSpacesRecipientGroupsMETA {
     XrUuid*                     groups;
 } XrShareSpacesRecipientGroupsMETA;
 
+// XrSpaceGroupUuidFilterInfoMETA extends XrSpaceQueryInfoBaseHeaderFB
 typedef struct XrSpaceGroupUuidFilterInfoMETA {
     XrStructureType             type;
     const void* XR_MAY_ALIAS    next;

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 if __name__ != "__main__":
     raise SystemExit(f'Utility script "{__file__}" should not be used as a module!')
@@ -31,8 +31,9 @@ else:
     deps_folder = os.path.join("bin", "build_deps")
 
 # Mesa NIR
+# Sync with `drivers/d3d12/SCsub` when updating Mesa.
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
-mesa_version = "25.3.1"
+mesa_version = "25.3.1-1"
 # WinPixEventRuntime
 # Check for latest version: https://www.nuget.org/api/v2/package/WinPixEventRuntime (check downloaded filename)
 pix_version = "1.0.240308001"
@@ -41,8 +42,8 @@ pix_folder = os.path.join(deps_folder, "pix")
 # DirectX 12 Agility SDK
 # Check for latest version: https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12 (check downloaded filename)
 # After updating this, remember to change the default value of the `rendering/rendering_device/d3d12/agility_sdk_version`
-# project setting to match the minor version (e.g. for `1.613.3`, it should be `613`).
-agility_sdk_version = "1.613.3"
+# project setting to match the minor version (e.g. for `1.618.5`, it should be `618`).
+agility_sdk_version = "1.618.5"
 agility_sdk_archive = os.path.join(deps_folder, f"Agility_SDK_{agility_sdk_version}.nupkg")
 agility_sdk_folder = os.path.join(deps_folder, "agility_sdk")
 

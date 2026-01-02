@@ -567,6 +567,7 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_META, 1000291005) \
     _(XR_TYPE_ENVIRONMENT_DEPTH_HAND_REMOVAL_SET_INFO_META, 1000291006) \
     _(XR_TYPE_SYSTEM_ENVIRONMENT_DEPTH_PROPERTIES_META, 1000291007) \
+    _(XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_TIMESTAMP_META, 1000291008) \
     _(XR_TYPE_RENDER_MODEL_CREATE_INFO_EXT, 1000300000) \
     _(XR_TYPE_RENDER_MODEL_PROPERTIES_GET_INFO_EXT, 1000300001) \
     _(XR_TYPE_RENDER_MODEL_PROPERTIES_EXT, 1000300002) \
@@ -5758,6 +5759,12 @@ XR_ENUM_STR(XrResult);
     _(farZ) \
     _(views) \
 
+/// Calls your macro with the name of each member of XrEnvironmentDepthImageTimestampMETA, in order.
+#define XR_LIST_STRUCT_XrEnvironmentDepthImageTimestampMETA(_) \
+    _(type) \
+    _(next) \
+    _(captureTime) \
+
 /// Calls your macro with the name of each member of XrEnvironmentDepthHandRemovalSetInfoMETA, in order.
 #define XR_LIST_STRUCT_XrEnvironmentDepthHandRemovalSetInfoMETA(_) \
     _(type) \
@@ -7650,6 +7657,7 @@ XR_ENUM_STR(XrResult);
     _(XrEnvironmentDepthImageAcquireInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_ACQUIRE_INFO_META) \
     _(XrEnvironmentDepthImageViewMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_VIEW_META) \
     _(XrEnvironmentDepthImageMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_META) \
+    _(XrEnvironmentDepthImageTimestampMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_TIMESTAMP_META) \
     _(XrEnvironmentDepthHandRemovalSetInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_HAND_REMOVAL_SET_INFO_META) \
     _(XrSystemEnvironmentDepthPropertiesMETA, XR_TYPE_SYSTEM_ENVIRONMENT_DEPTH_PROPERTIES_META) \
     _(XrRenderModelCreateInfoEXT, XR_TYPE_RENDER_MODEL_CREATE_INFO_EXT) \

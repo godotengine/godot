@@ -123,6 +123,8 @@ public:
 	void update_value_overrides();
 
 	Vector<String> get_files_to_export() const;
+	HashSet<String> get_selected_files() const;
+	void set_selected_files(const HashSet<String> &p_files);
 	Dictionary get_customized_files() const;
 	int get_customized_files_count() const;
 	void set_customized_files(const Dictionary &p_files);

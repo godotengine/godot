@@ -732,6 +732,7 @@ LocalizationEditor::LocalizationEditor() {
 	localization_changed = "localization_changed";
 
 	TabContainer *translations = memnew(TabContainer);
+	translations->set_theme_type_variation("TabContainerInner");
 	translations->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(translations);
 
@@ -816,6 +817,11 @@ LocalizationEditor::LocalizationEditor() {
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_res_option_file_open));
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
+
+		mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
 
 		translation_remap_options = memnew(Tree);
 		translation_remap_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);

@@ -67,6 +67,8 @@ public:
 	GDVIRTUAL0RC(String, _get_support_data_info);
 	GDVIRTUAL1RC(bool, _save_support_data, const String &);
 	GDVIRTUAL0RC(PackedByteArray, _get_support_data);
+	virtual bool is_locale_using_support_data(const String &p_locale) const override;
+	GDVIRTUAL1RC(bool, _is_locale_using_support_data, const String &);
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const override;
 	GDVIRTUAL1RC(bool, _is_locale_right_to_left, const String &);

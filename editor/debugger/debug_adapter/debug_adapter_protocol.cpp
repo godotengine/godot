@@ -145,6 +145,7 @@ Error DebugAdapterProtocol::on_client_connected() {
 	ERR_FAIL_COND_V_MSG(clients.size() >= DAP_MAX_CLIENTS, FAILED, "Max client limits reached");
 
 	Ref<StreamPeerTCP> tcp_peer = server->take_connection();
+	ERR_FAIL_COND_V_MSG(tcp_peer.is_null(), FAILED, "Failed to take incoming DAP connection.");
 	tcp_peer->set_no_delay(true);
 	Ref<DAPeer> peer = memnew(DAPeer);
 	peer->connection = tcp_peer;

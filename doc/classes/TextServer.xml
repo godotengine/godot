@@ -1160,6 +1160,13 @@
 				Returns [code]true[/code] if locale is right-to-left.
 			</description>
 		</method>
+		<method name="is_locale_using_support_data" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns [code]true[/code] if the locale requires text server support data for line/word breaking.
+			</description>
+		</method>
 		<method name="is_valid_identifier" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="string" type="String" />

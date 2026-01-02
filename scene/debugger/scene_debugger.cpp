@@ -30,6 +30,7 @@
 
 #include "scene_debugger.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
@@ -1606,6 +1607,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	panner->set_scroll_speed(pan_speed);
 
 	sel_2d_grab_dist = p_settings.get("editors/polygon_editor/point_grab_radius", 0);
+	sel_2d_scale = MAX(1, Math::ceil(2.0 / (float)GLOBAL_GET("display/window/stretch/scale")));
 
 	selection_area_fill = p_settings.get("box_selection_fill_color", Color());
 	selection_area_outline = p_settings.get("box_selection_stroke_color", Color());
@@ -1926,11 +1928,13 @@ void RuntimeNodeSelect::_physics_frame() {
 						if (Object::cast_to<CanvasItem>(final_node)) {
 							CanvasItem *ci_tmp = Object::cast_to<CanvasItem>(final_node);
 							order = ci_tmp->get_effective_z_index() + ci_tmp->get_canvas_layer();
+#ifndef _3D_DISABLED
 						} else if (Object::cast_to<Node3D>(final_node)) {
 							Node3D *node3d_tmp = Object::cast_to<Node3D>(final_node);
 							Camera3D *camera = root->get_camera_3d();
 							Vector3 pos = camera->project_ray_origin(selection_position);
 							order = -pos.distance_to(node3d_tmp->get_global_transform().origin);
+#endif // _3D_DISABLED
 						}
 					}
 					node = node->get_parent();
@@ -2280,7 +2284,7 @@ void RuntimeNodeSelect::_update_selection() {
 
 		const Color selection_color_2d = Color(1, 0.6, 0.4, 0.7);
 		for (int i = 0; i < 4; i++) {
-			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, 2);
+			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, sel_2d_scale);
 		}
 	}
 
@@ -2444,6 +2448,11 @@ void RuntimeNodeSelect::_open_selection_list(const Vector<SelectResult> &p_items
 	selection_list->set_position(selection_list->is_embedded() ? p_pos : (Input::get_singleton()->get_mouse_position() + root->get_position()));
 	selection_list->reset_size();
 	selection_list->popup();
+
+	selection_list->set_content_scale_factor(1);
+	selection_list->set_min_size(selection_list->get_contents_minimum_size());
+	selection_list->reset_size();
+
 	// FIXME: Ugly hack that stops the popup from hiding when the button is released.
 	selection_list->call_deferred(SNAME("set_position"), selection_list->get_position() + Point2(1, 0));
 }
@@ -2785,14 +2794,14 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 	far_plane.d += zfar;
 	frustum.push_back(far_plane);
 
+	// Keep track of the currently listed nodes, so repeats can be ignored.
+	HashSet<Node *> node_list;
+
 #ifndef PHYSICS_3D_DISABLED
 	Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&frustum[0], frustum.size());
 	Ref<ConvexPolygonShape3D> shape;
 	shape.instantiate();
 	shape->set_points(points);
-
-	// Keep track of the currently listed nodes, so repeats can be ignored.
-	HashSet<Node *> node_list;
 
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();

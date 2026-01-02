@@ -44,6 +44,7 @@
 #include "editor/gui/progress_dialog.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
@@ -2129,6 +2130,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	// Import Items tab.
 	TabContainer *import_tc = memnew(TabContainer);
+	import_tc->set_theme_type_variation("TabContainerInner");
 	import_tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tc->add_child(import_tc);
 	tc->set_tab_title(1, TTR("Import Items"));
@@ -3485,6 +3487,9 @@ void ThemeTypeEditor::_notification(int p_what) {
 			rename_type_button->set_button_icon(get_editor_theme_icon(SNAME("Rename")));
 			remove_type_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 
+			const String theme_style = EDITOR_GET("interface/theme/style");
+			data_type_tabs->set_theme_type_variation(theme_style == "Classic" ? "TabContainerOdd" : "TabContainerInner");
+
 			data_type_tabs->set_tab_icon(0, get_editor_theme_icon(SNAME("Color")));
 			data_type_tabs->set_tab_icon(1, get_editor_theme_icon(SNAME("MemberConstant")));
 			data_type_tabs->set_tab_icon(2, get_editor_theme_icon(SNAME("FontItem")));
@@ -3622,7 +3627,6 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	main_vb->add_child(data_type_tabs);
 	data_type_tabs->set_v_size_flags(SIZE_EXPAND_FILL);
 	data_type_tabs->set_use_hidden_tabs_for_min_size(true);
-	data_type_tabs->set_theme_type_variation("TabContainerOdd");
 
 	color_items_list = _create_item_list(Theme::DATA_TYPE_COLOR);
 	constant_items_list = _create_item_list(Theme::DATA_TYPE_CONSTANT);

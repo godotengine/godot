@@ -16,9 +16,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "All Recognized"
-msgstr "Ĉiaj rekonaj dosiertipoj"
-
 msgid "Save"
 msgstr "Konservi"
 
@@ -33,6 +30,9 @@ msgstr "Elekti kurantan dosierujon"
 
 msgid "Select This Folder"
 msgstr "Elekti ĉi tiun dosierujon"
+
+msgid "All Recognized"
+msgstr "Ĉiaj rekonaj dosiertipoj"
 
 msgid "Open a File"
 msgstr "Malfermi dosieron"

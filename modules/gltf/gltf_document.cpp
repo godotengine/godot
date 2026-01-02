@@ -2053,10 +2053,18 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+static inline Ref<Image> _duplicate_and_decompress_image(const Ref<Image> &p_image) {
+	Ref<Image> img = p_image->duplicate();
+	if (img->is_compressed()) {
+		img->decompress();
+	}
+	return img;
+}
+
 Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_image, const String &p_image_format, float p_lossy_quality, Ref<GLTFDocumentExtension> p_image_save_extension) {
 	Dictionary image_dict;
 	if (p_image->is_compressed()) {
-		p_image->decompress();
+		p_image = _duplicate_and_decompress_image(p_image);
 		ERR_FAIL_COND_V_MSG(p_image->is_compressed(), image_dict, "glTF: Image was compressed, but could not be decompressed.");
 	}
 
@@ -2707,10 +2715,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				if (has_ao) {
 					height = ao_texture->get_height();
 					width = ao_texture->get_width();
-					ao_image = ao_texture->get_image();
-					if (ao_image->is_compressed()) {
-						ao_image->decompress();
-					}
+					ao_image = _duplicate_and_decompress_image(ao_texture->get_image());
 					if (!ao_texture->get_path().is_empty()) {
 						common_paths.insert(ao_texture->get_path());
 					}
@@ -2719,10 +2724,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				if (has_roughness) {
 					height = roughness_texture->get_height();
 					width = roughness_texture->get_width();
-					roughness_image = roughness_texture->get_image();
-					if (roughness_image->is_compressed()) {
-						roughness_image->decompress();
-					}
+					roughness_image = _duplicate_and_decompress_image(roughness_texture->get_image());
 					if (!roughness_texture->get_path().is_empty()) {
 						common_paths.insert(roughness_texture->get_path());
 					}
@@ -2731,10 +2733,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				if (has_metalness) {
 					height = metallic_texture->get_height();
 					width = metallic_texture->get_width();
-					metallness_image = metallic_texture->get_image();
-					if (metallness_image->is_compressed()) {
-						metallness_image->decompress();
-					}
+					metallness_image = _duplicate_and_decompress_image(metallic_texture->get_image());
 					if (!metallic_texture->get_path().is_empty()) {
 						common_paths.insert(metallic_texture->get_path());
 					}
@@ -2805,9 +2804,6 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				has_ao = true;
 				has_roughness = true;
 				has_metalness = true;
-				Ref<Image> orm_image = original_orm_tex->get_image();
-				orm_image->decompress();
-				orm_image->convert(Image::FORMAT_RGBA8);
 
 				_set_material_texture_name(original_orm_tex, original_orm_tex->get_path(), mat_name, "_orm");
 				orm_texture_index = _set_texture(p_state, original_orm_tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
@@ -2839,26 +2835,23 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			String path;
 			{
 				Ref<Texture2D> normal_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
-				if (normal_texture.is_valid()) {
+				if (normal_texture.is_valid() && normal_texture->get_image().is_valid()) {
 					path = normal_texture->get_path();
 					// Code for uncompressing RG normal maps
-					Ref<Image> img = normal_texture->get_image();
-					if (img.is_valid()) {
-						img->decompress();
-						img->convert(Image::FORMAT_RGBA8);
-						for (int32_t y = 0; y < img->get_height(); y++) {
-							for (int32_t x = 0; x < img->get_width(); x++) {
-								Color c = img->get_pixel(x, y);
-								Vector2 red_green = Vector2(c.r, c.g);
-								red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
-								float blue = 1.0f - red_green.dot(red_green);
-								blue = MAX(0.0f, blue);
-								c.b = Math::sqrt(blue);
-								img->set_pixel(x, y, c);
-							}
+					Ref<Image> img = _duplicate_and_decompress_image(normal_texture->get_image());
+					img->convert(Image::FORMAT_RGBA8);
+					for (int32_t y = 0; y < img->get_height(); y++) {
+						for (int32_t x = 0; x < img->get_width(); x++) {
+							Color c = img->get_pixel(x, y);
+							Vector2 red_green = Vector2(c.r, c.g);
+							red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
+							float blue = 1.0f - red_green.dot(red_green);
+							blue = MAX(0.0f, blue);
+							c.b = Math::sqrt(blue);
+							img->set_pixel(x, y, c);
 						}
-						tex->set_image(img);
 					}
+					tex->set_image(img);
 				}
 			}
 			GLTFTextureIndex gltf_texture_index = -1;
@@ -3105,7 +3098,11 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
-				material->set_emission(Color(0, 0, 0));
+				material->set_emission_operator(BaseMaterial3D::EMISSION_OP_MULTIPLY);
+				// glTF spec: emissiveFactor × emissiveTexture. Use WHITE if no factor specified.
+				if (!material_dict.has("emissiveFactor")) {
+					material->set_emission(Color(1, 1, 1));
+				}
 			}
 		}
 

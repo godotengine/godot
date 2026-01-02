@@ -324,10 +324,6 @@ CopyEffects::~CopyEffects() {
 		copy.pipelines[i].free();
 	}
 
-	for (int i = 0; i < FILTER_MODE_MAX; i++) {
-		filter.compute_pipelines[i].free();
-	}
-
 	if (raster_effects.has_flag(RASTER_EFFECT_GAUSSIAN_BLUR)) {
 		blur_raster.shader.version_free(blur_raster.shader_version);
 		RD::get_singleton()->free_rid(blur_raster.glow_sampler);
@@ -338,8 +334,19 @@ CopyEffects::~CopyEffects() {
 		filter.raster_shader.version_free(filter.shader_version);
 		roughness.raster_shader.version_free(roughness.shader_version);
 	} else {
+		// PipelineDeferredRD always needs to be freed before its corresponding shader since the pipeline may not have finished compiling before the shader is freed. This
+		// ensures that we wait on the pipeline compilation before we free it.
+		for (int i = 0; i < DOWNSAMPLER_MODE_MAX; i++) {
+			octmap_downsampler.compute_pipelines[i].free();
+		}
 		octmap_downsampler.compute_shader.version_free(octmap_downsampler.shader_version);
+
+		for (int i = 0; i < FILTER_MODE_MAX; i++) {
+			filter.compute_pipelines[i].free();
+		}
 		filter.compute_shader.version_free(filter.shader_version);
+
+		roughness.compute_pipeline.free();
 		roughness.compute_shader.version_free(roughness.shader_version);
 	}
 

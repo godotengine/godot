@@ -986,7 +986,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);
-	effects->set_theme_type_variation("TreeSecondary");
+	effects->set_theme_type_variation("EditorAudioBusEffectsTree");
 	effects->connect(SceneStringName(gui_input), callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
 	send = memnew(OptionButton);
@@ -1078,6 +1078,16 @@ void EditorAudioBusDrop::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dropped"));
 }
 
+void EditorAudioBuses::_update_file_label() {
+	const String filename = ResourceUID::ensure_path(edited_path).get_file();
+	file->set_text(filename);
+	file->set_tooltip_text(filename);
+
+	if (is_visible_in_tree()) {
+		_update_file_label_size();
+	}
+}
+
 void EditorAudioBuses::_update_file_label_size() {
 	int label_min_width = file->get_minimum_size().x + file->get_character_bounds(0).size.x;
 	file->set_custom_minimum_size(Size2(label_min_width, 0));
@@ -1120,7 +1130,9 @@ void EditorAudioBuses::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			bus_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			_update_file_label_size();
+			if (is_visible_in_tree()) {
+				_update_file_label_size();
+			}
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1154,11 +1166,9 @@ void EditorAudioBuses::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible()) {
-				break;
+			if (is_visible_in_tree()) {
+				_update_file_label();
 			}
-
-			_update_file_label_size();
 		} break;
 	}
 }
@@ -1269,17 +1279,34 @@ void EditorAudioBuses::_drop_at_index(int p_bus, int p_index) {
 
 void EditorAudioBuses::_server_save() {
 	Ref<AudioBusLayout> state = AudioServer::get_singleton()->generate_bus_layout();
-	ResourceSaver::save(state, edited_path);
+	if (edited_path.is_empty()) {
+		ResourceSaver::save(state, "res://default_bus_layout.tres");
+		edited_path = ResourceUID::path_to_uid("res://default_bus_layout.tres");
+		ProjectSettings::get_singleton()->set_setting("audio/buses/default_bus_layout", edited_path);
+		_update_file_label();
+	} else if (!edited_path.begins_with("uid://")) {
+		ResourceSaver::save(state, edited_path);
+		edited_path = ResourceUID::path_to_uid(edited_path);
+		ProjectSettings::get_singleton()->set_setting("audio/buses/default_bus_layout", edited_path);
+	} else {
+		ResourceSaver::save(state, ResourceUID::ensure_path(edited_path));
+	}
+}
+
+void EditorAudioBuses::_file_moved(const String &p_old_path, const String &p_new_path) {
+	if (is_visible_in_tree() && !edited_path.is_empty()) {
+		callable_mp(this, &EditorAudioBuses::_update_file_label).call_deferred();
+	}
 }
 
 void EditorAudioBuses::_select_layout() {
-	FileSystemDock::get_singleton()->navigate_to_path(edited_path);
+	FileSystemDock::get_singleton()->navigate_to_path(ResourceUID::ensure_path(edited_path));
 }
 
 void EditorAudioBuses::_save_as_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
-	file_dialog->set_current_path(edited_path);
+	file_dialog->set_current_path(ResourceUID::ensure_path(edited_path));
 	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
@@ -1287,7 +1314,7 @@ void EditorAudioBuses::_save_as_layout() {
 void EditorAudioBuses::_new_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Location for New Layout..."));
-	file_dialog->set_current_path(edited_path);
+	file_dialog->set_current_path("new_bus_layout.tres");
 	file_dialog->popup_file_dialog();
 	new_layout = true;
 }
@@ -1295,7 +1322,7 @@ void EditorAudioBuses::_new_layout() {
 void EditorAudioBuses::_load_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_title(TTR("Open Audio Bus Layout"));
-	file_dialog->set_current_path(edited_path);
+	file_dialog->set_current_path(ResourceUID::ensure_path(edited_path));
 	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
@@ -1318,7 +1345,23 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 			return;
 		}
 	}
-	open_layout(p_string);
+	open_layout(ResourceUID::path_to_uid(p_string));
+}
+
+void EditorAudioBuses::update_layout(EditorDock::DockLayout p_layout) {
+	bool new_floating = (p_layout == EditorDock::DOCK_LAYOUT_FLOATING);
+	if (floating == new_floating) {
+		return;
+	}
+	floating = new_floating;
+
+	if (floating) {
+		bus_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
+	} else {
+		bus_mc->set_theme_type_variation("NoBorderBottomPanel");
+		bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
+	}
 }
 
 void EditorAudioBuses::_bind_methods() {
@@ -1339,15 +1382,12 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb = memnew(HBoxContainer);
 	main_vb->add_child(top_hb);
 
-	edited_path = ResourceUID::ensure_path(GLOBAL_GET("audio/buses/default_bus_layout"));
+	edited_path = GLOBAL_GET("audio/buses/default_bus_layout");
 
 	Label *layout_label = memnew(Label(TTRC("Layout:")));
 	top_hb->add_child(layout_label);
 
 	file = memnew(Label);
-	const String _file_name = edited_path.get_file();
-	file->set_text(_file_name);
-	file->set_tooltip_text(_file_name);
 	file->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	file->set_mouse_filter(MOUSE_FILTER_PASS);
 	file->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
@@ -1387,15 +1427,15 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb->add_child(_new);
 	_new->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_new_layout));
 
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontal");
-	mc->set_v_size_flags(SIZE_EXPAND_FILL);
-	main_vb->add_child(mc);
+	bus_mc = memnew(MarginContainer);
+	bus_mc->set_theme_type_variation("NoBorderBottomPanel");
+	bus_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(bus_mc);
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	bus_scroll->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
-	mc->add_child(bus_scroll);
+	bus_mc->add_child(bus_scroll);
 
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1419,6 +1459,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &EditorAudioBuses::_rebuild_buses));
+	FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &EditorAudioBuses::_file_moved));
 
 	set_process(true);
 }
@@ -1427,23 +1468,19 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	make_visible();
 
 	const String path = ResourceUID::ensure_path(p_path);
-
 	if (!ResourceLoader::exists(path)) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR(R"(Can't open audio bus layout: "%s" doesn't exist.)"), path));
 		return;
 	}
 
-	Ref<AudioBusLayout> state = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+	Ref<AudioBusLayout> state = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (state.is_null()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR(R"(Can't open audio bus layout: "%s" is not a valid audio bus layout.)"), path));
 		return;
 	}
 
-	edited_path = path;
-	const String _file_name = edited_path.get_file();
-	file->set_text(_file_name);
-	file->set_tooltip_text(_file_name);
-	_update_file_label_size();
+	edited_path = p_path; // Use UID when available.
+	_update_file_label();
 
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
@@ -1452,11 +1489,13 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 }
 
 void AudioBusesEditorPlugin::edit(Object *p_node) {
-	if (Object::cast_to<AudioBusLayout>(p_node)) {
-		String path = Object::cast_to<AudioBusLayout>(p_node)->get_path();
-		if (path.is_resource_file()) {
-			audio_bus_editor->open_layout(path);
-		}
+	Ref<AudioBusLayout> bus_layout(p_node);
+	if (bus_layout.is_null()) {
+		return;
+	}
+	const String path = bus_layout->get_path();
+	if (path.is_resource_file()) {
+		audio_bus_editor->open_layout(ResourceUID::path_to_uid(path));
 	}
 }
 

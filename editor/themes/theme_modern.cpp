@@ -42,12 +42,10 @@
 #include "scene/resources/style_box_line.h"
 
 // Helper.
-static Color _get_base_color(EditorThemeManager::ThemeConfiguration &p_config, float p_brightness_ofs = 0.0, float p_saturation_mult = 1.0) {
-	const bool is_dark = p_brightness_ofs >= 0.0 ? p_config.dark_theme : !p_config.dark_theme;
+static Color _get_base_color(EditorThemeManager::ThemeConfiguration &p_config, float p_dimness_ofs = 0.0, float p_saturation_mult = 1.0) {
 	Color color = p_config.base_color;
-	color.set_v(CLAMP(Math::lerp(color.get_v(), is_dark ? 1 : 0, Math::abs(p_config.contrast * p_brightness_ofs)), 0, 1));
+	color.set_v(CLAMP(Math::lerp(color.get_v(), 0, p_config.contrast * p_dimness_ofs), 0, 1));
 	color.set_s(color.get_s() * p_saturation_mult);
-
 	return color;
 }
 
@@ -66,12 +64,12 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Ensure base colors are in the 0..1 luminance range to avoid 8-bit integer overflow or text rendering issues.
 		// Some places in the editor use 8-bit integer colors.
-		p_config.dark_color_1 = p_config.base_color.lerp(Color(0, 0, 0, 1), p_config.contrast).clamp();
+		p_config.dark_color_1 = p_config.base_color.lerp(Color(0, 0, 0, 1), p_config.contrast * 1.15).clamp();
 		p_config.dark_color_2 = p_config.dark_theme ? Color(0, 0, 0, 0.3) : Color(1, 1, 1, 0.3);
-		p_config.dark_color_3 = _get_base_color(p_config, p_config.dark_theme ? -0.95 : -1.8, 0.9);
+		p_config.dark_color_3 = _get_base_color(p_config, 0.8, 0.9);
 
-		p_config.contrast_color_1 = p_config.base_color.lerp(p_config.mono_color, MAX(p_config.contrast, p_config.default_contrast));
-		p_config.contrast_color_2 = p_config.base_color.lerp(p_config.mono_color, MAX(p_config.contrast * 1.5, p_config.default_contrast * 1.5));
+		p_config.contrast_color_1 = p_config.base_color.lerp(p_config.mono_color, MAX(p_config.contrast * 1.15, p_config.default_contrast * 1.15));
+		p_config.contrast_color_2 = p_config.base_color.lerp(p_config.mono_color, MAX(p_config.contrast * 1.725, p_config.default_contrast * 1.725));
 
 		p_config.highlight_color = Color(p_config.accent_color.r, p_config.accent_color.g, p_config.accent_color.b, 0.275);
 		p_config.highlight_disabled_color = p_config.highlight_color.lerp(p_config.dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
@@ -119,11 +117,11 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Font colors.
 
-		p_config.font_color = p_config.mono_color_font * Color(1, 1, 1, 0.7);
-		p_config.font_secondary_color = p_config.mono_color_font * Color(1, 1, 1, 0.45);
+		p_config.font_color = p_config.mono_color_font * Color(1, 1, 1, 0.75);
+		p_config.font_secondary_color = p_config.mono_color_font * Color(1, 1, 1, 0.55);
 		p_config.font_focus_color = p_config.mono_color_font;
-		p_config.font_hover_color = p_config.mono_color_font;
-		p_config.font_pressed_color = p_config.mono_color_font;
+		p_config.font_hover_color = p_config.mono_color_font * Color(1, 1, 1, 0.85);
+		p_config.font_pressed_color = p_config.mono_color_font * Color(1, 1, 1, 0.85);
 		p_config.font_hover_pressed_color = p_config.mono_color_font;
 		p_config.font_disabled_color = p_config.mono_color_font * Color(1, 1, 1, p_config.dark_icon_and_font ? 0.35 : 0.5);
 		p_config.font_readonly_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.65);
@@ -171,8 +169,8 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Icon colors.
 
-		p_config.icon_normal_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.7 : 0.95);
-		p_config.icon_secondary_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.45 : 0.6);
+		p_config.icon_normal_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.85 : 0.95);
+		p_config.icon_secondary_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.6 : 0.75);
 		p_config.icon_focus_color = Color(1, 1, 1);
 		p_config.icon_hover_color = Color(1, 1, 1);
 		p_config.icon_pressed_color = p_config.accent_color * (p_config.dark_icon_and_font ? 1.15 : 3.5);
@@ -187,21 +185,22 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Additional GUI colors.
 
-		p_config.surface_lowest_color = _get_base_color(p_config, p_config.dark_theme ? -1.3 : -2.2, 0.9);
-		p_config.surface_lower_color = p_config.dark_color_3;
-		p_config.surface_low_color = _get_base_color(p_config, p_config.dark_theme ? -0.6 : -0.9);
-		p_config.surface_base_color = _get_base_color(p_config, -0.2);
-		p_config.surface_high_color = _get_base_color(p_config, 0.2, 0.8);
-		p_config.surface_higher_color = _get_base_color(p_config, 0.35, 0.8);
-		p_config.surface_highest_color = _get_base_color(p_config, 0.55, 0.6);
+		p_config.surface_popup_color = _get_base_color(p_config, 1.9, 0.9);
+		p_config.surface_lowest_color = _get_base_color(p_config, 1.7, 0.9);
+		p_config.surface_lower_color = _get_base_color(p_config, 1.1, 0.9);
+		p_config.surface_low_color = _get_base_color(p_config, 0.8);
+		p_config.surface_base_color = _get_base_color(p_config);
+		p_config.surface_high_color = _get_base_color(p_config, -1.3, 0.8);
+		p_config.surface_higher_color = _get_base_color(p_config, -1.5, 0.8);
+		p_config.surface_highest_color = _get_base_color(p_config, -2.2, 0.6);
 
-		p_config.button_normal_color = _get_base_color(p_config, 0.35, 0.85);
-		p_config.button_hover_color = _get_base_color(p_config, 0.55, 0.75);
-		p_config.button_pressed_color = _get_base_color(p_config, 0.75, 0.75);
-		p_config.button_disabled_color = _get_base_color(p_config, 0.2, 0.75);
-		p_config.button_border_normal_color = _get_base_color(p_config, 0.45, 0.75);
-		p_config.button_border_hover_color = _get_base_color(p_config, 0.65, 0.75);
-		p_config.button_border_pressed_color = _get_base_color(p_config, 0.85, 0.75);
+		p_config.button_normal_color = _get_base_color(p_config, -2.0, 0.85);
+		p_config.button_hover_color = _get_base_color(p_config, -2.9, 0.75);
+		p_config.button_pressed_color = _get_base_color(p_config, -3.2, 0.75);
+		p_config.button_disabled_color = _get_base_color(p_config, -1.5, 0.75);
+		p_config.button_border_normal_color = _get_base_color(p_config, -2.5, 0.75);
+		p_config.button_border_hover_color = _get_base_color(p_config, -3.4, 0.75);
+		p_config.button_border_pressed_color = _get_base_color(p_config, -3.7, 0.75);
 
 		p_config.shadow_color = Color(0, 0, 0, p_config.dark_theme ? 0.3 : 0.1);
 		p_config.selection_color = p_config.accent_color * Color(1, 1, 1, 0.4);
@@ -325,7 +324,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 			}
 
 			p_config.flat_button_pressed = p_config.flat_button_hover->duplicate();
-			p_config.flat_button_pressed->set_bg_color(p_config.button_hover_color);
+			p_config.flat_button_pressed->set_bg_color(_get_base_color(p_config, -2.4, 0.75));
 			if (p_config.draw_extra_borders) {
 				p_config.flat_button_pressed->set_border_color(p_config.extra_border_color_1);
 			}
@@ -337,7 +336,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		// Windows and popups.
 		{
 			p_config.popup_panel_style = p_config.base_style->duplicate();
-			p_config.popup_panel_style->set_bg_color(_get_base_color(p_config, -0.8, 0.9));
+			p_config.popup_panel_style->set_bg_color(p_config.surface_popup_color);
 			p_config.popup_panel_style->set_shadow_color(Color(0, 0, 0, 0.3));
 			p_config.popup_panel_style->set_shadow_size(p_config.base_margin * 0.75 * EDSCALE);
 			p_config.popup_panel_style->set_content_margin_all(p_config.popup_margin * EDSCALE);
@@ -424,7 +423,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("font_shadow_color", "TooltipLabel", Color(1, 1, 1, 0));
 
 			Ref<StyleBoxFlat> tooltip_style = p_config.base_style->duplicate();
-			tooltip_style->set_bg_color(p_config.surface_lower_color);
+			tooltip_style->set_bg_color(p_config.surface_popup_color);
 			tooltip_style->set_content_margin_all(0);
 			tooltip_style->set_corner_radius_all(0);
 			if (p_config.draw_extra_borders) {
@@ -436,7 +435,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		// PopupPanel
 		Ref<StyleBoxFlat> popup_panel_style = p_config.base_style->duplicate();
-		popup_panel_style->set_bg_color(p_config.surface_lower_color);
+		popup_panel_style->set_bg_color(p_config.surface_popup_color);
 		popup_panel_style->set_shadow_color(Color(0, 0, 0, 0.3));
 		popup_panel_style->set_shadow_size(p_config.base_margin * 0.75 * EDSCALE);
 		popup_panel_style->set_content_margin_all(p_config.popup_margin);
@@ -620,8 +619,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color(SceneStringName(font_color), "Tree", p_config.font_color);
 			p_theme->set_color("font_hovered_color", "Tree", p_config.font_hover_color);
 			p_theme->set_color("font_hovered_dimmed_color", "Tree", p_config.font_hover_color);
-			p_theme->set_color("font_hovered_selected_color", "Tree", p_config.font_hover_color);
-			p_theme->set_color("font_selected_color", "Tree", p_config.font_pressed_color);
+			p_theme->set_color("font_hovered_selected_color", "Tree", p_config.mono_color_font);
+			p_theme->set_color("font_selected_color", "Tree", p_config.mono_color_font);
 			p_theme->set_color("font_disabled_color", "Tree", p_config.font_disabled_color);
 			p_theme->set_color("font_outline_color", "Tree", p_config.font_outline_color);
 			p_theme->set_color("title_button_color", "Tree", p_config.font_color);
@@ -695,9 +694,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			style_tree_cursor->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.04));
 
 			Ref<StyleBoxFlat> style_tree_title = p_config.base_style->duplicate();
-			style_tree_title->set_bg_color(p_config.surface_lowest_color);
+			style_tree_title->set_bg_color(p_config.surface_lower_color);
 			// Use a transparent border to separate rounded column titles.
-			style_tree_title->set_border_color(Color(p_config.surface_lowest_color, 0));
+			style_tree_title->set_border_color(Color(p_config.surface_lower_color, 0));
 			style_tree_title->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
 			style_tree_title->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
 
@@ -706,6 +705,27 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_stylebox("title_button_normal", "Tree", style_tree_title);
 			p_theme->set_stylebox("title_button_hover", "Tree", style_tree_title);
 			p_theme->set_stylebox("title_button_pressed", "Tree", style_tree_title);
+		}
+
+		// ProjectList.
+		{
+			Ref<StyleBoxFlat> style_project_list_hover = p_config.flat_button_hover->duplicate();
+			style_project_list_hover->set_bg_color(_get_base_color(p_config, -0.5, 0.75));
+			style_project_list_hover->set_content_margin_all(0);
+
+			Ref<StyleBoxFlat> style_project_list_selected = style_project_list_hover->duplicate();
+			style_project_list_selected->set_bg_color(_get_base_color(p_config, -1.0, 0.75));
+
+			Ref<StyleBoxFlat> style_project_list_hover_pressed = style_project_list_selected->duplicate();
+			style_project_list_hover_pressed->set_bg_color(_get_base_color(p_config, -1.2, 0.75));
+
+			p_theme->set_stylebox("hovered", "ProjectList", style_project_list_hover);
+			p_theme->set_stylebox("selected", "ProjectList", style_project_list_selected);
+			p_theme->set_stylebox("hover_pressed", "ProjectList", style_project_list_hover_pressed);
+			p_theme->set_stylebox("focus", "ProjectList", p_config.focus_style);
+
+			p_theme->set_color(SceneStringName(font_color), "ProjectList", p_config.font_color);
+			p_theme->set_color("guide_color", "ProjectList", Color(1, 1, 1, 0));
 		}
 
 		// ItemList.
@@ -753,7 +773,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		style_tab_unselected->set_border_width_all(0);
 
 		Ref<StyleBoxFlat> style_tab_hovered = style_tab_unselected->duplicate();
-		style_tab_hovered->set_bg_color(p_config.surface_base_color * Color(1, 1, 1, 0.8));
+		style_tab_hovered->set_bg_color(p_config.surface_base_color * Color(1, 1, 1, 0.6));
 
 		Color drop_mark_color = p_config.dark_color_2.lerp(p_config.accent_color, 0.75);
 
@@ -991,13 +1011,20 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("buttons_min_height", "AcceptDialog", p_config.dialogs_buttons_min_size.y * EDSCALE);
 
 		// FileDialog.
-		p_theme->set_icon("folder", "FileDialog", p_theme->get_icon(SNAME("Folder"), EditorStringName(EditorIcons)));
-		p_theme->set_icon("parent_folder", "FileDialog", p_theme->get_icon(SNAME("ArrowUp"), EditorStringName(EditorIcons)));
-		p_theme->set_icon("back_folder", "FileDialog", p_theme->get_icon(SNAME("Back"), EditorStringName(EditorIcons)));
-		p_theme->set_icon("forward_folder", "FileDialog", p_theme->get_icon(SNAME("Forward"), EditorStringName(EditorIcons)));
-		p_theme->set_icon("reload", "FileDialog", p_theme->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
-		p_theme->set_icon("toggle_hidden", "FileDialog", p_theme->get_icon(SNAME("GuiVisibilityVisible"), EditorStringName(EditorIcons)));
-		p_theme->set_icon("create_folder", "FileDialog", p_theme->get_icon(SNAME("FolderCreate"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("folder", "FileDialog", p_theme->get_icon("Folder", EditorStringName(EditorIcons)));
+		p_theme->set_icon("parent_folder", "FileDialog", p_theme->get_icon("ArrowUp", EditorStringName(EditorIcons)));
+		p_theme->set_icon("back_folder", "FileDialog", p_theme->get_icon("Back", EditorStringName(EditorIcons)));
+		p_theme->set_icon("forward_folder", "FileDialog", p_theme->get_icon("Forward", EditorStringName(EditorIcons)));
+		p_theme->set_icon("reload", "FileDialog", p_theme->get_icon("Reload", EditorStringName(EditorIcons)));
+		p_theme->set_icon("toggle_hidden", "FileDialog", p_theme->get_icon("GuiVisibilityVisible", EditorStringName(EditorIcons)));
+		p_theme->set_icon("toggle_filename_filter", "FileDialog", p_theme->get_icon("FilenameFilter", EditorStringName(EditorIcons)));
+		p_theme->set_icon("thumbnail_mode", "FileDialog", p_theme->get_icon("FileThumbnail", EditorStringName(EditorIcons)));
+		p_theme->set_icon("list_mode", "FileDialog", p_theme->get_icon("FileList", EditorStringName(EditorIcons)));
+		p_theme->set_icon("sort", "FileDialog", p_theme->get_icon("Sort", EditorStringName(EditorIcons)));
+		p_theme->set_icon("favorite", "FileDialog", p_theme->get_icon("Favorites", EditorStringName(EditorIcons)));
+		p_theme->set_icon("favorite_up", "FileDialog", p_theme->get_icon("MoveUp", EditorStringName(EditorIcons)));
+		p_theme->set_icon("favorite_down", "FileDialog", p_theme->get_icon("MoveDown", EditorStringName(EditorIcons)));
+		p_theme->set_icon("create_folder", "FileDialog", p_theme->get_icon("FolderCreate", EditorStringName(EditorIcons)));
 		// Use a different color for folder icons to make them easier to distinguish from files.
 		// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
 		p_theme->set_color("folder_icon_color", "FileDialog", (p_config.dark_icon_and_font ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(p_config.accent_color, 0.7));
@@ -1011,7 +1038,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		// PopupMenu.
 		{
 			Ref<StyleBoxFlat> style_popup_menu = p_config.base_style->duplicate();
-			style_popup_menu->set_bg_color(p_config.surface_lower_color);
+			style_popup_menu->set_bg_color(p_config.surface_popup_color);
 			style_popup_menu->set_content_margin_all(p_config.popup_margin);
 			style_popup_menu->set_corner_radius_all(0);
 			if (p_config.draw_extra_borders) {
@@ -1020,7 +1047,10 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			}
 			p_theme->set_stylebox(SceneStringName(panel), "PopupMenu", style_popup_menu);
 
-			p_theme->set_stylebox(SceneStringName(hover), "PopupMenu", p_config.flat_button_hover);
+			Ref<StyleBoxFlat> style_popup_hover = p_config.flat_button_hover->duplicate();
+			style_popup_hover->set_bg_color(_get_base_color(p_config, -0.5, 0.75));
+
+			p_theme->set_stylebox(SceneStringName(hover), "PopupMenu", style_popup_hover);
 
 			Ref<StyleBoxLine> style_popup_separator = EditorThemeManager::make_line_stylebox(p_config.mono_color * Color(1, 1, 1, p_config.dark_theme ? 0.075 : 0.125), Math::round(2 * EDSCALE), p_config.base_margin * -2 * EDSCALE, p_config.base_margin * -2 * EDSCALE);
 
@@ -1244,6 +1274,22 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 	p_theme->set_color("font_outline_color", "ProgressBar", p_config.font_outline_color);
 	p_theme->set_constant("outline_size", "ProgressBar", 0);
 
+	// PopupProgressBar
+
+	p_theme->set_type_variation("PopupProgressBar", "ProgressBar");
+
+	Ref<StyleBoxFlat> popup_progress_bar_style = progress_bar_style->duplicate();
+	popup_progress_bar_style->set_bg_color(_get_base_color(p_config, 0.4, 0.9));
+
+	Ref<StyleBoxFlat> popup_progress_fill_style = progress_fill_style->duplicate();
+	popup_progress_fill_style->set_bg_color(_get_base_color(p_config, -1.6, 0.9));
+	if (p_config.draw_extra_borders) {
+		popup_progress_fill_style->set_border_color(p_config.extra_border_color_1);
+	}
+
+	p_theme->set_stylebox("background", "PopupProgressBar", popup_progress_bar_style);
+	p_theme->set_stylebox("fill", "PopupProgressBar", popup_progress_fill_style);
+
 	// GraphEdit and related nodes.
 	{
 		// GraphEdit.
@@ -1325,7 +1371,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			const int gn_corner_radius = 3;
 
 			const Color gn_bg_color = p_config.dark_theme ? p_config.dark_color_3 : p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
-			const Color gn_frame_bg = _get_base_color(p_config, p_config.dark_theme ? -1.8 : -0.5, 0.9);
+			const Color gn_frame_bg = _get_base_color(p_config, 2.4, 0.9);
 
 			const bool high_contrast_borders = p_config.draw_extra_borders && p_config.dark_theme;
 
@@ -1388,6 +1434,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_stylebox("titlebar_selected", "GraphNode", gn_titlebar_selected_style);
 			p_theme->set_stylebox("slot", "GraphNode", gn_slot_style);
 			p_theme->set_stylebox("slot_selected", "GraphNode", p_config.focus_style);
+
+			const Color gn_separator_color = gn_frame_bg.lerp(p_config.mono_color, 0.1);
+			p_theme->set_stylebox("separator", "GraphNode", EditorThemeManager::make_line_stylebox(gn_separator_color, Math::round(2 * EDSCALE)));
 
 			p_theme->set_color("resizer_color", "GraphNode", gn_decoration_color);
 
@@ -1522,7 +1571,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_type_variation("ProjectTagButton", "Button");
 
 			Ref<StyleBoxFlat> tag = p_config.button_style->duplicate();
-			tag->set_bg_color(p_config.dark_theme ? tag->get_bg_color().lightened(0.2) : tag->get_bg_color().darkened(0.2));
+			tag->set_border_width_all(0);
 			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
@@ -1530,6 +1579,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(CoreStringName(normal), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_hover->duplicate();
+			tag->set_border_width_all(0);
 			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
@@ -1537,6 +1587,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(hover), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_pressed->duplicate();
+			tag->set_border_width_all(0);
 			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
@@ -1548,7 +1599,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	// Editor and main screen.
 	{
 		// Editor background.
-		Color background_color = p_config.surface_lowest_color; //_get_base_color(p_config, -1.5);
+		Color background_color = p_config.surface_lowest_color;
 		p_theme->set_color("background", EditorStringName(Editor), background_color);
 		Ref<StyleBoxFlat> style_bg = p_config.base_style->duplicate();
 		style_bg->set_bg_color(background_color);
@@ -1629,6 +1680,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("hover_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
 		p_theme->set_stylebox("hover_pressed", "MainScreenButton", p_config.base_empty_wide_style);
 		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
+
+		p_theme->set_color("font_pressed_color", "MainScreenButton", p_config.mono_color_font);
 
 		p_theme->set_type_variation("MainMenuBar", "FlatMenuButton");
 		p_theme->set_stylebox(CoreStringName(normal), "MainMenuBar", p_config.flat_button);
@@ -1740,6 +1793,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Launch Pad and Play buttons.
 		Ref<StyleBoxFlat> style_launch_pad_movie = p_config.base_style->duplicate();
+		style_launch_pad_movie->set_content_margin_all(p_config.base_margin * EDSCALE);
 		style_launch_pad_movie->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.2));
 		style_launch_pad_movie->set_border_color(p_config.accent_color * Color(1, 1, 1, 0.8));
 		style_launch_pad_movie->set_border_width_all(Math::round(2 * EDSCALE));
@@ -1868,7 +1922,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// MarginContainers with negative margins, to negate borders. Used with scroll hints.
 		{
-			int margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
+			int panel_margin = p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
+			int margin = -panel_margin;
 
 			p_theme->set_type_variation("NoBorderHorizontal", "MarginContainer");
 			p_theme->set_constant("margin_left", "NoBorderHorizontal", margin);
@@ -1879,7 +1934,15 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_constant("margin_right", "NoBorderHorizontalBottom", margin);
 			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
 
-			margin = margin - p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
+			int bottom_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
+			margin = -bottom_margin;
+
+			// Used in editors residing in the bottom panel.
+			p_theme->set_type_variation("NoBorderBottomPanel", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderBottomPanel", margin);
+			p_theme->set_constant("margin_right", "NoBorderBottomPanel", margin);
+
+			margin = -panel_margin - bottom_margin;
 
 			// Used in the animation track editor.
 			p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
@@ -1916,7 +1979,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// TabContainerOdd variation.
 		{
-			// Can be used on tabs against the base color background (e.g. nested tabs).
+			// Used for tabs against the base color background in the classic theme.
 			p_theme->set_type_variation("TabContainerOdd", "TabContainer");
 
 			Ref<StyleBoxFlat> style_tab_selected_odd = p_theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->duplicate();
@@ -1930,6 +1993,62 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox("tabbar_background", "TabContainerOdd", p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
 		}
 
+		// TabContainerInner, TabBarInner, PanelContainerTabbarInner variations.
+		{
+			// Used for tabs against the base color background in the modern theme.
+			p_theme->set_type_variation("TabContainerInner", "TabContainer");
+			p_theme->set_type_variation("TabBarInner", "TabBar");
+			p_theme->set_type_variation("PanelContainerTabbarInner", "PanelContainer");
+
+			Ref<StyleBoxFlat> style_tab_selected_inner = p_theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->duplicate();
+			style_tab_selected_inner->set_content_margin_individual(p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE);
+			style_tab_selected_inner->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+			p_theme->set_stylebox("tab_selected", "TabContainerInner", style_tab_selected_inner);
+			p_theme->set_stylebox("tab_selected", "TabBarInner", style_tab_selected_inner);
+
+			Color background_color = p_config.surface_lower_color.lerp(p_config.mono_color_inv, 0.15);
+
+			Ref<StyleBoxFlat> style_tab_unselected_inner = style_tab_selected_inner->duplicate();
+			style_tab_unselected_inner->set_bg_color(background_color);
+			p_theme->set_stylebox("tab_unselected", "TabContainerInner", style_tab_unselected_inner);
+			p_theme->set_stylebox("tab_unselected", "TabBarInner", style_tab_unselected_inner);
+
+			Ref<StyleBoxFlat> style_tab_hovered_inner = style_tab_selected_inner->duplicate();
+			style_tab_hovered_inner->set_bg_color(background_color.lerp(p_config.mono_color, 0.05));
+			p_theme->set_stylebox("tab_hovered", "TabContainerInner", style_tab_hovered_inner);
+			p_theme->set_stylebox("tab_hovered", "TabBarInner", style_tab_hovered_inner);
+
+			Ref<StyleBoxFlat> style_tab_disabled_inner = style_tab_selected_inner->duplicate();
+			style_tab_disabled_inner->set_bg_color(background_color);
+			p_theme->set_stylebox("tab_disabled", "TabContainerInner", style_tab_disabled_inner);
+			p_theme->set_stylebox("tab_disabled", "TabBarInner", style_tab_disabled_inner);
+
+			Ref<StyleBoxFlat> style_tabbar_background_inner = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
+			style_tabbar_background_inner->set_content_margin_all(p_config.base_margin * EDSCALE);
+			style_tabbar_background_inner->set_corner_radius_all(p_config.corner_radius * EDSCALE + p_config.base_margin * EDSCALE);
+			style_tabbar_background_inner->set_bg_color(background_color);
+
+			p_theme->set_stylebox("tabbar_background", "TabContainerInner", style_tabbar_background_inner);
+
+			p_theme->set_constant("tab_separation", "TabContainerInner", p_config.separation_margin);
+			p_theme->set_constant("tab_separation", "TabBarInner", p_config.separation_margin);
+
+			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerTabbarInner", style_tabbar_background_inner);
+		}
+
+		// TreeLineEdit.
+		{
+			Ref<StyleBoxFlat> tree_line_edit_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();
+			tree_line_edit_style->set_corner_radius_all(0);
+
+			Ref<StyleBoxFlat> tree_line_edit_style_focus = p_theme->get_stylebox("focus", SNAME("LineEdit"))->duplicate();
+			tree_line_edit_style_focus->set_corner_radius_all(0);
+
+			p_theme->set_type_variation("TreeLineEdit", "LineEdit");
+			p_theme->set_stylebox(CoreStringName(normal), "TreeLineEdit", tree_line_edit_style);
+			p_theme->set_stylebox("focus", "TreeLineEdit", tree_line_edit_style_focus);
+		}
+
 		// EditorValidationPanel.
 		Ref<StyleBoxFlat> editor_validation_panel = p_config.base_style->duplicate();
 		editor_validation_panel->set_bg_color(p_config.surface_low_color);
@@ -1941,6 +2060,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_type_variation("ScrollContainerSecondary", "ScrollContainer");
 			p_theme->set_type_variation("TreeSecondary", "Tree");
 			p_theme->set_type_variation("ItemListSecondary", "ItemList");
+			p_theme->set_type_variation("EditorAudioBusEffectsTree", "Tree");
 
 			Ref<StyleBoxFlat> style_sidebar = p_config.base_style->duplicate();
 			style_sidebar->set_bg_color(p_config.surface_low_color);
@@ -1955,6 +2075,27 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			// Use it for EditorDebuggerInspector in StackTrace to keep the default 3-column layout,
 			// as the debugger inspector is too small to be considered a main area.
 			p_theme->set_stylebox(SceneStringName(panel), "EditorDebuggerInspector", style_sidebar);
+
+			// TreeSecondary title headers
+			Ref<StyleBoxFlat> style_tree_title_secondary = p_config.base_style->duplicate();
+			Color secondary_title_color = _get_base_color(p_config, 1.6, 0.9);
+			style_tree_title_secondary->set_bg_color(secondary_title_color);
+			style_tree_title_secondary->set_border_color(Color(secondary_title_color, 0));
+			style_tree_title_secondary->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_tree_title_secondary->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+
+			p_theme->set_stylebox("title_button_normal", "TreeSecondary", style_tree_title_secondary);
+			p_theme->set_stylebox("title_button_hover", "TreeSecondary", style_tree_title_secondary);
+			p_theme->set_stylebox("title_button_pressed", "TreeSecondary", style_tree_title_secondary);
+
+			// EditorAudioBusEffectsTree
+			Ref<StyleBoxFlat> style_audio_bus_effect_tree = p_config.base_style->duplicate();
+			style_audio_bus_effect_tree->set_bg_color(_get_base_color(p_config, 0.3));
+			if (p_config.draw_extra_borders) {
+				style_audio_bus_effect_tree->set_border_width_all(1 * EDSCALE);
+				style_audio_bus_effect_tree->set_border_color(p_config.extra_border_color_2);
+			}
+			p_theme->set_stylebox(SceneStringName(panel), "EditorAudioBusEffectsTree", style_audio_bus_effect_tree);
 		}
 
 		// ForegroundPanel.
@@ -1974,7 +2115,11 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Vertical separation between inspector areas.
 		p_theme->set_type_variation("EditorInspectorContainer", "VBoxContainer");
-		p_theme->set_constant("separation", "EditorInspectorContainer", Math::ceil(p_config.base_margin * 0.5 * EDSCALE));
+		p_theme->set_constant("separation", "EditorInspectorContainer", Math::ceil(p_config.base_margin * EDSCALE));
+
+		// Vertical separation between inspector sections.
+		p_theme->set_type_variation("EditorSectionContainer", "VBoxContainer");
+		p_theme->set_constant("separation", "EditorSectionContainer", p_config.base_margin * 0.5 * EDSCALE);
 
 		// Vertical separation between inspector properties.
 		p_theme->set_type_variation("EditorPropertyContainer", "VBoxContainer");
@@ -1987,7 +2132,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		style_property_bg->set_border_width_all(0);
 
 		Ref<StyleBoxFlat> style_property_bg_selected = p_config.base_style->duplicate();
-		style_property_bg_selected->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.03));
+		style_property_bg_selected->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.05));
 
 		Ref<StyleBoxFlat> style_property_child_bg = p_config.base_style->duplicate();
 		style_property_child_bg->set_bg_color(p_config.surface_lower_color);
@@ -2058,6 +2203,9 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			category_bg->set_border_color(p_config.extra_border_color_2);
 		}
 		p_theme->set_stylebox("bg", "EditorInspectorCategory", category_bg);
+
+		// EditorInspectorArray.
+		p_theme->set_color("bg", "EditorInspectorArray", p_config.surface_base_color);
 
 		p_theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);
 
@@ -2305,7 +2453,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("link_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_font, 0.8));
 		p_theme->set_color("code_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_font, 0.6));
 		p_theme->set_color("kbd_color", "EditorHelp", p_config.accent_color.lerp(kbd_color, 0.6));
-		p_theme->set_color("code_bg_color", "EditorHelp", p_config.dark_color_3);
+		p_theme->set_color("code_bg_color", "EditorHelp", _get_base_color(p_config, 1.6, 0.8));
 		p_theme->set_color("kbd_bg_color", "EditorHelp", p_config.dark_color_1);
 		p_theme->set_color("param_bg_color", "EditorHelp", p_config.dark_color_1);
 		p_theme->set_constant(SceneStringName(line_separation), "EditorHelp", Math::round(6 * EDSCALE));
@@ -2318,9 +2466,9 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	// EditorHelpBitTitle.
 	{
 		Ref<StyleBoxFlat> editor_help_title_style = p_config.base_style->duplicate();
-		editor_help_title_style->set_bg_color(_get_base_color(p_config, p_config.dark_theme ? -0.55 : -0.9));
+		editor_help_title_style->set_bg_color(_get_base_color(p_config, 1.25, 0.75));
 		editor_help_title_style->set_content_margin_individual(p_config.base_margin * 2 * EDSCALE, p_config.base_margin * EDSCALE, p_config.base_margin * 2 * EDSCALE, p_config.base_margin * EDSCALE);
-		editor_help_title_style->set_corner_radius_individual(0, 0, p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE);
+		editor_help_title_style->set_corner_radius_individual(p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE, 0, 0);
 		if (p_config.draw_extra_borders) {
 			editor_help_title_style->set_border_width_all(Math::round(EDSCALE));
 			editor_help_title_style->set_border_color(p_config.extra_border_color_2);
@@ -2346,12 +2494,9 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	}
 
 	// Asset Library.
-	Ref<StyleBoxFlat> assetlib_panel_style = p_config.base_style->duplicate();
-	assetlib_panel_style->set_bg_color(p_config.surface_low_color);
-	assetlib_panel_style->set_content_margin_all(p_config.base_margin * 2 * EDSCALE);
-
 	p_theme->set_stylebox("bg", "AssetLib", EditorThemeManager::make_empty_stylebox(p_config.base_margin, p_config.base_margin, p_config.base_margin, p_config.base_margin));
-	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", assetlib_panel_style);
+	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.foreground_panel);
+	p_theme->set_stylebox("downloads", "AssetLib", p_theme->get_stylebox(SceneStringName(panel), SNAME("ScrollContainerSecondary")));
 	p_theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5)); // FIXME: Use a defined color instead.
 	p_theme->set_icon("dismiss", "AssetLib", p_theme->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 

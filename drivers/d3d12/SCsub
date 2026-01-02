@@ -2,9 +2,17 @@
 from misc.utility.scons_hints import *
 
 import os
+import re
+import sys
 from pathlib import Path
 
 import methods
+from methods import print_error
+
+# Sync with `misc/scripts/install_d3d12_sdk_windows.py` when updating Mesa.
+# Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
+req_version_major = 25
+req_version_minor = 3
 
 Import("env")
 env_d3d12_rdd = env.Clone()
@@ -103,6 +111,18 @@ extra_defines = [
 mesa_ver = Path(mesa_absdir + "/VERSION.info")
 if not mesa_ver.is_file():
     mesa_ver = Path(mesa_absdir + "/VERSION")
+
+match = re.match(r"([0-9]*).([0-9]*).([0-9]*)-?([0-9.+]*)", mesa_ver.read_text().strip())
+if (
+    match is None
+    or int(match.group(1)) != req_version_major
+    or (int(match.group(1)) == req_version_major and int(match.group(2)) < req_version_minor)
+):
+    print_error(
+        "The Direct3D 12 rendering driver dependencies are outdated or missing.\n"
+        "You can re-install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
+    )
+    sys.exit(255)
 
 # These defines are inspired by the Meson build scripts in the original repo.
 extra_defines += [

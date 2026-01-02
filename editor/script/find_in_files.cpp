@@ -35,13 +35,13 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -409,7 +409,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		folder_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesDialog::_on_folder_button_pressed));
 		hbc->add_child(folder_button);
 
-		_folder_dialog = memnew(FileDialog);
+		_folder_dialog = memnew(EditorFileDialog);
 		_folder_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 		_folder_dialog->connect("dir_selected", callable_mp(this, &FindInFilesDialog::_on_folder_selected));
 		add_child(_folder_dialog);
@@ -754,10 +754,15 @@ FindInFilesPanel::FindInFilesPanel() {
 		vbc->add_child(hbc);
 	}
 
+	_results_mc = memnew(MarginContainer);
+	_results_mc->set_theme_type_variation("NoBorderHorizontal");
+	_results_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_child(_results_mc);
+
 	_results_display = memnew(Tree);
 	_results_display->set_accessibility_name(TTRC("Search Results"));
 	_results_display->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
+	_results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	_results_display->connect(SceneStringName(item_selected), callable_mp(this, &FindInFilesPanel::_on_result_selected));
 	_results_display->connect("item_edited", callable_mp(this, &FindInFilesPanel::_on_item_edited));
 	_results_display->connect("button_clicked", callable_mp(this, &FindInFilesPanel::_on_button_clicked));
@@ -768,7 +773,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display->add_theme_constant_override("inner_item_margin_left", 0);
 	_results_display->add_theme_constant_override("inner_item_margin_right", 0);
 	_results_display->create_item(); // Root
-	vbc->add_child(_results_display);
+	_results_mc->add_child(_results_display);
 
 	{
 		_replace_container = memnew(HBoxContainer);
@@ -860,6 +865,22 @@ void FindInFilesPanel::stop_search() {
 	_progress_bar->set_visible(false);
 	_refresh_button->show();
 	_cancel_button->hide();
+}
+
+void FindInFilesPanel::update_layout(EditorDock::DockLayout p_layout) {
+	bool new_floating = (p_layout == EditorDock::DOCK_LAYOUT_FLOATING);
+	if (_floating == new_floating) {
+		return;
+	}
+	_floating = new_floating;
+
+	if (_floating) {
+		_results_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		_results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+	} else {
+		_results_mc->set_theme_type_variation("NoBorderHorizontal");
+		_results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	}
 }
 
 void FindInFilesPanel::_notification(int p_what) {
@@ -1416,6 +1437,15 @@ void FindInFilesContainer::_on_find_in_files_close_button_clicked(FindInFilesPan
 	_update_bar_visibility();
 	if (_tabs->get_tab_count() == 0) {
 		close();
+	}
+}
+
+void FindInFilesContainer::update_layout(EditorDock::DockLayout p_layout) {
+	for (Node *node : _tabs->iterate_children()) {
+		FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(node);
+		if (panel) {
+			panel->update_layout(p_layout);
+		}
 	}
 }
 

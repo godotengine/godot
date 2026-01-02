@@ -5,7 +5,9 @@
 	</brief_description>
 	<description>
 		This texture array class allows you to use a 2D array texture created directly on the [RenderingDevice] as a texture for materials, meshes, etc.
+		[b]Note:[/b] [Texture2DArrayRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [Texture2DArray] instead.
 	</description>
 	<tutorials>
+		<link title="Compute Texture demo">https://godotengine.org/asset-library/asset/2764</link>
 	</tutorials>
 </class>

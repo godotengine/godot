@@ -196,7 +196,7 @@ public:
 	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);
 };
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 
 class OS_MacOS_Embedded : public OS_MacOS {
 public:

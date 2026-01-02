@@ -995,6 +995,11 @@ struct CD3DX12_GPU_DESCRIPTOR_HANDLE : public D3D12_GPU_DESCRIPTOR_HANDLE
 // To help enable root signature 1.1 features when they are available and not require maintaining
 // two code paths for building root signatures, this helper method reconstructs a 1.0 signature when
 // 1.1 is not supported.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcovered-switch-default"
+#endif
+
 inline HRESULT D3DX12SerializeVersionedRootSignature(
     _In_ HMODULE pLibD3D12,
     _In_ const D3D12_VERSIONED_ROOT_SIGNATURE_DESC* pRootSignatureDesc,
@@ -1060,32 +1065,38 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
                                 break;
 
                             case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
-                                const D3D12_ROOT_DESCRIPTOR_TABLE1& table_1_1 = desc_1_1.pParameters[n].DescriptorTable;
-
-                                const SIZE_T DescriptorRangesSize = sizeof(D3D12_DESCRIPTOR_RANGE) * table_1_1.NumDescriptorRanges;
-                                void* pDescriptorRanges = (DescriptorRangesSize > 0 && SUCCEEDED(hr)) ? HeapAlloc(GetProcessHeap(), 0, DescriptorRangesSize) : nullptr;
-                                if (DescriptorRangesSize > 0 && pDescriptorRanges == nullptr)
                                 {
-                                    hr = E_OUTOFMEMORY;
-                                }
-                                auto pDescriptorRanges_1_0 = static_cast<D3D12_DESCRIPTOR_RANGE*>(pDescriptorRanges);
+                                    const D3D12_ROOT_DESCRIPTOR_TABLE1& table_1_1 = desc_1_1.pParameters[n].DescriptorTable;
 
-                                if (SUCCEEDED(hr))
-                                {
-                                    for (UINT x = 0; x < table_1_1.NumDescriptorRanges; x++)
+                                    const SIZE_T DescriptorRangesSize = sizeof(D3D12_DESCRIPTOR_RANGE) * table_1_1.NumDescriptorRanges;
+                                    void* pDescriptorRanges = (DescriptorRangesSize > 0 && SUCCEEDED(hr)) ? HeapAlloc(GetProcessHeap(), 0, DescriptorRangesSize) : nullptr;
+                                    if (DescriptorRangesSize > 0 && pDescriptorRanges == nullptr)
                                     {
-                                        __analysis_assume(DescriptorRangesSize == sizeof(D3D12_DESCRIPTOR_RANGE) * table_1_1.NumDescriptorRanges);
-                                        pDescriptorRanges_1_0[x].BaseShaderRegister = table_1_1.pDescriptorRanges[x].BaseShaderRegister;
-                                        pDescriptorRanges_1_0[x].NumDescriptors = table_1_1.pDescriptorRanges[x].NumDescriptors;
-                                        pDescriptorRanges_1_0[x].OffsetInDescriptorsFromTableStart = table_1_1.pDescriptorRanges[x].OffsetInDescriptorsFromTableStart;
-                                        pDescriptorRanges_1_0[x].RangeType = table_1_1.pDescriptorRanges[x].RangeType;
-                                        pDescriptorRanges_1_0[x].RegisterSpace = table_1_1.pDescriptorRanges[x].RegisterSpace;
+                                        hr = E_OUTOFMEMORY;
                                     }
-                                }
+                                    auto pDescriptorRanges_1_0 = static_cast<D3D12_DESCRIPTOR_RANGE*>(pDescriptorRanges);
 
-                                D3D12_ROOT_DESCRIPTOR_TABLE& table_1_0 = pParameters_1_0[n].DescriptorTable;
-                                table_1_0.NumDescriptorRanges = table_1_1.NumDescriptorRanges;
-                                table_1_0.pDescriptorRanges = pDescriptorRanges_1_0;
+                                    if (SUCCEEDED(hr))
+                                    {
+                                        for (UINT x = 0; x < table_1_1.NumDescriptorRanges; x++)
+                                        {
+                                            __analysis_assume(DescriptorRangesSize == sizeof(D3D12_DESCRIPTOR_RANGE) * table_1_1.NumDescriptorRanges);
+                                            pDescriptorRanges_1_0[x].BaseShaderRegister = table_1_1.pDescriptorRanges[x].BaseShaderRegister;
+                                            pDescriptorRanges_1_0[x].NumDescriptors = table_1_1.pDescriptorRanges[x].NumDescriptors;
+                                            pDescriptorRanges_1_0[x].OffsetInDescriptorsFromTableStart = table_1_1.pDescriptorRanges[x].OffsetInDescriptorsFromTableStart;
+                                            pDescriptorRanges_1_0[x].RangeType = table_1_1.pDescriptorRanges[x].RangeType;
+                                            pDescriptorRanges_1_0[x].RegisterSpace = table_1_1.pDescriptorRanges[x].RegisterSpace;
+                                        }
+                                    }
+
+                                    D3D12_ROOT_DESCRIPTOR_TABLE& table_1_0 = pParameters_1_0[n].DescriptorTable;
+                                    table_1_0.NumDescriptorRanges = table_1_1.NumDescriptorRanges;
+                                    table_1_0.pDescriptorRanges = pDescriptorRanges_1_0;
+                                }
+                                break;
+
+                            default:
+                                break;
                             }
                         }
                     }
@@ -1143,6 +1154,9 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
 
                     return hr;
                 }
+
+                default:
+                    break;
             }
             break;
 
@@ -1199,12 +1213,21 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
             }
 #endif
 
+            default:
+                break;
             }
+            break;
+
 #if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
         case D3D_ROOT_SIGNATURE_VERSION_1_2:
 #endif
+        default:
             return d3d_D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
     }
 
     return E_INVALIDARG;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

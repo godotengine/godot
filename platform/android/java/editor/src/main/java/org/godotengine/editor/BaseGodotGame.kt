@@ -104,8 +104,8 @@ abstract class BaseGodotGame: GodotEditor() {
 	@CallSuper
 	override fun supportsFeature(featureTag: String): Boolean {
 		if (HYBRID_APP_FEATURE == featureTag) {
-			// Check if hybrid is enabled
-			return isHybridAppEnabled()
+			// Check if hybrid is enabled.
+			return godot?.isXrRuntime == true && isHybridAppEnabled()
 		}
 
 		return super.supportsFeature(featureTag)

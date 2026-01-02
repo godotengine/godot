@@ -328,11 +328,13 @@ Ref<TextParagraph> TextParagraph::duplicate() const {
 	Ref<TextParagraph> copy;
 	copy.instantiate();
 	if (dropcap_rid.is_valid()) {
+		TS->free_rid(copy->dropcap_rid);
 		copy->dropcap_rid = TS->shaped_text_duplicate(dropcap_rid);
 	}
 	copy->dropcap_lines = dropcap_lines;
 	copy->dropcap_margins = dropcap_margins;
 	if (rid.is_valid()) {
+		TS->free_rid(copy->rid);
 		copy->rid = TS->shaped_text_duplicate(rid);
 	}
 	copy->lines_dirty = true;

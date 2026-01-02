@@ -495,6 +495,12 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_
 	last_closest_point = nullptr;
 	pass++;
 
+	if (_get_solid_unchecked(p_begin_point->id)) {
+		return false;
+	}
+	if (p_begin_point == p_end_point) {
+		return true;
+	}
 	if (_get_solid_unchecked(p_end_point->id) && !p_allow_partial_path) {
 		return false;
 	}
@@ -636,17 +642,8 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
 
-	Point *a = _get_point(p_from_id.x, p_from_id.y);
-	Point *b = _get_point(p_to_id.x, p_to_id.y);
-
-	if (a == b) {
-		Vector<Vector2> ret;
-		ret.push_back(a->pos);
-		return ret;
-	}
-
-	Point *begin_point = a;
-	Point *end_point = b;
+	Point *begin_point = _get_point(p_from_id.x, p_from_id.y);
+	Point *end_point = _get_point(p_to_id.x, p_to_id.y);
 
 	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
@@ -689,17 +686,8 @@ TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const V
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
 
-	Point *a = _get_point(p_from_id.x, p_from_id.y);
-	Point *b = _get_point(p_to_id.x, p_to_id.y);
-
-	if (a == b) {
-		TypedArray<Vector2i> ret;
-		ret.push_back(a->id);
-		return ret;
-	}
-
-	Point *begin_point = a;
-	Point *end_point = b;
+	Point *begin_point = _get_point(p_from_id.x, p_from_id.y);
+	Point *end_point = _get_point(p_to_id.x, p_to_id.y);
 
 	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
