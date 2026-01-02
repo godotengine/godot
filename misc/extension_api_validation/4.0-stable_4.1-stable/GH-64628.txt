@@ -1,0 +1,6 @@
+GH-64628
+--------
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate_from_path/arguments': size changed value in new API, from 2 to 3.
+
+Added parameters to virtual method.

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gdextension_interface.h"
+#include "gdextension_interface.gen.h"
 
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
@@ -261,6 +261,7 @@ static void gdextension_get_godot_version2(GDExtensionGodotVersion2 *r_godot_ver
 }
 
 // Memory Functions
+#ifndef DISABLE_DEPRECATED
 static void *gdextension_mem_alloc(size_t p_size) {
 	return memalloc(p_size);
 }
@@ -271,6 +272,19 @@ static void *gdextension_mem_realloc(void *p_mem, size_t p_size) {
 
 static void gdextension_mem_free(void *p_mem) {
 	memfree(p_mem);
+}
+#endif
+
+static void *gdextension_mem_alloc2(size_t p_size, GDExtensionBool p_prepad_align) {
+	return Memory::alloc_static(p_size, p_prepad_align);
+}
+
+static void *gdextension_mem_realloc2(void *p_mem, size_t p_size, GDExtensionBool p_prepad_align) {
+	return Memory::realloc_static(p_mem, p_size, p_prepad_align);
+}
+
+static void gdextension_mem_free2(void *p_mem, GDExtensionBool p_prepad_align) {
+	Memory::free_static(p_mem, p_prepad_align);
 }
 
 // Helper print functions.
@@ -803,13 +817,11 @@ static GDExtensionPtrOperatorEvaluator gdextension_variant_get_ptr_operator_eval
 }
 static GDExtensionPtrBuiltInMethod gdextension_variant_get_ptr_builtin_method(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_method, GDExtensionInt p_hash) {
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
-	uint32_t hash = Variant::get_builtin_method_hash(Variant::Type(p_type), method);
-	if (hash != p_hash) {
-		ERR_PRINT_ONCE("Error getting method " + method + ", hash mismatch.");
-		return nullptr;
+	GDExtensionPtrBuiltInMethod ptr = (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method_with_compatibility(Variant::Type(p_type), method, p_hash);
+	if (!ptr) {
+		ERR_PRINT("Error getting method " + method + ", missing or hash mismatch.");
 	}
-
-	return (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method(Variant::Type(p_type), method);
+	return ptr;
 }
 static GDExtensionPtrConstructor gdextension_variant_get_ptr_constructor(GDExtensionVariantType p_type, int32_t p_constructor) {
 	return (GDExtensionPtrConstructor)Variant::get_ptr_constructor(Variant::Type(p_type), p_constructor);
@@ -1687,9 +1699,14 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(get_godot_version);
 #endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(get_godot_version2);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(mem_alloc);
 	REGISTER_INTERFACE_FUNC(mem_realloc);
 	REGISTER_INTERFACE_FUNC(mem_free);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(mem_alloc2);
+	REGISTER_INTERFACE_FUNC(mem_realloc2);
+	REGISTER_INTERFACE_FUNC(mem_free2);
 	REGISTER_INTERFACE_FUNC(print_error);
 	REGISTER_INTERFACE_FUNC(print_error_with_message);
 	REGISTER_INTERFACE_FUNC(print_warning);

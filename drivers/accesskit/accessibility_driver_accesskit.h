@@ -33,7 +33,7 @@
 #ifdef ACCESSKIT_ENABLED
 
 #include "core/templates/rid_owner.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #ifdef ACCESSKIT_DYNAMIC
 #ifdef LINUXBSD_ENABLED
@@ -113,7 +113,7 @@ public:
 
 	RID accessibility_create_element(DisplayServer::WindowID p_window_id, DisplayServer::AccessibilityRole p_role) override;
 	RID accessibility_create_sub_element(const RID &p_parent_rid, DisplayServer::AccessibilityRole p_role, int p_insert_pos = -1) override;
-	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1) override;
+	virtual RID accessibility_create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false) override;
 	bool accessibility_has_element(const RID &p_id) const override;
 	void accessibility_free_element(const RID &p_id) override;
 

@@ -92,9 +92,20 @@ Thread::ID Thread::start(Thread::Callback p_callback, void *p_user, const Settin
 			break;
 	}
 
-	if (p_settings.stack_size > 0) {
-		pthread_attr_setstacksize(&attr, p_settings.stack_size);
-	}
+	// The default stack size for secondary threads on Apple platforms is 512KiB.
+	// This is insufficient when using a library like SPIRV-Cross, which can generate deep stacks and result in a stack overflow.
+	// It also creates a problematic discrepancy with other platforms, where secondary threads are often at least 1 MiB.
+	pthread_attr_setstacksize(&attr,
+#if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
+			// ASan (and to some degree TSan) needs a lot of extra stack size.
+			4 * 1024 * 1024 // 4 MiB
+#elif !defined(__OPTIMIZE__)
+			// Unoptimized builds also need a larger stack size.
+			2 * 1024 * 1024 // 2 MiB
+#else
+			1 * 1024 * 1024 // 1 MiB
+#endif
+	);
 
 	// Create the thread
 	pthread_create(&pthread, &attr, thread_callback, thread_data);

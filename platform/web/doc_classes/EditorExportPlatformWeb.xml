@@ -84,8 +84,8 @@
 			[b]Note:[/b] Some browsers have a hard cap on the number of threads that can be allocated, so it is best to be cautious and keep this number low.
 		</member>
 		<member name="threads/godot_pool_size" type="int" setter="" getter="">
-			Override for the default size of the [WorkerThreadPool]. This setting is used when [member ProjectSettings.threading/worker_pool/max_threads] size is set to -1 (which it is by default). This size must be smaller than [member threads/emscripten_pool_size] otherwise deadlocks may occur.
-			When using threads this size needs to be large enough to accommodate features that rely on having a dedicated thread like [member ProjectSettings.physics/2d/run_on_separate_thread] or [member ProjectSettings.rendering/driver/threads/thread_model]. In general, it is best to ensure that this is at least 4 and is at least 2 or 3 less than [member threads/emscripten_pool_size].
+			Override for the default size of the [WorkerThreadPool]. This setting is used when [member ProjectSettings.threading/worker_pool/max_threads] size is set to [code]-1[/code] (which it is by default). This size must be smaller than [member threads/emscripten_pool_size] otherwise deadlocks may occur.
+			When using threads, this size needs to be large enough to accommodate features that rely on having a dedicated thread like [member ProjectSettings.physics/2d/run_on_separate_thread] or [member ProjectSettings.rendering/driver/threads/thread_model]. In general, it is best to ensure that this is at least [code]4[/code] and is at least [code]2[/code] or [code]3[/code] less than [member threads/emscripten_pool_size].
 		</member>
 		<member name="variant/extensions_support" type="bool" setter="" getter="">
 			If [code]true[/code] enables [GDExtension] support for this web build.

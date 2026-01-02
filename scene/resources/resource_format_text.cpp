@@ -194,6 +194,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			int name = -1;
 			int instance = -1;
 			int index = -1;
+			int unique_id = Node::UNIQUE_SCENE_ID_UNASSIGNED;
+
 			//int base_scene=-1;
 
 			if (next_tag.fields.has("name")) {
@@ -202,8 +204,14 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("parent")) {
 				NodePath np = next_tag.fields["parent"];
-				np.prepend_period(); //compatible to how it manages paths internally
-				parent = packed_scene->get_state()->add_node_path(np);
+				PackedInt32Array np_id;
+				if (next_tag.fields.has("parent_id_path")) {
+					np_id = next_tag.fields["parent_id_path"];
+				}
+				parent = packed_scene->get_state()->add_node_path(np, np_id);
+			}
+			if (next_tag.fields.has("unique_id")) {
+				unique_id = next_tag.fields["unique_id"];
 			}
 
 			if (next_tag.fields.has("type")) {
@@ -246,7 +254,11 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			}
 
 			if (next_tag.fields.has("owner")) {
-				owner = packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
+				PackedInt32Array np_id;
+				if (next_tag.fields.has("owner_uid_path")) {
+					np_id = next_tag.fields["owner_uid_path"];
+				}
+				owner = packed_scene->get_state()->add_node_path(next_tag.fields["owner"], np_id);
 			} else {
 				if (parent != -1 && !(type == SceneState::TYPE_INSTANTIATED && instance == -1)) {
 					owner = 0; //if no owner, owner is root
@@ -257,7 +269,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				index = next_tag.fields["index"];
 			}
 
-			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, index);
+			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, index, unique_id);
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];
@@ -327,6 +339,16 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			int unbinds = 0;
 			Array binds;
 
+			PackedInt32Array from_id;
+			if (next_tag.fields.has("from_uid_path")) {
+				from_id = next_tag.fields["from_uid_path"];
+			}
+
+			PackedInt32Array to_id;
+			if (next_tag.fields.has("to_uid_path")) {
+				to_id = next_tag.fields["to_uid_path"];
+			}
+
 			if (next_tag.fields.has("flags")) {
 				flags = next_tag.fields["flags"];
 			}
@@ -345,8 +367,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			}
 
 			packed_scene->get_state()->add_connection(
-					packed_scene->get_state()->add_node_path(from.simplified()),
-					packed_scene->get_state()->add_node_path(to.simplified()),
+					packed_scene->get_state()->add_node_path(from.simplified(), from_id),
+					packed_scene->get_state()->add_node_path(to.simplified(), to_id),
 					packed_scene->get_state()->add_name(signal),
 					packed_scene->get_state()->add_name(method),
 					flags,
@@ -396,9 +418,46 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 	}
 }
 
+void ResourceLoaderText::_count_resources() {
+	resources_total = 0;
+	resource_current = 0;
+
+	// Save current file position to restore after counting.
+	uint64_t original_pos = f->get_position();
+
+	// Seek to beginning to count all resources.
+	f->seek(0);
+
+	bool has_main_resource = false;
+	while (!f->eof_reached()) {
+		String line = f->get_line().strip_edges();
+
+		// Only count resources that contribute to progress
+		// (ext_resources are loaded asynchronously and don't count).
+		// Note: nodes are all parsed together as part of the main resource (PackedScene),
+		// so they only contribute 1 to the progress count, not one per node.
+		if (line.begins_with("[sub_resource ")) {
+			resources_total++;
+		} else if (line.begins_with("[resource]") || line.begins_with("[node ")) {
+			// Main resource or scene with nodes - only count once.
+			if (!has_main_resource) {
+				resources_total++;
+				has_main_resource = true;
+			}
+		}
+	}
+
+	// Restore original file position.
+	f->seek(original_pos);
+}
+
 Error ResourceLoaderText::load() {
 	if (error != OK) {
 		return error;
+	}
+
+	if (progress) {
+		_count_resources();
 	}
 
 	while (true) {
@@ -478,8 +537,6 @@ Error ResourceLoaderText::load() {
 			_printerr();
 			return error;
 		}
-
-		resource_current++;
 	}
 
 #ifdef TOOLS_ENABLED
@@ -488,10 +545,6 @@ Error ResourceLoaderText::load() {
 		Resource::set_resource_id_for_path(local_path, E.value.path, E.key);
 	}
 #endif
-
-	//these are the ones that count
-	resources_total -= resource_current;
-	resource_current = 0;
 
 	while (true) {
 		if (next_tag.name != "sub_resource") {
@@ -979,13 +1032,13 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 				}
 
 				if (is_scene) {
-					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(format_version) + uid_text + "]\n");
+					fw->store_line("[gd_scene format=" + itos(format_version) + uid_text + "]\n");
 				} else {
 					String script_res_text;
 					if (!script_class.is_empty()) {
 						script_res_text = "script_class=\"" + script_class + "\" ";
 					}
-					fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(format_version) + uid_text + "]\n");
+					fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "format=" + itos(format_version) + uid_text + "]\n");
 				}
 			}
 
@@ -1076,7 +1129,6 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 	stream.f = f;
 	is_scene = false;
 	ignore_resource_parsing = false;
-	resource_current = 0;
 
 	VariantParser::Tag tag;
 	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
@@ -1127,12 +1179,6 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 		res_uid = ResourceUID::get_singleton()->text_to_id(tag.fields["uid"]);
 	} else {
 		res_uid = ResourceUID::INVALID_ID;
-	}
-
-	if (tag.fields.has("load_steps")) {
-		resources_total = tag.fields["load_steps"];
-	} else {
-		resources_total = 0;
 	}
 
 	if (!p_skip_first_tag) {
@@ -1466,7 +1512,7 @@ void ResourceFormatLoaderText::get_classes_used(const String &p_path, HashSet<St
 }
 
 String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
-	String ext = p_path.get_extension().to_lower();
+	const String ext = p_path.get_extension().to_lower();
 	if (ext == "tscn") {
 		return "PackedScene";
 	} else if (ext != "tres") {
@@ -1488,8 +1534,7 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 }
 
 String ResourceFormatLoaderText::get_resource_script_class(const String &p_path) const {
-	String ext = p_path.get_extension().to_lower();
-	if (ext != "tres") {
+	if (!p_path.has_extension("tres")) {
 		return String();
 	}
 
@@ -1507,8 +1552,7 @@ String ResourceFormatLoaderText::get_resource_script_class(const String &p_path)
 }
 
 ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path) const {
-	String ext = p_path.get_extension().to_lower();
-
+	const String ext = p_path.get_extension().to_lower();
 	if (ext != "tscn" && ext != "tres") {
 		return ResourceUID::INVALID_ID;
 	}
@@ -1754,11 +1798,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 		}
 
-		int load_steps = saved_resources.size() + external_resources.size();
-
-		if (load_steps > 1) {
-			title += "load_steps=" + itos(load_steps) + " ";
-		}
 		title += "format=" + itos(use_compat ? ResourceLoaderText::FORMAT_VERSION_COMPAT : ResourceLoaderText::FORMAT_VERSION) + "";
 
 		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(local_path, true);
@@ -1963,7 +2002,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			StringName type = state->get_node_type(i);
 			StringName name = state->get_node_name(i);
 			int index = state->get_node_index(i);
-			NodePath path = state->get_node_path(i, true);
+			int unique_id = state->get_node_unique_id(i);
+			NodePath parent_path = state->get_node_path(i, true);
+			PackedInt32Array parent_id_path = state->get_node_parent_id_path(i);
+			PackedInt32Array owner_id_path = state->get_node_owner_id_path(i);
 			NodePath owner = state->get_node_owner_path(i);
 			Ref<PackedScene> instance = state->get_node_instance(i);
 			String instance_placeholder = state->get_node_instance_placeholder(i);
@@ -1975,14 +2017,25 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			if (type != StringName()) {
 				header += " type=\"" + String(type) + "\"";
 			}
-			if (path != NodePath()) {
-				header += " parent=\"" + String(path.simplified()).c_escape() + "\"";
+			if (parent_path != NodePath()) {
+				header += " parent=\"" + String(parent_path.simplified()).c_escape() + "\"";
+				if (parent_id_path.size()) {
+					header += " parent_id_path=" + Variant(parent_id_path).get_construct_string();
+				}
 			}
+
 			if (owner != NodePath() && owner != NodePath(".")) {
 				header += " owner=\"" + String(owner.simplified()).c_escape() + "\"";
+				if (owner_id_path.size()) {
+					header += " owner_uid_path=" + Variant(owner_id_path).get_construct_string();
+				}
 			}
 			if (index >= 0) {
 				header += " index=\"" + itos(index) + "\"";
+			}
+
+			if (unique_id != Node::UNIQUE_SCENE_ID_UNASSIGNED) {
+				header += " unique_id=" + itos(unique_id) + "";
 			}
 
 			if (deferred_node_paths.size()) {
@@ -2050,6 +2103,20 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				connstr += " flags=" + itos(flags);
 			}
 
+			{
+				PackedInt32Array from_idp = state->get_connection_source_id_path(i);
+				if (from_idp.size()) {
+					connstr += " from_uid_path=" + Variant(from_idp).get_construct_string();
+				}
+			}
+
+			{
+				PackedInt32Array to_idp = state->get_connection_target_id_path(i);
+				if (to_idp.size()) {
+					connstr += " to_uid_path=" + Variant(to_idp).get_construct_string();
+				}
+			}
+
 			int unbinds = state->get_connection_unbinds(i);
 			if (unbinds > 0) {
 				connstr += " unbinds=" + itos(unbinds);
@@ -2091,14 +2158,14 @@ Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid) {
 
 	fw = FileAccess::open(local_path + ".uidren", FileAccess::WRITE);
 	if (is_scene) {
-		fw->store_string("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+		fw->store_string("[gd_scene format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
 	} else {
 		String script_res_text;
 		if (!script_class.is_empty()) {
 			script_res_text = "script_class=\"" + script_class + "\" ";
 		}
 
-		fw->store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+		fw->store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
 	}
 
 	uint8_t c = f->get_8();

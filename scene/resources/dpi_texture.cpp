@@ -155,7 +155,7 @@ void DPITexture::_remove_scale(double p_scale) {
 	RID *rid = texture_cache.getptr(p_scale);
 	if (rid) {
 		if (rid->is_valid()) {
-			RenderingServer::get_singleton()->free(*rid);
+			RenderingServer::get_singleton()->free_rid(*rid);
 		}
 		texture_cache.erase(p_scale);
 	}
@@ -204,14 +204,14 @@ RID DPITexture::_load_at_scale(double p_scale, bool p_set_size) const {
 	}
 
 	Size2 current_size = size;
-	if (p_set_size) {
-		size.x = img->get_width();
-		base_size.x = img->get_width();
+	if (p_set_size || size.is_zero_approx()) {
+		size.x = img->get_width() / p_scale;
+		base_size.x = size.x;
 		if (size_override.x != 0) {
 			size.x = size_override.x;
 		}
-		size.y = img->get_height();
-		base_size.y = img->get_height();
+		size.y = img->get_height() / p_scale;
+		base_size.y = size.y;
 		if (size_override.y != 0) {
 			size.y = size_override.y;
 		}
@@ -230,12 +230,12 @@ RID DPITexture::_load_at_scale(double p_scale, bool p_set_size) const {
 void DPITexture::_clear() {
 	for (KeyValue<double, RID> &tx : texture_cache) {
 		if (tx.value.is_valid()) {
-			RenderingServer::get_singleton()->free(tx.value);
+			RenderingServer::get_singleton()->free_rid(tx.value);
 		}
 	}
 	texture_cache.clear();
 	if (base_texture.is_valid()) {
-		RenderingServer::get_singleton()->free(base_texture);
+		RenderingServer::get_singleton()->free_rid(base_texture);
 	}
 	base_texture = RID();
 	alpha_cache.unref();
@@ -274,19 +274,16 @@ bool DPITexture::has_alpha() const {
 }
 
 RID DPITexture::get_scaled_rid() const {
-	double scale = 1.0;
-	CanvasItem *ci = CanvasItem::get_current_item_drawn();
-	if (ci) {
-		Viewport *vp = ci->get_viewport();
-		if (vp) {
-			scale = vp->get_oversampling();
-		}
+	double scale = TextServer::get_current_drawn_item_oversampling();
+	if (scale == 0.0) {
+		scale = 1.0;
 	}
 	return _ensure_scale(scale);
 }
 
 void DPITexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, size), get_scaled_rid(), false, p_modulate, p_transpose);
+	RID rid = get_scaled_rid(); // Note: call `get_scaled_rid` before using `size` to ensure it is loaded.
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, size), rid, false, p_modulate, p_transpose);
 }
 
 void DPITexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {

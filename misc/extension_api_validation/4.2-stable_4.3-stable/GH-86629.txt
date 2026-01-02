@@ -1,0 +1,9 @@
+GH-86629
+--------
+Validate extension JSON: Error: Field 'classes/Animation/methods/position_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/rotation_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/scale_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/blend_shape_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/value_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument to track_interpolate to treat playing backward correctly. Compatibility method registered.

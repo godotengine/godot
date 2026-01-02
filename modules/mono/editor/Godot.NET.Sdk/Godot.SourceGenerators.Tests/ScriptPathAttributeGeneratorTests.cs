@@ -1,9 +1,10 @@
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.CodeAnalysis.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
@@ -22,7 +23,7 @@ public class ScriptPathAttributeGeneratorTests
     }
 
     [Fact]
-    public async void ScriptBoilerplate()
+    public async Task ScriptBoilerplate()
     {
         var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
             new string[] { "ScriptBoilerplate.cs" },
@@ -33,7 +34,7 @@ public class ScriptPathAttributeGeneratorTests
     }
 
     [Fact]
-    public async void FooBar()
+    public async Task FooBar()
     {
         var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
             new string[] { "Foo.cs", "Bar.cs" },
@@ -44,7 +45,7 @@ public class ScriptPathAttributeGeneratorTests
     }
 
     [Fact]
-    public async void Generic()
+    public async Task Generic()
     {
         var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
             new string[] { "Generic.cs" },
@@ -55,7 +56,7 @@ public class ScriptPathAttributeGeneratorTests
     }
 
     [Fact]
-    public async void GenericMultipleClassesSameName()
+    public async Task GenericMultipleClassesSameName()
     {
         var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
             Array.Empty<string>(),
@@ -67,7 +68,7 @@ public class ScriptPathAttributeGeneratorTests
     }
 
     [Fact]
-    public async void NamespaceMultipleClassesSameName()
+    public async Task NamespaceMultipleClassesSameName()
     {
         var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
             Array.Empty<string>(),

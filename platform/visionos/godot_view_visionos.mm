@@ -76,5 +76,7 @@ GODOT_CLANG_WARNING_POP
 @end
 
 GDTView *GDTViewCreate() {
-	return [GDTViewVisionOS new];
+	GDTViewVisionOS *view = [GDTViewVisionOS new];
+	view.preferredFrameRate = 90;
+	return view;
 }

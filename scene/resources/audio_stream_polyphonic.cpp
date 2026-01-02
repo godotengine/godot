@@ -31,7 +31,7 @@
 #include "audio_stream_polyphonic.h"
 #include "audio_stream_polyphonic.compat.inc"
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 constexpr uint64_t ID_MASK = 0xFFFFFFFF;
 constexpr uint64_t INDEX_SHIFT = 32;
@@ -178,7 +178,7 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 
 		while (todo) {
 			int to_mix = MIN(todo, int(INTERNAL_BUFFER_LEN));
-			int mixed = s.stream_playback->mix(internal_buffer, s.pitch_scale, to_mix);
+			int mixed = s.stream_playback->mix(internal_buffer, p_rate_scale * s.pitch_scale, to_mix);
 
 			for (int i = 0; i < to_mix; i++) {
 				p_buffer[offset + i] += internal_buffer[i] * volume;
@@ -255,7 +255,7 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 				sp->bus = p_bus;
 
 				if (streams[i].stream_playback->get_sample_playback().is_valid()) {
-					AudioServer::get_singleton()->stop_playback_stream(sp);
+					AudioServer::get_singleton()->stop_playback_stream(streams[i].stream_playback);
 				}
 
 				streams[i].stream_playback->set_sample_playback(sp);

@@ -19,11 +19,11 @@
 				Multiplies the current scale by the [param ratio] vector.
 			</description>
 		</method>
-		<method name="get_angle_to" qualifiers="const">
+		<method name="get_angle_to" qualifiers="const" keywords="look_at">
 			<return type="float" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
-				Returns the angle between the node and the [param point] in radians.
+				Returns the angle between the node and the [param point] in radians. See also [method look_at].
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/node2d_get_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
@@ -45,31 +45,31 @@
 			<return type="void" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
-				Rotates the node so that its local +X axis points towards the [param point], which is expected to use global coordinates.
+				Rotates the node so that its local +X axis points towards the [param point], which is expected to use global coordinates. This method is a combination of both [method rotate] and [method get_angle_to].
 				[param point] should not be the same as the node's position, otherwise the node always looks to the right.
 			</description>
 		</method>
-		<method name="move_local_x">
+		<method name="move_local_x" keywords="translate_object_local">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<param index="1" name="scaled" type="bool" default="false" />
 			<description>
-				Applies a local translation on the node's X axis based on the [method Node._process]'s [param delta]. If [param scaled] is [code]false[/code], normalizes the movement.
+				Applies a local translation on the node's X axis with the amount specified in [param delta]. If [param scaled] is [code]false[/code], normalizes the movement to occur independently of the node's [member scale].
 			</description>
 		</method>
-		<method name="move_local_y">
+		<method name="move_local_y" keywords="translate_object_local">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<param index="1" name="scaled" type="bool" default="false" />
 			<description>
-				Applies a local translation on the node's Y axis based on the [method Node._process]'s [param delta]. If [param scaled] is [code]false[/code], normalizes the movement.
+				Applies a local translation on the node's Y axis with the amount specified in [param delta]. If [param scaled] is [code]false[/code], normalizes the movement to occur independently of the node's [member scale].
 			</description>
 		</method>
 		<method name="rotate">
 			<return type="void" />
 			<param index="0" name="radians" type="float" />
 			<description>
-				Applies a rotation to the node, in radians, starting from its current rotation.
+				Applies a rotation to the node, in radians, starting from its current rotation. This is equivalent to [code]rotation += radians[/code].
 			</description>
 		</method>
 		<method name="to_global" qualifiers="const">
@@ -90,7 +90,7 @@
 			<return type="void" />
 			<param index="0" name="offset" type="Vector2" />
 			<description>
-				Translates the node by the given [param offset] in local coordinates.
+				Translates the node by the given [param offset] in local coordinates. This is equivalent to [code]position += offset[/code].
 			</description>
 		</method>
 	</methods>

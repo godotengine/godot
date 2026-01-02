@@ -6,7 +6,7 @@
 
 // Jolt library version
 #define JPH_VERSION_MAJOR 5
-#define JPH_VERSION_MINOR 3
+#define JPH_VERSION_MINOR 4
 #define JPH_VERSION_PATCH 0
 
 // Determine which features the library was compiled with
@@ -437,6 +437,11 @@
 #define JPH_SUPPRESS_WARNINGS_STD_END															\
 	JPH_SUPPRESS_WARNING_POP
 
+// MSVC STL requires _HAS_EXCEPTIONS=0 if exceptions are turned off
+#if defined(JPH_COMPILER_MSVC) && (!defined(__cpp_exceptions) || !__cpp_exceptions) && !defined(_HAS_EXCEPTIONS)
+	#define _HAS_EXCEPTIONS 0
+#endif
+
 // Standard C++ includes
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <float.h>
@@ -448,7 +453,8 @@ JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <functional>
 #include <algorithm>
 #include <cstdint>
-#ifdef JPH_COMPILER_MSVC
+#include <type_traits>
+#if defined(JPH_COMPILER_MSVC) || (defined(JPH_COMPILER_CLANG) && defined(_MSC_VER)) // MSVC or clang-cl
 	#include <malloc.h> // for alloca
 #endif
 #if defined(JPH_USE_SSE)

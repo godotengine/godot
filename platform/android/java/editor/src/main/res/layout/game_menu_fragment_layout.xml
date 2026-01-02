@@ -18,12 +18,12 @@
 			android:orientation="horizontal">
 
 			<ImageButton
-				android:id="@+id/game_menu_pause_button"
+				android:id="@+id/game_menu_suspend_button"
 				style="?android:attr/borderlessButtonStyle"
 				android:layout_width="48dp"
 				android:layout_height="48dp"
 				android:background="@drawable/game_menu_button_bg"
-				android:src="@drawable/pause_play_selector" />
+				android:src="@drawable/suspend" />
 
 			<ImageButton
 				android:id="@+id/game_menu_next_frame_button"
@@ -32,6 +32,22 @@
 				android:layout_height="48dp"
 				android:background="@drawable/game_menu_button_bg"
 				android:src="@drawable/next_frame" />
+
+			<Button
+				android:id="@+id/game_menu_set_time_scale_button"
+				style="?android:attr/borderlessButtonStyle"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:background="@drawable/game_menu_button_bg"
+				android:text="1.0x"/>
+
+			<ImageButton
+				android:id="@+id/game_menu_reset_time_scale_button"
+				style="?android:attr/borderlessButtonStyle"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:background="@drawable/game_menu_button_bg"
+				android:src="@drawable/reset" />
 
 			<View
 				android:layout_width="1dp"

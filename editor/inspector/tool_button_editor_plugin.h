@@ -37,6 +37,7 @@ class EditorInspectorToolButtonPlugin : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorToolButtonPlugin, EditorInspectorPlugin);
 
 	void _call_action(const Variant &p_object, const StringName &p_property);
+	void _invoke_callable(const Callable &p_callable);
 
 public:
 	virtual bool can_handle(Object *p_object) override;

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/config_file.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/control.h"
@@ -39,6 +40,7 @@ class Node3D;
 class Button;
 class PopupMenu;
 class EditorDebuggerPlugin;
+class EditorDock;
 class EditorExport;
 class EditorExportPlugin;
 class EditorExportPlatform;
@@ -65,6 +67,8 @@ class EditorPlugin : public Node {
 	String plugin_version;
 
 #ifndef DISABLE_DEPRECATED
+	static inline HashMap<Control *, EditorDock *> legacy_docks;
+
 	void _editor_project_settings_changed();
 #endif
 
@@ -85,15 +89,17 @@ public:
 	};
 
 	enum DockSlot {
-		DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX
+		DOCK_SLOT_NONE = DockConstants::DOCK_SLOT_NONE,
+		DOCK_SLOT_LEFT_UL = DockConstants::DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL = DockConstants::DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR = DockConstants::DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR = DockConstants::DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL = DockConstants::DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL = DockConstants::DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR = DockConstants::DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR = DockConstants::DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_BOTTOM = DockConstants::DOCK_SLOT_BOTTOM,
+		DOCK_SLOT_MAX = DockConstants::DOCK_SLOT_MAX
 	};
 
 	enum AfterGUIInput {
@@ -133,6 +139,7 @@ protected:
 	GDVIRTUAL1(_set_window_layout, Ref<ConfigFile>)
 	GDVIRTUAL1(_get_window_layout, Ref<ConfigFile>)
 	GDVIRTUAL0R(bool, _build)
+	GDVIRTUAL2RC(Vector<String>, _run_scene, String, Vector<String>)
 	GDVIRTUAL0(_enable_plugin)
 	GDVIRTUAL0(_disable_plugin)
 
@@ -140,6 +147,13 @@ protected:
 	Button *_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title);
 	void _add_control_to_dock_compat_88081(DockSlot p_slot, Control *p_control);
 	static void _bind_compatibility_methods();
+
+	void add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut = nullptr);
+	void remove_control_from_docks(Control *p_control);
+	void set_dock_tab_icon(Control *p_control, const Ref<Texture2D> &p_icon);
+
+	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut = nullptr);
+	void remove_control_from_bottom_panel(Control *p_control);
 #endif
 
 public:
@@ -147,12 +161,9 @@ public:
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	void remove_control_from_container(CustomControlContainer p_location, Control *p_control);
-	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut = nullptr);
-	void add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut = nullptr);
-	void remove_control_from_docks(Control *p_control);
-	void remove_control_from_bottom_panel(Control *p_control);
 
-	void set_dock_tab_icon(Control *p_control, const Ref<Texture2D> &p_icon);
+	void add_dock(EditorDock *p_dock);
+	void remove_dock(EditorDock *p_dock);
 
 	void add_tool_menu_item(const String &p_name, const Callable &p_callable);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
@@ -202,6 +213,7 @@ public:
 	virtual void get_window_layout(Ref<ConfigFile> p_layout);
 	virtual void edited_scene_changed() {} // if changes are pending in editor, apply them
 	virtual bool build(); // builds with external tools. Returns true if safe to continue running scene.
+	virtual void run_scene(const String &p_scene, Vector<String> &r_args);
 
 	EditorInterface *get_editor_interface();
 	ScriptCreateDialog *get_script_create_dialog();

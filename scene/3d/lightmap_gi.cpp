@@ -219,7 +219,7 @@ LightmapGIData::ShadowmaskMode LightmapGIData::get_shadowmask_mode() const {
 	return (ShadowmaskMode)RS::get_singleton()->lightmap_get_shadowmask_mode(lightmap);
 }
 
-void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure) {
+void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure, uint32_t p_lightprobe_hash) {
 	if (p_points.size()) {
 		int pc = p_points.size();
 		ERR_FAIL_COND(pc * 9 != p_point_sh.size());
@@ -235,6 +235,7 @@ void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, con
 	}
 	RS::get_singleton()->lightmap_set_baked_exposure_normalization(lightmap, p_baked_exposure);
 	baked_exposure = p_baked_exposure;
+	lightprobe_hash = p_lightprobe_hash;
 	interior = p_interior;
 	bounds = p_bounds;
 }
@@ -253,6 +254,10 @@ PackedInt32Array LightmapGIData::get_capture_tetrahedra() const {
 
 PackedInt32Array LightmapGIData::get_capture_bsp_tree() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_bsp_tree(lightmap);
+}
+
+uint32_t LightmapGIData::get_lightprobe_hash() const {
+	return lightprobe_hash;
 }
 
 AABB LightmapGIData::get_capture_bounds() const {
@@ -275,7 +280,12 @@ void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("sh"));
 	ERR_FAIL_COND(!p_data.has("interior"));
 	ERR_FAIL_COND(!p_data.has("baked_exposure"));
-	set_capture_data(p_data["bounds"], p_data["interior"], p_data["points"], p_data["sh"], p_data["tetrahedra"], p_data["bsp"], p_data["baked_exposure"]);
+
+	uint32_t phash = 0;
+	if (p_data.has("lightprobe_hash")) { // Older versions will not have it.
+		phash = p_data["lightprobe_hash"];
+	}
+	set_capture_data(p_data["bounds"], p_data["interior"], p_data["points"], p_data["sh"], p_data["tetrahedra"], p_data["bsp"], p_data["baked_exposure"], phash);
 }
 
 Dictionary LightmapGIData::_get_probe_data() const {
@@ -287,6 +297,7 @@ Dictionary LightmapGIData::_get_probe_data() const {
 	d["sh"] = get_capture_sh();
 	d["interior"] = is_interior();
 	d["baked_exposure"] = get_baked_exposure();
+	d["lightprobe_hash"] = lightprobe_hash;
 	return d;
 }
 
@@ -365,7 +376,7 @@ LightmapGIData::LightmapGIData() {
 
 LightmapGIData::~LightmapGIData() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(lightmap);
+	RS::get_singleton()->free_rid(lightmap);
 }
 
 ///////////////////////////
@@ -468,7 +479,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 	}
 }
 
-int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const {
+int LightmapGI::_bsp_get_simplex_side(const LocalVector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const {
 	int over = 0;
 	int under = 0;
 	const BSPSimplex &s = p_simplices[p_simplex];
@@ -498,7 +509,7 @@ int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const Loc
 
 //#define DEBUG_BSP
 
-int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes) {
+int32_t LightmapGI::_compute_bsp_tree(const LocalVector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes) {
 	ERR_FAIL_COND_V(p_simplex_indices.size() < 2, -1);
 
 	int32_t node_index = (int32_t)bsp_nodes.size();
@@ -1332,34 +1343,46 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		gi_data->add_user(np, uv_scale, slice_index, subindex);
 	}
 
-	{
-		// Create tetrahedrons.
-		Vector<Vector3> points;
-		Vector<Color> sh;
-		points.resize(lightmapper->get_bake_probe_count());
-		sh.resize(lightmapper->get_bake_probe_count() * 9);
-		for (int i = 0; i < lightmapper->get_bake_probe_count(); i++) {
-			points.write[i] = lightmapper->get_bake_probe_point(i);
-			Vector<Color> colors = lightmapper->get_bake_probe_sh(i);
-			ERR_CONTINUE(colors.size() != 9);
-			for (int j = 0; j < 9; j++) {
-				sh.write[i * 9 + j] = colors[j];
-			}
-		}
+	int probe_count = lightmapper->get_bake_probe_count();
 
+	// Probe SH may change between bakes.
+	LocalVector<Color> probe_sh;
+	LocalVector<Vector3> probe_points;
+	probe_sh.resize(probe_count * 9);
+	probe_points.resize(probe_count);
+
+	uint32_t bake_probe_hash = HASH_MURMUR3_SEED;
+	for (int i = 0; i < probe_count; i++) {
+		// Calculate the hash from probe positions.
+		Vector3 point = lightmapper->get_bake_probe_point(i);
+		bake_probe_hash = hash_murmur3_one_double(point.x, bake_probe_hash);
+		bake_probe_hash = hash_murmur3_one_double(point.y, bake_probe_hash);
+		bake_probe_hash = hash_murmur3_one_double(point.z, bake_probe_hash);
+
+		probe_points[i] = point;
+		Vector<Color> colors = lightmapper->get_bake_probe_sh(i);
+		ERR_CONTINUE(colors.size() != 9);
+		for (int j = 0; j < 9; j++) {
+			probe_sh[i * 9 + j] = colors[j];
+		}
+	}
+
+	// If the probe hash doesn't match, build the BSP tree from scratch.
+	if (bake_probe_hash != gi_data->get_lightprobe_hash()) {
 		// Obtain solved simplices.
 		if (p_bake_step) {
 			p_bake_step(0.8, RTR("Generating Probe Volumes"), p_bake_userdata, true);
 		}
 
-		Vector<Delaunay3D::OutputSimplex> solved_simplices = Delaunay3D::tetrahedralize(points);
+		Vector<Delaunay3D::OutputSimplex> solved_simplices = Delaunay3D::tetrahedralize(Vector<Vector3>(probe_points));
+		int64_t simplex_count = solved_simplices.size();
 
 		LocalVector<BSPSimplex> bsp_simplices;
 		LocalVector<Plane> bsp_planes;
 		LocalVector<int32_t> bsp_simplex_indices;
 		PackedInt32Array tetrahedrons;
 
-		for (int i = 0; i < solved_simplices.size(); i++) {
+		for (int i = 0; i < simplex_count; i++) {
 			//Prepare a special representation of the simplex, which uses a BSP Tree
 			BSPSimplex bsp_simplex;
 			for (int j = 0; j < 4; j++) {
@@ -1372,9 +1395,9 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					{ 0, 1, 3 },
 					{ 1, 2, 3 }
 				};
-				Vector3 a = points[solved_simplices[i].points[face_order[j][0]]];
-				Vector3 b = points[solved_simplices[i].points[face_order[j][1]]];
-				Vector3 c = points[solved_simplices[i].points[face_order[j][2]]];
+				Vector3 a = probe_points[solved_simplices[i].points[face_order[j][0]]];
+				Vector3 b = probe_points[solved_simplices[i].points[face_order[j][1]]];
+				Vector3 c = probe_points[solved_simplices[i].points[face_order[j][2]]];
 
 				//store planes in an array, but ensure they are reused, to speed up processing
 
@@ -1409,7 +1432,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			for (uint32_t i = 0; i < bsp_simplices.size(); i++) {
 				f->store_line("o Simplex" + itos(i));
 				for (int j = 0; j < 4; j++) {
-					f->store_line(vformat("v %f %f %f", points[bsp_simplices[i].vertices[j]].x, points[bsp_simplices[i].vertices[j]].y, points[bsp_simplices[i].vertices[j]].z));
+					f->store_line(vformat("v %f %f %f", probe_points[bsp_simplices[i].vertices[j]].x, probe_points[bsp_simplices[i].vertices[j]].y, probe_points[bsp_simplices[i].vertices[j]].z));
 				}
 				static const int face_order[4][3] = {
 					{ 1, 2, 3 },
@@ -1436,7 +1459,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			p_bake_step(0.9, RTR("Generating Probe Acceleration Structures"), p_bake_userdata, true);
 		}
 
-		_compute_bsp_tree(points, bsp_planes, planes_tested, bsp_simplices, bsp_simplex_indices, bsp_nodes);
+		// Compute a BSP tree of the simplices, so it's easy to find the exact one.
+		_compute_bsp_tree(probe_points, bsp_planes, planes_tested, bsp_simplices, bsp_simplex_indices, bsp_nodes);
 
 		PackedInt32Array bsp_array;
 		bsp_array.resize(bsp_nodes.size() * 6); // six 32 bits values used for each BSP node
@@ -1460,10 +1484,9 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 #endif
 		}
 
-		/* Obtain the colors from the images, they will be re-created as cubemaps on the server, depending on the driver */
-
-		gi_data->set_capture_data(bounds, interior, points, sh, tetrahedrons, bsp_array, exposure_normalization);
-		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
+		gi_data->set_capture_data(bounds, interior, Vector<Vector3>(probe_points), Vector<Color>(probe_sh), tetrahedrons, bsp_array, exposure_normalization, bake_probe_hash);
+	} else {
+		gi_data->set_capture_data(bounds, interior, Vector<Vector3>(probe_points), Vector<Color>(probe_sh), gi_data->get_capture_tetrahedra(), gi_data->get_capture_bsp_tree(), exposure_normalization, bake_probe_hash);
 	}
 
 	gi_data->set_path(p_image_data_path, true);

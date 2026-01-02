@@ -35,7 +35,7 @@
 
 #include "nav_mesh_generator_3d.h"
 
-using namespace NavigationUtilities;
+using namespace NavigationDefaults3D;
 
 /// Creates a struct for each function and a function that once called creates
 /// an instance of that struct with the submitted parameters.
@@ -1227,7 +1227,7 @@ String GodotNavigationServer3D::get_baking_navigation_mesh_state_msg(Ref<Navigat
 #endif // _3D_DISABLED
 }
 
-COMMAND_1(free, RID, p_object) {
+COMMAND_1(free_rid, RID, p_object) {
 	if (map_owner.owns(p_object)) {
 		NavMap3D *map = map_owner.get_or_null(p_object);
 

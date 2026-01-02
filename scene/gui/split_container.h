@@ -37,7 +37,12 @@ class TextureRect;
 class SplitContainerDragger : public Control {
 	GDCLASS(SplitContainerDragger, Control);
 	friend class SplitContainer;
+
 	Rect2 split_bar_rect;
+	TextureRect *touch_dragger = nullptr;
+
+	void _touch_dragger_mouse_exited();
+	void _touch_dragger_gui_input(const Ref<InputEvent> &p_event);
 
 protected:
 	void _notification(int p_what);
@@ -50,11 +55,17 @@ protected:
 private:
 	bool dragging = false;
 	int drag_from = 0;
-	int drag_ofs = 0;
+	int start_drag_split_offset = 0;
 	bool mouse_inside = false;
 
 public:
+	int dragger_index = -1;
+
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
+	void set_touch_dragger_enabled(bool p_enabled);
+	void update_touch_dragger();
+	bool is_touch_dragger_enabled() const;
 
 	SplitContainerDragger();
 };
@@ -71,21 +82,26 @@ public:
 	};
 
 private:
-	int show_drag_area = false;
+	bool show_drag_area = false;
 	int drag_area_margin_begin = 0;
 	int drag_area_margin_end = 0;
 	int drag_area_offset = 0;
-	int split_offset = 0;
-	int computed_split_offset = 0;
+
+	PackedInt32Array split_offsets;
+	LocalVector<int> default_dragger_positions;
+	LocalVector<int> dragger_positions;
+	LocalVector<Control *> valid_children;
+	LocalVector<SplitContainerDragger *> dragging_area_controls;
+
 	bool vertical = false;
 	bool collapsed = false;
 	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
 	bool dragging_enabled = true;
-
-	SplitContainerDragger *dragging_area_control = nullptr;
+	bool split_offset_pending = false;
+	bool can_use_desired_sizes = false;
+	bool initialized = false;
 
 	bool touch_dragger_enabled = false;
-	TextureRect *touch_dragger = nullptr;
 
 	struct ThemeCache {
 		Color touch_dragger_color;
@@ -106,24 +122,44 @@ private:
 
 	Ref<Texture2D> _get_grabber_icon() const;
 	Ref<Texture2D> _get_touch_dragger_icon() const;
-	void _touch_dragger_mouse_exited();
-	void _touch_dragger_gui_input(const Ref<InputEvent> &p_event);
-	void _compute_split_offset(bool p_clamp);
+	Point2i _get_valid_range(int p_dragger_index) const;
+
+	PackedInt32Array _get_desired_sizes() const;
+	void _set_desired_sizes(const PackedInt32Array &p_desired_sizes, int p_priority_index = -1);
+
+	void _update_default_dragger_positions();
+	void _update_dragger_positions(int p_clamp_index = -1);
 	int _get_separation() const;
 	void _resort();
-	Control *_get_sortable_child(int p_idx, SortableVisibilityMode p_visibility_mode = SortableVisibilityMode::VISIBLE_IN_TREE) const;
+	void _update_draggers();
+	void _on_child_visibility_changed(Control *p_control);
+	void _add_valid_child(Control *p_control);
+	void _remove_valid_child(Control *p_control);
 
 protected:
 	bool is_fixed = false;
 
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
+
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
+	virtual void move_child_notify(Node *p_child) override;
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _clamp_split_offset_compat_90411();
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
-	void set_split_offset(int p_offset);
-	int get_split_offset() const;
-	void clamp_split_offset();
+	void set_split_offset(int p_offset, int p_index = 0);
+	int get_split_offset(int p_index = 0) const;
+
+	void set_split_offsets(const PackedInt32Array &p_offsets);
+	PackedInt32Array get_split_offsets() const;
+
+	void clamp_split_offset(int p_priority_index = 0);
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed() const;
@@ -154,10 +190,16 @@ public:
 	void set_show_drag_area_enabled(bool p_enabled);
 	bool is_show_drag_area_enabled() const;
 
-	Control *get_drag_area_control() { return dragging_area_control; }
+	TypedArray<Control> get_drag_area_controls();
 
 	void set_touch_dragger_enabled(bool p_enabled);
 	bool is_touch_dragger_enabled() const;
+
+#ifndef DISABLE_DEPRECATED
+	Control *get_drag_area_control() { return dragging_area_controls[0]; }
+	void _set_split_offset_first(int p_offset) { set_split_offset(p_offset); }
+	int _get_split_offset_first() const { return get_split_offset(); }
+#endif
 
 	SplitContainer(bool p_vertical = false);
 };

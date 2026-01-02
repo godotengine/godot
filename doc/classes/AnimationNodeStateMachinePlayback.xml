@@ -40,10 +40,34 @@
 				Returns the playback position within the current animation state.
 			</description>
 		</method>
+		<method name="get_fading_from_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the playback state length of the node from [method get_fading_from_node]. Returns [code]0[/code] if no animation fade is occurring.
+			</description>
+		</method>
 		<method name="get_fading_from_node" qualifiers="const">
 			<return type="StringName" />
 			<description>
 				Returns the starting state of currently fading animation.
+			</description>
+		</method>
+		<method name="get_fading_from_play_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the playback position of the node from [method get_fading_from_node]. Returns [code]0[/code] if no animation fade is occurring.
+			</description>
+		</method>
+		<method name="get_fading_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the length of the current fade animation. Returns [code]0[/code] if no animation fade is occurring.
+			</description>
+		</method>
+		<method name="get_fading_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the playback position of the current fade animation. Returns [code]0[/code] if no animation fade is occurring.
 			</description>
 		</method>
 		<method name="get_travel_path" qualifiers="const">

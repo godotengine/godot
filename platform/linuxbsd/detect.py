@@ -67,7 +67,7 @@ def get_doc_path():
 def get_flags():
     return {
         "arch": detect_arch(),
-        "supported": ["mono"],
+        "supported": ["library", "mono"],
     }
 
 
@@ -144,7 +144,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
-        env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
+        env.Append(CPPDEFINES=["SANITIZERS_ENABLED"])
 
         if env["use_ubsan"]:
             env.Append(
@@ -181,6 +181,9 @@ def configure(env: "SConsEnvironment"):
             env.Append(LINKFLAGS=["-fsanitize=memory"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
+
+    if env["library_type"] == "shared_library":
+        env.Append(CCFLAGS=["-fPIC"])
 
     # LTO
 
@@ -244,6 +247,9 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_enet"]:
         env.ParseConfig("pkg-config libenet --cflags --libs")
+        print_warning(
+            "System-provided ENet has its functionality limited to IPv4 only and no DTLS support, unless patched for Godot."
+        )
 
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
@@ -278,6 +284,9 @@ def configure(env: "SConsEnvironment"):
     if not env["builtin_libwebp"]:
         env.ParseConfig("pkg-config libwebp --cflags --libs")
 
+    if not env["builtin_libjpeg_turbo"]:
+        env.ParseConfig("pkg-config libturbojpeg --cflags --libs")
+
     if not env["builtin_mbedtls"]:
         # mbedTLS only provides a pkgconfig file since 3.6.0, but we still support 2.28.x,
         # so fallback to manually specifying LIBS if it fails.
@@ -298,9 +307,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
     if not env["builtin_recastnavigation"]:
-        # No pkgconfig file so far, hardcode default paths.
-        env.Prepend(CPPEXTPATH=["/usr/include/recastnavigation"])
-        env.Append(LIBS=["Recast"])
+        env.ParseConfig("pkg-config recastnavigation --cflags --libs")
 
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.
@@ -411,7 +418,7 @@ def configure(env: "SConsEnvironment"):
 
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
     if env["use_sowrap"]:
-        env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers"])
+        env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers"])
 
     env.Append(
         CPPDEFINES=[
@@ -473,9 +480,9 @@ def configure(env: "SConsEnvironment"):
                 sys.exit(255)
             env.ParseConfig("pkg-config wayland-egl --cflags --libs")
         else:
-            env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers/wayland/"])
+            env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/wayland/"])
             if env["libdecor"]:
-                env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers/libdecor-0/"])
+                env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/libdecor-0/"])
 
         if env["libdecor"]:
             env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])

@@ -61,6 +61,10 @@ partial class ExportedFields
         /// </summary>
         public new static readonly global::Godot.StringName @_fieldString = "_fieldString";
         /// <summary>
+        /// Cached name for the '_fieldStaticImport' field.
+        /// </summary>
+        public new static readonly global::Godot.StringName @_fieldStaticImport = "_fieldStaticImport";
+        /// <summary>
         /// Cached name for the '_fieldVector2' field.
         /// </summary>
         public new static readonly global::Godot.StringName @_fieldVector2 = "_fieldVector2";
@@ -217,6 +221,10 @@ partial class ExportedFields
         /// </summary>
         public new static readonly global::Godot.StringName @_fieldGodotResourceTexture = "_fieldGodotResourceTexture";
         /// <summary>
+        /// Cached name for the '_fieldGodotResourceTextureWithInitializer' field.
+        /// </summary>
+        public new static readonly global::Godot.StringName @_fieldGodotResourceTextureWithInitializer = "_fieldGodotResourceTextureWithInitializer";
+        /// <summary>
         /// Cached name for the '_fieldStringName' field.
         /// </summary>
         public new static readonly global::Godot.StringName @_fieldStringName = "_fieldStringName";
@@ -303,6 +311,10 @@ partial class ExportedFields
         }
         if (name == PropertyName.@_fieldString) {
             this.@_fieldString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            return true;
+        }
+        if (name == PropertyName.@_fieldStaticImport) {
+            this.@_fieldStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
             return true;
         }
         if (name == PropertyName.@_fieldVector2) {
@@ -461,6 +473,10 @@ partial class ExportedFields
             this.@_fieldGodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
             return true;
         }
+        if (name == PropertyName.@_fieldGodotResourceTextureWithInitializer) {
+            this.@_fieldGodotResourceTextureWithInitializer = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
+            return true;
+        }
         if (name == PropertyName.@_fieldStringName) {
             this.@_fieldStringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
             return true;
@@ -549,6 +565,10 @@ partial class ExportedFields
         }
         if (name == PropertyName.@_fieldString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_fieldString);
+            return true;
+        }
+        if (name == PropertyName.@_fieldStaticImport) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@_fieldStaticImport);
             return true;
         }
         if (name == PropertyName.@_fieldVector2) {
@@ -707,6 +727,10 @@ partial class ExportedFields
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.@_fieldGodotResourceTexture);
             return true;
         }
+        if (name == PropertyName.@_fieldGodotResourceTextureWithInitializer) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.@_fieldGodotResourceTextureWithInitializer);
+            return true;
+        }
         if (name == PropertyName.@_fieldStringName) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(this.@_fieldStringName);
             return true;
@@ -763,6 +787,7 @@ partial class ExportedFields
         properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.@_fieldSingle, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.@_fieldDouble, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@_fieldString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.@_fieldStaticImport, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)5, name: PropertyName.@_fieldVector2, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)6, name: PropertyName.@_fieldVector2I, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)7, name: PropertyName.@_fieldRect2, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
@@ -802,6 +827,7 @@ partial class ExportedFields
         properties.Add(new(type: (global::Godot.Variant.Type)0, name: PropertyName.@_fieldVariant, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)135174, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)24, name: PropertyName.@_fieldGodotObjectOrDerived, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)24, name: PropertyName.@_fieldGodotResourceTexture, hint: (global::Godot.PropertyHint)17, hintString: "Texture", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)24, name: PropertyName.@_fieldGodotResourceTextureWithInitializer, hint: (global::Godot.PropertyHint)17, hintString: "Texture", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)21, name: PropertyName.@_fieldStringName, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)22, name: PropertyName.@_fieldNodePath, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)23, name: PropertyName.@_fieldRid, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));

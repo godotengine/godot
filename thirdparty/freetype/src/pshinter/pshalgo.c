@@ -4,7 +4,7 @@
  *
  *   PostScript hinting algorithm (body).
  *
- * Copyright (C) 2001-2024 by
+ * Copyright (C) 2001-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used
@@ -100,7 +100,7 @@
 
     if ( idx >= table->max_hints )
     {
-      FT_TRACE0(( "psh_hint_table_record: invalid hint index %d\n", idx ));
+      FT_TRACE0(( "psh_hint_table_record: invalid hint index %u\n", idx ));
       return;
     }
 

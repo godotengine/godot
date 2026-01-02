@@ -62,10 +62,12 @@ void JavaClass::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_java_class_name"), &JavaClass::get_java_class_name);
 	ClassDB::bind_method(D_METHOD("get_java_method_list"), &JavaClass::get_java_method_list);
 	ClassDB::bind_method(D_METHOD("get_java_parent_class"), &JavaClass::get_java_parent_class);
+	ClassDB::bind_method(D_METHOD("has_java_method", "method"), &JavaClass::has_java_method);
 }
 
 void JavaObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_java_class"), &JavaObject::get_java_class);
+	ClassDB::bind_method(D_METHOD("has_java_method", "method"), &JavaObject::has_java_method);
 }
 
 void JavaClassWrapper::_bind_methods() {
@@ -94,6 +96,10 @@ Ref<JavaClass> JavaClass::get_java_parent_class() const {
 	return Ref<JavaClass>();
 }
 
+bool JavaClass::has_java_method(const StringName &) const {
+	return false;
+}
+
 JavaClass::JavaClass() {
 }
 
@@ -106,6 +112,10 @@ Variant JavaObject::callp(const StringName &, const Variant **, int, Callable::C
 
 Ref<JavaClass> JavaObject::get_java_class() const {
 	return Ref<JavaClass>();
+}
+
+bool JavaObject::has_java_method(const StringName &) const {
+	return false;
 }
 
 JavaClassWrapper *JavaClassWrapper::singleton = nullptr;

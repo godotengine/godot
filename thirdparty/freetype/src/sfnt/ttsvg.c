@@ -4,7 +4,7 @@
  *
  *   OpenType SVG Color (specification).
  *
- * Copyright (C) 2022-2024 by
+ * Copyright (C) 2022-2025 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and Moazin Khatti.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,7 +20,7 @@
    *
    * 'SVG' table specification:
    *
-   *    https://docs.microsoft.com/en-us/typography/opentype/spec/svg
+   *    https://learn.microsoft.com/typography/opentype/spec/svg
    *
    */
 
@@ -45,6 +45,9 @@
 #define SVG_MINIMUM_SIZE                (SVG_TABLE_HEADER_SIZE +        \
                                          SVG_DOCUMENT_LIST_MINIMUM_SIZE)
 
+
+  /* An arbitrary, heuristic size limit (67MByte) for expanded SVG data. */
+#define MAX_SVG_SIZE  ( 1 << 26 )
 
   typedef struct  Svg_
   {
@@ -345,6 +348,13 @@
                     (FT_ULong)doc[doc_length - 2] << 16 |
                     (FT_ULong)doc[doc_length - 3] << 8  |
                     (FT_ULong)doc[doc_length - 4];
+
+      if ( uncomp_size >= MAX_SVG_SIZE )
+      {
+        FT_ERROR(( "Uncompressed SVG document too large.\n" ));
+        error = FT_THROW( Array_Too_Large );
+        goto Exit;
+      }
 
       if ( FT_QALLOC( uncomp_buffer, uncomp_size ) )
         goto Exit;

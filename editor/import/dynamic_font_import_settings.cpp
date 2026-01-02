@@ -39,6 +39,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/translations/editor_locale_dialog.h"
 #include "scene/gui/split_container.h"
@@ -613,6 +614,11 @@ void DynamicFontImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			const String theme_style = EDITOR_GET("interface/theme/style");
+			const String type_variation = theme_style == "Classic" ? "TabContainerOdd" : "TabContainerInner";
+			main_pages->set_theme_type_variation(type_variation);
+			preload_pages->set_theme_type_variation(type_variation);
+
 			add_var->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			label_warn->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
@@ -1014,7 +1020,6 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	main_pages->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	main_pages->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_pages->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	main_pages->set_theme_type_variation("TabContainerOdd");
 	root_vb->add_child(main_pages);
 
 	label_warn = memnew(Label);
@@ -1065,6 +1070,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	inspector_general = memnew(EditorInspector);
 	inspector_general->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_general->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
+	inspector_general->set_theme_type_variation("ScrollContainerSecondary");
 	page1_hb->add_child(inspector_general);
 	inspector_general->connect("property_edited", callable_mp(this, &DynamicFontImportSettingsDialog::_main_prop_changed));
 
@@ -1114,12 +1120,14 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	vars_list->set_column_expand(1, false);
 	vars_list->set_column_custom_minimum_width(1, 50 * EDSCALE);
 	vars_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vars_list->set_theme_type_variation("TreeSecondary");
 	page2_side_vb->add_child(vars_list);
 	vars_list->connect(SceneStringName(item_selected), callable_mp(this, &DynamicFontImportSettingsDialog::_variation_selected));
 	vars_list->connect("button_clicked", callable_mp(this, &DynamicFontImportSettingsDialog::_variation_remove));
 
 	inspector_vars = memnew(EditorInspector);
 	inspector_vars->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	inspector_vars->set_theme_type_variation("ScrollContainerSecondary");
 	page2_side_vb->add_child(inspector_vars);
 	inspector_vars->connect("property_edited", callable_mp(this, &DynamicFontImportSettingsDialog::_variation_changed));
 
@@ -1166,6 +1174,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	locale_tree->set_column_expand(0, true);
 	locale_tree->set_column_custom_minimum_width(0, 120 * EDSCALE);
 	locale_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	locale_tree->set_theme_type_variation("TreeSecondary");
 	page2_0_vb->add_child(locale_tree);
 	locale_tree->connect("item_activated", callable_mp(this, &DynamicFontImportSettingsDialog::_locale_edited));
 
@@ -1199,9 +1208,9 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	page2_1_vb->add_child(page2_1_hb);
 
 	inspector_text = memnew(EditorInspector);
-
 	inspector_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_text->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
+	inspector_text->set_theme_type_variation("ScrollContainerSecondary");
 	page2_1_hb->add_child(inspector_text);
 	inspector_text->connect("property_edited", callable_mp(this, &DynamicFontImportSettingsDialog::_change_text_opts));
 
@@ -1252,6 +1261,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	glyph_table->add_theme_style_override("selected", glyph_table->get_theme_stylebox(SceneStringName(panel)));
 	glyph_table->add_theme_style_override("selected_focus", glyph_table->get_theme_stylebox(SceneStringName(panel)));
 	glyph_table->add_theme_constant_override("h_separation", 0);
+	glyph_table->set_theme_type_variation("TreeSecondary");
 	glyph_table->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	glyphs_split->add_child(glyph_table);
@@ -1266,6 +1276,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	glyph_tree->set_column_expand(1, true);
 	glyph_tree->set_column_custom_minimum_width(0, 120 * EDSCALE);
 	glyph_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	glyph_tree->set_theme_type_variation("TreeSecondary");
 	glyph_root = glyph_tree->create_item();
 	for (int i = 0; !unicode_ranges[i].name.is_empty(); i++) {
 		_add_glyph_range_item(unicode_ranges[i].start, unicode_ranges[i].end, unicode_ranges[i].name);

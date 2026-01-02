@@ -39,13 +39,13 @@
 		<method name="_validate_bone_names" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when bone name and index need to be validated such as the timing of the entering tree or changing skeleton.
+				Called when bone names and indices need to be validated, such as when entering the scene tree or changing skeleton.
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
 			<return type="Skeleton3D" />
 			<description>
-				Get parent [Skeleton3D] node if found.
+				Returns the parent [Skeleton3D] node if it exists. Otherwise, returns [code]null[/code].
 			</description>
 		</method>
 	</methods>
@@ -84,6 +84,66 @@
 		</constant>
 		<constant name="BONE_AXIS_MINUS_Z" value="5" enum="BoneAxis">
 			Enumerated value for the -Z axis.
+		</constant>
+		<constant name="BONE_DIRECTION_PLUS_X" value="0" enum="BoneDirection">
+			Enumerated value for the +X axis.
+		</constant>
+		<constant name="BONE_DIRECTION_MINUS_X" value="1" enum="BoneDirection">
+			Enumerated value for the -X axis.
+		</constant>
+		<constant name="BONE_DIRECTION_PLUS_Y" value="2" enum="BoneDirection">
+			Enumerated value for the +Y axis.
+		</constant>
+		<constant name="BONE_DIRECTION_MINUS_Y" value="3" enum="BoneDirection">
+			Enumerated value for the -Y axis.
+		</constant>
+		<constant name="BONE_DIRECTION_PLUS_Z" value="4" enum="BoneDirection">
+			Enumerated value for the +Z axis.
+		</constant>
+		<constant name="BONE_DIRECTION_MINUS_Z" value="5" enum="BoneDirection">
+			Enumerated value for the -Z axis.
+		</constant>
+		<constant name="BONE_DIRECTION_FROM_PARENT" value="6" enum="BoneDirection">
+			Enumerated value for the axis from a parent bone to the child bone.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_NONE" value="0" enum="SecondaryDirection">
+			Enumerated value for the case when the axis is undefined.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_PLUS_X" value="1" enum="SecondaryDirection">
+			Enumerated value for the +X axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_MINUS_X" value="2" enum="SecondaryDirection">
+			Enumerated value for the -X axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_PLUS_Y" value="3" enum="SecondaryDirection">
+			Enumerated value for the +Y axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_MINUS_Y" value="4" enum="SecondaryDirection">
+			Enumerated value for the -Y axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_PLUS_Z" value="5" enum="SecondaryDirection">
+			Enumerated value for the +Z axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_MINUS_Z" value="6" enum="SecondaryDirection">
+			Enumerated value for the -Z axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_CUSTOM" value="7" enum="SecondaryDirection">
+			Enumerated value for an optional axis.
+		</constant>
+		<constant name="ROTATION_AXIS_X" value="0" enum="RotationAxis">
+			Enumerated value for the rotation of the X axis.
+		</constant>
+		<constant name="ROTATION_AXIS_Y" value="1" enum="RotationAxis">
+			Enumerated value for the rotation of the Y axis.
+		</constant>
+		<constant name="ROTATION_AXIS_Z" value="2" enum="RotationAxis">
+			Enumerated value for the rotation of the Z axis.
+		</constant>
+		<constant name="ROTATION_AXIS_ALL" value="3" enum="RotationAxis">
+			Enumerated value for the unconstrained rotation.
+		</constant>
+		<constant name="ROTATION_AXIS_CUSTOM" value="4" enum="RotationAxis">
+			Enumerated value for an optional rotation axis.
 		</constant>
 	</constants>
 </class>

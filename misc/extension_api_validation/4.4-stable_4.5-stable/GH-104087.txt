@@ -1,0 +1,8 @@
+GH-104087
+---------
+Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/register_composition_layer_provider/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
+Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregister_composition_layer_provider/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
+Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/register_projection_views_extension/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
+Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregister_projection_views_extension/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
+
+Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.

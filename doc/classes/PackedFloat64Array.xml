@@ -48,7 +48,7 @@
 				Appends a [PackedFloat64Array] at the end of this array.
 			</description>
 		</method>
-		<method name="bsearch">
+		<method name="bsearch" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="float" />
 			<param index="1" name="before" type="bool" default="true" />
@@ -72,7 +72,7 @@
 				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="PackedFloat64Array" />
 			<description>
 				Creates a copy of the array, and returns it.
@@ -106,7 +106,7 @@
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the 64-bit float at the given [param index] in the array. If [param index] out-of-bounds or negative, this method fails and returns [code]0.0[/code].
+				Returns the 64-bit float at the given [param index] in the array. If [param index] is out-of-bounds or negative, this method fails and returns [code]0.0[/code].
 				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>

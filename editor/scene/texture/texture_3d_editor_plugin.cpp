@@ -111,27 +111,19 @@ void Texture3DEditor::_texture_changed() {
 }
 
 void Texture3DEditor::_update_material(bool p_texture_changed) {
-	material->set_shader_parameter("layer", (layer->get_value() + 0.5) / texture->get_depth());
+	texture_material->set_shader_parameter("layer", (layer->get_value() + 0.5) / texture->get_depth());
 
 	if (p_texture_changed) {
-		material->set_shader_parameter("tex", texture->get_rid());
+		texture_material->set_shader_parameter("tex", texture->get_rid());
 	}
 
-	material->set_shader_parameter("u_channel_factors", channel_selector->get_selected_channel_factors());
+	texture_material->set_shader_parameter("u_channel_factors", channel_selector->get_selected_channel_factors());
 }
 
 void Texture3DEditor::_draw_outline() {
 	const float outline_width = Math::round(EDSCALE);
 	const Rect2 outline_rect = texture_rect->get_rect().grow(outline_width * 0.5);
 	draw_rect(outline_rect, theme_cache.outline_color, false, outline_width);
-}
-
-void Texture3DEditor::_make_shaders() {
-	shader.instantiate();
-	shader->set_code(texture_3d_shader);
-
-	material.instantiate();
-	material->set_shader(shader);
 }
 
 void Texture3DEditor::_texture_rect_update_area() {
@@ -208,6 +200,15 @@ void Texture3DEditor::on_selected_channels_changed() {
 	_update_material(false);
 }
 
+void Texture3DEditor::init_shaders() {
+	texture_shader.instantiate();
+	texture_shader->set_code(texture_3d_shader);
+}
+
+void Texture3DEditor::finish_shaders() {
+	texture_shader.unref();
+}
+
 void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 	if (texture.is_valid()) {
 		texture->disconnect_changed(callable_mp(this, &Texture3DEditor::_texture_changed));
@@ -216,12 +217,13 @@ void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 	texture = p_texture;
 
 	if (texture.is_valid()) {
-		if (shader.is_null()) {
-			_make_shaders();
+		if (texture_material.is_null()) {
+			texture_material.instantiate();
+			texture_material->set_shader(texture_shader);
 		}
 
 		texture->connect_changed(callable_mp(this, &Texture3DEditor::_texture_changed));
-		texture_rect->set_material(material);
+		texture_rect->set_material(texture_material);
 
 		setting = true;
 		layer->set_value(0);

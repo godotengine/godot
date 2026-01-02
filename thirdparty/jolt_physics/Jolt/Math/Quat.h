@@ -40,6 +40,7 @@ public:
 								Quat(const Quat &inRHS) = default;
 	Quat &						operator = (const Quat &inRHS) = default;
 	inline						Quat(float inX, float inY, float inZ, float inW)				: mValue(inX, inY, inZ, inW) { }
+	inline explicit				Quat(const Float4 &inV)											: mValue(Vec4::sLoadFloat4(&inV)) { }
 	inline explicit				Quat(Vec4Arg inV)												: mValue(inV) { }
 	///@}
 
@@ -159,6 +160,9 @@ public:
 	/// Rotate a vector by this quaternion
 	JPH_INLINE Vec3				operator * (Vec3Arg inValue) const;
 
+	/// Multiply a quaternion with imaginary components and no real component (x, y, z, 0) with a quaternion
+	static JPH_INLINE Quat		sMultiplyImaginary(Vec3Arg inLHS, QuatArg inRHS);
+
 	/// Rotate a vector by the inverse of this quaternion
 	JPH_INLINE Vec3				InverseRotate(Vec3Arg inValue) const;
 
@@ -175,7 +179,7 @@ public:
 	JPH_INLINE float			Dot(QuatArg inRHS) const										{ return mValue.Dot(inRHS.mValue); }
 
 	/// The conjugate [w, -x, -y, -z] is the same as the inverse for unit quaternions
-	JPH_INLINE Quat				Conjugated() const												{ return Quat(Vec4::sXor(mValue, UVec4(0x80000000, 0x80000000, 0x80000000, 0).ReinterpretAsFloat())); }
+	JPH_INLINE Quat				Conjugated() const												{ return Quat(mValue.FlipSign<-1, -1, -1, 1>()); }
 
 	/// Get inverse quaternion
 	JPH_INLINE Quat				Inversed() const												{ return Conjugated() / Length(); }
@@ -184,7 +188,7 @@ public:
 	JPH_INLINE Quat				EnsureWPositive() const											{ return Quat(Vec4::sXor(mValue, Vec4::sAnd(mValue.SplatW(), UVec4::sReplicate(0x80000000).ReinterpretAsFloat()))); }
 
 	/// Get a quaternion that is perpendicular to this quaternion
-	JPH_INLINE Quat				GetPerpendicular() const										{ return Quat(Vec4(1, -1, 1, -1) * mValue.Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>()); }
+	JPH_INLINE Quat				GetPerpendicular() const										{ return Quat(mValue.Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>().FlipSign<1, -1, 1, -1>()); }
 
 	/// Get rotation angle around inAxis (uses Swing Twist Decomposition to get the twist quaternion and uses q(axis, angle) = [cos(angle / 2), axis * sin(angle / 2)])
 	JPH_INLINE float			GetRotationAngle(Vec3Arg inAxis) const							{ return GetW() == 0.0f? JPH_PI : 2.0f * ATan(GetXYZ().Dot(inAxis) / GetW()); }
@@ -238,8 +242,17 @@ public:
 	/// Load 3 floats from memory (X, Y and Z component and then calculates W) reads 32 bits extra which it doesn't use
 	static JPH_INLINE Quat		sLoadFloat3Unsafe(const Float3 &inV);
 
-	/// Store 3 as floats to memory (X, Y and Z component)
+	/// Store as 3 floats to memory (X, Y and Z component). Ensures that W is positive before storing.
 	JPH_INLINE void				StoreFloat3(Float3 *outV) const;
+
+	/// Store as 4 floats
+	JPH_INLINE void				StoreFloat4(Float4 *outV) const;
+
+	/// Compress a unit quaternion to a 32 bit value, precision is around 0.5 degree
+	JPH_INLINE uint32			CompressUnitQuat() const										{ return mValue.CompressUnitVector(); }
+
+	/// Decompress a unit quaternion from a 32 bit value
+	JPH_INLINE static Quat		sDecompressUnitQuat(uint32 inValue)								{ return Quat(Vec4::sDecompressUnitVector(inValue)); }
 
 	/// To String
 	friend ostream &			operator << (ostream &inStream, QuatArg inQ)					{ inStream << inQ.mValue; return inStream; }

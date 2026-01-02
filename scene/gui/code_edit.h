@@ -111,6 +111,7 @@ private:
 	/* Line numbers */
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
+	int line_numbers_min_digits = 3;
 	String line_number_padding = " ";
 	HashMap<int, RID> line_number_text_cache;
 	void _clear_line_number_text_cache();
@@ -290,6 +291,7 @@ private:
 
 		/* Other visuals */
 		Ref<StyleBox> style_normal;
+		Ref<StyleBox> style_readonly;
 
 		Color brace_mismatch_color;
 
@@ -412,6 +414,8 @@ public:
 	bool is_draw_line_numbers_enabled() const;
 	void set_line_numbers_zero_padded(bool p_zero_padded);
 	bool is_line_numbers_zero_padded() const;
+	void set_line_numbers_min_digits(int p_count);
+	int get_line_numbers_min_digits() const;
 
 	/* Fold gutter */
 	void set_draw_fold_gutter(bool p_draw);
@@ -432,7 +436,8 @@ public:
 
 	int get_folded_line_header(int p_line) const;
 	bool is_line_folded(int p_line) const;
-	TypedArray<int> get_folded_lines() const;
+	TypedArray<int> get_folded_lines_bind() const;
+	PackedInt32Array get_folded_lines() const;
 
 	/* Code region */
 	void create_code_region();

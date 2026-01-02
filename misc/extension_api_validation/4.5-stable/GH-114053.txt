@@ -1,0 +1,7 @@
+GH-114053
+---------
+Validate extension JSON: Error: Field 'classes/FileAccess/methods/create_temp/arguments': meta was removed.
+Validate extension JSON: Error: Field 'classes/FileAccess/methods/create_temp/arguments/0': type changed value in new API, from "int" to "enum::FileAccess.ModeFlags".
+
+The argument was supposed to use this enum instead of an untyped int.
+A compatibility method has been registered.

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
 class RenderingContextDriver;
@@ -96,7 +96,8 @@ class DisplayServerAndroid : public DisplayServer {
 
 	Callable file_picker_callback;
 
-	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
+	template <typename... Args>
+	void _window_callback(const Callable &p_callable, bool p_deferred, const Args &...p_rest_args) const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 
@@ -110,7 +111,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
@@ -220,6 +221,8 @@ public:
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
+	virtual void window_set_color(const Color &p_color) override;
+
 	virtual void process_events() override;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
@@ -245,6 +248,7 @@ public:
 
 	void reset_window();
 	void notify_surface_changed(int p_width, int p_height);
+	void notify_application_paused();
 
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;

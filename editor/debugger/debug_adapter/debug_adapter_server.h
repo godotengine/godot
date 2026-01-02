@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "debug_adapter_protocol.h"
+#include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/plugins/editor_plugin.h"
 
 class DebugAdapterServer : public EditorPlugin {
@@ -39,7 +39,6 @@ class DebugAdapterServer : public EditorPlugin {
 	DebugAdapterProtocol protocol;
 
 	int remote_port = 6006;
-	bool thread_running = false;
 	bool started = false;
 	bool polling = false;
 	static void thread_func(void *p_userdata);

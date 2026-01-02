@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A [SkeletonProfile] as a preset that is optimized for the human form. This exists for standardization, so all parameters are read-only.
-		A humanoid skeleton profile contains 54 bones divided in 4 groups: [code]"Body"[/code], [code]"Face"[/code], [code]"LeftHand"[/code], and [code]"RightHand"[/code]. It is structured as follows:
+		A humanoid skeleton profile contains 56 bones divided into 4 groups: [code]"Body"[/code], [code]"Face"[/code], [code]"LeftHand"[/code], and [code]"RightHand"[/code]. It is structured as follows:
 		[codeblock lang=text]
 		Root
 		└─ Hips

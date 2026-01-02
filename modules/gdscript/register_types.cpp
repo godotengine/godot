@@ -78,8 +78,8 @@ Ref<GDScriptEditorTranslationParserPlugin> gdscript_translation_parser_plugin;
 class EditorExportGDScript : public EditorExportPlugin {
 	GDCLASS(EditorExportGDScript, EditorExportPlugin);
 
-	static constexpr int DEFAULT_SCRIPT_MODE = EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
-	int script_mode = DEFAULT_SCRIPT_MODE;
+	static constexpr EditorExportPreset::ScriptExportMode DEFAULT_SCRIPT_MODE = EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
+	EditorExportPreset::ScriptExportMode script_mode = DEFAULT_SCRIPT_MODE;
 
 protected:
 	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) override {

@@ -78,7 +78,7 @@ LightStorage::~LightStorage() {
 	free_light_data();
 
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
-		RD::get_singleton()->free(E.value.cubemap);
+		RD::get_singleton()->free_rid(E.value.cubemap);
 	}
 
 	singleton = nullptr;
@@ -432,7 +432,14 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	switch (light->type) {
 		case RS::LIGHT_SPOT: {
 			float len = light->param[RS::LIGHT_PARAM_RANGE];
-			float size = Math::tan(Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+			float angle = Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE]);
+
+			if (angle > Math::PI * 0.5) {
+				// Light casts backwards as well.
+				return AABB(Vector3(-1, -1, -1) * len, Vector3(2, 2, 2) * len);
+			}
+
+			float size = Math::sin(angle) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 		};
 		case RS::LIGHT_OMNI: {
@@ -539,17 +546,17 @@ void LightStorage::light_instance_mark_visible(RID p_light_instance) {
 
 void LightStorage::free_light_data() {
 	if (directional_light_buffer.is_valid()) {
-		RD::get_singleton()->free(directional_light_buffer);
+		RD::get_singleton()->free_rid(directional_light_buffer);
 		directional_light_buffer = RID();
 	}
 
 	if (omni_light_buffer.is_valid()) {
-		RD::get_singleton()->free(omni_light_buffer);
+		RD::get_singleton()->free_rid(omni_light_buffer);
 		omni_light_buffer = RID();
 	}
 
 	if (spot_light_buffer.is_valid()) {
-		RD::get_singleton()->free(spot_light_buffer);
+		RD::get_singleton()->free_rid(spot_light_buffer);
 		spot_light_buffer = RID();
 	}
 
@@ -1169,11 +1176,7 @@ void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_
 }
 
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
-	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL(reflection_probe);
-	ERR_FAIL_COND(p_resolution < 32);
-
-	reflection_probe->resolution = p_resolution;
+	WARN_PRINT_ONCE("reflection_probe_set_resolution is not available in Godot 4. ReflectionProbe size is configured in the project settings with the rendering/reflections/reflection_atlas/reflection_size setting.");
 }
 
 void LightStorage::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) {
@@ -1259,13 +1262,6 @@ float LightStorage::reflection_probe_get_mesh_lod_threshold(RID p_probe) const {
 	return reflection_probe->mesh_lod_threshold;
 }
 
-int LightStorage::reflection_probe_get_resolution(RID p_probe) const {
-	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL_V(reflection_probe, 0);
-
-	return reflection_probe->resolution;
-}
-
 float LightStorage::reflection_probe_get_baked_exposure(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL_V(reflection_probe, 1.0);
@@ -1347,6 +1343,28 @@ void LightStorage::reflection_atlas_free(RID p_ref_atlas) {
 	reflection_atlas_owner.free(p_ref_atlas);
 }
 
+void LightStorage::_reflection_atlas_clear(ReflectionAtlas *p_reflection_atlas) {
+	RD::get_singleton()->free_rid(p_reflection_atlas->reflection);
+	p_reflection_atlas->reflection = RID();
+
+	RD::get_singleton()->free_rid(p_reflection_atlas->depth_fb);
+	p_reflection_atlas->depth_fb = RID();
+
+	RD::get_singleton()->free_rid(p_reflection_atlas->depth_buffer);
+	p_reflection_atlas->depth_buffer = RID();
+
+	for (int i = 0; i < p_reflection_atlas->reflections.size(); i++) {
+		p_reflection_atlas->reflections.write[i].data.clear_reflection_data();
+		if (p_reflection_atlas->reflections[i].owner.is_null()) {
+			continue;
+		}
+
+		reflection_probe_release_atlas_index(p_reflection_atlas->reflections[i].owner);
+	}
+
+	p_reflection_atlas->reflections.clear();
+}
+
 void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) {
 	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
 	ERR_FAIL_NULL(ra);
@@ -1364,21 +1382,7 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 	ra->count = p_reflection_count;
 
 	if (ra->reflection.is_valid()) {
-		//clear and invalidate everything
-		RD::get_singleton()->free(ra->reflection);
-		ra->reflection = RID();
-		RD::get_singleton()->free(ra->depth_buffer);
-		ra->depth_buffer = RID();
-		for (int i = 0; i < ra->reflections.size(); i++) {
-			ra->reflections.write[i].data.clear_reflection_data();
-			if (ra->reflections[i].owner.is_null()) {
-				continue;
-			}
-			reflection_probe_release_atlas_index(ra->reflections[i].owner);
-			//rp->atlasindex clear
-		}
-
-		ra->reflections.clear();
+		_reflection_atlas_clear(ra);
 	}
 
 	if (ra->render_buffers.is_valid()) {
@@ -1448,7 +1452,6 @@ void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 		rpi->rendering = false;
 		rpi->dirty = true;
 		rpi->processing_layer = 1;
-		rpi->processing_side = 0;
 	}
 
 	rpi->atlas_index = -1;
@@ -1486,6 +1489,9 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	ERR_FAIL_NULL_V(atlas, false);
 
+	ERR_FAIL_COND_V_MSG(atlas->size < 2, false, "Attempted to render to a reflection atlas of invalid resolution.");
+	ERR_FAIL_COND_V_MSG(atlas->count < 1, false, "Attempted to render to a reflection atlas of size < 1.");
+
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 
@@ -1493,42 +1499,58 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		atlas->render_buffers.instantiate();
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
+	RD::get_singleton()->draw_command_begin_label("Reflection Probe Render");
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
+	const bool update_always = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS;
+	if (update_always && atlas->reflection.is_valid() && atlas->size != 256) {
 		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
 		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
 	}
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8) {
-		// Invalidate reflection atlas, need to regenerate
-		RD::get_singleton()->free(atlas->reflection);
-		atlas->reflection = RID();
-
-		for (int i = 0; i < atlas->reflections.size(); i++) {
-			if (atlas->reflections[i].owner.is_null()) {
-				continue;
-			}
-			reflection_probe_release_atlas_index(atlas->reflections[i].owner);
-		}
-
-		atlas->reflections.clear();
+	// Reflection atlas only allows recreating the texture at a lower resolution when going from not real time to real time,
+	// but not the other way around. This can lead to situations where the reflection atlas will be stuck on a lower resolution
+	// even if no real-time probes are present. This is intentional behavior until a future solution can accommodate for both
+	// quality levels being used simultaneously.
+	const int required_real_time_mipmaps = 7;
+	const bool switched_to_real_time = !atlas->update_always && update_always && atlas->reflection.is_valid();
+	const bool real_time_mipmaps_different = update_always && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != required_real_time_mipmaps;
+	if (switched_to_real_time || real_time_mipmaps_different) {
+		_reflection_atlas_clear(atlas);
 	}
 
 	if (atlas->reflection.is_null()) {
+		RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
+		ERR_FAIL_NULL_V_MSG(copy_effects, false, "Effects haven't been initialized");
+
 		int mipmaps = MIN(RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1);
-		mipmaps = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
+		mipmaps = update_always ? required_real_time_mipmaps : mipmaps;
+
+		// Double size to approximate texel density of cubemaps + add border for proper filtering/mipmapping.
+		uint32_t padding_pixels = (1 << (mipmaps - 1));
+		atlas->reflection_texture_size = atlas->size * 2 + padding_pixels * 2;
+		atlas->uv_border_size = float(padding_pixels) / float(atlas->reflection_texture_size);
+
+		bool use_storage = !copy_effects->get_raster_effects().has_flag(CopyEffects::RASTER_EFFECT_OCTMAP);
 		{
-			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
-			tf.array_layers = 6 * atlas->count;
+			tf.array_layers = atlas->count;
 			tf.format = get_reflection_probe_color_format();
-			tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 			tf.mipmaps = mipmaps;
+			tf.width = atlas->reflection_texture_size;
+			tf.height = atlas->reflection_texture_size;
+			tf.usage_bits = get_reflection_probe_color_usage_bits(use_storage);
+			atlas->reflection = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		}
+		{
+			RD::TextureFormat tf;
+			tf.array_layers = 6;
+			tf.format = get_reflection_probe_color_format();
+			tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 			tf.width = atlas->size;
 			tf.height = atlas->size;
-			tf.usage_bits = get_reflection_probe_color_usage_bits();
-			atlas->reflection = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			tf.usage_bits = get_reflection_probe_color_usage_bits(use_storage);
+			atlas->color_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
 		{
 			RD::TextureFormat tf;
@@ -1540,17 +1562,20 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format());
-			for (int j = 0; j < 6; j++) {
-				atlas->reflections.write[i].fbs[j] = RendererSceneRenderRD::get_singleton()->reflection_probe_create_framebuffer(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j], atlas->depth_buffer);
-			}
+			atlas->reflections.write[i].data.update_reflection_data(atlas->reflection_texture_size, mipmaps, false, atlas->reflection, i, update_always, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format(), atlas->uv_border_size);
 		}
 
-		Vector<RID> fb;
-		fb.push_back(atlas->depth_buffer);
-		atlas->depth_fb = RD::get_singleton()->framebuffer_create(fb);
+		for (int i = 0; i < 6; i++) {
+			atlas->color_views[i] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), atlas->color_buffer, i, 0);
+			atlas->color_fbs[i] = RendererSceneRenderRD::get_singleton()->reflection_probe_create_framebuffer(atlas->color_views[i], atlas->depth_buffer);
+		}
+
+		Vector<RID> fbs;
+		fbs.push_back(atlas->depth_buffer);
+		atlas->depth_fb = RD::get_singleton()->framebuffer_create(fbs);
 
 		atlas->render_buffers->configure_for_reflections(Size2i(atlas->size, atlas->size));
+		atlas->update_always = update_always;
 	}
 
 	if (rpi->atlas_index == -1) {
@@ -1583,8 +1608,24 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	rpi->rendering = true;
 	rpi->dirty = false;
 	rpi->processing_layer = 1;
-	rpi->processing_side = 0;
 
+	RD::get_singleton()->draw_command_end_label();
+
+	return true;
+}
+
+bool LightStorage::reflection_probe_instance_end_render(RID p_instance, RID p_reflection_atlas) {
+	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
+	ERR_FAIL_NULL_V_MSG(copy_effects, false, "Effects haven't been initialized");
+
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_reflection_atlas);
+	ERR_FAIL_NULL_V(atlas, false);
+
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+
+	RD::get_singleton()->draw_command_begin_label("Convert reflection probe to octahedral");
+	copy_effects->copy_cubemap_to_octmap(atlas->color_buffer, atlas->reflections.write[rpi->atlas_index].data.layers[0].mipmaps[0].framebuffer, atlas->uv_border_size);
 	RD::get_singleton()->draw_command_end_label();
 
 	return true;
@@ -1613,35 +1654,17 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 		// Using real time reflections, all roughness is done in one step
 		atlas->reflections.write[rpi->atlas_index].data.create_reflection_fast_filter(false);
 		rpi->rendering = false;
-		rpi->processing_side = 0;
 		rpi->processing_layer = 1;
 		return true;
 	}
 
-	if (rpi->processing_layer > 1) {
-		atlas->reflections.write[rpi->atlas_index].data.create_reflection_importance_sample(false, 10, rpi->processing_layer, RendererSceneRenderRD::get_singleton()->get_sky()->sky_ggx_samples_quality);
-		rpi->processing_layer++;
-		if (rpi->processing_layer == atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
-			rpi->rendering = false;
-			rpi->processing_side = 0;
-			rpi->processing_layer = 1;
-			return true;
-		}
-		return false;
+	atlas->reflections.write[rpi->atlas_index].data.create_reflection_importance_sample(false, rpi->processing_layer, RendererSceneRenderRD::get_singleton()->get_sky()->sky_ggx_samples_quality);
 
-	} else {
-		atlas->reflections.write[rpi->atlas_index].data.create_reflection_importance_sample(false, rpi->processing_side, rpi->processing_layer, RendererSceneRenderRD::get_singleton()->get_sky()->sky_ggx_samples_quality);
-	}
-
-	rpi->processing_side++;
-	if (rpi->processing_side == 6) {
-		rpi->processing_side = 0;
-		rpi->processing_layer++;
-		if (rpi->processing_layer == atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
-			rpi->rendering = false;
-			rpi->processing_layer = 1;
-			return true;
-		}
+	rpi->processing_layer++;
+	if (rpi->processing_layer == (int)atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
+		rpi->rendering = false;
+		rpi->processing_layer = 1;
+		return true;
 	}
 
 	return false;
@@ -1665,7 +1688,7 @@ RID LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, int 
 	ERR_FAIL_NULL_V(atlas, RID());
 	ERR_FAIL_COND_V_MSG(rpi->atlas_index < 0, RID(), "Reflection probe atlas index invalid. Maximum amount of reflection probes in use (" + itos(atlas->count) + ") may have been exceeded, reflections will not display properly. Consider increasing Rendering > Reflections > Reflection Atlas > Reflection Count in the Project Settings.");
 
-	return atlas->reflections[rpi->atlas_index].fbs[p_index];
+	return atlas->color_fbs[p_index];
 }
 
 RID LightStorage::reflection_probe_instance_get_depth_framebuffer(RID p_instance, int p_index) {
@@ -1698,7 +1721,7 @@ ClusterBuilderRD *LightStorage::reflection_probe_instance_get_cluster_builder(RI
 
 void LightStorage::free_reflection_data() {
 	if (reflection_buffer.is_valid()) {
-		RD::get_singleton()->free(reflection_buffer);
+		RD::get_singleton()->free_rid(reflection_buffer);
 		reflection_buffer = RID();
 	}
 
@@ -1811,11 +1834,11 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 }
 
 RD::DataFormat LightStorage::get_reflection_probe_color_format() {
-	return RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format();
+	return RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format();
 }
 
-uint32_t LightStorage::get_reflection_probe_color_usage_bits() {
-	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
+uint32_t LightStorage::get_reflection_probe_color_usage_bits(bool p_storage) {
+	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | (p_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
 }
 
 RD::DataFormat LightStorage::get_reflection_probe_depth_format() {
@@ -2141,7 +2164,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 
 	// erasing atlas
 	if (shadow_atlas->depth.is_valid()) {
-		RD::get_singleton()->free(shadow_atlas->depth);
+		RD::get_singleton()->free_rid(shadow_atlas->depth);
 		shadow_atlas->depth = RID();
 	}
 	for (int i = 0; i < 4; i++) {
@@ -2540,7 +2563,7 @@ void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits)
 	directional_shadow.use_16_bits = p_16_bits;
 
 	if (directional_shadow.depth.is_valid()) {
-		RD::get_singleton()->free(directional_shadow.depth);
+		RD::get_singleton()->free_rid(directional_shadow.depth);
 		directional_shadow.depth = RID();
 		RendererSceneRenderRD::get_singleton()->base_uniforms_changed();
 	}

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
@@ -53,6 +53,7 @@ enum GlobalMenuCheckType {
 	Key accel;
 	GlobalMenuCheckType checkable_type;
 	bool checked;
+	bool enabled;
 	int max_states;
 	int state;
 	Ref<Image> img;

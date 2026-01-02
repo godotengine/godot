@@ -13,7 +13,6 @@ from methods import redirect_emitter
 sources = []
 
 common_win = [
-    "godot_windows.cpp",
     "os_windows.cpp",
     "display_server_windows.cpp",
     "key_mapping_windows.cpp",
@@ -28,6 +27,11 @@ common_win = [
     "drop_target_windows.cpp",
 ]
 
+if env["library_type"] == "executable":
+    common_win += ["godot_windows.cpp"]
+else:
+    common_win += ["libgodot_windows.cpp"]
+
 if env.msvc:
     common_win += ["crash_handler_windows_seh.cpp"]
 else:
@@ -39,7 +43,7 @@ common_win_wrap = [
 
 env_wrap = env.Clone()
 
-if env["arch"] == "x86_64":
+if env["arch"] == "x86_64" and env["library_type"] == "executable":
     env_cpp_check = env.Clone()
     env_cpp_check.add_source_files(sources, ["cpu_feature_validation.c"])
     if env.msvc:
@@ -65,8 +69,12 @@ def arrange_program_clean(prog):
 
 
 env["BUILDERS"]["RES"].emitter = redirect_emitter
-res_file = "godot_res.rc"
-res_target = "godot_res" + env["OBJSUFFIX"]
+if env.editor_build:
+    res_file = "godot_res.rc"
+    res_target = "godot_res" + env["OBJSUFFIX"]
+else:
+    res_file = "godot_res_template.rc"
+    res_target = "godot_res_template" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 env.Depends(res_obj, "#core/version_generated.gen.h")
 
@@ -76,16 +84,26 @@ sources += res_obj
 if env["accesskit"] and not env.msvc:
     sources += env.DEFLIB("uiautomationcore")
 
-prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+if env["library_type"] == "static_library":
+    prog = env.add_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+elif env["library_type"] == "shared_library":
+    prog = env.add_shared_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+else:
+    prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 arrange_program_clean(prog)
 
+env.Depends(prog, "godot.manifest")
 if env.msvc:
     env.Depends(prog, "godot.natvis")
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
-    res_wrap_file = "godot_res_wrap.rc"
-    res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
+    if env.editor_build:
+        res_wrap_file = "godot_res_wrap.rc"
+        res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
+    else:
+        res_wrap_file = "godot_res_wrap_template.rc"
+        res_wrap_target = "godot_res_wrap_template" + env["OBJSUFFIX"]
     res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
     env_wrap.Depends(res_wrap_obj, "#core/version_generated.gen.h")
 

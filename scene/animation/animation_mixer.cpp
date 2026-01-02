@@ -38,8 +38,8 @@
 #include "scene/animation/animation_player.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/resources/animation.h"
+#include "servers/audio/audio_server.h"
 #include "servers/audio/audio_stream.h"
-#include "servers/audio_server.h"
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_stream_player_3d.h"
@@ -69,10 +69,7 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 			al = get_animation_library(StringName());
 		}
 		al->add_animation(which, anim);
-	} else if (name.begins_with("libraries")) {
-#else
-	if (name.begins_with("libraries")) {
-#endif // DISABLE_DEPRECATED
+	} else if (name == "libraries") {
 		Dictionary d = p_value;
 		while (animation_libraries.size()) {
 			remove_animation_library(animation_libraries[0].name);
@@ -82,10 +79,28 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 			add_animation_library(kv.key, lib);
 		}
 		emit_signal(SNAME("animation_libraries_updated"));
-
+	} else if (name.begins_with("libraries/")) {
+		String which = name.get_slicec('/', 1);
+		if (has_animation_library(which)) {
+			remove_animation_library(which);
+		}
+		add_animation_library(which, p_value);
+		emit_signal(SNAME("animation_libraries_updated"));
 	} else {
 		return false;
 	}
+#else
+	if (name.begins_with("libraries/")) {
+		String which = name.get_slicec('/', 1);
+		if (has_animation_library(which)) {
+			remove_animation_library(which);
+		}
+		add_animation_library(which, p_value);
+		emit_signal(SNAME("animation_libraries_updated"));
+	} else {
+		return false;
+	}
+#endif // DISABLE_DEPRECATED
 
 	return true;
 }
@@ -93,12 +108,13 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 
-	if (name.begins_with("libraries")) {
-		Dictionary d;
-		for (const AnimationLibraryData &lib : animation_libraries) {
-			d[lib.name] = lib.library;
+	if (name.begins_with("libraries/")) {
+		String which = name.get_slicec('/', 1);
+		if (has_animation_library(which)) {
+			r_ret = get_animation_library(which);
+		} else {
+			return false;
 		}
-		r_ret = d;
 	} else {
 		return false;
 	}
@@ -111,7 +127,10 @@ uint32_t AnimationMixer::_get_libraries_property_usage() const {
 }
 
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries"), PROPERTY_HINT_DICTIONARY_TYPE, "StringName;AnimationLibrary", _get_libraries_property_usage()));
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		const String path = vformat("libraries/%s", animation_libraries[i].name);
+		p_list->push_back(PropertyInfo(Variant::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary", _get_libraries_property_usage()));
+	}
 }
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
@@ -613,10 +632,10 @@ void AnimationMixer::_create_track_num_to_track_cache_for_animation(Ref<Animatio
 		return;
 	}
 	LocalVector<TrackCache *> &track_num_to_track_cache = animation_track_num_to_track_cache.insert_new(p_animation, LocalVector<TrackCache *>())->value;
-	const Vector<Animation::Track *> &tracks = p_animation->get_tracks();
+	const LocalVector<Animation::Track *> &tracks = p_animation->get_tracks();
 
 	track_num_to_track_cache.resize(tracks.size());
-	for (int i = 0; i < tracks.size(); i++) {
+	for (uint32_t i = 0; i < tracks.size(); i++) {
 		TrackCache **track_ptr = track_cache.getptr(tracks[i]->thash);
 		if (track_ptr == nullptr) {
 			track_num_to_track_cache[i] = nullptr;
@@ -641,6 +660,7 @@ bool AnimationMixer::_update_caches() {
 
 	Node *parent = get_node_or_null(root_node);
 	if (!parent) {
+		WARN_PRINT_ONCE(vformat("'%s' is an invalid root_node path, caches will not be built, please check the root_node assignment on: %s", root_node, get_path()));
 		cache_valid = false;
 		return false;
 	}
@@ -666,6 +686,9 @@ bool AnimationMixer::_update_caches() {
 	for (const StringName &E : sname_list) {
 		Ref<Animation> anim = get_animation(E);
 		for (int i = 0; i < anim->get_track_count(); i++) {
+			if (!anim->track_is_enabled(i)) {
+				continue;
+			}
 			NodePath path = anim->track_get_path(i);
 			Animation::TypeHash thash = anim->track_get_type_hash(i);
 			Animation::TrackType track_src_type = anim->track_get_type(i);
@@ -730,15 +753,11 @@ bool AnimationMixer::_update_caches() {
 						// If there is a Reset Animation, it takes precedence by overwriting.
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0) {
+							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								if (is_value) {
-									if (reset_anim->track_get_key_count(rt) > 0) {
-										track_value->init_value = reset_anim->track_get_key_value(rt, 0);
-									}
+									track_value->init_value = reset_anim->track_get_key_value(rt, 0);
 								} else {
-									if (reset_anim->track_get_key_count(rt) > 0) {
-										track_value->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
-									}
+									track_value->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
 								}
 							}
 						}
@@ -805,7 +824,7 @@ bool AnimationMixer::_update_caches() {
 						// For non Skeleton3D bone animation.
 						if (has_reset_anim && !has_rest) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
+							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								switch (track_src_type) {
 									case Animation::TYPE_POSITION_3D: {
 										track_xform->init_loc = reset_anim->track_get_key_value(rt, 0);
@@ -851,7 +870,7 @@ bool AnimationMixer::_update_caches() {
 
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
+							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								track_bshape->init_value = reset_anim->track_get_key_value(rt, 0);
 							}
 						}
@@ -981,7 +1000,7 @@ bool AnimationMixer::_update_caches() {
 
 void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 	_blend_init();
-	if (_blend_pre_process(p_delta, track_count, track_map)) {
+	if (cache_valid && _blend_pre_process(p_delta, track_count, track_map)) {
 		_blend_capture(p_delta);
 		_blend_calc_total_weight();
 		_blend_process(p_delta, p_update_only);
@@ -1137,7 +1156,7 @@ void AnimationMixer::_blend_calc_total_weight() {
 		LocalVector<TrackCache *> &track_num_to_track_cache = animation_track_num_to_track_cache[a];
 		thread_local HashSet<Animation::TypeHash, HashHasher> processed_hashes;
 		processed_hashes.clear();
-		const Vector<Animation::Track *> tracks = a->get_tracks();
+		const LocalVector<Animation::Track *> &tracks = a->get_tracks();
 		Animation::Track *const *tracks_ptr = tracks.ptr();
 		int count = tracks.size();
 		for (int i = 0; i < count; i++) {
@@ -1185,7 +1204,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 #endif // _3D_DISABLED
 		ERR_CONTINUE_EDMSG(!animation_track_num_to_track_cache.has(a), "No animation in cache.");
 		LocalVector<TrackCache *> &track_num_to_track_cache = animation_track_num_to_track_cache[a];
-		const Vector<Animation::Track *> tracks = a->get_tracks();
+		const LocalVector<Animation::Track *> &tracks = a->get_tracks();
 		Animation::Track *const *tracks_ptr = tracks.ptr();
 		real_t a_length = a->get_length();
 		int count = tracks.size();
@@ -1406,7 +1425,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
 								a->try_rotation_track_interpolate(i, end, &rot[1]);
 								rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
-								root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
+								root_motion_cache.rot = Animation::interpolate_via_rest(root_motion_cache.rot, rot[1], blend, rot[0]);
 								prev_time = start;
 							}
 						} else {
@@ -1418,7 +1437,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
 								a->try_rotation_track_interpolate(i, start, &rot[1]);
 								rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
-								root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
+								root_motion_cache.rot = Animation::interpolate_via_rest(root_motion_cache.rot, rot[1], blend, rot[0]);
 								prev_time = end;
 							}
 						}
@@ -1429,7 +1448,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
 						a->try_rotation_track_interpolate(i, time, &rot[1]);
 						rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
-						root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
+						root_motion_cache.rot = Animation::interpolate_via_rest(root_motion_cache.rot, rot[1], blend, rot[0]);
 						prev_time = !backward ? start : end;
 					}
 					{
@@ -1439,7 +1458,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							continue;
 						}
 						rot = post_process_key_value(a, i, rot, t->object_id, t->bone_idx);
-						t->rot = (t->rot * Quaternion().slerp(t->init_rot.inverse() * rot, blend)).normalized();
+						t->rot = Animation::interpolate_via_rest(t->rot, rot, blend, t->init_rot);
 					}
 #endif // _3D_DISABLED
 				} break;
@@ -1585,21 +1604,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						// Special case for angle interpolation.
 						if (t->is_using_angle) {
 							// For blending consistency, it prevents rotation of more than 180 degrees from init_value.
-							// This is the same as for Quaternion blends.
-							float rot_a = t->value;
-							float rot_b = value;
-							float rot_init = t->init_value;
-							rot_a = Math::fposmod(rot_a, (float)Math::TAU);
-							rot_b = Math::fposmod(rot_b, (float)Math::TAU);
-							rot_init = Math::fposmod(rot_init, (float)Math::TAU);
-							if (rot_init < Math::PI) {
-								rot_a = rot_a > rot_init + Math::PI ? rot_a - Math::TAU : rot_a;
-								rot_b = rot_b > rot_init + Math::PI ? rot_b - Math::TAU : rot_b;
-							} else {
-								rot_a = rot_a < rot_init - Math::PI ? rot_a + Math::TAU : rot_a;
-								rot_b = rot_b < rot_init - Math::PI ? rot_b + Math::TAU : rot_b;
-							}
-							t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math::TAU);
+							// This is the same with Quaternion blending.
+							t->value = Animation::interpolate_via_rest((double)t->value, (double)value, blend, (double)t->init_value);
 						} else {
 							value = Animation::cast_to_blendwise(value);
 							if (t->init_value.is_array()) {
@@ -2508,7 +2514,7 @@ void AnimatedValuesBackup::set_data(const AHashMap<Animation::TypeHash, Animatio
 }
 
 AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> AnimatedValuesBackup::get_data() const {
-	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> ret;
+	AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> ret;
 	for (const KeyValue<Animation::TypeHash, AnimationMixer::TrackCache *> &E : data) {
 		AnimationMixer::TrackCache *track = get_cache_copy(E.value);
 		ERR_CONTINUE(!track); // Backup shouldn't contain tracks that cannot be copied, this is a mistake.

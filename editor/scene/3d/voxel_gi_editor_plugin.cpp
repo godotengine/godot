@@ -44,7 +44,6 @@ void VoxelGIEditorPlugin::_bake() {
 			if (path.is_empty()) {
 				path = "res://" + voxel_gi->get_name() + "_data.res";
 			} else {
-				String ext = path.get_extension();
 				path = path.get_basename() + "." + voxel_gi->get_name() + "_data.res";
 			}
 			probe_file->set_current_path(path);

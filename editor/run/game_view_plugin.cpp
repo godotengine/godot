@@ -44,13 +44,14 @@
 #include "editor/gui/window_wrapper.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/embedded_process.h"
+#include "editor/run/run_instances_dialog.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/panel.h"
 #include "scene/gui/separator.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
@@ -94,6 +95,12 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	Array mode;
 	mode.append(select_mode);
 	p_session->send_message("scene:runtime_node_select_set_mode", mode);
+	Array avoid_locked;
+	avoid_locked.append(selection_avoid_locked);
+	p_session->send_message("scene:runtime_node_select_set_avoid_locked", avoid_locked);
+	Array prefer_group;
+	prefer_group.append(selection_prefer_group);
+	p_session->send_message("scene:runtime_node_select_set_prefer_group", prefer_group);
 	Array mute_audio_data;
 	mute_audio_data.append(mute_audio);
 	p_session->send_message("scene:debug_mute_audio", mute_audio_data);
@@ -134,6 +141,28 @@ void GameViewDebugger::next_frame() {
 	}
 }
 
+void GameViewDebugger::set_time_scale(double p_scale) {
+	Array message;
+	message.append(p_scale);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:speed_changed", message);
+		}
+	}
+}
+
+void GameViewDebugger::reset_time_scale() {
+	Array message;
+	message.append(1.0);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:speed_changed", message);
+		}
+	}
+}
+
 void GameViewDebugger::set_node_type(int p_type) {
 	node_type = p_type;
 
@@ -156,6 +185,32 @@ void GameViewDebugger::set_selection_visible(bool p_visible) {
 	for (Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
 			I->send_message("scene:runtime_node_select_set_visible", message);
+		}
+	}
+}
+
+void GameViewDebugger::set_selection_avoid_locked(bool p_enabled) {
+	selection_avoid_locked = p_enabled;
+
+	Array message;
+	message.append(p_enabled);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:runtime_node_select_set_avoid_locked", message);
+		}
+	}
+}
+
+void GameViewDebugger::set_selection_prefer_group(bool p_enabled) {
+	selection_prefer_group = p_enabled;
+
+	Array message;
+	message.append(p_enabled);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:runtime_node_select_set_prefer_group", message);
 		}
 	}
 }
@@ -335,7 +390,9 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 
 		_show_update_window_wrapper();
 
-		embedded_process->grab_focus();
+		if (embedded_process->get_focus_mode_with_override() != FOCUS_NONE) {
+			embedded_process->grab_focus();
+		}
 	}
 
 	_update_arguments_for_instance(p_idx, r_arguments);
@@ -422,7 +479,10 @@ void GameView::_play_pressed() {
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
 			// Reset the normal size of the bottom panel when fully expanded.
 			EditorNode::get_singleton()->get_bottom_panel()->set_expanded(false);
-			embedded_process->grab_focus();
+
+			if (embedded_process->get_focus_mode_with_override() != FOCUS_NONE) {
+				embedded_process->grab_focus();
+			}
 		}
 		embedded_process->embed_process(current_process_id);
 		_update_ui();
@@ -479,6 +539,10 @@ void GameView::_embedded_process_focused() {
 }
 
 void GameView::_editor_or_project_settings_changed() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	// Update the window size and aspect ratio.
 	_update_embed_window_size();
 
@@ -497,6 +561,8 @@ void GameView::_update_debugger_buttons() {
 
 	suspend_button->set_disabled(empty);
 	camera_override_button->set_disabled(empty);
+	speed_state_button->set_disabled(empty);
+	reset_speed_button->set_disabled(empty);
 
 	PopupMenu *menu = camera_override_menu->get_popup();
 
@@ -509,6 +575,8 @@ void GameView::_update_debugger_buttons() {
 		camera_override_button->set_pressed(false);
 	}
 	next_frame_button->set_disabled(!suspend_button->is_pressed());
+
+	_reset_time_scales();
 }
 
 void GameView::_handle_shortcut_requested(int p_embed_action) {
@@ -560,6 +628,25 @@ void GameView::_select_mode_pressed(int p_option) {
 	EditorSettings::get_singleton()->set_project_metadata("game_view", "select_mode", mode);
 }
 
+void GameView::_selection_options_menu_id_pressed(int p_id) {
+	switch (p_id) {
+		case SELECTION_AVOID_LOCKED: {
+			selection_avoid_locked = !selection_avoid_locked;
+			debugger->set_selection_avoid_locked(selection_avoid_locked);
+			EditorSettings::get_singleton()->set_project_metadata("game_view", "selection_avoid_locked", selection_avoid_locked);
+		} break;
+		case SELECTION_PREFER_GROUP: {
+			selection_prefer_group = !selection_prefer_group;
+			debugger->set_selection_prefer_group(selection_prefer_group);
+			EditorSettings::get_singleton()->set_project_metadata("game_view", "selection_prefer_group", selection_prefer_group);
+		} break;
+	}
+
+	PopupMenu *menu = selection_options_menu->get_popup();
+	menu->set_item_checked(menu->get_item_index(SELECTION_AVOID_LOCKED), selection_avoid_locked);
+	menu->set_item_checked(menu->get_item_index(SELECTION_PREFER_GROUP), selection_prefer_group);
+}
+
 void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 	switch (p_id) {
 		case EMBED_RUN_GAME_EMBEDDED: {
@@ -576,17 +663,62 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 				EditorSettings::get_singleton()->set_project_metadata("game_view", "make_floating_on_play", make_floating_on_play);
 			}
 		} break;
+		case SIZE_MODE_FIXED:
+		case SIZE_MODE_KEEP_ASPECT:
+		case SIZE_MODE_STRETCH: {
+			embed_size_mode = (EmbedSizeMode)p_id;
+			EditorSettings::get_singleton()->set_project_metadata("game_view", "embed_size_mode", p_id);
+
+			_update_embed_window_size();
+		} break;
 	}
 	_update_embed_menu_options();
 	_update_ui();
 }
 
-void GameView::_size_mode_button_pressed(int size_mode) {
-	embed_size_mode = (EmbedSizeMode)size_mode;
-	EditorSettings::get_singleton()->set_project_metadata("game_view", "embed_size_mode", size_mode);
+void GameView::_reset_time_scales() {
+	if (!is_visible_in_tree()) {
+		return;
+	}
+	time_scale_index = DEFAULT_TIME_SCALE_INDEX;
+	debugger->reset_time_scale();
+	_update_speed_buttons();
+}
 
-	_update_embed_menu_options();
-	_update_embed_window_size();
+void GameView::_speed_state_menu_pressed(int p_id) {
+	time_scale_index = p_id;
+	debugger->set_time_scale(time_scale_range[time_scale_index]);
+	_update_speed_buttons();
+}
+
+void GameView::_update_speed_buttons() {
+	bool disabled = time_scale_index == DEFAULT_TIME_SCALE_INDEX;
+	reset_speed_button->set_disabled(disabled);
+	speed_state_button->set_text(vformat(U"%s×", time_scale_label[time_scale_index]));
+	_update_speed_state_color();
+}
+
+void GameView::_update_speed_state_color() {
+	Color text_color;
+	if (time_scale_index == DEFAULT_TIME_SCALE_INDEX) {
+		text_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+	} else if (time_scale_index > DEFAULT_TIME_SCALE_INDEX) {
+		text_color = get_theme_color(SNAME("success_color"), EditorStringName(Editor));
+	} else if (time_scale_index < DEFAULT_TIME_SCALE_INDEX) {
+		text_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	}
+	speed_state_button->add_theme_color_override(SceneStringName(font_color), text_color);
+}
+
+void GameView::_update_speed_state_size() {
+	if (!speed_state_button) {
+		return;
+	}
+	float min_size = 0;
+	for (const String lbl : time_scale_label) {
+		min_size = MAX(speed_state_button->get_minimum_size_for_text_and_icon(vformat(U"%s×", lbl), Ref<Texture2D>()).x, min_size);
+	}
+	speed_state_button->set_custom_minimum_size(Vector2(min_size, 0));
 }
 
 GameView::EmbedAvailability GameView::_get_embed_available() {
@@ -597,8 +729,16 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 		return EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE;
 	}
 	String display_driver = GLOBAL_GET("display/display_server/driver");
-	if (display_driver == "headless" || display_driver == "wayland") {
+	if (display_driver == "headless") {
 		return EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER;
+	}
+
+	if (RunInstancesDialog::get_singleton()) {
+		List<String> instance_args;
+		RunInstancesDialog::get_singleton()->get_argument_list_for_instance(0, instance_args);
+		if (instance_args.find("--headless")) {
+			return EMBED_NOT_AVAILABLE_HEADLESS;
+		}
 	}
 
 	EditorRun::WindowPlacement placement = EditorRun::get_window_placement();
@@ -643,11 +783,7 @@ void GameView::_update_ui() {
 			}
 			break;
 		case EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED:
-			if (DisplayServer::get_singleton()->get_name() == "Wayland") {
-				state_label->set_text(TTRC("Game embedding not available on Wayland.\nWayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD > Prefer Wayland)."));
-			} else {
-				state_label->set_text(TTRC("Game embedding not available on your OS."));
-			}
+			state_label->set_text(TTRC("Game embedding not available on your OS."));
 			break;
 		case EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER:
 			state_label->set_text(vformat(TTR("Game embedding not available for the Display Server: '%s'.\nDisplay Server can be modified in the Project Settings (Display > Display Server > Driver)."), GLOBAL_GET("display/display_server/driver")));
@@ -663,6 +799,9 @@ void GameView::_update_ui() {
 			break;
 		case EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE:
 			state_label->set_text(TTRC("Game embedding not available in single window mode."));
+			break;
+		case EMBED_NOT_AVAILABLE_HEADLESS:
+			state_label->set_text(TTRC("Game embedding not available when the game starts in headless mode."));
 			break;
 	}
 
@@ -683,11 +822,11 @@ void GameView::_update_embed_menu_options() {
 	menu->set_item_checked(menu->get_item_index(EMBED_RUN_GAME_EMBEDDED), embed_on_play);
 	menu->set_item_checked(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), make_floating_on_play && is_multi_window);
 
-	menu->set_item_disabled(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), !embed_on_play || !is_multi_window);
+	menu->set_item_checked(menu->get_item_index(SIZE_MODE_FIXED), embed_size_mode == SIZE_MODE_FIXED);
+	menu->set_item_checked(menu->get_item_index(SIZE_MODE_KEEP_ASPECT), embed_size_mode == SIZE_MODE_KEEP_ASPECT);
+	menu->set_item_checked(menu->get_item_index(SIZE_MODE_STRETCH), embed_size_mode == SIZE_MODE_STRETCH);
 
-	fixed_size_button->set_pressed(embed_size_mode == SIZE_MODE_FIXED);
-	keep_aspect_button->set_pressed(embed_size_mode == SIZE_MODE_KEEP_ASPECT);
-	stretch_button->set_pressed(embed_size_mode == SIZE_MODE_STRETCH);
+	menu->set_item_disabled(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), !embed_on_play || !is_multi_window);
 }
 
 void GameView::_update_embed_window_size() {
@@ -771,13 +910,18 @@ void GameView::_camera_override_menu_id_pressed(int p_id) {
 void GameView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Alt+RMB: Show list of all nodes at position clicked."));
+			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(vformat(TTR("%s+Alt+RMB: Show list of all nodes at position clicked."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)));
 			_update_ui();
 		} break;
 
+		case NOTIFICATION_POST_ENTER_TREE: {
+			_update_speed_state_size();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
-			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
+			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Suspend")));
 			next_frame_button->set_button_icon(get_editor_theme_icon(SNAME("NextFrame")));
+			reset_speed_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_button_icon(get_editor_theme_icon(SNAME("InputEventJoypadMotion")));
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_button_icon(get_editor_theme_icon(SNAME("2DNodes")));
@@ -787,15 +931,16 @@ void GameView::_notification(int p_what) {
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
 
 			hide_selection->set_button_icon(get_editor_theme_icon(hide_selection->is_pressed() ? SNAME("GuiVisibilityHidden") : SNAME("GuiVisibilityVisible")));
-			fixed_size_button->set_button_icon(get_editor_theme_icon(SNAME("FixedSize")));
-			keep_aspect_button->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
-			stretch_button->set_button_icon(get_editor_theme_icon(SNAME("Stretch")));
-			embed_options_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			selection_options_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			embed_options_menu->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
 
 			debug_mute_audio_button->set_button_icon(get_editor_theme_icon(debug_mute_audio ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
 
 			camera_override_button->set_button_icon(get_editor_theme_icon(SNAME("Camera")));
 			camera_override_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+
+			_update_speed_state_size();
+			_update_speed_state_color();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -821,7 +966,6 @@ void GameView::_notification(int p_what) {
 					} break;
 				}
 				embed_size_mode = (EmbedSizeMode)(int)EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_size_mode", SIZE_MODE_FIXED);
-				keep_aspect_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "keep_aspect", true));
 				_update_embed_menu_options();
 
 				EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &GameView::_play_pressed));
@@ -834,11 +978,7 @@ void GameView::_notification(int p_what) {
 				EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &GameView::_editor_or_project_settings_changed));
 			} else {
 				// Embedding not available.
-				embedding_separator->hide();
-				embed_options_menu->hide();
-				fixed_size_button->hide();
-				keep_aspect_button->hide();
-				stretch_button->hide();
+				embedding_hb->hide();
 			}
 
 			_update_ui();
@@ -920,6 +1060,21 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	// macOS requires the embedded display driver.
 	remove_args.insert("--display-driver");
 #endif
+
+#ifdef WAYLAND_ENABLED
+	// Wayland requires its display driver.
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		remove_args.insert("--display-driver");
+	}
+#endif
+
+#ifdef X11_ENABLED
+	// X11 requires its display driver.
+	if (DisplayServer::get_singleton()->get_name() == "X11") {
+		remove_args.insert("--display-driver");
+	}
+#endif
+
 	while (E) {
 		List<String>::Element *N = E->next();
 
@@ -947,6 +1102,20 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 #if MACOS_ENABLED
 	N = r_arguments.insert_after(N, "--embedded");
+#endif
+
+#ifdef WAYLAND_ENABLED
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		N = r_arguments.insert_after(N, "--display-driver");
+		N = r_arguments.insert_after(N, "wayland");
+	}
+#endif
+
+#ifdef X11_ENABLED
+	if (DisplayServer::get_singleton()->get_name() == "X11") {
+		N = r_arguments.insert_after(N, "--display-driver");
+		N = r_arguments.insert_after(N, "x11");
+	}
 #endif
 
 	// Be sure to have the correct window size in the embedded_process control.
@@ -1046,36 +1215,59 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	window_wrapper = p_wrapper;
 	embedded_process = p_embedded_process;
 
-	// Add some margin to the sides for better aesthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
-	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	add_child(toolbar_margin);
 
-	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
-	toolbar_margin->add_child(main_menu_hbox);
+	FlowContainer *main_menu_fc = memnew(FlowContainer);
+	toolbar_margin->add_child(main_menu_fc);
 
+	HBoxContainer *process_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(process_hb);
 	suspend_button = memnew(Button);
-	main_menu_hbox->add_child(suspend_button);
+	process_hb->add_child(suspend_button);
 	suspend_button->set_toggle_mode(true);
 	suspend_button->set_theme_type_variation(SceneStringName(FlatButton));
 	suspend_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_suspend_button_toggled));
 	suspend_button->set_accessibility_name(TTRC("Suspend"));
 	suspend_button->set_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
+	suspend_button->set_tooltip_text(TTRC("Force pause at SceneTree level. Stops all processing, but you can still interact with the project."));
 
 	next_frame_button = memnew(Button);
-	main_menu_hbox->add_child(next_frame_button);
+	process_hb->add_child(next_frame_button);
 	next_frame_button->set_theme_type_variation(SceneStringName(FlatButton));
 	next_frame_button->connect(SceneStringName(pressed), callable_mp(*debugger, &GameViewDebugger::next_frame));
 	next_frame_button->set_accessibility_name(TTRC("Next Frame"));
 	next_frame_button->set_shortcut(ED_GET_SHORTCUT("editor/next_frame_embedded_project"));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	speed_state_button = memnew(MenuButton);
+	process_hb->add_child(speed_state_button);
+	speed_state_button->set_text(U"1.0×");
+	speed_state_button->set_flat(false);
+	speed_state_button->set_theme_type_variation("FlatMenuButton");
+	speed_state_button->set_tooltip_text(TTRC("Change the game speed."));
+	speed_state_button->set_accessibility_name(TTRC("Speed State"));
+
+	PopupMenu *menu = speed_state_button->get_popup();
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_speed_state_menu_pressed));
+	for (String lbl : time_scale_label) {
+		menu->add_item(vformat(U"%s×", lbl));
+	}
+
+	reset_speed_button = memnew(Button);
+	process_hb->add_child(reset_speed_button);
+	reset_speed_button->set_theme_type_variation(SceneStringName(FlatButton));
+	reset_speed_button->set_tooltip_text(TTRC("Reset the game speed."));
+	reset_speed_button->set_accessibility_name(TTRC("Reset Speed"));
+	reset_speed_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_reset_time_scales));
+
+	process_hb->add_child(memnew(VSeparator));
+
+	HBoxContainer *input_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(input_hb);
 
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE] = memnew(Button);
-	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]);
+	input_hb->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_text(TTRC("Input"));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_toggle_mode(true);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_pressed(true);
@@ -1084,7 +1276,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_tooltip_text(TTRC("Allow game input."));
 
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D] = memnew(Button);
-	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]);
+	input_hb->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_text(TTRC("2D"));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_toggle_mode(true);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1092,27 +1284,20 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_tooltip_text(TTRC("Disable game input and allow to select Node2Ds, Controls, and manipulate the 2D camera."));
 
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D] = memnew(Button);
-	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]);
+	input_hb->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_text(TTRC("3D"));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_toggle_mode(true);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_theme_type_variation(SceneStringName(FlatButton));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_3D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_tooltip_text(TTRC("Disable game input and allow to select Node3Ds and manipulate the 3D camera."));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	input_hb->add_child(memnew(VSeparator));
 
-	hide_selection = memnew(Button);
-	main_menu_hbox->add_child(hide_selection);
-	hide_selection->set_toggle_mode(true);
-	hide_selection->set_theme_type_variation(SceneStringName(FlatButton));
-	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
-	hide_selection->set_tooltip_text(TTRC("Toggle Selection Visibility"));
-	hide_selection->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "hide_selection", false));
-
-	main_menu_hbox->add_child(memnew(VSeparator));
+	HBoxContainer *selection_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(selection_hb);
 
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE] = memnew(Button);
-	main_menu_hbox->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]);
+	selection_hb->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_toggle_mode(true);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_pressed(true);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1121,7 +1306,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_shortcut_context(this);
 
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST] = memnew(Button);
-	main_menu_hbox->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]);
+	selection_hb->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_toggle_mode(true);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_theme_type_variation(SceneStringName(FlatButton));
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_select_mode_pressed).bind(RuntimeNodeSelect::SELECT_MODE_LIST));
@@ -1129,31 +1314,68 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	_select_mode_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "select_mode", 0));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	hide_selection = memnew(Button);
+	selection_hb->add_child(hide_selection);
+	hide_selection->set_toggle_mode(true);
+	hide_selection->set_theme_type_variation(SceneStringName(FlatButton));
+	hide_selection->set_tooltip_text(TTRC("Toggle Selection Visibility"));
+	hide_selection->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "hide_selection", false));
+	if (hide_selection->is_pressed()) {
+		debugger->set_selection_visible(false);
+	}
+	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
+
+	selection_options_menu = memnew(MenuButton);
+	selection_hb->add_child(selection_options_menu);
+	selection_options_menu->set_flat(false);
+	selection_options_menu->set_theme_type_variation("FlatMenuButton");
+	selection_options_menu->set_h_size_flags(SIZE_SHRINK_END);
+	selection_options_menu->set_tooltip_text(TTRC("Selection Options"));
+
+	PopupMenu *selection_menu = selection_options_menu->get_popup();
+	selection_menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_selection_options_menu_id_pressed));
+	selection_menu->add_check_item(TTRC("Don't Select Locked Nodes"), SELECTION_AVOID_LOCKED);
+	selection_menu->add_check_item(TTRC("Select Group Over Children"), SELECTION_PREFER_GROUP);
+
+	selection_avoid_locked = EditorSettings::get_singleton()->get_project_metadata("game_view", "selection_avoid_locked", false);
+	selection_prefer_group = EditorSettings::get_singleton()->get_project_metadata("game_view", "selection_prefer_group", false);
+	selection_menu->set_item_checked(selection_menu->get_item_index(SELECTION_AVOID_LOCKED), selection_avoid_locked);
+	selection_menu->set_item_checked(selection_menu->get_item_index(SELECTION_PREFER_GROUP), selection_prefer_group);
+
+	debugger->set_selection_avoid_locked(selection_avoid_locked);
+	debugger->set_selection_prefer_group(selection_prefer_group);
+
+	selection_hb->add_child(memnew(VSeparator));
+
+	HBoxContainer *audio_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(audio_hb);
 
 	debug_mute_audio_button = memnew(Button);
-	main_menu_hbox->add_child(debug_mute_audio_button);
+	audio_hb->add_child(debug_mute_audio_button);
 	debug_mute_audio_button->set_theme_type_variation("FlatButton");
 	debug_mute_audio_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_debug_mute_audio_button_pressed));
 	debug_mute_audio_button->set_tooltip_text(debug_mute_audio ? TTRC("Unmute game audio.") : TTRC("Mute game audio."));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	audio_hb->add_child(memnew(VSeparator));
+
+	HBoxContainer *camera_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(camera_hb);
 
 	camera_override_button = memnew(Button);
-	main_menu_hbox->add_child(camera_override_button);
+	camera_hb->add_child(camera_override_button);
 	camera_override_button->set_toggle_mode(true);
 	camera_override_button->set_theme_type_variation(SceneStringName(FlatButton));
 	camera_override_button->set_tooltip_text(TTRC("Override the in-game camera."));
 	camera_override_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_camera_override_button_toggled));
 
 	camera_override_menu = memnew(MenuButton);
-	main_menu_hbox->add_child(camera_override_menu);
+	camera_hb->add_child(camera_override_menu);
 	camera_override_menu->set_flat(false);
 	camera_override_menu->set_theme_type_variation("FlatMenuButton");
 	camera_override_menu->set_h_size_flags(SIZE_SHRINK_END);
 	camera_override_menu->set_tooltip_text(TTRC("Camera Override Options"));
 
-	PopupMenu *menu = camera_override_menu->get_popup();
+	menu = camera_override_menu->get_popup();
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_camera_override_menu_id_pressed));
 	menu->add_item(TTRC("Reset 2D Camera"), CAMERA_RESET_2D);
 	menu->add_item(TTRC("Reset 3D Camera"), CAMERA_RESET_3D);
@@ -1163,33 +1385,14 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	menu->add_radio_check_item(TTRC("Manipulate From Editors"), CAMERA_MODE_EDITORS);
 	_camera_override_menu_id_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "camera_override_mode", 0));
 
-	embedding_separator = memnew(VSeparator);
-	main_menu_hbox->add_child(embedding_separator);
+	camera_hb->add_child(memnew(VSeparator));
 
-	fixed_size_button = memnew(Button);
-	main_menu_hbox->add_child(fixed_size_button);
-	fixed_size_button->set_toggle_mode(true);
-	fixed_size_button->set_theme_type_variation("FlatButton");
-	fixed_size_button->set_tooltip_text(TTRC("Embedded game size is based on project settings.\nThe 'Keep Aspect' mode is used when the Game Workspace is smaller than the desired size."));
-	fixed_size_button->set_accessibility_name(TTRC("Embedded game size is based on project settings."));
-	fixed_size_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_FIXED));
-
-	keep_aspect_button = memnew(Button);
-	main_menu_hbox->add_child(keep_aspect_button);
-	keep_aspect_button->set_toggle_mode(true);
-	keep_aspect_button->set_theme_type_variation("FlatButton");
-	keep_aspect_button->set_tooltip_text(TTRC("Keep the aspect ratio of the embedded game."));
-	keep_aspect_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_KEEP_ASPECT));
-
-	stretch_button = memnew(Button);
-	main_menu_hbox->add_child(stretch_button);
-	stretch_button->set_toggle_mode(true);
-	stretch_button->set_theme_type_variation("FlatButton");
-	stretch_button->set_tooltip_text(TTRC("Embedded game size stretches to fit the Game Workspace."));
-	stretch_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_STRETCH));
+	embedding_hb = memnew(HBoxContainer);
+	embedding_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_menu_fc->add_child(embedding_hb);
 
 	embed_options_menu = memnew(MenuButton);
-	main_menu_hbox->add_child(embed_options_menu);
+	embedding_hb->add_child(embed_options_menu);
 	embed_options_menu->set_flat(false);
 	embed_options_menu->set_theme_type_variation("FlatMenuButton");
 	embed_options_menu->set_h_size_flags(SIZE_SHRINK_END);
@@ -1199,22 +1402,32 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_embed_options_menu_menu_id_pressed));
 	menu->add_check_item(TTRC("Embed Game on Next Play"), EMBED_RUN_GAME_EMBEDDED);
 	menu->add_check_item(TTRC("Make Game Workspace Floating on Next Play"), EMBED_MAKE_FLOATING_ON_PLAY);
+	menu->add_separator(TTRC("Embedded Window Sizing"));
 
-	main_menu_hbox->add_spacer();
+	menu->add_radio_check_item(TTRC("Fixed Size"), SIZE_MODE_FIXED);
+	menu->set_item_tooltip(menu->get_item_index(SIZE_MODE_FIXED), TTRC("Embedded game size is based on project settings.\nThe 'Keep Aspect' mode is used when the Game Workspace is smaller than the desired size."));
+	menu->add_radio_check_item(TTRC("Keep Aspect Ratio"), SIZE_MODE_KEEP_ASPECT);
+	menu->set_item_tooltip(menu->get_item_index(SIZE_MODE_KEEP_ASPECT), TTRC("Keep the aspect ratio of the embedded game."));
+	menu->add_radio_check_item(TTRC("Stretch to Fit"), SIZE_MODE_STRETCH);
+	menu->set_item_tooltip(menu->get_item_index(SIZE_MODE_STRETCH), TTRC("Embedded game size stretches to fit the Game Workspace."));
 
 	game_size_label = memnew(Label());
-	main_menu_hbox->add_child(game_size_label);
+	embedding_hb->add_child(game_size_label);
 	game_size_label->hide();
 	// Setting the minimum size prevents the game workspace from resizing indefinitely
 	// due to the label size oscillating by a few pixels when the game is in stretch mode
 	// and the game workspace is at its minimum size.
 	game_size_label->set_custom_minimum_size(Size2(80 * EDSCALE, 0));
+	game_size_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	game_size_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT);
 
-	panel = memnew(Panel);
+	panel = memnew(PanelContainer);
 	add_child(panel);
 	panel->set_theme_type_variation("GamePanel");
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
+#ifdef MACOS_ENABLED
+	panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+#endif
 
 	panel->add_child(embedded_process);
 	embedded_process->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
@@ -1224,17 +1437,8 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	embedded_process->connect("embedded_process_focused", callable_mp(this, &GameView::_embedded_process_focused));
 	embedded_process->set_custom_minimum_size(Size2i(100, 100));
 
-	MarginContainer *state_container = memnew(MarginContainer);
-	state_container->add_theme_constant_override("margin_left", 8 * EDSCALE);
-	state_container->add_theme_constant_override("margin_right", 8 * EDSCALE);
-	state_container->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-#ifdef MACOS_ENABLED
-	state_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-#endif
-	panel->add_child(state_container);
-
 	state_label = memnew(Label());
-	state_container->add_child(state_label);
+	panel->add_child(state_label);
 	state_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	state_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	state_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);

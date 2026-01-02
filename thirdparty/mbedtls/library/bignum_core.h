@@ -822,4 +822,45 @@ void mbedtls_mpi_core_from_mont_rep(mbedtls_mpi_uint *X,
                                     mbedtls_mpi_uint mm,
                                     mbedtls_mpi_uint *T);
 
+/** Compute GCD(A, N) and optionally the inverse of A mod N if it exists.
+ *
+ * Requires N to be odd, 0 <= A <= N and A_limbs <= N_limbs.
+ * When I != NULL, N (the modulus) must be greater than 1.
+ *
+ * A and N may not alias each other.
+ * When I == NULL (computing only the GCD), G may alias A or N.
+ * When I != NULL (computing the modular inverse), G or I may alias A
+ * but none of them may alias N (the modulus).
+ *
+ * If any of the above preconditions is not met, output values are unspecified.
+ *
+ * \param[out]    G       The GCD of \p A and \p N.
+ *                        Must have the same number of limbs as \p N.
+ * \param[out]    I       The inverse of \p A modulo \p N if it exists (that is,
+ *                        if \p G above is 1 on exit); indeterminate otherwise.
+ *                        This must either be NULL (to only compute the GCD),
+ *                        or have the same number of limbs as \p N.
+ * \param[in]     A       The 1st operand of GCD and number to invert.
+ *                        This value must be less than or equal to \p N.
+ * \param         A_limbs The number of limbs of \p A.
+ *                        Must be less than or equal to \p N_limbs.
+ * \param[in]     N       The 2nd operand of GCD and modulus for inversion.
+ *                        This value must be odd.
+ *                        If I != NULL this value must be greater than 1.
+ * \param         N_limbs The number of limbs of \p N.
+ * \param[in,out] T       Temporary storage of size at least 5 * N_limbs limbs,
+ *                        or 4 * N_limbs if \p I is NULL (GCD only).
+ *                        Its initial content is unused and
+ *                        its final content is indeterminate.
+ *                        It must not alias or otherwise overlap any of the
+ *                        other parameters.
+ */
+void mbedtls_mpi_core_gcd_modinv_odd(mbedtls_mpi_uint *G,
+                                     mbedtls_mpi_uint *I,
+                                     const mbedtls_mpi_uint *A,
+                                     size_t A_limbs,
+                                     const mbedtls_mpi_uint *N,
+                                     size_t N_limbs,
+                                     mbedtls_mpi_uint *T);
+
 #endif /* MBEDTLS_BIGNUM_CORE_H */

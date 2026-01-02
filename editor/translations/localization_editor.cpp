@@ -37,7 +37,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/translations/editor_translation_parser.h"
-#include "editor/translations/pot_generator.h"
+#include "editor/translations/template_generator.h"
 #include "scene/gui/control.h"
 #include "scene/gui/tab_container.h"
 
@@ -45,8 +45,8 @@ void LocalizationEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
-			translation_pot_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_pot_delete));
-			translation_pot_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
+			template_source_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_template_source_delete));
+			template_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
@@ -62,8 +62,15 @@ void LocalizationEditor::_notification(int p_what) {
 				translation_res_option_file_open_dialog->add_filter("*." + E);
 			}
 
-			_update_pot_file_extensions();
-			pot_generate_dialog->add_filter("*.pot");
+			_update_template_source_file_extensions();
+			template_generate_dialog->add_filter("*.pot");
+			template_generate_dialog->add_filter("*.csv");
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			for (Tree *tree : trees) {
+				tree->set_drop_mode_flags(Tree::DROP_MODE_DISABLED);
+			}
 		} break;
 	}
 }
@@ -336,12 +343,12 @@ void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_co
 	undo_redo->commit_action();
 }
 
-void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
-	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
+void LocalizationEditor::_template_source_add(const PackedStringArray &p_paths) {
+	PackedStringArray sources = GLOBAL_GET("internationalization/locale/translations_pot_files");
 	int count = 0;
 	for (const String &path : p_paths) {
-		if (!pot_translations.has(path)) {
-			pot_translations.push_back(path);
+		if (!sources.has(path)) {
+			sources.push_back(path);
 			count += 1;
 		}
 	}
@@ -350,8 +357,8 @@ void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTRN("Add %d file for POT generation", "Add %d files for POT generation", count), count));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", pot_translations);
+	undo_redo->create_action(vformat(TTRN("Add %d file for template generation", "Add %d files for template generation", count), count));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", sources);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", GLOBAL_GET("internationalization/locale/translations_pot_files"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
@@ -360,7 +367,7 @@ void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 	undo_redo->commit_action();
 }
 
-void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
+void LocalizationEditor::_template_source_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
 	if (p_mouse_button != MouseButton::LEFT) {
 		return;
 	}
@@ -370,15 +377,15 @@ void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button,
 
 	int idx = ti->get_metadata(0);
 
-	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	PackedStringArray sources = GLOBAL_GET("internationalization/locale/translations_pot_files");
 
-	ERR_FAIL_INDEX(idx, pot_translations.size());
+	ERR_FAIL_INDEX(idx, sources.size());
 
-	pot_translations.remove_at(idx);
+	sources.remove_at(idx);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Remove file from POT generation"));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", pot_translations);
+	undo_redo->create_action(TTR("Remove file from template generation"));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", sources);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", GLOBAL_GET("internationalization/locale/translations_pot_files"));
 	undo_redo->add_do_method(this, "update_translations");
 	undo_redo->add_undo_method(this, "update_translations");
@@ -387,30 +394,30 @@ void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button,
 	undo_redo->commit_action();
 }
 
-void LocalizationEditor::_pot_file_open() {
-	pot_file_open_dialog->popup_file_dialog();
+void LocalizationEditor::_template_source_file_open() {
+	template_source_open_dialog->popup_file_dialog();
 }
 
-void LocalizationEditor::_pot_generate_open() {
-	pot_generate_dialog->popup_file_dialog();
+void LocalizationEditor::_template_generate_open() {
+	template_generate_dialog->popup_file_dialog();
 }
 
-void LocalizationEditor::_pot_add_builtin_toggled() {
-	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_builtin_strings_to_pot", translation_pot_add_builtin->is_pressed());
+void LocalizationEditor::_template_add_builtin_toggled() {
+	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_builtin_strings_to_pot", template_add_builtin->is_pressed());
 	ProjectSettings::get_singleton()->save();
 }
 
-void LocalizationEditor::_pot_generate(const String &p_file) {
+void LocalizationEditor::_template_generate(const String &p_file) {
 	EditorSettings::get_singleton()->set_project_metadata("pot_generator", "last_pot_path", p_file);
-	POTGenerator::get_singleton()->generate_pot(p_file);
+	TranslationTemplateGenerator::get_singleton()->generate(p_file);
 }
 
-void LocalizationEditor::_update_pot_file_extensions() {
-	pot_file_open_dialog->clear_filters();
+void LocalizationEditor::_update_template_source_file_extensions() {
+	template_source_open_dialog->clear_filters();
 	List<String> translation_parse_file_extensions;
 	EditorTranslationParser::get_singleton()->get_recognized_extensions(&translation_parse_file_extensions);
 	for (const String &E : translation_parse_file_extensions) {
-		pot_file_open_dialog->add_filter("*." + E);
+		template_source_open_dialog->add_filter("*." + E);
 	}
 }
 
@@ -420,6 +427,17 @@ void LocalizationEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_do
 }
 
 void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const String &p_new_file) {
+	// Update source files if the moved file is a part of them.
+	PackedStringArray sources = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	if (sources.has(p_old_file)) {
+		sources.erase(p_old_file);
+		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translations_pot_files", sources);
+
+		PackedStringArray new_file;
+		new_file.push_back(p_new_file);
+		_template_source_add(new_file);
+	}
+
 	// Update remaps if the moved file is a part of them.
 	Dictionary remaps;
 	bool remaps_changed = false;
@@ -471,6 +489,13 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 }
 
 void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
+	// Check if the source files are affected.
+	PackedStringArray sources = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	if (sources.has(p_file)) {
+		sources.erase(p_file);
+		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translations_pot_files", sources);
+	}
+
 	// Check if the remaps are affected.
 	Dictionary remaps;
 
@@ -501,6 +526,89 @@ void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
 		update_translations();
 		emit_signal("localization_changed");
 	}
+}
+
+Variant LocalizationEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	Tree *tree = Object::cast_to<Tree>(p_from);
+	ERR_FAIL_COND_V(trees.find(tree) == -1, Variant());
+
+	if (tree->get_button_id_at_position(p_point) != -1) {
+		return Variant();
+	}
+
+	TreeItem *selected = tree->get_next_selected(nullptr);
+	if (!selected) {
+		return Variant();
+	}
+	tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+
+	Label *preview = memnew(Label);
+	preview->set_text(selected->get_text(0));
+	set_drag_preview(preview);
+
+	Dictionary drag_data;
+	drag_data["type"] = tree_data_types[tree];
+	drag_data["item"] = selected;
+
+	return drag_data;
+}
+
+bool LocalizationEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	Tree *tree = Object::cast_to<Tree>(p_from);
+	ERR_FAIL_COND_V(trees.find(tree) == -1, false);
+
+	Dictionary drop_data = p_data;
+	return drop_data.get("type", "") == tree_data_types[tree];
+}
+
+void LocalizationEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	Tree *tree = Object::cast_to<Tree>(p_from);
+	ERR_FAIL_COND(trees.find(tree) == -1);
+
+	if (!can_drop_data_fw(p_point, p_data, p_from)) {
+		return;
+	}
+
+	TreeItem *item = tree->get_item_at_position(p_point);
+	if (!item) {
+		return;
+	}
+	int section = MAX(tree->get_drop_section_at_position(p_point), 0);
+	Dictionary drop_data = p_data;
+
+	TreeItem *from = Object::cast_to<TreeItem>(drop_data["item"]);
+	if (item == from) {
+		return;
+	}
+
+	const StringName &setting = tree_settings[tree];
+	PackedStringArray setting_value = GLOBAL_GET(setting);
+	const PackedStringArray original_setting_value = setting_value;
+	const int index_from = from->get_metadata(0);
+	const String path = setting_value[index_from];
+
+	int target_index = item->get_metadata(0);
+	target_index = MAX(target_index + section, 0);
+	if (target_index > index_from) {
+		target_index -= 1; // Account for item being removed.
+	}
+
+	if (target_index == index_from) {
+		return;
+	}
+
+	setting_value.remove_at(index_from);
+	setting_value.insert(target_index, path);
+
+	EditorUndoRedoManager *ur_man = EditorUndoRedoManager::get_singleton();
+	ur_man->create_action(TTR("Rearrange Localization Items"));
+	ur_man->add_do_method(ProjectSettings::get_singleton(), "set", setting, setting_value);
+	ur_man->add_do_method(ProjectSettings::get_singleton(), "save");
+	ur_man->add_do_method(this, "update_translations");
+	ur_man->add_undo_method(ProjectSettings::get_singleton(), "set", setting, original_setting_value);
+	ur_man->add_undo_method(ProjectSettings::get_singleton(), "save");
+	ur_man->add_undo_method(this, "update_translations");
+	ur_man->commit_action();
 }
 
 void LocalizationEditor::update_translations() {
@@ -594,24 +702,22 @@ void LocalizationEditor::update_translations() {
 		}
 	}
 
-	// Update translation POT files.
-	translation_pot_list->clear();
-	root = translation_pot_list->create_item(nullptr);
-	translation_pot_list->set_hide_root(true);
-	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
-	for (int i = 0; i < pot_translations.size(); i++) {
-		TreeItem *t = translation_pot_list->create_item(root);
+	// Update translation source files.
+	template_source_list->clear();
+	root = template_source_list->create_item(nullptr);
+	template_source_list->set_hide_root(true);
+	PackedStringArray sources = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	for (int i = 0; i < sources.size(); i++) {
+		TreeItem *t = template_source_list->create_item(root);
 		t->set_editable(0, false);
-		t->set_text(0, pot_translations[i].replace_first("res://", ""));
-		t->set_tooltip_text(0, pot_translations[i]);
+		t->set_text(0, sources[i].replace_first("res://", ""));
+		t->set_tooltip_text(0, sources[i]);
 		t->set_metadata(0, i);
 		t->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0, false, TTRC("Remove"));
 	}
 
-	// New translation parser plugin might extend possible file extensions in POT generation.
-	_update_pot_file_extensions();
-
-	pot_generate_button->set_disabled(pot_translations.is_empty());
+	// New translation parser plugin might extend possible file extensions in template generation.
+	_update_template_source_file_extensions();
 
 	updating_translations = false;
 }
@@ -626,6 +732,7 @@ LocalizationEditor::LocalizationEditor() {
 	localization_changed = "localization_changed";
 
 	TabContainer *translations = memnew(TabContainer);
+	translations->set_theme_type_variation("TabContainerInner");
 	translations->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(translations);
 
@@ -645,13 +752,17 @@ LocalizationEditor::LocalizationEditor() {
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_file_open));
 		thb->add_child(addtr);
 
-		VBoxContainer *tmc = memnew(VBoxContainer);
-		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
 
 		translation_list = memnew(Tree);
-		translation_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tmc->add_child(translation_list);
+		translation_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+		mc->add_child(translation_list);
+		trees.push_back(translation_list);
+		tree_data_types[translation_list] = "localization_editor_translation_item";
+		tree_settings[translation_list] = "internationalization/locale/translations";
 
 		locale_select = memnew(EditorLocaleDialog);
 		locale_select->connect("locale_selected", callable_mp(this, &LocalizationEditor::_translation_res_option_selected));
@@ -679,15 +790,16 @@ LocalizationEditor::LocalizationEditor() {
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_res_file_open));
 		thb->add_child(addtr);
 
-		VBoxContainer *tmc = memnew(VBoxContainer);
-		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontal");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
 
 		translation_remap = memnew(Tree);
-		translation_remap->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		translation_remap->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 		translation_remap->connect("cell_selected", callable_mp(this, &LocalizationEditor::_translation_res_select));
 		translation_remap->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_delete));
-		tmc->add_child(translation_remap);
+		mc->add_child(translation_remap);
 
 		translation_res_file_open_dialog = memnew(EditorFileDialog);
 		translation_res_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
@@ -706,9 +818,10 @@ LocalizationEditor::LocalizationEditor() {
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 
-		tmc = memnew(VBoxContainer);
-		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
+		mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
 
 		translation_remap_options = memnew(Tree);
 		translation_remap_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -724,7 +837,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap_options->connect("item_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_changed));
 		translation_remap_options->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_option_delete));
 		translation_remap_options->connect("custom_popup_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_popup));
-		tmc->add_child(translation_remap_options);
+		mc->add_child(translation_remap_options);
 
 		translation_res_option_file_open_dialog = memnew(EditorFileDialog);
 		translation_res_option_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
@@ -734,7 +847,7 @@ LocalizationEditor::LocalizationEditor() {
 
 	{
 		VBoxContainer *tvb = memnew(VBoxContainer);
-		tvb->set_name(TTRC("POT Generation"));
+		tvb->set_name(TTRC("Template Generation"));
 		translations->add_child(tvb);
 
 		HBoxContainer *thb = memnew(HBoxContainer);
@@ -745,31 +858,43 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->add_child(thb);
 
 		Button *addtr = memnew(Button(TTRC("Add...")));
-		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_file_open));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_source_file_open));
 		thb->add_child(addtr);
 
-		pot_generate_button = memnew(Button(TTRC("Generate POT")));
-		pot_generate_button->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_generate_open));
-		thb->add_child(pot_generate_button);
+		template_generate_button = memnew(Button(TTRC("Generate")));
+		template_generate_button->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_generate_open));
+		thb->add_child(template_generate_button);
 
-		translation_pot_list = memnew(Tree);
-		translation_pot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(translation_pot_list);
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontal");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
 
-		translation_pot_add_builtin = memnew(CheckBox(TTRC("Add Built-in Strings to POT")));
-		translation_pot_add_builtin->set_tooltip_text(TTRC("Add strings from built-in components such as certain Control nodes."));
-		translation_pot_add_builtin->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_add_builtin_toggled));
-		tvb->add_child(translation_pot_add_builtin);
+		template_source_list = memnew(Tree);
+		template_source_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+		mc->add_child(template_source_list);
+		trees.push_back(template_source_list);
+		tree_data_types[template_source_list] = "localization_editor_pot_item";
+		tree_settings[template_source_list] = "internationalization/locale/translations_pot_files";
 
-		pot_generate_dialog = memnew(EditorFileDialog);
-		pot_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-		pot_generate_dialog->set_current_path(EditorSettings::get_singleton()->get_project_metadata("pot_generator", "last_pot_path", String()));
-		pot_generate_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_pot_generate));
-		add_child(pot_generate_dialog);
+		template_add_builtin = memnew(CheckBox(TTRC("Add Built-in Strings")));
+		template_add_builtin->set_tooltip_text(TTRC("Add strings from built-in components such as certain Control nodes."));
+		template_add_builtin->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_add_builtin_toggled));
+		tvb->add_child(template_add_builtin);
 
-		pot_file_open_dialog = memnew(EditorFileDialog);
-		pot_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
-		pot_file_open_dialog->connect("files_selected", callable_mp(this, &LocalizationEditor::_pot_add));
-		add_child(pot_file_open_dialog);
+		template_generate_dialog = memnew(EditorFileDialog);
+		template_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+		template_generate_dialog->set_current_path(EditorSettings::get_singleton()->get_project_metadata("pot_generator", "last_pot_path", String()));
+		template_generate_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_template_generate));
+		add_child(template_generate_dialog);
+
+		template_source_open_dialog = memnew(EditorFileDialog);
+		template_source_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
+		template_source_open_dialog->connect("files_selected", callable_mp(this, &LocalizationEditor::_template_source_add));
+		add_child(template_source_open_dialog);
+	}
+
+	for (Tree *tree : trees) {
+		SET_DRAG_FORWARDING_GCD(tree, LocalizationEditor);
 	}
 }

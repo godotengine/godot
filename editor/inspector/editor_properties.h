@@ -34,6 +34,7 @@
 
 class CheckBox;
 class ColorPickerButton;
+class ConfirmationDialog;
 class CreateDialog;
 class EditorFileDialog;
 class EditorLocaleDialog;
@@ -41,10 +42,22 @@ class EditorResourcePicker;
 class EditorSpinSlider;
 class EditorVariantTypePopupMenu;
 class MenuButton;
-class PropertySelector;
 class SceneTreeDialog;
 class TextEdit;
 class TextureButton;
+
+struct EditorPropertyRangeHint {
+	bool or_greater = true;
+	bool or_less = true;
+	double min = 0.0;
+	double max = 0.0;
+	double step = 1.0;
+	String suffix;
+	bool exp_range = false;
+	bool prefer_slider = false;
+	bool hide_control = true;
+	bool radians_as_degrees = false;
+};
 
 class EditorPropertyNil : public EditorProperty {
 	GDCLASS(EditorPropertyNil, EditorProperty);
@@ -82,12 +95,16 @@ class EditorPropertyText : public EditorProperty {
 	GDCLASS(EditorPropertyText, EditorProperty);
 	LineEdit *text = nullptr;
 
+	bool monospaced = false;
 	bool updating = false;
 	bool string_name = false;
 	void _text_changed(const String &p_string);
 	void _text_submitted(const String &p_string);
+	void _update_theme();
 
 protected:
+	void _notification(int p_what);
+
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
@@ -95,21 +112,27 @@ public:
 	virtual void update_property() override;
 	void set_placeholder(const String &p_string);
 	void set_secret(bool p_enabled);
+	void set_monospaced(bool p_monospaced);
 	EditorPropertyText();
 };
 
 class EditorPropertyMultilineText : public EditorProperty {
 	GDCLASS(EditorPropertyMultilineText, EditorProperty);
+
 	TextEdit *text = nullptr;
 
 	AcceptDialog *big_text_dialog = nullptr;
 	TextEdit *big_text = nullptr;
 	Button *open_big_text = nullptr;
 
+	bool expression = false;
+	bool monospaced = false;
+	bool wrap_lines = true;
+
 	void _big_text_changed();
 	void _text_changed();
 	void _open_big_text();
-	bool expression = false;
+	void _update_theme();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -117,6 +140,13 @@ protected:
 
 public:
 	virtual void update_property() override;
+
+	void set_monospaced(bool p_monospaced);
+	bool get_monospaced();
+
+	void set_wrap_lines(bool p_wrap_lines);
+	bool get_wrap_lines();
+
 	EditorPropertyMultilineText(bool p_expression = false);
 };
 
@@ -134,6 +164,7 @@ class EditorPropertyTextEnum : public EditorProperty {
 	Button *cancel_button = nullptr;
 
 	Vector<String> options;
+	Vector<String> option_names;
 	bool string_name = false;
 	bool loose_mode = false;
 
@@ -150,7 +181,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_loose_mode = false);
+	void setup(const Vector<String> &p_options, const Vector<String> &p_option_names = {}, bool p_string_name = false, bool p_loose_mode = false);
 	virtual void update_property() override;
 	EditorPropertyTextEnum();
 };
@@ -258,6 +289,7 @@ public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property() override;
 	void set_option_button_clip(bool p_enable);
+	OptionButton *get_option_button(); // Hack to allow setting icons.
 	EditorPropertyEnum();
 };
 
@@ -289,7 +321,10 @@ private:
 	bool expand_hovered = false;
 	bool expanded = false;
 	int expansion_rows = 0;
-	uint32_t hovered_index = INT32_MAX; // Nothing is hovered.
+	const uint32_t HOVERED_INDEX_NONE = UINT32_MAX;
+	uint32_t hovered_index = HOVERED_INDEX_NONE;
+	bool dragging = false;
+	bool dragging_value_to_set = false;
 	bool read_only = false;
 	int renamed_layer_index = -1;
 	PopupMenu *layer_rename = nullptr;
@@ -370,7 +405,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_hide_slider, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix = String());
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyInteger();
 };
 
@@ -421,7 +456,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), bool p_radians_as_degrees = false);
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyFloat();
 };
 
@@ -477,7 +512,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyRect2(bool p_force_wide = false);
 };
 
@@ -492,7 +527,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(int p_min, int p_max, const String &p_suffix = String());
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyRect2i(bool p_force_wide = false);
 };
 
@@ -507,7 +542,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyPlane(bool p_force_wide = false);
 };
 
@@ -539,7 +574,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String(), bool p_hide_editor = false);
+	void setup(const EditorPropertyRangeHint &p_range_hint, bool p_hide_editor = false);
 	EditorPropertyQuaternion();
 };
 
@@ -554,7 +589,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyAABB();
 };
 
@@ -569,7 +604,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyTransform2D(bool p_include_origin = true);
 };
 
@@ -584,7 +619,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyBasis();
 };
 
@@ -600,7 +635,7 @@ protected:
 public:
 	virtual void update_property() override;
 	virtual void update_using_transform(Transform3D p_transform);
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyTransform3D();
 };
 
@@ -616,7 +651,7 @@ protected:
 public:
 	virtual void update_property() override;
 	virtual void update_using_transform(Projection p_transform);
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyProjection();
 };
 
@@ -634,7 +669,6 @@ class EditorPropertyColor : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
-	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;

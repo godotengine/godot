@@ -273,7 +273,10 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 				target_cname = link_target_parts[0];
 			}
 
-			if (link_tag == "method") {
+			if (!_validate_api_type(target_itype, p_itype)) {
+				// If the target member is referenced from a type with a different API level, we can't reference it.
+				_append_text_undeclared(output, link_target);
+			} else if (link_tag == "method") {
 				_append_text_method(output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "constructor") {
 				// TODO: Support constructors?
@@ -587,7 +590,10 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				target_cname = link_target_parts[0];
 			}
 
-			if (link_tag == "method") {
+			if (!_validate_api_type(target_itype, p_itype)) {
+				// If the target member is referenced from a type with a different API level, we can't reference it.
+				_append_xml_undeclared(xml_output, link_target);
+			} else if (link_tag == "method") {
 				_append_xml_method(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "constructor") {
 				// TODO: Support constructors?
@@ -831,6 +837,9 @@ void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeI
 			p_output.append("'new " BINDINGS_NAMESPACE ".");
 			p_output.append(p_target_itype->proxy_name);
 			p_output.append("()'");
+		} else if (p_target_cname == "to_string") {
+			// C# uses the built-in object.ToString() method, reference that instead.
+			p_output.append("'object.ToString()'");
 		} else {
 			const MethodInterface *target_imethod = p_target_itype->find_method_by_name(p_target_cname);
 
@@ -865,7 +874,7 @@ void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeI
 				}
 				p_output.append(")'");
 			} else {
-				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
 				}
 
@@ -908,7 +917,7 @@ void BindingsGenerator::_append_text_member(StringBuilder &p_output, const TypeI
 			p_output.append(target_iprop->proxy_name);
 			p_output.append("'");
 		} else {
-			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 				ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
 			}
 
@@ -939,7 +948,7 @@ void BindingsGenerator::_append_text_signal(StringBuilder &p_output, const TypeI
 			p_output.append(target_isignal->proxy_name);
 			p_output.append("'");
 		} else {
-			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 				ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
 			}
 
@@ -964,7 +973,7 @@ void BindingsGenerator::_append_text_enum(StringBuilder &p_output, const TypeInt
 		p_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
 		p_output.append("'");
 	} else {
-		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_link_target)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_target_cname)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 
@@ -1032,7 +1041,7 @@ void BindingsGenerator::_append_text_constant(StringBuilder &p_output, const Typ
 				// Also search in @GlobalScope as a last resort if no class was specified
 				_append_text_constant_in_global_scope(p_output, p_target_cname, p_link_target);
 			} else {
-				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 					ERR_PRINT("Cannot resolve constant reference in documentation: '" + p_link_target + "'.");
 				}
 
@@ -1106,12 +1115,15 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	} else {
 		if (p_target_cname == "_init") {
-			// The _init method is not declared in C#, reference the constructor instead
+			// The _init method is not declared in C#, reference the constructor instead.
 			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 			p_xml_output.append(p_target_itype->proxy_name);
 			p_xml_output.append(".");
 			p_xml_output.append(p_target_itype->proxy_name);
 			p_xml_output.append("()\"/>");
+		} else if (p_target_cname == "to_string") {
+			// C# uses the built-in object.ToString() method, reference that instead.
+			p_xml_output.append("<see cref=\"object.ToString()\"/>");
 		} else {
 			const MethodInterface *target_imethod = p_target_itype->find_method_by_name(p_target_cname);
 
@@ -1149,7 +1161,7 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 					p_xml_output.append(")\"/>");
 				}
 			} else {
-				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
 				}
 
@@ -1195,7 +1207,7 @@ void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append("\"/>");
 			}
 		} else {
-			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 				ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
 			}
 
@@ -1229,7 +1241,7 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append("\"/>");
 			}
 		} else {
-			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 				ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
 			}
 
@@ -1258,7 +1270,7 @@ void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const Type
 			p_xml_output.append("\"/>");
 		}
 	} else {
-		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_link_target)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_target_cname)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 
@@ -1326,7 +1338,7 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 				// Also search in @GlobalScope as a last resort if no class was specified
 				_append_xml_constant_in_global_scope(p_xml_output, p_target_cname, p_link_target);
 			} else {
-				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				if (!p_target_itype->is_intentionally_ignored(p_target_cname)) {
 					ERR_PRINT("Cannot resolve constant reference in documentation: '" + p_link_target + "'.");
 				}
 
@@ -2777,6 +2789,8 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	if (p_iprop.is_hidden) {
 		p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
+		// Deprecated PROPERTY_USAGE_INTERNAL properties appear as hidden to C# and may call deprecated getter/setter functions.
+		p_output.append("\n#pragma warning disable CS0618 // Type or member is obsolete.");
 	}
 
 	p_output.append(MEMBER_BEGIN "public ");
@@ -2834,6 +2848,10 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	}
 
 	p_output.append(CLOSE_BLOCK_L1);
+
+	if (p_iprop.is_hidden) {
+		p_output.append("#pragma warning restore CS0618 // Type or member is obsolete.\n");
+	}
 
 	return OK;
 }
@@ -3858,35 +3876,28 @@ struct SortMethodWithHashes {
 bool BindingsGenerator::_populate_object_type_interfaces() {
 	obj_types.clear();
 
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	class_list.sort_custom<StringName::AlphCompare>();
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
 
-	while (class_list.size()) {
-		StringName type_cname = class_list.front()->get();
-
+	for (const StringName &type_cname : class_list) {
 		ClassDB::APIType api_type = ClassDB::get_api_type(type_cname);
 
 		if (api_type == ClassDB::API_NONE) {
-			class_list.pop_front();
 			continue;
 		}
 
 		if (ignored_types.has(type_cname)) {
 			_log("Ignoring type '%s' because it's in the list of ignored types\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_exposed(type_cname)) {
 			_log("Ignoring type '%s' because it's not exposed\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(type_cname)) {
 			_log("Ignoring type '%s' because it's not enabled\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
@@ -4245,7 +4256,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
 
 		for (const KeyValue<StringName, MethodInfo> &E : signal_map) {
 			SignalInterface isignal;
@@ -4447,8 +4458,6 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			obj_types.insert(itype.name + CS_SINGLETON_INSTANCE_SUFFIX, itype);
 		}
-
-		class_list.pop_front();
 	}
 
 	return true;

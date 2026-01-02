@@ -32,22 +32,7 @@
 
 RendererSceneOcclusionCull *RendererSceneOcclusionCull::singleton = nullptr;
 
-const Vector3 RendererSceneOcclusionCull::HZBuffer::corners[8] = {
-	Vector3(0, 0, 0),
-	Vector3(0, 0, 1),
-	Vector3(0, 1, 0),
-	Vector3(0, 1, 1),
-	Vector3(1, 0, 0),
-	Vector3(1, 0, 1),
-	Vector3(1, 1, 0),
-	Vector3(1, 1, 1)
-};
-
 bool RendererSceneOcclusionCull::HZBuffer::occlusion_jitter_enabled = false;
-
-bool RendererSceneOcclusionCull::HZBuffer::is_empty() const {
-	return sizes.is_empty();
-}
 
 void RendererSceneOcclusionCull::HZBuffer::clear() {
 	if (sizes.is_empty()) {
@@ -64,7 +49,7 @@ void RendererSceneOcclusionCull::HZBuffer::clear() {
 	}
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(debug_texture);
+	RS::get_singleton()->free_rid(debug_texture);
 }
 
 void RendererSceneOcclusionCull::HZBuffer::resize(const Size2i &p_size) {
@@ -122,7 +107,7 @@ void RendererSceneOcclusionCull::HZBuffer::resize(const Size2i &p_size) {
 
 	debug_data.resize(sizes[0].x * sizes[0].y);
 	if (debug_texture.is_valid()) {
-		RS::get_singleton()->free(debug_texture);
+		RS::get_singleton()->free_rid(debug_texture);
 		debug_texture = RID();
 	}
 }

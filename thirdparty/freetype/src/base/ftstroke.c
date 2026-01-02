@@ -4,7 +4,7 @@
  *
  *   FreeType path stroker (body).
  *
- * Copyright (C) 2002-2024 by
+ * Copyright (C) 2002-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1070,7 +1070,7 @@
         if ( theta == FT_ANGLE_PI2 )
           theta = -rotate;
 
-        phi    = stroker->angle_in + theta + rotate;
+        phi = stroker->angle_in + theta + rotate;
 
         FT_Vector_From_Polar( &sigma, stroker->miter_limit, theta );
 
@@ -1371,7 +1371,7 @@
     arc[1] = *control;
     arc[2] = stroker->center;
 
-    while ( arc >= bez_stack )
+    do
     {
       FT_Angle  angle_in, angle_out;
 
@@ -1524,10 +1524,12 @@
         }
       }
 
-      arc -= 2;
-
       stroker->angle_in = angle_out;
-    }
+
+      if ( arc == bez_stack )
+        break;
+      arc -= 2;
+    } while ( 1 );
 
     stroker->center      = *to;
     stroker->line_length = 0;
@@ -1577,7 +1579,7 @@
     arc[2] = *control1;
     arc[3] = stroker->center;
 
-    while ( arc >= bez_stack )
+    do
     {
       FT_Angle  angle_in, angle_mid, angle_out;
 
@@ -1741,10 +1743,12 @@
         }
       }
 
-      arc -= 3;
-
       stroker->angle_in = angle_out;
-    }
+
+      if ( arc == bez_stack )
+        break;
+      arc -= 3;
+    } while ( 1 );
 
     stroker->center      = *to;
     stroker->line_length = 0;

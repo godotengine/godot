@@ -30,12 +30,13 @@
 
 #include "openxr_render_model_extension.h"
 
+#ifdef MODULE_GLTF_ENABLED
 #include "../openxr_api.h"
 #include "../openxr_interface.h"
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 OpenXRRenderModelExtension *OpenXRRenderModelExtension::singleton = nullptr;
 
@@ -71,11 +72,14 @@ OpenXRRenderModelExtension::~OpenXRRenderModelExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRRenderModelExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRRenderModelExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	if (GLOBAL_GET("xr/openxr/extensions/render_model")) {
-		request_extensions[XR_EXT_UUID_EXTENSION_NAME] = &uuid_ext;
+		if (p_version < XR_API_VERSION_1_1_0) {
+			// Extension was promoted in OpenXR 1.1, only include it in OpenXR 1.0.
+			request_extensions[XR_EXT_UUID_EXTENSION_NAME] = &uuid_ext;
+		}
 		request_extensions[XR_EXT_RENDER_MODEL_EXTENSION_NAME] = &render_model_ext;
 		request_extensions[XR_EXT_INTERACTION_RENDER_MODEL_EXTENSION_NAME] = &interaction_render_model_ext;
 	}
@@ -379,7 +383,13 @@ RID OpenXRRenderModelExtension::render_model_create(XrRenderModelIdEXT p_render_
 		nullptr, // next
 	};
 
-	XrRenderModelPropertiesEXT properties;
+	XrRenderModelPropertiesEXT properties = {
+		XR_TYPE_RENDER_MODEL_PROPERTIES_EXT, // type
+		nullptr, // next
+		{}, // cacheId
+		0, // animatableNodeCount
+	};
+
 	result = xrGetRenderModelPropertiesEXT(render_model.xr_render_model, &properties_info, &properties);
 	if (XR_FAILED(result)) {
 		ERR_PRINT("OpenXR: Failed to get render model properties [" + OpenXRAPI::get_singleton()->get_error_string(result) + "]");
@@ -783,3 +793,4 @@ OpenXRRenderModelData::OpenXRRenderModelData() {
 
 OpenXRRenderModelData::~OpenXRRenderModelData() {
 }
+#endif // MODULE_GLTF_ENABLED

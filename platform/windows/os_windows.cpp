@@ -38,6 +38,8 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
+#include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
@@ -46,13 +48,14 @@
 #include "drivers/windows/net_socket_winsock.h"
 #include "drivers/windows/thread_windows.h"
 #include "main/main.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 #include <avrt.h>
 #include <bcrypt.h>
 #include <direct.h>
+#include <hidsdi.h>
 #include <knownfolders.h>
 #include <process.h>
 #include <psapi.h>
@@ -60,6 +63,7 @@
 #include <shlobj.h>
 #include <wbemcli.h>
 #include <wincrypt.h>
+#include <winternl.h>
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
@@ -648,15 +652,78 @@ String OS_Windows::get_version_alias() const {
 	return "";
 }
 
-Vector<String> OS_Windows::get_video_adapter_driver_info() const {
-	if (RenderingServer::get_singleton() == nullptr) {
+Vector<String> OS_Windows::_get_video_adapter_driver_info_reg(const String &p_name) const {
+	Vector<String> info;
+
+	String subkey = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}";
+	HKEY hkey = nullptr;
+	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)subkey.utf16().get_data(), 0, KEY_READ, &hkey);
+	if (result != ERROR_SUCCESS) {
 		return Vector<String>();
 	}
 
-	static Vector<String> info;
-	if (!info.is_empty()) {
-		return info;
+	DWORD subkeys = 0;
+	result = RegQueryInfoKeyW(hkey, nullptr, nullptr, nullptr, &subkeys, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+	if (result != ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return Vector<String>();
 	}
+	for (DWORD i = 0; i < subkeys; i++) {
+		WCHAR key_name[MAX_PATH] = L"";
+		DWORD key_name_size = MAX_PATH;
+		result = RegEnumKeyExW(hkey, i, key_name, &key_name_size, nullptr, nullptr, nullptr, nullptr);
+		if (result != ERROR_SUCCESS) {
+			continue;
+		}
+		String id = String::utf16((const char16_t *)key_name, key_name_size);
+		if (!id.is_empty()) {
+			HKEY sub_hkey = nullptr;
+			result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(subkey + "\\" + id).utf16().get_data(), 0, KEY_QUERY_VALUE, &sub_hkey);
+			if (result != ERROR_SUCCESS) {
+				continue;
+			}
+
+			WCHAR buffer[4096];
+			DWORD buffer_len = 4096;
+			DWORD vtype = REG_SZ;
+			if (RegQueryValueExW(sub_hkey, L"DriverDesc", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) != ERROR_SUCCESS || buffer_len == 0) {
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"HardwareInformation.AdapterString", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) != ERROR_SUCCESS || buffer_len == 0) {
+					RegCloseKey(sub_hkey);
+					continue;
+				}
+			}
+
+			String driver_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+			if (driver_name == p_name) {
+				String driver_provider = driver_name;
+				String driver_version;
+
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"ProviderName", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+					driver_provider = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+				}
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"DriverVersion", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+					driver_version = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+				}
+				if (!driver_version.is_empty()) {
+					info.push_back(driver_provider);
+					info.push_back(driver_version);
+
+					RegCloseKey(sub_hkey);
+					break;
+				}
+			}
+			RegCloseKey(sub_hkey);
+		}
+	}
+	RegCloseKey(hkey);
+	return info;
+}
+
+Vector<String> OS_Windows::_get_video_adapter_driver_info_wmi(const String &p_name) const {
+	Vector<String> info;
 
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
 	REFIID uuid = IID_IWbemLocator; // Interface UUID
@@ -666,11 +733,6 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
 	String driver_name;
 	String driver_version;
-
-	const String device_name = RenderingServer::get_singleton()->get_video_adapter_name();
-	if (device_name.is_empty()) {
-		return Vector<String>();
-	}
 
 	HRESULT hr = CoCreateInstance(clsid, nullptr, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
 	if (hr != S_OK) {
@@ -686,7 +748,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 		return Vector<String>();
 	}
 
-	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", device_name);
+	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", p_name);
 	BSTR query = SysAllocString((const WCHAR *)gpu_device_class_query.utf16().get_data());
 	BSTR query_lang = SysAllocString(L"WQL");
 	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, nullptr, &iter);
@@ -751,6 +813,28 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	return info;
 }
 
+Vector<String> OS_Windows::get_video_adapter_driver_info() const {
+	if (RenderingServer::get_singleton() == nullptr) {
+		return Vector<String>();
+	}
+
+	static Vector<String> info;
+	if (!info.is_empty()) {
+		return info;
+	}
+
+	const String device_name = RenderingServer::get_singleton()->get_video_adapter_name();
+	if (device_name.is_empty()) {
+		return Vector<String>();
+	}
+
+	info = _get_video_adapter_driver_info_reg(device_name);
+	if (info.is_empty()) {
+		info = _get_video_adapter_driver_info_wmi(device_name);
+	}
+	return info;
+}
+
 bool OS_Windows::get_user_prefers_integrated_gpu() const {
 	// On Windows 10, the preferred GPU configured in Windows Settings is
 	// stored in the registry under the key
@@ -771,7 +855,7 @@ bool OS_Windows::get_user_prefers_integrated_gpu() const {
 			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)(void *)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
 
 			if (GetCurrentApplicationUserModelId) {
-				UINT32 length = std::size(value_name);
+				UINT32 length = std_size(value_name);
 				LONG result = GetCurrentApplicationUserModelId(&length, value_name);
 				if (result == ERROR_SUCCESS) {
 					is_packaged = true;
@@ -1596,6 +1680,14 @@ Error OS_Windows::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+String OS_Windows::get_cwd() const {
+	Char16String real_current_dir_name;
+	size_t str_len = GetCurrentDirectoryW(0, nullptr);
+	real_current_dir_name.resize_uninitialized(str_len + 1);
+	GetCurrentDirectoryW(real_current_dir_name.size(), (LPWSTR)real_current_dir_name.ptrw());
+	return String::utf16((const char16_t *)real_current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/');
+}
+
 Vector<String> OS_Windows::get_system_fonts() const {
 	if (!dwrite_init) {
 		return Vector<String>();
@@ -2248,6 +2340,8 @@ void OS_Windows::run() {
 	main_loop->initialize();
 
 	while (true) {
+		GodotProfileFrameMark;
+		GodotProfileZone("OS_Windows::run");
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 		if (Main::iteration()) {
 			break;
@@ -2484,9 +2578,10 @@ String OS_Windows::get_system_ca_certificates() {
 		bool success = CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, nullptr, &size);
 		ERR_CONTINUE(!success);
 		PackedByteArray pba;
-		pba.resize(size);
+		pba.resize(size + 1);
 		CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, (char *)pba.ptrw(), &size);
-		certs += String::ascii(Span((char *)pba.ptr(), size));
+		pba.write[size] = 0;
+		certs += String::ascii(Span((const char *)pba.ptr(), strlen((const char *)pba.ptr())));
 		curr = CertEnumCertificatesInStore(cert_store, curr);
 	}
 	CertCloseStore(cert_store, 0);
@@ -2655,8 +2750,107 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 }
 #endif
 
+using GetProcAddressType = FARPROC(__stdcall *)(HMODULE, LPCSTR);
+GetProcAddressType Original_GetProcAddress = nullptr;
+
+using HidD_GetProductStringType = BOOLEAN(__stdcall *)(HANDLE, void *, ULONG);
+HidD_GetProductStringType Original_HidD_GetProductString = nullptr;
+
+#ifndef HID_USAGE_GENERIC_MULTI_AXIS_CONTROLLER
+#define HID_USAGE_GENERIC_MULTI_AXIS_CONTROLLER 0x08
+#endif
+
+bool _hid_is_controller(HANDLE p_hid_handle) {
+	PHIDP_PREPARSED_DATA hid_preparsed = nullptr;
+	BOOLEAN preparsed_res = HidD_GetPreparsedData(p_hid_handle, &hid_preparsed);
+	if (!preparsed_res) {
+		return false;
+	}
+
+	HIDP_CAPS hid_caps = {};
+	NTSTATUS caps_res = HidP_GetCaps(hid_preparsed, &hid_caps);
+	HidD_FreePreparsedData(hid_preparsed);
+	if (caps_res != HIDP_STATUS_SUCCESS) {
+		return false;
+	}
+
+	if (hid_caps.UsagePage != HID_USAGE_PAGE_GENERIC) {
+		return false;
+	}
+
+	if (hid_caps.Usage == HID_USAGE_GENERIC_JOYSTICK || hid_caps.Usage == HID_USAGE_GENERIC_GAMEPAD || hid_caps.Usage == HID_USAGE_GENERIC_MULTI_AXIS_CONTROLLER) {
+		return true;
+	}
+
+	return false;
+}
+
+BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, ULONG p_buffer_length) {
+	constexpr const wchar_t unknown_product_string[] = L"Unknown HID Device";
+	constexpr size_t unknown_product_length = sizeof(unknown_product_string);
+
+	if (_hid_is_controller(p_object)) {
+		return HidD_GetProductString(p_object, p_buffer, p_buffer_length);
+	}
+
+	// The HID is (probably) not a controller, so we don't care about returning its actual product string.
+	// This avoids stalls on `EnumDevices` because DirectInput attempts to enumerate all HIDs, including some DACs
+	// and other devices which take too long to respond to those requests, added to the lack of a shorter timeout.
+	if (p_buffer_length >= unknown_product_length) {
+		memcpy(p_buffer, unknown_product_string, unknown_product_length);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+FARPROC __stdcall Hook_GetProcAddress(HMODULE p_module, LPCSTR p_name) {
+	if (String(p_name) == "HidD_GetProductString") {
+		return (FARPROC)(LPVOID)Hook_HidD_GetProductString;
+	}
+	if (Original_GetProcAddress) {
+		return Original_GetProcAddress(p_module, p_name);
+	}
+	return nullptr;
+}
+
+LPVOID install_iat_hook(const String &p_target, const String &p_module, const String &p_symbol, LPVOID p_hook_func) {
+	LPVOID image_base = LoadLibraryA(p_target.ascii().get_data());
+	if (image_base) {
+		PIMAGE_NT_HEADERS nt_headers = (PIMAGE_NT_HEADERS)((DWORD_PTR)image_base + ((PIMAGE_DOS_HEADER)image_base)->e_lfanew);
+		PIMAGE_IMPORT_DESCRIPTOR import_descriptor = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD_PTR)image_base + nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+		while (import_descriptor->Name != 0) {
+			LPCSTR library_name = (LPCSTR)((DWORD_PTR)image_base + import_descriptor->Name);
+			if (String(library_name).to_lower() == p_module) {
+				PIMAGE_THUNK_DATA original_first_thunk = (PIMAGE_THUNK_DATA)((DWORD_PTR)image_base + import_descriptor->OriginalFirstThunk);
+				PIMAGE_THUNK_DATA first_thunk = (PIMAGE_THUNK_DATA)((DWORD_PTR)image_base + import_descriptor->FirstThunk);
+
+				while ((LPVOID)original_first_thunk->u1.AddressOfData != nullptr) {
+					PIMAGE_IMPORT_BY_NAME function_import = (PIMAGE_IMPORT_BY_NAME)((DWORD_PTR)image_base + original_first_thunk->u1.AddressOfData);
+					if (String(function_import->Name).to_lower() == p_symbol.to_lower()) {
+						DWORD old_protect = 0;
+						VirtualProtect((LPVOID)(&first_thunk->u1.Function), 8, PAGE_READWRITE, &old_protect);
+
+						LPVOID old_func = (LPVOID)first_thunk->u1.Function;
+						first_thunk->u1.Function = (DWORD_PTR)p_hook_func;
+
+						VirtualProtect((LPVOID)(&first_thunk->u1.Function), 8, old_protect, nullptr);
+						return old_func;
+					}
+					original_first_thunk++;
+					first_thunk++;
+				}
+			}
+			import_descriptor++;
+		}
+	}
+	return nullptr;
+}
+
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
+
+	Original_GetProcAddress = (GetProcAddressType)install_iat_hook("dinput8.dll", "kernel32.dll", "GetProcAddress", (LPVOID)Hook_GetProcAddress);
+	Original_HidD_GetProductString = (HidD_GetProductStringType)install_iat_hook("dinput8.dll", "hid.dll", "HidD_GetProductString", (LPVOID)Hook_HidD_GetProductString);
 
 	_init_encodings();
 

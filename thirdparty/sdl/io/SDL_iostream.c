@@ -455,7 +455,8 @@ static bool SDLCALL fd_flush(void *userdata, SDL_IOStatus *status)
         result = SDL_fdatasync(iodata->fd);
     } while (result < 0 && errno == EINTR);
 
-    if (result < 0) {
+    // We get EINVAL when flushing a pipe, just make that a no-op
+    if (result < 0 && errno != EINVAL) {
         return SDL_SetError("Error flushing datastream: %s", strerror(errno));
     }
     return true;

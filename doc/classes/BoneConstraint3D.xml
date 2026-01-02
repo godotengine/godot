@@ -52,6 +52,21 @@
 				This bone will be only referenced and not modified by this modifier.
 			</description>
 		</method>
+		<method name="get_reference_node" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the reference node path of the setting at [param index].
+				This node will be only referenced and not modified by this modifier.
+			</description>
+		</method>
+		<method name="get_reference_type" qualifiers="const">
+			<return type="int" enum="BoneConstraint3D.ReferenceType" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the reference target type of the setting at [param index]. See also [enum ReferenceType].
+			</description>
+		</method>
 		<method name="get_setting_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -100,6 +115,23 @@
 				This bone will be only referenced and not modified by this modifier.
 			</description>
 		</method>
+		<method name="set_reference_node">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="node" type="NodePath" />
+			<description>
+				Sets the reference node path of the setting at [param index] to [param node].
+				This node will be only referenced and not modified by this modifier.
+			</description>
+		</method>
+		<method name="set_reference_type">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="type" type="int" enum="BoneConstraint3D.ReferenceType" />
+			<description>
+				Sets the reference target type of the setting at [param index] to [param type]. See also [enum ReferenceType].
+			</description>
+		</method>
 		<method name="set_setting_count">
 			<return type="void" />
 			<param index="0" name="count" type="int" />
@@ -108,4 +140,13 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="REFERENCE_TYPE_BONE" value="0" enum="ReferenceType">
+			The reference target is a bone. In this case, the reference target spaces is local space.
+		</constant>
+		<constant name="REFERENCE_TYPE_NODE" value="1" enum="ReferenceType">
+			The reference target is a [Node3D]. In this case, the reference target spaces is model space.
+			In other words, the reference target's coordinates are treated as if it were placed directly under [Skeleton3D] which parent of the [BoneConstraint3D].
+		</constant>
+	</constants>
 </class>

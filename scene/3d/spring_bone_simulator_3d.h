@@ -32,12 +32,19 @@
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
+#ifndef DISABLE_DEPRECATED
+namespace compat::SpringBoneSimulator3D {
+enum BoneDirection : int;
+enum RotationAxis : int;
+} //namespace compat::SpringBoneSimulator3D
+#endif
+
 class SpringBoneSimulator3D : public SkeletonModifier3D {
 	GDCLASS(SpringBoneSimulator3D, SkeletonModifier3D);
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 
 	bool joints_dirty = false;
 
@@ -48,35 +55,17 @@ class SpringBoneSimulator3D : public SkeletonModifier3D {
 	void _make_collisions_dirty();
 
 public:
-	enum BoneDirection {
-		BONE_DIRECTION_PLUS_X,
-		BONE_DIRECTION_MINUS_X,
-		BONE_DIRECTION_PLUS_Y,
-		BONE_DIRECTION_MINUS_Y,
-		BONE_DIRECTION_PLUS_Z,
-		BONE_DIRECTION_MINUS_Z,
-		BONE_DIRECTION_FROM_PARENT,
-	};
-
 	enum CenterFrom {
 		CENTER_FROM_WORLD_ORIGIN,
 		CENTER_FROM_NODE,
 		CENTER_FROM_BONE,
 	};
 
-	enum RotationAxis {
-		ROTATION_AXIS_X,
-		ROTATION_AXIS_Y,
-		ROTATION_AXIS_Z,
-		ROTATION_AXIS_ALL,
-		ROTATION_AXIS_CUSTOM,
-	};
-
 	struct SpringBone3DVerletInfo {
 		Vector3 prev_tail;
 		Vector3 current_tail;
-		Vector3 forward_vector;
 		Quaternion current_rot;
+		Vector3 forward_vector;
 		float length = 0.0;
 	};
 
@@ -150,12 +139,12 @@ public:
 		Vector3 gravity_direction = Vector3(0, -1, 0);
 		RotationAxis rotation_axis = ROTATION_AXIS_ALL;
 		Vector3 rotation_axis_vector = Vector3(1, 0, 0);
-		Vector<SpringBone3DJointSetting *> joints;
+		LocalVector<SpringBone3DJointSetting *> joints;
 
 		// Cache into collisions.
 		bool enable_all_child_collisions = true;
-		Vector<NodePath> collisions;
-		Vector<NodePath> exclude_collisions;
+		LocalVector<NodePath> collisions;
+		LocalVector<NodePath> exclude_collisions;
 		LocalVector<ObjectID> cached_collisions;
 
 		// To process.
@@ -165,8 +154,9 @@ public:
 	};
 
 protected:
-	Vector<SpringBone3DSetting *> settings;
+	LocalVector<SpringBone3DSetting *> settings;
 	Vector3 external_force;
+	bool mutable_bone_axes = true;
 
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -183,13 +173,22 @@ protected:
 	virtual void _set_active(bool p_active) override;
 	virtual void _process_modification(double p_delta) override;
 	void _init_joints(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
-	void _process_joints(double p_delta, Skeleton3D *p_skeleton, Vector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
+	void _process_joints(double p_delta, Skeleton3D *p_skeleton, LocalVector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
 
-	void _make_joints_dirty(int p_index);
+	void _make_joints_dirty(int p_index, bool p_reset = false);
 	void _make_all_joints_dirty();
 
 	void _update_joint_array(int p_index);
-	void _update_joints();
+	void _update_joints(bool p_reset);
+	void _set_joint_bone(int p_index, int p_joint, int p_bone);
+
+	void _update_bone_axis(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
+
+#ifdef TOOLS_ENABLED
+	bool gizmo_dirty = false;
+	void _make_gizmo_dirty();
+	void _redraw_gizmo();
+#endif // TOOLS_ENABLED
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
@@ -197,6 +196,17 @@ protected:
 
 	void _validate_rotation_axes(Skeleton3D *p_skeleton) const;
 	void _validate_rotation_axis(Skeleton3D *p_skeleton, int p_index, int p_joint) const;
+
+#ifndef DISABLE_DEPRECATED
+	compat::SpringBoneSimulator3D::BoneDirection _get_end_bone_direction_bind_compat_110120(int p_index) const;
+	void _set_end_bone_direction_bind_compat_110120(int p_index, compat::SpringBoneSimulator3D::BoneDirection p_bone_direction);
+	compat::SpringBoneSimulator3D::RotationAxis _get_rotation_axis_bind_compat_110120(int p_index) const;
+	void _set_rotation_axis_bind_compat_110120(int p_index, compat::SpringBoneSimulator3D::RotationAxis p_axis);
+	compat::SpringBoneSimulator3D::RotationAxis _get_joint_rotation_axis_bind_compat_110120(int p_index, int p_joint) const;
+	void _set_joint_rotation_axis_bind_compat_110120(int p_index, int p_joint, compat::SpringBoneSimulator3D::RotationAxis p_axis);
+
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 
 public:
 	// Setting.
@@ -258,9 +268,7 @@ public:
 	void set_individual_config(int p_index, bool p_enabled);
 	bool is_config_individual(int p_index) const;
 
-	void set_joint_bone_name(int p_index, int p_joint, const String &p_bone_name);
 	String get_joint_bone_name(int p_index, int p_joint) const;
-	void set_joint_bone(int p_index, int p_joint, int p_bone);
 	int get_joint_bone(int p_index, int p_joint) const;
 
 	void set_joint_rotation_axis(int p_index, int p_joint, RotationAxis p_axis);
@@ -304,16 +312,18 @@ public:
 	void set_external_force(const Vector3 &p_force);
 	Vector3 get_external_force() const;
 
+	void set_mutable_bone_axes(bool p_enabled);
+	bool are_bone_axes_mutable() const;
+
 	// To process manually.
 	void reset();
 
 #ifdef TOOLS_ENABLED
+	Vector3 get_bone_vector(int p_index, int p_joint) const;
 	virtual bool is_processed_on_saving() const override { return true; }
-#endif
+#endif // TOOLS_ENABLED
 
 	~SpringBoneSimulator3D();
 };
 
-VARIANT_ENUM_CAST(SpringBoneSimulator3D::BoneDirection);
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::CenterFrom);
-VARIANT_ENUM_CAST(SpringBoneSimulator3D::RotationAxis);

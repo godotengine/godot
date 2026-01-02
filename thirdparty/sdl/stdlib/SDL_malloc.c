@@ -1478,6 +1478,13 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #endif /* NO_MALLOC_STATS */
 #ifndef LACKS_ERRNO_H
 #include <errno.h>       /* for MALLOC_FAILURE_ACTION */
+#else /* LACKS_ERRNO_H */
+#ifndef EINVAL
+#define EINVAL 22
+#endif
+#ifndef ENOMEM
+#define ENOMEM 12
+#endif
 #endif /* LACKS_ERRNO_H */
 #ifdef DEBUG
 #if ABORT_ON_ASSERT_FAILURE

@@ -85,6 +85,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 	int current_major = current_version_info.get("major", 0);
 	int current_minor = current_version_info.get("minor", 0);
 	int current_patch = current_version_info.get("patch", 0);
+	available_newer_version = String();
 
 	for (const Variant &data_bit : version_array) {
 		const Dictionary version_info = data_bit;

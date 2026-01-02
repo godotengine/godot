@@ -53,7 +53,7 @@
 		</method>
 		<method name="create_temp" qualifiers="static">
 			<return type="FileAccess" />
-			<param index="0" name="mode_flags" type="int" />
+			<param index="0" name="mode_flags" type="int" enum="FileAccess.ModeFlags" />
 			<param index="1" name="prefix" type="String" default="&quot;&quot;" />
 			<param index="2" name="extension" type="String" default="&quot;&quot;" />
 			<param index="3" name="keep" type="bool" default="false" />
@@ -133,10 +133,8 @@
 		</method>
 		<method name="get_as_text" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="skip_cr" type="bool" default="false" />
 			<description>
 				Returns the whole file as a [String]. Text is interpreted as being UTF-8 encoded. This ignores the file cursor and does not affect it.
-				If [param skip_cr] is [code]true[/code], carriage return characters ([code]\r[/code], CR) will be ignored when parsing the UTF-8, so that only line feed characters ([code]\n[/code], LF) represent a new line (Unix convention).
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
@@ -173,6 +171,41 @@
 				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [enum Error].
 			</description>
 		</method>
+		<method name="get_extended_attribute" qualifiers="static">
+			<return type="PackedByteArray" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<description>
+				Reads the file extended attribute with name [param attribute_name] as a byte array.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
+			</description>
+		</method>
+		<method name="get_extended_attribute_string" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<description>
+				Reads the file extended attribute with name [param attribute_name] as a UTF-8 encoded string.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
+			</description>
+		</method>
+		<method name="get_extended_attributes_list" qualifiers="static">
+			<return type="PackedStringArray" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns a list of file extended attributes.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
+			</description>
+		</method>
 		<method name="get_file_as_bytes" qualifiers="static">
 			<return type="PackedByteArray" />
 			<param index="0" name="path" type="String" />
@@ -205,7 +238,7 @@
 			<return type="bool" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns [code]true[/code], if file [code]hidden[/code] attribute is set.
+				Returns [code]true[/code] if the [b]hidden[/b] attribute is set on the file at the given path.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -271,7 +304,7 @@
 			<return type="bool" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns [code]true[/code], if file [code]read only[/code] attribute is set.
+				Returns [code]true[/code] if the [b]read only[/b] attribute is set on the file at the given path.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -293,14 +326,14 @@
 			<return type="int" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns file size in bytes, or [code]-1[/code] on error.
+				Returns the size of the file at the given path, in bytes, or [code]-1[/code] on error.
 			</description>
 		</method>
 		<method name="get_unix_permissions" qualifiers="static">
 			<return type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns file UNIX permissions.
+				Returns the UNIX permissions of the file at the given path.
 				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
@@ -361,6 +394,18 @@
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
+		<method name="remove_extended_attribute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<description>
+				Removes file extended attribute with name [param attribute_name].
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
+			</description>
+		</method>
 		<method name="resize">
 			<return type="int" enum="Error" />
 			<param index="0" name="length" type="int" />
@@ -372,15 +417,41 @@
 			<return type="void" />
 			<param index="0" name="position" type="int" />
 			<description>
-				Changes the file reading/writing cursor to the specified position (in bytes from the beginning of the file). This changes the value returned by [method get_position].
+				Sets the file cursor to the specified position in bytes, from the beginning of the file. This changes the value returned by [method get_position].
 			</description>
 		</method>
 		<method name="seek_end">
 			<return type="void" />
 			<param index="0" name="position" type="int" default="0" />
 			<description>
-				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file). This changes the value returned by [method get_position].
-				[b]Note:[/b] This is an offset, so you should use negative numbers or the file cursor will be at the end of the file.
+				Sets the file cursor to the specified position in bytes, from the end of the file. This changes the value returned by [method get_position].
+				[b]Note:[/b] This is an offset, so you should use negative numbers otherwise the file cursor will be at the end of the file.
+			</description>
+		</method>
+		<method name="set_extended_attribute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<param index="2" name="data" type="PackedByteArray" />
+			<description>
+				Writes file extended attribute with name [param attribute_name] as a byte array.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
+			</description>
+		</method>
+		<method name="set_extended_attribute_string" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<param index="2" name="data" type="String" />
+			<description>
+				Writes file extended attribute with name [param attribute_name] as a UTF-8 encoded string.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
 			</description>
 		</method>
 		<method name="set_hidden_attribute" qualifiers="static">
@@ -494,7 +565,7 @@
 			<param index="0" name="values" type="PackedStringArray" />
 			<param index="1" name="delim" type="String" default="&quot;,&quot;" />
 			<description>
-				Store the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
+				Stores the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
 				Text will be encoded as UTF-8. Returns [code]true[/code] if the operation is successful.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
@@ -580,14 +651,14 @@
 			Opens the file for read operations. The file cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE" value="2" enum="ModeFlags">
-			Opens the file for write operations. The file is created if it does not exist, and truncated if it does.
+			Opens the file for write operations. If the file exists, it is truncated to zero length and its contents are cleared. Otherwise, it is created.
 			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
 		</constant>
 		<constant name="READ_WRITE" value="3" enum="ModeFlags">
 			Opens the file for read and write operations. Does not truncate the file. The file cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE_READ" value="7" enum="ModeFlags">
-			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The file cursor is positioned at the beginning of the file.
+			Opens the file for read and write operations. If the file exists, it is truncated to zero length and its contents are cleared. Otherwise, it is created. The file cursor is positioned at the beginning of the file.
 			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">

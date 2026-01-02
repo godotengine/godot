@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <winnt.h>
+
 struct _WinLocale {
 	const char *locale;
 	int main_lang;

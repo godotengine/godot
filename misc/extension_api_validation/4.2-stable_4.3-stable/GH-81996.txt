@@ -1,0 +1,7 @@
+GH-81996
+--------
+Validate extension JSON: Error: Field 'classes/GPUParticles2D/properties/process_material': type changed value in new API, from "ShaderMaterial,ParticleProcessMaterial" to "ParticleProcessMaterial,ShaderMaterial".
+Validate extension JSON: Error: Field 'classes/GPUParticles3D/properties/process_material': type changed value in new API, from "ShaderMaterial,ParticleProcessMaterial" to "ParticleProcessMaterial,ShaderMaterial".
+Validate extension JSON: Error: Field 'classes/Sky/properties/sky_material': type changed value in new API, from "ShaderMaterial,PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial" to "PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial,ShaderMaterial".
+
+Property hints reordered to improve editor usability. The types allowed are still the same as before. No adjustments should be necessary.

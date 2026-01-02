@@ -44,7 +44,7 @@
 			<param index="6" name="width" type="float" default="-1.0" />
 			<param index="7" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. [param center] is defined in local space. See also [method draw_circle].
+				Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. [param center] is defined in local space. For elliptical arcs, see [method draw_ellipse_arc]. See also [method draw_circle].
 				If [param width] is negative, it will be ignored and the arc will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				The arc is drawn from [param start_angle] towards the value of [param end_angle] so in clockwise direction if [code]start_angle &lt; end_angle[/code] and counter-clockwise otherwise. Passing the same angles but in reversed order will produce the same arc. If absolute difference of [param start_angle] and [param end_angle] is greater than [constant @GDScript.TAU] radians, then a full circle arc is drawn (i.e. arc will not overlap itself).
 			</description>
@@ -83,7 +83,7 @@
 			<param index="4" name="width" type="float" default="-1.0" />
 			<param index="5" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a circle, with [param position] defined in local space. See also [method draw_arc], [method draw_polyline], and [method draw_polygon].
+				Draws a circle, with [param position] defined in local space. See also [method draw_ellipse], [method draw_arc], [method draw_polyline], and [method draw_polygon].
 				If [param filled] is [code]true[/code], the circle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the circle will be drawn as a stroke with the [param color] and [param width] specified.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
@@ -116,6 +116,40 @@
 				[param dash] is the length of each dash in pixels, with the gap between each dash being the same length. If [param aligned] is [code]true[/code], the length of the first and last dashes may be shortened or lengthened to allow the line to begin and end at the precise points defined by [param from] and [param to]. Both ends are always symmetrical when [param aligned] is [code]true[/code]. If [param aligned] is [code]false[/code], all dashes will have the same length, but the line may appear incomplete at the end due to the dash length not dividing evenly into the line length. Only full dashes are drawn when [param aligned] is [code]false[/code].
 				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
 				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
+			</description>
+		</method>
+		<method name="draw_ellipse">
+			<return type="void" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="major" type="float" />
+			<param index="2" name="minor" type="float" />
+			<param index="3" name="color" type="Color" />
+			<param index="4" name="filled" type="bool" default="true" />
+			<param index="5" name="width" type="float" default="-1.0" />
+			<param index="6" name="antialiased" type="bool" default="false" />
+			<description>
+				Draws an ellipse with semi-major axis [param major] and semi-minor axis [param minor]. See also [method draw_circle], [method draw_ellipse_arc], [method draw_polyline], and [method draw_polygon].
+				If [param filled] is [code]true[/code], the ellipse will be filled with the [param color] specified. If [param filled] is [code]false[/code], the ellipse will be drawn as a stroke with the [param color] and [param width] specified.
+				If [param width] is negative, then two-point primitives will be drawn instead of four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
+				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
+			</description>
+		</method>
+		<method name="draw_ellipse_arc">
+			<return type="void" />
+			<param index="0" name="center" type="Vector2" />
+			<param index="1" name="major" type="float" />
+			<param index="2" name="minor" type="float" />
+			<param index="3" name="start_angle" type="float" />
+			<param index="4" name="end_angle" type="float" />
+			<param index="5" name="point_count" type="int" />
+			<param index="6" name="color" type="Color" />
+			<param index="7" name="width" type="float" default="-1.0" />
+			<param index="8" name="antialiased" type="bool" default="false" />
+			<description>
+				Draws an unfilled elliptical arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. For circular arcs, see [method draw_arc]. See also [method draw_ellipse].
+				If [param width] is negative, it will be ignored and the arc will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				The arc is drawn from [param start_angle] towards the value of [param end_angle] so in clockwise direction if [code]start_angle &lt; end_angle[/code] and counter-clockwise otherwise. Passing the same angles but in reversed order will produce the same arc. If absolute difference of [param start_angle] and [param end_angle] is greater than [constant @GDScript.TAU] radians, then a full ellipse is drawn (i.e. arc will not overlap itself).
 			</description>
 		</method>
 		<method name="draw_end_animation">
@@ -342,20 +376,10 @@
 				[b]Example:[/b] Draw "Hello world", using the project's default font:
 				[codeblocks]
 				[gdscript]
-				# If using this method in a script that redraws constantly, move the
-				# `default_font` declaration to a member variable assigned in `_ready()`
-				# so the Control is only created once.
-				var default_font = ThemeDB.fallback_font
-				var default_font_size = ThemeDB.fallback_font_size
-				draw_string(default_font, Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, default_font_size)
+				draw_string(ThemeDB.fallback_font, Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, ThemeDB.fallback_font_size)
 				[/gdscript]
 				[csharp]
-				// If using this method in a script that redraws constantly, move the
-				// `default_font` declaration to a member variable assigned in `_Ready()`
-				// so the Control is only created once.
-				Font defaultFont = ThemeDB.FallbackFont;
-				int defaultFontSize = ThemeDB.FallbackFontSize;
-				DrawString(defaultFont, new Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, defaultFontSize);
+				DrawString(ThemeDB.FallbackFont, new Vector2(64, 64), "Hello world", HorizontalAlignment.Left, -1, ThemeDB.FallbackFontSize);
 				[/csharp]
 				[/codeblocks]
 				See also [method Font.draw_string].
@@ -486,7 +510,7 @@
 			<return type="Transform2D" />
 			<description>
 				Returns the transform of this [CanvasItem] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
-				Equals to [method get_global_transform] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
+				Equivalent to [method get_global_transform_with_canvas] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
@@ -599,7 +623,7 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever global transform changes.
+				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever its global transform changes.
 				[b]Note:[/b] Many canvas items such as [Camera2D] or [Light2D] automatically enable this in order to function correctly.
 			</description>
 		</method>
@@ -655,6 +679,7 @@
 		</member>
 		<member name="visibility_layer" type="int" setter="set_visibility_layer" getter="get_visibility_layer" default="1">
 			The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask.
+			[b]Note:[/b] A [CanvasItem] does not inherit its parents' visibility layers. This means that if a parent [CanvasItem] does not have all the same layers as its child, the child may not be visible even if both the parent and child have [member visible] set to [code]true[/code]. For example, if a parent has layer 1 and a child has layer 2, the child will not be visible in a [Viewport] with the canvas cull mask set to layer 1 or 2 (see [member Viewport.canvas_cull_mask]). To ensure that both the parent and child are visible, the parent must have both layers 1 and 2, or the child must have [member top_level] set to [code]true[/code].
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
 			If [code]true[/code], this [CanvasItem] may be drawn. Whether this [CanvasItem] is actually drawn depends on the visibility of all of its [CanvasItem] ancestors. In other words: this [CanvasItem] will be drawn when [method is_visible_in_tree] returns [code]true[/code] and all [CanvasItem] ancestors share at least one [member visibility_layer] with this [CanvasItem].
@@ -719,6 +744,7 @@
 		</constant>
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			The [CanvasItem] has exited the canvas.
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
 			Notification received when this [CanvasItem] is registered to a new [World2D] (see [method get_world_2d]).

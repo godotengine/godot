@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class GodotBody2D;
 
@@ -101,7 +101,7 @@ public:
 	virtual Vector2 get_contact_collider_velocity_at_position(int p_contact_idx) const override;
 	virtual Vector2 get_contact_impulse(int p_contact_idx) const override;
 
-	virtual PhysicsDirectSpaceState2D *get_space_state() override;
+	virtual RequiredResult<PhysicsDirectSpaceState2D> get_space_state() override;
 
 	virtual real_t get_step() const override;
 };

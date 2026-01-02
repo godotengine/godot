@@ -14,6 +14,8 @@
 #ifndef WEBP_UTILS_BIT_WRITER_UTILS_H_
 #define WEBP_UTILS_BIT_WRITER_UTILS_H_
 
+#include <stddef.h>
+
 #include "src/webp/types.h"
 
 #ifdef __cplusplus
@@ -25,14 +27,14 @@ extern "C" {
 
 typedef struct VP8BitWriter VP8BitWriter;
 struct VP8BitWriter {
-  int32_t  range_;      // range-1
-  int32_t  value_;
-  int      run_;        // number of outstanding bits
-  int      nb_bits_;    // number of pending bits
-  uint8_t* buf_;        // internal buffer. Re-allocated regularly. Not owned.
-  size_t   pos_;
-  size_t   max_pos_;
-  int      error_;      // true in case of error
+  int32_t  range;      // range-1
+  int32_t  value;
+  int      run;        // number of outstanding bits
+  int      nb_bits;    // number of pending bits
+  uint8_t* buf;        // internal buffer. Re-allocated regularly. Not owned.
+  size_t   pos;
+  size_t   max_pos;
+  int      error;      // true in case of error
 };
 
 // Initialize the object. Allocates some initial memory based on expected_size.
@@ -54,17 +56,17 @@ int VP8BitWriterAppend(VP8BitWriter* const bw,
 
 // return approximate write position (in bits)
 static WEBP_INLINE uint64_t VP8BitWriterPos(const VP8BitWriter* const bw) {
-  const uint64_t nb_bits = 8 + bw->nb_bits_;   // bw->nb_bits_ is <= 0, note
-  return (bw->pos_ + bw->run_) * 8 + nb_bits;
+  const uint64_t nb_bits = 8 + bw->nb_bits;   // bw->nb_bits is <= 0, note
+  return (bw->pos + bw->run) * 8 + nb_bits;
 }
 
 // Returns a pointer to the internal buffer.
 static WEBP_INLINE uint8_t* VP8BitWriterBuf(const VP8BitWriter* const bw) {
-  return bw->buf_;
+  return bw->buf;
 }
 // Returns the size of the internal buffer.
 static WEBP_INLINE size_t VP8BitWriterSize(const VP8BitWriter* const bw) {
-  return bw->pos_;
+  return bw->pos;
 }
 
 //------------------------------------------------------------------------------
@@ -87,21 +89,21 @@ typedef uint16_t vp8l_wtype_t;
 #endif
 
 typedef struct {
-  vp8l_atype_t bits_;   // bit accumulator
-  int          used_;   // number of bits used in accumulator
-  uint8_t*     buf_;    // start of buffer
-  uint8_t*     cur_;    // current write position
-  uint8_t*     end_;    // end of buffer
+  vp8l_atype_t bits;   // bit accumulator
+  int          used;   // number of bits used in accumulator
+  uint8_t*     buf;    // start of buffer
+  uint8_t*     cur;    // current write position
+  uint8_t*     end;    // end of buffer
 
   // After all bits are written (VP8LBitWriterFinish()), the caller must observe
-  // the state of error_. A value of 1 indicates that a memory allocation
+  // the state of 'error'. A value of 1 indicates that a memory allocation
   // failure has happened during bit writing. A value of 0 indicates successful
   // writing of bits.
-  int error_;
+  int error;
 } VP8LBitWriter;
 
 static WEBP_INLINE size_t VP8LBitWriterNumBytes(const VP8LBitWriter* const bw) {
-  return (bw->cur_ - bw->buf_) + ((bw->used_ + 7) >> 3);
+  return (bw->cur - bw->buf) + ((bw->used + 7) >> 3);
 }
 
 // Returns false in case of memory allocation error.
@@ -129,16 +131,16 @@ void VP8LPutBitsInternal(VP8LBitWriter* const bw, uint32_t bits, int n_bits);
 // and within a byte least-significant-bit first.
 // This function can write up to 32 bits in one go, but VP8LBitReader can only
 // read 24 bits max (VP8L_MAX_NUM_BIT_READ).
-// VP8LBitWriter's error_ flag is set in case of  memory allocation error.
+// VP8LBitWriter's 'error' flag is set in case of memory allocation error.
 static WEBP_INLINE void VP8LPutBits(VP8LBitWriter* const bw,
                                     uint32_t bits, int n_bits) {
   if (sizeof(vp8l_wtype_t) == 4) {
     if (n_bits > 0) {
-      if (bw->used_ >= 32) {
+      if (bw->used >= 32) {
         VP8LPutBitsFlushBits(bw);
       }
-      bw->bits_ |= (vp8l_atype_t)bits << bw->used_;
-      bw->used_ += n_bits;
+      bw->bits |= (vp8l_atype_t)bits << bw->used;
+      bw->used += n_bits;
     }
   } else {
     VP8LPutBitsInternal(bw, bits, n_bits);

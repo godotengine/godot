@@ -220,7 +220,6 @@ private:
 
 	struct ReflectionProbe {
 		RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
-		int resolution = 256;
 		float intensity = 1.0;
 		float blend_distance = 1.0;
 		RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
@@ -246,15 +245,20 @@ private:
 	struct ReflectionAtlas {
 		int count = 0;
 		int size = 0;
+		int reflection_texture_size = 0;
+		float uv_border_size = 0.0;
+		bool update_always = false;
 
 		RID reflection;
+		RID color_buffer;
+		RID color_views[6];
+		RID color_fbs[6];
 		RID depth_buffer;
 		RID depth_fb;
 
 		struct Reflection {
 			RID owner;
 			RendererRD::SkyRD::ReflectionData data;
-			RID fbs[6];
 		};
 
 		Vector<Reflection> reflections;
@@ -266,6 +270,8 @@ private:
 
 	mutable RID_Owner<ReflectionAtlas> reflection_atlas_owner;
 
+	void _reflection_atlas_clear(ReflectionAtlas *p_reflection_atlas);
+
 	/* REFLECTION PROBE INSTANCE */
 
 	struct ReflectionProbeInstance {
@@ -276,7 +282,6 @@ private:
 		bool dirty = true;
 		bool rendering = false;
 		int processing_layer = 1;
-		int processing_side = 0;
 
 		uint64_t last_pass = 0;
 		uint32_t cull_mask = 0;
@@ -863,7 +868,6 @@ public:
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override;
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
 
-	int reflection_probe_get_resolution(RID p_probe) const;
 	float reflection_probe_get_baked_exposure(RID p_probe) const;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const override;
 
@@ -892,6 +896,18 @@ public:
 		return atlas->reflection;
 	}
 
+	_FORCE_INLINE_ int reflection_atlas_get_texture_size(RID p_ref_atlas) {
+		ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_ref_atlas);
+		ERR_FAIL_NULL_V(atlas, 0);
+		return atlas->reflection_texture_size;
+	}
+
+	_FORCE_INLINE_ float reflection_atlas_get_border_size(RID p_ref_atlas) {
+		ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_ref_atlas);
+		ERR_FAIL_NULL_V(atlas, 0.0);
+		return atlas->uv_border_size;
+	}
+
 	/* REFLECTION PROBE INSTANCE */
 
 	bool owns_reflection_probe_instance(RID p_rid) { return reflection_probe_instance_owner.owns(p_rid); }
@@ -904,6 +920,7 @@ public:
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override;
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override;
+	virtual bool reflection_probe_instance_end_render(RID p_instance, RID p_reflection_atlas) override;
 	virtual Ref<RenderSceneBuffers> reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) override;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override;
 
@@ -967,7 +984,7 @@ public:
 	RID get_reflection_probe_buffer() { return reflection_buffer; }
 	void update_reflection_probe_buffer(RenderDataRD *p_render_data, const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
 	static RD::DataFormat get_reflection_probe_color_format();
-	static uint32_t get_reflection_probe_color_usage_bits();
+	static uint32_t get_reflection_probe_color_usage_bits(bool p_storage);
 	static RD::DataFormat get_reflection_probe_depth_format();
 	static uint32_t get_reflection_probe_depth_usage_bits();
 

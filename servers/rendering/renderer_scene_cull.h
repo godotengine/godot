@@ -1240,9 +1240,10 @@ public:
 
 	// Tonemap
 	PASS4(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float)
+	PASS2(environment_set_tonemap_agx_contrast, RID, float)
 	PASS1RC(RS::EnvironmentToneMapper, environment_get_tone_mapper, RID)
 	PASS1RC(float, environment_get_exposure, RID)
-	PASS1RC(float, environment_get_white, RID)
+	PASS2RC(float, environment_get_white, RID, bool)
 
 	// Fog
 	PASS11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, RS::EnvironmentFogMode)
@@ -1311,6 +1312,7 @@ public:
 	PASS1RC(float, environment_get_ssr_fade_out, RID)
 	PASS1RC(float, environment_get_ssr_depth_tolerance, RID)
 
+	PASS1(environment_set_ssr_half_size, bool)
 	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
 
 	// SSAO
@@ -1390,6 +1392,7 @@ public:
 	PASS1(decals_set_filter, RS::DecalFilter)
 	PASS1(light_projectors_set_filter, RS::LightProjectorFilter)
 	PASS1(lightmaps_set_bicubic_filter, bool)
+	PASS1(material_set_use_debanding, bool)
 
 	virtual void update();
 

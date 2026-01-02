@@ -423,6 +423,13 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		actions_cache = p_action_infos;
 	}
 
+	Pair<String, int> selected_item;
+	TreeItem *ti = action_tree->get_selected();
+	if (ti) {
+		selected_item.first = ti->get_text(0);
+		selected_item.second = action_tree->get_selected_column();
+	}
+
 	HashSet<String> collapsed_actions;
 	TreeItem *root = action_tree->get_root();
 	if (root) {
@@ -458,6 +465,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 
 		// First Column - Action Name
 		action_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+		action_item->set_cell_mode(0, TreeItem::CELL_MODE_STRING);
 		action_item->set_text(0, action_info.name);
 		action_item->set_editable(0, action_info.editable);
 		action_item->set_icon(0, action_info.icon);
@@ -481,6 +489,12 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 
 		action_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 		action_item->set_custom_bg_color(1, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		action_item->set_custom_stylebox(0, get_theme_stylebox(SNAME("prop_subsection_stylebox_left"), EditorStringName(Editor)));
+		action_item->set_custom_stylebox(1, get_theme_stylebox(SNAME("prop_subsection_stylebox_right"), EditorStringName(Editor)));
+
+		if (selected_item.first == action_info.name) {
+			action_item->select(selected_item.second);
+		}
 
 		for (int evnt_idx = 0; evnt_idx < events.size(); evnt_idx++) {
 			Ref<InputEvent> event = events[evnt_idx];
@@ -530,6 +544,10 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			event_item->add_button(2, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_EVENT, false, TTRC("Remove Event"), TTRC("Remove Event"));
 			event_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 			event_item->set_button_color(2, 1, Color(1, 1, 1, 0.75));
+
+			if (selected_item.first == event_item->get_text(0)) {
+				event_item->select(selected_item.second);
+			}
 		}
 	}
 }

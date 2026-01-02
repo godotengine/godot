@@ -68,6 +68,7 @@
 #include "mbedtls/error.h"
 
 #include "bn_mul.h"
+#include "bignum_internal.h"
 #include "ecp_invasive.h"
 
 #include <string.h>
@@ -1173,7 +1174,7 @@ cleanup:
     MBEDTLS_MPI_CHK(mbedtls_mpi_mul_int_mod(grp, X, A, c))
 
 #define MPI_ECP_INV(dst, src)                                                 \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod((dst), (src), &grp->P))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(NULL, (dst), (src), &grp->P))
 
 #define MPI_ECP_MOV(X, A)                                                     \
     MBEDTLS_MPI_CHK(mbedtls_mpi_copy(X, A))
@@ -2201,21 +2202,6 @@ static int ecp_mul_comb_after_precomp(const mbedtls_ecp_group *grp,
 final_norm:
     MBEDTLS_ECP_BUDGET(MBEDTLS_ECP_OPS_INV);
 #endif
-    /*
-     * Knowledge of the jacobian coordinates may leak the last few bits of the
-     * scalar [1], and since our MPI implementation isn't constant-flow,
-     * inversion (used for coordinate normalization) may leak the full value
-     * of its input via side-channels [2].
-     *
-     * [1] https://eprint.iacr.org/2003/191
-     * [2] https://eprint.iacr.org/2020/055
-     *
-     * Avoid the leak by randomizing coordinates before we normalize them.
-     */
-    if (f_rng != 0) {
-        MBEDTLS_MPI_CHK(ecp_randomize_jac(grp, RR, f_rng, p_rng));
-    }
-
     MBEDTLS_MPI_CHK(ecp_normalize_jac(grp, RR));
 
 #if defined(MBEDTLS_ECP_RESTARTABLE)
@@ -2594,18 +2580,6 @@ static int ecp_mul_mxz(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
         MPI_ECP_COND_SWAP(&R->Z, &RP.Z, b);
     }
 
-    /*
-     * Knowledge of the projective coordinates may leak the last few bits of the
-     * scalar [1], and since our MPI implementation isn't constant-flow,
-     * inversion (used for coordinate normalization) may leak the full value
-     * of its input via side-channels [2].
-     *
-     * [1] https://eprint.iacr.org/2003/191
-     * [2] https://eprint.iacr.org/2020/055
-     *
-     * Avoid the leak by randomizing coordinates before we normalize them.
-     */
-    MBEDTLS_MPI_CHK(ecp_randomize_mxz(grp, R, f_rng, p_rng));
     MBEDTLS_MPI_CHK(ecp_normalize_mxz(grp, R));
 
 cleanup:

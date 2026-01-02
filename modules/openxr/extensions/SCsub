@@ -7,6 +7,7 @@ Import("env_openxr")
 module_obj = []
 
 env_openxr.add_source_files(module_obj, "*.cpp")
+env_openxr.add_source_files(module_obj, "spatial_entities/*.cpp")
 
 # These are platform dependent
 if env["platform"] == "android":

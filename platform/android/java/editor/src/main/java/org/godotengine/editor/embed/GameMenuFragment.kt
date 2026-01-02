@@ -38,6 +38,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.PopupMenu
 import android.widget.RadioButton
 import androidx.core.content.edit
@@ -102,6 +103,8 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		fun reset3DCamera()
 		fun manipulateCamera(mode: CameraMode)
 		fun muteAudio(enabled: Boolean)
+		fun resetTimeScale()
+		fun setTimeScale(scale: Double)
 
 		fun isGameEmbeddingSupported(): Boolean
 		fun embedGameOnPlay(embedded: Boolean)
@@ -125,11 +128,17 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	private val collapseMenuButton: View? by lazy {
 		view?.findViewById(R.id.game_menu_collapse_button)
 	}
-	private val pauseButton: View? by lazy {
-		view?.findViewById(R.id.game_menu_pause_button)
+	private val suspendButton: View? by lazy {
+		view?.findViewById(R.id.game_menu_suspend_button)
 	}
 	private val nextFrameButton: View? by lazy {
 		view?.findViewById(R.id.game_menu_next_frame_button)
+	}
+	private val setTimeScaleButton: Button? by lazy {
+		view?.findViewById<Button>(R.id.game_menu_set_time_scale_button)
+	}
+	private val resetTimeScaleButton: View? by lazy {
+		view?.findViewById(R.id.game_menu_reset_time_scale_button)
 	}
 	private val unselectNodesButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_unselect_nodes_button)
@@ -175,6 +184,33 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 				menu.setGroupDividerEnabled(true)
+			}
+		}
+	}
+
+	private val timeScaleMenu: PopupMenu by lazy {
+		PopupMenu(context, setTimeScaleButton).apply {
+			inflate(R.menu.time_scale_options)
+			setOnMenuItemClickListener { menuItem: MenuItem ->
+				val selectedScale = when (menuItem.itemId) {
+					R.id.speed_1_16 -> 0.0625f
+					R.id.speed_1_8 -> 0.125f
+					R.id.speed_1_4 -> 0.25f
+					R.id.speed_1_2 -> 0.5f
+					R.id.speed_3_4 -> 0.75f
+					R.id.speed_1_0 -> 1.0f
+					R.id.speed_1_25 -> 1.25f
+					R.id.speed_1_5 -> 1.5f
+					R.id.speed_1_75 -> 1.75f
+					R.id.speed_2_0 -> 2.0f
+					R.id.speed_4_0 -> 4.0f
+					R.id.speed_8_0 -> 8.0f
+					R.id.speed_16_0 -> 16.0f
+					else -> 1.0f
+				}
+				setTimeScaleButton?.text = menuItem.title
+				menuListener?.setTimeScale(selectedScale.toDouble())
+				true
 			}
 		}
 	}
@@ -267,7 +303,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 				menuListener?.closeGameWindow()
 			}
 		}
-		pauseButton?.apply {
+		suspendButton?.apply {
 			setOnClickListener {
 				val isActivated = !it.isActivated
 				menuListener?.suspendGame(isActivated)
@@ -277,6 +313,19 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		nextFrameButton?.apply {
 			setOnClickListener {
 				menuListener?.dispatchNextFrame()
+			}
+		}
+
+		setTimeScaleButton?.apply {
+			setOnClickListener {
+				timeScaleMenu.show()
+			}
+		}
+
+		resetTimeScaleButton?.apply {
+			setOnClickListener {
+				menuListener?.resetTimeScale()
+				setTimeScaleButton?.text = "1.0x"
 			}
 		}
 
@@ -348,7 +397,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		isGameEmbedded = gameMenuState.getBoolean(BaseGodotEditor.EXTRA_IS_GAME_EMBEDDED, false)
 		isGameRunning = gameMenuState.getBoolean(BaseGodotEditor.EXTRA_IS_GAME_RUNNING, false)
 
-		pauseButton?.isEnabled = isGameRunning
+		suspendButton?.isEnabled = isGameRunning
 		nextFrameButton?.isEnabled = isGameRunning
 
 		val nodeType = gameMenuState.getSerializable(BaseGodotEditor.GAME_MENU_ACTION_SET_NODE_TYPE) as GameMenuListener.NodeType? ?: GameMenuListener.NodeType.NONE

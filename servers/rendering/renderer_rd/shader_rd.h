@@ -36,7 +36,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class ShaderRD {
 public:
@@ -65,6 +65,7 @@ private:
 	Vector<bool> group_enabled;
 
 	Vector<RD::PipelineImmutableSampler> immutable_samplers;
+	Vector<uint64_t> dynamic_buffers;
 
 	struct Version {
 		Mutex *mutex = nullptr;
@@ -225,6 +226,8 @@ public:
 
 	const String &get_name() const;
 
+	const Vector<uint64_t> &get_dynamic_buffers() const;
+
 	static void shaders_embedded_set_lock();
 	static const ShaderVersionPairSet &shaders_embedded_set_get();
 	static void shaders_embedded_set_unlock();
@@ -237,15 +240,26 @@ public:
 	static void set_shader_cache_save_compressed_zstd(bool p_enable);
 	static void set_shader_cache_save_debug(bool p_enable);
 
-	static Vector<RD::ShaderStageSPIRVData> compile_stages(const Vector<String> &p_stage_sources);
+	static Vector<RD::ShaderStageSPIRVData> compile_stages(const Vector<String> &p_stage_sources, const Vector<uint64_t> &p_dynamic_buffers);
 	static PackedByteArray save_shader_cache_bytes(const LocalVector<int> &p_variants, const Vector<Vector<uint8_t>> &p_variant_data);
 
 	Vector<String> version_build_variant_stage_sources(RID p_version, int p_variant);
 	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 	String version_get_cache_file_relative_path(RID p_version, int p_group, const String &p_api_name);
 
-	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "", const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers = Vector<RD::PipelineImmutableSampler>());
-	void initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines = "", const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers = Vector<RD::PipelineImmutableSampler>());
+	struct DynamicBuffer {
+		static uint64_t encode(uint32_t p_set_id, uint32_t p_binding) {
+			return uint64_t(p_set_id) << 32ul | uint64_t(p_binding);
+		}
+	};
+
+	// Dynamic Buffers specifies Which buffers will be persistent/dynamic when used.
+	// See DynamicBuffer::encode. We need this argument because SPIR-V does not distinguish between a
+	// uniform buffer and a dynamic uniform buffer. At shader level they're the same thing, but the PSO
+	// is created slightly differently and they're bound differently.
+	// On D3D12 the Root Layout is also different.
+	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "", const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers = Vector<RD::PipelineImmutableSampler>(), const Vector<uint64_t> &p_dynamic_buffers = Vector<uint64_t>());
+	void initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines = "", const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers = Vector<RD::PipelineImmutableSampler>(), const Vector<uint64_t> &p_dynamic_buffers = Vector<uint64_t>());
 
 	virtual ~ShaderRD();
 };

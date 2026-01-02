@@ -17,6 +17,7 @@
 
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/asn1write.h"
+#include "bignum_internal.h"
 
 #include <string.h>
 
@@ -251,7 +252,7 @@ int mbedtls_ecdsa_sign_restartable(mbedtls_ecp_group *grp,
     int ret, key_tries, sign_tries;
     int *p_sign_tries = &sign_tries, *p_key_tries = &key_tries;
     mbedtls_ecp_point R;
-    mbedtls_mpi k, e, t;
+    mbedtls_mpi k, e;
     mbedtls_mpi *pk = &k, *pr = r;
 
     /* Fail cleanly on curves such as Curve25519 that can't be used for ECDSA */
@@ -265,7 +266,7 @@ int mbedtls_ecdsa_sign_restartable(mbedtls_ecp_group *grp,
     }
 
     mbedtls_ecp_point_init(&R);
-    mbedtls_mpi_init(&k); mbedtls_mpi_init(&e); mbedtls_mpi_init(&t);
+    mbedtls_mpi_init(&k); mbedtls_mpi_init(&e);
 
     ECDSA_RS_ENTER(sig);
 
@@ -340,21 +341,11 @@ modn:
         MBEDTLS_MPI_CHK(derive_mpi(grp, &e, buf, blen));
 
         /*
-         * Generate a random value to blind inv_mod in next step,
-         * avoiding a potential timing leak.
-         */
-        MBEDTLS_MPI_CHK(mbedtls_ecp_gen_privkey(grp, &t, f_rng_blind,
-                                                p_rng_blind));
-
-        /*
-         * Step 6: compute s = (e + r * d) / k = t (e + rd) / (kt) mod n
+         * Step 6: compute s = (e + r * d) / k
          */
         MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(s, pr, d));
         MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&e, &e, s));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&e, &e, &t));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(pk, pk, &t));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(pk, pk, &grp->N));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod(s, pk, &grp->N));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(NULL, s, pk, &grp->N));
         MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(s, s, &e));
         MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(s, s, &grp->N));
     } while (mbedtls_mpi_cmp_int(s, 0) == 0);
@@ -367,7 +358,7 @@ modn:
 
 cleanup:
     mbedtls_ecp_point_free(&R);
-    mbedtls_mpi_free(&k); mbedtls_mpi_free(&e); mbedtls_mpi_free(&t);
+    mbedtls_mpi_free(&k); mbedtls_mpi_free(&e);
 
     ECDSA_RS_LEAVE(sig);
 
@@ -540,7 +531,7 @@ int mbedtls_ecdsa_verify_restartable(mbedtls_ecp_group *grp,
      */
     ECDSA_BUDGET(MBEDTLS_ECP_OPS_CHK + MBEDTLS_ECP_OPS_INV + 2);
 
-    MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod(&s_inv, s, &grp->N));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(NULL, &s_inv, s, &grp->N));
 
     MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(pu1, &e, &s_inv));
     MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(pu1, pu1, &grp->N));

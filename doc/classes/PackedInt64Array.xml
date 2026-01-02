@@ -48,7 +48,7 @@
 				Appends a [PackedInt64Array] at the end of this array.
 			</description>
 		</method>
-		<method name="bsearch">
+		<method name="bsearch" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="int" />
 			<param index="1" name="before" type="bool" default="true" />
@@ -70,7 +70,7 @@
 				Returns the number of times an element is in the array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<description>
 				Creates a copy of the array, and returns it.
@@ -102,7 +102,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the 64-bit integer at the given [param index] in the array. If [param index] out-of-bounds or negative, this method fails and returns [code]0[/code].
+				Returns the 64-bit integer at the given [param index] in the array. If [param index] is out-of-bounds or negative, this method fails and returns [code]0[/code].
 				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>

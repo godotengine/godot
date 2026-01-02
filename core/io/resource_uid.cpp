@@ -47,7 +47,7 @@ String ResourceUID::get_cache_file() {
 }
 
 static constexpr uint8_t uuid_characters[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', '0', '1', '2', '3', '4', '5', '6', '7', '8' };
-static constexpr uint32_t uuid_characters_element_count = std::size(uuid_characters);
+static constexpr uint32_t uuid_characters_element_count = std_size(uuid_characters);
 static constexpr uint8_t max_uuid_number_length = 13; // Max 0x7FFFFFFFFFFFFFFF (uid://d4n4ub6itg400) size is 13 characters.
 
 String ResourceUID::id_to_text(ID p_id) const {
@@ -160,6 +160,9 @@ void ResourceUID::add_id(ID p_id, const String &p_path) {
 	Cache c;
 	c.cs = p_path.utf8();
 	unique_ids[p_id] = c;
+	if (use_reverse_cache) {
+		reverse_cache[c.cs] = p_id;
+	}
 	changed = true;
 }
 
@@ -175,6 +178,9 @@ void ResourceUID::set_id(ID p_id, const String &p_path) {
 	if ((update_ptr == nullptr) != (cached_ptr == nullptr) || strcmp(update_ptr, cached_ptr) != 0) {
 		unique_ids[p_id].cs = cs;
 		unique_ids[p_id].saved_to_cache = false; //changed
+		if (use_reverse_cache) {
+			reverse_cache[cs] = p_id;
+		}
 		changed = true;
 	}
 }
@@ -201,9 +207,20 @@ String ResourceUID::get_id_path(ID p_id) const {
 	return String::utf8(cs.ptr());
 }
 
+ResourceUID::ID ResourceUID::get_path_id(const String &p_path) const {
+	const ID *id = reverse_cache.getptr(p_path.utf8());
+	if (id) {
+		return *id;
+	}
+	return INVALID_ID;
+}
+
 void ResourceUID::remove_id(ID p_id) {
 	MutexLock l(mutex);
 	ERR_FAIL_COND(!unique_ids.has(p_id));
+	if (use_reverse_cache) {
+		reverse_cache.erase(unique_ids[p_id].cs);
+	}
 	unique_ids.erase(p_id);
 }
 
@@ -265,6 +282,9 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 
 	MutexLock l(mutex);
 	if (p_reset) {
+		if (use_reverse_cache) {
+			reverse_cache.clear();
+		}
 		unique_ids.clear();
 	}
 
@@ -281,6 +301,9 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 
 		c.saved_to_cache = true;
 		unique_ids[id] = c;
+		if (use_reverse_cache) {
+			reverse_cache[c.cs] = id;
+		}
 	}
 
 	cache_entries = entry_count;
@@ -328,19 +351,22 @@ Error ResourceUID::update_cache() {
 }
 
 String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const String &p_uid_string) {
-	const uint32_t entry_count = p_cache_file->get_32();
-	CharString cs;
-	for (uint32_t i = 0; i < entry_count; i++) {
-		int64_t id = p_cache_file->get_64();
-		int32_t len = p_cache_file->get_32();
-		cs.resize_uninitialized(len + 1);
-		ERR_FAIL_COND_V(cs.size() != len + 1, String());
-		cs[len] = 0;
-		int32_t rl = p_cache_file->get_buffer((uint8_t *)cs.ptrw(), len);
-		ERR_FAIL_COND_V(rl != len, String());
+	const int64_t uid_from_string = singleton->text_to_id(p_uid_string);
+	if (uid_from_string != INVALID_ID) {
+		const uint32_t entry_count = p_cache_file->get_32();
+		CharString cs;
+		for (uint32_t i = 0; i < entry_count; i++) {
+			int64_t id = p_cache_file->get_64();
+			int32_t len = p_cache_file->get_32();
+			cs.resize_uninitialized(len + 1);
+			ERR_FAIL_COND_V(cs.size() != len + 1, String());
+			cs[len] = 0;
+			int32_t rl = p_cache_file->get_buffer((uint8_t *)cs.ptrw(), len);
+			ERR_FAIL_COND_V(rl != len, String());
 
-		if (singleton->id_to_text(id) == p_uid_string) {
-			return String::utf8(cs.get_data());
+			if (id == uid_from_string) {
+				return String::utf8(cs.get_data());
+			}
 		}
 	}
 	return String();
@@ -348,9 +374,13 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 
 void ResourceUID::clear() {
 	cache_entries = 0;
+	if (use_reverse_cache) {
+		reverse_cache.clear();
+	}
 	unique_ids.clear();
 	changed = false;
 }
+
 void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("id_to_text", "id"), &ResourceUID::id_to_text);
 	ClassDB::bind_method(D_METHOD("text_to_id", "text_id"), &ResourceUID::text_to_id);

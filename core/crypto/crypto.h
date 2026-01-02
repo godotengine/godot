@@ -114,7 +114,6 @@ public:
 	virtual Error update(const PackedByteArray &p_data) = 0;
 	virtual PackedByteArray finish() = 0;
 
-	HMACContext() {}
 	virtual ~HMACContext() {}
 };
 
@@ -144,11 +143,11 @@ public:
 	// Compares two PackedByteArrays for equality without leaking timing information in order to prevent timing attacks.
 	// @see: https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy
 	bool constant_time_compare(const PackedByteArray &p_trusted, const PackedByteArray &p_received);
-
-	Crypto() {}
 };
 
 class ResourceFormatLoaderCrypto : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatLoaderCrypto, ResourceFormatLoader);
+
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
@@ -161,6 +160,8 @@ public:
 };
 
 class ResourceFormatSaverCrypto : public ResourceFormatSaver {
+	GDSOFTCLASS(ResourceFormatSaverCrypto, ResourceFormatSaver);
+
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;

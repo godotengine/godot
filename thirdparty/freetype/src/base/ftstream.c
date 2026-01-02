@@ -4,7 +4,7 @@
  *
  *   I/O stream support (body).
  *
- * Copyright (C) 2000-2024 by
+ * Copyright (C) 2000-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -242,7 +242,7 @@
     FT_ULong  read_bytes;
 
 
-    FT_TRACE7(( "FT_Stream_EnterFrame: %ld bytes\n", count ));
+    FT_TRACE7(( "FT_Stream_EnterFrame: %lu bytes\n", count ));
 
     /* check for nested frame access */
     FT_ASSERT( stream && stream->cursor == 0 );

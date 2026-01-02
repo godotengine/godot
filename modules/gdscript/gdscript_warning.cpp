@@ -118,6 +118,8 @@ String GDScriptWarning::get_message() const {
 			return R"(The "@static_unload" annotation is redundant because the file does not have a class with static variables.)";
 		case REDUNDANT_AWAIT:
 			return R"("await" keyword is unnecessary because the expression isn't a coroutine nor a signal.)";
+		case MISSING_AWAIT:
+			return R"("await" keyword might be desired because the expression is a coroutine.)";
 		case ASSERT_ALWAYS_TRUE:
 			return "Assert statement is redundant because the expression is always true.";
 		case ASSERT_ALWAYS_FALSE:
@@ -168,7 +170,7 @@ String GDScriptWarning::get_message() const {
 		case CONSTANT_USED_AS_FUNCTION: // There is already an error.
 		case FUNCTION_USED_AS_PROPERTY: // This is valid, returns `Callable`.
 			break;
-#endif
+#endif // DISABLE_DEPRECATED
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -183,7 +185,7 @@ int GDScriptWarning::get_default_value(Code p_code) {
 }
 
 PropertyInfo GDScriptWarning::get_property_info(Code p_code) {
-	return PropertyInfo(Variant::INT, get_settings_path_from_code(p_code), PROPERTY_HINT_ENUM, "Ignore,Warn,Error");
+	return PropertyInfo(Variant::INT, get_setting_path_from_code(p_code), PROPERTY_HINT_ENUM, "Ignore,Warn,Error");
 }
 
 String GDScriptWarning::get_name() const {
@@ -221,6 +223,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("MISSING_TOOL"),
 		PNAME("REDUNDANT_STATIC_UNLOAD"),
 		PNAME("REDUNDANT_AWAIT"),
+		PNAME("MISSING_AWAIT"),
 		PNAME("ASSERT_ALWAYS_TRUE"),
 		PNAME("ASSERT_ALWAYS_FALSE"),
 		PNAME("INTEGER_DIVISION"),
@@ -242,15 +245,15 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
 		"FUNCTION_USED_AS_PROPERTY",
-#endif
+#endif // DISABLE_DEPRECATED
 	};
 
-	static_assert(std::size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
+	static_assert(std_size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
 
 	return names[(int)p_code];
 }
 
-String GDScriptWarning::get_settings_path_from_code(Code p_code) {
+String GDScriptWarning::get_setting_path_from_code(Code p_code) {
 	return "debug/gdscript/warnings/" + get_name_from_code(p_code).to_lower();
 }
 

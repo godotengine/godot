@@ -45,6 +45,7 @@
 #ifdef GLES3_ENABLED
 #include <wayland-egl-core.h>
 #endif
+#include <xkbcommon/xkbcommon-compose.h>
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
 
@@ -70,6 +71,9 @@
 #include "wayland/protocol/xdg_foreign_v2.gen.h"
 #include "wayland/protocol/xdg_shell.gen.h"
 #include "wayland/protocol/xdg_system_bell.gen.h"
+#include "wayland/protocol/xdg_toplevel_icon.gen.h"
+
+#include "wayland/protocol/godot_embedding_compositor.gen.h"
 
 // NOTE: Deprecated.
 #include "wayland/protocol/xdg_foreign_v1.gen.h"
@@ -83,7 +87,9 @@
 #endif // LIBDECOR_ENABLED
 
 #include "core/os/thread.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
+
+#include "wayland_embedder.h"
 
 class WaylandThread {
 public:
@@ -197,6 +203,9 @@ public:
 		struct xdg_system_bell_v1 *xdg_system_bell = nullptr;
 		uint32_t xdg_system_bell_name = 0;
 
+		struct xdg_toplevel_icon_manager_v1 *xdg_toplevel_icon_manager = nullptr;
+		uint32_t xdg_toplevel_icon_manager_name = 0;
+
 		struct xdg_activation_v1 *xdg_activation = nullptr;
 		uint32_t xdg_activation_name = 0;
 
@@ -224,6 +233,9 @@ public:
 		// We're really not meant to use this one directly but we still need to know
 		// whether it's available.
 		uint32_t wp_fifo_manager_name = 0;
+
+		struct godot_embedding_compositor *godot_embedding_compositor = nullptr;
+		uint32_t godot_embedding_compositor_name = 0;
 	};
 
 	// General Wayland-specific states. Shouldn't be accessed directly.
@@ -458,6 +470,8 @@ public:
 		struct xkb_context *xkb_context = nullptr;
 		struct xkb_keymap *xkb_keymap = nullptr;
 		struct xkb_state *xkb_state = nullptr;
+		struct xkb_compose_state *xkb_compose_state = nullptr;
+		struct xkb_compose_table *xkb_compose_table = nullptr;
 
 		const char *keymap_buffer = nullptr;
 		uint32_t keymap_buffer_size = 0;
@@ -466,12 +480,19 @@ public:
 
 		xkb_layout_index_t current_layout_index = 0;
 
-		int32_t repeat_key_delay_msec = 0;
-		int32_t repeat_start_delay_msec = 0;
+		// Clients with `wl_seat`s older than version 4 do not support
+		// `wl_keyboard::repeat_info`, so we'll provide a reasonable default of 25
+		// keys per second, with a start delay of 600 milliseconds.
+		int32_t repeat_key_delay_msec = 1000 / 25;
+		int32_t repeat_start_delay_msec = 600;
 
 		xkb_keycode_t repeating_keycode = XKB_KEYCODE_INVALID;
 		uint64_t last_repeat_start_msec = 0;
 		uint64_t last_repeat_msec = 0;
+
+		uint32_t mods_depressed = 0;
+		uint32_t mods_latched = 0;
+		uint32_t mods_locked = 0;
 
 		bool shift_pressed = false;
 		bool ctrl_pressed = false;
@@ -525,6 +546,22 @@ public:
 		Point2i hotspot;
 	};
 
+	struct EmbeddingCompositorState {
+		LocalVector<struct godot_embedded_client *> clients;
+
+		// Only a client per PID can create a window.
+		HashMap<int, struct godot_embedded_client *> mapped_clients;
+
+		OS::ProcessID focused_pid = -1;
+	};
+
+	struct EmbeddedClientState {
+		struct godot_embedding_compositor *embedding_compositor = nullptr;
+
+		uint32_t pid = 0;
+		bool window_mapped = false;
+	};
+
 private:
 	struct ThreadData {
 		SafeFlag thread_done;
@@ -542,6 +579,9 @@ private:
 	HashMap<DisplayServer::WindowID, WindowState> windows;
 
 	List<Ref<Message>> messages;
+
+	xdg_toplevel_icon_v1 *xdg_icon = nullptr;
+	wl_buffer *icon_buffer = nullptr;
 
 	String cursor_theme_name;
 	int unscaled_cursor_size = 24;
@@ -596,6 +636,10 @@ private:
 	RegistryState registry;
 
 	bool initialized = false;
+
+#ifdef TOOLS_ENABLED
+	WaylandEmbedder embedder;
+#endif
 
 #ifdef LIBDECOR_ENABLED
 	struct libdecor *libdecor_context = nullptr;
@@ -734,6 +778,13 @@ private:
 	static void _xdg_exported_v2_on_handle(void *data, zxdg_exported_v2 *exported, const char *handle);
 
 	static void _xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token);
+
+	static void _godot_embedding_compositor_on_client(void *data, struct godot_embedding_compositor *godot_embedding_compositor, struct godot_embedded_client *godot_embedded_client, int32_t pid);
+
+	static void _godot_embedded_client_on_disconnected(void *data, struct godot_embedded_client *godot_embedded_client);
+	static void _godot_embedded_client_on_window_embedded(void *data, struct godot_embedded_client *godot_embedded_client);
+	static void _godot_embedded_client_on_window_focus_in(void *data, struct godot_embedded_client *godot_embedded_client);
+	static void _godot_embedded_client_on_window_focus_out(void *data, struct godot_embedded_client *godot_embedded_client);
 
 	// Core Wayland event listeners.
 	static constexpr struct wl_registry_listener wl_registry_listener = {
@@ -922,6 +973,18 @@ private:
 		.done = _xdg_activation_token_on_done,
 	};
 
+	// Godot interfaces.
+	static constexpr struct godot_embedding_compositor_listener godot_embedding_compositor_listener = {
+		.client = _godot_embedding_compositor_on_client,
+	};
+
+	static constexpr struct godot_embedded_client_listener godot_embedded_client_listener = {
+		.disconnected = _godot_embedded_client_on_disconnected,
+		.window_embedded = _godot_embedded_client_on_window_embedded,
+		.window_focus_in = _godot_embedded_client_on_window_focus_in,
+		.window_focus_out = _godot_embedded_client_on_window_focus_out,
+	};
+
 #ifdef LIBDECOR_ENABLED
 	// libdecor event handlers.
 	static void libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message);
@@ -977,6 +1040,8 @@ private:
 	static Ref<InputEventKey> _seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed);
 	static Ref<InputEventKey> _seat_state_get_unstuck_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed, Key p_key);
 
+	static void _seat_state_handle_xkb_keycode(SeatState *p_ss, xkb_keycode_t p_xkb_keycode, bool p_pressed, bool p_echo = false);
+
 	static void _wayland_state_update_cursor();
 
 	void _set_current_seat(struct wl_seat *p_seat);
@@ -1002,6 +1067,8 @@ public:
 
 	static OfferState *wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer);
 
+	static EmbeddingCompositorState *godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor);
+
 	void seat_state_unlock_pointer(SeatState *p_ss);
 	void seat_state_lock_pointer(SeatState *p_ss);
 	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
@@ -1012,7 +1079,7 @@ public:
 	void seat_state_echo_keys(SeatState *p_ss);
 
 	static int window_state_get_preferred_buffer_scale(WindowState *p_ws);
-	static double window_state_get_scale_factor(WindowState *p_ws);
+	static double window_state_get_scale_factor(const WindowState *p_ws);
 	static void window_state_update_size(WindowState *p_ws, int p_width, int p_height);
 
 	static Vector2i scale_vector2i(const Vector2i &p_vector, double p_amount);
@@ -1023,7 +1090,9 @@ public:
 
 	void beep() const;
 
-	void window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	void set_icon(const Ref<Image> &p_icon);
+
+	void window_create(DisplayServer::WindowID p_window_id, const Size2i &p_size, DisplayServer::WindowID p_parent_id = DisplayServer::INVALID_WINDOW_ID);
 	void window_create_popup(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id, Rect2i p_rect);
 	void window_destroy(DisplayServer::WindowID p_window_Id);
 
@@ -1031,6 +1100,7 @@ public:
 
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
 	WindowState *window_get_state(DisplayServer::WindowID p_window_id);
+	const WindowState *window_get_state(DisplayServer::WindowID p_window_id) const;
 
 	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
 
@@ -1082,6 +1152,7 @@ public:
 	String keyboard_get_layout_name(int p_index) const;
 
 	Key keyboard_get_key_from_physical(Key p_key) const;
+	Key keyboard_get_label_from_physical(Key p_key) const;
 
 	void keyboard_echo_keys();
 
@@ -1106,6 +1177,10 @@ public:
 	uint64_t window_get_last_frame_time(DisplayServer::WindowID p_window_id) const;
 	bool window_is_suspended(DisplayServer::WindowID p_window_id) const;
 	bool is_suspended() const;
+
+	struct godot_embedding_compositor *get_embedding_compositor();
+
+	OS::ProcessID embedded_compositor_get_focused_pid();
 
 	Error init();
 	void destroy();

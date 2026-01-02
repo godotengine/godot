@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/graph_edit.h"
@@ -46,8 +47,8 @@ public:
 	virtual void edit(const Ref<AnimationNode> &p_node) = 0;
 };
 
-class AnimationTreeEditor : public VBoxContainer {
-	GDCLASS(AnimationTreeEditor, VBoxContainer);
+class AnimationTreeEditor : public EditorDock {
+	GDCLASS(AnimationTreeEditor, EditorDock);
 
 	ScrollContainer *path_edit = nullptr;
 	HBoxContainer *path_hb = nullptr;
@@ -96,7 +97,6 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTreeEditorPlugin, EditorPlugin);
 
 	AnimationTreeEditor *anim_tree_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "AnimationTree"; }

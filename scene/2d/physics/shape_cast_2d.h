@@ -32,7 +32,7 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/2d/shape_2d.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class CollisionObject2D;
 
@@ -112,9 +112,9 @@ public:
 	real_t get_closest_collision_unsafe_fraction() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(const CollisionObject2D *p_node);
+	void add_exception(RequiredParam<const CollisionObject2D> rp_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(const CollisionObject2D *p_node);
+	void remove_exception(RequiredParam<const CollisionObject2D> rp_node);
 	void clear_exceptions();
 
 	PackedStringArray get_configuration_warnings() const override;

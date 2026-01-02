@@ -52,7 +52,7 @@
 		<method name="get_runtime_texture" qualifiers="const">
 			<return type="Texture2D" />
 			<description>
-				If [member use_texture_padding] is [code]false[/code], returns [member texture]. Otherwise, returns and internal [ImageTexture] created that includes the padding.
+				If [member use_texture_padding] is [code]false[/code], returns [member texture]. Otherwise, returns an internal [ImageTexture] created that includes the padding.
 			</description>
 		</method>
 		<method name="get_runtime_tile_texture_region" qualifiers="const">

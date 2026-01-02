@@ -30,9 +30,17 @@
 
 #include "openxr_select_runtime.h"
 
+#ifdef WINDOWS_ENABLED
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #include "core/io/dir_access.h"
+#include "core/io/json.h"
 #include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
+
+constexpr char GENERIC_PREFIX[] = "Unknown OpenXR Runtime";
 
 void OpenXRSelectRuntime::_update_items() {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -102,23 +110,120 @@ void OpenXRSelectRuntime::_notification(int p_notification) {
 	}
 }
 
-OpenXRSelectRuntime::OpenXRSelectRuntime() {
+String OpenXRSelectRuntime::_try_and_get_runtime_name(const String &p_config_file) {
+	if constexpr (!GD_IS_CLASS_ENABLED(JSON)) {
+		return "";
+	}
+
+	// Attempt to get a valid runtime name from the json file
+	String file_contents = FileAccess::get_file_as_string(p_config_file);
+	Dictionary root_node = JSON::parse_string(file_contents);
+	if (!root_node.has("runtime")) {
+		return "";
+	}
+	Dictionary api_layer = root_node["runtime"];
+	if (!api_layer.has("name") || api_layer["name"].get_type() != Variant::STRING) {
+		return "";
+	}
+	return api_layer["name"];
+}
+
+void OpenXRSelectRuntime::_add_runtime(Dictionary &r_runtimes, const String &p_config_file) {
+	if (r_runtimes.values().has(p_config_file)) {
+		// config file already in the list of runtimes, do not add a duplicate
+		return;
+	}
+
+	String runtime_name = _try_and_get_runtime_name(p_config_file);
+	if (runtime_name.is_empty()) {
+		runtime_name = GENERIC_PREFIX;
+	}
+
+	if (r_runtimes.keys().has(runtime_name)) {
+		// Highly unlikely, performance is not critical
+		unsigned int index = 1;
+		while (r_runtimes.keys().has(runtime_name + " " + uitos(index))) {
+			index++;
+		}
+		runtime_name = runtime_name + " " + uitos(index);
+	}
+	r_runtimes[runtime_name] = p_config_file;
+}
+
+Dictionary OpenXRSelectRuntime::_enumerate_runtimes() {
 	Dictionary default_runtimes;
 
-	// Add known common runtimes by default.
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED)
+	// Add known common runtimes in case they are not populated in registry
 	default_runtimes["Meta"] = "C:\\Program Files\\Oculus\\Support\\oculus-runtime\\oculus_openxr_64.json";
 	default_runtimes["SteamVR"] = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\steamxr_win64.json";
 	default_runtimes["Varjo"] = "C:\\Program Files\\Varjo\\varjo-openxr\\VarjoOpenXR.json";
 	default_runtimes["WMR"] = "C:\\WINDOWS\\system32\\MixedRealityRuntime.json";
-#endif
-#ifdef LINUXBSD_ENABLED
+
+	// Hard code openxr version 1.
+	LPCWSTR runtimes_key = L"SOFTWARE\\Khronos\\OpenXR\\1\\AvailableRuntimes";
+	HKEY hkey = nullptr;
+	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, runtimes_key, 0, KEY_READ | KEY_QUERY_VALUE, &hkey);
+	if (result != ERROR_SUCCESS) {
+		return default_runtimes;
+	}
+
+	DWORD max_value_len, value_count;
+	result = RegQueryInfoKeyW(
+			hkey, // hKey
+			nullptr, // lpClass
+			nullptr, // lpcchClass
+			nullptr, // lpReserved
+			nullptr, // lpcSubKeys
+			nullptr, // lpcbMaxSubKeyLen
+			nullptr, // lpcbMaxClassLen
+			&value_count, // lpcValues
+			&max_value_len, // lpcbMaxValueNameLen
+			nullptr, // lpcbMaxValueLen
+			nullptr, // lpcbSecurityDescriptor
+			nullptr // lpftLastWriteTime
+	);
+	if (result != ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return default_runtimes;
+	}
+
+	Char16String value_name;
+	value_name.resize_uninitialized(max_value_len + 1);
+	DWORD value_len, value_type;
+
+	for (DWORD i = 0; i < value_count; i++) {
+		value_len = max_value_len + 1;
+		result = RegEnumValueW(
+				hkey, // hKey
+				i, // dwIndex
+				(LPWSTR)value_name.get_data(), // lpValueName
+				&value_len, // lpcchValueName
+				nullptr, // lpReserved
+				&value_type, // lpType
+				nullptr, // lpData
+				nullptr // lpcbData
+		);
+		if (result != ERROR_SUCCESS || value_type != REG_DWORD) {
+			continue;
+		}
+
+		_add_runtime(default_runtimes, String::utf16((const char16_t *)value_name.get_data()));
+	}
+
+	// Cleanup, close the key we opened
+	RegCloseKey(hkey);
+
+#elif defined(LINUXBSD_ENABLED)
 	default_runtimes["Monado"] = "/usr/share/openxr/1/openxr_monado.json";
 	default_runtimes["SteamVR"] = "~/.steam/steam/steamapps/common/SteamVR/steamxr_linux64.json";
 #endif
+	return default_runtimes;
+}
 
+OpenXRSelectRuntime::OpenXRSelectRuntime() {
 	// TODO: Move to editor_settings.cpp
-	EDITOR_DEF_RST("xr/openxr/runtime_paths", default_runtimes);
+	EDITOR_DEF_RST("xr/openxr/runtime_paths", _enumerate_runtimes());
 
 	set_flat(true);
 	set_theme_type_variation("TopBarOptionButton");

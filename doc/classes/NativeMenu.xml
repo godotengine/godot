@@ -401,6 +401,14 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="get_system_menu_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<description>
+				Returns the text of the system menu item.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="has_feature" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="NativeMenu.Feature" />
@@ -718,6 +726,15 @@
 			<description>
 				Registers callable to emit after the menu is closed.
 				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_system_menu_text">
+			<return type="void" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the text of the system menu item.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 	</methods>

@@ -31,13 +31,25 @@
 #pragma once
 
 #include "servers/camera/camera_feed.h"
-#include "servers/camera_server.h"
+#include "servers/camera/camera_server.h"
 
 #include <camera/NdkCameraDevice.h>
 #include <camera/NdkCameraError.h>
 #include <camera/NdkCameraManager.h>
 #include <camera/NdkCameraMetadataTags.h>
 #include <media/NdkImageReader.h>
+#include <optional>
+
+enum class CameraFacing {
+	BACK = 0,
+	FRONT = 1,
+};
+
+struct CameraRotationParams {
+	int sensor_orientation;
+	CameraFacing camera_facing;
+	int display_rotation;
+};
 
 class CameraFeedAndroid : public CameraFeed {
 	GDSOFTCLASS(CameraFeedAndroid, CameraFeed);
@@ -56,9 +68,16 @@ private:
 	AImageReader *reader = nullptr;
 	ACameraCaptureSession *session = nullptr;
 	ACaptureRequest *request = nullptr;
+	Mutex callback_mutex;
+	bool was_active_before_pause = false;
 
 	void _add_formats();
 	void _set_rotation();
+	void refresh_camera_metadata();
+	static std::optional<int> calculate_rotation(const CameraRotationParams &p_params);
+	static int normalize_angle(int p_angle);
+	static int get_display_rotation();
+	static int get_app_orientation();
 
 	static void onError(void *context, ACameraDevice *p_device, int error);
 	static void onDisconnected(void *context, ACameraDevice *p_device);
@@ -74,6 +93,9 @@ public:
 	bool set_format(int p_index, const Dictionary &p_parameters) override;
 	Array get_formats() const override;
 	FeedFormat get_format() const override;
+	void handle_pause();
+	void handle_resume();
+	void handle_rotation_change();
 
 	CameraFeedAndroid(ACameraManager *manager, ACameraMetadata *metadata, const char *id,
 			CameraFeed::FeedPosition position, int32_t orientation);
@@ -91,6 +113,9 @@ private:
 
 public:
 	void set_monitoring_feeds(bool p_monitoring_feeds) override;
+	void handle_application_pause() override;
+	void handle_application_resume() override;
+	void handle_display_rotation_change(int p_orientation) override;
 
 	~CameraAndroid();
 };

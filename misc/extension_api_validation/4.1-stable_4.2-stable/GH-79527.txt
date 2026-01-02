@@ -1,0 +1,5 @@
+GH-79527
+--------
+Validate extension JSON: Error: Field 'classes/ParticleProcessMaterial/properties/orbit_velocity_curve': type changed value in new API, from "CurveTexture" to "CurveTexture,CurveXYZTexture".
+
+Added accepted curve type from only CurveTexture to CurveXYZTexture.

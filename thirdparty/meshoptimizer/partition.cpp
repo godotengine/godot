@@ -10,6 +10,9 @@
 namespace meshopt
 {
 
+// To avoid excessive recursion for malformed inputs, we switch to bisection after some depth
+const int kMergeDepthCutoff = 40;
+
 struct ClusterAdjacency
 {
 	unsigned int* offsets;
@@ -52,49 +55,44 @@ static void filterClusterIndices(unsigned int* data, unsigned int* offsets, cons
 	offsets[cluster_count] = unsigned(cluster_write);
 }
 
-static void computeClusterBounds(float* cluster_bounds, const unsigned int* cluster_indices, const unsigned int* cluster_offsets, size_t cluster_count, const float* vertex_positions, size_t vertex_positions_stride)
+static float computeClusterBounds(const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_positions_stride, float* out_center)
 {
 	size_t vertex_stride_float = vertex_positions_stride / sizeof(float);
 
-	for (size_t i = 0; i < cluster_count; ++i)
+	float center[3] = {0, 0, 0};
+
+	// approximate center of the cluster by averaging all vertex positions
+	for (size_t j = 0; j < index_count; ++j)
 	{
-		float center[3] = {0, 0, 0};
+		const float* p = vertex_positions + indices[j] * vertex_stride_float;
 
-		// approximate center of the cluster by averaging all vertex positions
-		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-		{
-			const float* p = vertex_positions + cluster_indices[j] * vertex_stride_float;
-
-			center[0] += p[0];
-			center[1] += p[1];
-			center[2] += p[2];
-		}
-
-		// note: technically clusters can't be empty per meshopt_partitionCluster but we check for a division by zero in case that changes
-		if (size_t cluster_size = cluster_offsets[i + 1] - cluster_offsets[i])
-		{
-			center[0] /= float(cluster_size);
-			center[1] /= float(cluster_size);
-			center[2] /= float(cluster_size);
-		}
-
-		// compute radius of the bounding sphere for each cluster
-		float radiussq = 0;
-
-		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-		{
-			const float* p = vertex_positions + cluster_indices[j] * vertex_stride_float;
-
-			float d2 = (p[0] - center[0]) * (p[0] - center[0]) + (p[1] - center[1]) * (p[1] - center[1]) + (p[2] - center[2]) * (p[2] - center[2]);
-
-			radiussq = radiussq < d2 ? d2 : radiussq;
-		}
-
-		cluster_bounds[i * 4 + 0] = center[0];
-		cluster_bounds[i * 4 + 1] = center[1];
-		cluster_bounds[i * 4 + 2] = center[2];
-		cluster_bounds[i * 4 + 3] = sqrtf(radiussq);
+		center[0] += p[0];
+		center[1] += p[1];
+		center[2] += p[2];
 	}
+
+	// note: technically clusters can't be empty per meshopt_partitionCluster but we check for a division by zero in case that changes
+	if (index_count)
+	{
+		center[0] /= float(index_count);
+		center[1] /= float(index_count);
+		center[2] /= float(index_count);
+	}
+
+	// compute radius of the bounding sphere for each cluster
+	float radiussq = 0;
+
+	for (size_t j = 0; j < index_count; ++j)
+	{
+		const float* p = vertex_positions + indices[j] * vertex_stride_float;
+
+		float d2 = (p[0] - center[0]) * (p[0] - center[0]) + (p[1] - center[1]) * (p[1] - center[1]) + (p[2] - center[2]) * (p[2] - center[2]);
+
+		radiussq = radiussq < d2 ? d2 : radiussq;
+	}
+
+	memcpy(out_center, center, sizeof(center));
+	return sqrtf(radiussq);
 }
 
 static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned int* cluster_indices, const unsigned int* cluster_offsets, size_t cluster_count, size_t vertex_count, meshopt_Allocator& allocator)
@@ -211,6 +209,9 @@ struct ClusterGroup
 	int next;
 	unsigned int size; // 0 unless root
 	unsigned int vertices;
+
+	float center[3];
+	float radius;
 };
 
 struct GroupOrder
@@ -285,15 +286,18 @@ static unsigned int countShared(const ClusterGroup* groups, int group1, int grou
 	return total;
 }
 
-static void mergeBounds(float* target, const float* source)
+static void mergeBounds(ClusterGroup& target, const ClusterGroup& source)
 {
-	float r1 = target[3], r2 = source[3];
-	float dx = source[0] - target[0], dy = source[1] - target[1], dz = source[2] - target[2];
+	float r1 = target.radius, r2 = source.radius;
+	float dx = source.center[0] - target.center[0], dy = source.center[1] - target.center[1], dz = source.center[2] - target.center[2];
 	float d = sqrtf(dx * dx + dy * dy + dz * dz);
 
 	if (d + r1 < r2)
 	{
-		memcpy(target, source, 4 * sizeof(float));
+		target.center[0] = source.center[0];
+		target.center[1] = source.center[1];
+		target.center[2] = source.center[2];
+		target.radius = source.radius;
 		return;
 	}
 
@@ -301,17 +305,17 @@ static void mergeBounds(float* target, const float* source)
 	{
 		float k = d > 0 ? (d + r2 - r1) / (2 * d) : 0.f;
 
-		target[0] += dx * k;
-		target[1] += dy * k;
-		target[2] += dz * k;
-		target[3] = (d + r2 + r1) / 2;
+		target.center[0] += dx * k;
+		target.center[1] += dy * k;
+		target.center[2] += dz * k;
+		target.radius = (d + r2 + r1) / 2;
 	}
 }
 
-static float boundsScore(const float* target, const float* source)
+static float boundsScore(const ClusterGroup& target, const ClusterGroup& source)
 {
-	float r1 = target[3], r2 = source[3];
-	float dx = source[0] - target[0], dy = source[1] - target[1], dz = source[2] - target[2];
+	float r1 = target.radius, r2 = source.radius;
+	float dx = source.center[0] - target.center[0], dy = source.center[1] - target.center[1], dz = source.center[2] - target.center[2];
 	float d = sqrtf(dx * dx + dy * dy + dz * dz);
 
 	float mr = d + r1 < r2 ? r2 : (d + r2 < r1 ? r1 : (d + r2 + r1) / 2);
@@ -319,7 +323,7 @@ static float boundsScore(const float* target, const float* source)
 	return mr > 0 ? r1 / mr : 0.f;
 }
 
-static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdjacency& adjacency, size_t max_partition_size, const float* cluster_bounds)
+static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdjacency& adjacency, size_t max_partition_size, bool use_bounds)
 {
 	assert(groups[id].size > 0);
 
@@ -347,8 +351,8 @@ static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdj
 			float score = float(int(shared)) * (group_rsqrt + other_rsqrt);
 
 			// incorporate spatial score to favor merging nearby groups
-			if (cluster_bounds)
-				score *= 1.f + 0.4f * boundsScore(&cluster_bounds[id * 4], &cluster_bounds[other * 4]);
+			if (use_bounds)
+				score *= 1.f + 0.4f * boundsScore(groups[id], groups[other]);
 
 			if (score > best_score)
 			{
@@ -361,6 +365,120 @@ static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdj
 	return best_group;
 }
 
+static void mergeLeaf(ClusterGroup* groups, unsigned int* order, size_t count, size_t target_partition_size, size_t max_partition_size)
+{
+	for (size_t i = 0; i < count; ++i)
+	{
+		unsigned int id = order[i];
+		if (groups[id].size == 0 || groups[id].size >= target_partition_size)
+			continue;
+
+		float best_score = -1.f;
+		int best_group = -1;
+
+		for (size_t j = 0; j < count; ++j)
+		{
+			unsigned int other = order[j];
+			if (id == other || groups[other].size == 0)
+				continue;
+
+			if (groups[id].size + groups[other].size > max_partition_size)
+				continue;
+
+			// favor merging nearby groups
+			float score = boundsScore(groups[id], groups[other]);
+
+			if (score > best_score)
+			{
+				best_score = score;
+				best_group = other;
+			}
+		}
+
+		// merge id *into* best_group; that way, we may merge more groups into the same best_group, maximizing the chance of reaching target
+		if (best_group != -1)
+		{
+			// combine groups by linking them together
+			unsigned int tail = best_group;
+			while (groups[tail].next >= 0)
+				tail = groups[tail].next;
+
+			groups[tail].next = id;
+
+			// update group sizes; note, we omit vertices update for simplicity as it's not used for spatial merge
+			groups[best_group].size += groups[id].size;
+			groups[id].size = 0;
+
+			// merge bounding spheres
+			mergeBounds(groups[best_group], groups[id]);
+			groups[id].radius = 0.f;
+		}
+	}
+}
+
+static size_t mergePartition(unsigned int* order, size_t count, const ClusterGroup* groups, int axis, float pivot)
+{
+	size_t m = 0;
+
+	// invariant: elements in range [0, m) are < pivot, elements in range [m, i) are >= pivot
+	for (size_t i = 0; i < count; ++i)
+	{
+		float v = groups[order[i]].center[axis];
+
+		// swap(m, i) unconditionally
+		unsigned int t = order[m];
+		order[m] = order[i];
+		order[i] = t;
+
+		// when v >= pivot, we swap i with m without advancing it, preserving invariants
+		m += v < pivot;
+	}
+
+	return m;
+}
+
+static void mergeSpatial(ClusterGroup* groups, unsigned int* order, size_t count, size_t target_partition_size, size_t max_partition_size, size_t leaf_size, int depth)
+{
+	size_t total = 0;
+	for (size_t i = 0; i < count; ++i)
+		total += groups[order[i]].size;
+
+	if (total <= max_partition_size || count <= leaf_size)
+		return mergeLeaf(groups, order, count, target_partition_size, max_partition_size);
+
+	float mean[3] = {};
+	float vars[3] = {};
+	float runc = 1, runs = 1;
+
+	// gather statistics on the points in the subtree using Welford's algorithm
+	for (size_t i = 0; i < count; ++i, runc += 1.f, runs = 1.f / runc)
+	{
+		const float* point = groups[order[i]].center;
+
+		for (int k = 0; k < 3; ++k)
+		{
+			float delta = point[k] - mean[k];
+			mean[k] += delta * runs;
+			vars[k] += delta * (point[k] - mean[k]);
+		}
+	}
+
+	// split axis is one where the variance is largest
+	int axis = (vars[0] >= vars[1] && vars[0] >= vars[2]) ? 0 : (vars[1] >= vars[2] ? 1 : 2);
+
+	float split = mean[axis];
+	size_t middle = mergePartition(order, count, groups, axis, split);
+
+	// enforce balance for degenerate partitions
+	// this also ensures recursion depth is bounded on pathological inputs
+	if (middle <= leaf_size / 2 || count - middle <= leaf_size / 2 || depth >= kMergeDepthCutoff)
+		middle = count / 2;
+
+	// recursion depth is logarithmic and bounded due to max depth check above
+	mergeSpatial(groups, order, middle, target_partition_size, max_partition_size, leaf_size, depth + 1);
+	mergeSpatial(groups, order + middle, count - middle, target_partition_size, max_partition_size, leaf_size, depth + 1);
+}
+
 } // namespace meshopt
 
 size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* cluster_indices, size_t total_index_count, const unsigned int* cluster_index_counts, size_t cluster_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_partition_size)
@@ -371,7 +489,7 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 	assert(vertex_positions_stride % sizeof(float) == 0);
 	assert(target_partition_size > 0);
 
-	size_t max_partition_size = target_partition_size + target_partition_size * 3 / 8;
+	size_t max_partition_size = target_partition_size + target_partition_size / 3;
 
 	meshopt_Allocator allocator;
 
@@ -385,20 +503,12 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 	filterClusterIndices(cluster_newindices, cluster_offsets, cluster_indices, cluster_index_counts, cluster_count, used, vertex_count, total_index_count);
 	cluster_indices = cluster_newindices;
 
-	// compute bounding sphere for each cluster if positions are provided
-	float* cluster_bounds = NULL;
-
-	if (vertex_positions)
-	{
-		cluster_bounds = allocator.allocate<float>(cluster_count * 4);
-		computeClusterBounds(cluster_bounds, cluster_indices, cluster_offsets, cluster_count, vertex_positions, vertex_positions_stride);
-	}
-
 	// build cluster adjacency along with edge weights (shared vertex count)
 	ClusterAdjacency adjacency = {};
 	buildClusterAdjacency(adjacency, cluster_indices, cluster_offsets, cluster_count, vertex_count, allocator);
 
 	ClusterGroup* groups = allocator.allocate<ClusterGroup>(cluster_count);
+	memset(groups, 0, sizeof(ClusterGroup) * cluster_count);
 
 	GroupOrder* order = allocator.allocate<GroupOrder>(cluster_count);
 	size_t pending = 0;
@@ -411,6 +521,10 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 		groups[i].size = 1;
 		groups[i].vertices = cluster_offsets[i + 1] - cluster_offsets[i];
 		assert(groups[i].vertices > 0);
+
+		// compute bounding sphere for each cluster if positions are provided
+		if (vertex_positions)
+			groups[i].radius = computeClusterBounds(cluster_indices + cluster_offsets[i], cluster_offsets[i + 1] - cluster_offsets[i], vertex_positions, vertex_positions_stride, groups[i].center);
 
 		GroupOrder item = {};
 		item.id = unsigned(i);
@@ -439,7 +553,7 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 		if (groups[top.id].size >= target_partition_size)
 			continue;
 
-		int best_group = pickGroupToMerge(groups, top.id, adjacency, max_partition_size, cluster_bounds);
+		int best_group = pickGroupToMerge(groups, top.id, adjacency, max_partition_size, /* use_bounds= */ vertex_positions);
 
 		// we can't grow the group any more, emit as is
 		if (best_group == -1)
@@ -449,14 +563,11 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 		unsigned int shared = countShared(groups, top.id, best_group, adjacency);
 
 		// combine groups by linking them together
-		assert(groups[best_group].size > 0);
+		unsigned int tail = top.id;
+		while (groups[tail].next >= 0)
+			tail = groups[tail].next;
 
-		for (int i = top.id; i >= 0; i = groups[i].next)
-			if (groups[i].next < 0)
-			{
-				groups[i].next = best_group;
-				break;
-			}
+		groups[tail].next = best_group;
 
 		// update group sizes; note, the vertex update is a O(1) approximation which avoids recomputing the true size
 		groups[top.id].size += groups[best_group].size;
@@ -467,10 +578,10 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 		groups[best_group].vertices = 0;
 
 		// merge bounding spheres if bounds are available
-		if (cluster_bounds)
+		if (vertex_positions)
 		{
-			mergeBounds(&cluster_bounds[top.id * 4], &cluster_bounds[best_group * 4]);
-			memset(&cluster_bounds[best_group * 4], 0, 4 * sizeof(float));
+			mergeBounds(groups[top.id], groups[best_group]);
+			groups[best_group].radius = 0;
 		}
 
 		// re-associate all clusters back to the merged group
@@ -481,6 +592,20 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 		heapPush(order, pending++, top);
 	}
 
+	// if vertex positions are provided, we do a final pass to see if we can merge small groups based on spatial locality alone
+	if (vertex_positions)
+	{
+		unsigned int* merge_order = reinterpret_cast<unsigned int*>(order);
+		size_t merge_offset = 0;
+
+		for (size_t i = 0; i < cluster_count; ++i)
+			if (groups[i].size)
+				merge_order[merge_offset++] = unsigned(i);
+
+		mergeSpatial(groups, merge_order, merge_offset, target_partition_size, max_partition_size, /* leaf_size= */ 8, 0);
+	}
+
+	// output each remaining group
 	size_t next_group = 0;
 
 	for (size_t i = 0; i < cluster_count; ++i)

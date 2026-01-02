@@ -1,0 +1,24 @@
+GH-76176
+--------
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_base_control', from 31757941 to A5E188F5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_edited_scene_root', from 6C6B0707 to BC5DCFF4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_editor_main_screen', from 36955D8D to 65B2D3B5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_editor_paths', from FA334A57 to 5F1D5DC4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_editor_settings', from 932B4D2E to F399A3EB. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_file_system_dock', from 217210BD to DF93E7E7. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_resource_filesystem', from 1D5C1A47 to 2E802B7E. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_resource_previewer', from 5E161783 to 383C77ED. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_script_editor', from EB48A7D4 to 056A8923. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/EditorInterface/methods/get_selection', from 0302AF0B to A05A4D13. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_base_control': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_edited_scene_root': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_editor_main_screen': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_editor_paths': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_editor_settings': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_file_system_dock': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_resource_filesystem': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_resource_previewer': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_script_editor': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/get_selection': is_const changed value in new API, from false to true.
+
+Functions were made `const`. No adjustments should be necessary.

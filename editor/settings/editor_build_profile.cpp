@@ -40,6 +40,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 
 #include "modules/modules_enabled.gen.h" // For mono.
@@ -301,8 +302,6 @@ const HashMap<EditorBuildProfile::BuildOption, LocalVector<String>> EditorBuildP
 			"RayCast3D",
 			"SoftBody3D",
 			"SpringArm3D",
-			"SpringBoneCollision3D",
-			"SpringBoneSimulator3D",
 			"VehicleWheel3D",
 	} },
 	{ BUILD_OPTION_TEXT_SERVER_ADVANCED, {
@@ -944,20 +943,20 @@ void EditorBuildProfileManager::_detect_from_project() {
 
 	edited->clear_disabled_classes();
 
-	List<StringName> all_classes;
-	ClassDB::get_class_list(&all_classes);
+	LocalVector<StringName> all_classes;
+	ClassDB::get_class_list(all_classes);
 
-	for (const StringName &E : all_classes) {
-		if (String(E).begins_with("Editor") || ClassDB::get_api_type(E) != ClassDB::API_CORE || all_used_classes.has(E)) {
+	for (const StringName &class_name : all_classes) {
+		if (String(class_name).begins_with("Editor") || ClassDB::get_api_type(class_name) != ClassDB::API_CORE || all_used_classes.has(class_name)) {
 			// This class is valid or editor-only, do nothing.
 			continue;
 		}
 
-		StringName p = ClassDB::get_parent_class(E);
+		StringName p = ClassDB::get_parent_class(class_name);
 		if (!p || all_used_classes.has(p)) {
 			// If no parent, or if the parent is enabled, then add to disabled classes.
 			// This way we avoid disabling redundant classes.
-			edited->set_disable_class(E, true);
+			edited->set_disable_class(class_name, true);
 		}
 	}
 
@@ -1328,11 +1327,15 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	class_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
+	class_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	class_list->connect("cell_selected", callable_mp(this, &EditorBuildProfileManager::_class_list_item_selected));
 	class_list->connect("item_edited", callable_mp(this, &EditorBuildProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorBuildProfileManager::_class_list_item_collapsed));
+
 	// It will be displayed once the user creates or chooses a profile.
-	main_vbc->add_margin_child(TTR("Configure Engine Compilation Profile:"), class_list, true);
+	MarginContainer *mc = main_vbc->add_margin_child(TTRC("Configure Engine Compilation Profile:"), class_list, true);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	description_bit = memnew(EditorHelpBit);
 	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);

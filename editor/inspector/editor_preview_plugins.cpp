@@ -192,7 +192,7 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const Ref<Resource> &p_from, c
 	Ref<Image> img = p_from;
 
 	if (img.is_null() || img->is_empty()) {
-		return Ref<Image>();
+		return Ref<Texture2D>();
 	}
 
 	img = img->duplicate();
@@ -200,7 +200,7 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const Ref<Resource> &p_from, c
 
 	if (img->is_compressed()) {
 		if (img->decompress() != OK) {
-			return Ref<Image>();
+			return Ref<Texture2D>();
 		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
@@ -393,7 +393,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
 	int lats = 32;
 	int lons = 32;
-	const double lat_step = Math::TAU / lats;
+	const double lat_step = Math::PI / lats;
 	const double lon_step = Math::TAU / lons;
 	real_t radius = 1.0;
 
@@ -428,22 +428,27 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 				Vector3(x0 * zr0, z0, y0 * zr0)
 			};
 
-#define ADD_POINT(m_idx)                                                                       \
-	normals.push_back(v[m_idx]);                                                               \
-	vertices.push_back(v[m_idx] * radius);                                                     \
-	{                                                                                          \
-		Vector2 uv(Math::atan2(v[m_idx].x, v[m_idx].z), Math::atan2(-v[m_idx].y, v[m_idx].z)); \
-		uv /= Math::PI;                                                                        \
-		uv *= 4.0;                                                                             \
-		uv = uv * 0.5 + Vector2(0.5, 0.5);                                                     \
-		uvs.push_back(uv);                                                                     \
-	}                                                                                          \
-	{                                                                                          \
-		Vector3 t = tt.xform(v[m_idx]);                                                        \
-		tangents.push_back(t.x);                                                               \
-		tangents.push_back(t.y);                                                               \
-		tangents.push_back(t.z);                                                               \
-		tangents.push_back(1.0);                                                               \
+#define ADD_POINT(m_idx)                                                                               \
+	normals.push_back(v[m_idx]);                                                                       \
+	vertices.push_back(v[m_idx] * radius);                                                             \
+	{                                                                                                  \
+		Vector2 uv;                                                                                    \
+		if (j >= lons / 2) {                                                                           \
+			uv = Vector2(Math::atan2(-v[m_idx].x, -v[m_idx].z), Math::atan2(v[m_idx].y, -v[m_idx].z)); \
+		} else {                                                                                       \
+			uv = Vector2(Math::atan2(v[m_idx].x, v[m_idx].z), Math::atan2(-v[m_idx].y, v[m_idx].z));   \
+		}                                                                                              \
+		uv /= Math::PI;                                                                                \
+		uv *= 4.0;                                                                                     \
+		uv = uv * 0.5 + Vector2(0.5, 0.5);                                                             \
+		uvs.push_back(uv);                                                                             \
+	}                                                                                                  \
+	{                                                                                                  \
+		Vector3 t = tt.xform(v[m_idx]);                                                                \
+		tangents.push_back(t.x);                                                                       \
+		tangents.push_back(t.y);                                                                       \
+		tangents.push_back(t.z);                                                                       \
+		tangents.push_back(1.0);                                                                       \
 	}
 
 			ADD_POINT(0);
@@ -467,16 +472,16 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
 EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(sphere);
-	RS::get_singleton()->free(sphere_instance);
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(camera_attributes);
-	RS::get_singleton()->free(scenario);
+	RS::get_singleton()->free_rid(sphere);
+	RS::get_singleton()->free_rid(sphere_instance);
+	RS::get_singleton()->free_rid(viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(camera);
+	RS::get_singleton()->free_rid(camera_attributes);
+	RS::get_singleton()->free_rid(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -811,15 +816,15 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	//RS::get_singleton()->free(sphere);
-	RS::get_singleton()->free(mesh_instance);
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(camera_attributes);
-	RS::get_singleton()->free(scenario);
+	RS::get_singleton()->free_rid(mesh_instance);
+	RS::get_singleton()->free_rid(viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(camera);
+	RS::get_singleton()->free_rid(camera_attributes);
+	RS::get_singleton()->free_rid(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -903,9 +908,9 @@ EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(canvas_item);
-	RS::get_singleton()->free(canvas);
-	RS::get_singleton()->free(viewport);
+	RS::get_singleton()->free_rid(canvas_item);
+	RS::get_singleton()->free_rid(canvas);
+	RS::get_singleton()->free_rid(viewport);
 }
 
 ////////////////////////////////////////////////////////////////////////////

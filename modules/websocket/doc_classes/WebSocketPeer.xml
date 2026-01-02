@@ -4,7 +4,7 @@
 		A WebSocket connection.
 	</brief_description>
 	<description>
-		This class represents WebSocket connection, and can be used as a WebSocket client (RFC 6455-compliant) or as a remote peer of a WebSocket server.
+		This class represents WebSocket connection, and can be used as a WebSocket client ([url=https://datatracker.ietf.org/doc/html/rfc6455]RFC 6455[/url]-compliant) or as a remote peer of a WebSocket server.
 		You can send WebSocket binary frames using [method PacketPeer.put_packet], and WebSocket text frames using [method send] (prefer text frames when interacting with text-based API). You can check the frame type of the last packet via [method was_string_packet].
 		To start a WebSocket client, first call [method connect_to_url], then regularly call [method poll] (e.g. during [Node] process). You can query the socket state via [method get_ready_state], get the number of pending packets using [method PacketPeer.get_available_packet_count], and retrieve them via [method PacketPeer.get_packet].
 		[codeblocks]
@@ -50,8 +50,10 @@
 			<param index="0" name="code" type="int" default="1000" />
 			<param index="1" name="reason" type="String" default="&quot;&quot;" />
 			<description>
-				Closes this WebSocket connection. [param code] is the status code for the closure (see RFC 6455 section 7.4 for a list of valid status codes). [param reason] is the human readable reason for closing the connection (can be any UTF-8 string that's smaller than 123 bytes). If [param code] is negative, the connection will be closed immediately without notifying the remote peer.
-				[b]Note:[/b] To achieve a clean close, you will need to keep polling until [constant STATE_CLOSED] is reached.
+				Closes this WebSocket connection.
+				[param code] is the status code for the closure (see [url=https://datatracker.ietf.org/doc/html/rfc6455#section-7.4.1]RFC 6455 section 7.4[/url] for a list of valid status codes). If [param code] is negative, the connection will be closed immediately without notifying the remote peer.
+				[param reason] is the human-readable reason for closing the connection. It can be any UTF-8 string that's smaller than 123 bytes.
+				[b]Note:[/b] To achieve a clean closure, you will need to keep polling until [constant STATE_CLOSED] is reached.
 				[b]Note:[/b] The Web export might not support all status codes. Please refer to browser-specific documentation for more details.
 			</description>
 		</method>

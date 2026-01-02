@@ -34,6 +34,7 @@
 #include "core/math/math_funcs.h"
 
 #include <zlib.h> // Should come before including tinyexr.
+#include <cstdlib>
 
 #include "thirdparty/tinyexr/tinyexr.h"
 

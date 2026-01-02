@@ -54,6 +54,7 @@ enum PackFlags {
 enum PackFileFlags {
 	PACK_FILE_ENCRYPTED = 1 << 0,
 	PACK_FILE_REMOVAL = 1 << 1,
+	PACK_FILE_DELTA = 1 << 2,
 };
 
 class PackSource;
@@ -72,6 +73,7 @@ public:
 		PackSource *src = nullptr;
 		bool encrypted;
 		bool bundle;
+		bool delta;
 	};
 
 private:
@@ -103,6 +105,7 @@ private:
 	};
 
 	HashMap<PathMD5, PackedFile, PathMD5> files;
+	HashMap<PathMD5, Vector<PackedFile>, PathMD5> delta_patches;
 
 	Vector<PackSource *> sources;
 
@@ -116,9 +119,11 @@ private:
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false, bool p_bundle = false); // for PackSource
+	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false, bool p_bundle = false, bool p_delta = false); // for PackSource
 	void remove_path(const String &p_path);
 	uint8_t *get_file_hash(const String &p_path);
+	Vector<PackedFile> get_delta_patches(const String &p_path) const;
+	bool has_delta_patches(const String &p_path) const;
 	HashSet<String> get_file_paths() const;
 
 	void set_disabled(bool p_disabled) { disabled = p_disabled; }
@@ -166,6 +171,7 @@ class FileAccessPack : public FileAccess {
 	GDSOFTCLASS(FileAccessPack, FileAccess);
 	PackedData::PackedFile pf;
 
+	String path;
 	mutable uint64_t pos;
 	mutable bool eof;
 	uint64_t off;
@@ -185,6 +191,9 @@ class FileAccessPack : public FileAccess {
 
 public:
 	virtual bool is_open() const override;
+
+	virtual String get_path() const override { return path; }
+	virtual String get_path_absolute() const override { return path; }
 
 	virtual void seek(uint64_t p_position) override;
 	virtual void seek_end(int64_t p_position = 0) override;

@@ -49,6 +49,10 @@
 		<member name="layer_viewport" type="SubViewport" setter="set_layer_viewport" getter="get_layer_viewport">
 			The [SubViewport] to render on the composition layer.
 		</member>
+		<member name="protected_content" type="bool" setter="set_protected_content" getter="is_protected_content" default="false">
+			If enabled, the OpenXR swapchain will be created with the [code]XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT[/code] flag, which will protect its contents from CPU access.
+			When used with an Android Surface, this may allow DRM content to be presented, and will only take effect when the Surface is first created; later changes to this property will have no effect.
+		</member>
 		<member name="sort_order" type="int" setter="set_sort_order" getter="get_sort_order" default="1">
 			The sort order for this composition layer. Higher numbers will be shown in front of lower numbers.
 			[b]Note:[/b] This will have no effect if a fallback mesh is being used.

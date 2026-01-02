@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="UDSServer" inherits="SocketServer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A Unix Domain Socket (UDS) server.
+	</brief_description>
+	<description>
+		A Unix Domain Socket (UDS) server. Listens to connections on a socket path and returns a [StreamPeerUDS] when it gets an incoming connection. Unix Domain Sockets provide inter-process communication on the same machine using the filesystem namespace.
+		[b]Note:[/b] Unix Domain Sockets are only available on Unix-like systems (Linux, macOS, etc.) and are not supported on Windows.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="listen">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Listens on the socket at [param path]. The socket file will be created at the specified path.
+				[b]Note:[/b] The socket file must not already exist at the specified path. You may need to remove any existing socket file before calling this method.
+			</description>
+		</method>
+		<method name="take_connection">
+			<return type="StreamPeerUDS" />
+			<description>
+				If a connection is available, returns a StreamPeerUDS with the connection.
+			</description>
+		</method>
+	</methods>
+</class>

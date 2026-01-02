@@ -33,6 +33,7 @@
 #include "java_class_wrapper.h"
 
 #include "core/config/engine.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/variant.h"
 
 class JNISingleton : public Object {
@@ -46,33 +47,42 @@ class JNISingleton : public Object {
 	RBMap<StringName, MethodData> method_map;
 	Ref<JavaObject> wrapped_object;
 
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("has_java_method", "method"), &JNISingleton::has_java_method);
+	}
+
 public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
-		if (wrapped_object.is_valid()) {
-			RBMap<StringName, MethodData>::Element *E = method_map.find(p_method);
-
-			// Check the method we're looking for is in the JNISingleton map and that
-			// the arguments match.
-			bool call_error = !E || E->get().argtypes.size() != p_argcount;
-			if (!call_error) {
-				for (int i = 0; i < p_argcount; i++) {
-					if (!Variant::can_convert(p_args[i]->get_type(), E->get().argtypes[i])) {
-						call_error = true;
-						break;
-					}
-				}
-			}
-
-			if (!call_error) {
-				return wrapped_object->callp(p_method, p_args, p_argcount, r_error);
-			}
+		// Godot methods take precedence.
+		Variant ret = Object::callp(p_method, p_args, p_argcount, r_error);
+		if (r_error.error == Callable::CallError::CALL_OK) {
+			return ret;
 		}
 
-		return Object::callp(p_method, p_args, p_argcount, r_error);
+		// Check the method we're looking for is in the JNISingleton map.
+		// This is done because JNISingletons register methods differently than wrapped JavaClass / JavaObject to allow
+		// for access to private methods annotated with the @UsedByGodot annotation.
+		// In the future, we should remove access to private methods and require that JNISingletons' methods exposed to
+		// GDScript be all public, similarly to what we do for wrapped JavaClass / JavaObject methods. Doing so will
+		// also allow dropping and deprecating the @UsedByGodot annotation.
+		RBMap<StringName, MethodData>::Element *E = method_map.find(p_method);
+		if (E) {
+			if (wrapped_object.is_valid()) {
+				return wrapped_object->callp(p_method, p_args, p_argcount, r_error);
+			} else {
+				r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			}
+		}
+		return Variant();
 	}
 
 	Ref<JavaObject> get_wrapped_object() const {
 		return wrapped_object;
+	}
+
+	bool has_java_method(const StringName &p_method) const {
+		return method_map.has(p_method);
 	}
 
 	void add_method(const StringName &p_name, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type) {

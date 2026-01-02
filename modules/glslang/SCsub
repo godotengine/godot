@@ -12,6 +12,7 @@ thirdparty_obj = []
 
 if env["builtin_glslang"]:
     thirdparty_dir = "#thirdparty/glslang/"
+    thirdparty_spirv_headers_dir = "#thirdparty/spirv-headers/"
     thirdparty_sources = [
         "glslang/GenericCodeGen/CodeGen.cpp",
         "glslang/GenericCodeGen/Link.cpp",
@@ -62,11 +63,10 @@ if env["builtin_glslang"]:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    # Include `#thirdparty` to workaround mismatch between location of `SPIRV` in library source
-    # and in installed public headers.
-    env_glslang.Prepend(CPPEXTPATH=[thirdparty_dir, "#thirdparty"])
+    env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty"])
+    env_glslang.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "include/spirv/unified1"])
 
-    env_glslang.Append(CPPDEFINES=["ENABLE_OPT=0"])
+    env_glslang.Append(CPPDEFINES=[("ENABLE_OPT", 0)])
 
     env_thirdparty = env_glslang.Clone()
     env_thirdparty.disable_warnings()

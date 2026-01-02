@@ -1,0 +1,7 @@
+GH-88081
+--------
+Validate extension JSON: Error: Field 'classes/EditorPlugin/methods/add_control_to_bottom_panel/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/EditorPlugin/methods/add_control_to_dock/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument to add_control_to_bottom_panel and add_control_to_dock to specify a shortcut that toggles the bottom panel/dock's visibility.
+Compatibility method registered.

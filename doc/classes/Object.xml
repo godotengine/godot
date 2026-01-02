@@ -73,6 +73,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
@@ -185,6 +186,7 @@
 				[/codeblocks]
 				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc. If you want to customize exported properties, use [method _validate_property].
 				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy.
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
@@ -265,7 +267,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] The base [Object] defines a few notifications ([constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE]). Inheriting classes such as [Node] define a lot more notifications, which are also received by this method.
-				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. Call order depends on the [code]reversed[/code] argument of [method notification] and varies between different notifications. Most notifications are sent in the forward order (i.e. Object class first, most derived class last).
 			</description>
 		</method>
 		<method name="_property_can_revert" qualifiers="virtual">
@@ -274,6 +276,7 @@
 			<description>
 				Override this method to customize the given [param property]'s revert behavior. Should return [code]true[/code] if the [param property] has a custom default value and is revertible in the Inspector dock. Use [method _property_get_revert] to specify the [param property]'s default value.
 				[b]Note:[/b] This method must return consistently, regardless of the current value of the [param property].
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns [code]true[/code].
 			</description>
 		</method>
 		<method name="_property_get_revert" qualifiers="virtual">
@@ -282,6 +285,7 @@
 			<description>
 				Override this method to customize the given [param property]'s revert behavior. Should return the default value for the [param property]. If the default value differs from the [param property]'s current value, a revert icon is displayed in the Inspector dock.
 				[b]Note:[/b] [method _property_can_revert] must also be overridden for this method to be called.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
@@ -336,6 +340,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns [code]true[/code].
 			</description>
 		</method>
 		<method name="_to_string" qualifiers="virtual">
@@ -471,6 +476,7 @@
 				node.CallDeferred(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
+				For methods that are deferred from the same thread, the order of execution at idle time is identical to the order in which [code skip-lint]call_deferred[/code] was called.
 				See also [method Callable.call_deferred].
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 				[b]Note:[/b] If you're looking to delay the function call by a frame, refer to the [signal SceneTree.process_frame] and [signal SceneTree.physics_frame] signals.
@@ -525,7 +531,7 @@
 				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and generates an error, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
 				[b]Note:[/b] If the [param callable]'s object is freed, the connection will be lost.
 				[b]Note:[/b] In GDScript, it is generally recommended to connect signals with [method Signal.connect] instead.
-				[b]Note:[/b] This operation (and all other signal related operations) is thread-safe.
+				[b]Note:[/b] This method, and all other signal-related methods, are thread-safe.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -698,7 +704,7 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of existing signals as an [Array] of dictionaries.
-				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
+				[b]Note:[/b] Due to the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
 			</description>
 		</method>
 		<method name="get_translation_domain" qualifiers="const">
@@ -1026,6 +1032,7 @@
 		</constant>
 		<constant name="NOTIFICATION_PREDELETE" value="1">
 			Notification received when the object is about to be deleted. Can be used like destructors in object-oriented programming languages.
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
 			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.
@@ -1034,7 +1041,8 @@
 			Deferred connections trigger their [Callable]s on idle time (at the end of the frame), rather than instantly.
 		</constant>
 		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
-			Persisting connections are stored when the object is serialized (such as when using [method PackedScene.pack]). In the editor, connections created through the Node dock are always persisting.
+			Persisting connections are stored when the object is serialized (such as when using [method PackedScene.pack]). In the editor, connections created through the Signals dock are always persisting.
+			[b]Note:[/b] Connections to lambda functions (that is, when the function code is embedded in the [method connect] call) cannot be made persistent.
 		</constant>
 		<constant name="CONNECT_ONE_SHOT" value="4" enum="ConnectFlags">
 			One-shot connections disconnect themselves after emission.

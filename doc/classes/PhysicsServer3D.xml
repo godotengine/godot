@@ -701,16 +701,19 @@
 		<method name="box_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D box shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the box's half-extents.
 			</description>
 		</method>
 		<method name="capsule_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D capsule shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the capsule's height and radius.
 			</description>
 		</method>
 		<method name="concave_polygon_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D concave polygon shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the concave polygon's triangles.
 			</description>
 		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
@@ -733,16 +736,20 @@
 		<method name="convex_polygon_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D convex polygon shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the convex polygon's points.
 			</description>
 		</method>
 		<method name="custom_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a custom shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's data.
+				[b]Note:[/b] Custom shapes are not supported by the built-in physics servers, so calling this method always produces an error when using Godot Physics or Jolt Physics. Custom physics servers implemented as GDExtensions may support a custom shape.
 			</description>
 		</method>
 		<method name="cylinder_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D cylinder shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the cylinder's height and radius.
 			</description>
 		</method>
 		<method name="free_rid">
@@ -800,6 +807,7 @@
 		<method name="heightmap_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D heightmap shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the heightmap's data.
 			</description>
 		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
@@ -985,6 +993,7 @@
 		<method name="separation_ray_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D separation ray shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's [code]length[/code] and [code]slide_on_slope[/code] properties.
 			</description>
 		</method>
 		<method name="set_active">
@@ -998,7 +1007,7 @@
 			<return type="Variant" />
 			<param index="0" name="shape" type="RID" />
 			<description>
-				Returns the shape data.
+				Returns the shape data that configures the shape, such as the half-extents of a box or the triangles of a concave (trimesh) shape. See [method shape_set_data] for the precise format of this data in each case.
 			</description>
 		</method>
 		<method name="shape_get_margin" qualifiers="const">
@@ -1013,7 +1022,7 @@
 			<return type="int" enum="PhysicsServer3D.ShapeType" />
 			<param index="0" name="shape" type="RID" />
 			<description>
-				Returns the type of shape.
+				Returns the shape's type.
 			</description>
 		</method>
 		<method name="shape_set_data">
@@ -1021,7 +1030,18 @@
 			<param index="0" name="shape" type="RID" />
 			<param index="1" name="data" type="Variant" />
 			<description>
-				Sets the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
+				Sets the shape data that configures the shape. The [param data] to be passed depends on the shape's type (see [method shape_get_type]):
+				- [constant SHAPE_WORLD_BOUNDARY]: a [Plane],
+				- [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key [code]"length"[/code] with a [float] value and the key [code]"slide_on_slope"[/code] with a [bool] value,
+				- [constant SHAPE_SPHERE]: a [float] that is the radius of the sphere,
+				- [constant SHAPE_BOX]: a [Vector3] containing the half-extents of the box,
+				- [constant SHAPE_CAPSULE]: a dictionary containing the keys [code]"height"[/code] and [code]"radius"[/code] with [float] values,
+				- [constant SHAPE_CYLINDER]: a dictionary containing the keys [code]"height"[/code] and [code]"radius"[/code] with [float] values,
+				- [constant SHAPE_CONVEX_POLYGON]: a [PackedVector3Array] of points defining a convex polygon (the shape will be the convex hull of the points),
+				- [constant SHAPE_CONCAVE_POLYGON]: a dictionary containing the key [code]"faces"[/code] with a [PackedVector3Array] value (with a length divisible by 3, so that each 3-tuple of points forms a face) and the key [code]"backface_collision"[/code] with a [bool] value,
+				- [constant SHAPE_HEIGHTMAP]: a dictionary containing the keys [code]"width"[/code] and [code]"depth"[/code] with [int] values, and the key [code]"heights"[/code] with a value that is a packed array of [float]s of length [code]width * depth[/code] (that is a [PackedFloat32Array], or a [PackedFloat64Array] if Godot was compiled with the [code]precision=double[/code] option), and optionally the keys [code]"min_height"[/code] and [code]"max_height"[/code] with [float] values,
+				- [constant SHAPE_SOFT_BODY]: the input [param data] is ignored and this method has no effect,
+				- [constant SHAPE_CUSTOM]: the input [param data] is interpreted by a custom physics server, if it supports custom shapes.
 			</description>
 		</method>
 		<method name="shape_set_margin">
@@ -1407,11 +1427,13 @@
 		<method name="sphere_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D sphere shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the sphere's radius.
 			</description>
 		</method>
 		<method name="world_boundary_shape_create">
 			<return type="RID" />
 			<description>
+				Creates a 3D world boundary shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's normal direction and distance properties.
 			</description>
 		</method>
 	</methods>
@@ -1646,37 +1668,37 @@
 			Represents the size of the [enum G6DOFJointAxisFlag] enum.
 		</constant>
 		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
-			The [Shape3D] is a [WorldBoundaryShape3D].
+			Constant for creating a world boundary shape (used by the [WorldBoundaryShape3D] resource).
 		</constant>
 		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
-			The [Shape3D] is a [SeparationRayShape3D].
+			Constant for creating a separation ray shape (used by the [SeparationRayShape3D] resource).
 		</constant>
 		<constant name="SHAPE_SPHERE" value="2" enum="ShapeType">
-			The [Shape3D] is a [SphereShape3D].
+			Constant for creating a sphere shape (used by the [SphereShape3D] resource).
 		</constant>
 		<constant name="SHAPE_BOX" value="3" enum="ShapeType">
-			The [Shape3D] is a [BoxShape3D].
+			Constant for creating a box shape (used by the [BoxShape3D] resource).
 		</constant>
 		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
-			The [Shape3D] is a [CapsuleShape3D].
+			Constant for creating a capsule shape (used by the [CapsuleShape3D] resource).
 		</constant>
 		<constant name="SHAPE_CYLINDER" value="5" enum="ShapeType">
-			The [Shape3D] is a [CylinderShape3D].
+			Constant for creating a cylinder shape (used by the [CylinderShape3D] resource).
 		</constant>
 		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
-			The [Shape3D] is a [ConvexPolygonShape3D].
+			Constant for creating a convex polygon shape (used by the [ConvexPolygonShape3D] resource).
 		</constant>
 		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
-			The [Shape3D] is a [ConcavePolygonShape3D].
+			Constant for creating a concave polygon (trimesh) shape (used by the [ConcavePolygonShape3D] resource).
 		</constant>
 		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
-			The [Shape3D] is a [HeightMapShape3D].
+			Constant for creating a heightmap shape (used by the [HeightMapShape3D] resource).
 		</constant>
 		<constant name="SHAPE_SOFT_BODY" value="9" enum="ShapeType">
-			The [Shape3D] is used internally for a soft body. Any attempt to create this kind of shape results in an error.
+			Constant used internally for a soft body shape. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
-			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
+			Constant used internally for a custom shape. Any attempt to create this kind of shape results in an error when using Godot Physics or Jolt Physics.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY_OVERRIDE_MODE" value="0" enum="AreaParameter">
 			Constant to set/get gravity override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.

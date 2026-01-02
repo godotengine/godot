@@ -70,15 +70,20 @@ typedef NS_OPTIONS(NSUInteger, SampleCount) {
 };
 
 struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
-	uint32_t mslVersionMajor = 0;
-	uint32_t mslVersionMinor = 0;
+	/// Maximum version of the Metal Shading Language version available.
+	uint32_t msl_max_version = 0;
+	/*! @brief Target version of the Metal Shading Language used to translate shaders.
+	 *
+	 * This can be used to override the features used to generate shaders. Primarily
+	 * for engine developers for testing.
+	 */
+	uint32_t msl_target_version = 0;
 	MTLGPUFamily highestFamily = MTLGPUFamilyApple4;
 	bool supportsBCTextureCompression = false;
 	bool supportsDepth24Stencil8 = false;
 	bool supports32BitFloatFiltering = false;
 	bool supports32BitMSAA = false;
 	bool supportsMac = TARGET_OS_OSX;
-	MTLLanguageVersion mslVersionEnum = MTLLanguageVersion1_2;
 	SampleCount supportedSampleCounts = SampleCount1;
 	long hostMemoryPageSize = 0;
 	bool layeredRendering = false;
@@ -89,14 +94,29 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	bool tessellationShader = false; /**< If true, tessellation shaders are supported. */
 	bool imageCubeArray = false; /**< If true, image cube arrays are supported. */
 	MTLArgumentBuffersTier argument_buffers_tier = MTLArgumentBuffersTier1;
-	/// If true, argument encoders are required to encode arguments into an argument buffer.
-	bool needs_arg_encoders = true;
+	bool needs_arg_encoders = true; /**< If true, argument encoders are required to encode arguments into an argument buffer. */
+	bool use_argument_buffers = true; /**< If true, argument buffers are can be used instead of slot binding, if available. */
 	bool metal_fx_spatial = false; /**< If true, Metal FX spatial functions are supported. */
 	bool metal_fx_temporal = false; /**< If true, Metal FX temporal functions are supported. */
 	bool supports_gpu_address = false; /**< If true, referencing a GPU address in a shader is supported. */
 	bool supports_image_atomic_32_bit = false; /**< If true, 32-bit atomic operations on images are supported by the GPU. */
 	bool supports_image_atomic_64_bit = false; /**< If true, 64-bit atomic operations on images are supported by the GPU. */
 	bool supports_native_image_atomics = false; /**< If true, native image atomic operations are supported by the OS. */
+	bool supports_residency_sets = false; /**< If true, residency sets (MTLResidencySet) are supported by the OS. */
+
+	/*!
+	 * Check if argument buffers are fully supported, which requires tier 2 support and no need for argument encoders.
+	 */
+	_FORCE_INLINE_ bool argument_buffers_supported() const {
+		return argument_buffers_tier == MTLArgumentBuffersTier2 && needs_arg_encoders == false;
+	}
+
+	/*!
+	 * Check if argument buffers can be used, which requires that they are supported and that the user has enabled their use.
+	 */
+	_FORCE_INLINE_ bool argument_buffers_enabled() const {
+		return use_argument_buffers && argument_buffers_supported();
+	}
 };
 
 struct MetalLimits {

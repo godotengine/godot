@@ -172,7 +172,6 @@ class CodeTextEditor : public VBoxContainer {
 	Label *line_and_col_txt = nullptr;
 	Label *indentation_txt = nullptr;
 
-	Label *info = nullptr;
 	Timer *idle = nullptr;
 	float idle_time = 0.0f;
 	float idle_time_with_errors = 0.0f;
@@ -297,7 +296,7 @@ public:
 
 	void validate_script();
 
-	void set_toggle_list_control(Control *p_control);
+	void set_toggle_list_control(Control *p_toggle_list_control);
 	void show_toggle_files_button();
 	void update_toggle_files_button();
 

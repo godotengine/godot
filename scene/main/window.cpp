@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/string/translation_server.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
@@ -703,6 +702,15 @@ void Window::_clear_window() {
 
 	bool had_focus = has_focus();
 
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+		float win_scale = DisplayServer::get_singleton()->window_get_scale(window_id);
+
+		Size2i adjusted_size = Size2i(size.width / win_scale, size.height / win_scale);
+		Size2i adjusted_pos = Size2i(position.x / win_scale, position.y / win_scale);
+
+		_rect_changed_callback(Rect2i(adjusted_pos, adjusted_size));
+	}
+
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
@@ -1180,6 +1188,8 @@ void Window::_update_window_size() {
 			DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
 			DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
 			DisplayServer::get_singleton()->window_set_size(size, window_id);
+		} else if (Engine::get_singleton()->is_embedded_in_editor()) {
+			size = DisplayServer::get_singleton()->window_get_size(window_id); // Reset size.
 		}
 	}
 
@@ -1726,6 +1736,15 @@ real_t Window::get_content_scale_factor() const {
 	return content_scale_factor;
 }
 
+void Window::set_nonclient_area(const Rect2i &p_rect) {
+	ERR_MAIN_THREAD_GUARD;
+	nonclient_area = p_rect;
+}
+
+Rect2i Window::get_nonclient_area() const {
+	return nonclient_area;
+}
+
 DisplayServer::WindowID Window::get_window_id() const {
 	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
 	if (get_embedder()) {
@@ -1785,7 +1804,7 @@ Size2 Window::_get_contents_minimum_size() const {
 		}
 	}
 
-	return max * content_scale_factor;
+	return max;
 }
 
 void Window::child_controls_changed() {
@@ -1816,6 +1835,12 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	ERR_MAIN_THREAD_GUARD;
 
 	if (exclusive_child != nullptr) {
+		if (nonclient_area.has_area() && is_inside_tree()) {
+			Ref<InputEventMouse> me = p_ev;
+			if (me.is_valid() && nonclient_area.has_point(me->get_position())) {
+				emit_signal(SceneStringName(nonclient_window_input), p_ev);
+			}
+		}
 		if (!is_embedding_subwindows()) { // Not embedding, no need for event.
 			return;
 		}
@@ -1835,8 +1860,8 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-void Window::_window_input_text(const String &p_text) {
-	push_text_input(p_text);
+void Window::_window_input_text(const String &p_text, bool p_emit_signal) {
+	_push_text_input(p_text, p_emit_signal);
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {
@@ -1925,7 +1950,17 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
 
-	popup(popup_rect);
+	emit_signal(SNAME("about_to_popup"));
+
+	if (popup_rect != Rect2()) {
+		set_size(popup_rect.size);
+	}
+	_pre_popup();
+	if (popup_rect != Rect2i()) {
+		popup_rect.size = get_size();
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
+	_popup_base(popup_rect);
 }
 
 void Window::popup_centered(const Size2i &p_minsize) {
@@ -1954,7 +1989,17 @@ void Window::popup_centered(const Size2i &p_minsize) {
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
 
-	popup(popup_rect);
+	emit_signal(SNAME("about_to_popup"));
+
+	if (popup_rect != Rect2()) {
+		set_size(popup_rect.size);
+	}
+	_pre_popup();
+	if (popup_rect != Rect2i()) {
+		popup_rect.size = get_size();
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
+	_popup_base(popup_rect);
 }
 
 void Window::popup_centered_ratio(float p_ratio) {
@@ -1981,14 +2026,36 @@ void Window::popup_centered_ratio(float p_ratio) {
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
 
-	popup(popup_rect);
+	emit_signal(SNAME("about_to_popup"));
+
+	if (popup_rect != Rect2()) {
+		set_size(popup_rect.size);
+	}
+	_pre_popup();
+	if (popup_rect != Rect2i()) {
+		popup_rect.size = get_size();
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
+	_popup_base(popup_rect);
 }
 
 void Window::popup(const Rect2i &p_screen_rect) {
 	ERR_MAIN_THREAD_GUARD;
 	emit_signal(SNAME("about_to_popup"));
 
+	Rect2i screen_rect = p_screen_rect;
+	if (screen_rect != Rect2i()) {
+		set_size(screen_rect.size);
+	}
 	_pre_popup();
+	if (screen_rect != Rect2i()) {
+		screen_rect.size = get_size();
+	}
+	_popup_base(screen_rect);
+}
+
+void Window::_popup_base(const Rect2i &p_screen_rect) {
+	ERR_MAIN_THREAD_GUARD;
 
 	if (!get_embedder() && get_flag(FLAG_POPUP)) {
 		// Send a focus-out notification when opening a Window Manager Popup.
@@ -2559,18 +2626,6 @@ Variant Window::get_theme_item(Theme::DataType p_data_type, const StringName &p_
 Ref<Texture2D> Window::get_editor_theme_icon(const StringName &p_name) const {
 	return get_theme_icon(p_name, SNAME("EditorIcons"));
 }
-
-Ref<Texture2D> Window::get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const {
-	if (!p_global_menu) {
-		return get_theme_icon(p_name, SNAME("EditorIcons"));
-	}
-	if (p_dark_mode && has_theme_icon(String(p_name) + "Dark", SNAME("EditorIcons"))) {
-		return get_theme_icon(String(p_name) + "Dark", SNAME("EditorIcons"));
-	} else if (!p_dark_mode && has_theme_icon(String(p_name) + "Light", SNAME("EditorIcons"))) {
-		return get_theme_icon(String(p_name) + "Light", SNAME("EditorIcons"));
-	}
-	return get_theme_icon(p_name, SNAME("EditorIcons"));
-}
 #endif
 
 bool Window::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2932,12 +2987,9 @@ bool Window::is_layout_rtl() const {
 				} else if (proj_root_layout_direction == 2) {
 					return true;
 				} else if (proj_root_layout_direction == 3) {
-					String locale = OS::get_singleton()->get_locale();
-					return TS->is_locale_right_to_left(locale);
+					return TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 				} else {
-					const Ref<Translation> &t = TranslationServer::get_singleton()->get_translation_object(TranslationServer::get_singleton()->get_locale());
-					String locale = t.is_valid() ? t->get_locale() : TranslationServer::get_singleton()->get_fallback_locale();
-					return TS->is_locale_right_to_left(locale);
+					return TS->is_locale_right_to_left(_get_locale());
 				}
 			}
 		}
@@ -2946,8 +2998,9 @@ bool Window::is_layout_rtl() const {
 			return true;
 		}
 #endif
+		const StringName domain_name = get_translation_domain();
 		Node *parent_node = get_parent();
-		while (parent_node) {
+		while (parent_node && parent_node->get_translation_domain() == domain_name) {
 			Control *parent_control = Object::cast_to<Control>(parent_node);
 			if (parent_control) {
 				return parent_control->is_layout_rtl();
@@ -2965,25 +3018,21 @@ bool Window::is_layout_rtl() const {
 		} else if (root_layout_direction == 2) {
 			return true;
 		} else if (root_layout_direction == 3) {
-			String locale = OS::get_singleton()->get_locale();
-			return TS->is_locale_right_to_left(locale);
+			return TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 		} else {
-			String locale = TranslationServer::get_singleton()->get_tool_locale();
-			return TS->is_locale_right_to_left(locale);
+			return TS->is_locale_right_to_left(_get_locale());
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
 		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		} else {
-			String locale = TranslationServer::get_singleton()->get_tool_locale();
-			return TS->is_locale_right_to_left(locale);
+			return TS->is_locale_right_to_left(_get_locale());
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
 		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		} else {
-			String locale = OS::get_singleton()->get_locale();
-			return TS->is_locale_right_to_left(locale);
+			return TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 		}
 	} else {
 		return (layout_dir == LAYOUT_DIRECTION_RTL);
@@ -3227,6 +3276,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_content_scale_stretch", "stretch"), &Window::set_content_scale_stretch);
 	ClassDB::bind_method(D_METHOD("get_content_scale_stretch"), &Window::get_content_scale_stretch);
 
+	ClassDB::bind_method(D_METHOD("set_nonclient_area", "area"), &Window::set_nonclient_area);
+	ClassDB::bind_method(D_METHOD("get_nonclient_area"), &Window::get_nonclient_area);
+
 	ClassDB::bind_method(D_METHOD("set_keep_title_visible", "title_visible"), &Window::set_keep_title_visible);
 	ClassDB::bind_method(D_METHOD("get_keep_title_visible"), &Window::get_keep_title_visible);
 
@@ -3331,6 +3383,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_current_screen", "get_current_screen");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2I, "nonclient_area", PROPERTY_HINT_NONE, ""), "set_nonclient_area", "get_nonclient_area");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");
 
@@ -3380,6 +3433,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
 
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("nonclient_window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));

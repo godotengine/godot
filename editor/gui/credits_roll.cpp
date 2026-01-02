@@ -35,6 +35,7 @@
 #include "core/input/input.h"
 #include "core/license.gen.h"
 #include "core/string/string_builder.h"
+#include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -88,13 +89,23 @@ String CreditsRoll::_build_string(const char *const *p_from) const {
 	return sb.as_string();
 }
 
+void CreditsRoll::_visibility_changed() {
+	if (!is_visible()) {
+		mouse_enabled = false;
+		set_process_internal(false);
+		set_process_input(false);
+	}
+}
+
+void CreditsRoll::input(const Ref<InputEvent> &p_event) {
+	// Block inputs from going elsewhere while the credits roll.
+	get_tree()->get_root()->set_input_as_handled();
+}
+
 void CreditsRoll::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible()) {
-				set_process_internal(false);
-				mouse_enabled = false;
-			}
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect("visibility_changed", callable_mp(this, &CreditsRoll::_visibility_changed));
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -103,18 +114,14 @@ void CreditsRoll::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_WM_GO_BACK_REQUEST: {
-			hide();
-		} break;
-
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			const Vector2 pos = content->get_position();
 			if (pos.y < -content->get_size().y - 30) {
-				hide();
+				hide(); // No more credits left, show's over.
 				break;
 			}
 
-			if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::RIGHT)) {
+			if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::RIGHT) || Input::get_singleton()->is_action_pressed(SNAME("ui_cancel"))) {
 				hide();
 				break;
 			}
@@ -136,13 +143,13 @@ void CreditsRoll::_notification(int p_what) {
 
 void CreditsRoll::roll_credits() {
 	if (!project_manager) {
-		font_size_normal = get_theme_font_size("main_size", EditorStringName(EditorFonts)) * 2;
+		font_size_normal = EditorNode::get_singleton()->get_editor_theme()->get_font_size("main_size", EditorStringName(EditorFonts)) * 2;
 		font_size_header = font_size_normal + 10 * EDSCALE;
 		font_size_big_header = font_size_header + 20 * EDSCALE;
-		bold_font = get_theme_font("bold", EditorStringName(EditorFonts));
+		bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("bold", EditorStringName(EditorFonts));
 
 		{
-			const Ref<Texture2D> logo_texture = get_editor_theme_icon("Logo");
+			const Ref<Texture2D> logo_texture = EditorNode::get_singleton()->get_editor_theme()->get_icon("Logo", EditorStringName(EditorIcons));
 
 			TextureRect *logo = memnew(TextureRect);
 			logo->set_custom_minimum_size(Vector2(0, logo_texture->get_height() * 3));
@@ -220,28 +227,22 @@ void CreditsRoll::roll_credits() {
 		_create_nothing(400 * EDSCALE);
 		_create_label(TTRC("Thank you for choosing Godot Engine!"), LabelSize::BIG_HEADER);
 	}
+	// Needs to be set here, so it stays centered even if the window is resized.
+	content->set_anchors_and_offsets_preset(Control::PRESET_VCENTER_WIDE);
 
 	Window *root = get_tree()->get_root();
 	content->set_position(Vector2(content->get_position().x, root->get_size().y + 30));
 
-	set_position(root->get_position());
-	set_size(root->get_size());
-
-	popup();
 	set_process_internal(true);
+	set_process_input(true);
 }
 
 CreditsRoll::CreditsRoll() {
-	set_wrap_controls(false);
-
-	{
-		ColorRect *background = memnew(ColorRect);
-		background->set_color(Color(0, 0, 0, 1));
-		background->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-		add_child(background);
-	}
+	ColorRect *background = memnew(ColorRect);
+	background->set_color(Color(0, 0, 0, 1));
+	background->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	add_child(background);
 
 	content = memnew(VBoxContainer);
-	content->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	add_child(content);
 }

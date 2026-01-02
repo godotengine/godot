@@ -92,8 +92,8 @@ void Container::_sort_children() {
 	pending_sort = false;
 }
 
-void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
-	ERR_FAIL_NULL(p_child);
+void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &p_rect) {
+	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
 	ERR_FAIL_COND(p_child->get_parent() != this);
 
 	bool rtl = is_layout_rtl();

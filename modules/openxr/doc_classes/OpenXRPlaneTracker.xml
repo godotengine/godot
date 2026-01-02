@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRPlaneTracker" inherits="OpenXRSpatialEntityTracker" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Spatial entity tracker for our spatial entity plane tracking extension.
+	</brief_description>
+	<description>
+		Spatial entity tracker for our OpenXR spatial entity plane tracking extension. These trackers identify entities in our real space such as walls, floors, tables, etc. and map their location to our virtual space.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_mesh_data">
+			<return type="void" />
+			<description>
+				Clears the mesh data for this tracker. You should only call this if you are handling your own discovery logic.
+			</description>
+		</method>
+		<method name="get_mesh">
+			<return type="Mesh" />
+			<description>
+				Gets a mesh created from either the mesh data or from our bounding size for this plane.
+			</description>
+		</method>
+		<method name="get_mesh_offset" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Gets the transform by which to offset the mesh and collision shape from our pose to display these correctly.
+			</description>
+		</method>
+		<method name="get_shape">
+			<return type="Shape3D" />
+			<param index="0" name="thickness" type="float" default="0.01" />
+			<description>
+				Gets a collision shape built either from the mesh data or from our bounding size for this plane.
+			</description>
+		</method>
+		<method name="set_mesh_data">
+			<return type="void" />
+			<param index="0" name="origin" type="Transform3D" />
+			<param index="1" name="vertices" type="PackedVector2Array" />
+			<param index="2" name="indices" type="PackedInt32Array" default="PackedInt32Array()" />
+			<description>
+				Sets the mesh data for this plane. You should only call this if you are handling your own discovery logic.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bounds_size" type="Vector2" setter="set_bounds_size" getter="get_bounds_size" default="Vector2(0, 0)">
+			The bounding size of the plane. This is a 2D size.
+		</member>
+		<member name="plane_alignment" type="int" setter="set_plane_alignment" getter="get_plane_alignment" enum="OpenXRSpatialComponentPlaneAlignmentList.PlaneAlignment" default="0">
+			The main alignment in space of this plane.
+		</member>
+		<member name="plane_label" type="String" setter="set_plane_label" getter="get_plane_label" default="&quot;&quot;">
+			The semantic label for this plane.
+		</member>
+	</members>
+	<signals>
+		<signal name="mesh_changed">
+			<description>
+				Emitted when our mesh data has changed the mesh instance and collision needs to be updated.
+			</description>
+		</signal>
+	</signals>
+</class>

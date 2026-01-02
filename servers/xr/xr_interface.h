@@ -32,7 +32,7 @@
 
 #include "core/math/projection.h"
 #include "core/os/thread_safe.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 #include "xr_vrs.h"
 
 // forward declaration

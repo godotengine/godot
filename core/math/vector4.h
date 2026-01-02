@@ -32,13 +32,14 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
+#include "core/templates/hashfuncs.h"
 #include "core/typedefs.h"
 
 class String;
 struct Vector4i;
 
 struct [[nodiscard]] Vector4 {
-	static const int AXIS_COUNT = 4;
+	static constexpr int AXIS_COUNT = 4;
 
 	enum Axis {
 		AXIS_X,
@@ -146,6 +147,14 @@ struct [[nodiscard]] Vector4 {
 	explicit operator String() const;
 	operator Vector4i() const;
 
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(x);
+		h = hash_murmur3_one_real(y, h);
+		h = hash_murmur3_one_real(z, h);
+		h = hash_murmur3_one_real(w, h);
+		return hash_fmix32(h);
+	}
+
 	constexpr Vector4() :
 			x(0), y(0), z(0), w(0) {}
 	constexpr Vector4(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
@@ -195,7 +204,10 @@ constexpr void Vector4::operator*=(real_t p_s) {
 }
 
 constexpr void Vector4::operator/=(real_t p_s) {
-	*this *= (1 / p_s);
+	x /= p_s;
+	y /= p_s;
+	z /= p_s;
+	w /= p_s;
 }
 
 constexpr Vector4 Vector4::operator+(const Vector4 &p_vec4) const {
@@ -223,7 +235,7 @@ constexpr Vector4 Vector4::operator*(real_t p_s) const {
 }
 
 constexpr Vector4 Vector4::operator/(real_t p_s) const {
-	return *this * (1 / p_s);
+	return Vector4(x / p_s, y / p_s, z / p_s, w / p_s);
 }
 
 constexpr bool Vector4::operator==(const Vector4 &p_vec4) const {

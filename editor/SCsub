@@ -56,36 +56,23 @@ if env.editor_build:
     # ratio (20% for the editor UI, 10% for the class reference).
     # Generated with `make include-list` for each resource.
 
-    # Editor translations
-    env.CommandNoCache(
-        "#editor/translations/editor_translations.gen.h",
-        Glob("#editor/translations/editor/*"),
-        env.Run(editor_builders.make_translations_header),
-    )
-
-    # Property translations
-    env.CommandNoCache(
-        "#editor/translations/property_translations.gen.h",
-        Glob("#editor/translations/properties/*"),
-        env.Run(editor_builders.make_translations_header),
-    )
-
-    # Documentation translations
-    env.CommandNoCache(
-        "#editor/translations/doc_translations.gen.h",
-        Glob("#doc/translations/*"),
-        env.Run(editor_builders.make_translations_header),
-    )
-
-    # Extractable translations
-    env.CommandNoCache(
-        "#editor/translations/extractable_translations.gen.h",
-        Glob("#editor/translations/extractable/*"),
-        env.Run(editor_builders.make_translations_header),
-    )
+    translation_targets = {
+        "#editor/translations/editor_translations.gen.cpp": Glob("#editor/translations/editor/*"),
+        "#editor/translations/property_translations.gen.cpp": Glob("#editor/translations/properties/*"),
+        "#editor/translations/doc_translations.gen.cpp": Glob("#doc/translations/*"),
+        "#editor/translations/extractable_translations.gen.cpp": Glob("#editor/translations/extractable/*"),
+    }
+    for target_cpp, sources in translation_targets.items():
+        target_h = os.path.splitext(target_cpp)[0] + ".h"
+        env.CommandNoCache(
+            [target_h, target_cpp],
+            sources,
+            env.Run(editor_builders.make_translations),
+        )
 
     env.add_source_files(env.editor_sources, "*.cpp")
     env.add_source_files(env.editor_sources, gen_exporters)
+    env.add_source_files(env.editor_sources, translation_targets.keys())
 
     SConscript("animation/SCsub")
     SConscript("asset_library/SCsub")

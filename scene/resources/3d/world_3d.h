@@ -31,14 +31,15 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
+
 #ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 class CameraAttributes;
 class Camera3D;
+class Compositor;
 class VisibleOnScreenNotifier3D;
 struct SpatialIndexer;
 

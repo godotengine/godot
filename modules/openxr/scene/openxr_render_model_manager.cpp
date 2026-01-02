@@ -30,11 +30,13 @@
 
 #include "openxr_render_model_manager.h"
 
+#ifdef MODULE_GLTF_ENABLED
 #include "../extensions/openxr_render_model_extension.h"
+
 #include "../openxr_api.h"
 #include "core/config/project_settings.h"
 #include "scene/3d/xr/xr_nodes.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 void OpenXRRenderModelManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tracker"), &OpenXRRenderModelManager::get_tracker);
@@ -63,7 +65,7 @@ void OpenXRRenderModelManager::_update_models() {
 	ERR_FAIL_NULL(render_model_extension);
 
 	// Make a copy of our current models.
-	HashMap<RID, Node3D *> org_render_models = render_models;
+	HashMap<RID, Node3D *> org_render_models = HashMap<RID, Node3D *>(render_models);
 
 	// Loop through our interaction data so we add new entries.
 	TypedArray<RID> render_model_rids = render_model_extension->render_model_get_all();
@@ -282,3 +284,4 @@ void OpenXRRenderModelManager::set_make_local_to_pose(const String &p_action) {
 String OpenXRRenderModelManager::get_make_local_to_pose() const {
 	return make_local_to_pose;
 }
+#endif // MODULE_GLTF_ENABLED

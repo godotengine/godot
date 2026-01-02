@@ -33,6 +33,7 @@
 #include "core/object/object_id.h"
 #include "core/string/string_name.h"
 
+class Array;
 class Object;
 class Variant;
 class CallableCustom;

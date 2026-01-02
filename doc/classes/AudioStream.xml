@@ -64,7 +64,7 @@
 				Override this method to return [code]true[/code] if this stream has a loop.
 			</description>
 		</method>
-		<method name="_instantiate_playback" qualifiers="virtual const">
+		<method name="_instantiate_playback" qualifiers="virtual required const">
 			<return type="AudioStreamPlayback" />
 			<description>
 				Override this method to customize the returned value of [method instantiate_playback]. Should return a new [AudioStreamPlayback] created when the stream is played (such as by an [AudioStreamPlayer]).

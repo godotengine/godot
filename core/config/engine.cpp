@@ -38,22 +38,38 @@
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
+void Engine::_update_time_scale() {
+	_time_scale = _user_time_scale * _game_time_scale;
+	user_ips = MAX(1, ips * _user_time_scale);
+	max_user_physics_steps_per_frame = MAX(max_physics_steps_per_frame, max_physics_steps_per_frame * _user_time_scale);
+}
+
 void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
+	_update_time_scale();
 }
 
 int Engine::get_physics_ticks_per_second() const {
 	return ips;
 }
 
+int Engine::get_user_physics_ticks_per_second() const {
+	return user_ips;
+}
+
 void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
 	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
 	max_physics_steps_per_frame = p_max_physics_steps;
+	_update_time_scale();
 }
 
 int Engine::get_max_physics_steps_per_frame() const {
 	return max_physics_steps_per_frame;
+}
+
+int Engine::get_user_max_physics_steps_per_frame() const {
+	return max_user_physics_steps_per_frame;
 }
 
 void Engine::set_physics_jitter_fix(double p_threshold) {
@@ -112,11 +128,21 @@ uint32_t Engine::get_frame_delay() const {
 }
 
 void Engine::set_time_scale(double p_scale) {
-	_time_scale = p_scale;
+	_game_time_scale = p_scale;
+	_update_time_scale();
 }
 
 double Engine::get_time_scale() const {
-	return freeze_time_scale ? 0 : _time_scale;
+	return freeze_time_scale ? 0.0 : _game_time_scale;
+}
+
+void Engine::set_user_time_scale(double p_scale) {
+	_user_time_scale = p_scale;
+	_update_time_scale();
+}
+
+double Engine::get_effective_time_scale() const {
+	return freeze_time_scale ? 0.0 : _time_scale;
 }
 
 double Engine::get_unfrozen_time_scale() const {

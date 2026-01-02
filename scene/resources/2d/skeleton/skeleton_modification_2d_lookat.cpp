@@ -141,37 +141,32 @@ void SkeletonModification2DLookAt::_execute(float p_delta) {
 		return;
 	}
 
-	Transform2D operation_transform = operation_bone->get_global_transform();
-	Transform2D target_trans = target_node_reference->get_global_transform();
+	real_t angle_to_target = operation_bone->get_angle_to(target_node_reference->get_global_position());
 
-	// Look at the target!
-	operation_transform = operation_transform.looking_at(target_trans.get_origin());
-	// Apply whatever scale it had prior to looking_at
-	operation_transform.set_scale(operation_bone->get_global_scale());
-
-	// Account for the direction the bone faces in:
-	operation_transform.set_rotation(operation_transform.get_rotation() - operation_bone->get_bone_angle());
+	// Account for the direction the bone faces in
+	angle_to_target -= operation_bone->get_bone_angle();
 
 	// Apply additional rotation
-	operation_transform.set_rotation(operation_transform.get_rotation() + additional_rotation);
+	angle_to_target += additional_rotation;
 
-	// Apply constraints in globalspace:
-	if (enable_constraint && !constraint_in_localspace) {
-		operation_transform.set_rotation(clamp_angle(operation_transform.get_rotation(), constraint_angle_min, constraint_angle_max, constraint_angle_invert));
-	}
+	if (enable_constraint) {
+		real_t new_angle = angle_to_target;
 
-	// Convert from a global transform to a local transform via the Bone2D node
-	operation_bone->set_global_transform(operation_transform);
-	operation_transform = operation_bone->get_transform();
-
-	// Apply constraints in localspace:
-	if (enable_constraint && constraint_in_localspace) {
-		operation_transform.set_rotation(clamp_angle(operation_transform.get_rotation(), constraint_angle_min, constraint_angle_max, constraint_angle_invert));
+		if (constraint_in_localspace) {
+			new_angle += operation_bone->get_rotation();
+			new_angle = clamp_angle(new_angle, constraint_angle_min, constraint_angle_max, constraint_angle_invert);
+			operation_bone->set_rotation(new_angle);
+		} else {
+			new_angle += operation_bone->get_global_rotation();
+			new_angle = clamp_angle(new_angle, constraint_angle_min, constraint_angle_max, constraint_angle_invert);
+			operation_bone->set_global_rotation(new_angle);
+		}
+	} else {
+		operation_bone->rotate(angle_to_target);
 	}
 
 	// Set the local pose override, and to make sure child bones are also updated, set the transform of the bone.
-	stack->skeleton->set_bone_local_pose_override(bone_idx, operation_transform, stack->strength, true);
-	operation_bone->set_transform(operation_transform);
+	stack->skeleton->set_bone_local_pose_override(bone_idx, operation_bone->get_transform(), stack->strength, true);
 }
 
 void SkeletonModification2DLookAt::_setup_modification(SkeletonModificationStack2D *p_stack) {
@@ -185,7 +180,7 @@ void SkeletonModification2DLookAt::_setup_modification(SkeletonModificationStack
 }
 
 void SkeletonModification2DLookAt::_draw_editor_gizmo() {
-	if (!enabled || !is_setup) {
+	if (!enabled || !is_setup || bone_idx < 0) {
 		return;
 	}
 

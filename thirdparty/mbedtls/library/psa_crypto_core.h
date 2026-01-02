@@ -24,18 +24,6 @@
 #include "mbedtls/threading.h"
 #endif
 
-/**
- * Tell if PSA is ready for this cipher.
- *
- * \note            For now, only checks the state of the driver subsystem,
- *                  not the algorithm. Might do more in the future.
- *
- * \param cipher_alg  The cipher algorithm (ignored for now).
- *
- * \return 1 if the driver subsytem is ready, 0 otherwise.
- */
-int psa_can_do_cipher(psa_key_type_t key_type, psa_algorithm_t cipher_alg);
-
 typedef enum {
     PSA_SLOT_EMPTY = 0,
     PSA_SLOT_FILLING,

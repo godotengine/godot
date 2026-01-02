@@ -86,9 +86,9 @@ public:
 
 	// WebSocketPeer
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) override;
-	virtual Error connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_client_options) override;
-	virtual Error accept_stream(Ref<StreamPeer> p_stream) override;
-	virtual void close(int p_code = 1000, String p_reason = "") override;
+	virtual Error connect_to_url(const String &p_url, const Ref<TLSOptions> &p_tls_client_options) override;
+	virtual Error accept_stream(const Ref<StreamPeer> &p_stream) override;
+	virtual void close(int p_code = 1000, const String &p_reason = "") override;
 	virtual void poll() override;
 
 	virtual State get_ready_state() const override;

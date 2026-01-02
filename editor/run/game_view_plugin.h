@@ -55,6 +55,9 @@ private:
 	bool mute_audio = false;
 	EditorDebuggerNode::CameraOverride camera_override_mode = EditorDebuggerNode::OVERRIDE_INGAME;
 
+	bool selection_avoid_locked = false;
+	bool selection_prefer_group = false;
+
 	void _session_started(Ref<EditorDebuggerSession> p_session);
 	void _session_stopped();
 
@@ -82,10 +85,16 @@ public:
 	void set_suspend(bool p_enabled);
 	void next_frame();
 
+	void set_time_scale(double p_scale);
+	void reset_time_scale();
+
 	void set_node_type(int p_type);
 	void set_select_mode(int p_mode);
 
 	void set_selection_visible(bool p_visible);
+
+	void set_selection_avoid_locked(bool p_enabled);
+	void set_selection_prefer_group(bool p_enabled);
 
 	void set_debug_mute_audio(bool p_enabled);
 
@@ -110,6 +119,8 @@ class GameView : public VBoxContainer {
 		CAMERA_MODE_EDITORS,
 		EMBED_RUN_GAME_EMBEDDED,
 		EMBED_MAKE_FLOATING_ON_PLAY,
+		SELECTION_AVOID_LOCKED,
+		SELECTION_PREFER_GROUP,
 	};
 
 	enum EmbedSizeMode {
@@ -126,6 +137,7 @@ class GameView : public VBoxContainer {
 		EMBED_NOT_AVAILABLE_FULLSCREEN,
 		EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE,
 		EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER,
+		EMBED_NOT_AVAILABLE_HEADLESS,
 	};
 
 	inline static GameView *singleton = nullptr;
@@ -149,6 +161,9 @@ class GameView : public VBoxContainer {
 
 	bool debug_mute_audio = false;
 
+	bool selection_avoid_locked = false;
+	bool selection_prefer_group = false;
+
 	Button *suspend_button = nullptr;
 	Button *next_frame_button = nullptr;
 
@@ -156,21 +171,27 @@ class GameView : public VBoxContainer {
 	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
 
 	Button *hide_selection = nullptr;
+	MenuButton *selection_options_menu = nullptr;
 
 	Button *debug_mute_audio_button = nullptr;
 
 	Button *camera_override_button = nullptr;
 	MenuButton *camera_override_menu = nullptr;
 
-	VSeparator *embedding_separator = nullptr;
-	Button *fixed_size_button = nullptr;
-	Button *keep_aspect_button = nullptr;
-	Button *stretch_button = nullptr;
+	HBoxContainer *embedding_hb = nullptr;
 	MenuButton *embed_options_menu = nullptr;
 	Label *game_size_label = nullptr;
-	Panel *panel = nullptr;
+	PanelContainer *panel = nullptr;
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
+
+	int const DEFAULT_TIME_SCALE_INDEX = 5;
+	Array time_scale_range = { 0.0625f, 0.125f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 4.0f, 8.0f, 16.0f };
+	Array time_scale_label = { "1/16", "1/8", "1/4", "1/2", "3/4", "1.0", "1.25", "1.5", "1.75", "2.0", "4.0", "8.0", "16.0" };
+	int time_scale_index = DEFAULT_TIME_SCALE_INDEX;
+
+	MenuButton *speed_state_button = nullptr;
+	Button *reset_speed_button = nullptr;
 
 	void _sessions_changed();
 
@@ -182,8 +203,14 @@ class GameView : public VBoxContainer {
 
 	void _node_type_pressed(int p_option);
 	void _select_mode_pressed(int p_option);
+	void _selection_options_menu_id_pressed(int p_id);
 	void _embed_options_menu_menu_id_pressed(int p_id);
-	void _size_mode_button_pressed(int size_mode);
+
+	void _reset_time_scales();
+	void _speed_state_menu_pressed(int p_id);
+	void _update_speed_buttons();
+	void _update_speed_state_color();
+	void _update_speed_state_size();
 
 	void _play_pressed();
 	static void _instance_starting_static(int p_idx, List<String> &r_arguments);

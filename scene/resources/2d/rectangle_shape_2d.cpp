@@ -30,8 +30,8 @@
 
 #include "rectangle_shape_2d.h"
 
-#include "servers/physics_server_2d.h"
-#include "servers/rendering_server.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 void RectangleShape2D::_update_shape() {
 	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), size * 0.5);
 	emit_changed();

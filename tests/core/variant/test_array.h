@@ -66,6 +66,36 @@ TEST_CASE("[Array] size(), clear(), and is_empty()") {
 	CHECK(arr.size() == 0);
 }
 
+TEST_CASE("[Array] fill()") {
+	Array arr;
+	arr.resize(5);
+	arr.fill(7);
+	Array expected = { 7, 7, 7, 7, 7 };
+	CHECK_EQ(arr, expected);
+
+	Array empty;
+	empty.fill(7);
+	Array empty_expected;
+	CHECK_EQ(empty, empty_expected);
+}
+
+TEST_CASE("[Array] reverse()") {
+	Array odd_sized = { 1, 2, 3 };
+	odd_sized.reverse();
+	Array odd_sized_expected = { 3, 2, 1 };
+	CHECK_EQ(odd_sized, odd_sized_expected);
+
+	Array even_sized = { "a", "b", "c", "d" };
+	even_sized.reverse();
+	Array even_sized_expected = { "d", "c", "b", "a" };
+	CHECK_EQ(even_sized, even_sized_expected);
+
+	Array empty;
+	empty.reverse();
+	Array empty_expected;
+	CHECK_EQ(empty, empty_expected);
+}
+
 TEST_CASE("[Array] Assignment and comparison operators") {
 	Array arr1;
 	Array arr2;
@@ -81,6 +111,16 @@ TEST_CASE("[Array] Assignment and comparison operators") {
 	CHECK(arr2 >= arr1);
 	Array arr3 = arr2;
 	CHECK(arr3 == arr2);
+}
+
+TEST_CASE("[Array] append()") {
+	Array arr;
+	arr.append(1);
+	arr.append(2);
+	arr.append(3);
+	arr.append("test");
+	Array expected = { 1, 2, 3, "test" };
+	CHECK_EQ(arr, expected);
 }
 
 TEST_CASE("[Array] append_array()") {
@@ -160,19 +200,85 @@ TEST_CASE("[Array] remove_at()") {
 	CHECK(arr.size() == 0);
 }
 
-TEST_CASE("[Array] get()") {
-	Array arr = { 1 };
-	CHECK(int(arr.get(0)) == 1);
+TEST_CASE("[Array] get() and set()") {
+	Array arr = { 1, 2, 3 };
+	CHECK_EQ(int(arr.get(0)), 1);
+	CHECK_EQ(int(arr.get(1)), 2);
+	CHECK_EQ(int(arr.get(2)), 3);
+
+	arr.set(1, 5);
+	CHECK_EQ(int(arr.get(1)), 5);
 }
 
-TEST_CASE("[Array] sort()") {
+TEST_CASE("[Array] sort() and bsearch()") {
 	Array arr = { 3, 4, 2, 1 };
 	arr.sort();
-	int val = 1;
-	for (int i = 0; i < arr.size(); i++) {
-		CHECK(int(arr[i]) == val);
-		val++;
-	}
+	Array expected = { 1, 2, 3, 4 };
+	CHECK_EQ(arr, expected);
+
+	CHECK_EQ(arr.bsearch(1), 0);
+	CHECK_EQ(arr.bsearch(3), 2);
+	CHECK_EQ(arr.bsearch(-100), 0);
+	CHECK_EQ(arr.bsearch(100), 4);
+}
+
+static bool _order_descending(int p_a, int p_b) {
+	return p_b < p_a;
+}
+
+TEST_CASE("[Array] sort_custom() and bsearch_custom()") {
+	Array arr = { 3, 4, 2, 1 };
+	arr.sort_custom(callable_mp_static(_order_descending));
+	Array expected = { 4, 3, 2, 1 };
+	CHECK_EQ(arr, expected);
+
+	CHECK_EQ(arr.bsearch_custom(1, callable_mp_static(_order_descending)), 3);
+	CHECK_EQ(arr.bsearch_custom(4, callable_mp_static(_order_descending)), 0);
+	CHECK_EQ(arr.bsearch_custom(100, callable_mp_static(_order_descending)), 0);
+	CHECK_EQ(arr.bsearch_custom(-100, callable_mp_static(_order_descending)), 4);
+}
+
+static bool _is_even(int p_num) {
+	return p_num % 2 == 0;
+}
+
+static bool _is_odd(int p_num) {
+	return p_num % 2 == 1;
+}
+
+TEST_CASE("[Array] filter(), any(), all()") {
+	Array nums = { 1, 2, 3, 4, 5, 6, 7 };
+	CHECK(nums.any(callable_mp_static(_is_odd)));
+	CHECK(nums.any(callable_mp_static(_is_even)));
+	CHECK(!nums.all(callable_mp_static(_is_odd)));
+	CHECK(!nums.all(callable_mp_static(_is_even)));
+
+	Array odd = nums.filter(callable_mp_static(_is_odd));
+	Array odd_expected = { 1, 3, 5, 7 };
+	CHECK_EQ(odd, odd_expected);
+
+	Array even = nums.filter(callable_mp_static(_is_even));
+	Array even_expected = { 2, 4, 6 };
+	CHECK_EQ(even, even_expected);
+
+	CHECK(odd.all(callable_mp_static(_is_odd)));
+	CHECK(odd.any(callable_mp_static(_is_odd)));
+	CHECK(!odd.all(callable_mp_static(_is_even)));
+	CHECK(!odd.any(callable_mp_static(_is_even)));
+}
+
+static int _add(int p_a, int p_b) {
+	return p_a + p_b;
+}
+
+TEST_CASE("[Array] map() and reduce()") {
+	Array array = { 1, 2, 3, 4, 5 };
+	Array mapped = array.map(callable_mp_static(_add).bind(5));
+	Array mapped_expected = { 6, 7, 8, 9, 10 };
+	CHECK_EQ(mapped, mapped_expected);
+
+	Variant sum = 0;
+	CHECK_EQ(int(array.reduce(callable_mp_static(_add), sum)), 15);
 }
 
 TEST_CASE("[Array] push_front(), pop_front(), pop_back()") {
@@ -626,6 +732,17 @@ TEST_CASE("[Array] Typed copying") {
 	a6.clear();
 }
 
+TEST_CASE("[Array] find() and rfind()") {
+	Array array = { "a", "b", "c", "a", "b", "c" };
+
+	CHECK_EQ(array.find("a"), 0);
+	CHECK_EQ(array.find("c"), 2);
+	CHECK_EQ(array.find("a", 1), 3);
+
+	CHECK_EQ(array.rfind("b"), 4);
+	CHECK_EQ(array.rfind("c", -2), 2);
+}
+
 static bool _find_custom_callable(const Variant &p_val) {
 	return (int)p_val % 2 == 0;
 }
@@ -642,6 +759,31 @@ TEST_CASE("[Array] Test rfind_custom") {
 	// Find last even number.
 	int index = a1.rfind_custom(callable_mp_static(_find_custom_callable));
 	CHECK_EQ(index, 4);
+}
+
+TEST_CASE("[Array] Test typed arrays") {
+	Array arr1;
+	CHECK_FALSE(arr1.is_typed());
+
+	arr1.set_typed(Variant::FLOAT, StringName(), Variant());
+	CHECK(arr1.is_typed());
+	CHECK_EQ(arr1.get_typed_builtin(), Variant::FLOAT);
+
+	arr1.push_back(1);
+	CHECK_EQ(arr1.size(), 1);
+
+	ERR_PRINT_OFF;
+	arr1.push_back("test wrong type");
+	CHECK_EQ(arr1.size(), 1);
+	ERR_PRINT_ON;
+
+	Array arr2;
+	arr2.set_typed(Variant::INT, StringName(), Variant());
+	CHECK_FALSE(arr1.is_same_typed(arr2));
+
+	Array arr3;
+	arr3.set_typed(Variant::OBJECT, "Node", Variant());
+	CHECK_EQ(arr3.get_typed_class_name(), "Node");
 }
 
 } // namespace TestArray

@@ -1,0 +1,6 @@
+GH-89419
+--------
+Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/register_text_enter/arguments/0': type changed value in new API, from "Control" to "LineEdit".
+Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/remove_button/arguments/0': type changed value in new API, from "Control" to "Button".
+
+Changed argument type to the more specific one actually expected by the method. Compatibility method registered.

@@ -244,6 +244,7 @@ EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
+	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(options);
 	add_focusable(options);
 	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyAnchorsPreset::_option_selected));
@@ -426,6 +427,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	flag_presets = memnew(OptionButton);
 	flag_presets->set_clip_text(true);
 	flag_presets->set_flat(true);
+	flag_presets->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	vb->add_child(flag_presets);
 	add_focusable(flag_presets);
 	set_label_reference(flag_presets);
@@ -770,7 +772,7 @@ SizeFlagPresetPicker::SizeFlagPresetPicker(bool p_vertical) {
 
 void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 	LayoutPreset preset = (LayoutPreset)p_preset;
-	List<Node *> selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
@@ -791,7 +793,7 @@ void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 }
 
 void ControlEditorToolbar::_anchors_to_current_ratio() {
-	List<Node *> selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Anchors, Offsets (Keep Ratio)"));
@@ -842,7 +844,7 @@ void ControlEditorToolbar::_anchor_mode_toggled(bool p_status) {
 }
 
 void ControlEditorToolbar::_container_flags_selected(int p_flags, bool p_vertical) {
-	List<Node *> selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_vertical) {
@@ -869,7 +871,7 @@ void ControlEditorToolbar::_container_flags_selected(int p_flags, bool p_vertica
 }
 
 void ControlEditorToolbar::_expand_flag_toggled(bool p_expand, bool p_vertical) {
-	List<Node *> selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_vertical) {
@@ -924,8 +926,8 @@ bool ControlEditorToolbar::_is_node_locked(const Node *p_node) {
 
 List<Control *> ControlEditorToolbar::_get_edited_controls() {
 	List<Control *> selection;
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Control *control = Object::cast_to<Control>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Control *control = ObjectDB::get_instance<Control>(E.key);
 		if (control && control->is_visible_in_tree() && control->get_viewport() == EditorNode::get_singleton()->get_scene_root() && !_is_node_locked(control)) {
 			selection.push_back(control);
 		}
@@ -956,8 +958,8 @@ void ControlEditorToolbar::_selection_changed() {
 		SIZE_EXPAND,
 	};
 
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Control *control = Object::cast_to<Control>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Control *control = ObjectDB::get_instance<Control>(E.key);
 		if (!control) {
 			continue;
 		}
@@ -1003,7 +1005,7 @@ void ControlEditorToolbar::_selection_changed() {
 		int nb_valid_controls = 0;
 		int nb_anchors_mode = 0;
 
-		List<Node *> selection = editor_selection->get_top_selected_node_list();
+		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 		for (Node *E : selection) {
 			Control *control = Object::cast_to<Control>(E);
 			if (!control) {
@@ -1053,7 +1055,7 @@ void ControlEditorToolbar::_selection_changed() {
 		int nb_h_expand = 0;
 		int nb_v_expand = 0;
 
-		List<Node *> selection = editor_selection->get_top_selected_node_list();
+		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 		for (Node *E : selection) {
 			Control *control = Object::cast_to<Control>(E);
 			if (!control) {

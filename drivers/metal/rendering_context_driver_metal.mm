@@ -32,6 +32,22 @@
 
 #import "rendering_device_driver_metal.h"
 
+#include "core/templates/sort_array.h"
+
+#import <os/log.h>
+#import <os/signpost.h>
+
+#pragma mark - Logging
+
+os_log_t LOG_DRIVER;
+// Used for dynamic tracing.
+os_log_t LOG_INTERVALS;
+
+__attribute__((constructor)) static void InitializeLogging(void) {
+	LOG_DRIVER = os_log_create("org.godotengine.godot.metal", OS_LOG_CATEGORY_POINTS_OF_INTEREST);
+	LOG_INTERVALS = os_log_create("org.godotengine.godot.metal", "events");
+}
+
 @protocol MTLDeviceEx <MTLDevice>
 #if TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED < 130300
 - (void)setShouldMaximizeConcurrentCompilation:(BOOL)v;
@@ -184,9 +200,115 @@ public:
 	}
 };
 
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) SurfaceOffscreen : public RenderingContextDriverMetal::Surface {
+	int frame_buffer_size = 3;
+	MDFrameBuffer *frame_buffers;
+	LocalVector<id<MTLTexture>> textures;
+	LocalVector<id<MTLDrawable>> drawables;
+
+	int32_t rear = -1;
+	std::atomic_int count;
+	uint64_t target_time = 0;
+	CAMetalLayer *layer;
+
+public:
+	SurfaceOffscreen(CAMetalLayer *p_layer, id<MTLDevice> p_device) :
+			Surface(p_device), layer(p_layer) {
+		layer.allowsNextDrawableTimeout = YES;
+		layer.framebufferOnly = YES;
+		layer.opaque = OS::get_singleton()->is_layered_allowed() ? NO : YES;
+		layer.pixelFormat = get_pixel_format();
+		layer.device = p_device;
+#if TARGET_OS_OSX
+		layer.displaySyncEnabled = NO;
+#endif
+		target_time = OS::get_singleton()->get_ticks_usec();
+
+		textures.resize(frame_buffer_size);
+		drawables.resize(frame_buffer_size);
+
+		frame_buffers = memnew_arr(MDFrameBuffer, frame_buffer_size);
+		for (int i = 0; i < frame_buffer_size; i++) {
+			frame_buffers[i].set_texture_count(1);
+		}
+	}
+
+	~SurfaceOffscreen() override {
+		memdelete_arr(frame_buffers);
+	}
+
+	Error resize(uint32_t p_desired_framebuffer_count) override final {
+		if (width == 0 || height == 0) {
+			// Very likely the window is minimized, don't create a swap chain.
+			return ERR_SKIP;
+		}
+
+		CGSize drawableSize = CGSizeMake(width, height);
+		CGSize current = layer.drawableSize;
+		if (!CGSizeEqualToSize(current, drawableSize)) {
+			layer.drawableSize = drawableSize;
+		}
+
+		return OK;
+	}
+
+	RDD::FramebufferID acquire_next_frame_buffer() override final {
+		if (count.load(std::memory_order_relaxed) == 3) {
+			// Wait for a frame to be presented.
+			return RDD::FramebufferID();
+		}
+
+		rear = (rear + 1) % 3;
+		count.fetch_add(1, std::memory_order_relaxed);
+
+		MDFrameBuffer &frame_buffer = frame_buffers[rear];
+
+		if (textures[rear] == nil || textures[rear].width != width || textures[rear].height != height) {
+			MTLTextureDescriptor *texture_descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:get_pixel_format() width:width height:height mipmapped:NO];
+			texture_descriptor.usage = MTLTextureUsageRenderTarget;
+			texture_descriptor.hazardTrackingMode = MTLHazardTrackingModeUntracked;
+			texture_descriptor.storageMode = MTLStorageModePrivate;
+			textures[rear] = [device newTextureWithDescriptor:texture_descriptor];
+		}
+
+		frame_buffer.size = Size2i(width, height);
+		uint64_t now = OS::get_singleton()->get_ticks_usec();
+		if (now >= target_time) {
+			target_time = now + 1'000'000; // 1 second into the future.
+			id<CAMetalDrawable> drawable = layer.nextDrawable;
+			ERR_FAIL_NULL_V_MSG(drawable, RDD::FramebufferID(), "no drawable available");
+			drawables[rear] = drawable;
+			frame_buffer.set_texture(0, drawable.texture);
+		} else {
+			frame_buffer.set_texture(0, textures[rear]);
+		}
+
+		return RDD::FramebufferID(&frame_buffers[rear]);
+	}
+
+	void present(MDCommandBuffer *p_cmd_buffer) override final {
+		MDFrameBuffer *frame_buffer = &frame_buffers[rear];
+
+		if (drawables[rear] != nil) {
+			[p_cmd_buffer->get_command_buffer() presentDrawable:drawables[rear]];
+			drawables[rear] = nil;
+		}
+
+		[p_cmd_buffer->get_command_buffer() addScheduledHandler:^(id<MTLCommandBuffer> p_command_buffer) {
+			frame_buffer->unset_texture(0);
+			count.fetch_add(-1, std::memory_order_relaxed);
+		}];
+	}
+};
+
 RenderingContextDriver::SurfaceID RenderingContextDriverMetal::surface_create(const void *p_platform_data) {
 	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
-	Surface *surface = memnew(SurfaceLayer(wpd->layer, metal_device));
+	Surface *surface;
+	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_OFF_SCREEN"); v == U"1") {
+		surface = memnew(SurfaceOffscreen(wpd->layer, metal_device));
+	} else {
+		surface = memnew(SurfaceLayer(wpd->layer, metal_device));
+	}
 
 	return SurfaceID(surface);
 }

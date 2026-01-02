@@ -580,7 +580,7 @@
 			<return type="void" />
 			<param index="0" name="color" type="Color" default="Color(0, 0, 0, 0)" />
 			<description>
-				Adds a [code skip-lint][s][/code] tag to the tag stack. If [param color] alpha value is zero, current font color with alpha multiplied by [theme_item strikethrough_alpha] is used.
+				Adds a [code skip-lint][s][/code] tag to the tag stack. If [param color]'s alpha value is [code]0.0[/code], the current font's color with its alpha multiplied by [theme_item strikethrough_alpha] is used.
 			</description>
 		</method>
 		<method name="push_table">
@@ -597,7 +597,7 @@
 			<return type="void" />
 			<param index="0" name="color" type="Color" default="Color(0, 0, 0, 0)" />
 			<description>
-				Adds a [code skip-lint][u][/code] tag to the tag stack. If [param color] alpha value is zero, current font color with alpha multiplied by [theme_item underline_alpha] is used.
+				Adds a [code skip-lint][u][/code] tag to the tag stack. If [param color]'s alpha value is [code]0.0[/code], the current font's color with its alpha multiplied by [theme_item underline_alpha] is used.
 			</description>
 		</method>
 		<method name="reload_effects">
@@ -745,13 +745,13 @@
 			If [code]true[/code], the label underlines hint tags such as [code skip-lint][hint=description]{text}[/hint][/code].
 		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
-			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify.
+			Controls the text's horizontal alignment. Supports left, center, right, and fill (also known as justify).
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
 			Line fill alignment rules.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true" keywords="url_underlined">
 			If [code]true[/code], the label underlines meta tags such as [code skip-lint][url]{text}[/url][/code]. These tags can call a function when clicked if [signal meta_clicked] is connected to a function.

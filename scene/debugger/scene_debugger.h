@@ -89,12 +89,9 @@ private:
 	static Error _msg_clear_selection(const Array &p_args);
 	static Error _msg_suspend_changed(const Array &p_args);
 	static Error _msg_next_frame(const Array &p_args);
+	static Error _msg_speed_changed(const Array &p_args);
 	static Error _msg_debug_mute_audio(const Array &p_args);
 	static Error _msg_override_cameras(const Array &p_args);
-	static Error _msg_transform_camera_2d(const Array &p_args);
-#ifndef _3D_DISABLED
-	static Error _msg_transform_camera_3d(const Array &p_args);
-#endif
 	static Error _msg_set_object_property(const Array &p_args);
 	static Error _msg_set_object_property_field(const Array &p_args);
 	static Error _msg_reload_cached_files(const Array &p_args);
@@ -118,11 +115,16 @@ private:
 	static Error _msg_runtime_node_select_set_type(const Array &p_args);
 	static Error _msg_runtime_node_select_set_mode(const Array &p_args);
 	static Error _msg_runtime_node_select_set_visible(const Array &p_args);
+	static Error _msg_runtime_node_select_set_avoid_locked(const Array &p_args);
+	static Error _msg_runtime_node_select_set_prefer_group(const Array &p_args);
+	static Error _msg_rq_screenshot(const Array &p_args);
+
 	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
+	static Error _msg_transform_camera_2d(const Array &p_args);
 #ifndef _3D_DISABLED
 	static Error _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
-#endif
-	static Error _msg_rq_screenshot(const Array &p_args);
+	static Error _msg_transform_camera_3d(const Array &p_args);
+#endif // _3D_DISABLED
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
@@ -144,10 +146,12 @@ public:
 	List<SceneDebuggerProperty> properties;
 
 	SceneDebuggerObject(ObjectID p_id);
+	SceneDebuggerObject(Object *p_obj);
 	SceneDebuggerObject() {}
 
 	void serialize(Array &r_arr, int p_max_size = 1 << 20);
 	void deserialize(const Array &p_arr);
+	void deserialize(uint64_t p_id, const String &p_class_name, const Array &p_props);
 };
 
 class SceneDebuggerTree {
@@ -278,12 +282,16 @@ private:
 	bool selection_visible = true;
 	bool selection_update_queued = false;
 
+	bool avoid_locked_nodes = false;
+	bool prefer_group_selection = false;
+
 	bool multi_shortcut_pressed = false;
 	bool list_shortcut_pressed = false;
 	RID draw_canvas;
 	RID sel_drag_ci;
 
 	bool camera_override = false;
+	bool camera_first_override = true;
 
 	// Values taken from EditorZoomWidget.
 	const float VIEW_2D_MIN_ZOOM = 1.0 / 128;
@@ -296,6 +304,7 @@ private:
 
 	LocalVector<ObjectID> selected_ci_nodes;
 	real_t sel_2d_grab_dist = 0;
+	int sel_2d_scale = 1;
 
 	RID sbox_2d_ci;
 
@@ -326,7 +335,6 @@ private:
 	const float CAMERA_MIN_FOV_SCALE = 0.1;
 	const float CAMERA_MAX_FOV_SCALE = 2.5;
 
-	bool camera_first_override = true;
 	bool camera_freelook = false;
 
 	real_t camera_fov = 0;
@@ -355,10 +363,10 @@ private:
 
 		~SelectionBox3D() {
 			if (instance.is_valid()) {
-				RS::get_singleton()->free(instance);
-				RS::get_singleton()->free(instance_ofs);
-				RS::get_singleton()->free(instance_xray);
-				RS::get_singleton()->free(instance_xray_ofs);
+				RS::get_singleton()->free_rid(instance);
+				RS::get_singleton()->free_rid(instance_ofs);
+				RS::get_singleton()->free_rid(instance_xray);
+				RS::get_singleton()->free_rid(instance_xray_ofs);
 			}
 		}
 	};
@@ -394,6 +402,8 @@ private:
 	void _clear_selection();
 	void _update_selection_drag(const Point2 &p_end_pos = Point2());
 	void _set_selection_visible(bool p_visible);
+	void _set_avoid_locked(bool p_enabled);
+	void _set_prefer_group(bool p_enabled);
 
 	void _open_selection_list(const Vector<SelectResult> &p_items, const Point2 &p_pos);
 	void _close_selection_list();

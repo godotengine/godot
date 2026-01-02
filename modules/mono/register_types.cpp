@@ -53,7 +53,7 @@ void initialize_mono_module(ModuleInitializationLevel p_level) {
 	script_language_cs->set_language_index(ScriptServer::get_language_count());
 	ScriptServer::register_language(script_language_cs);
 
-	if (GD_IS_CLASS_ENABLED(CSharpScript)) {
+	if constexpr (GD_IS_CLASS_ENABLED(CSharpScript)) {
 		resource_loader_cs.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_cs);
 		resource_saver_cs.instantiate();
@@ -72,7 +72,7 @@ void uninitialize_mono_module(ModuleInitializationLevel p_level) {
 		memdelete(script_language_cs);
 	}
 
-	if (GD_IS_CLASS_ENABLED(CSharpScript)) {
+	if constexpr (GD_IS_CLASS_ENABLED(CSharpScript)) {
 		ResourceLoader::remove_resource_format_loader(resource_loader_cs);
 		resource_loader_cs.unref();
 		ResourceSaver::remove_resource_format_saver(resource_saver_cs);

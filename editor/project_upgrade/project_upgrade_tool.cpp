@@ -30,12 +30,14 @@
 
 #include "project_upgrade_tool.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/dialogs.h"
 
 void ProjectUpgradeTool::_add_files(EditorFileSystemDirectory *p_dir, Vector<String> &r_reimport_paths, Vector<String> &r_resave_scenes, Vector<String> &r_resave_resources) {
@@ -77,6 +79,11 @@ void ProjectUpgradeTool::popup_dialog() {
 void ProjectUpgradeTool::prepare_upgrade() {
 	EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RUN_ON_RESTART, true);
 
+#ifndef DISABLE_DEPRECATED
+	ProjectSettings::get_singleton()->set_setting("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d", false);
+	ProjectSettings::get_singleton()->save();
+#endif
+
 	Vector<String> reimport_paths;
 	Vector<String> resave_scenes;
 	Vector<String> resave_resources;
@@ -96,11 +103,15 @@ void ProjectUpgradeTool::begin_upgrade() {
 }
 
 void ProjectUpgradeTool::finish_upgrade() {
-	EditorNode::get_singleton()->trigger_menu_option(EditorSceneTabs::SCENE_CLOSE_ALL, true);
+	EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_CLOSE_ALL, true);
 
 	Vector<String> paths = EditorSettings::get_singleton()->get_project_metadata(META_PROJECT_UPGRADE_TOOL, META_REIMPORT_PATHS, Vector<String>());
 	EditorFileSystem::get_singleton()->reimport_files(paths);
 	EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_REIMPORT_PATHS, Variant());
+
+#ifndef DISABLE_DEPRECATED
+	MeshInstance3D::upgrading_skeleton_compat = true;
+#endif
 
 	{
 		paths = EditorSettings::get_singleton()->get_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_SCENES, Vector<String>());
@@ -115,6 +126,10 @@ void ProjectUpgradeTool::finish_upgrade() {
 		}
 		EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_SCENES, Variant());
 	}
+
+#ifndef DISABLE_DEPRECATED
+	MeshInstance3D::upgrading_skeleton_compat = false;
+#endif
 
 	{
 		paths = EditorSettings::get_singleton()->get_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_RESOURCES, Vector<String>());

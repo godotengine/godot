@@ -174,13 +174,16 @@ String Variant::get_type_name(Variant::Type p_type) {
 	return "";
 }
 
-Variant::Type Variant::get_type_by_name(const String &p_type_name) {
-	static HashMap<String, Type> type_names;
-	if (unlikely(type_names.is_empty())) {
-		for (int i = 0; i < VARIANT_MAX; i++) {
-			type_names[get_type_name((Type)i)] = (Type)i;
-		}
+static HashMap<String, Variant::Type> _init_type_name_map() {
+	HashMap<String, Variant::Type> type_names;
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		type_names[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
 	}
+	return type_names;
+}
+
+Variant::Type Variant::get_type_by_name(const String &p_type_name) {
+	static HashMap<String, Type> type_names = _init_type_name_map();
 
 	const Type *ptr = type_names.getptr(p_type_name);
 	return (ptr == nullptr) ? VARIANT_MAX : *ptr;
@@ -2941,7 +2944,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			return hash_one_uint64(reinterpret_cast<const ::RID *>(_data._mem)->get_id());
 		} break;
 		case OBJECT: {
-			return hash_one_uint64(hash_make_uint64_t(_get_obj().obj));
+			return hash_one_uint64(reinterpret_cast<uint64_t>(_get_obj().obj));
 		} break;
 		case STRING_NAME: {
 			return reinterpret_cast<const StringName *>(_data._mem)->hash();

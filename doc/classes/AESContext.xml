@@ -118,10 +118,10 @@
 			AES electronic codebook decryption mode.
 		</constant>
 		<constant name="MODE_CBC_ENCRYPT" value="2" enum="Mode">
-			AES cipher blocker chaining encryption mode.
+			AES cipher block chaining encryption mode.
 		</constant>
 		<constant name="MODE_CBC_DECRYPT" value="3" enum="Mode">
-			AES cipher blocker chaining decryption mode.
+			AES cipher block chaining decryption mode.
 		</constant>
 		<constant name="MODE_MAX" value="4" enum="Mode">
 			Maximum value for the mode enum.

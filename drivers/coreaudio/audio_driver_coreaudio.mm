@@ -394,6 +394,11 @@ Error AudioDriverCoreAudio::init_input_device() {
 	UInt32 flag = 1;
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, sizeof(flag));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+#ifdef MACOS_ENABLED
+	flag = 0;
+	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, &flag, sizeof(flag));
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+#endif
 
 	UInt32 size;
 #ifdef MACOS_ENABLED
@@ -515,6 +520,8 @@ void AudioDriverCoreAudio::finish_input_device() {
 }
 
 Error AudioDriverCoreAudio::input_start() {
+	ERR_FAIL_NULL_V(input_unit, FAILED);
+
 	input_buffer_init(capture_buffer_frames);
 
 	OSStatus result = AudioOutputUnitStart(input_unit);

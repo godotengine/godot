@@ -253,5 +253,5 @@ Joint2D::Joint2D() {
 
 Joint2D::~Joint2D() {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
-	PhysicsServer2D::get_singleton()->free(joint);
+	PhysicsServer2D::get_singleton()->free_rid(joint);
 }

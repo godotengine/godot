@@ -37,7 +37,6 @@
  The `config` section and fields are required and defined as follow:
 - **name**: name of the plugin
 - **binary**: path to static `.a` library
-- **use_swift_runtime**: optional boolean field used to determine if Swift runtime is used
 
 The `dependencies` and fields are optional.
 - **linked**: dependencies that should only be linked.
@@ -56,7 +55,6 @@ struct PluginConfigAppleEmbedded {
 	inline static const char *CONFIG_SECTION = "config";
 	inline static const char *CONFIG_NAME_KEY = "name";
 	inline static const char *CONFIG_BINARY_KEY = "binary";
-	inline static const char *CONFIG_USE_SWIFT_KEY = "use_swift_runtime";
 	inline static const char *CONFIG_INITIALIZE_KEY = "initialization";
 	inline static const char *CONFIG_DEINITIALIZE_KEY = "deinitialization";
 
@@ -93,7 +91,6 @@ struct PluginConfigAppleEmbedded {
 	// Required config section
 	String name;
 	String binary;
-	bool use_swift_runtime;
 	String initialization_method;
 	String deinitialization_method;
 

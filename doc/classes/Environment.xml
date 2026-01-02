@@ -6,8 +6,9 @@
 	<description>
 		Resource for environment nodes (like [WorldEnvironment]) that define multiple environment operations (such as background [Sky] or [Color], ambient light, fog, depth-of-field...). These parameters affect the final render of the scene. The order of these operations is:
 		- Depth of Field Blur
+		- Auto Exposure
 		- Glow
-		- Tonemap (Auto Exposure)
+		- Tonemap
 		- Adjustments
 	</description>
 	<tutorials>
@@ -35,19 +36,19 @@
 	</methods>
 	<members>
 		<member name="adjustment_brightness" type="float" setter="set_adjustment_brightness" getter="get_adjustment_brightness" default="1.0">
-			The global brightness value of the rendered scene. Effective only if [member adjustment_enabled] is [code]true[/code].
+			Applies a simple brightness adjustment to the rendered image after tonemaping. To adjust scene brightness use [member tonemap_exposure] instead, which is applied before tonemapping and thus less prone to issues with bright colors. Effective only if [member adjustment_enabled] is [code]true[/code].
 		</member>
 		<member name="adjustment_color_correction" type="Texture" setter="set_adjustment_color_correction" getter="get_adjustment_color_correction">
 			The [Texture2D] or [Texture3D] lookup table (LUT) to use for the built-in post-process color grading. Can use a [GradientTexture1D] for a 1-dimensional LUT, or a [Texture3D] for a more complex LUT. Effective only if [member adjustment_enabled] is [code]true[/code].
 		</member>
 		<member name="adjustment_contrast" type="float" setter="set_adjustment_contrast" getter="get_adjustment_contrast" default="1.0">
-			The global contrast value of the rendered scene (default value is 1). Effective only if [member adjustment_enabled] is [code]true[/code].
+			Increasing [member adjustment_contrast] will make dark values darker and bright values brighter. This simple adjustment is applied to the rendered image after tonemaping. When set to a value greater than [code]1.0[/code], [member adjustment_contrast] is prone to clipping colors that become too bright or too dark. Effective only if [member adjustment_enabled] is [code]true[/code].
 		</member>
 		<member name="adjustment_enabled" type="bool" setter="set_adjustment_enabled" getter="is_adjustment_enabled" default="false">
 			If [code]true[/code], enables the [code]adjustment_*[/code] properties provided by this resource. If [code]false[/code], modifications to the [code]adjustment_*[/code] properties will have no effect on the rendered scene.
 		</member>
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation" default="1.0">
-			The global color saturation value of the rendered scene (default value is 1). Effective only if [member adjustment_enabled] is [code]true[/code].
+			Applies a simple saturation adjustment to the rendered image after tonemaping. When [member adjustment_saturation] is set to [code]0.0[/code], the rendered image will be fully converted to a grayscale image. Effective only if [member adjustment_enabled] is [code]true[/code].
 		</member>
 		<member name="ambient_light_color" type="Color" setter="set_ambient_light_color" getter="get_ambient_light_color" default="Color(0, 0, 0, 1)">
 			The ambient light's [Color]. Only effective if [member ambient_light_sky_contribution] is lower than [code]1.0[/code] (exclusive).
@@ -124,15 +125,15 @@
 		<member name="fog_sun_scatter" type="float" setter="set_fog_sun_scatter" getter="get_fog_sun_scatter" default="0.0">
 			If set above [code]0.0[/code], renders the scene's directional light(s) in the fog color depending on the view angle. This can be used to give the impression that the sun is "piercing" through the fog.
 		</member>
-		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="2">
+		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="1">
 			The glow blending mode.
-			[b]Note:[/b] [member glow_blend_mode] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
+			[b]Note:[/b] The Compatibility renderer always uses [constant GLOW_BLEND_MODE_SCREEN] and [member glow_blend_mode] will have no effect.
 		</member>
 		<member name="glow_bloom" type="float" setter="set_glow_bloom" getter="get_glow_bloom" default="0.0">
 			The bloom's intensity. If set to a value higher than [code]0[/code], this will make glow visible in areas darker than the [member glow_hdr_threshold].
 		</member>
 		<member name="glow_enabled" type="bool" setter="set_glow_enabled" getter="is_glow_enabled" default="false">
-			If [code]true[/code], the glow effect is enabled. This simulates real world eye/camera behavior where bright pixels bleed onto surrounding pixels.
+			If [code]true[/code], the glow effect is enabled. This simulates real world atmosphere and eye/camera behavior by causing bright pixels to bleed onto surrounding pixels.
 			[b]Note:[/b] When using the Mobile rendering method, glow looks different due to the lower dynamic range available in the Mobile rendering method.
 			[b]Note:[/b] When using the Compatibility rendering method, glow uses a different implementation with some properties being unavailable and hidden from the inspector: [code]glow_levels/*[/code], [member glow_normalized], [member glow_strength], [member glow_blend_mode], [member glow_mix], [member glow_map], and [member glow_map_strength]. This implementation is optimized to run on low-end devices and is less flexible as a result.
 		</member>
@@ -140,31 +141,31 @@
 			The higher threshold of the HDR glow. Areas brighter than this threshold will be clamped for the purposes of the glow effect.
 		</member>
 		<member name="glow_hdr_scale" type="float" setter="set_glow_hdr_bleed_scale" getter="get_glow_hdr_bleed_scale" default="2.0">
-			The bleed scale of the HDR glow.
+			Smooths the transition between values that are below and above [member glow_hdr_threshold] by reducing the amount of glow generated by values that are close to [member glow_hdr_threshold]. Values above [code]glow_hdr_threshold + glow_hdr_scale[/code] will not have glow reduced in this way.
 		</member>
 		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="1.0">
 			The lower threshold of the HDR glow. When using the Mobile rendering method (which only supports a lower dynamic range up to [code]2.0[/code]), this may need to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case. This value also needs to be decreased below [code]1.0[/code] when using glow in 2D, as 2D rendering is performed in SDR.
 		</member>
-		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
-			The overall brightness multiplier of the glow effect. When using the Mobile rendering method (which only supports a lower dynamic range up to [code]2.0[/code]), this should be increased to [code]1.5[/code] to compensate.
+		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.3">
+			The overall brightness multiplier that is applied to the glow effect just before it is blended with the scene. When using the Mobile rendering method (which only supports a lower dynamic range up to [code]2.0[/code]), this should be increased to [code]1.5[/code] to compensate.
 		</member>
 		<member name="glow_levels/1" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 1st level of glow. This is the most "local" level (least blurry).
 			[b]Note:[/b] [member glow_levels/1] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>
-		<member name="glow_levels/2" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
+		<member name="glow_levels/2" type="float" setter="set_glow_level" getter="get_glow_level" default="0.8">
 			The intensity of the 2nd level of glow.
 			[b]Note:[/b] [member glow_levels/2] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>
-		<member name="glow_levels/3" type="float" setter="set_glow_level" getter="get_glow_level" default="1.0">
+		<member name="glow_levels/3" type="float" setter="set_glow_level" getter="get_glow_level" default="0.4">
 			The intensity of the 3rd level of glow.
 			[b]Note:[/b] [member glow_levels/3] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>
-		<member name="glow_levels/4" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
+		<member name="glow_levels/4" type="float" setter="set_glow_level" getter="get_glow_level" default="0.1">
 			The intensity of the 4th level of glow.
 			[b]Note:[/b] [member glow_levels/4] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>
-		<member name="glow_levels/5" type="float" setter="set_glow_level" getter="get_glow_level" default="1.0">
+		<member name="glow_levels/5" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 5th level of glow.
 			[b]Note:[/b] [member glow_levels/5] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>
@@ -195,7 +196,7 @@
 			[b]Note:[/b] [member glow_normalized] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>
 		<member name="glow_strength" type="float" setter="set_glow_strength" getter="get_glow_strength" default="1.0">
-			The strength of the glow effect. This applies as the glow is blurred across the screen and increases the distance and intensity of the blur. When using the Mobile rendering method, this should be increased to compensate for the lower dynamic range.
+			The strength that is used when blurring across the screen to generate the glow effect. This affects the distance and intensity of the blur. When using the Mobile rendering method, this should be increased to compensate for the lower dynamic range.
 			[b]Note:[/b] [member glow_strength] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
@@ -261,7 +262,7 @@
 		</member>
 		<member name="ssao_enabled" type="bool" setter="set_ssao_enabled" getter="is_ssao_enabled" default="false">
 			If [code]true[/code], the screen-space ambient occlusion effect is enabled. This darkens objects' corners and cavities to simulate ambient light not reaching the entire object as in real life. This works well for small, dynamic objects, but baked lighting or ambient occlusion textures will do a better job at displaying ambient occlusion on large static objects. Godot uses a form of SSAO called Adaptive Screen Space Ambient Occlusion which is itself a form of Horizon Based Ambient Occlusion.
-			[b]Note:[/b] SSAO is only supported in the Forward+ rendering method, not Mobile or Compatibility.
+			[b]Note:[/b] SSAO is only supported in the Forward+ and Compatibility rendering methods, not Mobile.
 		</member>
 		<member name="ssao_horizon" type="float" setter="set_ssao_horizon" getter="get_ssao_horizon" default="0.06">
 			The threshold for considering whether a given point on a surface is occluded or not represented as an angle from the horizon mapped into the [code]0.0-1.0[/code] range. A value of [code]1.0[/code] results in no occlusion.
@@ -297,12 +298,13 @@
 		<member name="ssil_sharpness" type="float" setter="set_ssil_sharpness" getter="get_ssil_sharpness" default="0.98">
 			The amount that the screen-space indirect lighting effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
 		</member>
-		<member name="ssr_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.2">
+		<member name="ssr_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.5">
 			The depth tolerance for screen-space reflections.
 		</member>
 		<member name="ssr_enabled" type="bool" setter="set_ssr_enabled" getter="is_ssr_enabled" default="false">
 			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [VoxelGI]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.
 			[b]Note:[/b] SSR is only supported in the Forward+ rendering method, not Mobile or Compatibility.
+			[b]Note:[/b] SSR is not supported on viewports that have a transparent background (where [member Viewport.transparent_bg] is [code]true[/code]).
 		</member>
 		<member name="ssr_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" default="0.15">
 			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
@@ -313,6 +315,13 @@
 		<member name="ssr_max_steps" type="int" setter="set_ssr_max_steps" getter="get_ssr_max_steps" default="64">
 			The maximum number of steps for screen-space reflections. Higher values are slower.
 		</member>
+		<member name="tonemap_agx_contrast" type="float" setter="set_tonemap_agx_contrast" getter="get_tonemap_agx_contrast" default="1.25">
+			Increasing [member tonemap_agx_contrast] will make dark values darker and bright values brighter. Produces a higher quality result than [member adjustment_contrast] without any additional performance cost, but is only available when using the [constant TONE_MAPPER_AGX] tonemapper.
+		</member>
+		<member name="tonemap_agx_white" type="float" setter="set_tonemap_agx_white" getter="get_tonemap_agx_white" default="16.29">
+			The white reference value for tonemapping, which indicates where bright white is located in the scale of values provided to the tonemapper. For photorealistic lighting, it is recommended to set [member tonemap_agx_white] to at least [code]6.0[/code]. Higher values result in less blown out highlights, but may make the scene appear lower contrast. [member tonemap_agx_white] is the same as [member tonemap_white], but is only effective with the [constant TONE_MAPPER_AGX] tonemapper. See also [member tonemap_exposure].
+			[b]Note:[/b] When using the Mobile renderer with [member Viewport.use_hdr_2d] disabled, [member tonemap_agx_white] is ignored and a white value of [code]2.0[/code] will always be used instead.
+		</member>
 		<member name="tonemap_exposure" type="float" setter="set_tonemap_exposure" getter="get_tonemap_exposure" default="1.0">
 			Adjusts the brightness of values before they are provided to the tonemapper. Higher [member tonemap_exposure] values result in a brighter image. See also [member tonemap_white].
 			[b]Note:[/b] Values provided to the tonemapper will also be multiplied by [code]2.0[/code] and [code]1.8[/code] for [constant TONE_MAPPER_FILMIC] and [constant TONE_MAPPER_ACES] respectively to produce a similar apparent brightness as [constant TONE_MAPPER_LINEAR].
@@ -321,8 +330,8 @@
 			The tonemapping mode to use. Tonemapping is the process that "converts" HDR values to be suitable for rendering on an LDR display. (Godot doesn't support rendering on HDR displays yet.)
 		</member>
 		<member name="tonemap_white" type="float" setter="set_tonemap_white" getter="get_tonemap_white" default="1.0">
-			The white reference value for tonemapping, which indicates where bright white is located in the scale of values provided to the tonemapper. For photorealistic lighting, recommended values are between [code]6.0[/code] and [code]8.0[/code]. Higher values result in less blown out highlights, but may make the scene appear lower contrast. See also [member tonemap_exposure].
-			[b]Note:[/b] [member tonemap_white] is ignored when using [constant TONE_MAPPER_LINEAR] or [constant TONE_MAPPER_AGX].
+			The white reference value for tonemapping, which indicates where bright white is located in the scale of values provided to the tonemapper. For photorealistic lighting, it is recommended to set [member tonemap_white] to at least [code]6.0[/code]. Higher values result in less blown out highlights, but may make the scene appear lower contrast. [member tonemap_agx_white] will be used instead when using the [constant TONE_MAPPER_AGX] tonemapper. See also [member tonemap_exposure].
+			[b]Note:[/b] [member tonemap_white] must be set to [code]2.0[/code] or lower on the Mobile renderer to produce bright images.
 		</member>
 		<member name="volumetric_fog_albedo" type="Color" setter="set_volumetric_fog_albedo" getter="get_volumetric_fog_albedo" default="Color(1, 1, 1, 1)">
 			The [Color] of the volumetric fog when interacting with lights. Mist and fog have an albedo close to [code]Color(1, 1, 1, 1)[/code] while smoke has a darker albedo.
@@ -429,23 +438,22 @@
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
 		</constant>
 		<constant name="TONE_MAPPER_AGX" value="4" enum="ToneMapper">
-			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
-			[b]Note:[/b] [member tonemap_white] is fixed at a value of [code]16.29[/code], which makes [constant TONE_MAPPER_AGX] unsuitable for use with the Mobile rendering method.
+			Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
-			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
+			Adds the glow effect to the scene.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_SCREEN" value="1" enum="GlowBlendMode">
-			Screen glow blending mode. Increases brightness, used frequently with bloom.
+			Adds the glow effect to the scene after modifying the glow influence based on the scene value; dark values will be highly influenced by glow and bright values will not be influenced by glow. This approach avoids bright values becoming overly bright from the glow effect. [member tonemap_white] is used to determine the maximum scene value where the glow should have no influence. When [member tonemap_mode] is set to [constant TONE_MAPPER_LINEAR], a value of [code]1.0[/code] will be used as the maximum scene value.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="GlowBlendMode">
-			Soft light glow blending mode. Modifies contrast, exposes shadows and highlights (vivid bloom).
+			Adds the glow effect to the tonemapped image after modifying the glow influence based on the image value; dark values and bright values will not be influenced by glow and mid-range values will be highly influenced by glow. This approach avoids bright values becoming overly bright from the glow effect. The glow will have the largest influence on image values of [code]0.25[/code] and will have no influence when applied to image values greater than [code]1.0[/code].
 		</constant>
 		<constant name="GLOW_BLEND_MODE_REPLACE" value="3" enum="GlowBlendMode">
-			Replace glow blending mode. Replaces all pixels' color by the glow value. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness.
+			Replaces all pixels' color by the glow effect. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness or to preview glow configuration in the editor.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_MIX" value="4" enum="GlowBlendMode">
-			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
+			Mixes the glow image with the scene image. Best used with [member glow_bloom] to avoid darkening the scene.
 		</constant>
 		<constant name="FOG_MODE_EXPONENTIAL" value="0" enum="FogMode">
 			Use a physically-based fog model defined primarily by fog density.

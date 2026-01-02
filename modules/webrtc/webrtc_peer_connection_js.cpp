@@ -83,26 +83,26 @@ Error WebRTCPeerConnectionJS::create_offer() {
 	return OK;
 }
 
-Error WebRTCPeerConnectionJS::set_local_description(String type, String sdp) {
-	godot_js_rtc_pc_local_description_set(_js_id, type.utf8().get_data(), sdp.utf8().get_data(), this, &_on_error);
+Error WebRTCPeerConnectionJS::set_local_description(const String &p_type, const String &p_sdp) {
+	godot_js_rtc_pc_local_description_set(_js_id, p_type.utf8().get_data(), p_sdp.utf8().get_data(), this, &_on_error);
 	return OK;
 }
 
-Error WebRTCPeerConnectionJS::set_remote_description(String type, String sdp) {
-	if (type == "offer") {
+Error WebRTCPeerConnectionJS::set_remote_description(const String &p_type, const String &p_sdp) {
+	if (p_type == "offer") {
 		ERR_FAIL_COND_V(_conn_state != STATE_NEW, FAILED);
 		_conn_state = STATE_CONNECTING;
 	}
-	godot_js_rtc_pc_remote_description_set(_js_id, type.utf8().get_data(), sdp.utf8().get_data(), this, &_on_session_created, &_on_error);
+	godot_js_rtc_pc_remote_description_set(_js_id, p_type.utf8().get_data(), p_sdp.utf8().get_data(), this, &_on_session_created, &_on_error);
 	return OK;
 }
 
-Error WebRTCPeerConnectionJS::add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName) {
-	godot_js_rtc_pc_ice_candidate_add(_js_id, sdpMidName.utf8().get_data(), sdpMlineIndexName, sdpName.utf8().get_data());
+Error WebRTCPeerConnectionJS::add_ice_candidate(const String &p_sdp_mid_name, int p_sdp_mline_index_name, const String &p_sdp_name) {
+	godot_js_rtc_pc_ice_candidate_add(_js_id, p_sdp_mid_name.utf8().get_data(), p_sdp_mline_index_name, p_sdp_name.utf8().get_data());
 	return OK;
 }
 
-Error WebRTCPeerConnectionJS::initialize(Dictionary p_config) {
+Error WebRTCPeerConnectionJS::initialize(const Dictionary &p_config) {
 	if (_js_id) {
 		godot_js_rtc_pc_destroy(_js_id);
 		_js_id = 0;
@@ -114,7 +114,7 @@ Error WebRTCPeerConnectionJS::initialize(Dictionary p_config) {
 	return _js_id ? OK : FAILED;
 }
 
-Ref<WebRTCDataChannel> WebRTCPeerConnectionJS::create_data_channel(String p_channel, Dictionary p_channel_config) {
+Ref<WebRTCDataChannel> WebRTCPeerConnectionJS::create_data_channel(const String &p_channel, const Dictionary &p_channel_config) {
 	ERR_FAIL_COND_V(_conn_state != STATE_NEW, nullptr);
 
 	String config = Variant(p_channel_config).to_json_string();

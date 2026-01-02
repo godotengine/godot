@@ -33,7 +33,7 @@
 #include "core/config/engine.h"
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/resources/world_2d.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void ShapeCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
@@ -347,8 +347,8 @@ void ShapeCast2D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void ShapeCast2D::add_exception(const CollisionObject2D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+void ShapeCast2D::add_exception(RequiredParam<const CollisionObject2D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject2D.");
 	add_exception_rid(p_node->get_rid());
 }
 
@@ -356,8 +356,8 @@ void ShapeCast2D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void ShapeCast2D::remove_exception(const CollisionObject2D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+void ShapeCast2D::remove_exception(RequiredParam<const CollisionObject2D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject2D.");
 	remove_exception_rid(p_node->get_rid());
 }
 

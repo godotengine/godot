@@ -30,13 +30,25 @@
 
 #include "openxr_composition_layer_quad.h"
 
+#include "../extensions/openxr_composition_layer_extension.h"
 #include "../openxr_interface.h"
 
 #include "scene/resources/3d/primitive_meshes.h"
 
-OpenXRCompositionLayerQuad::OpenXRCompositionLayerQuad() :
-		OpenXRCompositionLayer((XrCompositionLayerBaseHeader *)&composition_layer) {
-	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayerQuad::update_transform));
+OpenXRCompositionLayerQuad::OpenXRCompositionLayerQuad() {
+	if (composition_layer_extension) {
+		XrCompositionLayerQuad openxr_composition_layer = {
+			XR_TYPE_COMPOSITION_LAYER_QUAD, // type
+			nullptr, // next
+			0, // layerFlags
+			XR_NULL_HANDLE, // space
+			XR_EYE_VISIBILITY_BOTH, // eyeVisibility
+			{}, // subImage
+			{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
+			{ (float)quad_size.x, (float)quad_size.y }, // size
+		};
+		composition_layer = composition_layer_extension->composition_layer_create((XrCompositionLayerBaseHeader *)&openxr_composition_layer);
+	}
 }
 
 OpenXRCompositionLayerQuad::~OpenXRCompositionLayerQuad() {
@@ -56,21 +68,11 @@ Ref<Mesh> OpenXRCompositionLayerQuad::_create_fallback_mesh() {
 	return mesh;
 }
 
-void OpenXRCompositionLayerQuad::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			update_transform();
-		} break;
-	}
-}
-
-void OpenXRCompositionLayerQuad::update_transform() {
-	composition_layer.pose = get_openxr_pose();
-}
-
 void OpenXRCompositionLayerQuad::set_quad_size(const Size2 &p_size) {
 	quad_size = p_size;
-	composition_layer.size = { (float)quad_size.x, (float)quad_size.y };
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_quad_size(composition_layer, p_size);
+	}
 	update_fallback_mesh();
 }
 

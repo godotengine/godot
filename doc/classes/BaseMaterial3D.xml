@@ -14,21 +14,21 @@
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="BaseMaterial3D.Feature" />
 			<description>
-				Returns [code]true[/code], if the specified [enum Feature] is enabled.
+				Returns [code]true[/code] if the specified [param feature] is enabled.
 			</description>
 		</method>
 		<method name="get_flag" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="flag" type="int" enum="BaseMaterial3D.Flags" />
 			<description>
-				Returns [code]true[/code] if the specified flag is enabled.
+				Returns [code]true[/code] if the specified [param flag] is enabled.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam" />
 			<description>
-				Returns the [Texture2D] associated with the specified [enum TextureParam].
+				Returns the [Texture2D] associated with the specified texture [param param].
 			</description>
 		</method>
 		<method name="set_feature">
@@ -36,7 +36,7 @@
 			<param index="0" name="feature" type="int" enum="BaseMaterial3D.Feature" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified [enum Feature]. Many features that are available in [BaseMaterial3D]s need to be enabled before use. This way the cost for using the feature is only incurred when specified. Features can also be enabled by setting the corresponding member to [code]true[/code].
+				If [param enable] is [code]true[/code], enables the specified [param feature]. Many features that are available in [BaseMaterial3D] need to be enabled before use. This way, the cost for using the feature is only incurred when specified. Features can also be enabled by setting their corresponding property to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_flag">
@@ -44,7 +44,7 @@
 			<param index="0" name="flag" type="int" enum="BaseMaterial3D.Flags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified flag. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting the corresponding member to [code]true[/code].
+				If [param enable] is [code]true[/code], enables the specified [param flag]. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting their corresponding property to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_texture">
@@ -66,7 +66,7 @@
 			If the texture appears unexpectedly too dark or too bright, check [member albedo_texture_force_srgb].
 		</member>
 		<member name="albedo_texture_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
-			If [code]true[/code], forces a conversion of the [member albedo_texture] from sRGB color space to linear color space. See also [member vertex_color_is_srgb].
+			If [code]true[/code], forces a conversion of the [member albedo_texture] from nonlinear sRGB encoding to linear encoding. See also [member vertex_color_is_srgb].
 			This should only be enabled when needed (typically when using a [ViewportTexture] as [member albedo_texture]). If [member albedo_texture_force_srgb] is [code]true[/code] when it shouldn't be, the texture will appear to be too dark. If [member albedo_texture_force_srgb] is [code]false[/code] when it shouldn't be, the texture will appear to be too bright.
 		</member>
 		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
@@ -160,7 +160,7 @@
 			Determines when depth rendering takes place. See also [member transparency].
 		</member>
 		<member name="depth_test" type="int" setter="set_depth_test" getter="get_depth_test" enum="BaseMaterial3D.DepthTest" default="0" experimental="May be affected by future rendering pipeline changes.">
-			Determines which comparison operator is used when testing depth. See [enum DepthTest].
+			Determines which comparison operator is used when testing depth.
 			[b]Note:[/b] Changing [member depth_test] to a non-default value only has a visible effect when used on a transparent material, or a material that has [member depth_draw_mode] set to [constant DEPTH_DRAW_DISABLED].
 		</member>
 		<member name="detail_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
@@ -382,13 +382,13 @@
 			The primary color of the stencil effect.
 		</member>
 		<member name="stencil_compare" type="int" setter="set_stencil_compare" getter="get_stencil_compare" enum="BaseMaterial3D.StencilCompare" default="0" experimental="May be affected by future rendering pipeline changes.">
-			The comparison operator to use for stencil masking operations. See [enum StencilCompare].
+			The comparison operator to use for stencil masking operations.
 		</member>
 		<member name="stencil_flags" type="int" setter="set_stencil_flags" getter="get_stencil_flags" default="0" experimental="May be affected by future rendering pipeline changes.">
-			The flags dictating how the stencil operation behaves. See [enum StencilFlags].
+			The flags dictating how the stencil operation behaves.
 		</member>
 		<member name="stencil_mode" type="int" setter="set_stencil_mode" getter="get_stencil_mode" enum="BaseMaterial3D.StencilMode" default="0" experimental="May be affected by future rendering pipeline changes.">
-			The stencil effect mode. See [enum StencilMode].
+			The stencil effect mode.
 		</member>
 		<member name="stencil_outline_thickness" type="float" setter="set_stencil_effect_outline_thickness" getter="get_stencil_effect_outline_thickness" default="0.01" experimental="May be affected by future rendering pipeline changes.">
 			The outline thickness for [constant STENCIL_MODE_OUTLINE].
@@ -398,6 +398,7 @@
 		</member>
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges. Subsurface scattering quality is controlled by [member ProjectSettings.rendering/environment/subsurface_scattering/subsurface_scattering_quality].
+			[b]Note:[/b] Subsurface scattering is not supported on viewports that have a transparent background (where [member Viewport.transparent_bg] is [code]true[/code]).
 		</member>
 		<member name="subsurf_scatter_skin_mode" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], subsurface scattering will use a special mode optimized for the color and density of human skin, such as boosting the intensity of the red channel in subsurface scattering.
@@ -479,7 +480,7 @@
 			If [code]true[/code], triplanar mapping for [code]UV2[/code] is calculated in world space rather than object local space. See also [member uv2_triplanar].
 		</member>
 		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. If [code]false[/code], vertex colors are considered to be stored in linear color space and are rendered as-is. See also [member albedo_texture_force_srgb].
+			If [code]true[/code], vertex colors are considered to be stored in nonlinear sRGB encoding and are converted to linear encoding during rendering. If [code]false[/code], vertex colors are considered to be stored in linear encoding and are rendered as-is. See also [member albedo_texture_force_srgb].
 			[b]Note:[/b] Only effective when using the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -705,7 +706,7 @@
 			Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh.
 		</constant>
 		<constant name="FLAG_SRGB_VERTEX_COLOR" value="2" enum="Flags">
-			Vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. See also [member vertex_color_is_srgb].
+			Vertex colors are considered to be stored in nonlinear sRGB encoding and are converted to linear encoding during rendering. See also [member vertex_color_is_srgb].
 			[b]Note:[/b] Only effective when using the Forward+ and Mobile rendering methods.
 		</constant>
 		<constant name="FLAG_USE_POINT_SIZE" value="3" enum="Flags">
@@ -736,7 +737,7 @@
 			Use [code]UV2[/code] coordinates to look up from the [member emission_texture].
 		</constant>
 		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="12" enum="Flags">
-			Forces the shader to convert albedo from sRGB space to linear space. See also [member albedo_texture_force_srgb].
+			Forces the shader to convert albedo from nonlinear sRGB encoding to linear encoding. See also [member albedo_texture_force_srgb].
 		</constant>
 		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="13" enum="Flags">
 			Disables receiving shadows from other objects.
@@ -861,7 +862,7 @@
 			Enables stencil operations without a preset.
 		</constant>
 		<constant name="STENCIL_FLAG_READ" value="1" enum="StencilFlags">
-			The material will only be rendered where it passes a stencil comparison with existing stencil buffer values. See [enum StencilCompare].
+			The material will only be rendered where it passes a stencil comparison with existing stencil buffer values.
 		</constant>
 		<constant name="STENCIL_FLAG_WRITE" value="2" enum="StencilFlags">
 			The material will write the reference value to the stencil buffer where it passes the depth test.

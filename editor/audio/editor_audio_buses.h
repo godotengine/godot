@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
@@ -42,11 +42,12 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/texture_progress_bar.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
 class EditorAudioBuses;
 class EditorFileDialog;
+class HBoxContainer;
+class Timer;
 
 class EditorAudioBus : public PanelContainer {
 	GDCLASS(EditorAudioBus, PanelContainer);
@@ -147,11 +148,12 @@ protected:
 	void _notification(int p_what);
 };
 
-class EditorAudioBuses : public VBoxContainer {
-	GDCLASS(EditorAudioBuses, VBoxContainer);
+class EditorAudioBuses : public EditorDock {
+	GDCLASS(EditorAudioBuses, EditorDock);
 
 	HBoxContainer *top_hb = nullptr;
 
+	MarginContainer *bus_mc = nullptr;
 	ScrollContainer *bus_scroll = nullptr;
 	HBoxContainer *bus_hb = nullptr;
 
@@ -168,6 +170,11 @@ class EditorAudioBuses : public VBoxContainer {
 	Timer *save_timer = nullptr;
 	String edited_path;
 
+	bool floating = false;
+
+	void _update_file_label();
+	void _update_file_label_size();
+
 	void _rebuild_buses();
 	void _update_bus(int p_index);
 	void _update_sends();
@@ -181,6 +188,7 @@ class EditorAudioBuses : public VBoxContainer {
 	void _drop_at_index(int p_bus, int p_index);
 
 	void _server_save();
+	void _file_moved(const String &p_old_path, const String &p_new_path);
 
 	void _select_layout();
 	void _load_layout();
@@ -196,6 +204,8 @@ class EditorAudioBuses : public VBoxContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
 
 public:
 	void open_layout(const String &p_path);

@@ -32,9 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
+#include "core/os/main_loop.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "thirdparty/misc/polypartition.h"
 
 #define PADDING_REF_SIZE 1024.0
@@ -372,7 +373,7 @@ PrimitiveMesh::PrimitiveMesh() {
 
 PrimitiveMesh::~PrimitiveMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(mesh);
+	RenderingServer::get_singleton()->free_rid(mesh);
 
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 	ProjectSettings *project_settings = ProjectSettings::get_singleton();
@@ -3226,8 +3227,9 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		TS->shaped_text_clear(text_rid);
 		TS->shaped_text_set_direction(text_rid, text_direction);
 
-		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
+		const String &lang = language.is_empty() ? _get_locale() : language;
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, lang) : xl_text;
+		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), lang);
 
 		TypedArray<Vector3i> stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
@@ -3685,11 +3687,8 @@ void TextMesh::_bind_methods() {
 void TextMesh::_notification(int p_what) {
 	switch (p_what) {
 		case MainLoop::NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = tr(text);
-			if (new_text == xl_text) {
-				return; // Nothing new.
-			}
-			xl_text = new_text;
+			// Language update might change the appearance of some characters.
+			xl_text = tr(text);
 			dirty_text = true;
 			request_update();
 		} break;
@@ -3952,16 +3951,16 @@ TextServer::StructuredTextParser TextMesh::get_structured_text_bidi_override() c
 	return st_parser;
 }
 
-void TextMesh::set_structured_text_bidi_override_options(Array p_args) {
+void TextMesh::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args != p_args) {
-		st_args = p_args;
+		st_args = Array(p_args);
 		dirty_text = true;
 		request_update();
 	}
 }
 
 Array TextMesh::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void TextMesh::set_uppercase(bool p_uppercase) {

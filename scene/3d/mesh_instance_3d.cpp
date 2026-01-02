@@ -42,7 +42,7 @@
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MeshInstance3D::_navmesh_source_geometry_parser;
@@ -342,6 +342,13 @@ void MeshInstance3D::create_multiple_convex_collisions(const Ref<MeshConvexDecom
 void MeshInstance3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+#ifndef DISABLE_DEPRECATED
+			if (upgrading_skeleton_compat) {
+				if (skeleton_path.is_empty() && Object::cast_to<Skeleton3D>(get_parent())) {
+					skeleton_path = NodePath("..");
+				}
+			}
+#endif
 			_resolve_skeleton_path();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -925,6 +932,12 @@ void MeshInstance3D::_bind_methods() {
 }
 
 MeshInstance3D::MeshInstance3D() {
+	_define_ancestry(AncestralClass::MESH_INSTANCE_3D);
+#ifndef DISABLE_DEPRECATED
+	if (use_parent_skeleton_compat) {
+		skeleton_path = NodePath("..");
+	}
+#endif
 }
 
 MeshInstance3D::~MeshInstance3D() {

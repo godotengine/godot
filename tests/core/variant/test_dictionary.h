@@ -136,14 +136,36 @@ TEST_CASE("[Dictionary] get_valid()") {
 	Variant val = map.get_valid(1);
 	CHECK(int(val) == 3);
 }
-TEST_CASE("[Dictionary] get()") {
+
+TEST_CASE("[Dictionary] set(), get(), and get_or_add()") {
 	Dictionary map;
-	map[1] = 3;
+
+	map.set(1, 3);
 	Variant val = map.get(1, -1);
 	CHECK(int(val) == 3);
+
+	map.set(1, 5);
+	val = map.get(1, -1);
+	CHECK(int(val) == 5);
+
+	CHECK(int(map.get_or_add(1, 7)) == 5);
+	CHECK(int(map.get_or_add(2, 7)) == 7);
 }
 
-TEST_CASE("[Dictionary] size(), empty() and clear()") {
+TEST_CASE("[Dictionary] make_read_only() and is_read_only()") {
+	Dictionary map;
+	CHECK_FALSE(map.is_read_only());
+	CHECK(map.set(1, 1));
+
+	map.make_read_only();
+	CHECK(map.is_read_only());
+
+	ERR_PRINT_OFF;
+	CHECK_FALSE(map.set(1, 2));
+	ERR_PRINT_ON;
+}
+
+TEST_CASE("[Dictionary] size(), is_empty() and clear()") {
 	Dictionary map;
 	CHECK(map.size() == 0);
 	CHECK(map.is_empty());
@@ -180,6 +202,38 @@ TEST_CASE("[Dictionary] keys() and values()") {
 	CHECK(int(values[0]) == 3);
 }
 
+TEST_CASE("[Dictionary] merge() and merged()") {
+	Dictionary d1 = {
+		{ "key1", 1 },
+		{ "key2", 2 },
+	};
+	Dictionary d2 = {
+		{ "key2", 200 },
+		{ "key3", 300 },
+	};
+	Dictionary expected_no_overwrite = {
+		{ "key1", 1 },
+		{ "key2", 2 },
+		{ "key3", 300 },
+	};
+	Dictionary expected_overwrite = {
+		{ "key1", 1 },
+		{ "key2", 200 },
+		{ "key3", 300 },
+	};
+
+	Dictionary d_test = d1.duplicate();
+	d_test.merge(d2, false);
+	CHECK_EQ(d_test, expected_no_overwrite);
+
+	d_test = d1.duplicate();
+	d_test.merge(d2, true);
+	CHECK_EQ(d_test, expected_overwrite);
+
+	CHECK_EQ(d1.merged(d2, false), expected_no_overwrite);
+	CHECK_EQ(d1.merged(d2, true), expected_overwrite);
+}
+
 TEST_CASE("[Dictionary] Duplicate dictionary") {
 	// d = {1: {1: 1}, {2: 2}: [2], [3]: 3}
 	Dictionary k2 = { { 2, 2 } };
@@ -196,6 +250,11 @@ TEST_CASE("[Dictionary] Duplicate dictionary") {
 	CHECK_MESSAGE(Dictionary(deep_d[1]).id() != Dictionary(d[1]).id(), "Should clone nested dictionary");
 	CHECK_MESSAGE(Array(deep_d[k2]).id() != Array(d[k2]).id(), "Should clone nested array");
 	CHECK_EQ(deep_d, d);
+
+	// Check that duplicate_deep matches duplicate(true)
+	Dictionary deep_d2 = d.duplicate_deep();
+	CHECK_EQ(deep_d, deep_d2);
+
 	deep_d[0] = 0;
 	CHECK_NE(deep_d, d);
 	deep_d.erase(0);
@@ -539,6 +598,52 @@ TEST_CASE("[Dictionary] Order and find") {
 	CHECK_EQ(d.find_key("does not exist"), Variant());
 }
 
+TEST_CASE("[Dictionary] sort()") {
+	Dictionary d;
+	d[3] = 3;
+	d[2] = 2;
+	d[4] = 4;
+	d[1] = 1;
+
+	Array expected_unsorted = { 3, 2, 4, 1 };
+	CHECK_EQ(d.keys(), expected_unsorted);
+
+	d.sort();
+	Array expected_sorted = { 1, 2, 3, 4 };
+	CHECK_EQ(d.keys(), expected_sorted);
+
+	Dictionary d_str;
+	d_str["b"] = 2;
+	d_str["c"] = 3;
+	d_str["a"] = 1;
+
+	d_str.sort();
+	Array expected_str_sorted = { "a", "b", "c" };
+	CHECK_EQ(d_str.keys(), expected_str_sorted);
+}
+
+TEST_CASE("[Dictionary] assign()") {
+	Dictionary untyped;
+	untyped["key1"] = "value";
+	CHECK(untyped.size() == 1);
+
+	Dictionary typed;
+	typed.set_typed(Variant::STRING, StringName(), Variant(), Variant::STRING, StringName(), Variant());
+	typed.assign(untyped);
+	CHECK(typed.size() == 1);
+	typed["key2"] = "value";
+
+	untyped.assign(typed);
+	CHECK(untyped.size() == 2);
+	untyped["key3"] = 5;
+	CHECK(untyped.size() == 3);
+
+	ERR_PRINT_OFF;
+	typed.assign(untyped);
+	ERR_PRINT_ON;
+	CHECK(typed.size() == 2);
+}
+
 TEST_CASE("[Dictionary] Typed copying") {
 	TypedDictionary<int, int> d1;
 	d1[0] = 1;
@@ -574,6 +679,31 @@ TEST_CASE("[Dictionary] Typed copying") {
 	d4.clear();
 	d5.clear();
 	d6.clear();
+}
+
+TEST_CASE("[Dictionary] Type checks/comparisons") {
+	Dictionary d1;
+	CHECK_FALSE(d1.is_typed());
+	CHECK_FALSE(d1.is_typed_key());
+	CHECK_FALSE(d1.is_typed_value());
+
+	d1.set_typed(Variant::STRING, StringName(), Variant(), Variant::OBJECT, "Node", Variant());
+	CHECK(d1.is_typed());
+	CHECK(d1.is_typed_key());
+	CHECK(d1.is_typed_value());
+	CHECK_EQ(d1.get_typed_key_builtin(), Variant::STRING);
+	CHECK_EQ(d1.get_typed_value_builtin(), Variant::OBJECT);
+	CHECK_EQ(d1.get_typed_value_class_name(), "Node");
+
+	Dictionary d2;
+	CHECK_FALSE(d1.is_same_typed(d2));
+	CHECK_FALSE(d1.is_same_typed_key(d2));
+	CHECK_FALSE(d1.is_same_typed_value(d2));
+
+	d2.set_typed(Variant::STRING, StringName(), Variant(), Variant::STRING, StringName(), Variant());
+	CHECK_FALSE(d1.is_same_typed(d2));
+	CHECK(d1.is_same_typed_key(d2));
+	CHECK_FALSE(d1.is_same_typed_value(d2));
 }
 
 TEST_CASE("[Dictionary] Iteration") {

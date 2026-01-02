@@ -34,7 +34,8 @@
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
-#include "editor/docks/node_dock.h"
+#include "editor/docks/groups_dock.h"
+#include "editor/docks/signals_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -133,10 +134,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->create_action(TTR("Unlock Node"));
 		undo_redo->add_do_method(n, "remove_meta", "_edit_lock_");
 		undo_redo->add_undo_method(n, "set_meta", "_edit_lock_", true);
-		undo_redo->add_do_method(this, "_update_tree");
-		undo_redo->add_undo_method(this, "_update_tree");
 		undo_redo->add_do_method(this, "emit_signal", "node_changed");
 		undo_redo->add_undo_method(this, "emit_signal", "node_changed");
+		undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+		undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 		if (n->is_class("AnimationMixer")) {
@@ -150,10 +151,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
 			undo_redo->add_do_method(n, "remove_meta", "_edit_group_");
 			undo_redo->add_undo_method(n, "set_meta", "_edit_group_", true);
-			undo_redo->add_do_method(this, "_update_tree");
-			undo_redo->add_undo_method(this, "_update_tree");
 			undo_redo->add_do_method(this, "emit_signal", "node_changed");
 			undo_redo->add_undo_method(this, "emit_signal", "node_changed");
+			undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+			undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
@@ -194,16 +195,14 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 		set_selected(n);
 
-		EditorDockManager::get_singleton()->focus_dock(NodeDock::get_singleton());
-		NodeDock::get_singleton()->show_connections();
+		EditorDockManager::get_singleton()->focus_dock(SignalsDock::get_singleton());
 	} else if (p_id == BUTTON_GROUPS) {
 		editor_selection->clear();
 		editor_selection->add_node(n);
 
 		set_selected(n);
 
-		EditorDockManager::get_singleton()->focus_dock(NodeDock::get_singleton());
-		NodeDock::get_singleton()->show_groups();
+		EditorDockManager::get_singleton()->focus_dock(GroupsDock::get_singleton());
 	} else if (p_id == BUTTON_UNIQUE) {
 		bool ask_before_revoking_unique_name = EDITOR_GET("docks/scene_tree/ask_before_revoking_unique_name");
 		revoke_node = n;
@@ -323,8 +322,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			item = tree->get_root();
 			if (!item) {
 				item = tree->create_item(nullptr);
-				index = 0;
 			}
+			index = 0;
 		} else {
 			index = p_node->get_index(false);
 			item = tree->create_item(p_parent, index);
@@ -334,6 +333,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 		I->value.index = index;
 		is_new = true;
 	}
+
+	EditorNode::get_singleton()->update_resource_count(p_node);
 
 	if (!(p_force || I->value.dirty)) {
 		// Nothing to do.
@@ -404,7 +405,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		}
 	}
 
-	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node, "Node");
+	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node);
 	p_item->set_icon(0, icon);
 	p_item->set_metadata(0, p_node->get_path());
 
@@ -670,7 +671,7 @@ void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 			p_item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 		}
 		tooltip += String("\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path());
-	} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
+	} else if (p_node != get_scene_node() && p_node->is_instance() && can_open_instance) {
 		if (p_item->get_button_by_id(0, BUTTON_SUBSCENE) == -1) {
 			p_item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 		}
@@ -706,7 +707,12 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 		return;
 	}
 
-	TreeItem *item = _find(tree->get_root(), p_node->get_path());
+	TreeItem *item;
+	if (I->value.item && I->value.item->get_metadata(0) == p_node->get_path()) {
+		item = I->value.item;
+	} else {
+		item = _find(tree->get_root(), p_node->get_path());
+	}
 
 	if (!item) {
 		return;
@@ -765,20 +771,24 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 
 void SceneTreeEditor::_move_node_children(HashMap<Node *, CachedNode>::Iterator &p_I) {
 	TreeItem *item = p_I->value.item;
+	TreeItem *previous_item = nullptr;
 	Node *node = p_I->key;
 	int cc = node->get_child_count(false);
 
 	for (int i = 0; i < cc; i++) {
 		HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(node->get_child(i, false));
 		if (CI) {
-			_move_node_item(item, CI);
+			_move_node_item(item, CI, previous_item);
+			previous_item = CI->value.item;
+		} else {
+			previous_item = nullptr;
 		}
 	}
 
 	p_I->value.has_moved_children = false;
 }
 
-void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I) {
+void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I, TreeItem *p_correct_prev) {
 	if (!p_parent) {
 		return;
 	}
@@ -801,13 +811,19 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 	}
 
 	if (p_I->value.index != current_node_index) {
-		// If we just re-parented we know our index.
-		if (current_item_index == -1) {
-			current_item_index = item->get_index();
+		bool already_in_correct_location;
+		if (current_item_index >= 0) {
+			// If we just re-parented we know our index.
+			already_in_correct_location = current_item_index == current_node_index;
+		} else if (p_correct_prev) {
+			// It's cheaper to check if we're set up correctly by checking via correct_prev if we can
+			already_in_correct_location = item->get_prev() == p_correct_prev;
+		} else {
+			already_in_correct_location = item->get_index() == current_node_index;
 		}
 
 		// Are we already in the right place?
-		if (current_node_index == current_item_index) {
+		if (already_in_correct_location) {
 			p_I->value.index = current_node_index;
 			return;
 		}
@@ -815,11 +831,14 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 		// Are we the first node?
 		if (current_node_index == 0) {
 			// There has to be at least 1 other node, otherwise we would not have gotten here.
-			TreeItem *neighbor_item = p_parent->get_child(0);
+			TreeItem *neighbor_item = p_parent->get_first_child();
 			item->move_before(neighbor_item);
 		} else {
-			TreeItem *neighbor_item = p_parent->get_child(CLAMP(current_node_index - 1, 0, p_parent->get_child_count() - 1));
-			item->move_after(neighbor_item);
+			TreeItem *prev_item = p_correct_prev;
+			if (!prev_item) {
+				prev_item = p_parent->get_child(CLAMP(current_node_index - 1, 0, p_parent->get_child_count() - 1));
+			}
+			item->move_after(prev_item);
 		}
 
 		p_I->value.index = current_node_index;
@@ -879,7 +898,6 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 	if (p_node != get_scene_node() && !get_scene_node()->is_ancestor_of(p_node)) {
 		return;
 	}
-
 	node_cache.remove(p_node);
 	_update_if_clean();
 }
@@ -908,17 +926,17 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		return;
 	}
 
-	Node *scene_node = get_scene_node();
-
-	if (node_cache.current_scene_node != scene_node) {
-		_reset();
-		marked.clear();
-		node_cache.current_scene_node = scene_node;
-		node_cache.force_update = true;
-	}
-
 	if (!update_when_invisible && !is_visible_in_tree()) {
 		return;
+	}
+
+	Node *scene_node = get_scene_node();
+	const ObjectID scene_id = scene_node ? scene_node->get_instance_id() : ObjectID();
+	if (node_cache.current_scene_id != scene_id) {
+		_reset();
+		marked.clear();
+		node_cache.current_scene_id = scene_id;
+		node_cache.force_update = true;
 	}
 
 	if (tree->is_editing()) {
@@ -929,7 +947,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	last_hash = hash_djb2_one_64(0);
 
-	if (node_cache.current_scene_node) {
+	if (node_cache.current_scene_id.is_valid()) {
 		// Handle pinning/unpinning the animation player only do this once per iteration.
 		Node *pinned_node = AnimationPlayerEditor::get_singleton()->get_editing_node();
 		// If pinned state changed, update the currently pinned node.
@@ -950,7 +968,6 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 			}
 			node_cache.current_pinned_node = pinned_node;
 		}
-
 		_update_node_subtree(get_scene_node(), nullptr, node_cache.force_update);
 		_compute_hash(get_scene_node(), last_hash);
 
@@ -1207,7 +1224,6 @@ void SceneTreeEditor::_compute_hash(Node *p_node, uint64_t &hash) {
 void SceneTreeEditor::_reset() {
 	// Stop any waiting change to tooltip.
 	update_node_tooltip_delay->stop();
-
 	tree->clear();
 	node_cache.clear();
 }
@@ -1312,9 +1328,15 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	}
 
 	// Emitted "selected" in _selected_changed() when select single node, so select multiple node emit "changed".
-	if (editor_selection->get_selected_nodes().size() > 1) {
-		emit_signal(SNAME("node_changed"));
+	if (editor_selection->get_selection().size() > 1 && !pending_selection_update) {
+		pending_selection_update = true;
+		callable_mp(this, &SceneTreeEditor::_process_selection_update).call_deferred();
 	}
+}
+
+void SceneTreeEditor::_process_selection_update() {
+	pending_selection_update = false;
+	emit_signal(SNAME("node_changed"));
 }
 
 void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
@@ -1351,6 +1373,8 @@ void SceneTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			// Wait for the node to be inspected before triggering the unfolding.
+			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000 * 2);
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 			[[fallthrough]];
 		}
@@ -1433,7 +1457,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
 			TreeItem *node = item->get_parent();
-			while (node && node != tree->get_root()) {
+			while (node) {
 				node->set_collapsed(false);
 				node = node->get_parent();
 			}
@@ -1521,7 +1545,7 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace,
 	// which would make it more difficult to get the node via `get_node()`.
 	new_name = new_name.strip_edges();
-	if (new_name.is_empty() && p_node->get_owner() != nullptr && !p_node->get_scene_file_path().is_empty()) {
+	if (new_name.is_empty() && p_node->get_owner() != nullptr && p_node->is_instance()) {
 		// If name is empty and node is root of an instance, revert to the original name.
 		const Ref<PackedScene> node_scene = ResourceLoader::load(p_node->get_scene_file_path());
 		if (node_scene.is_valid()) {
@@ -1717,11 +1741,15 @@ void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {
 	_update_tree();
 }
 
-void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
-	valid_types = p_valid;
+void SceneTreeEditor::clear_cache() {
 	node_cache.force_update = true;
 	callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 	tree_dirty = true;
+}
+
+void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
+	valid_types = p_valid;
+	clear_cache();
 }
 
 void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {
@@ -1861,6 +1889,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	Dictionary drag_data;
 	drag_data["type"] = "nodes";
 	drag_data["nodes"] = objs;
+	drag_data["scene_root"] = get_tree()->get_edited_scene_root();
 
 	tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
 	emit_signal(SNAME("nodes_dragged"));
@@ -1879,6 +1908,11 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 	Dictionary d = p_data;
 	if (!d.has("type")) {
+		return false;
+	}
+
+	Object *data_root = d.get("scene_root", (Object *)nullptr);
+	if (data_root && get_tree()->get_edited_scene_root() != data_root) {
 		return false;
 	}
 
@@ -1955,7 +1989,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		for (int i = 0; i < nodes.size(); i++) {
 			Node *n = get_node(nodes[i]);
 			// Nodes from an instantiated scene can't be rearranged.
-			if (n && n->get_owner() && n->get_owner() != get_scene_node() && !n->get_owner()->get_scene_file_path().is_empty()) {
+			if (n && n->get_owner() && n->get_owner() != get_scene_node() && n->get_owner()->is_instance()) {
 				return false;
 			}
 		}
@@ -2221,9 +2255,8 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 	content->move_child(allowed_types_hbox, 0);
 
 	{
-		Label *label = memnew(Label);
+		Label *label = memnew(Label(TTRC("Allowed:")));
 		allowed_types_hbox->add_child(label);
-		label->set_text(TTR("Allowed:"));
 	}
 
 	HFlowContainer *hflow = memnew(HFlowContainer);
@@ -2274,7 +2307,7 @@ void SceneTreeDialog::_notification(int p_what) {
 				tree->update_tree();
 
 				// Select the search bar by default.
-				callable_mp((Control *)filter, &Control::grab_focus).call_deferred();
+				callable_mp((Control *)filter, &Control::grab_focus).call_deferred(false);
 			}
 		} break;
 
@@ -2338,7 +2371,7 @@ void SceneTreeDialog::_bind_methods() {
 }
 
 SceneTreeDialog::SceneTreeDialog() {
-	set_title(TTR("Select a Node"));
+	set_title(TTRC("Select a Node"));
 	content = memnew(VBoxContainer);
 	add_child(content);
 
@@ -2347,7 +2380,7 @@ SceneTreeDialog::SceneTreeDialog() {
 
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	filter->set_placeholder(TTR("Filter Nodes"));
+	filter->set_placeholder(TTRC("Filter Nodes"));
 	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect(SceneStringName(text_changed), callable_mp(this, &SceneTreeDialog::_filter_changed));
@@ -2359,7 +2392,7 @@ SceneTreeDialog::SceneTreeDialog() {
 
 	// Add 'Show All' button to HBoxContainer next to the filter, visible only when valid_types is defined.
 	show_all_nodes = memnew(CheckButton);
-	show_all_nodes->set_text(TTR("Show All"));
+	show_all_nodes->set_text(TTRC("Show All"));
 	show_all_nodes->connect(SceneStringName(toggled), callable_mp(this, &SceneTreeDialog::_show_all_nodes_changed));
 	show_all_nodes->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 	show_all_nodes->hide();
@@ -2437,6 +2470,9 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 
 	HashMap<Node *, CachedNode>::Iterator I = cache.find(p_node);
 	if (I) {
+		if (editor->is_scene_tree_dock) {
+			EditorNode::get_singleton()->update_resource_count(I->key, true);
+		}
 		if (p_recursive) {
 			int cc = p_node->get_child_count(false);
 
@@ -2445,7 +2481,7 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 			}
 		}
 
-		if (current_scene_node != p_node) {
+		if (current_scene_id != p_node->get_instance_id()) {
 			// Do not remove from the Tree control here. See delete_pending below.
 			I->value.item->deselect(0);
 			I->value.delete_serial = delete_serial;

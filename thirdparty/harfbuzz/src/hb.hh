@@ -89,7 +89,6 @@
 #pragma GCC diagnostic error   "-Wstring-conversion"
 #pragma GCC diagnostic error   "-Wswitch-enum"
 #pragma GCC diagnostic error   "-Wtautological-overlap-compare"
-#pragma GCC diagnostic error   "-Wuninitialized"
 #pragma GCC diagnostic error   "-Wunneeded-internal-declaration"
 #pragma GCC diagnostic error   "-Wunused"
 #pragma GCC diagnostic error   "-Wunused-local-typedefs"
@@ -110,11 +109,21 @@
 #pragma GCC diagnostic warning "-Wformat-signedness"
 #pragma GCC diagnostic warning "-Wignored-pragma-optimize"
 #pragma GCC diagnostic warning "-Wlogical-op"
-#pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 #pragma GCC diagnostic warning "-Wmissing-format-attribute"
+#pragma GCC diagnostic warning "-Wpessimizing-move"
 #pragma GCC diagnostic warning "-Wundef"
 #pragma GCC diagnostic warning "-Wunsafe-loop-optimizations"
 #pragma GCC diagnostic warning "-Wunused-but-set-variable"
+#ifdef __clang__
+// The following are too buggy on gcc
+// https://github.com/harfbuzz/harfbuzz/issues/5589
+// https://github.com/harfbuzz/harfbuzz/pull/5367
+#pragma GCC diagnostic warning "-Wmaybe-uninitialized"
+#pragma GCC diagnostic warning "-Wuninitialized"
+#else
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#endif
 #endif
 
 /* Ignored currently, but should be fixed at some point. */
@@ -136,6 +145,7 @@
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wpacked" // Erratic impl in clang
 #pragma GCC diagnostic ignored "-Wrange-loop-analysis" // https://github.com/harfbuzz/harfbuzz/issues/2834
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
@@ -239,6 +249,8 @@
 // clang defines it so no need.
 #ifdef __has_builtin
 #define hb_has_builtin __has_builtin
+#elif defined(_MSC_VER)
+#define hb_has_builtin(x) 0
 #else
 #define hb_has_builtin(x) ((defined(__GNUC__) && __GNUC__ >= 5))
 #endif
@@ -556,5 +568,14 @@ extern "C" void  hb_free_impl(void *ptr);
 #include "hb-array.hh"	// Requires: hb-algs hb-iter hb-null
 #include "hb-vector.hh"	// Requires: hb-array hb-null
 #include "hb-object.hh"	// Requires: hb-atomic hb-mutex hb-vector
+
+
+/* Our src/test-*.cc use hb_assert(), such that it's not compiled out under NDEBUG.
+ * https://github.com/harfbuzz/harfbuzz/issues/5418 */
+#define hb_always_assert(x) \
+	HB_STMT_START { \
+	  if (!(x)) { fprintf(stderr, "Assertion failed: %s, at %s:%d\n", #x, __FILE__, __LINE__); abort(); } \
+	} HB_STMT_END
+
 
 #endif /* HB_HH */

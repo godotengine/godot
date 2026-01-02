@@ -41,6 +41,8 @@
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/io/xml_parser.h"
+#include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #ifdef TOOLS_ENABLED
@@ -49,7 +51,7 @@
 #endif
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include <dlfcn.h>
 #include <sys/system_properties.h>
@@ -72,6 +74,14 @@ String _remove_symlink(const String &dir) {
 	chdir(current_dir_name);
 	return dir_without_symlink;
 }
+
+#ifdef TOOLS_ENABLED
+_FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
+	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
+	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
+	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+}
+#endif
 
 class AndroidLogger : public Logger {
 public:
@@ -346,7 +356,7 @@ void OS_Android::main_loop_begin() {
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+		GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 		if (game_view_plugin != nullptr) {
 			game_view_plugin->connect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
 		}
@@ -355,6 +365,8 @@ void OS_Android::main_loop_begin() {
 }
 
 bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_Android::main_loop_iterate");
 	if (!main_loop) {
 		return false;
 	}
@@ -376,7 +388,7 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 void OS_Android::main_loop_end() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+		GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 		if (game_view_plugin != nullptr) {
 			game_view_plugin->disconnect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
 		}
@@ -602,7 +614,7 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 		font_name = font_aliases[font_name];
 	}
 	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
-	String lang_prefix = p_locale.split("_")[0];
+	String lang_prefix = p_locale.get_slicec('_', 0);
 	Vector<String> ret;
 	int best_score = 0;
 	for (const List<FontInfo>::Element *E = fonts.front(); E; E = E->next()) {
@@ -866,7 +878,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	}
 #endif
 
-	if (godot_java->has_feature(p_feature)) {
+	if (godot_java->check_internal_feature_support(p_feature)) {
 		return true;
 	}
 

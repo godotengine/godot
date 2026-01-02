@@ -6,6 +6,7 @@
 	<description>
 		Object that holds the project-independent editor settings. These settings are generally visible in the [b]Editor &gt; Editor Settings[/b] menu.
 		Property names use slash delimiters to distinguish sections. Setting values can be of any [Variant] type. It's recommended to use [code]snake_case[/code] for editor settings to be consistent with the Godot editor itself.
+		Editor settings are saved automatically when changed.
 		Accessing the settings can be done using the following methods, such as:
 		[codeblocks]
 		[gdscript]
@@ -69,6 +70,33 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="add_shortcut">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="shortcut" type="Shortcut" />
+			<description>
+				Adds a [param shortcut] whose path is specified by [param path].
+				The [param path] determines how the shortcut is organized and displayed in the editor's shortcut settings. The path format affects the display as follows:
+				- [code]"name"[/code] (no slash): Creates a category named [code]name[/code] with the shortcut displayed as [code]name[/code].
+				- [code]"category/name"[/code] (single slash): Displays as [code]name[/code] in the [code]category[/code] section.
+				- [code]"category/name/extra"[/code] (multiple slashes): Extra path components are ignored, so this behaves the same as [code]"category/name"[/code].
+				[b]Note:[/b] Shortcuts are only saved to the editor settings if they differ from their original/default state. This means empty shortcuts that were originally empty will not persist between editor sessions and must be re-added. If a shortcut with the same [param path] already exists, this method will update it with the new [param shortcut] instead of creating a duplicate.
+				[codeblock]
+				# Add a custom shortcut for a plugin action.
+				var my_shortcut = Shortcut.new()
+				var input_event = InputEventKey.new()
+				input_event.keycode = KEY_F5
+				input_event.ctrl_pressed = true
+				my_shortcut.events.append(input_event)
+
+				# This will appear under the "My Plugin" category as "Reload Data".
+				EditorInterface.get_editor_settings().add_shortcut("my_plugin/reload_data", my_shortcut)
+
+				# This will appear under the "Test Action" category as "Test Action".
+				EditorInterface.get_editor_settings().add_shortcut("test_action", my_shortcut)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="check_changed_settings_in_group" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="setting_prefix" type="String" />
@@ -117,6 +145,19 @@
 				Returns the value of the setting specified by [param name]. This is equivalent to using [method Object.get] on the EditorSettings instance.
 			</description>
 		</method>
+		<method name="get_shortcut" qualifiers="const">
+			<return type="Shortcut" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the shortcut specified by [param path]. Tries to find a built-in action if no shortcut with the provided path is found in the shortcut list. If found, adds it to the list and returns it, otherwise returns [code]null[/code].
+			</description>
+		</method>
+		<method name="get_shortcut_list">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of stored shortcut paths.
+			</description>
+		</method>
 		<method name="has_setting" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -124,11 +165,33 @@
 				Returns [code]true[/code] if the setting specified by [param name] exists, [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="has_shortcut" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the shortcut specified by [param path] exists, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="is_shortcut" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="event" type="InputEvent" />
+			<description>
+				Returns [code]true[/code] if the shortcut specified by [param path] matches the event specified by [param event], [code]false[/code] otherwise.
+			</description>
+		</method>
 		<method name="mark_setting_changed">
 			<return type="void" />
 			<param index="0" name="setting" type="String" />
 			<description>
 				Marks the passed editor setting as being changed, see [method get_changed_settings]. Only settings which exist (see [method has_setting]) will be accepted.
+			</description>
+		</method>
+		<method name="remove_shortcut">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Removes the shortcut specified by [param path].
 			</description>
 		</method>
 		<method name="set_builtin_action_override">
@@ -407,6 +470,9 @@
 		<member name="editors/3d/navigation/zoom_style" type="int" setter="" getter="">
 			The mouse cursor movement direction to use when zooming by moving the mouse. This does not affect zooming with the mouse wheel.
 		</member>
+		<member name="editors/3d/navigation_feel/angle_snap_threshold" type="float" setter="" getter="">
+			The angle threshold for snapping camera rotation to 45-degree angles while orbiting with [kbd]Alt[/kbd] held.
+		</member>
 		<member name="editors/3d/navigation_feel/orbit_inertia" type="float" setter="" getter="">
 			The inertia to use when orbiting in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>
@@ -451,6 +517,9 @@
 		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/gridmap_grid" type="Color" setter="" getter="">
 			The 3D editor gizmo color for the [GridMap] grid.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/ik_chain" type="Color" setter="" getter="">
+			The 3D editor gizmo color for the [IKModifier3D] guides.
 		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/instantiated" type="Color" setter="" getter="">
 			The color override to use for 3D editor gizmos if the [Node3D] in question is part of an instantiated scene file (from the perspective of the current scene).
@@ -547,6 +616,10 @@
 		<member name="editors/animation/default_fps_mode" type="int" setter="" getter="">
 			Default step mode for [AnimationPlayer] (seconds or FPS). The option is remembered locally for a scene and this option only determines the default value when scene doesn't have local state yet.
 		</member>
+		<member name="editors/animation/insert_at_current_time" type="bool" setter="" getter="">
+			If [code]true[/code], animation keys and markers are inserted at the current time in the animation.
+			If [code]false[/code], they are inserted at the mouse cursor's position.
+		</member>
 		<member name="editors/animation/onion_layers_future_color" type="Color" setter="" getter="">
 			The modulate color to use for "future" frames displayed in the animation editor's onion skinning feature.
 		</member>
@@ -560,9 +633,6 @@
 		<member name="editors/bone_mapper/handle_colors/set" type="Color" setter="" getter="">
 		</member>
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
-		</member>
-		<member name="editors/grid_map/palette_min_width" type="int" setter="" getter="">
-			Minimum width of GridMap's mesh palette side panel.
 		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
 			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
@@ -783,6 +853,10 @@
 			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
 			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
 		</member>
+		<member name="filesystem/on_save/warn_on_saving_large_text_resources" type="bool" setter="" getter="">
+			If [code]true[/code], displays a warning toast message when saving a text-based scene or resource that is larger than 500 KiB on disk. This is typically caused by binary subresources being embedded as text, which results in slow and inefficient conversion to text. This in turn impacts scene saving and loading times.
+			This should usually be resolved by moving the embedded binary subresource to its own binary resource file ([code].res[/code] extension instead of [code].tres[/code]). This is the preferred approach. Alternatively, the entire scene can be saved with the binary [code].scn[/code] format as opposed to [code].tscn[/code], but this will make it less friendly to version control systems.
+		</member>
 		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
 			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
 		</member>
@@ -793,6 +867,9 @@
 		</member>
 		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
 			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
+		</member>
+		<member name="filesystem/quick_open_dialog/instant_preview" type="bool" setter="" getter="">
+			If [code]true[/code], highlighting a resource will preview it quickly without confirming the selection or closing the dialog.
 		</member>
 		<member name="filesystem/quick_open_dialog/max_fuzzy_misses" type="int" setter="" getter="">
 			The number of missed query characters allowed in a match when fuzzy matching is enabled. For example, with the default value of [code]2[/code], [code]"normal"[/code] would match [code]"narmal"[/code] and [code]"norma"[/code] but not [code]"nor"[/code].
@@ -822,16 +899,20 @@
 			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).
 			- [b]Always Active[/b] ([code]1[/code]): Accessibility support is enabled, and updates to the accessibility information are always processed, regardless of the status of assistive apps.
 			- [b]Disabled[/b] ([code]2[/code]): Accessibility support is fully disabled.
-			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD) do not count as assistive apps. To test your project with these tools, use [b]Always Active[/b].
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD), do not count as assistive apps. To test the editor with these tools, use [b]Always Active[/b].
 		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
-			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
-			- [b]Auto[/b] follows the platform convention: OK first on Windows, KDE, and LXQt, Cancel first on macOS and other Linux desktop environments.
-			- [b]Cancel First[/b] forces the ordering Cancel/OK.
-			- [b]OK First[/b] forces the ordering OK/Cancel.
+			How to position the Cancel and OK buttons in the editor's [AcceptDialog] windows. Different platforms have different conventions for this, which can be overridden through this setting to avoid accidental clicks when using Godot on multiple platforms.
+			- [b]Auto[/b] follows the platform convention: OK first on Windows, KDE, and LXQt; Cancel first on macOS and other Linux desktop environments.
+			- [b]Cancel First[/b] forces the Cancel/OK ordering.
+			- [b]OK First[/b] forces the OK/Cancel ordering.
+			To check if these buttons are swapped at runtime, use [method DisplayServer.get_swap_cancel_ok].
 		</member>
 		<member name="interface/editor/automatically_open_screenshots" type="bool" setter="" getter="">
 			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
+		</member>
+		<member name="interface/editor/bottom_dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks located at the bottom.
 		</member>
 		<member name="interface/editor/code_font" type="String" setter="" getter="">
 			The font to use for the script editor. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
@@ -866,10 +947,13 @@
 			If set to [b]Custom[/b], the scaling value in [member interface/editor/custom_display_scale] will be used.
 		</member>
 		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
-			Tab style of editor docks.
+			Tab style of editor docks, except bottom docks.
+		</member>
+		<member name="interface/editor/dragging_hover_wait_seconds" type="float" setter="" getter="">
+			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
 		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
-			The language to use for the editor interface.
+			The language to use for the editor interface. If set to [b]Auto[/b], the language is automatically determined based on the system locale. See also [method EditorInterface.get_editor_language].
 			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
@@ -919,6 +1003,11 @@
 		<member name="interface/editor/main_font_bold" type="String" setter="" getter="">
 			The font to use for bold text in the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 			[b]Note:[/b] If the provided font is variable, a weight of 700 (bold) will be used.
+		</member>
+		<member name="interface/editor/main_font_custom_opentype_features" type="String" setter="" getter="">
+			List of custom OpenType features to use, if supported by the currently configured main font. Check what OpenType features are supported by your font first.
+			The string should follow the OpenType specification, e.g. [code]ss01,tnum,calt=false[/code]. Microsoft's documentation contains a list of [url=https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist]all registered features[/url].
+			[b]Note:[/b] The default editor main font ([url=https://rsms.me/inter]Inter[/url]) has custom OpenType features in its font file, with [code]ss04[/code] and [code]tnum[/code] enabled and [code]calt[/code] disabled by default. Supported features can be found at its website.
 		</member>
 		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
 			The size of the font in the editor interface.
@@ -1026,6 +1115,9 @@
 		<member name="interface/inspector/horizontal_vector_types_editing" type="bool" setter="" getter="">
 			If [code]true[/code], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Plane], and [Quaternion] properties are shown on a single line in the inspector instead of multiple lines. This is overall more compact, but it can be harder to view and edit large values without expanding the inspector horizontally.
 		</member>
+		<member name="interface/inspector/integer_drag_speed" type="float" setter="" getter="">
+			Base speed for increasing/decreasing integer values by dragging them in the inspector.
+		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
 		</member>
@@ -1055,6 +1147,9 @@
 		</member>
 		<member name="interface/multi_window/restore_windows_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], the floating panel position, size, and screen will be saved on editor exit. On next launch the panels that were floating will be made floating in the saved positions, sizes and screens, if possible.
+		</member>
+		<member name="interface/scene_tabs/auto_select_current_scene_file" type="bool" setter="" getter="">
+			If [code]true[/code], the FileSystem dock will automatically navigate to the currently selected scene tab.
 		</member>
 		<member name="interface/scene_tabs/display_close_button" type="int" setter="" getter="">
 			Controls when the Close (X) button is displayed on scene tabs at the top of the editor.
@@ -1088,6 +1183,9 @@
 		<member name="interface/theme/border_size" type="int" setter="" getter="">
 			The border size to use for interface elements (in pixels).
 		</member>
+		<member name="interface/theme/color_preset" type="String" setter="" getter="">
+			The editor color preset to use.
+		</member>
 		<member name="interface/theme/contrast" type="float" setter="" getter="">
 			The contrast factor to use when deriving the editor theme's base color (see [member interface/theme/base_color]). When using a positive values, the derived colors will be [i]darker[/i] than the base color. This contrast factor can be set to a negative value, which will make the derived colors [i]brighter[/i] than the base color. Negative contrast rates often look better for light themes.
 		</member>
@@ -1099,6 +1197,12 @@
 		</member>
 		<member name="interface/theme/draw_extra_borders" type="bool" setter="" getter="">
 			If [code]true[/code], draws additional borders around interactive UI elements in the editor. This is automatically enabled when using the [b]Black (OLED)[/b] theme preset, as this theme preset uses a fully black background.
+		</member>
+		<member name="interface/theme/draw_relationship_lines" type="int" setter="" getter="">
+			What relationship lines to draw in the editor's [Tree]-based GUIs (such as the Scene tree dock).
+			- [b]None[/b] will make it so that no relationship lines are drawn.
+			- [b]Selected Only[/b] will only draw them for selected items.
+			- [b]All[/b] will always draw them for all items.
 		</member>
 		<member name="interface/theme/follow_system_theme" type="bool" setter="" getter="">
 			If [code]true[/code], the editor theme preset will attempt to automatically match the system theme.
@@ -1113,14 +1217,14 @@
 			The saturation to use for editor icons. Higher values result in more vibrant colors.
 			[b]Note:[/b] The default editor icon saturation was increased by 30% in Godot 4.0 and later. To get Godot 3.x's icon saturation back, set [member interface/theme/icon_saturation] to [code]0.77[/code].
 		</member>
-		<member name="interface/theme/preset" type="String" setter="" getter="">
-			The editor theme preset to use.
-		</member>
 		<member name="interface/theme/relationship_line_opacity" type="float" setter="" getter="">
 			The opacity to use when drawing relationship lines in the editor's [Tree]-based GUIs (such as the Scene tree dock).
 		</member>
 		<member name="interface/theme/spacing_preset" type="String" setter="" getter="">
 			The editor theme spacing preset to use. See also [member interface/theme/base_spacing] and [member interface/theme/additional_spacing].
+		</member>
+		<member name="interface/theme/style" type="String" setter="" getter="">
+			The editor theme style to use.
 		</member>
 		<member name="interface/theme/use_system_accent_color" type="bool" setter="" getter="">
 			If [code]true[/code], set accent color based on system settings.
@@ -1135,7 +1239,7 @@
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
 		<member name="interface/touchscreen/enable_touch_optimizations" type="bool" setter="" getter="">
-			If [code]true[/code], increases the scrollbar touch area and enables a larger dragger for split containers to improve usability on touchscreen devices
+			If [code]true[/code], increases the scrollbar touch area, enables a larger dragger for split containers, and increases PopupMenu vertical separation to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
 		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">
@@ -1155,7 +1259,7 @@
 			All update modes will ignore builds with different major versions (e.g. Godot 4 -&gt; Godot 5).
 		</member>
 		<member name="network/connection/network_mode" type="int" setter="" getter="">
-			Determines whether online features are enabled in the editor, such as the Asset Library or update checks. Disabling these online features helps alleviate privacy concerns by preventing the editor from making HTTP requests to the Godot website or third-party platforms hosting assets from the Asset Library.
+			Determines whether online features, such as the Asset Library or update checks, are enabled in the editor. If this is a privacy concern, disabling these online features prevents the editor from making HTTP requests to the Godot website or third-party platforms hosting assets from the Asset Library.
 			Editor plugins and tool scripts are recommended to follow this setting. However, Godot can't prevent them from violating this rule.
 		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
@@ -1173,7 +1277,7 @@
 			[b]Note:[/b] Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.
 		</member>
 		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
-			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.
+			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-bundle.crt]included Mozilla certificate bundle[/url] will be used.
 		</member>
 		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="">
 			If [code]true[/code], enable TLSv1.3 negotiation.
@@ -1183,7 +1287,7 @@
 			The renderer type that will be checked off by default when creating a new project. Accepted strings are "forward_plus", "mobile" or "gl_compatibility".
 		</member>
 		<member name="project_manager/directory_naming_convention" type="int" setter="" getter="">
-			Directory naming convention for the project manager. Options are "No convention" (project name is directory name), "kebab-case" (default), "snake_case", "camelCase", "PascalCase", or "Title Case".
+			Directory naming convention for the project manager. Options are "No Convention" (project name is directory name), "kebab-case" (default), "snake_case", "camelCase", "PascalCase", or "Title Case".
 		</member>
 		<member name="project_manager/sorting_order" type="int" setter="" getter="">
 			The sorting order to use in the project manager. When changing the sorting order in the project manager, this setting is set permanently in the editor settings.
@@ -1353,7 +1457,7 @@
 			If [code]true[/code], the caret will be moved when right-clicking somewhere in the script editor (like when left-clicking or middle-clicking). If [code]false[/code], the caret will only be moved when left-clicking or middle-clicking somewhere.
 		</member>
 		<member name="text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method" type="bool" setter="" getter="">
-			If [code]true[/code], opens the script editor when connecting a signal to an existing script method from the Node dock.
+			If [code]true[/code], opens the script editor when connecting a signal to an existing script method from the Signals dock.
 		</member>
 		<member name="text_editor/behavior/navigation/scroll_past_end_of_file" type="bool" setter="" getter="">
 			If [code]true[/code], allows scrolling past the end of the file.
@@ -1385,7 +1489,7 @@
 			If [code]true[/code], automatically adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] (such as [code]-&gt; void[/code] and [code]: int[/code]) in many situations where it's possible to, including when:
 			- Accepting a suggestion from code autocompletion;
 			- Creating a new script from a template;
-			- Connecting signals from the Node dock;
+			- Connecting signals from the Signals dock;
 			- Creating variables prefixed with [annotation @GDScript.@onready], by dropping nodes from the Scene dock into the script editor while holding [kbd]Ctrl[/kbd].
 		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
@@ -1458,7 +1562,7 @@
 			How many script names can be highlighted at most, if [member text_editor/script_list/script_temperature_enabled] is [code]true[/code]. Scripts older than this value use the default font color.
 		</member>
 		<member name="text_editor/script_list/show_members_overview" type="bool" setter="" getter="">
-			If [code]true[/code], displays an overview of the current script's member variables and functions at the left of the script editor. See also [member text_editor/script_list/sort_members_outline_alphabetically].
+			If [code]true[/code], displays an overview of the current script's member functions at the left of the script editor. See also [member text_editor/script_list/sort_members_outline_alphabetically].
 		</member>
 		<member name="text_editor/script_list/sort_members_outline_alphabetically" type="bool" setter="" getter="">
 			If [code]true[/code], sorts the members outline (located at the left of the script editor) using alphabetical order. If [code]false[/code], sorts the members outline depending on the order in which members are found in the script.
@@ -1614,6 +1718,10 @@
 		</member>
 		<member name="text_editor/theme/highlighting/string_color" type="Color" setter="" getter="">
 			The script editor's color for strings (single-line and multi-line).
+		</member>
+		<member name="text_editor/theme/highlighting/string_placeholder_color" type="Color" setter="" getter="">
+			The script editor's color for string placeholders, such as [code]%s[/code] and [code]{_}[/code]. Refer to the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings documentation[/url] for more details.
+			[b]Note:[/b] Only the default [code]{_}[/code] placeholder patterns are highlighted for the [method String.format] method. Custom patterns still appear as plain strings.
 		</member>
 		<member name="text_editor/theme/highlighting/symbol_color" type="Color" setter="" getter="">
 			The script editor's color for operators ([code]( ) [ ] { } + - * /[/code], ...).

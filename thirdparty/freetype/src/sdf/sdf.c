@@ -4,7 +4,7 @@
  *
  *   FreeType Signed Distance Field renderer module component (body only).
  *
- * Copyright (C) 2020-2024 by
+ * Copyright (C) 2020-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.

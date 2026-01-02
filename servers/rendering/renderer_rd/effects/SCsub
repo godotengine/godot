@@ -15,7 +15,7 @@ thirdparty_dir = "#thirdparty/amd-fsr2/"
 thirdparty_sources = ["ffx_assert.cpp", "ffx_fsr2.cpp"]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_effects.Prepend(CPPEXTPATH=[thirdparty_dir])
+env_effects.Prepend(CPPPATH=[thirdparty_dir])
 
 
 def areatex_builder(target, source, env):

@@ -36,7 +36,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/variant/typed_array.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
 #include "servers/rendering/rendering_device_graph.h"
@@ -151,6 +151,7 @@ private:
 		RDD::BufferID driver_id;
 		uint64_t frame_used = 0;
 		uint32_t fill_amount = 0;
+		uint8_t *data_ptr = nullptr;
 	};
 
 	struct StagingBuffers {
@@ -189,6 +190,7 @@ private:
 	// swapchain semaphore to be signaled (which causes bubbles).
 	bool split_swapchain_into_its_own_cmd_buffer = true;
 	uint32_t gpu_copy_count = 0;
+	uint32_t direct_copy_count = 0;
 	uint32_t copy_bytes_count = 0;
 	uint32_t prev_gpu_copy_count = 0;
 	uint32_t prev_copy_bytes_count = 0;
@@ -206,11 +208,55 @@ private:
 
 public:
 	Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size);
-	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data);
+	/**
+	 * @brief Updates the given GPU buffer at offset and size with the given CPU data.
+	 * @remarks
+	 *	Buffer update is queued into the render graph. The render graph will reorder this operation so
+	 *	that it happens together with other buffer_update() in bulk and before rendering operations
+	 *	(or compute dispatches) that need it.
+	 *
+	 *	This means that the following will not work as intended:
+	 *	@code
+	 *		buffer_update(buffer_a, ..., data_source_x, ...);
+	 *		draw_list_draw(buffer_a);							// render data_render_x.
+	 *		buffer_update(buffer_a, ..., data_source_y, ...);
+	 *		draw_list_draw(buffer_a);							// render data_source_y.
+	 *	@endcode
+	 *
+	 *	Because it will be *reordered* to become the following:
+	 *	@code
+	 *		buffer_update(buffer_a, ..., data_source_x, ...);
+	 *		buffer_update(buffer_a, ..., data_source_y, ...);
+	 *		draw_list_draw(buffer_a); // render data_source_y. <-- Oops! should be data_source_x
+	 *		draw_list_draw(buffer_a); // render data_source_y.
+	 *	@endcode
+	 *
+	 *	When p_skip_check = true, we will perform checks to prevent this situation from happening
+	 *	(buffer_update must not be called while creating a draw or compute list).
+	 *	Do NOT set it to false for user-facing public API because users had trouble understanding
+	 *  this problem when manually creating draw lists.
+	 *
+	 *  Godot internally can set p_skip_check = true when it believes it will only update
+	 *  the buffer once and it needs to be done while a draw/compute list is being created.
+	 *
+	 *  Important: The Vulkan & Metal APIs do not allow issuing copies while inside a RenderPass.
+	 *  We can do it because Godot's render graph will reorder them.
+	 *
+	 * @param p_buffer		GPU buffer to update.
+	 * @param p_offset		Offset in bytes (relative to p_buffer).
+	 * @param p_size		Size in bytes of the data.
+	 * @param p_data		CPU data to transfer to GPU.
+	 *						Pointer can be deleted after buffer_update returns.
+	 * @param p_skip_check	Must always be false for user-facing public API. See remarks.
+	 * @return				Status result of the operation.
+	 */
+	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_skip_check = false);
 	Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size);
 	Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0); // This causes stall, only use to retrieve large buffers for saving.
 	Error buffer_get_data_async(RID p_buffer, const Callable &p_callback, uint32_t p_offset = 0, uint32_t p_size = 0);
 	uint64_t buffer_get_device_address(RID p_buffer);
+	uint8_t *buffer_persistent_map_advance(RID p_buffer);
+	void buffer_flush(RID p_buffer);
 
 private:
 	/******************/
@@ -303,6 +349,7 @@ public:
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
 		bool has_initial_data = false;
+		bool pending_clear = false;
 
 		BitField<RDD::TextureAspectBits> read_aspect_flags = {};
 		BitField<RDD::TextureAspectBits> barrier_aspect_flags = {};
@@ -347,7 +394,6 @@ public:
 	uint32_t texture_upload_region_size_px = 0;
 	uint32_t texture_download_region_size_px = 0;
 
-	Vector<uint8_t> _texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d = false);
 	uint32_t _texture_layer_count(Texture *p_texture) const;
 	uint32_t _texture_alignment(Texture *p_texture) const;
 	Error _texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, RDD::TextureLayout p_dst_layout, bool p_immediate_flush);
@@ -356,6 +402,8 @@ public:
 	void _texture_free_shared_fallback(Texture *p_texture);
 	void _texture_copy_shared(RID p_src_texture_rid, Texture *p_src_texture, RID p_dst_texture_rid, Texture *p_dst_texture);
 	void _texture_create_reinterpret_buffer(Texture *p_texture);
+	void _texture_check_pending_clear(RID p_texture_rid, Texture *p_texture);
+	void _texture_clear(RID p_texture_rid, Texture *p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
 	uint32_t _texture_vrs_method_to_usage_bits() const;
 
 	struct TextureGetDataRequest {
@@ -474,6 +522,7 @@ public:
 		Vector<int32_t> resolve_attachments;
 		Vector<int32_t> preserve_attachments;
 		int32_t depth_attachment = ATTACHMENT_UNUSED;
+		int32_t depth_resolve_attachment = ATTACHMENT_UNUSED;
 	};
 
 	typedef int64_t FramebufferFormatID;
@@ -741,6 +790,7 @@ private:
 
 	struct VertexDescriptionCache {
 		Vector<VertexAttribute> vertex_formats;
+		VertexAttributeBindingsMap bindings;
 		RDD::VertexFormatID driver_id;
 	};
 
@@ -789,6 +839,7 @@ public:
 	enum BufferCreationBits {
 		BUFFER_CREATION_DEVICE_ADDRESS_BIT = (1 << 0),
 		BUFFER_CREATION_AS_STORAGE_BIT = (1 << 1),
+		BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT = (1 << 2),
 	};
 
 	enum StorageBufferUsage {
@@ -1091,6 +1142,7 @@ private:
 		Vector<RDG::ResourceUsage> draw_trackers_usage;
 		HashMap<RID, RDG::ResourceUsage> untracked_usage;
 		LocalVector<SharedTexture> shared_textures_to_update;
+		LocalVector<RID> pending_clear_textures;
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
 	};
@@ -1098,6 +1150,7 @@ private:
 	RID_Owner<UniformSet, true> uniform_set_owner;
 
 	void _uniform_set_update_shared(UniformSet *p_uniform_set);
+	void _uniform_set_update_clears(UniformSet *p_uniform_set);
 
 public:
 	/** Bake a set of uniforms that can be bound at runtime with the given shader.
@@ -1162,7 +1215,6 @@ private:
 	WorkerThreadPool::TaskID pipeline_cache_save_task = WorkerThreadPool::INVALID_TASK_ID;
 
 	Vector<uint8_t> _load_pipeline_cache();
-	void _update_pipeline_cache(bool p_closing = false);
 	static void _save_pipeline_cache(void *p_data);
 
 	struct ComputePipeline {
@@ -1183,6 +1235,8 @@ public:
 
 	RID compute_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>());
 	bool compute_pipeline_is_valid(RID p_pipeline);
+
+	void update_pipeline_cache(bool p_closing = false);
 
 private:
 	/****************/
@@ -1313,7 +1367,13 @@ public:
 		DRAW_IGNORE_ALL = DRAW_IGNORE_COLOR_ALL | DRAW_IGNORE_DEPTH | DRAW_IGNORE_STENCIL
 	};
 
+	/**
+	 * @param p_clear_color Must use linear encoding when HDR 2D is active.
+	 */
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
+	/**
+	 * @param p_clear_color_values Color values must use linear encoding when HDR 2D is active.
+	 */
 	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, VectorView<Color> p_clear_color_values = VectorView<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 	DrawListID _draw_list_begin_bind(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 
@@ -1321,6 +1381,7 @@ public:
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
 	void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index);
 	void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array);
+	void draw_list_bind_vertex_buffers_format(DrawListID p_list, VertexFormatID p_vertex_format, uint32_t p_vertex_count, const Span<RID> &p_vertex_buffers, const Span<uint64_t> &p_offsets = Vector<uint64_t>());
 	void draw_list_bind_index_array(DrawListID p_list, RID p_index_array);
 	void draw_list_set_line_width(DrawListID p_list, float p_width);
 	void draw_list_set_push_constant(DrawListID p_list, const void *p_data, uint32_t p_data_size);
@@ -1588,7 +1649,7 @@ public:
 	void _execute_frame(bool p_present);
 	void _stall_for_frame(uint32_t p_frame);
 	void _stall_for_previous_frames();
-	void _flush_and_stall_for_all_frames();
+	void _flush_and_stall_for_all_frames(bool p_begin_frame = true);
 
 	template <typename T>
 	void _free_rids(T &p_owner, const char *p_type);
@@ -1603,7 +1664,12 @@ public:
 
 	void _set_max_fps(int p_max_fps);
 
-	void free(RID p_id);
+	void free_rid(RID p_rid);
+#ifndef DISABLE_DEPRECATED
+	[[deprecated("Use `free_rid()` instead.")]] void free(RID p_rid) {
+		free_rid(p_rid);
+	}
+#endif // DISABLE_DEPRECATED
 
 	/****************/
 	/**** Timing ****/
@@ -1652,6 +1718,8 @@ public:
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
 
+	uint64_t get_frames_drawn() const { return frames_drawn; }
+
 	bool is_composite_alpha_supported() const;
 
 	uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
@@ -1697,6 +1765,7 @@ private:
 
 	VertexFormatID _vertex_format_create(const TypedArray<RDVertexAttribute> &p_vertex_formats);
 	RID _vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers, const Vector<int64_t> &p_offsets = Vector<int64_t>());
+	void _draw_list_bind_vertex_buffers_format(DrawListID p_list, VertexFormatID p_vertex_format, uint32_t p_vertex_count, const TypedArray<RID> &p_vertex_buffers, const Vector<int64_t> &p_offsets = Vector<int64_t>());
 
 	Ref<RDShaderSPIRV> _shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache = true);
 	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode, const String &p_shader_name = "");

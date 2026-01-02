@@ -33,8 +33,6 @@
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
 
-#include <algorithm>
-
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
@@ -67,6 +65,8 @@ public:
 };
 
 class RenderingDeviceCommons : public Object {
+	GDSOFTCLASS(RenderingDeviceCommons, Object);
+
 	////////////////////////////////////////////
 	// PUBLIC STUFF
 	// Exposed by RenderingDevice, and shared
@@ -421,7 +421,8 @@ public:
 		// Try to set this bit as much as possible. If you set it, validation doesn't complain
 		// and it works fine on mobile, then go ahead.
 		TEXTURE_USAGE_TRANSIENT_BIT = (1 << 11),
-		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_TRANSIENT_BIT,
+		TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT = (1 << 12),
+		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT,
 	};
 
 	struct TextureFormat {
@@ -549,12 +550,25 @@ public:
 	};
 
 	struct VertexAttribute {
+		uint32_t binding = UINT32_MAX; // Attribute buffer binding index. When set to UINT32_MAX, it uses the index of the attribute in the layout.
 		uint32_t location = 0; // Shader location.
 		uint32_t offset = 0;
 		DataFormat format = DATA_FORMAT_MAX;
 		uint32_t stride = 0;
 		VertexFrequency frequency = VERTEX_FREQUENCY_VERTEX;
 	};
+
+	struct VertexAttributeBinding {
+		uint32_t stride = 0;
+		VertexFrequency frequency = VERTEX_FREQUENCY_VERTEX;
+
+		VertexAttributeBinding() = default;
+		VertexAttributeBinding(uint32_t p_stride, VertexFrequency p_frequency) :
+				stride(p_stride),
+				frequency(p_frequency) {}
+	};
+
+	typedef HashMap<uint32_t, VertexAttributeBinding> VertexAttributeBindingsMap;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -607,6 +621,7 @@ public:
 	struct ShaderStageSPIRVData {
 		ShaderStage shader_stage = SHADER_STAGE_MAX;
 		Vector<uint8_t> spirv;
+		Vector<uint64_t> dynamic_buffers;
 	};
 
 	/*********************/
@@ -615,6 +630,7 @@ public:
 
 	static const uint32_t MAX_UNIFORM_SETS = 16;
 
+	// Keep the enum values in sync with the `SHADER_UNIFORM_NAMES` values (file rendering_device.cpp).
 	enum UniformType {
 		UNIFORM_TYPE_SAMPLER, // For sampling only (sampler GLSL type).
 		UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, // For sampling only, but includes a texture, (samplerXX GLSL type), first a sampler then a texture.
@@ -626,6 +642,8 @@ public:
 		UNIFORM_TYPE_UNIFORM_BUFFER, // Regular uniform buffer (or UBO).
 		UNIFORM_TYPE_STORAGE_BUFFER, // Storage buffer ("buffer" qualifier) like UBO, but supports storage, for compute mostly.
 		UNIFORM_TYPE_INPUT_ATTACHMENT, // Used for sub-pass read/write, for mobile mostly.
+		UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, // Same as UNIFORM but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
+		UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, // Same as STORAGE but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
 		UNIFORM_TYPE_MAX
 	};
 
@@ -954,6 +972,8 @@ public:
 		SUPPORTS_BUFFER_DEVICE_ADDRESS,
 		SUPPORTS_IMAGE_ATOMIC_32_BIT,
 		SUPPORTS_VULKAN_MEMORY_MODEL,
+		SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE,
+		SUPPORTS_POINT_SIZE,
 	};
 
 	enum SubgroupOperations {
@@ -1062,6 +1082,7 @@ public:
 		uint32_t fragment_output_mask = 0;
 		bool is_compute = false;
 		bool has_multiview = false;
+		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};
 		uint32_t push_constant_size = 0;
 
@@ -1071,6 +1092,4 @@ public:
 		BitField<ShaderStage> stages_bits = {};
 		BitField<ShaderStage> push_constant_stages = {};
 	};
-
-	static Error reflect_spirv(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection);
 };

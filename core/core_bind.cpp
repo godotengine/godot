@@ -35,10 +35,12 @@
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
@@ -51,10 +53,12 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 }
 
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, Array r_progress) {
-	float progress = 0;
-	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, &progress);
+	// Progress being the default array indicates the user hasn't requested for it to be computed.
 	// Default array should never be modified, it causes the hash of the method to change.
-	if (!ClassDB::is_default_array_arg(r_progress)) {
+	const bool return_progress = !ClassDB::is_default_array_arg(r_progress);
+	float progress = 0;
+	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, return_progress ? &progress : nullptr);
+	if (return_progress) {
 		r_progress.resize(1);
 		r_progress[0] = progress;
 	}
@@ -163,7 +167,7 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
+Error ResourceSaver::save(RequiredParam<Resource> p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
 	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
@@ -1526,6 +1530,10 @@ void Thread::set_thread_safety_checks_enabled(bool p_enabled) {
 	set_current_thread_safe_for_nodes(!p_enabled);
 }
 
+bool Thread::is_main_thread() {
+	return ::Thread::is_main_thread();
+}
+
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
@@ -1534,6 +1542,7 @@ void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
 
 	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
+	ClassDB::bind_static_method("Thread", D_METHOD("is_main_thread"), &Thread::is_main_thread);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
@@ -1545,14 +1554,16 @@ namespace Special {
 ////// ClassDB //////
 
 PackedStringArray ClassDB::get_class_list() const {
-	List<StringName> classes;
-	::ClassDB::get_class_list(&classes);
+	LocalVector<StringName> classes;
+	::ClassDB::get_class_list(classes);
 
 	PackedStringArray ret;
 	ret.resize(classes.size());
+	String *ptrw = ret.ptrw();
 	int idx = 0;
-	for (const StringName &E : classes) {
-		ret.set(idx++, E);
+	for (const StringName &cls : classes) {
+		ptrw[idx] = cls;
+		idx++;
 	}
 
 	return ret;
@@ -1806,8 +1817,12 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "is_class_enabled" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
-		for (const String &E : get_class_list()) {
-			r_options->push_back(E.quote());
+		LocalVector<StringName> classes;
+		::ClassDB::get_class_list(classes);
+		for (const StringName &E : classes) {
+			if (::ClassDB::is_class_exposed(E)) {
+				r_options->push_back(E.operator String().quote());
+			}
 		}
 	}
 

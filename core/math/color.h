@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 
@@ -238,6 +239,14 @@ struct [[nodiscard]] Color {
 	_FORCE_INLINE_ void set_ok_hsl_h(float p_h) { set_ok_hsl(p_h, get_ok_hsl_s(), get_ok_hsl_l(), a); }
 	_FORCE_INLINE_ void set_ok_hsl_s(float p_s) { set_ok_hsl(get_ok_hsl_h(), p_s, get_ok_hsl_l(), a); }
 	_FORCE_INLINE_ void set_ok_hsl_l(float p_l) { set_ok_hsl(get_ok_hsl_h(), get_ok_hsl_s(), p_l, a); }
+
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_float(r);
+		h = hash_murmur3_one_float(r, h);
+		h = hash_murmur3_one_float(b, h);
+		h = hash_murmur3_one_float(a, h);
+		return hash_fmix32(h);
+	}
 
 	constexpr Color() :
 			r(0), g(0), b(0), a(1) {}

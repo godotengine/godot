@@ -967,6 +967,37 @@ void VisualShader::set_node_position(Type p_type, int p_id, const Vector2 &p_pos
 	g->nodes[p_id].position = p_position;
 }
 
+// Returns 0 if no embeds, 1 if external embeds, 2 if builtin embeds
+int VisualShader::has_node_embeds() const {
+	bool external_embeds = false;
+	for (int i = 0; i < TYPE_MAX; i++) {
+		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+			List<PropertyInfo> props;
+			E.value.node->get_property_list(&props);
+			// For classes that inherit from VisualShaderNode, the class properties start at the 12th, and the last value is always 'script'
+			for (int j = 12; j < props.size() - 1; j++) {
+				// VisualShaderNodeCustom cannot have embeds
+				if (props.get(j).name == "VisualShaderNodeCustom") {
+					break;
+				}
+				// Ref<Resource> properties get classed as type Variant::Object
+				if (props.get(j).type == Variant::OBJECT) {
+					Ref<Resource> res = E.value.node->get(props.get(j).name);
+					if (res.is_valid()) {
+						if (res->is_built_in()) {
+							return 2;
+						} else {
+							external_embeds = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return external_embeds;
+}
+
 Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Vector2());
 	const Graph *g = &graph[p_type];
@@ -1261,6 +1292,10 @@ String VisualShader::get_reroute_parameter_name(Type p_type, int p_reroute_node)
 		Ref<VisualShaderNodeParameter> parameter_node = node->node;
 		if (parameter_node.is_valid() && parameter_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
 			return parameter_node->get_parameter_name();
+		}
+		Ref<VisualShaderNodeParameterRef> parameter_ref_node = node->node;
+		if (parameter_ref_node.is_valid() && parameter_ref_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
+			return parameter_ref_node->get_parameter_name();
 		}
 		Ref<VisualShaderNodeInput> input_node = node->node;
 		if (input_node.is_valid() && input_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
@@ -1985,11 +2020,8 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	const Vector<ShaderLanguage::ModeInfo> &smodes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(shader_mode));
 
 	if (smodes.size() > 0) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil"), PNAME("enabled"))));
-
-		uint32_t stencil_prop_usage = stencil_enabled ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
-
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil"), PNAME("reference")), PROPERTY_HINT_RANGE, "0,255,1", stencil_prop_usage));
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil"), PNAME("enabled")), PROPERTY_HINT_GROUP_ENABLE));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil"), PNAME("reference")), PROPERTY_HINT_RANGE, "0,255,1"));
 
 		HashMap<String, String> stencil_enums;
 		HashSet<String> stencil_toggles;
@@ -2013,11 +2045,11 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		for (const KeyValue<String, String> &E : stencil_enums) {
-			p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil_modes"), E.key), PROPERTY_HINT_ENUM, E.value, stencil_prop_usage));
+			p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil_modes"), E.key), PROPERTY_HINT_ENUM, E.value));
 		}
 
 		for (const String &E : stencil_toggles) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil_flags"), E), PROPERTY_HINT_NONE, "", stencil_prop_usage));
+			p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil_flags"), E)));
 		}
 	}
 
@@ -2054,6 +2086,12 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 		}
 		p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	}
+}
+
+void VisualShader::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "code") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -4355,6 +4393,16 @@ VisualShaderNodeParameter::Qualifier VisualShaderNodeParameter::get_qualifier() 
 	return qualifier;
 }
 
+void VisualShaderNodeParameter::set_instance_index(int p_index) {
+	ERR_FAIL_INDEX(p_index, 16);
+	instance_index = p_index;
+	emit_changed();
+}
+
+int VisualShaderNodeParameter::get_instance_index() const {
+	return instance_index;
+}
+
 void VisualShaderNodeParameter::set_global_code_generated(bool p_enabled) {
 	global_code_generated = p_enabled;
 }
@@ -4381,12 +4429,17 @@ void VisualShaderNodeParameter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_qualifier", "qualifier"), &VisualShaderNodeParameter::set_qualifier);
 	ClassDB::bind_method(D_METHOD("get_qualifier"), &VisualShaderNodeParameter::get_qualifier);
 
+	ClassDB::bind_method(D_METHOD("set_instance_index", "instance_index"), &VisualShaderNodeParameter::set_instance_index);
+	ClassDB::bind_method(D_METHOD("get_instance_index"), &VisualShaderNodeParameter::get_instance_index);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "parameter_name"), "set_parameter_name", "get_parameter_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "qualifier", PROPERTY_HINT_ENUM, "None,Global,Instance"), "set_qualifier", "get_qualifier");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "qualifier", PROPERTY_HINT_ENUM, "None,Global,Instance,Instance + Index"), "set_qualifier", "get_qualifier");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "instance_index", PROPERTY_HINT_RANGE, "0,15,1"), "set_instance_index", "get_instance_index");
 
 	BIND_ENUM_CONSTANT(QUAL_NONE);
 	BIND_ENUM_CONSTANT(QUAL_GLOBAL);
 	BIND_ENUM_CONSTANT(QUAL_INSTANCE);
+	BIND_ENUM_CONSTANT(QUAL_INSTANCE_INDEX);
 	BIND_ENUM_CONSTANT(QUAL_MAX);
 }
 
@@ -4397,6 +4450,7 @@ String VisualShaderNodeParameter::_get_qual_str() const {
 				break;
 			case QUAL_GLOBAL:
 				return "global ";
+			case QUAL_INSTANCE_INDEX:
 			case QUAL_INSTANCE:
 				return "instance ";
 			default:
@@ -4420,6 +4474,7 @@ String VisualShaderNodeParameter::get_warning(Shader::Mode p_mode, VisualShader:
 			case QUAL_GLOBAL:
 				qualifier_str = "global";
 				break;
+			case QUAL_INSTANCE_INDEX:
 			case QUAL_INSTANCE:
 				qualifier_str = "instance";
 				break;
@@ -4503,6 +4558,9 @@ String VisualShaderNodeParameter::get_warning(Shader::Mode p_mode, VisualShader:
 Vector<StringName> VisualShaderNodeParameter::get_editable_properties() const {
 	Vector<StringName> props;
 	props.push_back("qualifier");
+	if (qualifier == QUAL_INSTANCE_INDEX) {
+		props.push_back("instance_index");
+	}
 	return props;
 }
 
@@ -4804,8 +4862,7 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 	int count = 0;
 	int index = 0;
 	for (int i = 0; i < inputs_strings.size(); i++) {
-		Vector<String> arr = inputs_strings[i].split(",");
-		if (arr[0].to_int() == p_id) {
+		if (inputs_strings[i].get_slicec(',', 0).to_int() == p_id) {
 			count = inputs_strings[i].size();
 			break;
 		}
@@ -4817,7 +4874,7 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 	inputs = inputs.substr(0, index);
 
 	for (int i = p_id; i < inputs_strings.size(); i++) {
-		inputs += inputs_strings[i].replace_first(inputs_strings[i].split(",")[0], itos(i)) + ";";
+		inputs += inputs_strings[i].replace_first(inputs_strings[i].get_slicec(',', 0), itos(i)) + ";";
 	}
 
 	_apply_port_changes();
@@ -4879,8 +4936,7 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 	int count = 0;
 	int index = 0;
 	for (int i = 0; i < outputs_strings.size(); i++) {
-		Vector<String> arr = outputs_strings[i].split(",");
-		if (arr[0].to_int() == p_id) {
+		if (outputs_strings[i].get_slicec(',', 0).to_int() == p_id) {
 			count = outputs_strings[i].size();
 			break;
 		}
@@ -4892,7 +4948,7 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 	outputs = outputs.substr(0, index);
 
 	for (int i = p_id; i < outputs_strings.size(); i++) {
-		outputs += outputs_strings[i].replace_first(outputs_strings[i].split(",")[0], itos(i)) + ";";
+		outputs += outputs_strings[i].replace_first(outputs_strings[i].get_slicec(',', 0), itos(i)) + ";";
 	}
 
 	_apply_port_changes();

@@ -87,6 +87,13 @@ typedef interface OpenCLOn12CreatorID OpenCLOn12CreatorID;
 #endif 	/* __OpenCLOn12CreatorID_FWD_DEFINED__ */
 
 
+#ifndef __VulkanOn12CreatorID_FWD_DEFINED__
+#define __VulkanOn12CreatorID_FWD_DEFINED__
+typedef interface VulkanOn12CreatorID VulkanOn12CreatorID;
+
+#endif 	/* __VulkanOn12CreatorID_FWD_DEFINED__ */
+
+
 #ifndef __DirectMLTensorFlowCreatorID_FWD_DEFINED__
 #define __DirectMLTensorFlowCreatorID_FWD_DEFINED__
 typedef interface DirectMLTensorFlowCreatorID DirectMLTensorFlowCreatorID;
@@ -99,6 +106,13 @@ typedef interface DirectMLTensorFlowCreatorID DirectMLTensorFlowCreatorID;
 typedef interface DirectMLPyTorchCreatorID DirectMLPyTorchCreatorID;
 
 #endif 	/* __DirectMLPyTorchCreatorID_FWD_DEFINED__ */
+
+
+#ifndef __DirectMLWebNNCreatorID_FWD_DEFINED__
+#define __DirectMLWebNNCreatorID_FWD_DEFINED__
+typedef interface DirectMLWebNNCreatorID DirectMLWebNNCreatorID;
+
+#endif 	/* __DirectMLWebNNCreatorID_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -126,7 +140,7 @@ enum D3D12_COMPATIBILITY_SHARED_FLAGS
         D3D12_COMPATIBILITY_SHARED_FLAG_9_ON_12	= 0x4
     } 	D3D12_COMPATIBILITY_SHARED_FLAGS;
 
-DEFINE_ENUM_FLAG_OPERATORS( D3D12_COMPATIBILITY_SHARED_FLAGS );
+DEFINE_ENUM_FLAG_OPERATORS( D3D12_COMPATIBILITY_SHARED_FLAGS )
 typedef 
 enum D3D12_REFLECT_SHARED_PROPERTY
     {
@@ -565,6 +579,78 @@ EXTERN_C const IID IID_OpenCLOn12CreatorID;
 #endif 	/* __OpenCLOn12CreatorID_INTERFACE_DEFINED__ */
 
 
+#ifndef __VulkanOn12CreatorID_INTERFACE_DEFINED__
+#define __VulkanOn12CreatorID_INTERFACE_DEFINED__
+
+/* interface VulkanOn12CreatorID */
+/* [unique][local][object][uuid] */ 
+
+
+EXTERN_C const IID IID_VulkanOn12CreatorID;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("bc806e01-3052-406c-a3e8-9fc07f048f98")
+    VulkanOn12CreatorID : public IUnknown
+    {
+    public:
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct VulkanOn12CreatorIDVtbl
+    {
+        BEGIN_INTERFACE
+        
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            VulkanOn12CreatorID * This,
+            REFIID riid,
+            _COM_Outptr_  void **ppvObject);
+        
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            VulkanOn12CreatorID * This);
+        
+        DECLSPEC_XFGVIRT(IUnknown, Release)
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            VulkanOn12CreatorID * This);
+        
+        END_INTERFACE
+    } VulkanOn12CreatorIDVtbl;
+
+    interface VulkanOn12CreatorID
+    {
+        CONST_VTBL struct VulkanOn12CreatorIDVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define VulkanOn12CreatorID_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define VulkanOn12CreatorID_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define VulkanOn12CreatorID_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __VulkanOn12CreatorID_INTERFACE_DEFINED__ */
+
+
 #ifndef __DirectMLTensorFlowCreatorID_INTERFACE_DEFINED__
 #define __DirectMLTensorFlowCreatorID_INTERFACE_DEFINED__
 
@@ -709,7 +795,79 @@ EXTERN_C const IID IID_DirectMLPyTorchCreatorID;
 #endif 	/* __DirectMLPyTorchCreatorID_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_d3d12compatibility_0000_0007 */
+#ifndef __DirectMLWebNNCreatorID_INTERFACE_DEFINED__
+#define __DirectMLWebNNCreatorID_INTERFACE_DEFINED__
+
+/* interface DirectMLWebNNCreatorID */
+/* [unique][local][object][uuid] */ 
+
+
+EXTERN_C const IID IID_DirectMLWebNNCreatorID;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("fdf01a76-1e11-450f-902b-74f04ea08094")
+    DirectMLWebNNCreatorID : public IUnknown
+    {
+    public:
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct DirectMLWebNNCreatorIDVtbl
+    {
+        BEGIN_INTERFACE
+        
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            DirectMLWebNNCreatorID * This,
+            REFIID riid,
+            _COM_Outptr_  void **ppvObject);
+        
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            DirectMLWebNNCreatorID * This);
+        
+        DECLSPEC_XFGVIRT(IUnknown, Release)
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            DirectMLWebNNCreatorID * This);
+        
+        END_INTERFACE
+    } DirectMLWebNNCreatorIDVtbl;
+
+    interface DirectMLWebNNCreatorID
+    {
+        CONST_VTBL struct DirectMLWebNNCreatorIDVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define DirectMLWebNNCreatorID_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define DirectMLWebNNCreatorID_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define DirectMLWebNNCreatorID_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __DirectMLWebNNCreatorID_INTERFACE_DEFINED__ */
+
+
+/* interface __MIDL_itf_d3d12compatibility_0000_0009 */
 /* [local] */ 
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_GAMES) */
@@ -719,12 +877,14 @@ DEFINE_GUID(IID_D3D11On12CreatorID,0xedbf5678,0x2960,0x4e81,0x84,0x29,0x99,0xd4,
 DEFINE_GUID(IID_D3D9On12CreatorID,0xfffcbb7f,0x15d3,0x42a2,0x84,0x1e,0x9d,0x8d,0x32,0xf3,0x7d,0xdd);
 DEFINE_GUID(IID_OpenGLOn12CreatorID,0x6bb3cd34,0x0d19,0x45ab,0x97,0xed,0xd7,0x20,0xba,0x3d,0xfc,0x80);
 DEFINE_GUID(IID_OpenCLOn12CreatorID,0x3f76bb74,0x91b5,0x4a88,0xb1,0x26,0x20,0xca,0x03,0x31,0xcd,0x60);
+DEFINE_GUID(IID_VulkanOn12CreatorID,0xbc806e01,0x3052,0x406c,0xa3,0xe8,0x9f,0xc0,0x7f,0x04,0x8f,0x98);
 DEFINE_GUID(IID_DirectMLTensorFlowCreatorID,0xcb7490ac,0x8a0f,0x44ec,0x9b,0x7b,0x6f,0x4c,0xaf,0xe8,0xe9,0xab);
 DEFINE_GUID(IID_DirectMLPyTorchCreatorID,0xaf029192,0xfba1,0x4b05,0x91,0x16,0x23,0x5e,0x06,0x56,0x03,0x54);
+DEFINE_GUID(IID_DirectMLWebNNCreatorID,0xfdf01a76,0x1e11,0x450f,0x90,0x2b,0x74,0xf0,0x4e,0xa0,0x80,0x94);
 
 
-extern RPC_IF_HANDLE __MIDL_itf_d3d12compatibility_0000_0007_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_d3d12compatibility_0000_0007_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_d3d12compatibility_0000_0009_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_d3d12compatibility_0000_0009_v0_0_s_ifspec;
 
 /* Additional Prototypes for ALL interfaces */
 

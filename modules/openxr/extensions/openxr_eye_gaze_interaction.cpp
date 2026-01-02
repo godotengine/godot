@@ -51,7 +51,7 @@ OpenXREyeGazeInteractionExtension::~OpenXREyeGazeInteractionExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXREyeGazeInteractionExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXREyeGazeInteractionExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	// Only enable this extension when requested.

@@ -145,12 +145,30 @@ constexpr const char *cubemap_array_shader = R"(
 void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
+	if (!use_rotation) {
+		return;
+	}
+
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
-		y_rot += -mm->get_relative().x * 0.01;
-		x_rot += -mm->get_relative().y * 0.01;
+	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::RIGHT)) {
+		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		}
+
+		y_rot += mm->get_relative().x * 0.01;
+		x_rot = CLAMP(x_rot - mm->get_relative().y * 0.01, -Math::PI * 0.5f, Math::PI * 0.5f);
 
 		_update_material(false);
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT) {
+		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			Input::get_singleton()->warp_mouse(original_mouse_pos);
+		} else if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
+			original_mouse_pos = mb->get_global_position();
+		}
 	}
 }
 
@@ -270,7 +288,7 @@ void TextureLayeredEditor::_update_material(bool p_texture_changed) {
 	materials[0]->set_shader_parameter("layer", layer->get_value());
 	materials[2]->set_shader_parameter("layer", layer->get_value());
 
-	Vector3 v(1, 1, 1);
+	Vector3 v(-1, -1, -1);
 	v.normalize();
 
 	Basis b;
@@ -283,6 +301,9 @@ void TextureLayeredEditor::_update_material(bool p_texture_changed) {
 	materials[2]->set_shader_parameter("rot", b);
 
 	if (p_texture_changed) {
+		const TextureLayered::LayeredType type = texture->get_layered_type();
+		use_rotation = type == TextureLayered::LAYERED_TYPE_CUBEMAP || type == TextureLayered::LAYERED_TYPE_CUBEMAP_ARRAY;
+
 		materials[texture->get_layered_type()]->set_shader_parameter("tex", texture->get_rid());
 	}
 
@@ -302,16 +323,7 @@ void TextureLayeredEditor::_draw_outline() {
 	draw_rect(outline_rect, theme_cache.outline_color, false, outline_width);
 }
 
-void TextureLayeredEditor::_make_shaders() {
-	shaders[0].instantiate();
-	shaders[0]->set_code(array_2d_shader);
-
-	shaders[1].instantiate();
-	shaders[1]->set_code(cubemap_shader);
-
-	shaders[2].instantiate();
-	shaders[2]->set_code(cubemap_array_shader);
-
+void TextureLayeredEditor::_make_materials() {
 	for (int i = 0; i < 3; i++) {
 		materials[i].instantiate();
 		materials[i]->set_shader(shaders[i]);
@@ -343,6 +355,23 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 	texture_rect->set_size(Vector2(tex_width, tex_height));
 }
 
+void TextureLayeredEditor::init_shaders() {
+	shaders[0].instantiate();
+	shaders[0]->set_code(array_2d_shader);
+
+	shaders[1].instantiate();
+	shaders[1]->set_code(cubemap_shader);
+
+	shaders[2].instantiate();
+	shaders[2]->set_code(cubemap_array_shader);
+}
+
+void TextureLayeredEditor::finish_shaders() {
+	shaders[0].unref();
+	shaders[1].unref();
+	shaders[2].unref();
+}
+
 void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	if (texture.is_valid()) {
 		texture->disconnect_changed(callable_mp(this, &TextureLayeredEditor::_texture_changed));
@@ -351,8 +380,8 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	texture = p_texture;
 
 	if (texture.is_valid()) {
-		if (shaders[0].is_null()) {
-			_make_shaders();
+		if (materials[0].is_null()) {
+			_make_materials();
 		}
 
 		texture->connect_changed(callable_mp(this, &TextureLayeredEditor::_texture_changed));

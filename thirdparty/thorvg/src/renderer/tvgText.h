@@ -40,10 +40,7 @@ struct Text::Impl
     bool italic = false;
     bool changed = false;
 
-    Impl(Text* p) : paint(p), shape(Shape::gen().release())
-    {
-        shape->fill(FillRule::EvenOdd);
-    }
+    Impl(Text* p) : paint(p), shape(Shape::gen().release()) {}
 
     ~Impl()
     {

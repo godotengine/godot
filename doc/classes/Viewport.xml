@@ -49,12 +49,14 @@
 			<return type="Camera2D" />
 			<description>
 				Returns the currently active 2D camera. Returns [code]null[/code] if there are no active cameras.
+				[b]Note:[/b] If called while the [i]Camera Override[/i] system is active in editor, this will return the internally managed override camera. It is therefore advised to avoid caching the return value, or to check that the cached value is still a valid instance and is the current camera before use. See [method @GlobalScope.is_instance_valid] and [method Camera2D.is_current].
 			</description>
 		</method>
 		<method name="get_camera_3d" qualifiers="const">
 			<return type="Camera3D" />
 			<description>
-				Returns the currently active 3D camera.
+				Returns the currently active 3D camera. Returns [code]null[/code] if there are no active cameras.
+				[b]Note:[/b] If called while the [i]Camera Override[/i] system is active in editor, this will return the internally managed override camera. It is therefore advised to avoid caching the return value, or to check that the cached value is a valid instance and is the current camera before use. See [method @GlobalScope.is_instance_valid] and [member Camera3D.current].
 			</description>
 		</method>
 		<method name="get_canvas_cull_mask_bit" qualifiers="const">
@@ -137,7 +139,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image encoded in linear space.
+				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image using linear encoding.
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">
@@ -167,7 +169,7 @@
 		<method name="gui_get_drag_description" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the drag data human-readable description.
+				Returns the human-readable description of the drag data, used for assistive apps.
 			</description>
 		</method>
 		<method name="gui_get_focus_owner" qualifiers="const">
@@ -206,7 +208,7 @@
 			<return type="void" />
 			<param index="0" name="description" type="String" />
 			<description>
-				Sets the drag data human-readable description.
+				Sets the human-readable description of the drag data to [param description], used for assistive apps.
 			</description>
 		</method>
 		<method name="is_input_handled" qualifiers="const">
@@ -283,7 +285,7 @@
 		<method name="set_input_as_handled">
 			<return type="void" />
 			<description>
-				Stops the input from propagating further down the [SceneTree].
+				Stops the input from propagating further up the [SceneTree].
 				[b]Note:[/b] This does not affect the methods in [Input], only the way events are propagated.
 			</description>
 		</method>
@@ -325,12 +327,13 @@
 		</member>
 		<member name="canvas_cull_mask" type="int" setter="set_canvas_cull_mask" getter="get_canvas_cull_mask" default="4294967295">
 			The rendering layers in which this [Viewport] renders [CanvasItem] nodes.
+			[b]Note:[/b] A [CanvasItem] does not inherit its parents' visibility layers. See [member CanvasItem.visibility_layer]'s description for details.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
-			Sets the default filter mode used by [CanvasItem]s in this Viewport.
+			The default filter mode used by [CanvasItem] nodes in this viewport.
 		</member>
 		<member name="canvas_item_default_texture_repeat" type="int" setter="set_default_canvas_item_texture_repeat" getter="get_default_canvas_item_texture_repeat" enum="Viewport.DefaultCanvasItemTextureRepeat" default="0">
-			Sets the default repeat mode used by [CanvasItem]s in this Viewport.
+			The default repeat mode used by [CanvasItem] nodes in this viewport.
 		</member>
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
@@ -350,6 +353,9 @@
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
 			If [code]true[/code], the viewport will not receive input events.
+		</member>
+		<member name="gui_drag_threshold" type="int" setter="set_drag_threshold" getter="get_drag_threshold" default="10">
+			The minimum distance the mouse cursor must move while pressed before a drag operation begins.
 		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
 			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they will appear as separate windows handled by the operating system.
@@ -452,16 +458,16 @@
 		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
+			[b]Note:[/b] Due to technical limitations, certain rendering features are disabled when a viewport has a transparent background. This currently applies to screen-space reflections, subsurface scattering, and depth of field.
 		</member>
 		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="is_using_debanding" default="false">
-			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. If [member use_hdr_2d] is [code]false[/code], 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. If [member use_hdr_2d] is [code]true[/code], debanding will only be applied if this is the root [Viewport] and will affect all 2D and 3D rendering, including canvas items.
-			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
-			See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding] and [method RenderingServer.viewport_set_use_debanding].
+			When using the Mobile or Forward+ renderers, set [member use_debanding] to enable or disable the debanding feature of this [Viewport]. If [member use_hdr_2d] is [code]false[/code], 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. If [member use_hdr_2d] is [code]true[/code], debanding will only be applied if this is the root [Viewport] and will affect all 2D and 3D rendering, including canvas items.
+			[member use_debanding] has no effect when using the Compatibility rendering method. The Mobile renderer can also use material debanding, which can be set with [method RenderingServer.material_set_use_debanding] or configured with [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
+			See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding], [method RenderingServer.material_set_use_debanding], and [method RenderingServer.viewport_set_use_debanding].
 		</member>
 		<member name="use_hdr_2d" type="bool" setter="set_use_hdr_2d" getter="is_using_hdr_2d" default="false">
-			If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility renderer, this will be an [code]RGBA16[/code] framebuffer. When using the Mobile renderer, it will be an [code]RGB10_A2[/code] framebuffer.
-			Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen).
-			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
+			If [code]true[/code], 2D rendering will use a high dynamic range (HDR) [code]RGBA16[/code] format framebuffer. Additionally, 2D rendering will be performed on linear values and will be converted using the appropriate transfer function immediately before blitting to the screen (if the Viewport is attached to the screen).
+			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 		</member>
 		<member name="use_occlusion_culling" type="bool" setter="set_use_occlusion_culling" getter="is_using_occlusion_culling" default="false">
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D for this viewport. For the root viewport, [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] must be set to [code]true[/code] instead.
@@ -707,6 +713,7 @@
 		</constant>
 		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="17" enum="DebugDraw">
 			Draws the probes used for signed distance field global illumination (SDFGI).
+			When in the editor, left-clicking a probe will display additional bright dots that show its occlusion information. A white dot means the light is not occluded at all at the dot's position, while a red dot means the light is fully occluded. Intermediate values are possible.
 			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>

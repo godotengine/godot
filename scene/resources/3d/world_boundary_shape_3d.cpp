@@ -31,7 +31,7 @@
 #include "world_boundary_shape_3d.h"
 
 #include "scene/resources/mesh.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 Vector<Vector3> WorldBoundaryShape3D::get_debug_mesh_lines() const {
 	Plane p = get_plane();

@@ -74,7 +74,7 @@ void OpenXRActionSetEditor::_notification(int p_what) {
 	}
 }
 
-OpenXRActionEditor *OpenXRActionSetEditor::_add_action_editor(Ref<OpenXRAction> p_action) {
+OpenXRActionEditor *OpenXRActionSetEditor::_add_action_editor(const Ref<OpenXRAction> &p_action) {
 	OpenXRActionEditor *action_editor = memnew(OpenXRActionEditor(p_action));
 	action_editor->connect("remove", callable_mp(this, &OpenXRActionSetEditor::_on_remove_action));
 	actions_vb->add_child(action_editor);
@@ -88,7 +88,7 @@ void OpenXRActionSetEditor::_on_toggle_expand() {
 	_set_fold_icon();
 }
 
-void OpenXRActionSetEditor::_on_action_set_name_changed(const String p_new_text) {
+void OpenXRActionSetEditor::_on_action_set_name_changed(const String &p_new_text) {
 	if (action_set->get_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Action Set"));
 		undo_redo->add_do_method(this, "_do_set_name", p_new_text);
@@ -110,12 +110,12 @@ void OpenXRActionSetEditor::_on_action_set_name_changed(const String p_new_text)
 	}
 }
 
-void OpenXRActionSetEditor::_do_set_name(const String p_new_text) {
+void OpenXRActionSetEditor::_do_set_name(const String &p_new_text) {
 	action_set->set_name(p_new_text);
 	action_set_name->set_text(p_new_text);
 }
 
-void OpenXRActionSetEditor::_on_action_set_localized_name_changed(const String p_new_text) {
+void OpenXRActionSetEditor::_on_action_set_localized_name_changed(const String &p_new_text) {
 	if (action_set->get_localized_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Action Sets Localized name"));
 		undo_redo->add_do_method(this, "_do_set_localized_name", p_new_text);
@@ -127,7 +127,7 @@ void OpenXRActionSetEditor::_on_action_set_localized_name_changed(const String p
 	}
 }
 
-void OpenXRActionSetEditor::_do_set_localized_name(const String p_new_text) {
+void OpenXRActionSetEditor::_do_set_localized_name(const String &p_new_text) {
 	action_set->set_localized_name(p_new_text);
 	action_set_localized_name->set_text(p_new_text);
 }
@@ -218,7 +218,7 @@ void OpenXRActionSetEditor::set_focus_on_entry() {
 	action_set_name->grab_focus();
 }
 
-OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRActionSet> p_action_set) {
+OpenXRActionSetEditor::OpenXRActionSetEditor(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRActionSet> &p_action_set) {
 	undo_redo = EditorUndoRedoManager::get_singleton();
 	action_map = p_action_map;
 	action_set = p_action_set;

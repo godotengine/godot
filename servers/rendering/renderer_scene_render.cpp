@@ -33,7 +33,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, const uint32_t p_visible_layers) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, uint32_t p_visible_layers) {
 	view_count = 1;
 	is_orthogonal = p_is_orthogonal;
 	is_frustum = p_is_frustum;
@@ -49,10 +49,10 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	taa_frame_count = p_taa_frame_count;
 }
 
-void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect) {
+void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, uint32_t p_visible_layers) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
-	visible_layers = 0xFFFFFFFF;
+	visible_layers = p_visible_layers;
 	view_count = p_view_count;
 	is_orthogonal = p_is_orthogonal;
 	is_frustum = p_is_frustum;
@@ -373,8 +373,20 @@ float RendererSceneRender::environment_get_exposure(RID p_env) const {
 	return environment_storage.environment_get_exposure(p_env);
 }
 
-float RendererSceneRender::environment_get_white(RID p_env) const {
-	return environment_storage.environment_get_white(p_env);
+float RendererSceneRender::environment_get_white(RID p_env, bool p_limit_agx_white) const {
+	return environment_storage.environment_get_white(p_env, p_limit_agx_white);
+}
+
+void RendererSceneRender::environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast) {
+	environment_storage.environment_set_tonemap_agx_contrast(p_env, p_agx_contrast);
+}
+
+float RendererSceneRender::environment_get_tonemap_agx_contrast(RID p_env) const {
+	return environment_storage.environment_get_tonemap_agx_contrast(p_env);
+}
+
+RendererEnvironmentStorage::TonemapParameters RendererSceneRender::environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white) const {
+	return environment_storage.environment_get_tonemap_parameters(p_env, p_limit_agx_white);
 }
 
 // Fog

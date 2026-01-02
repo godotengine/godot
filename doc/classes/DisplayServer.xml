@@ -34,15 +34,17 @@
 			<param index="1" name="shaped_text" type="RID" />
 			<param index="2" name="min_height" type="float" />
 			<param index="3" name="insert_pos" type="int" default="-1" />
+			<param index="4" name="is_last_line" type="bool" default="false" />
 			<description>
 				Creates a new, empty accessibility sub-element from the shaped text buffer. Sub-elements are freed automatically when the parent element is freed, or can be freed early using the [method accessibility_free_element] method.
+				If [param is_last_line] is [code]true[/code], no trailing newline is appended to the text content. Set to [code]true[/code] for the last line in multi-line text fields and for single-line text fields.
 			</description>
 		</method>
 		<method name="accessibility_element_get_meta" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="id" type="RID" />
 			<description>
-				Returns the metadata of the accessibility element.
+				Returns the metadata of the accessibility element [param id].
 			</description>
 		</method>
 		<method name="accessibility_element_set_meta">
@@ -50,14 +52,14 @@
 			<param index="0" name="id" type="RID" />
 			<param index="1" name="meta" type="Variant" />
 			<description>
-				Sets the metadata of the accessibility element.
+				Sets the metadata of the accessibility element [param id] to [param meta].
 			</description>
 		</method>
 		<method name="accessibility_free_element">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<description>
-				Frees an object created by [method accessibility_create_element], [method accessibility_create_sub_element], or [method accessibility_create_sub_text_edit_elements].
+				Frees the accessibility element [param id] created by [method accessibility_create_element], [method accessibility_create_sub_element], or [method accessibility_create_sub_text_edit_elements].
 			</description>
 		</method>
 		<method name="accessibility_get_window_root" qualifiers="const">
@@ -79,7 +81,7 @@
 			<description>
 				Returns [code]1[/code] if a screen reader, Braille display or other assistive app is active, [code]0[/code] otherwise. Returns [code]-1[/code] if status is unknown.
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
-				[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, macOS Accessibility Inspector, or AT-SPI Browser do not count as assistive apps and will not affect this value. To test your app with these tools, set [member ProjectSettings.accessibility/general/accessibility_support] to [code]1[/code].
+				[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD), do not count as assistive apps and will not affect this value. To test your project with these tools, set [member ProjectSettings.accessibility/general/accessibility_support] to [code]1[/code].
 			</description>
 		</method>
 		<method name="accessibility_set_window_focused">
@@ -784,10 +786,23 @@
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code]. [b]On Android,[/b] the third callback argument ([code]selected_filter_index[/code]) is always [code]0[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android (API level 29+).
 				[b]Note:[/b] [param current_directory] might be ignored.
-				[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
+				[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 				[b]Note:[/b] On Android and Linux, [param show_hidden] is ignored.
 				[b]Note:[/b] On Android and macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
+				[b]Note:[/b] On Android, this method uses the Android Storage Access Framework (SAF).
+				The file picker returns a URI instead of a filesystem path. This URI can be passed directly to [FileAccess] to perform read/write operations.
+				When using [constant FILE_DIALOG_MODE_OPEN_DIR], it returns a tree URI that grants full access to the selected directory. File operations inside this directory can be performed by passing a path on the form [code]treeUri#relative/path/to/file[/code] to [FileAccess].
+				To avoid opening the file picker again after each app restart, you can take persistable URI permission as follows:
+				[codeblocks]
+				[gdscript]
+				val uri = "content://com.android..." # URI of the selected file or folder.
+				val persist = true # Set to false to release the persistable permission.
+				var android_runtime = Engine.get_singleton("AndroidRuntime")
+				android_runtime.updatePersistableUriPermission(uri, persist)
+				[/gdscript]
+				[/codeblocks]
+				The persistable URI permission remains valid across app restarts as long as the directory is not moved, renamed, or deleted.
 			</description>
 		</method>
 		<method name="file_dialog_with_options_show">
@@ -812,7 +827,7 @@
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int, selected_option: Dictionary[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE_EXTRA] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
-				[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
+				[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 				[b]Note:[/b] On Linux (X11), [param show_hidden] is ignored.
 				[b]Note:[/b] On macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
@@ -870,7 +885,7 @@
 		<method name="get_primary_screen" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns index of the primary screen.
+				Returns the index of the primary screen.
 				[b]Note:[/b] This method is implemented on Linux/X11, macOS, and Windows. On other platforms, this method always returns [code]0[/code].
 			</description>
 		</method>
@@ -1752,9 +1767,9 @@
 			<return type="Color" />
 			<param index="0" name="position" type="Vector2i" />
 			<description>
-				Returns color of the display pixel at the [param position].
-				[b]Note:[/b] This method is implemented on Linux (X11, excluding XWayland), macOS, and Windows. On other platforms, this method always returns [Color].
-				[b]Note:[/b] On macOS, this method requires the "Screen Recording" permission. If permission is not granted, this method returns a screenshot that will only contain the desktop wallpaper, the current application's window, and other related UI elements.
+				Returns the color of the pixel at the given screen [param position]. On multi-monitor setups, the screen position is relative to the virtual desktop area.
+				[b]Note:[/b] This method is implemented on Linux (X11, excluding XWayland), macOS, and Windows. On other platforms, this method always returns [code]Color(0, 0, 0, 1)[/code].
+				[b]Note:[/b] On macOS, this method requires the "Screen Recording" permission. If permission is not granted, this method returns a color from a screenshot that will not include other application windows or OS elements not related to the application.
 			</description>
 		</method>
 		<method name="screen_get_position" qualifiers="const">
@@ -1774,11 +1789,11 @@
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 			</description>
 		</method>
-		<method name="screen_get_refresh_rate" qualifiers="const">
+		<method name="screen_get_refresh_rate" qualifiers="const" keywords="vsync">
 			<return type="float" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the current refresh rate of the specified screen. Returns [code]-1.0[/code] if [param screen] is invalid or the [DisplayServer] fails to find the refresh rate for the specified screen.
+				Returns the current refresh rate of the specified screen. When V-Sync is enabled, this returns the maximum framerate the project can effectively reach. Returns [code]-1.0[/code] if [param screen] is invalid or the [DisplayServer] fails to find the refresh rate for the specified screen.
 				To fallback to a default refresh rate if the method fails, try:
 				[codeblock]
 				var refresh_rate = DisplayServer.screen_get_refresh_rate()
@@ -1845,7 +1860,7 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Sets the [param callable] that should be called when hardware keyboard is connected/disconnected. [param callable] should accept a single [bool] parameter indicating whether the keyboard is connected (true) or disconnected (false).
+				Sets the callback that should be called when a hardware keyboard is connected or disconnected. [param callable] should accept a single [bool] argument indicating whether the keyboard has been connected ([code]true[/code]) or disconnected ([code]false[/code]).
 				[b]Note:[/b] This method is only implemented on Android.
 			</description>
 		</method>
@@ -1869,7 +1884,7 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Sets the [param callable] that should be called when system theme settings are changed. Callback method should have zero arguments.
+				Sets the callback that should be called when the system's theme settings are changed. [param callable] should accept zero arguments.
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
 			</description>
 		</method>
@@ -2058,8 +2073,8 @@
 		<method name="virtual_keyboard_get_height" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
-				[b]Note:[/b] On Android 7 and 8, the keyboard height may return 0 the first time the keyboard is opened in non-immersive mode. This behavior does not occur in immersive mode.
+				Returns the on-screen keyboard's height in pixels. Returns [code]0[/code] if there is no keyboard or if it is currently hidden.
+				[b]Note:[/b] On Android 7 and 8, the keyboard height may return [code]0[/code] the first time the keyboard is opened in non-immersive mode. This behavior does not occur in immersive mode.
 			</description>
 		</method>
 		<method name="virtual_keyboard_hide">
@@ -2236,14 +2251,14 @@
 		<method name="window_maximize_on_title_dbl_click" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], if double-click on a window title should maximize it.
+				Returns [code]true[/code] if double-clicking on a window's title should maximize it.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
 		<method name="window_minimize_on_title_dbl_click" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], if double-click on a window title should minimize it.
+				Returns [code]true[/code] if double-clicking on a window's title should minimize it.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
@@ -2259,6 +2274,14 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Makes the window specified by [param window_id] request attention, which is materialized by the window title and taskbar entry blinking until the window is focused. This usually has no visible effect if the window is currently focused. The exact behavior varies depending on the operating system.
+			</description>
+		</method>
+		<method name="window_set_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the background color of the root window.
+				[b]Note:[/b] This method is implemented only on Android.
 			</description>
 		</method>
 		<method name="window_set_current_screen">
@@ -2550,7 +2573,8 @@
 			Display server supports querying the operating system's display scale factor. This allows automatically detecting the hiDPI display [i]reliably[/i], instead of guessing based on the screen resolution and the display's reported DPI (which might be unreliable due to broken monitor EDID). [b]Windows, Linux (Wayland), macOS[/b]
 		</constant>
 		<constant name="FEATURE_ICON" value="13" enum="Feature">
-			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS, Linux (X11)[/b]
+			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS, Linux (X11/Wayland)[/b]
+			[b]Note:[/b] Use on Wayland requires the compositor to implement the [url=https://wayland.app/protocols/xdg-toplevel-icon-v1#xdg_toplevel_icon_v1]xdg_toplevel_icon_v1[/url] protocol, which not all compositors do. See [url=https://wayland.app/protocols/xdg-toplevel-icon-v1#compositor-support]xdg_toplevel_icon_v1#compositor-support[/url] for more information on individual compositor support.
 		</constant>
 		<constant name="FEATURE_NATIVE_ICON" value="14" enum="Feature">
 			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS[/b]
@@ -2766,7 +2790,7 @@
 			Element is hidden for accessibility tools.
 		</constant>
 		<constant name="FLAG_MULTISELECTABLE" value="1" enum="AccessibilityFlags">
-			Element is support multiple item selection.
+			Element supports multiple item selection.
 		</constant>
 		<constant name="FLAG_REQUIRED" value="2" enum="AccessibilityFlags">
 			Element require user input.
@@ -3138,7 +3162,7 @@
 			[b]Note:[/b] This flag is implemented on macOS and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="13" enum="WindowFlags">
-			Max value of the [enum WindowFlags].
+			Represents the size of the [enum WindowFlags] enum.
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
 			Sent when the mouse pointer enters the window.
@@ -3168,7 +3192,7 @@
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="WINDOW_EVENT_FORCE_CLOSE" value="8" enum="WindowEvent">
-			Sent when the window has been forcibly closed by the Display Server. The window shall immediately hide and clean any internal rendering references.
+			Sent when the window has been forcibly closed by the display server. The window will immediately hide and clean any internal rendering references.
 			[b]Note:[/b] This flag is implemented only on Linux (Wayland).
 		</constant>
 		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">

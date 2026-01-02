@@ -143,10 +143,8 @@ class TextShaderEditor : public ShaderEditor {
 	Button *site_search = nullptr;
 	PopupMenu *context_menu = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
-	uint64_t idle = 0;
 
 	GotoLinePopup *goto_line_popup = nullptr;
-	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
 
 	ShaderTextEditor *code_editor = nullptr;
@@ -176,8 +174,8 @@ class TextShaderEditor : public ShaderEditor {
 
 	uint32_t dependencies_version = 0xFFFFFFFF;
 
-	bool trim_trailing_whitespace_on_save;
-	bool trim_final_newlines_on_save;
+	bool trim_trailing_whitespace_on_save = false;
+	bool trim_final_newlines_on_save = false;
 
 protected:
 	void _notification(int p_what);
@@ -191,11 +189,13 @@ protected:
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) override;
 	virtual void edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) override;
-	virtual void use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) override;
+	virtual void use_menu_bar(MenuButton *p_file_menu) override;
 
 	virtual void apply_shaders() override;
 	virtual bool is_unsaved() const override;
 	virtual void save_external_data(const String &p_str = "") override;
+	virtual void set_toggle_list_control(Control *p_toggle_list_control) override;
+	virtual void update_toggle_files_button() override;
 	virtual void validate_script() override;
 
 	bool was_compilation_successful() const { return compilation_success; }

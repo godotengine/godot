@@ -168,7 +168,7 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector<Color> cap_colours_bottom;
 			Vector<int> cap_indices_bottom;
 
-			const int index_offset = verts_size;
+			const int index_offset = verts.size();
 
 			const Vector<Vector2> &convex = decomp[i];
 			const int convex_size = convex.size();
@@ -198,7 +198,7 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector<Color> cap_colours_top;
 			Vector<int> cap_indices_top;
 
-			const int index_offset = verts_size;
+			const int index_offset = verts.size();
 
 			const Vector<Vector2> &convex = decomp[i];
 			const int convex_size = convex.size();

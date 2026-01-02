@@ -32,10 +32,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
-
-#ifdef DEBUG_ENABLED
 #include "core/os/os.h"
-#endif
 
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneMultiplayer::_profile_bandwidth(const String &p_what, int p_value) {

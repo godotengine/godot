@@ -30,21 +30,25 @@
 
 #include "scene_debugger.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/math_fieldwise.h"
 #include "core/object/script_language.h"
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
+#include "scene/2d/camera_2d.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/collision_object_2d.h"
@@ -205,6 +209,13 @@ Error SceneDebugger::_msg_next_frame(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_speed_changed(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	double time_scale_user = p_args[0];
+	Engine::get_singleton()->set_user_time_scale(time_scale_user);
+	return OK;
+}
+
 Error SceneDebugger::_msg_debug_mute_audio(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool do_mute = p_args[0];
@@ -216,40 +227,13 @@ Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enable = p_args[0];
 	bool from_editor = p_args[1];
-	SceneTree::get_singleton()->get_root()->enable_canvas_transform_override(enable);
+	SceneTree::get_singleton()->get_root()->enable_camera_2d_override(enable);
 #ifndef _3D_DISABLED
 	SceneTree::get_singleton()->get_root()->enable_camera_3d_override(enable);
 #endif // _3D_DISABLED
 	RuntimeNodeSelect::get_singleton()->_set_camera_override_enabled(enable && !from_editor);
 	return OK;
 }
-
-Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-	Transform2D transform = p_args[0];
-	SceneTree::get_singleton()->get_root()->set_canvas_transform_override(transform);
-	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
-	return OK;
-}
-
-#ifndef _3D_DISABLED
-Error SceneDebugger::_msg_transform_camera_3d(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.size() < 5, ERR_INVALID_DATA);
-	Transform3D transform = p_args[0];
-	bool is_perspective = p_args[1];
-	float size_or_fov = p_args[2];
-	float depth_near = p_args[3];
-	float depth_far = p_args[4];
-	if (is_perspective) {
-		SceneTree::get_singleton()->get_root()->set_camera_3d_override_perspective(size_or_fov, depth_near, depth_far);
-	} else {
-		SceneTree::get_singleton()->get_root()->set_camera_3d_override_orthogonal(size_or_fov, depth_near, depth_far);
-	}
-	SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(transform);
-	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
-	return OK;
-}
-#endif // _3D_DISABLED
 
 Error SceneDebugger::_msg_set_object_property(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
@@ -432,13 +416,59 @@ Error SceneDebugger::_msg_runtime_node_select_set_visible(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_runtime_node_select_set_avoid_locked(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	bool avoid_locked = p_args[0];
+	RuntimeNodeSelect::get_singleton()->_set_avoid_locked(avoid_locked);
+	return OK;
+}
+
+Error SceneDebugger::_msg_runtime_node_select_set_prefer_group(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	bool prefer_group = p_args[0];
+	RuntimeNodeSelect::get_singleton()->_set_prefer_group(prefer_group);
+	return OK;
+}
+
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_reset_camera_2d();
 	return OK;
 }
+
+Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_2d_override_enabled(), ERR_BUG);
+	Transform2D transform = p_args[0];
+	Camera2D *override_camera = SceneTree::get_singleton()->get_root()->get_override_camera_2d();
+	override_camera->set_offset(transform.affine_inverse().get_origin());
+	override_camera->set_zoom(transform.get_scale());
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
+	return OK;
+}
+
 #ifndef _3D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_3d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_reset_camera_3d();
+	return OK;
+}
+
+Error SceneDebugger::_msg_transform_camera_3d(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 5, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled(), ERR_BUG);
+	Transform3D transform = p_args[0];
+	bool is_perspective = p_args[1];
+	float size_or_fov = p_args[2];
+	float depth_near = p_args[3];
+	float depth_far = p_args[4];
+
+	Camera3D *override_camera = SceneTree::get_singleton()->get_root()->get_override_camera_3d();
+	if (is_perspective) {
+		override_camera->set_perspective(size_or_fov, depth_near, depth_far);
+	} else {
+		override_camera->set_orthogonal(size_or_fov, depth_near, depth_far);
+	}
+	override_camera->set_transform(transform);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
 #endif // _3D_DISABLED
@@ -522,12 +552,13 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["clear_selection"] = _msg_clear_selection;
 	message_handlers["suspend_changed"] = _msg_suspend_changed;
 	message_handlers["next_frame"] = _msg_next_frame;
+	message_handlers["speed_changed"] = _msg_speed_changed;
 	message_handlers["debug_mute_audio"] = _msg_debug_mute_audio;
 	message_handlers["override_cameras"] = _msg_override_cameras;
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
 #ifndef _3D_DISABLED
 	message_handlers["transform_camera_3d"] = _msg_transform_camera_3d;
-#endif
+#endif // _3D_DISABLED
 	message_handlers["set_object_property"] = _msg_set_object_property;
 	message_handlers["set_object_property_field"] = _msg_set_object_property_field;
 	message_handlers["reload_cached_files"] = _msg_reload_cached_files;
@@ -551,6 +582,8 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_set_type"] = _msg_runtime_node_select_set_type;
 	message_handlers["runtime_node_select_set_mode"] = _msg_runtime_node_select_set_mode;
 	message_handlers["runtime_node_select_set_visible"] = _msg_runtime_node_select_set_visible;
+	message_handlers["runtime_node_select_set_avoid_locked"] = _msg_runtime_node_select_set_avoid_locked;
+	message_handlers["runtime_node_select_set_prefer_group"] = _msg_runtime_node_select_set_prefer_group;
 	message_handlers["runtime_node_select_reset_camera_2d"] = _msg_runtime_node_select_reset_camera_2d;
 #ifndef _3D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
@@ -622,7 +655,7 @@ void SceneDebugger::_send_object_ids(const Vector<ObjectID> &p_ids, bool p_updat
 	}
 
 	if (p_update_selection) {
-		RuntimeNodeSelect::get_singleton()->_set_selected_nodes(nodes);
+		RuntimeNodeSelect::get_singleton()->_set_selected_nodes(Vector<Node *>(nodes));
 	}
 
 	if (objs_missing) {
@@ -647,19 +680,21 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 		return;
 	}
 
-	String prop_name = p_property;
+	String prop_name;
 	if (p_property.begins_with("Members/")) {
-		Vector<String> ss = p_property.split("/");
-		prop_name = ss[ss.size() - 1];
+		prop_name = p_property.get_slicec('/', p_property.get_slice_count("/") - 1);
+	} else {
+		prop_name = p_property;
 	}
 
-	Variant value;
-	if (p_field.is_empty()) {
-		// Whole value.
-		value = p_value;
-	} else {
-		// Only one field.
-		value = fieldwise_assign(obj->get(prop_name), p_value, p_field);
+	Variant value = p_value;
+	if (p_value.is_string() && (obj->get_static_property_type(prop_name) == Variant::OBJECT || p_property == "script")) {
+		value = ResourceLoader::load(p_value);
+	}
+
+	if (!p_field.is_empty()) {
+		// Only one specific field.
+		value = fieldwise_assign(obj->get(prop_name), value, p_field);
 	}
 
 	obj->set(prop_name, value);
@@ -720,26 +755,28 @@ void SceneDebugger::reload_cached_files(const PackedStringArray &p_files) {
 	}
 }
 
+SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) :
+		SceneDebuggerObject(ObjectDB::get_instance(p_id)) {
+}
+
 /// SceneDebuggerObject
-SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
-	id = ObjectID();
-	Object *obj = ObjectDB::get_instance(p_id);
-	if (!obj) {
+SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
+	if (!p_obj) {
 		return;
 	}
 
-	id = p_id;
-	class_name = obj->get_class();
+	id = p_obj->get_instance_id();
+	class_name = p_obj->get_class();
 
-	if (ScriptInstance *si = obj->get_script_instance()) {
-		// Read script instance constants and variables
+	if (ScriptInstance *si = p_obj->get_script_instance()) {
+		// Read script instance constants and variables.
 		if (!si->get_script().is_null()) {
 			Script *s = si->get_script().ptr();
 			_parse_script_properties(s, si);
 		}
 	}
 
-	if (Node *node = Object::cast_to<Node>(obj)) {
+	if (Node *node = Object::cast_to<Node>(p_obj)) {
 		// For debugging multiplayer.
 		{
 			PropertyInfo pi(Variant::INT, String("Node/multiplayer_authority"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
@@ -754,17 +791,17 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 			PropertyInfo pi(Variant::STRING, String("Node/path"));
 			properties.push_back(SceneDebuggerProperty(pi, "[Orphan]"));
 		}
-	} else if (Script *s = Object::cast_to<Script>(obj)) {
+	} else if (Script *s = Object::cast_to<Script>(p_obj)) {
 		// Add script constants (no instance).
 		_parse_script_properties(s, nullptr);
 	}
 
 	// Add base object properties.
 	List<PropertyInfo> pinfo;
-	obj->get_property_list(&pinfo, true);
+	p_obj->get_property_list(&pinfo, true);
 	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-			properties.push_back(SceneDebuggerProperty(E, obj->get(E.name)));
+			properties.push_back(SceneDebuggerProperty(E, p_obj->get(E.name)));
 		}
 	}
 }
@@ -796,9 +833,28 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 		base = base->get_base_script();
 	}
 
+	HashSet<String> exported_members;
+
+	if (p_instance) {
+		List<PropertyInfo> pinfo;
+		p_instance->get_property_list(&pinfo);
+		for (const PropertyInfo &E : pinfo) {
+			if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
+				exported_members.insert(E.name);
+			}
+		}
+	}
+
 	// Members
 	for (KeyValue<const Script *, HashSet<StringName>> sm : members) {
 		for (const StringName &E : sm.value) {
+			if (exported_members.has(E)) {
+				continue; // Exported variables already show up in the inspector.
+			}
+			if (String(E).begins_with("@")) {
+				continue; // Skip groups.
+			}
+
 			Variant m;
 			if (p_instance->get(E, m)) {
 				String script_path = sm.key == p_script ? "" : sm.key->get_path().get_file() + "/";
@@ -825,7 +881,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 	Array send_props;
-	for (SceneDebuggerObject::SceneDebuggerProperty &property : properties) {
+	for (SceneDebuggerProperty &property : properties) {
 		const PropertyInfo &pi = property.first;
 		Variant &var = property.second;
 
@@ -863,13 +919,16 @@ void SceneDebuggerObject::deserialize(const Array &p_arr) {
 	CHECK_TYPE(p_arr[1], STRING);
 	CHECK_TYPE(p_arr[2], ARRAY);
 
-	id = uint64_t(p_arr[0]);
-	class_name = p_arr[1];
-	Array props = p_arr[2];
+	deserialize(uint64_t(p_arr[0]), p_arr[1], p_arr[2]);
+}
 
-	for (int i = 0; i < props.size(); i++) {
-		CHECK_TYPE(props[i], ARRAY);
-		Array prop = props[i];
+void SceneDebuggerObject::deserialize(uint64_t p_id, const String &p_class_name, const Array &p_props) {
+	id = p_id;
+	class_name = p_class_name;
+
+	for (int i = 0; i < p_props.size(); i++) {
+		CHECK_TYPE(p_props[i], ARRAY);
+		Array prop = p_props[i];
 
 		ERR_FAIL_COND(prop.size() != 6);
 		CHECK_TYPE(prop[0], STRING);
@@ -1292,11 +1351,9 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		return; //scene not editable
 	}
 
-	Vector<Node *> to_delete;
+	LocalVector<Node *> to_delete;
 
-	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
-		Node *n = *F;
-
+	for (const Node *n : E->value) {
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
@@ -1309,8 +1366,8 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		to_delete.push_back(n2);
 	}
 
-	for (int i = 0; i < to_delete.size(); i++) {
-		memdelete(to_delete[i]);
+	for (Node *node : to_delete) {
+		memdelete(node);
 	}
 }
 
@@ -1330,10 +1387,8 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		return; //scene not editable
 	}
 
-	Vector<Node *> to_remove;
-	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
-		Node *n = *F;
-
+	LocalVector<Node *> to_remove;
+	for (Node *n : E->value) {
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
@@ -1345,8 +1400,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		to_remove.push_back(n);
 	}
 
-	for (int i = 0; i < to_remove.size(); i++) {
-		Node *n = to_remove[i];
+	for (Node *n : to_remove) {
 		Node *n2 = n->get_node(p_at);
 		n2->get_parent()->remove_child(n2);
 		live_edit_remove_list[n][p_keep_id] = n2;
@@ -1500,9 +1554,9 @@ RuntimeNodeSelect::~RuntimeNodeSelect() {
 	}
 
 	if (draw_canvas.is_valid()) {
-		RS::get_singleton()->free(sel_drag_ci);
-		RS::get_singleton()->free(sbox_2d_ci);
-		RS::get_singleton()->free(draw_canvas);
+		RS::get_singleton()->free_rid(sel_drag_ci);
+		RS::get_singleton()->free_rid(sbox_2d_ci);
+		RS::get_singleton()->free_rid(draw_canvas);
 	}
 }
 
@@ -1527,6 +1581,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	panner->set_scroll_speed(pan_speed);
 
 	sel_2d_grab_dist = p_settings.get("editors/polygon_editor/point_grab_radius", 0);
+	sel_2d_scale = MAX(1, Math::ceil(2.0 / (float)GLOBAL_GET("display/window/stretch/scale")));
 
 	selection_area_fill = p_settings.get("box_selection_fill_color", Color());
 	selection_area_outline = p_settings.get("box_selection_stroke_color", Color());
@@ -1621,23 +1676,24 @@ void RuntimeNodeSelect::_select_set_mode(SelectMode p_mode) {
 void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 	camera_override = p_enabled;
 
-	if (p_enabled) {
-		_update_view_2d();
-	}
-
-#ifndef _3D_DISABLED
 	if (camera_first_override) {
 		_reset_camera_2d();
+#ifndef _3D_DISABLED
 		_reset_camera_3d();
+#endif // _3D_DISABLED
 
 		camera_first_override = false;
 	} else if (p_enabled) {
 		_update_view_2d();
 
-		SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(_get_cursor_transform());
-		SceneTree::get_singleton()->get_root()->set_camera_3d_override_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
-	}
+#ifndef _3D_DISABLED
+		Window *root = SceneTree::get_singleton()->get_root();
+		ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
+		Camera3D *override_camera = root->get_override_camera_3d();
+		override_camera->set_transform(_get_cursor_transform());
+		override_camera->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
 #endif // _3D_DISABLED
+	}
 }
 
 void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
@@ -1779,13 +1835,16 @@ void RuntimeNodeSelect::_process_frame() {
 		}
 
 		if (direction != Vector3()) {
+			Window *root = SceneTree::get_singleton()->get_root();
+			ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
+
 			// Calculate the process time manually, as the time scale is frozen.
 			const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second()) * Engine::get_singleton()->get_unfrozen_time_scale();
 			const Vector3 motion = direction * speed * process_time;
 			cursor.pos += motion;
 			cursor.eye_pos += motion;
 
-			SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(_get_cursor_transform());
+			root->get_override_camera_3d()->set_transform(_get_cursor_transform());
 		}
 	}
 #endif // _3D_DISABLED
@@ -1818,18 +1877,6 @@ void RuntimeNodeSelect::_physics_frame() {
 			}
 		}
 
-		// Remove possible duplicates.
-		for (int i = 0; i < items.size(); i++) {
-			Node *item = items[i].item;
-			for (int j = 0; j < i; j++) {
-				if (items[j].item == item) {
-					items.remove_at(i);
-					i--;
-
-					break;
-				}
-			}
-		}
 #ifndef _3D_DISABLED
 	} else if (node_select_type == NODE_TYPE_3D) {
 		if (selection_drag_valid) {
@@ -1838,6 +1885,59 @@ void RuntimeNodeSelect::_physics_frame() {
 			_find_3d_items_at_pos(selection_position, items);
 		}
 #endif // _3D_DISABLED
+	}
+
+	if ((prefer_group_selection || avoid_locked_nodes) && !list_shortcut_pressed && node_select_mode == SELECT_MODE_SINGLE) {
+		for (int i = 0; i < items.size(); i++) {
+			Node *node = items[i].item;
+			Node *final_node = node;
+			real_t order = items[i].order;
+
+			// Replace the node by the group if grouped.
+			if (prefer_group_selection) {
+				while (node && node != root) {
+					if (node->has_meta("_edit_group_")) {
+						final_node = node;
+
+						if (Object::cast_to<CanvasItem>(final_node)) {
+							CanvasItem *ci_tmp = Object::cast_to<CanvasItem>(final_node);
+							order = ci_tmp->get_effective_z_index() + ci_tmp->get_canvas_layer();
+#ifndef _3D_DISABLED
+						} else if (Object::cast_to<Node3D>(final_node)) {
+							Node3D *node3d_tmp = Object::cast_to<Node3D>(final_node);
+							Camera3D *camera = root->get_camera_3d();
+							Vector3 pos = camera->project_ray_origin(selection_position);
+							order = -pos.distance_to(node3d_tmp->get_global_transform().origin);
+#endif // _3D_DISABLED
+						}
+					}
+					node = node->get_parent();
+				}
+			}
+
+			// Filter out locked nodes.
+			if (avoid_locked_nodes && final_node->get_meta("_edit_lock_", false)) {
+				items.remove_at(i);
+				i--;
+				continue;
+			}
+
+			items.write[i].item = final_node;
+			items.write[i].order = order;
+		}
+	}
+
+	// Remove possible duplicates.
+	for (int i = 0; i < items.size(); i++) {
+		Node *item = items[i].item;
+		for (int j = 0; j < i; j++) {
+			if (items[j].item == item) {
+				items.remove_at(i);
+				i--;
+
+				break;
+			}
+		}
 	}
 
 	items.sort();
@@ -2008,7 +2108,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 		EngineDebugger::get_singleton()->send_message("remote_objects_selected", message);
 	}
 
-	_set_selected_nodes(nodes);
+	_set_selected_nodes(Vector<Node *>(nodes));
 }
 
 void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
@@ -2114,8 +2214,6 @@ void RuntimeNodeSelect::_queue_selection_update() {
 }
 
 void RuntimeNodeSelect::_update_selection() {
-	Window *root = SceneTree::get_singleton()->get_root();
-
 	RS::get_singleton()->canvas_item_clear(sbox_2d_ci);
 	RS::get_singleton()->canvas_item_set_visible(sbox_2d_ci, selection_visible);
 
@@ -2132,13 +2230,7 @@ void RuntimeNodeSelect::_update_selection() {
 			continue;
 		}
 
-		Transform2D xform;
-		// Cameras (overridden or not) don't affect `CanvasLayer`s.
-		if (root->is_canvas_transform_override_enabled() && !(ci->get_canvas_layer_node() && !ci->get_canvas_layer_node()->is_following_viewport())) {
-			xform = root->get_canvas_transform_override() * ci->get_global_transform();
-		} else {
-			xform = ci->get_global_transform_with_canvas();
-		}
+		Transform2D xform = ci->get_global_transform_with_canvas();
 
 		// Fallback.
 		Rect2 rect = Rect2(Vector2(), Vector2(10, 10));
@@ -2166,7 +2258,7 @@ void RuntimeNodeSelect::_update_selection() {
 
 		const Color selection_color_2d = Color(1, 0.6, 0.4, 0.7);
 		for (int i = 0; i < 4; i++) {
-			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, 2);
+			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, sel_2d_scale);
 		}
 	}
 
@@ -2270,27 +2362,8 @@ void RuntimeNodeSelect::_update_selection_drag(const Point2 &p_end_pos) {
 		return;
 	}
 
-	Window *root = SceneTree::get_singleton()->get_root();
-	Rect2 selection_drawing;
-	int thickness;
-	if (root->is_canvas_transform_override_enabled()) {
-		Transform2D xform = root->get_canvas_transform_override();
-		RS::get_singleton()->canvas_item_set_transform(sel_drag_ci, xform);
-		RS::get_singleton()->canvas_item_reset_physics_interpolation(sel_drag_ci);
-
-		selection_drawing.position = xform.affine_inverse().xform(selection_drag_area.position);
-		selection_drawing.size = xform.affine_inverse().xform(p_end_pos);
-		thickness = MAX(1, Math::ceil(1 / view_2d_zoom));
-	} else {
-		RS::get_singleton()->canvas_item_set_transform(sel_drag_ci, Transform2D());
-		RS::get_singleton()->canvas_item_reset_physics_interpolation(sel_drag_ci);
-
-		selection_drawing.position = selection_drag_area.position;
-		selection_drawing.size = p_end_pos;
-		thickness = 1;
-	}
-	selection_drawing.size -= selection_drawing.position;
-	selection_drawing = selection_drawing.abs();
+	Rect2 selection_drawing = selection_drag_area.abs();
+	int thickness = 1;
 
 	const Vector2 endpoints[4] = {
 		selection_drawing.position,
@@ -2320,13 +2393,40 @@ void RuntimeNodeSelect::_open_selection_list(const Vector<SelectResult> &p_items
 	root->add_child(selection_list);
 
 	for (const SelectResult &I : p_items) {
-		selection_list->add_item(I.item->get_name());
+		int locked = 0;
+		if (I.item->get_meta("_edit_lock_", false)) {
+			locked = 1;
+		} else {
+			Node *scene = SceneTree::get_singleton()->get_root();
+			Node *node = I.item;
+
+			while (node && node != scene->get_parent()) {
+				if (node->has_meta("_edit_group_")) {
+					locked = 2;
+				}
+				node = node->get_parent();
+			}
+		}
+
+		String suffix;
+		if (locked == 1) {
+			suffix = " (" + RTR("Locked") + ")";
+		} else if (locked == 2) {
+			suffix = " (" + RTR("Grouped") + ")";
+		}
+
+		selection_list->add_item((String)I.item->get_name() + suffix);
 		selection_list->set_item_metadata(-1, I.item);
 	}
 
 	selection_list->set_position(selection_list->is_embedded() ? p_pos : (Input::get_singleton()->get_mouse_position() + root->get_position()));
 	selection_list->reset_size();
 	selection_list->popup();
+
+	selection_list->set_content_scale_factor(1);
+	selection_list->set_min_size(selection_list->get_contents_minimum_size());
+	selection_list->reset_size();
+
 	// FIXME: Ugly hack that stops the popup from hiding when the button is released.
 	selection_list->call_deferred(SNAME("set_position"), selection_list->get_position() + Point2(1, 0));
 }
@@ -2342,6 +2442,14 @@ void RuntimeNodeSelect::_set_selection_visible(bool p_visible) {
 	if (has_selection) {
 		_update_selection();
 	}
+}
+
+void RuntimeNodeSelect::_set_avoid_locked(bool p_enabled) {
+	avoid_locked_nodes = p_enabled;
+}
+
+void RuntimeNodeSelect::_set_prefer_group(bool p_enabled) {
+	prefer_group_selection = p_enabled;
 }
 
 // Copied and trimmed from the CanvasItemEditor implementation.
@@ -2375,9 +2483,10 @@ void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_n
 
 	Window *root = SceneTree::get_singleton()->get_root();
 	Point2 pos;
-	// Cameras (overridden or not) don't affect `CanvasLayer`s.
+
+	// Cameras don't affect `CanvasLayer`s.
 	if (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport()) {
-		pos = (root->is_canvas_transform_override_enabled() ? root->get_canvas_transform_override() : root->get_canvas_transform()).affine_inverse().xform(p_pos);
+		pos = root->get_canvas_transform().affine_inverse().xform(p_pos);
 	} else {
 		pos = p_pos;
 	}
@@ -2437,9 +2546,9 @@ void RuntimeNodeSelect::_find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_
 
 	Window *root = SceneTree::get_singleton()->get_root();
 	Rect2 rect;
-	// Cameras (overridden or not) don't affect `CanvasLayer`s.
+	// Cameras don't affect `CanvasLayer`s.
 	if (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport()) {
-		rect = (root->is_canvas_transform_override_enabled() ? root->get_canvas_transform_override() : root->get_canvas_transform()).affine_inverse().xform(p_rect);
+		rect = root->get_canvas_transform().affine_inverse().xform(p_rect);
 	} else {
 		rect = p_rect;
 	}
@@ -2498,18 +2607,31 @@ void RuntimeNodeSelect::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Re
 }
 
 void RuntimeNodeSelect::_reset_camera_2d() {
-	view_2d_offset = -SceneTree::get_singleton()->get_root()->get_canvas_transform().get_origin();
+	camera_first_override = true;
+	Window *root = SceneTree::get_singleton()->get_root();
+	Camera2D *game_camera = root->is_camera_2d_override_enabled() ? root->get_overridden_camera_2d() : root->get_camera_2d();
+	if (game_camera) {
+		// Ideally we should be using Camera2D::get_camera_transform() but it's not so this hack will have to do for now.
+		view_2d_offset = game_camera->get_camera_screen_center() - (0.5 * root->get_visible_rect().size);
+	} else {
+		view_2d_offset = Vector2();
+	}
+
 	view_2d_zoom = 1;
 
-	_update_view_2d();
+	if (root->is_camera_2d_override_enabled()) {
+		_update_view_2d();
+	}
 }
 
 void RuntimeNodeSelect::_update_view_2d() {
-	Transform2D transform = Transform2D();
-	transform.scale_basis(Size2(view_2d_zoom, view_2d_zoom));
-	transform.columns[2] = -view_2d_offset * view_2d_zoom;
+	Window *root = SceneTree::get_singleton()->get_root();
+	ERR_FAIL_COND(!root->is_camera_2d_override_enabled());
 
-	SceneTree::get_singleton()->get_root()->set_canvas_transform_override(transform);
+	Camera2D *override_camera = root->get_override_camera_2d();
+	override_camera->set_anchor_mode(Camera2D::ANCHOR_MODE_FIXED_TOP_LEFT);
+	override_camera->set_zoom(Vector2(view_2d_zoom, view_2d_zoom));
+	override_camera->set_offset(view_2d_offset);
 
 	_queue_selection_update();
 }
@@ -2519,20 +2641,14 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 	Window *root = SceneTree::get_singleton()->get_root();
 
 	Vector3 ray, pos, to;
-	if (root->is_camera_3d_override_enabled()) {
-		ray = root->camera_3d_override_project_ray_normal(p_pos);
-		pos = root->camera_3d_override_project_ray_origin(p_pos);
-		to = pos + ray * root->get_camera_3d_override_properties()["z_far"];
-	} else {
-		Camera3D *camera = root->get_camera_3d();
-		if (!camera) {
-			return;
-		}
-
-		ray = camera->project_ray_normal(p_pos);
-		pos = camera->project_ray_origin(p_pos);
-		to = pos + ray * camera->get_far();
+	Camera3D *camera = root->get_camera_3d();
+	if (!camera) {
+		return;
 	}
+
+	ray = camera->project_ray_normal(p_pos);
+	pos = camera->project_ray_origin(p_pos);
+	to = pos + ray * camera->get_far();
 
 #ifndef PHYSICS_3D_DISABLED
 	// Start with physical objects.
@@ -2608,30 +2724,12 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 		return;
 	}
 
-	bool cam_override = root->is_camera_3d_override_enabled();
-	Vector3 cam_pos;
-	Vector3 dist_pos;
-	if (cam_override) {
-		cam_pos = root->get_camera_3d_override_transform().origin;
-		dist_pos = root->camera_3d_override_project_ray_origin(p_rect.position + p_rect.size / 2);
-	} else {
-		cam_pos = camera->get_global_position();
-		dist_pos = camera->project_ray_origin(p_rect.position + p_rect.size / 2);
-	}
+	Vector3 cam_pos = camera->get_global_position();
+	Vector3 dist_pos = camera->project_ray_origin(p_rect.position + p_rect.size / 2);
 
-	real_t znear, zfar = 0;
-	real_t zofs = 5.0;
-	if (cam_override) {
-		HashMap<StringName, real_t> override_props = root->get_camera_3d_override_properties();
-		znear = override_props["z_near"];
-		zfar = override_props["z_far"];
-		zofs -= znear;
-	} else {
-		znear = camera->get_near();
-		zfar = camera->get_far();
-		zofs -= znear;
-	}
-	zofs = MAX(0.0, zofs);
+	real_t znear = camera->get_near();
+	real_t zfar = camera->get_far();
+	real_t zofs = MAX(0.0, 5.0 - znear);
 
 	const Point2 pos_end = p_rect.position + p_rect.size;
 	Vector3 box[4] = {
@@ -2660,19 +2758,18 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 		frustum.push_back(Plane(a, b, cam_pos));
 	}
 
-	Plane near_plane;
 	// Get the camera normal.
-	if (cam_override) {
-		near_plane = Plane(root->get_camera_3d_override_transform().basis.get_column(2), cam_pos);
-	} else {
-		near_plane = Plane(camera->get_global_transform().basis.get_column(2), cam_pos);
-	}
+	Plane near_plane = Plane(camera->get_global_transform().basis.get_column(2), cam_pos);
+
 	near_plane.d -= znear;
 	frustum.push_back(near_plane);
 
 	Plane far_plane = -near_plane;
 	far_plane.d += zfar;
 	frustum.push_back(far_plane);
+
+	// Keep track of the currently listed nodes, so repeats can be ignored.
+	HashSet<Node *> node_list;
 
 #ifndef PHYSICS_3D_DISABLED
 	Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&frustum[0], frustum.size());
@@ -2682,11 +2779,13 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::ShapeResult result;
+	PhysicsDirectSpaceState3D::ShapeResult results[32];
 	PhysicsDirectSpaceState3D::ShapeParameters shape_params;
 	shape_params.shape_rid = shape->get_rid();
 	shape_params.collide_with_areas = true;
-	if (ss->intersect_shape(shape_params, &result, 32)) {
+	const int num_hits = ss->intersect_shape(shape_params, results, 32);
+	for (int i = 0; i < num_hits; i++) {
+		const PhysicsDirectSpaceState3D::ShapeResult &result = results[i];
 		SelectResult res;
 		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
@@ -2699,12 +2798,18 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 			for (uint32_t &I : owners) {
 				SelectResult res_shape;
 				res_shape.item = Object::cast_to<Node>(collision->shape_owner_get_owner(I));
-				res_shape.order = res.order;
-				r_items.push_back(res_shape);
+				if (!node_list.has(res_shape.item)) {
+					node_list.insert(res_shape.item);
+					res_shape.order = res.order;
+					r_items.push_back(res_shape);
+				}
 			}
 		}
 
-		r_items.push_back(res);
+		if (!node_list.has(res.item)) {
+			node_list.insert(res.item);
+			r_items.push_back(res);
+		}
 	}
 #endif // PHYSICS_3D_DISABLED
 
@@ -2734,8 +2839,11 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 				if (mesh_collision->inside_convex_shape(transformed_frustum.ptr(), transformed_frustum.size(), convex_points.ptr(), convex_points.size(), mesh_scale)) {
 					SelectResult res;
 					res.item = Object::cast_to<Node>(obj);
-					res.order = -dist_pos.distance_to(gt.origin);
-					r_items.push_back(res);
+					if (!node_list.has(res.item)) {
+						node_list.insert(res.item);
+						res.order = -dist_pos.distance_to(gt.origin);
+						r_items.push_back(res);
+					}
 
 					continue;
 				}
@@ -2751,27 +2859,10 @@ Vector3 RuntimeNodeSelect::_get_screen_to_space(const Vector3 &p_vector3) {
 	Window *root = SceneTree::get_singleton()->get_root();
 	Camera3D *camera = root->get_camera_3d();
 
+	Transform3D camera_transform = camera->get_camera_transform();
 	Size2 size = root->get_size();
-	real_t znear = 0;
-
-	Projection cm;
-	Transform3D camera_transform;
-	if (root->is_camera_3d_override_enabled()) {
-		HashMap<StringName, real_t> override_props = root->get_camera_3d_override_properties();
-		znear = override_props["z_near"];
-		cm.set_perspective(override_props["fov"], size.aspect(), znear + p_vector3.z, override_props["z_far"]);
-
-		camera_transform.translate_local(cursor.pos);
-		camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
-		camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
-		camera_transform.translate_local(0, 0, cursor.distance);
-	} else {
-		znear = camera->get_near();
-		cm.set_perspective(camera->get_fov(), size.aspect(), znear + p_vector3.z, camera->get_far());
-
-		camera_transform = camera->get_camera_transform();
-	}
-
+	real_t znear = camera->get_near();
+	Projection cm = Projection::create_perspective(camera->get_fov(), size.aspect(), znear + p_vector3.z, camera->get_far());
 	Vector2 screen_he = cm.get_viewport_half_extents();
 	return camera_transform.xform(Vector3(((p_vector3.x / size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (p_vector3.y / size.height)) * 2.0 - 1.0) * screen_he.y, -(znear + p_vector3.z)));
 }
@@ -2831,20 +2922,23 @@ bool RuntimeNodeSelect::_handle_3d_input(const Ref<InputEvent> &p_event) {
 		} else if (k->is_ctrl_pressed()) {
 			switch (k->get_physical_keycode()) {
 				case Key::EQUAL: {
+					ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled(), false);
 					cursor.fov_scale = CLAMP(cursor.fov_scale - 0.05, CAMERA_MIN_FOV_SCALE, CAMERA_MAX_FOV_SCALE);
-					SceneTree::get_singleton()->get_root()->set_camera_3d_override_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
+					SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
 
 					return true;
 				} break;
 				case Key::MINUS: {
+					ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled(), false);
 					cursor.fov_scale = CLAMP(cursor.fov_scale + 0.05, CAMERA_MIN_FOV_SCALE, CAMERA_MAX_FOV_SCALE);
-					SceneTree::get_singleton()->get_root()->set_camera_3d_override_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
+					SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
 
 					return true;
 				} break;
 				case Key::KEY_0: {
+					ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled(), false);
 					cursor.fov_scale = 1;
-					SceneTree::get_singleton()->get_root()->set_camera_3d_override_perspective(camera_fov, camera_znear, camera_zfar);
+					SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_perspective(camera_fov, camera_znear, camera_zfar);
 
 					return true;
 				} break;
@@ -2884,11 +2978,12 @@ void RuntimeNodeSelect::_set_camera_freelook_enabled(bool p_enabled) {
 }
 
 void RuntimeNodeSelect::_cursor_scale_distance(real_t p_scale) {
+	ERR_FAIL_COND(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled());
 	real_t min_distance = MAX(camera_znear * 4, VIEW_3D_MIN_ZOOM);
 	real_t max_distance = MIN(camera_zfar / 4, VIEW_3D_MAX_ZOOM);
 	cursor.distance = CLAMP(cursor.distance * p_scale, min_distance, max_distance);
 
-	SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(_get_cursor_transform());
+	SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_transform(_get_cursor_transform());
 }
 
 void RuntimeNodeSelect::_scale_freelook_speed(real_t p_scale) {
@@ -2903,6 +2998,8 @@ void RuntimeNodeSelect::_scale_freelook_speed(real_t p_scale) {
 
 void RuntimeNodeSelect::_cursor_look(Ref<InputEventWithModifiers> p_event) {
 	Window *root = SceneTree::get_singleton()->get_root();
+	ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
+
 	const Vector2 relative = _get_warped_mouse_motion(p_event, Rect2(Vector2(), root->get_size()));
 	const Transform3D prev_camera_transform = _get_cursor_transform();
 
@@ -2923,11 +3020,13 @@ void RuntimeNodeSelect::_cursor_look(Ref<InputEventWithModifiers> p_event) {
 	Vector3 diff = prev_pos - pos;
 	cursor.pos += diff;
 
-	SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(_get_cursor_transform());
+	root->get_override_camera_3d()->set_transform(_get_cursor_transform());
 }
 
 void RuntimeNodeSelect::_cursor_pan(Ref<InputEventWithModifiers> p_event) {
 	Window *root = SceneTree::get_singleton()->get_root();
+	ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
+
 	// Reduce all sides of the area by 1, so warping works when windows are maximized/fullscreen.
 	const Vector2 relative = _get_warped_mouse_motion(p_event, Rect2(Vector2(1, 1), root->get_size() - Vector2(2, 2)));
 	const real_t pan_speed = translation_sensitivity / 150.0;
@@ -2942,11 +3041,13 @@ void RuntimeNodeSelect::_cursor_pan(Ref<InputEventWithModifiers> p_event) {
 	camera_transform.translate_local(translation);
 	cursor.pos = camera_transform.origin;
 
-	SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(_get_cursor_transform());
+	root->get_override_camera_3d()->set_transform(_get_cursor_transform());
 }
 
 void RuntimeNodeSelect::_cursor_orbit(Ref<InputEventWithModifiers> p_event) {
 	Window *root = SceneTree::get_singleton()->get_root();
+	ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
+
 	// Reduce all sides of the area by 1, so warping works when windows are maximized/fullscreen.
 	const Vector2 relative = _get_warped_mouse_motion(p_event, Rect2(Vector2(1, 1), root->get_size() - Vector2(2, 2)));
 
@@ -2964,7 +3065,7 @@ void RuntimeNodeSelect::_cursor_orbit(Ref<InputEventWithModifiers> p_event) {
 		cursor.y_rot += relative.x * orbit_sensitivity;
 	}
 
-	SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(_get_cursor_transform());
+	root->get_override_camera_3d()->set_transform(_get_cursor_transform());
 }
 
 Point2 RuntimeNodeSelect::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_event, Rect2 p_area) const {
@@ -2992,22 +3093,25 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 
 	cursor = Cursor();
 	Window *root = SceneTree::get_singleton()->get_root();
-	Camera3D *camera = root->get_camera_3d();
-	if (camera) {
-		Transform3D transform = camera->get_global_transform();
+	Camera3D *game_camera = root->is_camera_3d_override_enabled() ? root->get_overridden_camera_3d() : root->get_camera_3d();
+	if (game_camera) {
+		Transform3D transform = game_camera->get_camera_transform();
 		transform.translate_local(0, 0, -cursor.distance);
 		cursor.pos = transform.origin;
 
-		cursor.x_rot = -camera->get_global_rotation().x;
-		cursor.y_rot = -camera->get_global_rotation().y;
+		cursor.x_rot = -game_camera->get_global_rotation().x;
+		cursor.y_rot = -game_camera->get_global_rotation().y;
 
-		cursor.fov_scale = CLAMP(camera->get_fov() / camera_fov, CAMERA_MIN_FOV_SCALE, CAMERA_MAX_FOV_SCALE);
+		cursor.fov_scale = CLAMP(game_camera->get_fov() / camera_fov, CAMERA_MIN_FOV_SCALE, CAMERA_MAX_FOV_SCALE);
 	} else {
 		cursor.fov_scale = 1.0;
 	}
 
-	SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(_get_cursor_transform());
-	SceneTree::get_singleton()->get_root()->set_camera_3d_override_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
+	if (root->is_camera_3d_override_enabled()) {
+		Camera3D *override_camera = root->get_override_camera_3d();
+		override_camera->set_transform(_get_cursor_transform());
+		override_camera->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
+	}
 }
 #endif // _3D_DISABLED
 

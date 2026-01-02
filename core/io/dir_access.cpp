@@ -326,7 +326,7 @@ Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error
 
 	if (!p_prefix.is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
-		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
+		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
 	}
 
 	Ref<DirAccess> dir_access = DirAccess::open(OS::get_singleton()->get_temp_path());
@@ -351,7 +351,7 @@ Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error
 	Error err = dir_access->make_dir(path);
 	if (err != OK) {
 		*r_error = err;
-		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" couldn't create directory "%s".)", ERROR_COMMON_PREFIX, path));
+		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" couldn't create directory "%s".)", ERROR_COMMON_PREFIX, path));
 	}
 	err = dir_access->change_dir(path);
 	if (err != OK) {

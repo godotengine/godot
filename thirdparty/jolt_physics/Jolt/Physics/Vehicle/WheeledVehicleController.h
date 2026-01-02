@@ -155,7 +155,13 @@ public:
 	void						SetRPMMeter(Vec3Arg inPosition, float inSize) { mRPMMeterPosition = inPosition; mRPMMeterSize = inSize; }
 #endif // JPH_DEBUG_RENDERER
 
+	// See: VehicleController
+	virtual Ref<VehicleControllerSettings> GetSettings() const override;
+
 protected:
+	/// Convert controller back to settings
+	void						ToSettings(WheeledVehicleControllerSettings &outSettings) const;
+
 	// See: VehicleController
 	virtual Wheel *				ConstructWheel(const WheelSettings &inWheel) const override { JPH_ASSERT(IsKindOf(&inWheel, JPH_RTTI(WheelSettingsWV))); return new WheelWV(static_cast<const WheelSettingsWV &>(inWheel)); }
 	virtual bool				AllowSleep() const override;

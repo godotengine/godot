@@ -59,7 +59,7 @@ void GLTFDocumentExtension::_bind_methods() {
 }
 
 // Import process.
-Error GLTFDocumentExtension::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
+Error GLTFDocumentExtension::import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) {
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
 	GDVIRTUAL_CALL(_import_preflight, p_state, p_extensions, err);
@@ -72,11 +72,11 @@ Vector<String> GLTFDocumentExtension::get_supported_extensions() {
 	return ret;
 }
 
-Error GLTFDocumentExtension::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &p_extensions) {
+Error GLTFDocumentExtension::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, const Dictionary &p_extensions) {
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_gltf_node.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_parse_node_extensions, p_state, p_gltf_node, p_extensions, err);
+	GDVIRTUAL_CALL(_parse_node_extensions, p_state, p_gltf_node, Dictionary(p_extensions), err);
 	return err;
 }
 
@@ -98,7 +98,7 @@ Error GLTFDocumentExtension::parse_texture_json(Ref<GLTFState> p_state, const Di
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(r_gltf_texture.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_parse_texture_json, p_state, p_texture_json, r_gltf_texture, err);
+	GDVIRTUAL_CALL(_parse_texture_json, p_state, Dictionary(p_texture_json), r_gltf_texture, err);
 	return err;
 }
 
@@ -136,7 +136,7 @@ Error GLTFDocumentExtension::import_node(Ref<GLTFState> p_state, Ref<GLTFNode> p
 	ERR_FAIL_COND_V(p_gltf_node.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_import_node, p_state, p_gltf_node, r_dict, p_node, err);
+	GDVIRTUAL_CALL(_import_node, p_state, p_gltf_node, Dictionary(r_dict), p_node, err);
 	return err;
 }
 
@@ -193,11 +193,11 @@ Vector<String> GLTFDocumentExtension::get_saveable_image_formats() {
 	return ret;
 }
 
-PackedByteArray GLTFDocumentExtension::serialize_image_to_bytes(Ref<GLTFState> p_state, Ref<Image> p_image, Dictionary p_image_dict, const String &p_image_format, float p_lossy_quality) {
+PackedByteArray GLTFDocumentExtension::serialize_image_to_bytes(Ref<GLTFState> p_state, Ref<Image> p_image, Dictionary &r_image_dict, const String &p_image_format, float p_lossy_quality) {
 	PackedByteArray ret;
 	ERR_FAIL_COND_V(p_state.is_null(), ret);
 	ERR_FAIL_COND_V(p_image.is_null(), ret);
-	GDVIRTUAL_CALL(_serialize_image_to_bytes, p_state, p_image, p_image_dict, p_image_format, p_lossy_quality, ret);
+	GDVIRTUAL_CALL(_serialize_image_to_bytes, p_state, p_image, Dictionary(r_image_dict), p_image_format, p_lossy_quality, ret);
 	return ret;
 }
 
@@ -209,11 +209,11 @@ Error GLTFDocumentExtension::save_image_at_path(Ref<GLTFState> p_state, Ref<Imag
 	return ret;
 }
 
-Error GLTFDocumentExtension::serialize_texture_json(Ref<GLTFState> p_state, Dictionary p_texture_json, Ref<GLTFTexture> p_gltf_texture, const String &p_image_format) {
+Error GLTFDocumentExtension::serialize_texture_json(Ref<GLTFState> p_state, Dictionary &r_texture_json, Ref<GLTFTexture> p_gltf_texture, const String &p_image_format) {
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_gltf_texture.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_serialize_texture_json, p_state, p_texture_json, p_gltf_texture, p_image_format, err);
+	GDVIRTUAL_CALL(_serialize_texture_json, p_state, Dictionary(r_texture_json), p_gltf_texture, p_image_format, err);
 	return err;
 }
 
@@ -221,7 +221,7 @@ Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_gltf_node.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
-	GDVIRTUAL_CALL(_export_node, p_state, p_gltf_node, r_dict, p_node, err);
+	GDVIRTUAL_CALL(_export_node, p_state, p_gltf_node, Dictionary(r_dict), p_node, err);
 	return err;
 }
 

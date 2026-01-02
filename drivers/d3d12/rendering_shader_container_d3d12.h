@@ -86,16 +86,20 @@ public:
 		2, // SHADER_STAGE_COMPUTE
 	};
 
-	struct RootSignatureLocation {
-		uint32_t root_param_index = UINT32_MAX;
-		uint32_t range_index = UINT32_MAX;
+	struct ReflectionBindingSetDataD3D12 {
+		uint32_t resource_root_param_idx = UINT32_MAX;
+		uint32_t resource_descriptor_count = 0;
+		uint32_t sampler_root_param_idx = UINT32_MAX;
+		uint32_t sampler_descriptor_count = 0;
 	};
 
 	struct ReflectionBindingDataD3D12 {
 		uint32_t resource_class = 0;
 		uint32_t has_sampler = 0;
 		uint32_t dxil_stages = 0;
-		RootSignatureLocation root_signature_locations[2];
+		uint32_t resource_descriptor_offset = UINT32_MAX;
+		uint32_t sampler_descriptor_offset = UINT32_MAX;
+		uint32_t root_param_idx = UINT32_MAX; // Root descriptor only.
 	};
 
 	struct ReflectionSpecializationDataD3D12 {
@@ -116,15 +120,16 @@ protected:
 
 	void *lib_d3d12 = nullptr;
 	ReflectionDataD3D12 reflection_data_d3d12;
+	Vector<ReflectionBindingSetDataD3D12> reflection_binding_set_data_d3d12;
 	Vector<ReflectionBindingDataD3D12> reflection_binding_set_uniforms_data_d3d12;
 	Vector<ReflectionSpecializationDataD3D12> reflection_specialization_data_d3d12;
 	Vector<uint8_t> root_signature_bytes;
 	uint32_t root_signature_crc = 0;
 
 #if NIR_ENABLED
-	bool _convert_spirv_to_nir(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv, const nir_shader_compiler_options *p_compiler_options, HashMap<int, nir_shader *> &r_stages_nir_shaders, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed);
+	bool _convert_spirv_to_nir(Span<ReflectShaderStage> p_spirv, const nir_shader_compiler_options *p_compiler_options, HashMap<int, nir_shader *> &r_stages_nir_shaders, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed);
 	bool _convert_nir_to_dxil(const HashMap<int, nir_shader *> &p_stages_nir_shaders, BitField<RenderingDeviceCommons::ShaderStage> p_stages_processed, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs);
-	bool _convert_spirv_to_dxil(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed);
+	bool _convert_spirv_to_dxil(Span<ReflectShaderStage> p_spirv, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed);
 	bool _generate_root_signature(BitField<RenderingDeviceCommons::ShaderStage> p_stages_processed);
 
 	// GodotNirCallbacks.
@@ -146,14 +151,15 @@ protected:
 	virtual uint32_t _to_bytes_reflection_binding_uniform_extra_data(uint8_t *p_bytes, uint32_t p_index) const override;
 	virtual uint32_t _to_bytes_reflection_specialization_extra_data(uint8_t *p_bytes, uint32_t p_index) const override;
 	virtual uint32_t _to_bytes_footer_extra_data(uint8_t *p_bytes) const override;
-	virtual void _set_from_shader_reflection_post(const String &p_shader_name, const RenderingDeviceCommons::ShaderReflection &p_reflection) override;
-	virtual bool _set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) override;
+	virtual void _set_from_shader_reflection_post(const ReflectShader &p_shader) override;
+	virtual bool _set_code_from_spirv(const ReflectShader &p_shader) override;
 
 public:
 	struct ShaderReflectionD3D12 {
 		uint32_t spirv_specialization_constants_ids_mask = 0;
 		uint32_t dxil_push_constant_stages = 0;
 		uint32_t nir_runtime_data_root_param_idx = 0;
+		Vector<ReflectionBindingSetDataD3D12> reflection_binding_sets_d3d12;
 		Vector<Vector<ReflectionBindingDataD3D12>> reflection_binding_set_uniforms_d3d12;
 		Vector<ReflectionSpecializationDataD3D12> reflection_specialization_data_d3d12;
 		Vector<uint8_t> root_signature_bytes;

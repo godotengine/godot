@@ -418,9 +418,9 @@ Object *CollisionObject2D::shape_owner_get_owner(uint32_t p_owner) const {
 	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
-void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape) {
+void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape2D> rp_shape) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
-	ERR_FAIL_COND(p_shape.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_shape, rp_shape);
 
 	ShapeData &sd = shapes[p_owner];
 	ShapeData::Shape s;
@@ -655,6 +655,8 @@ void CollisionObject2D::_bind_methods() {
 }
 
 CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
+	_define_ancestry(AncestralClass::COLLISION_OBJECT_2D);
+
 	rid = p_rid;
 	area = p_area;
 	pickable = true;
@@ -672,6 +674,7 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 }
 
 CollisionObject2D::CollisionObject2D() {
+	_define_ancestry(AncestralClass::COLLISION_OBJECT_2D);
 	//owner=
 
 	set_notify_transform(true);
@@ -679,5 +682,5 @@ CollisionObject2D::CollisionObject2D() {
 
 CollisionObject2D::~CollisionObject2D() {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
-	PhysicsServer2D::get_singleton()->free(rid);
+	PhysicsServer2D::get_singleton()->free_rid(rid);
 }

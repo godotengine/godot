@@ -8,18 +8,19 @@
 # Nafis Ibrahim <thepreciousnafis@gmail.com>, 2018.
 # Muhammad Hazim bin Hafizalshah <muhammadhazimhafizalshah@gmail.com>, 2020.
 # keviinx <keviinx@yahoo.com>, 2020.
-# Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021, 2022, 2024.
+# Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021, 2022, 2024, 2025.
 # Jacque Fresco <aidter@use.startmail.com>, 2021.
 # Lemoney <railkill@gmail.com>, 2021, 2022.
 # dens-07 <densleyn01@gmail.com>, 2023.
 # ghakindye vv <ghaffur2013@gmail.com>, 2024.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-03-01 21:04+0000\n"
-"Last-Translator: ghakindye vv <ghaffur2013@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:08+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
@@ -27,10 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.5-dev\n"
-
-msgid "Unset"
-msgstr "Batal Set"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Physical"
 msgstr "Fizikal"
@@ -176,6 +174,9 @@ msgstr "Butang Joypad %d"
 msgid "Pressure:"
 msgstr "Tekanan:"
 
+msgid "touched"
+msgstr "disentuh"
+
 msgid "released"
 msgstr "dilepas"
 
@@ -198,6 +199,12 @@ msgstr "Masukan MIDI di Saluran=%s Mesej=%s"
 
 msgid "Input Event with Shortcut=%s"
 msgstr "Peristiwa Pemasuk dengan Pintasan=%s"
+
+msgid " or "
+msgstr " atau "
+
+msgid "Action has no bound inputs"
+msgstr "Tindakan tidak mempunyai input terikat"
 
 msgid "Accept"
 msgstr "Terima"
@@ -361,6 +368,9 @@ msgstr "Menduplikasi Note"
 msgid "Delete Nodes"
 msgstr "Padam Nod"
 
+msgid "Follow Output Port Connection"
+msgstr "Ikuti Sambungan Port Keluaran"
+
 msgid "Go Up One Level"
 msgstr "Naik Satu Tingkat"
 
@@ -370,8 +380,20 @@ msgstr "Mengemas Kini"
 msgid "Show Hidden"
 msgstr "Tunjuk Tersembunyi"
 
+msgid "Focus Path"
+msgstr "Laluan Fokus"
+
 msgid "Swap Input Direction"
 msgstr "Tukar Arah Pemasuk"
+
+msgid "Start Unicode Character Input"
+msgstr "Mulakan Input Aksara Unicode"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "ColorPicker: Padam Pratetap"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Kebolehcapaian: Seret dan Lepas Papan Kekunci"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "%d Pemasukan tidak sah (tidak diluluskan) dalam ungkapan"
@@ -534,20 +556,6 @@ msgstr "Diskret"
 msgid "Capture"
 msgstr "Tangkap"
 
-msgid ""
-"AnimationTree is inactive.\n"
-"Activate to enable playback, check node warnings if activation fails."
-msgstr ""
-"AnimationTree tidak aktif.\n"
-"Aktifkan untuk membenarkan main balik, periksa amaran nod jika pengaktifan "
-"gagal."
-
-msgid "Set the blending position within the space"
-msgstr "Tetapkan kedudukan pengadunan dalam ruang"
-
-msgid "Select and move points, create points with RMB."
-msgstr "Pilih dan pindahkan titik-titik, cipta titik-titik dengan RMB."
-
 msgid "Create points."
 msgstr "Cipta titik-titik."
 
@@ -565,6 +573,9 @@ msgstr "Titik"
 
 msgid "Open Editor"
 msgstr "Buka Editor"
+
+msgid "Max"
+msgstr "Maks"
 
 msgid "Value"
 msgstr "Nilai"
@@ -602,6 +613,15 @@ msgstr "Padamkan titik-titik dan segi tiga-segi tiga."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 "Jana segi tiga-segi tiga campuran secara automatik (bukan secara manual)"
+
+msgid "Max Y"
+msgstr "Maks Y"
+
+msgid "Min Y"
+msgstr "Min Y"
+
+msgid "Min X"
+msgstr "Min X"
 
 msgid "Edit Filters"
 msgstr "Sunting Filters"
@@ -669,11 +689,50 @@ msgstr "Tambah Nod..."
 msgid "Enable Filtering"
 msgstr "Dayakan Penapisan"
 
+msgid "Invert"
+msgstr "Terbalik"
+
 msgid "Clear"
 msgstr "Kosongkan"
 
+msgid "Set Custom Timeline from Marker"
+msgstr "Tetapkan Garis Masa Tersuai dari Penanda"
+
+msgid "End Marker"
+msgstr "Penanda Akhir"
+
+msgid "Enter a library name."
+msgstr "Masukkan nama perpustakaan."
+
+msgid "Global library will be created."
+msgstr "Perpustakaan global akan dibuat."
+
 msgid "Load Animation"
 msgstr "Muatkan Animasi"
+
+msgid "Make Animation Library Unique: %s"
+msgstr "Buat Perpustakaan Animasi Unik: %s"
+
+msgid "Save Animation library to File: %s"
+msgstr "Simpan perpustakaan Animasi ke Fail: %s"
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"Fail yang anda pilih bukan AnimationLibrary yang sah.\n"
+"\n"
+"Jika animasi yang anda inginkan ada di dalam fail ini, simpan ia ke fail "
+"berasingan terlebih dahulu."
+
+msgid "Some of the selected libraries were already added to the mixer."
+msgstr ""
+"Beberapa perpustakaan yang dipilih telah pun ditambah ke dalam pengadun."
+
+msgid "Some of the selected animations were already added to the library."
+msgstr "Beberapa animasi yang dipilih telah pun ditambah ke dalam perpustakaan."
 
 msgid "Animation Name:"
 msgstr "Nama Animasi:"
@@ -693,8 +752,17 @@ msgstr "Buat Unik"
 msgid "Open in Inspector"
 msgstr "Buka dalam Inspektor"
 
+msgid "[built-in]"
+msgstr "[terbina-dalam]"
+
+msgid "[foreign]"
+msgstr "[asing]"
+
 msgid "Resource"
 msgstr "Sumber"
+
+msgid "Error:"
+msgstr "Ralat:"
 
 msgid "Toggle Autoplay"
 msgstr "Togol Automain"
@@ -726,6 +794,12 @@ msgstr "Adun Berubah Seterusnya"
 msgid "Change Blend Time"
 msgstr "Tukar Masa Blend"
 
+msgid "Onion skinning requires a RESET animation."
+msgstr "Onion skinning memerlukan animasi RESET."
+
+msgid "Animation"
+msgstr "Animasi"
+
 msgid "Animation position (in seconds)."
 msgstr "Kedudukan animasi (dalam saat)."
 
@@ -735,8 +809,8 @@ msgstr "Skala main balik animasi secara global untuk nod."
 msgid "Animation Tools"
 msgstr "Alat Animasi"
 
-msgid "Animation"
-msgstr "Animasi"
+msgid "New..."
+msgstr "Baru..."
 
 msgid "Duplicate..."
 msgstr "Penduakan..."
@@ -816,6 +890,9 @@ msgstr "Pindahkan Nod"
 msgid "Transition exists!"
 msgstr "Peralihan wujud!"
 
+msgid "Play/Travel to %s"
+msgstr "Main/Pergi ke %s"
+
 msgid "Add Transition"
 msgstr "Tambah Peralihan"
 
@@ -840,6 +917,17 @@ msgstr "Nod Dikeluarkan"
 msgid "Transition Removed"
 msgstr "Peralihan Dikeluarkan"
 
+msgid ""
+"Select and move nodes.\n"
+"RMB: Add node at position clicked.\n"
+"Shift+LMB+Drag: Connects the selected node with another node or creates a new "
+"node if you select an area without nodes."
+msgstr ""
+"Pilih dan alihkan nod.\n"
+"Klik Kanan: Tambah nod pada posisi yang diklik.\n"
+"Shift+Klik Kiri+Seret: Sambungkan nod yang dipilih dengan nod lain atau cipta "
+"nod baharu jika anda memilih kawasan tanpa nod."
+
 msgid "Create new nodes."
 msgstr "Cipta nod baru."
 
@@ -848,6 +936,9 @@ msgstr "Hubungkan nod-nod."
 
 msgid "Remove selected node or transition."
 msgstr "Alih keluar nod atau peralihan yang dipilih."
+
+msgid "New Transitions Should Auto Advance"
+msgstr "Peralihan Baharu Patut Maju Secara Automatik"
 
 msgid "Play Mode:"
 msgstr "Mod Main:"
@@ -890,6 +981,20 @@ msgstr "Ubah Panjang Animasi"
 
 msgid "Change Animation Loop"
 msgstr "Ubah Gelung Animasi"
+
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Tidak boleh ubah mod gelung pada animasi yang diinstans daripada adegan yang "
+"diimport.\n"
+"\n"
+"Untuk menukar mod gelung animasi ini, pergi ke tetapan Import Lanjutan adegan "
+"dan pilih animasi tersebut.\n"
+"Anda kemudian boleh menukar mod gelung daripada menu pemeriksa."
 
 msgid "Animation length (frames)"
 msgstr "Panjang animasi (bingkai)"
@@ -951,18 +1056,6 @@ msgstr "Dalam-Pemegang:"
 msgid "Out-Handle:"
 msgstr "Keluar-Pemegang:"
 
-msgid "Handle mode: Free\n"
-msgstr "Cara urusan: Bebas\n"
-
-msgid "Handle mode: Linear\n"
-msgstr "Cara urusan: Lelurus\n"
-
-msgid "Handle mode: Balanced\n"
-msgstr "Cara urusan: Seimbang\n"
-
-msgid "Handle mode: Mirrored\n"
-msgstr "Cara urusan: Cerminan\n"
-
 msgid "Stream:"
 msgstr "Aliran:"
 
@@ -998,9 +1091,6 @@ msgstr "Balut Gelung Interp"
 
 msgid "Duplicate Key(s)"
 msgstr "Menduakan Kunci"
-
-msgid "Add RESET Value(s)"
-msgstr "Tambah Nilai-nilai RESET"
 
 msgid "Delete Key(s)"
 msgstr "Padam Kunci"
@@ -1111,6 +1201,9 @@ msgstr "Papan klip kosong!"
 msgid "Paste Tracks"
 msgstr "Tampal Trek"
 
+msgid "Create Node"
+msgstr "Cipta Nod"
+
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Pilih nod AnimationPlayer untuk mencipta dan mengedit animasi."
 
@@ -1164,9 +1257,6 @@ msgstr "Pergi ke Langkah Seterusnya"
 
 msgid "Go to Previous Step"
 msgstr "Pergi ke Langkah Sebelumnya"
-
-msgid "Apply Reset"
-msgstr "Guna Set Semula"
 
 msgid "Use Bezier Curves"
 msgstr "Guna Lengkung Bezier"
@@ -1545,9 +1635,6 @@ msgstr "Muatkan Susun Atur Bas lalai."
 msgid "Create a new Bus Layout."
 msgstr "Cipta Susun Atur Bas baru."
 
-msgid "Debugger"
-msgstr "Penyahpepijat"
-
 msgid "Deploy with Remote Debug"
 msgstr "Gunakan Nyahpepijat Jarak Jauh"
 
@@ -1628,6 +1715,9 @@ msgstr ""
 
 msgid "Set %s"
 msgstr "Tetapkan %s"
+
+msgid "Debugger"
+msgstr "Penyahpepijat"
 
 msgid "Debug"
 msgstr "Nyahpepijat"
@@ -1980,6 +2070,9 @@ msgstr "Tulis Ganti"
 msgid "Create Script"
 msgstr "Cipta Skrip"
 
+msgid "Groups"
+msgstr "Kumpulan"
+
 msgid "Add to Group"
 msgstr "Tambah ke Kumpulan"
 
@@ -2021,6 +2114,9 @@ msgstr ""
 "Memilih sumber lain dalam dok FileSystem tampa mengklik Import Semula "
 "terlebih dahulu akan membuang perubahan yang dibuat dalam dok Import."
 
+msgid "Import"
+msgstr "Import"
+
 msgid "Import As:"
 msgstr "Import Sebagai:"
 
@@ -2045,6 +2141,9 @@ msgstr "Tampal Sifat-sifat"
 
 msgid "Make Sub-Resources Unique"
 msgstr "Buat Sub-Sumber Unik"
+
+msgid "Inspector"
+msgstr "Pemeriksa"
 
 msgid "Create a new resource in memory and edit it."
 msgstr "Cipta sumber baru dalam ingatan dan suntingnya."
@@ -2082,23 +2181,11 @@ msgstr "Buka Dokumentasi"
 msgid "Manage object properties."
 msgstr "Urus sifat objek."
 
-msgid "Groups"
-msgstr "Kumpulan"
-
-msgid "Select a single node to edit its signals and groups."
-msgstr "Pilih satu nod untuk menyunting isyarat dan kumpulan-kumpulannya."
-
 msgid "Delete %d nodes?"
 msgstr "Padam nod %d?"
 
 msgid "Delete node \"%s\"?"
 msgstr "Padam nod \"%s\"?"
-
-msgid "Filters"
-msgstr "Penapis"
-
-msgid "Create Node"
-msgstr "Cipta Nod"
 
 msgid "Can't overwrite scene that is still open!"
 msgstr "Tidak boleh tulis ganti adegan yang masih terbuka!"
@@ -2308,6 +2395,42 @@ msgstr "%d lebih banyak folder-folder"
 msgid "%d more files"
 msgstr "%d lebih banyak fail-fail"
 
+msgid "Save & Restart"
+msgstr "Simpan & Mula Semula"
+
+msgid "Open Recent"
+msgstr "Buka Terkini"
+
+msgid "Version Control"
+msgstr "Kawalan Versi"
+
+msgid "Install Android Build Template..."
+msgstr "Pasang Templat Binaan Android..."
+
+msgid "Open User Data Folder"
+msgstr "Buka Folder Data Pengguna"
+
+msgid "Tools"
+msgstr "Alatan"
+
+msgid "Editor Layout"
+msgstr "Editor Susun Atur"
+
+msgid "Open Editor Data/Settings Folder"
+msgstr "Buka Folder Data/Tetapan Editor"
+
+msgid "Open Editor Data Folder"
+msgstr "Buka Folder Data Editor"
+
+msgid "Open Editor Settings Folder"
+msgstr "Buka Folder Tetapan Editor"
+
+msgid "Manage Editor Features..."
+msgstr "Urus Ciri-ciri Penyunting..."
+
+msgid "Manage Export Templates..."
+msgstr "Urus Templat-templat Eksport..."
+
 msgid "Lock Selected Node(s)"
 msgstr "Kunci Nod Terpilih"
 
@@ -2344,9 +2467,6 @@ msgstr "Buka Adegan..."
 msgid "Reopen Closed Scene"
 msgstr "Buka Semula Adegan Tertutup"
 
-msgid "Open Recent"
-msgstr "Buka Terkini"
-
 msgid "Save Scene"
 msgstr "Simpan Adegan"
 
@@ -2371,29 +2491,14 @@ msgstr "Muatkan semula Adegan yang Disimpan"
 msgid "Close Scene"
 msgstr "Tutup Adegan"
 
-msgid "Quit"
-msgstr "Keluar"
-
 msgid "Editor Settings..."
 msgstr "Tetapan Editor..."
 
-msgid "Project"
-msgstr "Projek"
-
-msgid "Version Control"
-msgstr "Kawalan Versi"
+msgid "Quit"
+msgstr "Keluar"
 
 msgid "Export"
 msgstr "Eksport"
-
-msgid "Install Android Build Template..."
-msgstr "Pasang Templat Binaan Android..."
-
-msgid "Open User Data Folder"
-msgstr "Buka Folder Data Pengguna"
-
-msgid "Tools"
-msgstr "Alatan"
 
 msgid "Orphan Resource Explorer..."
 msgstr "Penjelajah Sumber Yatim..."
@@ -2404,32 +2509,11 @@ msgstr "Muat Semula Projek Semasa"
 msgid "Quit to Project List"
 msgstr "Keluar ke Senarai Projek"
 
-msgid "Editor Layout"
-msgstr "Editor Susun Atur"
-
 msgid "Take Screenshot"
 msgstr "Ambil Tangkapan Skrin"
 
 msgid "Toggle Fullscreen"
 msgstr "Togol Skrin Penuh"
-
-msgid "Open Editor Data/Settings Folder"
-msgstr "Buka Folder Data/Tetapan Editor"
-
-msgid "Open Editor Data Folder"
-msgstr "Buka Folder Data Editor"
-
-msgid "Open Editor Settings Folder"
-msgstr "Buka Folder Tetapan Editor"
-
-msgid "Manage Editor Features..."
-msgstr "Urus Ciri-ciri Penyunting..."
-
-msgid "Manage Export Templates..."
-msgstr "Urus Templat-templat Eksport..."
-
-msgid "Help"
-msgstr "Bantuan"
 
 msgid "Online Documentation"
 msgstr "Dokumentasi Dalam Talian"
@@ -2446,23 +2530,29 @@ msgstr "Hantar Maklum Balas Dokumen"
 msgid "Support Godot Development"
 msgstr "Sokong Pembangunan Godot"
 
-msgid "Save & Restart"
-msgstr "Simpan & Mula Semula"
+msgid "Open Script Editor"
+msgstr "Buka Editor Skrip"
+
+msgid "Open Asset Library"
+msgstr "Buka Perpustakaan Aset"
+
+msgid "Open the next Editor"
+msgstr "Buka Editor seterusnya"
+
+msgid "Open the previous Editor"
+msgstr "Buka Editor sebelumnya"
+
+msgid "Project"
+msgstr "Projek"
+
+msgid "Help"
+msgstr "Bantuan"
 
 msgid "Update Continuously"
 msgstr "Kemas Kini Secara Berterusan"
 
 msgid "Hide Update Spinner"
 msgstr "Sembunyikan Spinner Kemas Kini"
-
-msgid "Import"
-msgstr "Import"
-
-msgid "Inspector"
-msgstr "Pemeriksa"
-
-msgid "Node"
-msgstr "Nod"
 
 msgid "Don't Save"
 msgstr "Jangan Simpan"
@@ -2485,9 +2575,6 @@ msgstr "Pakej Templat"
 msgid "Export Library"
 msgstr "Eksport Perpustakaan"
 
-msgid "Open & Run a Script"
-msgstr "Buka & Jalankan Skrip"
-
 msgid "Restart"
 msgstr "Mula semula"
 
@@ -2502,24 +2589,6 @@ msgstr "Muatkan Ralat-ralat"
 
 msgid "Select Current"
 msgstr "Pilih Semasa"
-
-msgid "Open 2D Editor"
-msgstr "Buka Editor 2D"
-
-msgid "Open 3D Editor"
-msgstr "Buka Editor 3D"
-
-msgid "Open Script Editor"
-msgstr "Buka Editor Skrip"
-
-msgid "Open Asset Library"
-msgstr "Buka Perpustakaan Aset"
-
-msgid "Open the next Editor"
-msgstr "Buka Editor seterusnya"
-
-msgid "Open the previous Editor"
-msgstr "Buka Editor sebelumnya"
 
 msgid "Warning!"
 msgstr "Amaran!"
@@ -2704,25 +2773,8 @@ msgstr ""
 msgid "Export all resources in the project"
 msgstr "Eksport semua sumber dalam projek"
 
-msgid "Search Replacement For:"
-msgstr "Cari Penggantian Untuk:"
-
 msgid "Dependencies For:"
 msgstr "Kebergantungan Untuk:"
-
-msgid ""
-"Scene '%s' is currently being edited.\n"
-"Changes will only take effect when reloaded."
-msgstr ""
-"Adegan '% s' kini sedang diedit.\n"
-"Perubahan hanya akan berlaku apabila dimuat semula."
-
-msgid ""
-"Resource '%s' is in use.\n"
-"Changes will only take effect when reloaded."
-msgstr ""
-"Sumber '% s' sedang digunakan.\n"
-"Perubahan hanya akan berlaku apabila dimuat semula."
 
 msgid "Dependencies"
 msgstr "Kebergantungan"
@@ -2735,9 +2787,6 @@ msgstr "Perbaiki Pecah"
 
 msgid "Dependency Editor"
 msgstr "Editor Ketergantungan"
-
-msgid "Search Replacement Resource:"
-msgstr "Cari Penggantian Sumber:"
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -2763,20 +2812,14 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "Tidak boleh dialih keluar:"
 
-msgid "Error loading:"
-msgstr "Ralat memuatkan:"
+msgid "Fix Dependencies"
+msgstr "Perbaiki Kebergantungan"
 
 msgid "Load failed due to missing dependencies:"
 msgstr "Gagal memuat kerana kebergantungan hilang:"
 
 msgid "Which action should be taken?"
 msgstr "Tindakan apa yang harus diambil?"
-
-msgid "Fix Dependencies"
-msgstr "Perbaiki Kebergantungan"
-
-msgid "Errors loading!"
-msgstr "Ralat memuatkan!"
 
 msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "Padamkan objek %d secara kekal? (Tidak boleh dibuat asal!)"
@@ -2920,87 +2963,6 @@ msgstr "Kembangkan Panel Bawah"
 msgid "Move"
 msgstr "Pindah"
 
-msgid "Network"
-msgstr "Rangkaian"
-
-msgid "Select Current Folder"
-msgstr "Pilih Folder Semasa"
-
-msgid "Select This Folder"
-msgstr "Pilih Folder Ini"
-
-msgid "Open a File"
-msgstr "Buka Fail"
-
-msgid "Open File(s)"
-msgstr "Buka Fail"
-
-msgid "Open a Directory"
-msgstr "Buka Direktori"
-
-msgid "Open a File or Directory"
-msgstr "Buka Fail atau Direktori"
-
-msgid "Save a File"
-msgstr "Simpan Fail"
-
-msgid "Could not create folder."
-msgstr "Tidak dapat mencipta folder."
-
-msgid "Go Back"
-msgstr "Pergi Balik"
-
-msgid "Go Forward"
-msgstr "Pergi ke Hadapan"
-
-msgid "Go Up"
-msgstr "Pergi Atas"
-
-msgid "Toggle Hidden Files"
-msgstr "Togol Fail Tersembunyi"
-
-msgid "Toggle Favorite"
-msgstr "Togol Kegemaran"
-
-msgid "Toggle Mode"
-msgstr "Togol Mod"
-
-msgid "Focus Path"
-msgstr "Laluan Fokus"
-
-msgid "Move Favorite Up"
-msgstr "Pindah Kegemaran ke Atas"
-
-msgid "Move Favorite Down"
-msgstr "Pindah Kegemaran ke Bawah"
-
-msgid "Go to previous folder."
-msgstr "Pergi ke folder sebelumnya."
-
-msgid "Go to next folder."
-msgstr "Pergi ke folder seterusnya."
-
-msgid "Go to parent folder."
-msgstr "Pergi ke folder induk."
-
-msgid "Refresh files."
-msgstr "Muat semula fail."
-
-msgid "(Un)favorite current folder."
-msgstr "(Nyah)kegemaran folder semasa."
-
-msgid "Directories & Files:"
-msgstr "Direktori & Fail:"
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Togol keterlihatan fail tersembunyi."
-
-msgid "Preview:"
-msgstr "Pratonton:"
-
-msgid "File:"
-msgstr "Fail:"
-
 msgid "No sub-resources found."
 msgstr "Tiada sub-sumber dijumpai."
 
@@ -3036,6 +2998,9 @@ msgstr "Status"
 
 msgid "Enable"
 msgstr "Aktifkan"
+
+msgid "Preview:"
+msgstr "Pratonton:"
 
 msgid "Browse"
 msgstr "Layari"
@@ -3172,14 +3137,14 @@ msgstr "Bahasa:"
 msgid "Script Name:"
 msgstr "Nama Skrip:"
 
-msgid "Activate now?"
-msgstr "Aktifkan sekarang?"
-
 msgid "Error opening package file, not in ZIP format."
 msgstr "Ralat semasa membuka fail pakej, bukan dalam format ZIP."
 
 msgid "The following files failed extraction from package:"
 msgstr "Fail berikut gagal diekstrak dari pakej:"
+
+msgid "Toggle Favorite"
+msgstr "Togol Kegemaran"
 
 msgid "New Window"
 msgstr "Tetingkap Baru"
@@ -3189,12 +3154,6 @@ msgstr "Perpustakaan Aset"
 
 msgid "Error"
 msgstr "Ralat"
-
-msgid "Play the project."
-msgstr "Main projek."
-
-msgid "Play the edited scene."
-msgstr "Mainkan adegan yang diedit."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -3244,14 +3203,17 @@ msgstr "Piksel Pepejal"
 msgid "Border Pixels"
 msgstr "Piksel Sempadan"
 
-msgid "Directed Border Pixels"
-msgstr "Piksel Sempadan Diarahkan"
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
 
-msgid "Emission Mask"
-msgstr "Topeng Emission"
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
 
 msgid "Set Handle"
 msgstr "Tetapkan Pemegang"
+
+msgid "Skeleton2D"
+msgstr "Skeleton2D"
 
 msgid "Advanced"
 msgstr "Lanjutan"
@@ -3310,9 +3272,6 @@ msgstr ""
 "Alt+RMB: Tunjukkan senarai semua nod pada kedudukan yang diklik, termasuk "
 "yang dikunci."
 
-msgid "Select Mode"
-msgstr "Pilih Mod"
-
 msgid "Move Mode"
 msgstr "Mod Alih"
 
@@ -3321,6 +3280,9 @@ msgstr "Mod Putar"
 
 msgid "Scale Mode"
 msgstr "Mod Skala"
+
+msgid "Select Mode"
+msgstr "Pilih Mod"
 
 msgid "Ruler Mode"
 msgstr "Mod Pembaris"
@@ -3334,14 +3296,20 @@ msgstr "Konfigurasikan Snap..."
 msgid "Create Emission Points From Node"
 msgstr "Cipta Titik Emission Daripada Nod"
 
-msgid "Create Polygon3D"
-msgstr "Cipta Poligon3D"
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
 
 msgid "Edit Poly"
 msgstr "Edit Poli"
 
 msgid "Edit Poly (Remove Point)"
 msgstr "Edit Poli (Alih Keluar Titik)"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Translation mask for inserting keys."
 msgstr "Topeng terjemahan untuk memasukkan kekunci."
@@ -3650,15 +3618,6 @@ msgstr "Tidak dapat menyambungkan isyarat"
 msgid "Connect"
 msgstr "Sambung"
 
-msgid "Connect '%s' to '%s'"
-msgstr "Sambungkan '% s' ke '% s'"
-
-msgid "Disconnect '%s' from '%s'"
-msgstr "Putuskan sambungan '% s' dari '% s'"
-
-msgid "Disconnect all from signal: '%s'"
-msgstr "Putuskan semua sambungan dari isyarat: '% s'"
-
 msgid "Connect..."
 msgstr "Sambung ..."
 
@@ -3667,10 +3626,6 @@ msgstr "Putuskan sambungan"
 
 msgid "Connect a Signal to a Method"
 msgstr "Sambungkan Isyarat ke Kaedah"
-
-msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr ""
-"Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat \"% s\"?"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
@@ -3823,18 +3778,6 @@ msgstr "Ganti:"
 msgid "Delete Animation?"
 msgstr "Padam Animasi?"
 
-msgid "Play selected animation backwards from current pos. (A)"
-msgstr "Mainkan animasi terpilih ke belakang dari pos semasa. (A)"
-
-msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr "Mainkan animasi terpillih ke belakang dari hujung. (Shift+A)"
-
-msgid "Play selected animation from start. (Shift+D)"
-msgstr "Mainkan animasi terpilih dari awal. (Shift+D)"
-
-msgid "Play selected animation from current pos. (D)"
-msgstr "Mainkan animasi terpilih dar pos semasa. (D)"
-
 msgid "Zoom Reset"
 msgstr "Zum Set Semula"
 
@@ -3871,9 +3814,6 @@ msgstr "Gantikan dalam Fail-fail"
 
 msgid "Searching..."
 msgstr "Mencari..."
-
-msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "Tidak dapat membuka '% s'. Fail mungkin telah dipindahkan atau dipadam."
 
 msgid "Online Docs"
 msgstr "Dokumen Dalam Talian"
@@ -3974,9 +3914,6 @@ msgstr "Editor 3D"
 
 msgid "Scene Tree Editing"
 msgstr "Penyuntingan Pokok Adegan"
-
-msgid "Node Dock"
-msgstr "Dok nod"
 
 msgid "FileSystem Dock"
 msgstr "Dok FileSystem"
@@ -4120,6 +4057,9 @@ msgstr "Tambah Nod"
 msgid "Commit:"
 msgstr "Commit:"
 
+msgid "File:"
+msgstr "Fail:"
+
 msgid "Stage all changes"
 msgstr "Peringkat semua perubahan"
 
@@ -4134,6 +4074,9 @@ msgstr "Bait tidak mencukupi untuk menyahkod bait, atau format tidak sah."
 
 msgid "%s/s"
 msgstr "%s/s"
+
+msgid "Node"
+msgstr "Nod"
 
 msgid "Incoming RPC"
 msgstr "RPC masuk"

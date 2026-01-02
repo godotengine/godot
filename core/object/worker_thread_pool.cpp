@@ -364,24 +364,12 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 		if (pump_task_count >= thread_count) {
 			print_verbose(vformat("A greater number of dedicated threads were requested (%d) than threads available (%d). Please increase the number of available worker task threads. Recovering this session by spawning more worker task threads.", pump_task_count + 1, thread_count)); // +1 because we want to keep a Thread without any pump tasks free.
 
-			Thread::Settings settings;
-#ifdef __APPLE__
-			// The default stack size for new threads on Apple platforms is 512KiB.
-			// This is insufficient when using a library like SPIRV-Cross,
-			// which can generate deep stacks and result in a stack overflow.
-#ifdef DEV_ENABLED
-			// Debug builds need an even larger stack size.
-			settings.stack_size = 2 * 1024 * 1024; // 2 MiB
-#else
-			settings.stack_size = 1 * 1024 * 1024; // 1 MiB
-#endif
-#endif
 			// Re-sizing implies relocation, which is not supported for this array.
 			CRASH_COND_MSG(thread_count + 1 > (int)threads.get_capacity(), "Reserve trick for worker thread pool failed. Crashing.");
 			threads.resize_initialized(thread_count + 1);
 			threads[thread_count].index = thread_count;
 			threads[thread_count].pool = this;
-			threads[thread_count].thread.start(&WorkerThreadPool::_thread_function, &threads[thread_count], settings);
+			threads[thread_count].thread.start(&WorkerThreadPool::_thread_function, &threads[thread_count]);
 			thread_ids.insert(threads[thread_count].thread.get_id(), thread_count);
 		}
 	}
@@ -838,23 +826,10 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 #endif
 	threads.resize(p_thread_count);
 
-	Thread::Settings settings;
-#ifdef __APPLE__
-	// The default stack size for new threads on Apple platforms is 512KiB.
-	// This is insufficient when using a library like SPIRV-Cross,
-	// which can generate deep stacks and result in a stack overflow.
-#ifdef DEV_ENABLED
-	// Debug builds need an even larger stack size.
-	settings.stack_size = 2 * 1024 * 1024; // 2 MiB
-#else
-	settings.stack_size = 1 * 1024 * 1024; // 1 MiB
-#endif
-#endif
-
 	for (uint32_t i = 0; i < threads.size(); i++) {
 		threads[i].index = i;
 		threads[i].pool = this;
-		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i], settings);
+		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i]);
 		thread_ids.insert(threads[i].thread.get_id(), i);
 	}
 }

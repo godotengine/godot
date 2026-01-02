@@ -34,7 +34,7 @@
 #include "core/os/thread_safe.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 class TextServerExtension : public TextServer {
 	GDCLASS(TextServerExtension, TextServer);
@@ -67,6 +67,8 @@ public:
 	GDVIRTUAL0RC(String, _get_support_data_info);
 	GDVIRTUAL1RC(bool, _save_support_data, const String &);
 	GDVIRTUAL0RC(PackedByteArray, _get_support_data);
+	virtual bool is_locale_using_support_data(const String &p_locale) const override;
+	GDVIRTUAL1RC(bool, _is_locale_using_support_data, const String &);
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const override;
 	GDVIRTUAL1RC(bool, _is_locale_right_to_left, const String &);
@@ -413,6 +415,9 @@ public:
 	virtual void shaped_text_clear(const RID &p_shaped) override;
 	GDVIRTUAL1_REQUIRED(_shaped_text_clear, RID);
 
+	virtual RID shaped_text_duplicate(const RID &p_shaped) override;
+	GDVIRTUAL1R_REQUIRED(RID, _shaped_text_duplicate, RID);
+
 	virtual void shaped_text_set_direction(const RID &p_shaped, Direction p_direction = DIRECTION_AUTO) override;
 	virtual Direction shaped_text_get_direction(const RID &p_shaped) const override;
 	virtual Direction shaped_text_get_inferred_direction(const RID &p_shaped) const override;
@@ -456,9 +461,11 @@ public:
 	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) override;
 	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1, double p_baseline = 0.0) override;
 	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, double p_baseline = 0.0) override;
+	virtual bool shaped_text_has_object(const RID &p_shaped, const Variant &p_key) const override;
 	GDVIRTUAL7R_REQUIRED(bool, _shaped_text_add_string, RID, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
 	GDVIRTUAL6R_REQUIRED(bool, _shaped_text_add_object, RID, const Variant &, const Size2 &, InlineAlignment, int64_t, double);
 	GDVIRTUAL5R_REQUIRED(bool, _shaped_text_resize_object, RID, const Variant &, const Size2 &, InlineAlignment, double);
+	GDVIRTUAL2RC_REQUIRED(bool, _shaped_text_has_object, RID, const Variant &);
 
 	virtual String shaped_get_text(const RID &p_shaped) const override;
 	GDVIRTUAL1RC_REQUIRED(String, _shaped_get_text, RID);
@@ -602,12 +609,14 @@ public:
 	GDVIRTUAL2RC(int64_t, _shaped_text_prev_character_pos, RID, int64_t);
 	GDVIRTUAL2RC(int64_t, _shaped_text_closest_character_pos, RID, int64_t);
 
+#ifndef DISABLE_DEPRECATED
 	virtual String format_number(const String &p_string, const String &p_language = "") const override;
 	virtual String parse_number(const String &p_string, const String &p_language = "") const override;
 	virtual String percent_sign(const String &p_language = "") const override;
 	GDVIRTUAL2RC(String, _format_number, const String &, const String &);
 	GDVIRTUAL2RC(String, _parse_number, const String &, const String &);
 	GDVIRTUAL1RC(String, _percent_sign, const String &);
+#endif // DISABLE_DEPRECATED
 
 	virtual String strip_diacritics(const String &p_string) const override;
 	GDVIRTUAL1RC(String, _strip_diacritics, const String &);

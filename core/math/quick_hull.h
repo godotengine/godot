@@ -76,12 +76,10 @@ private:
 	struct FaceConnect {
 		List<Face>::Element *left = nullptr;
 		List<Face>::Element *right = nullptr;
-		FaceConnect() {}
 	};
 	struct RetFaceConnect {
 		List<Geometry3D::MeshData::Face>::Element *left = nullptr;
 		List<Geometry3D::MeshData::Face>::Element *right = nullptr;
-		RetFaceConnect() {}
 	};
 
 public:

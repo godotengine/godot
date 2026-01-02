@@ -1,0 +1,17 @@
+GH-90645
+--------
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_desc
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_name
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_type
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/set_tracker_desc
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/set_tracker_name
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/set_tracker_type
+Validate extension JSON: API was removed: classes/XRPositionalTracker/properties/description
+Validate extension JSON: API was removed: classes/XRPositionalTracker/properties/name
+Validate extension JSON: API was removed: classes/XRPositionalTracker/properties/type
+Validate extension JSON: Error: Field 'classes/WebXRInterface/methods/get_input_source_tracker/return_value': type changed value in new API, from "XRPositionalTracker" to "XRControllerTracker".
+Validate extension JSON: Error: Field 'classes/XRServer/methods/add_tracker/arguments/0': type changed value in new API, from "XRPositionalTracker" to "XRTracker".
+Validate extension JSON: Error: Field 'classes/XRServer/methods/get_tracker/return_value': type changed value in new API, from "XRPositionalTracker" to "XRTracker".
+Validate extension JSON: Error: Field 'classes/XRServer/methods/remove_tracker/arguments/0': type changed value in new API, from "XRPositionalTracker" to "XRTracker".
+
+All trackers now have an XRTracker base, and the XRServer uses the XRTracker type.

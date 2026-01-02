@@ -80,7 +80,7 @@
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just handle [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="_load" qualifiers="virtual const">
+		<method name="_load" qualifiers="virtual required const">
 			<return type="Variant" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="original_path" type="String" />

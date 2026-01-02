@@ -231,8 +231,7 @@ Error ResourceFormatSaverCrypto::save(const Ref<Resource> &p_resource, const Str
 	if (cert.is_valid()) {
 		err = cert->save(p_path);
 	} else if (key.is_valid()) {
-		String el = p_path.get_extension().to_lower();
-		err = key->save(p_path, el == "pub");
+		err = key->save(p_path, p_path.has_extension("pub"));
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}

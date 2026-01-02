@@ -39,7 +39,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 void NavigationRegion3DEditor::_node_removed(Node *p_node) {
 	if (selected_regions.is_empty()) {

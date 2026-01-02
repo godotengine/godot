@@ -203,6 +203,13 @@
 				Returns custom font size used to draw text in the column [param column].
 			</description>
 		</method>
+		<method name="get_custom_stylebox" qualifiers="const">
+			<return type="StyleBox" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the given column's custom [StyleBox] used to draw the background.
+			</description>
+		</method>
 		<method name="get_description" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="column" type="int" />
@@ -614,6 +621,7 @@
 			<param index="2" name="just_outline" type="bool" default="false" />
 			<description>
 				Sets the given column's custom background color and whether to just use it as an outline.
+				[b]Note:[/b] If a custom [StyleBox] is set, the background color will be drawn behind it.
 			</description>
 		</method>
 		<method name="set_custom_color">
@@ -657,6 +665,15 @@
 			<param index="1" name="font_size" type="int" />
 			<description>
 				Sets custom font size used to draw text in the given [param column].
+			</description>
+		</method>
+		<method name="set_custom_stylebox">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="stylebox" type="StyleBox" />
+			<description>
+				Sets the given column's custom [StyleBox] used to draw the background.
+				[b]Note:[/b] If a custom background color is set, the [StyleBox] will be drawn in front of it.
 			</description>
 		</method>
 		<method name="set_description">
@@ -746,7 +763,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+				Sets the language code of the given [param column]'s text to [param language]. This is used for line-breaking and text shaping algorithms. If [param language] is empty, the current locale is used.
 			</description>
 		</method>
 		<method name="set_metadata">

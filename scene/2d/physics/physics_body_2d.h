@@ -33,7 +33,7 @@
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/2d/physics/kinematic_collision_2d.h"
 #include "scene/resources/physics_material.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class PhysicsBody2D : public CollisionObject2D {
 	GDCLASS(PhysicsBody2D, CollisionObject2D);
@@ -54,6 +54,6 @@ public:
 	Vector2 get_gravity() const;
 
 	TypedArray<PhysicsBody2D> get_collision_exceptions();
-	void add_collision_exception_with(Node *p_node); //must be physicsbody
-	void remove_collision_exception_with(Node *p_node);
+	void add_collision_exception_with(RequiredParam<Node> rp_node); //must be physicsbody
+	void remove_collision_exception_with(RequiredParam<Node> rp_node);
 };

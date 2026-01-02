@@ -1,0 +1,6 @@
+GH-77143
+--------
+Validate extension JSON: Error: Hash changed for 'classes/WorkerThreadPool/methods/wait_for_task_completion', from 4CAD1009 to 32573865. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/WorkerThreadPool/methods/wait_for_task_completion': return_value
+
+Changed the return value from `void` to `Error`. No adjustments should be necessary.

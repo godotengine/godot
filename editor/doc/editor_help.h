@@ -112,17 +112,13 @@ class EditorHelp : public VBoxContainer {
 	int description_line = 0;
 
 	RichTextLabel *class_desc = nullptr;
-	HSplitContainer *h_split = nullptr;
 	inline static DocTools *doc = nullptr;
 	inline static DocTools *ext_doc = nullptr;
 
-	ConfirmationDialog *search_dialog = nullptr;
 	LineEdit *search = nullptr;
 	FindBar *find_bar = nullptr;
 	HBoxContainer *status_bar = nullptr;
 	Button *toggle_files_button = nullptr;
-
-	String base_path;
 
 	struct ThemeCache {
 		Ref<StyleBox> background_style;
@@ -344,6 +340,7 @@ class EditorHelpBit : public VBoxContainer {
 	void _add_type_to_title(const DocType &p_doc_type);
 	void _update_labels();
 	void _go_to_help(const String &p_what);
+	void _go_to_url(const String &p_what);
 	void _meta_clicked(const String &p_select);
 
 protected:
@@ -380,7 +377,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static Control *show_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false);
+	// The returned control is an orphan node, which is to make the standard tooltip invisible.
+	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false);
 
 	void popup_under_cursor();
 

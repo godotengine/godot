@@ -31,8 +31,11 @@
 #include "quick_settings_dialog.h"
 
 #include "core/string/translation_server.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_properties.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/editor_settings_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -57,9 +60,9 @@ void QuickSettingsDialog::_fetch_setting_values() {
 		for (const PropertyInfo &pi : editor_settings_properties) {
 			if (pi.name == "interface/editor/editor_language") {
 #ifndef ANDROID_ENABLED
-				editor_languages = pi.hint_string.split(",");
+				editor_languages = pi.hint_string.split(";", false);
 #endif
-			} else if (pi.name == "interface/theme/preset") {
+			} else if (pi.name == "interface/theme/color_preset") {
 				editor_themes = pi.hint_string.split(",");
 			} else if (pi.name == "interface/editor/display_scale") {
 				editor_scales = pi.hint_string.split(",");
@@ -81,10 +84,11 @@ void QuickSettingsDialog::_update_current_values() {
 		const String current_lang = EDITOR_GET("interface/editor/editor_language");
 
 		for (int i = 0; i < editor_languages.size(); i++) {
-			const String &lang_value = editor_languages[i];
+			const String &lang_value = editor_languages[i].get_slicec('/', 0);
 			if (current_lang == lang_value) {
-				language_option_button->set_text(current_lang);
+				language_option_button->set_text(editor_languages[i].get_slicec('/', 1));
 				language_option_button->select(i);
+				break;
 			}
 		}
 	}
@@ -92,7 +96,7 @@ void QuickSettingsDialog::_update_current_values() {
 
 	// Theme options.
 	{
-		const String current_theme = EDITOR_GET("interface/theme/preset");
+		const String current_theme = EDITOR_GET("interface/theme/color_preset");
 
 		for (int i = 0; i < editor_themes.size(); i++) {
 			const String &theme_value = editor_themes[i];
@@ -171,7 +175,6 @@ void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_
 	container->add_child(label);
 
 	p_control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	p_control->set_stretch_ratio(2.0);
 	container->add_child(p_control);
 }
 
@@ -184,7 +187,7 @@ void QuickSettingsDialog::_language_selected(int p_id) {
 
 void QuickSettingsDialog::_theme_selected(int p_id) {
 	const String selected_theme = theme_option_button->get_item_text(p_id);
-	_set_setting_value("interface/theme/preset", selected_theme);
+	_set_setting_value("interface/theme/color_preset", selected_theme);
 
 	custom_theme_label->set_visible(selected_theme == "Custom");
 }
@@ -227,6 +230,25 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 	}
 }
 
+void QuickSettingsDialog::_show_full_settings() {
+	if (!editor_settings_dialog) {
+		EditorHelp::generate_doc();
+
+		Ref<EditorInspectorDefaultPlugin> eidp;
+		eidp.instantiate();
+		EditorInspector::add_inspector_plugin(eidp);
+
+		EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+		add_child(epnp);
+
+		editor_settings_dialog = memnew(EditorSettingsDialog);
+		get_parent()->add_child(editor_settings_dialog);
+		editor_settings_dialog->connect("restart_requested", callable_mp(this, &QuickSettingsDialog::_request_restart));
+	}
+	hide();
+	editor_settings_dialog->popup_edit_settings();
+}
+
 void QuickSettingsDialog::_request_restart() {
 	emit_signal("restart_required");
 }
@@ -240,7 +262,7 @@ void QuickSettingsDialog::update_size_limits(const Size2 &p_max_popup_size) {
 void QuickSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			settings_list_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
+			settings_list_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("quick_settings_panel"), SNAME("ProjectManager")));
 
 			restart_required_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			custom_theme_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_placeholder_color"), EditorStringName(Editor)));
@@ -285,10 +307,10 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			language_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_language_selected));
 
 			for (int i = 0; i < editor_languages.size(); i++) {
-				const String &lang_value = editor_languages[i];
-				String lang_name = TranslationServer::get_singleton()->get_locale_name(lang_value);
-				language_option_button->add_item(vformat("[%s] %s", lang_value, lang_name), i);
-				language_option_button->set_item_metadata(i, lang_value);
+				const String &lang_code = editor_languages[i].get_slicec('/', 0);
+				const String &lang_name = editor_languages[i].get_slicec('/', 1);
+				language_option_button->add_item(lang_name, i);
+				language_option_button->set_item_metadata(i, lang_code);
 			}
 
 			_add_setting_control(TTRC("Language"), language_option_button);
@@ -306,7 +328,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				theme_option_button->add_item(theme_value, i);
 			}
 
-			_add_setting_control(TTRC("Interface Theme"), theme_option_button);
+			_add_setting_control(TTRC("Color Preset"), theme_option_button);
 
 			custom_theme_label = memnew(Label(TTRC("Custom preset can be further configured in the editor.")));
 			custom_theme_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
@@ -375,6 +397,15 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		}
 
 		_update_current_values();
+	}
+
+	// Full settings button.
+	{
+		Button *open_full_settings = memnew(Button);
+		open_full_settings->set_text(TTRC("Edit All Settings"));
+		open_full_settings->set_h_size_flags(Control::SIZE_SHRINK_END);
+		settings_list->add_child(open_full_settings);
+		open_full_settings->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_show_full_settings));
 	}
 
 	// Restart required panel.

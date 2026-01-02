@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 #include <ktx.h>
 #include <vk_format.h>
@@ -185,6 +186,30 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					break;
 				case GL_RGB9_E5:
 					format = Image::FORMAT_RGBE9995;
+					break;
+				case GL_R16:
+					format = Image::FORMAT_R16;
+					break;
+				case GL_RG16:
+					format = Image::FORMAT_RG16;
+					break;
+				case GL_RGB16:
+					format = Image::FORMAT_RGB16;
+					break;
+				case GL_RGBA16:
+					format = Image::FORMAT_RGBA16;
+					break;
+				case GL_R16UI:
+					format = Image::FORMAT_R16I;
+					break;
+				case GL_RG16UI:
+					format = Image::FORMAT_RG16I;
+					break;
+				case GL_RGB16UI:
+					format = Image::FORMAT_RGB16I;
+					break;
+				case GL_RGBA16UI:
+					format = Image::FORMAT_RGBA16I;
 					break;
 				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
 				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
@@ -382,6 +407,30 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 				case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
 					format = Image::FORMAT_RGBE9995;
 					break;
+				case VK_FORMAT_R16_UNORM:
+					format = Image::FORMAT_R16;
+					break;
+				case VK_FORMAT_R16G16_UNORM:
+					format = Image::FORMAT_RG16;
+					break;
+				case VK_FORMAT_R16G16B16_UNORM:
+					format = Image::FORMAT_RGB16;
+					break;
+				case VK_FORMAT_R16G16B16A16_UNORM:
+					format = Image::FORMAT_RGBA16;
+					break;
+				case VK_FORMAT_R16_UINT:
+					format = Image::FORMAT_R16I;
+					break;
+				case VK_FORMAT_R16G16_UINT:
+					format = Image::FORMAT_RG16I;
+					break;
+				case VK_FORMAT_R16G16B16_UINT:
+					format = Image::FORMAT_RGB16I;
+					break;
+				case VK_FORMAT_R16G16B16A16_UINT:
+					format = Image::FORMAT_RGBA16I;
+					break;
 				case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
 				case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
 					format = Image::FORMAT_DXT1;
@@ -553,7 +602,7 @@ bool ResourceFormatKTX::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatKTX::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "ktx" || p_path.get_extension().to_lower() == "ktx2") {
+	if (p_path.has_extension("ktx") || p_path.has_extension("ktx2")) {
 		return "ImageTexture";
 	}
 	return "";

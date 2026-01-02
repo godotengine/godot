@@ -74,7 +74,7 @@ public:
 	ENetUDP() {
 		sock = Ref<NetSocket>(NetSocket::create());
 		IP::Type ip_type = IP::TYPE_ANY;
-		sock->open(NetSocket::TYPE_UDP, ip_type);
+		sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 	}
 
 	~ENetUDP() {
@@ -88,11 +88,15 @@ public:
 	Error bind(IPAddress p_ip, uint16_t p_port) {
 		local_address = p_ip;
 		bound = true;
-		return sock->bind(p_ip, p_port);
+		NetSocket::Address addr(p_ip, p_port);
+		return sock->bind(addr);
 	}
 
 	Error get_socket_address(IPAddress *r_ip, uint16_t *r_port) {
-		Error err = sock->get_socket_address(r_ip, r_port);
+		NetSocket::Address addr;
+		Error err = sock->get_socket_address(&addr);
+		*r_ip = addr.ip();
+		*r_port = addr.port();
 		if (bound) {
 			*r_ip = local_address;
 		}

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A control for displaying plain text. It gives you control over the horizontal and vertical alignment and can wrap the text inside the node's bounding rectangle. It doesn't support bold, italics, or other rich text formatting. For that, use [RichTextLabel] instead.
+		[b]Note:[/b] A single Label node is not designed to display huge amounts of text. To display large amounts of text in a single node, consider using [RichTextLabel] instead as it supports features like an integrated scroll bar and threading. [RichTextLabel] generally performs better when displaying large amounts of text (several pages or more).
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
@@ -68,7 +69,7 @@
 			A [LabelSettings] resource that can be shared between multiple [Label] nodes. Takes priority over theme properties.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped" default="0">
 			The number of the lines ignored and not displayed from the start of the [member text] value.

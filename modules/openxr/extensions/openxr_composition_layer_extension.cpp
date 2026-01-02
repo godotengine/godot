@@ -56,7 +56,7 @@ OpenXRCompositionLayerExtension::~OpenXRCompositionLayerExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_COMPOSITION_LAYER_CYLINDER_EXTENSION_NAME] = &cylinder_ext_available;
@@ -72,7 +72,9 @@ HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extension
 void OpenXRCompositionLayerExtension::on_instance_created(const XrInstance p_instance) {
 #ifdef ANDROID_ENABLED
 	EXT_INIT_XR_FUNC(xrDestroySwapchain);
-	EXT_INIT_XR_FUNC(xrCreateSwapchainAndroidSurfaceKHR);
+	if (android_surface_ext_available) {
+		EXT_INIT_XR_FUNC(xrCreateSwapchainAndroidSurfaceKHR);
+	}
 #endif
 }
 
@@ -82,42 +84,96 @@ void OpenXRCompositionLayerExtension::on_session_created(const XrSession p_sessi
 
 void OpenXRCompositionLayerExtension::on_session_destroyed() {
 	OpenXRAPI::get_singleton()->unregister_composition_layer_provider(this);
-
-#ifdef ANDROID_ENABLED
-	free_queued_android_surface_swapchains();
-#endif
 }
 
 void OpenXRCompositionLayerExtension::on_pre_render() {
-#ifdef ANDROID_ENABLED
-	free_queued_android_surface_swapchains();
-#endif
-
-	for (OpenXRViewportCompositionLayerProvider *composition_layer : composition_layers) {
+	for (CompositionLayer *composition_layer : registered_composition_layers) {
 		composition_layer->on_pre_render();
 	}
 }
 
 int OpenXRCompositionLayerExtension::get_composition_layer_count() {
-	return composition_layers.size();
+	return registered_composition_layers.size();
 }
 
 XrCompositionLayerBaseHeader *OpenXRCompositionLayerExtension::get_composition_layer(int p_index) {
-	ERR_FAIL_INDEX_V(p_index, composition_layers.size(), nullptr);
-	return composition_layers[p_index]->get_composition_layer();
+	ERR_FAIL_UNSIGNED_INDEX_V((unsigned int)p_index, registered_composition_layers.size(), nullptr);
+	return registered_composition_layers[p_index]->get_composition_layer();
 }
 
 int OpenXRCompositionLayerExtension::get_composition_layer_order(int p_index) {
-	ERR_FAIL_INDEX_V(p_index, composition_layers.size(), 1);
-	return composition_layers[p_index]->get_sort_order();
+	ERR_FAIL_UNSIGNED_INDEX_V((unsigned int)p_index, registered_composition_layers.size(), 1);
+	return registered_composition_layers[p_index]->sort_order;
 }
 
-void OpenXRCompositionLayerExtension::register_viewport_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer) {
-	composition_layers.push_back(p_composition_layer);
+RID OpenXRCompositionLayerExtension::composition_layer_create(XrCompositionLayerBaseHeader *p_openxr_layer) {
+	RID rid = composition_layer_owner.make_rid();
+	CompositionLayer *layer = composition_layer_owner.get_or_null(rid);
+
+	switch (p_openxr_layer->type) {
+		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
+			layer->composition_layer_quad = *(XrCompositionLayerQuad *)p_openxr_layer;
+		} break;
+		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
+			layer->composition_layer_cylinder = *(XrCompositionLayerCylinderKHR *)p_openxr_layer;
+		} break;
+		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
+			layer->composition_layer_equirect = *(XrCompositionLayerEquirect2KHR *)p_openxr_layer;
+		} break;
+		default: {
+			ERR_PRINT(vformat("Invalid OpenXR composition layer type: %s", p_openxr_layer->type));
+			composition_layer_owner.free(rid);
+			return RID();
+		}
+	}
+
+	return rid;
 }
 
-void OpenXRCompositionLayerExtension::unregister_viewport_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer) {
-	composition_layers.erase(p_composition_layer);
+void OpenXRCompositionLayerExtension::composition_layer_free(RID p_layer) {
+	RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_free_rt).bind(p_layer));
+}
+
+void OpenXRCompositionLayerExtension::composition_layer_register(RID p_layer) {
+	RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_register_rt).bind(p_layer));
+}
+
+void OpenXRCompositionLayerExtension::composition_layer_unregister(RID p_layer) {
+	RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_unregister_rt).bind(p_layer));
+}
+
+Ref<JavaObject> OpenXRCompositionLayerExtension::composition_layer_get_android_surface(RID p_layer) {
+	MutexLock lock(composition_layer_mutex);
+	CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer);
+	ERR_FAIL_NULL_V(layer, Ref<JavaObject>());
+	return layer->get_android_surface();
+}
+
+void OpenXRCompositionLayerExtension::_composition_layer_free_rt(RID p_layer) {
+	_composition_layer_unregister_rt(p_layer);
+
+	MutexLock lock(composition_layer_mutex);
+	CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer);
+	if (layer) {
+		for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
+			extension->on_viewport_composition_layer_destroyed(&layer->composition_layer);
+		}
+		layer->free();
+	}
+
+	composition_layer_owner.free(p_layer);
+}
+
+void OpenXRCompositionLayerExtension::_composition_layer_register_rt(RID p_layer) {
+	CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer);
+	ERR_FAIL_NULL(layer);
+	registered_composition_layers.push_back(layer);
+}
+
+void OpenXRCompositionLayerExtension::_composition_layer_unregister_rt(RID p_layer) {
+	CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer);
+	ERR_FAIL_NULL(layer);
+	registered_composition_layers.erase(layer);
 }
 
 bool OpenXRCompositionLayerExtension::is_available(XrStructureType p_which) {
@@ -156,61 +212,17 @@ bool OpenXRCompositionLayerExtension::create_android_surface_swapchain(XrSwapcha
 
 	return false;
 }
-
-void OpenXRCompositionLayerExtension::free_android_surface_swapchain(XrSwapchain p_swapchain) {
-	android_surface_swapchain_free_queue.push_back(p_swapchain);
-}
-
-void OpenXRCompositionLayerExtension::free_queued_android_surface_swapchains() {
-	for (XrSwapchain swapchain : android_surface_swapchain_free_queue) {
-		xrDestroySwapchain(swapchain);
-	}
-	android_surface_swapchain_free_queue.clear();
-}
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
-// OpenXRViewportCompositionLayerProvider
+// OpenXRCompositionLayerExtension::CompositionLayer
 
-OpenXRViewportCompositionLayerProvider::OpenXRViewportCompositionLayerProvider(XrCompositionLayerBaseHeader *p_composition_layer) {
-	composition_layer = p_composition_layer;
-	openxr_api = OpenXRAPI::get_singleton();
-	composition_layer_extension = OpenXRCompositionLayerExtension::get_singleton();
-}
-
-OpenXRViewportCompositionLayerProvider::~OpenXRViewportCompositionLayerProvider() {
-	for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
-		extension->on_viewport_composition_layer_destroyed(composition_layer);
-	}
-
-	if (use_android_surface) {
-		free_swapchain();
-	} else {
-		// This will reset the viewport and free the swapchain too.
-		set_viewport(RID(), Size2i());
-	}
-}
-
-void OpenXRViewportCompositionLayerProvider::set_alpha_blend(bool p_alpha_blend) {
-	if (alpha_blend != p_alpha_blend) {
-		alpha_blend = p_alpha_blend;
-		if (alpha_blend) {
-			composition_layer->layerFlags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
-		} else {
-			composition_layer->layerFlags &= ~XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
-		}
-	}
-}
-
-void OpenXRViewportCompositionLayerProvider::set_viewport(RID p_viewport, Size2i p_size) {
+void OpenXRCompositionLayerExtension::CompositionLayer::set_viewport(RID p_viewport, const Size2i &p_size) {
 	ERR_FAIL_COND(use_android_surface);
-
-	RenderingServer *rs = RenderingServer::get_singleton();
-	ERR_FAIL_NULL(rs);
 
 	if (subviewport.viewport != p_viewport) {
 		if (subviewport.viewport.is_valid()) {
-			RID rt = rs->viewport_get_render_target(subviewport.viewport);
+			RID rt = RenderingServer::get_singleton()->viewport_get_render_target(subviewport.viewport);
 			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID(), RID());
 		}
 
@@ -222,10 +234,12 @@ void OpenXRViewportCompositionLayerProvider::set_viewport(RID p_viewport, Size2i
 			free_swapchain();
 			subviewport.viewport_size = Size2i();
 		}
+	} else if (subviewport.viewport_size != p_size) {
+		subviewport.viewport_size = p_size;
 	}
 }
 
-void OpenXRViewportCompositionLayerProvider::set_use_android_surface(bool p_use_android_surface, Size2i p_size) {
+void OpenXRCompositionLayerExtension::CompositionLayer::set_use_android_surface(bool p_use_android_surface, const Size2i &p_size) {
 #ifdef ANDROID_ENABLED
 	if (p_use_android_surface == use_android_surface) {
 		if (use_android_surface && swapchain_size != p_size) {
@@ -241,7 +255,7 @@ void OpenXRViewportCompositionLayerProvider::set_use_android_surface(bool p_use_
 	use_android_surface = p_use_android_surface;
 
 	if (use_android_surface) {
-		if (!composition_layer_extension->is_android_surface_swapchain_available()) {
+		if (!OpenXRCompositionLayerExtension::get_singleton()->is_android_surface_swapchain_available()) {
 			ERR_PRINT_ONCE("OpenXR: Cannot use Android surface for composition layer because the extension isn't available");
 		}
 
@@ -256,49 +270,147 @@ void OpenXRViewportCompositionLayerProvider::set_use_android_surface(bool p_use_
 #endif
 }
 
-#ifdef ANDROID_ENABLED
-void OpenXRViewportCompositionLayerProvider::create_android_surface() {
-	ERR_FAIL_COND(android_surface.swapchain != XR_NULL_HANDLE || android_surface.surface.is_valid());
-	ERR_FAIL_COND(!openxr_api || !openxr_api->is_running());
-
-	void *next_pointer = nullptr;
-	for (OpenXRExtensionWrapper *wrapper : openxr_api->get_registered_extension_wrappers()) {
-		void *np = wrapper->set_android_surface_swapchain_create_info_and_get_next_pointer(extension_property_values, next_pointer);
-		if (np != nullptr) {
-			next_pointer = np;
+void OpenXRCompositionLayerExtension::CompositionLayer::set_alpha_blend(bool p_alpha_blend) {
+	if (alpha_blend != p_alpha_blend) {
+		alpha_blend = p_alpha_blend;
+		if (alpha_blend) {
+			composition_layer.layerFlags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
+		} else {
+			composition_layer.layerFlags &= ~XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 		}
 	}
+}
 
-	// The XR_FB_android_surface_swapchain_create extension mandates that format, sampleCount,
-	// faceCount, arraySize, and mipCount must be zero.
-	XrSwapchainCreateInfo info = {
-		XR_TYPE_SWAPCHAIN_CREATE_INFO, // type
-		next_pointer, // next
-		0, // createFlags
-		XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, // usageFlags
-		0, // format
-		0, // sampleCount
-		(uint32_t)swapchain_size.x, // width
-		(uint32_t)swapchain_size.y, // height
-		0, // faceCount
-		0, // arraySize
-		0, // mipCount
+void OpenXRCompositionLayerExtension::CompositionLayer::set_transform(const Transform3D &p_transform) {
+	Transform3D reference_frame = XRServer::get_singleton()->get_reference_frame();
+	Transform3D transform = reference_frame.inverse() * p_transform;
+	Quaternion quat(transform.basis.orthonormalized());
+
+	XrPosef pose = {
+		{ (float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w },
+		{ (float)transform.origin.x, (float)transform.origin.y, (float)transform.origin.z }
 	};
 
-	jobject surface;
-	composition_layer_extension->create_android_surface_swapchain(&info, &android_surface.swapchain, &surface);
-
-	swapchain_state.dirty = true;
-
-	if (surface) {
-		android_surface.surface.instantiate(JavaClassWrapper::get_singleton()->wrap("android.view.Surface"), surface);
+	switch (composition_layer.type) {
+		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
+			composition_layer_quad.pose = pose;
+		} break;
+		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
+			composition_layer_cylinder.pose = pose;
+		} break;
+		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
+			composition_layer_equirect.pose = pose;
+		} break;
+		default: {
+			ERR_PRINT(vformat("Cannot set transform on unsupported composition layer type: %s", composition_layer.type));
+		}
 	}
 }
-#endif
 
-Ref<JavaObject> OpenXRViewportCompositionLayerProvider::get_android_surface() {
+void OpenXRCompositionLayerExtension::CompositionLayer::set_extension_property_values(const Dictionary &p_property_values) {
+	extension_property_values = p_property_values;
+	extension_property_values_changed = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_min_filter(Filter p_mode) {
+	swapchain_state.min_filter = p_mode;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_mag_filter(Filter p_mode) {
+	swapchain_state.mag_filter = p_mode;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_mipmap_mode(MipmapMode p_mode) {
+	swapchain_state.mipmap_mode = p_mode;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_horizontal_wrap(Wrap p_mode) {
+	swapchain_state.horizontal_wrap = p_mode;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_vertical_wrap(Wrap p_mode) {
+	swapchain_state.vertical_wrap = p_mode;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_red_swizzle(Swizzle p_mode) {
+	swapchain_state.red_swizzle = p_mode;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_green_swizzle(Swizzle p_mode) {
+	swapchain_state.green_swizzle = p_mode;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_blue_swizzle(Swizzle p_mode) {
+	swapchain_state.blue_swizzle = p_mode;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_alpha_swizzle(Swizzle p_mode) {
+	swapchain_state.alpha_swizzle = p_mode;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_max_anisotropy(float p_value) {
+	swapchain_state.max_anisotropy = p_value;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_border_color(const Color &p_color) {
+	swapchain_state.border_color = p_color;
+	swapchain_state_is_dirty = true;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_quad_size(const Size2 &p_size) {
+	ERR_FAIL_COND(composition_layer.type != XR_TYPE_COMPOSITION_LAYER_QUAD);
+	composition_layer_quad.size = { (float)p_size.x, (float)p_size.y };
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_cylinder_radius(float p_radius) {
+	ERR_FAIL_COND(composition_layer.type != XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR);
+	composition_layer_cylinder.radius = p_radius;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_cylinder_aspect_ratio(float p_aspect_ratio) {
+	ERR_FAIL_COND(composition_layer.type != XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR);
+	composition_layer_cylinder.aspectRatio = p_aspect_ratio;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_cylinder_central_angle(float p_central_angle) {
+	ERR_FAIL_COND(composition_layer.type != XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR);
+	composition_layer_cylinder.centralAngle = p_central_angle;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_equirect_radius(float p_radius) {
+	ERR_FAIL_COND(composition_layer.type != XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR);
+	composition_layer_equirect.radius = p_radius;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_equirect_central_horizontal_angle(float p_angle) {
+	ERR_FAIL_COND(composition_layer.type != XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR);
+	composition_layer_equirect.centralHorizontalAngle = p_angle;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_equirect_upper_vertical_angle(float p_angle) {
+	ERR_FAIL_COND(composition_layer.type != XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR);
+	composition_layer_equirect.upperVerticalAngle = p_angle;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_equirect_lower_vertical_angle(float p_angle) {
+	ERR_FAIL_COND(composition_layer.type != XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR);
+	composition_layer_equirect.lowerVerticalAngle = p_angle;
+}
+
+Ref<JavaObject> OpenXRCompositionLayerExtension::CompositionLayer::get_android_surface() {
 #ifdef ANDROID_ENABLED
 	if (use_android_surface) {
+		MutexLock lock(OpenXRCompositionLayerExtension::get_singleton()->composition_layer_mutex);
 		if (android_surface.surface.is_null()) {
 			create_android_surface();
 		}
@@ -308,14 +420,10 @@ Ref<JavaObject> OpenXRViewportCompositionLayerProvider::get_android_surface() {
 	return Ref<JavaObject>();
 }
 
-void OpenXRViewportCompositionLayerProvider::set_extension_property_values(const Dictionary &p_extension_property_values) {
-	extension_property_values = p_extension_property_values;
-	extension_property_values_changed = true;
-}
-
-void OpenXRViewportCompositionLayerProvider::on_pre_render() {
+void OpenXRCompositionLayerExtension::CompositionLayer::on_pre_render() {
 #ifdef ANDROID_ENABLED
 	if (use_android_surface) {
+		MutexLock lock(OpenXRCompositionLayerExtension::get_singleton()->composition_layer_mutex);
 		if (android_surface.surface.is_null()) {
 			create_android_surface();
 		}
@@ -324,7 +432,7 @@ void OpenXRViewportCompositionLayerProvider::on_pre_render() {
 #endif
 
 	RenderingServer *rs = RenderingServer::get_singleton();
-	ERR_FAIL_NULL(rs);
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 
 	if (subviewport.viewport.is_valid() && openxr_api && openxr_api->is_running()) {
 		RS::ViewportUpdateMode update_mode = rs->viewport_get_update_mode(subviewport.viewport);
@@ -338,19 +446,22 @@ void OpenXRViewportCompositionLayerProvider::on_pre_render() {
 		}
 	}
 
-	if (swapchain_state.dirty) {
+	if (swapchain_state_is_dirty) {
 		update_swapchain_state();
-		swapchain_state.dirty = false;
+		swapchain_state_is_dirty = false;
 	}
 }
 
-XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_composition_layer() {
+XrCompositionLayerBaseHeader *OpenXRCompositionLayerExtension::CompositionLayer::get_composition_layer() {
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	OpenXRCompositionLayerExtension *composition_layer_extension = OpenXRCompositionLayerExtension::get_singleton();
+
 	if (openxr_api == nullptr || composition_layer_extension == nullptr) {
 		// OpenXR not initialized or we're in the editor?
 		return nullptr;
 	}
 
-	if (!composition_layer_extension->is_available(composition_layer->type)) {
+	if (!composition_layer_extension->is_available(composition_layer.type)) {
 		// Selected type is not supported, ignore our layer.
 		return nullptr;
 	}
@@ -368,23 +479,20 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 	}
 
 	// Update the layer struct for the swapchain.
-	switch (composition_layer->type) {
+	switch (composition_layer.type) {
 		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
-			XrCompositionLayerQuad *quad_layer = (XrCompositionLayerQuad *)composition_layer;
-			quad_layer->space = openxr_api->get_play_space();
-			quad_layer->subImage = subimage;
+			composition_layer_quad.space = openxr_api->get_play_space();
+			composition_layer_quad.subImage = subimage;
 		} break;
 
 		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
-			XrCompositionLayerCylinderKHR *cylinder_layer = (XrCompositionLayerCylinderKHR *)composition_layer;
-			cylinder_layer->space = openxr_api->get_play_space();
-			cylinder_layer->subImage = subimage;
+			composition_layer_cylinder.space = openxr_api->get_play_space();
+			composition_layer_cylinder.subImage = subimage;
 		} break;
 
 		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
-			XrCompositionLayerEquirect2KHR *equirect_layer = (XrCompositionLayerEquirect2KHR *)composition_layer;
-			equirect_layer->space = openxr_api->get_play_space();
-			equirect_layer->subImage = subimage;
+			composition_layer_equirect.space = openxr_api->get_play_space();
+			composition_layer_equirect.subImage = subimage;
 		} break;
 
 		default: {
@@ -397,18 +505,27 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 
 		void *next_pointer = nullptr;
 		for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
-			void *np = extension->set_viewport_composition_layer_and_get_next_pointer(composition_layer, extension_property_values, next_pointer);
+			void *np = extension->set_viewport_composition_layer_and_get_next_pointer(&composition_layer, extension_property_values, next_pointer);
 			if (np) {
 				next_pointer = np;
 			}
 		}
-		composition_layer->next = next_pointer;
+		composition_layer.next = next_pointer;
 	}
 
-	return composition_layer;
+	return &composition_layer;
 }
 
-void OpenXRViewportCompositionLayerProvider::update_swapchain_state() {
+void OpenXRCompositionLayerExtension::CompositionLayer::free() {
+	if (use_android_surface) {
+		free_swapchain();
+	} else {
+		// This will reset the viewport and free the swapchain too.
+		set_viewport(RID(), Size2i());
+	}
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::update_swapchain_state() {
 	OpenXRFBUpdateSwapchainExtension *fb_update_swapchain_ext = OpenXRFBUpdateSwapchainExtension::get_singleton();
 	if (!fb_update_swapchain_ext) {
 		return;
@@ -432,11 +549,7 @@ void OpenXRViewportCompositionLayerProvider::update_swapchain_state() {
 	}
 }
 
-OpenXRViewportCompositionLayerProvider::SwapchainState *OpenXRViewportCompositionLayerProvider::get_swapchain_state() {
-	return &swapchain_state;
-}
-
-void OpenXRViewportCompositionLayerProvider::update_swapchain_sub_image(XrSwapchainSubImage &r_subimage) {
+void OpenXRCompositionLayerExtension::CompositionLayer::update_swapchain_sub_image(XrSwapchainSubImage &r_subimage) {
 #ifdef ANDROID_ENABLED
 	if (use_android_surface) {
 		r_subimage.swapchain = android_surface.swapchain;
@@ -456,14 +569,17 @@ void OpenXRViewportCompositionLayerProvider::update_swapchain_sub_image(XrSwapch
 	r_subimage.imageRect.extent.height = swapchain_size.height;
 }
 
-bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p_static_image) {
+bool OpenXRCompositionLayerExtension::CompositionLayer::update_and_acquire_swapchain(bool p_static_image) {
 	ERR_FAIL_COND_V(use_android_surface, false);
+
+	OpenXRCompositionLayerExtension *composition_layer_extension = OpenXRCompositionLayerExtension::get_singleton();
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 
 	if (openxr_api == nullptr || composition_layer_extension == nullptr) {
 		// OpenXR not initialized or we're in the editor?
 		return false;
 	}
-	if (!composition_layer_extension->is_available(get_openxr_type())) {
+	if (!composition_layer_extension->is_available(composition_layer.type)) {
 		// Selected type is not supported?
 		return false;
 	}
@@ -471,7 +587,7 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 	// See if our current swapchain is outdated.
 	if (subviewport.swapchain_info.get_swapchain() != XR_NULL_HANDLE) {
 		// If this swap chain, or the previous one, were static, then we can't reuse it.
-		if (swapchain_size == subviewport.viewport_size && !p_static_image && !subviewport.static_image) {
+		if (swapchain_size == subviewport.viewport_size && !p_static_image && !subviewport.static_image && protected_content == subviewport.swapchain_protected_content) {
 			// We're all good! Just acquire it.
 			// We can ignore should_render here, return will be false.
 			bool should_render = true;
@@ -489,12 +605,15 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 	if (p_static_image) {
 		create_flags |= XR_SWAPCHAIN_CREATE_STATIC_IMAGE_BIT;
 	}
+	if (protected_content) {
+		create_flags |= XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT;
+	}
 	if (!subviewport.swapchain_info.create(create_flags, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format, subviewport.viewport_size.width, subviewport.viewport_size.height, sample_count, array_size)) {
 		swapchain_size = Size2i();
 		return false;
 	}
 
-	swapchain_state.dirty = true;
+	swapchain_state_is_dirty = true;
 
 	// Acquire our image so we can start rendering into it,
 	// we can ignore should_render here, ret will be false.
@@ -503,15 +622,25 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 
 	swapchain_size = subviewport.viewport_size;
 	subviewport.static_image = p_static_image;
+	subviewport.swapchain_protected_content = protected_content;
 	return ret;
 }
 
-void OpenXRViewportCompositionLayerProvider::free_swapchain() {
+RID OpenXRCompositionLayerExtension::CompositionLayer::get_current_swapchain_texture() {
+	ERR_FAIL_COND_V(use_android_surface, RID());
+
+	if (OpenXRAPI::get_singleton() == nullptr) {
+		return RID();
+	}
+
+	return subviewport.swapchain_info.get_image();
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::free_swapchain() {
 #ifdef ANDROID_ENABLED
 	if (use_android_surface) {
 		if (android_surface.swapchain != XR_NULL_HANDLE) {
-			composition_layer_extension->free_android_surface_swapchain(android_surface.swapchain);
-
+			OpenXRCompositionLayerExtension::get_singleton()->xrDestroySwapchain(android_surface.swapchain);
 			android_surface.swapchain = XR_NULL_HANDLE;
 			android_surface.surface.unref();
 		}
@@ -527,12 +656,48 @@ void OpenXRViewportCompositionLayerProvider::free_swapchain() {
 	swapchain_size = Size2i();
 }
 
-RID OpenXRViewportCompositionLayerProvider::get_current_swapchain_texture() {
-	ERR_FAIL_COND_V(use_android_surface, RID());
+#ifdef ANDROID_ENABLED
+void OpenXRCompositionLayerExtension::CompositionLayer::create_android_surface() {
+	ERR_FAIL_COND(android_surface.swapchain != XR_NULL_HANDLE || android_surface.surface.is_valid());
 
-	if (openxr_api == nullptr) {
-		return RID();
+	void *next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *wrapper : OpenXRAPI::get_registered_extension_wrappers()) {
+		void *np = wrapper->set_android_surface_swapchain_create_info_and_get_next_pointer(extension_property_values, next_pointer);
+		if (np != nullptr) {
+			next_pointer = np;
+		}
 	}
 
-	return subviewport.swapchain_info.get_image();
+	// Check to see if content should be protected.
+	XrSwapchainCreateFlags create_flags = 0;
+
+	if (protected_content) {
+		create_flags = XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT;
+	}
+
+	// The XR_FB_android_surface_swapchain_create extension mandates that format, sampleCount,
+	// faceCount, arraySize, and mipCount must be zero.
+	XrSwapchainCreateInfo info = {
+		XR_TYPE_SWAPCHAIN_CREATE_INFO, // type
+		next_pointer, // next
+		create_flags, // createFlags
+		XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, // usageFlags
+		0, // format
+		0, // sampleCount
+		(uint32_t)swapchain_size.x, // width
+		(uint32_t)swapchain_size.y, // height
+		0, // faceCount
+		0, // arraySize
+		0, // mipCount
+	};
+
+	jobject surface;
+	OpenXRCompositionLayerExtension::get_singleton()->create_android_surface_swapchain(&info, &android_surface.swapchain, &surface);
+
+	swapchain_state_is_dirty = true;
+
+	if (surface) {
+		android_surface.surface.instantiate(JavaClassWrapper::get_singleton()->wrap("android.view.Surface"), surface);
+	}
 }
+#endif

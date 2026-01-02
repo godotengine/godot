@@ -59,14 +59,10 @@
 
 void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const {
 	Vector<String> arr;
-	if (GDVIRTUAL_CALL(_get_extensions, arr)) {
-		for (int i = 0; i < arr.size(); i++) {
-			r_extensions->push_back(arr[i]);
-		}
-		return;
+	GDVIRTUAL_CALL(_get_extensions, arr);
+	for (int i = 0; i < arr.size(); i++) {
+		r_extensions->push_back(arr[i]);
 	}
-
-	ERR_FAIL();
 }
 
 Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
@@ -75,11 +71,8 @@ Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_f
 		options_dict[elem.key] = elem.value;
 	}
 	Object *ret = nullptr;
-	if (GDVIRTUAL_CALL(_import_scene, p_path, p_flags, options_dict, ret)) {
-		return Object::cast_to<Node>(ret);
-	}
-
-	ERR_FAIL_V(nullptr);
+	GDVIRTUAL_CALL(_import_scene, p_path, p_flags, options_dict, ret);
+	return Object::cast_to<Node>(ret);
 }
 
 void EditorSceneFormatImporter::add_import_option(const String &p_name, const Variant &p_default_value) {
@@ -1706,6 +1699,11 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								base = col;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
+								NodePath skeleton_path = mi->get_skeleton_path();
+								Skeleton3D *skeleton = nullptr;
+								if (!skeleton_path.is_empty()) {
+									skeleton = Object::cast_to<Skeleton3D>(mi->get_node_or_null(skeleton_path));
+								}
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
 								rigid_body->set_name(p_node->get_name());
 								_copy_meta(p_node, rigid_body);
@@ -1721,6 +1719,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 									rigid_body->set_physics_material_override(pmo);
 								}
 								base = rigid_body;
+								if (skeleton) {
+									skeleton_path = mi->get_path_to(skeleton);
+									mi->set_skeleton_path(skeleton_path);
+								}
 							} break;
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
 								StaticBody3D *col = memnew(StaticBody3D);
@@ -2124,8 +2126,8 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule,Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "StaticBody3D,RigidBody3D,Area3D"), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex (Slow),Single Convex (Average),Trimesh (Slow),Box (Fast),Sphere (Fast),Cylinder (Average),Capsule (Fast),Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
@@ -2512,7 +2514,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 		}
 		script_ext_hint += "*." + E;
 	}
-	bool trimming_defaults_on = p_path.get_extension().to_lower() == "fbx";
+	bool trimming_defaults_on = p_path.has_extension("fbx");
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
@@ -3365,9 +3367,6 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	return OK;
 }
 
-ResourceImporterScene *ResourceImporterScene::scene_singleton = nullptr;
-ResourceImporterScene *ResourceImporterScene::animation_singleton = nullptr;
-
 Vector<Ref<EditorSceneFormatImporter>> ResourceImporterScene::scene_importers;
 Vector<Ref<EditorScenePostImportPlugin>> ResourceImporterScene::post_importer_plugins;
 
@@ -3379,26 +3378,8 @@ void ResourceImporterScene::show_advanced_options(const String &p_path) {
 	SceneImportSettingsDialog::get_singleton()->open_settings(p_path, _scene_import_type);
 }
 
-ResourceImporterScene::ResourceImporterScene(const String &p_scene_import_type, bool p_singleton) {
-	// This should only be set through the EditorNode.
-	if (p_singleton) {
-		if (p_scene_import_type == "AnimationLibrary") {
-			animation_singleton = this;
-		} else if (p_scene_import_type == "PackedScene") {
-			scene_singleton = this;
-		}
-	}
-
+ResourceImporterScene::ResourceImporterScene(const String &p_scene_import_type) {
 	_scene_import_type = p_scene_import_type;
-}
-
-ResourceImporterScene::~ResourceImporterScene() {
-	if (animation_singleton == this) {
-		animation_singleton = nullptr;
-	}
-	if (scene_singleton == this) {
-		scene_singleton = nullptr;
-	}
 }
 
 void ResourceImporterScene::add_scene_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority) {

@@ -37,6 +37,7 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_uid.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 
@@ -78,15 +79,15 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	return ret;
 }
 
-Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep, Error *r_error) {
+Ref<FileAccess> FileAccess::create_temp(ModeFlags p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep, Error *r_error) {
 	const String ERROR_COMMON_PREFIX = "Error while creating temporary file";
 
-	if (!p_prefix.is_valid_filename()) {
+	if (!p_prefix.is_empty() && !p_prefix.is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
 		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
 	}
 
-	if (!p_extension.is_valid_filename()) {
+	if (!p_extension.is_empty() && !p_extension.is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
 		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid extension.)", ERROR_COMMON_PREFIX, p_extension));
 	}
@@ -135,7 +136,7 @@ Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix
 	return ret;
 }
 
-Ref<FileAccess> FileAccess::_create_temp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep) {
+Ref<FileAccess> FileAccess::_create_temp(ModeFlags p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep) {
 	return create_temp(p_mode_flags, p_prefix, p_extension, p_keep, &last_file_open_error);
 }
 
@@ -445,7 +446,7 @@ class CharBuffer {
 public:
 	_FORCE_INLINE_ CharBuffer() :
 			buffer(stack_buffer),
-			capacity(std::size(stack_buffer)) {
+			capacity(std_size(stack_buffer)) {
 	}
 
 	_FORCE_INLINE_ void push_back(char c) {
@@ -467,10 +468,22 @@ String FileAccess::get_line() const {
 	uint8_t c = get_8();
 
 	while (!eof_reached()) {
-		if (c == '\n' || c == '\0' || get_error() != OK) {
+		if (c == '\r' || c == '\n' || c == '\0' || get_error() != OK) {
+			if (c == '\r') {
+				// Check for Windows-style EOL.
+				const uint64_t prev_pos = get_position() - 1;
+				if (unlikely(get_8() != '\n')) {
+					// HACK: We can't simply check the next value in a vacuum, so we risk triggering
+					//  an EOL false-positive in the unlikely event that this `\r` was the final
+					//  value of the file. Unilaterally work around by re-reading the *previous*
+					//  byte (the starting `\r`) to ensure `get_error()` returns `OK`.
+					const_cast<FileAccess *>(this)->seek(prev_pos);
+					get_8();
+				}
+			}
 			line.push_back(0);
 			return String::utf8(line.get_data());
-		} else if (c != '\r') {
+		} else {
 			line.push_back(char(c));
 		}
 
@@ -538,11 +551,11 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 	return strings;
 }
 
-String FileAccess::get_as_text(bool p_skip_cr) const {
+String FileAccess::get_as_text() const {
 	uint64_t original_pos = get_position();
 	const_cast<FileAccess *>(this)->seek(0);
 
-	String text = get_as_utf8_string(p_skip_cr);
+	String text = get_as_utf8_string();
 
 	const_cast<FileAccess *>(this)->seek(original_pos);
 
@@ -557,6 +570,7 @@ Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 		return data;
 	}
 
+	data.reserve_exact(p_length);
 	Error err = data.resize(p_length);
 	ERR_FAIL_COND_V_MSG(err != OK, data, vformat("Can't resize data to %d elements.", p_length));
 
@@ -570,7 +584,7 @@ Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	return data;
 }
 
-String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
+String FileAccess::get_as_utf8_string() const {
 	Vector<uint8_t> sourcef;
 	uint64_t len = get_length();
 	sourcef.resize(len + 1);
@@ -581,7 +595,7 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	w[len] = 0;
 
 	String s;
-	s.append_utf8((const char *)w, len, p_skip_cr);
+	s.append_utf8((const char *)w, len);
 	return s;
 }
 
@@ -757,6 +771,83 @@ Error FileAccess::set_read_only_attribute(const String &p_file, bool p_ro) {
 	return err;
 }
 
+PackedByteArray FileAccess::get_extended_attribute(const String &p_file, const String &p_attribute_name) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return PackedByteArray();
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	return fa->_get_extended_attribute(p_file, p_attribute_name);
+}
+
+String FileAccess::get_extended_attribute_string(const String &p_file, const String &p_attribute_name) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return String();
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), String(), vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	PackedByteArray data = fa->_get_extended_attribute(p_file, p_attribute_name);
+	if (data.is_empty()) {
+		return String();
+	}
+	return String::utf8((const char *)data.ptr(), data.size());
+}
+
+Error FileAccess::set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	return fa->_set_extended_attribute(p_file, p_attribute_name, p_data);
+}
+
+Error FileAccess::set_extended_attribute_string(const String &p_file, const String &p_attribute_name, const String &p_data) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	PackedByteArray data;
+	CharString cs = p_data.utf8();
+	data.resize(cs.size());
+	if (cs.size() > 0) {
+		memcpy(data.ptrw(), cs.get_data(), cs.size());
+	}
+
+	return fa->_set_extended_attribute(p_file, p_attribute_name, data);
+}
+
+Error FileAccess::remove_extended_attribute(const String &p_file, const String &p_attribute_name) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	return fa->_remove_extended_attribute(p_file, p_attribute_name);
+}
+
+PackedStringArray FileAccess::get_extended_attributes_list(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return PackedStringArray();
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedStringArray(), vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	return fa->_get_extended_attributes_list(p_file);
+}
+
 bool FileAccess::store_string(const String &p_string) {
 	if (p_string.length() == 0) {
 		return true;
@@ -851,6 +942,7 @@ Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_err
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), vformat("Can't open file from path '%s'.", String(p_path)));
 	}
 	Vector<uint8_t> data;
+	data.reserve_exact(f->get_length());
 	data.resize(f->get_length());
 	f->get_buffer(data.ptrw(), data.size());
 	return data;
@@ -987,7 +1079,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_buffer", "length"), (Vector<uint8_t> (FileAccess::*)(int64_t) const) & FileAccess::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &FileAccess::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &FileAccess::get_csv_line, DEFVAL(","));
-	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &FileAccess::get_as_text, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_as_text"), &FileAccess::get_as_text);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_md5", "path"), &FileAccess::get_md5);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_sha256", "path"), &FileAccess::get_sha256);
 	ClassDB::bind_method(D_METHOD("is_big_endian"), &FileAccess::is_big_endian);
@@ -1026,6 +1118,13 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_hidden_attribute", "file", "hidden"), &FileAccess::set_hidden_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "file", "ro"), &FileAccess::set_read_only_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "file"), &FileAccess::get_read_only_attribute);
+
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute", "file", "attribute_name"), &FileAccess::get_extended_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute_string", "file", "attribute_name"), &FileAccess::get_extended_attribute_string);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute", "file", "attribute_name", "data"), &FileAccess::set_extended_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute_string", "file", "attribute_name", "data"), &FileAccess::set_extended_attribute_string);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_extended_attribute", "file", "attribute_name"), &FileAccess::remove_extended_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attributes_list", "file"), &FileAccess::get_extended_attributes_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
 

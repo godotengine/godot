@@ -30,9 +30,12 @@
 
 #pragma once
 
-#include "core/os/main_loop.h"
-#include "core/string/ustring.h"
+#include "core/string/string_name.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
+
+class Object;
+class Dictionary;
 
 template <typename T>
 class TypedArray;
@@ -59,13 +62,17 @@ private:
 	double _process_step = 0;
 
 	int ips = 60;
+	int user_ips = 60;
 	double physics_jitter_fix = 0.5;
 	double _fps = 1;
 	int _max_fps = 0;
 	int _audio_output_latency = 0;
 	double _time_scale = 1.0;
+	double _game_time_scale = 1.0;
+	double _user_time_scale = 1.0;
 	uint64_t _physics_frames = 0;
 	int max_physics_steps_per_frame = 8;
+	int max_user_physics_steps_per_frame = 8;
 	double _physics_interpolation_fraction = 0.0f;
 	bool abort_on_gpu_errors = false;
 	bool use_validation_layers = false;
@@ -101,14 +108,19 @@ private:
 
 	bool freeze_time_scale = false;
 
+protected:
+	void _update_time_scale();
+
 public:
 	static Engine *get_singleton();
 
 	virtual void set_physics_ticks_per_second(int p_ips);
 	virtual int get_physics_ticks_per_second() const;
+	virtual int get_user_physics_ticks_per_second() const;
 
 	virtual void set_max_physics_steps_per_frame(int p_max_physics_steps);
 	virtual int get_max_physics_steps_per_frame() const;
+	virtual int get_user_max_physics_steps_per_frame() const;
 
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
@@ -132,6 +144,8 @@ public:
 
 	void set_time_scale(double p_scale);
 	double get_time_scale() const;
+	void set_user_time_scale(double p_scale);
+	double get_effective_time_scale() const;
 	double get_unfrozen_time_scale() const;
 
 	void set_print_to_stdout(bool p_enabled);

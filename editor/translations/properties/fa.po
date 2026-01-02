@@ -212,6 +212,9 @@ msgstr "بررسی مسیرهای نامعتبر نوار"
 msgid "Check Angle Interpolation Type Conflicting"
 msgstr "بررسی ناسازگاری نوع درون‌یابی زاویه"
 
+msgid "Compatibility"
+msgstr "سازگاری"
+
 msgid "Audio"
 msgstr "صدا"
 
@@ -238,9 +241,6 @@ msgstr "آی‌او‌اس"
 
 msgid "Session Category"
 msgstr "دسته‌بندی نشست"
-
-msgid "Mix With Others"
-msgstr "ترکیب با بقیه"
 
 msgid "Subwindows"
 msgstr "زیر پنجره ها"
@@ -425,15 +425,6 @@ msgstr "حداکثر توصیف‌گر در هر استخر توصیف‌گر"
 msgid "D3D12"
 msgstr "D3D12"
 
-msgid "Max Resource Descriptors per Frame"
-msgstr "حداکثر توصیف‌گران منابع در هر فریم"
-
-msgid "Max Sampler Descriptors per Frame"
-msgstr "حداکثر توصیف‌گران نمونه ساز در هر فریم"
-
-msgid "Max Misc Descriptors per Frame"
-msgstr "حداکثر توصیف‌گران متفرقه در هر فریم"
-
 msgid "Agility SDK Version"
 msgstr "نسخه کیت توسعه نرم‌افزاری Agility"
 
@@ -526,9 +517,6 @@ msgstr "شبیه‌سازی موس از بساوش"
 
 msgid "Emulate Touch From Mouse"
 msgstr "شبیه‌سازی بساوش از موس"
-
-msgid "Compatibility"
-msgstr "سازگاری"
 
 msgid "Sensors"
 msgstr "حسگرها"
@@ -773,9 +761,6 @@ msgstr "بومی‌سازی نمایشی"
 msgid "Use Pseudolocalization"
 msgstr "به‌کارگیری بومی‌سازی نمایشی"
 
-msgid "Replace With Accents"
-msgstr "جایگزینی با آکسان‌ها"
-
 msgid "Double Vowels"
 msgstr "جفت واکه‌ها"
 
@@ -824,6 +809,9 @@ msgstr "URLهای در دسترس"
 msgid "Request Timeout"
 msgstr "درخواست وقفه"
 
+msgid "Title"
+msgstr "عنوان"
+
 msgid "Distraction Free Mode"
 msgstr "حالت بدون حواس‌پرتی"
 
@@ -868,27 +856,6 @@ msgstr "چارچوب بافت"
 
 msgid "Export Path"
 msgstr "مسیر برون‌برد"
-
-msgid "Access"
-msgstr "دسترسی"
-
-msgid "Display Mode"
-msgstr "حالت نمایشگر"
-
-msgid "File Mode"
-msgstr "حالت پرونده"
-
-msgid "Filters"
-msgstr "پالایه‌ها"
-
-msgid "Options"
-msgstr "گزینه‌ها"
-
-msgid "Show Hidden Files"
-msgstr "نمایش پرونده‌های پنهان شده"
-
-msgid "Disable Overwrite Warning"
-msgstr "ازکاراندازی هشدار بازنویسی"
 
 msgid "Label"
 msgstr "برچسب"
@@ -1099,12 +1066,6 @@ msgstr "SVG"
 
 msgid "Editor"
 msgstr "ویراستار"
-
-msgid "Scale With Editor Scale"
-msgstr "مقیاس کردن با مقیاس ویراستار"
-
-msgid "Convert Colors With Editor Theme"
-msgstr "تبدیل رنگ‌ها با زمینهٔ ویراستار"
 
 msgid "Import Mode"
 msgstr "حالت درون‌برد"
@@ -1403,6 +1364,12 @@ msgstr "گذرواژه"
 
 msgid "File Dialog"
 msgstr "دیالوگ پرونده"
+
+msgid "Show Hidden Files"
+msgstr "نمایش پرونده‌های پنهان شده"
+
+msgid "Display Mode"
+msgstr "حالت نمایشگر"
 
 msgid "Max Results"
 msgstr "نتایج بیشینه‌"
@@ -1881,8 +1848,8 @@ msgstr "بازه از مبدای نهشت پندابزار"
 msgid "Show Image"
 msgstr "نمایش تصویر"
 
-msgid "Fullsize"
-msgstr "اندازه کامل"
+msgid "Stretch Mode"
+msgstr "حالت کشش"
 
 msgid "Use Filter"
 msgstr "بکاربردن پالایه"
@@ -2115,9 +2082,6 @@ msgstr "گرهٔ جهان"
 msgid "Region Size"
 msgstr "اندازهٔ دامنه"
 
-msgid "Loop Offset"
-msgstr "بازه از مبدای چرخه"
-
 msgid "IOD"
 msgstr "آی‌او‌دی"
 
@@ -2126,6 +2090,9 @@ msgstr "پهنای نمایشگر"
 
 msgid "Vulkan VRS"
 msgstr "وی.آر.اس وولکان"
+
+msgid "Loop Offset"
+msgstr "بازه از مبدای چرخه"
 
 msgid "Visibility Update Mode"
 msgstr "حالت به‌روزرسانی پدیداری"
@@ -2150,6 +2117,9 @@ msgstr "در فضای سه‌بعدی"
 
 msgid "Display Refresh Rate"
 msgstr "نرخ نوگردانی نمایشگر"
+
+msgid "Next"
+msgstr "بعدی"
 
 msgid "Layer Viewport"
 msgstr "دیدگسترهٔ لایه"
@@ -2604,9 +2574,6 @@ msgstr "ساده‌سازی مسیر"
 msgid "Simplify Epsilon"
 msgstr "ساده‌سازی اپسیلون"
 
-msgid "Avoidance Enabled"
-msgstr "پرهیزِ به‌کارافتاده"
-
 msgid "Max Neighbors"
 msgstr "بیشینه‌‌ی همسایگان"
 
@@ -2636,9 +2603,6 @@ msgstr "پهنای خط سفارشی مسیر"
 
 msgid "Vertices"
 msgstr "رئوس"
-
-msgid "NavigationMesh"
-msgstr "مش ناوبری"
 
 msgid "Navigation Polygon"
 msgstr "چندضلعی ناوبری"
@@ -3136,6 +3100,9 @@ msgstr "گونهٔ گذار"
 msgid "Use 3D Avoidance"
 msgstr "به‌کارگیری پرهیز سه‌بعدی"
 
+msgid "NavigationMesh"
+msgstr "مش ناوبری"
+
 msgid "Quaternion"
 msgstr "کواترنیون"
 
@@ -3307,9 +3274,6 @@ msgstr "زمان درآمیزی پیش‌فرض"
 msgid "Animation Path"
 msgstr "مسیر پویانمایی"
 
-msgid "Stretch Mode"
-msgstr "حالت کشش"
-
 msgid "Alignment"
 msgstr "تراز"
 
@@ -3388,9 +3352,6 @@ msgstr "راست همسایه"
 msgid "Neighbor Bottom"
 msgstr "پایین همسایه‌"
 
-msgid "Next"
-msgstr "بعدی"
-
 msgid "Previous"
 msgstr "پیشین"
 
@@ -3406,8 +3367,17 @@ msgstr "تنوع نوع"
 msgid "Autowrap"
 msgstr "پوشاندن خودکار"
 
-msgid "Title"
-msgstr "عنوان"
+msgid "File Mode"
+msgstr "حالت پرونده"
+
+msgid "Access"
+msgstr "دسترسی"
+
+msgid "Filters"
+msgstr "پالایه‌ها"
+
+msgid "Options"
+msgstr "گزینه‌ها"
 
 msgid "Show Grid"
 msgstr "نمایش توری"
@@ -4219,6 +4189,18 @@ msgstr "مقیاس پیش‌فرض زمینه"
 msgid "Custom"
 msgstr "سفارشی"
 
+msgid "Enable Input"
+msgstr "به‌کاراندازی درونداد"
+
+msgid "Output Device"
+msgstr "دستگاه برونداد"
+
+msgid "Input Device"
+msgstr "دستگاه درونداد"
+
+msgid "Playback Speed Scale"
+msgstr "مقیاس تندی بازنواخت"
+
 msgid "Playback Mode"
 msgstr "حالت بازنواخت"
 
@@ -4269,18 +4251,6 @@ msgstr "نرخ سافت کلیپ"
 
 msgid "Predelay"
 msgstr "پیش‌دیرکرد"
-
-msgid "Enable Input"
-msgstr "به‌کاراندازی درونداد"
-
-msgid "Output Device"
-msgstr "دستگاه برونداد"
-
-msgid "Input Device"
-msgstr "دستگاه درونداد"
-
-msgid "Playback Speed Scale"
-msgstr "مقیاس تندی بازنواخت"
 
 msgid "Is Active"
 msgstr "فعال است"
@@ -4338,15 +4308,6 @@ msgstr "رأس"
 
 msgid "IDs"
 msgstr "شناسه‌ها"
-
-msgid "Cull"
-msgstr "گردآوری"
-
-msgid "Unshaded"
-msgstr "سایه‌نخورده"
-
-msgid "Keep Data"
-msgstr "نگهداشتن داده"
 
 msgid "Render Loop Enabled"
 msgstr "چرخهٔ نماپردازش بکارافتاد"
@@ -4429,6 +4390,15 @@ msgstr "زبان سایه‌زن"
 msgid "Treat Warnings as Errors"
 msgstr "رفتار کردن با هشدارها به‌عنوان خطا"
 
+msgid "Cull"
+msgstr "گردآوری"
+
+msgid "Unshaded"
+msgstr "سایه‌نخورده"
+
+msgid "Keep Data"
+msgstr "نگهداشتن داده"
+
 msgid "Default Font Antialiasing"
 msgstr "نادندانگی پیش‌فرض قلم"
 
@@ -4444,14 +4414,14 @@ msgstr "شکل‌های درآمیزی"
 msgid "Hand Tracking Source"
 msgstr "سرچشمهٔ ردیابی دست"
 
-msgid "VRS Min Radius"
-msgstr "کمینهٔ شعاع وی.آر.اس"
-
-msgid "VRS Strength"
-msgstr "قدرت وی.آر.اس"
-
 msgid "World Origin"
 msgstr "خاستگاه جهان"
 
 msgid "Primary Interface"
 msgstr "میانای اصلی"
+
+msgid "VRS Min Radius"
+msgstr "کمینهٔ شعاع وی.آر.اس"
+
+msgid "VRS Strength"
+msgstr "قدرت وی.آر.اس"

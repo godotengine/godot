@@ -260,24 +260,20 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_column_title_alignment(COLUMN_VERSION, HORIZONTAL_ALIGNMENT_LEFT);
 	plugin_list->set_column_title_alignment(COLUMN_AUTHOR, HORIZONTAL_ALIGNMENT_LEFT);
 	plugin_list->set_column_title_alignment(COLUMN_EDIT, HORIZONTAL_ALIGNMENT_LEFT);
-	plugin_list->set_column_expand(COLUMN_PADDING_LEFT, false);
 	plugin_list->set_column_expand(COLUMN_STATUS, false);
 	plugin_list->set_column_expand(COLUMN_NAME, true);
 	plugin_list->set_column_expand(COLUMN_VERSION, false);
 	plugin_list->set_column_expand(COLUMN_AUTHOR, false);
 	plugin_list->set_column_expand(COLUMN_EDIT, false);
-	plugin_list->set_column_expand(COLUMN_PADDING_RIGHT, false);
 	plugin_list->set_column_clip_content(COLUMN_STATUS, true);
 	plugin_list->set_column_clip_content(COLUMN_NAME, true);
 	plugin_list->set_column_clip_content(COLUMN_VERSION, true);
 	plugin_list->set_column_clip_content(COLUMN_AUTHOR, true);
 	plugin_list->set_column_clip_content(COLUMN_EDIT, true);
-	plugin_list->set_column_custom_minimum_width(COLUMN_PADDING_LEFT, 10 * EDSCALE);
 	plugin_list->set_column_custom_minimum_width(COLUMN_STATUS, 80 * EDSCALE);
 	plugin_list->set_column_custom_minimum_width(COLUMN_VERSION, 100 * EDSCALE);
 	plugin_list->set_column_custom_minimum_width(COLUMN_AUTHOR, 250 * EDSCALE);
 	plugin_list->set_column_custom_minimum_width(COLUMN_EDIT, 40 * EDSCALE);
-	plugin_list->set_column_custom_minimum_width(COLUMN_PADDING_RIGHT, 10 * EDSCALE);
 	plugin_list->set_hide_root(true);
 	plugin_list->connect("item_edited", callable_mp(this, &EditorPluginSettings::_plugin_activity_changed), CONNECT_DEFERRED);
 

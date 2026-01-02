@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "scene/resources/gradient_texture.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 RID Environment::get_rid() const {
 	return environment;
@@ -227,12 +227,30 @@ float Environment::get_tonemap_white() const {
 	return tonemap_white;
 }
 
+void Environment::set_tonemap_agx_white(float p_white) {
+	tonemap_agx_white = p_white;
+	_update_tonemap();
+}
+
+float Environment::get_tonemap_agx_white() const {
+	return tonemap_agx_white;
+}
+
+void Environment::set_tonemap_agx_contrast(float p_agx_contrast) {
+	tonemap_agx_contrast = p_agx_contrast;
+	RS::get_singleton()->environment_set_tonemap_agx_contrast(environment, p_agx_contrast);
+}
+
+float Environment::get_tonemap_agx_contrast() const {
+	return tonemap_agx_contrast;
+}
+
 void Environment::_update_tonemap() {
 	RS::get_singleton()->environment_set_tonemap(
 			environment,
 			RS::EnvironmentToneMapper(tone_mapper),
 			tonemap_exposure,
-			tonemap_white);
+			tone_mapper == TONE_MAPPER_AGX ? tonemap_agx_white : tonemap_white);
 }
 
 // SSR
@@ -1116,11 +1134,18 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX)) {
-		// Whitepoint adjustment is not available with AgX or linear as it's hardcoded there.
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (p_property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
+	if (p_property.name == "tonemap_agx_white" && tone_mapper != TONE_MAPPER_AGX) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "tonemap_agx_contrast" && tone_mapper != TONE_MAPPER_AGX) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX && OS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -1132,6 +1157,15 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	} else {
 		if (p_property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
+	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
+		// Hide SSAO properties that only work in Forward+.
+		if (p_property.name.begins_with("ssao_")) {
+			if ((p_property.name != "ssao_enabled") && (p_property.name != "ssao_radius") && (p_property.name != "ssao_intensity")) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
 
@@ -1243,11 +1277,17 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tonemap_exposure"), &Environment::get_tonemap_exposure);
 	ClassDB::bind_method(D_METHOD("set_tonemap_white", "white"), &Environment::set_tonemap_white);
 	ClassDB::bind_method(D_METHOD("get_tonemap_white"), &Environment::get_tonemap_white);
+	ClassDB::bind_method(D_METHOD("set_tonemap_agx_white", "white"), &Environment::set_tonemap_agx_white);
+	ClassDB::bind_method(D_METHOD("get_tonemap_agx_white"), &Environment::get_tonemap_agx_white);
+	ClassDB::bind_method(D_METHOD("set_tonemap_agx_contrast", "contrast"), &Environment::set_tonemap_agx_contrast);
+	ClassDB::bind_method(D_METHOD("get_tonemap_agx_contrast"), &Environment::get_tonemap_agx_contrast);
 
 	ADD_GROUP("Tonemap", "tonemap_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES,AgX"), "set_tonemapper", "get_tonemapper");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"), "set_tonemap_exposure", "get_tonemap_exposure");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "1,16,0.01,or_greater"), "set_tonemap_white", "get_tonemap_white");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_agx_white", PROPERTY_HINT_RANGE, "2,16.5,0.01,or_greater"), "set_tonemap_agx_white", "get_tonemap_agx_white");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_agx_contrast", PROPERTY_HINT_RANGE, "1.0,2.0,0.01,or_greater"), "set_tonemap_agx_contrast", "get_tonemap_agx_contrast");
 
 	// SSR
 
@@ -1264,7 +1304,7 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("SSR", "ssr_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssr_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_ssr_enabled", "is_ssr_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssr_max_steps", PROPERTY_HINT_RANGE, "1,512,1"), "set_ssr_max_steps", "get_ssr_max_steps");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssr_max_steps", PROPERTY_HINT_RANGE, "32,512,1"), "set_ssr_max_steps", "get_ssr_max_steps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_fade_in", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_ssr_fade_in", "get_ssr_fade_in");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_fade_out", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_ssr_fade_out", "get_ssr_fade_out");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_depth_tolerance", PROPERTY_HINT_RANGE, "0.01,128,0.1"), "set_ssr_depth_tolerance", "get_ssr_depth_tolerance");
@@ -1405,7 +1445,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_strength", PROPERTY_HINT_RANGE, "0.0,2.0,0.01"), "set_glow_strength", "get_glow_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_mix", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_glow_mix", "get_glow_mix");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_bloom", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_glow_bloom", "get_glow_bloom");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "glow_blend_mode", PROPERTY_HINT_ENUM, "Additive,Screen,Softlight,Replace,Mix"), "set_glow_blend_mode", "get_glow_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "glow_blend_mode", PROPERTY_HINT_ENUM, "Additive,Screen,Soft Light,Replace,Mix"), "set_glow_blend_mode", "get_glow_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_threshold", PROPERTY_HINT_RANGE, "0.0,4.0,0.01"), "set_glow_hdr_bleed_threshold", "get_glow_hdr_bleed_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_scale", PROPERTY_HINT_RANGE, "0.0,4.0,0.01"), "set_glow_hdr_bleed_scale", "get_glow_hdr_bleed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_luminance_cap", PROPERTY_HINT_RANGE, "0.0,256.0,0.01"), "set_glow_hdr_luminance_cap", "get_glow_hdr_luminance_cap");
@@ -1522,9 +1562,9 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("Adjustments", "adjustment_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "adjustment_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_adjustment_enabled", "is_adjustment_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_brightness", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_brightness", "get_adjustment_brightness");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_contrast", "get_adjustment_contrast");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_brightness", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_adjustment_brightness", "get_adjustment_brightness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.75,1.25,0.005,or_less,or_greater"), "set_adjustment_contrast", "get_adjustment_contrast");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_less,or_greater"), "set_adjustment_saturation", "get_adjustment_saturation");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,Texture3D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
 
 	// Constants
@@ -1573,10 +1613,10 @@ Environment::Environment() {
 
 	glow_levels.resize(7);
 	glow_levels.write[0] = 0.0;
-	glow_levels.write[1] = 0.0;
-	glow_levels.write[2] = 1.0;
-	glow_levels.write[3] = 0.0;
-	glow_levels.write[4] = 1.0;
+	glow_levels.write[1] = 0.8;
+	glow_levels.write[2] = 0.4;
+	glow_levels.write[3] = 0.1;
+	glow_levels.write[4] = 0.0;
 	glow_levels.write[5] = 0.0;
 	glow_levels.write[6] = 0.0;
 
@@ -1596,5 +1636,5 @@ Environment::Environment() {
 
 Environment::~Environment() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(environment);
+	RS::get_singleton()->free_rid(environment);
 }

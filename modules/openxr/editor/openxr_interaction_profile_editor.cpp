@@ -61,7 +61,7 @@ void OpenXRInteractionProfileEditorBase::_do_update_interaction_profile() {
 	}
 }
 
-void OpenXRInteractionProfileEditorBase::_add_binding(const String p_action, const String p_path) {
+void OpenXRInteractionProfileEditorBase::_add_binding(const String &p_action, const String &p_path) {
 	ERR_FAIL_COND(action_map.is_null());
 	ERR_FAIL_COND(interaction_profile.is_null());
 
@@ -88,7 +88,7 @@ void OpenXRInteractionProfileEditorBase::_add_binding(const String p_action, con
 	_do_update_interaction_profile();
 }
 
-void OpenXRInteractionProfileEditorBase::_remove_binding(const String p_action, const String p_path) {
+void OpenXRInteractionProfileEditorBase::_remove_binding(const String &p_action, const String &p_path) {
 	ERR_FAIL_COND(action_map.is_null());
 	ERR_FAIL_COND(interaction_profile.is_null());
 
@@ -125,13 +125,13 @@ void OpenXRInteractionProfileEditorBase::_theme_changed() {
 	}
 }
 
-void OpenXRInteractionProfileEditorBase::remove_all_for_action_set(Ref<OpenXRActionSet> p_action_set) {
+void OpenXRInteractionProfileEditorBase::remove_all_for_action_set(const Ref<OpenXRActionSet> &p_action_set) {
 	// Note, don't need to remove bindings themselves as remove_all_for_action will be called for each before this is called.
 
 	// TODO update binding modifiers
 }
 
-void OpenXRInteractionProfileEditorBase::remove_all_for_action(Ref<OpenXRAction> p_action) {
+void OpenXRInteractionProfileEditorBase::remove_all_for_action(const Ref<OpenXRAction> &p_action) {
 	Vector<Ref<OpenXRIPBinding>> bindings = interaction_profile->get_bindings_for_action(p_action);
 	if (bindings.size() > 0) {
 		String action_name = p_action->get_name_with_set();
@@ -185,7 +185,7 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase() {
 	toolbar_vb->add_child(binding_modifiers_btn);
 }
 
-void OpenXRInteractionProfileEditorBase::setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile) {
+void OpenXRInteractionProfileEditorBase::setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRInteractionProfile> &p_interaction_profile) {
 	ERR_FAIL_NULL(binding_modifiers_dialog);
 	binding_modifiers_dialog->setup(p_action_map, p_interaction_profile);
 
@@ -198,10 +198,10 @@ void OpenXRInteractionProfileEditorBase::setup(Ref<OpenXRActionMap> p_action_map
 	if (profile_def != nullptr) {
 		profile_name = profile_def->display_name;
 
-		if (!profile_def->openxr_extension_name.is_empty()) {
+		if (!profile_def->openxr_extension_names.is_empty()) {
 			profile_name += "*";
 
-			tooltip = vformat(TTR("Note: This interaction profile requires extension %s support."), profile_def->openxr_extension_name);
+			tooltip = vformat(TTR("Note: This interaction profile requires extension %s support."), profile_def->openxr_extension_names);
 		}
 	}
 
@@ -214,12 +214,12 @@ void OpenXRInteractionProfileEditorBase::setup(Ref<OpenXRActionMap> p_action_map
 ///////////////////////////////////////////////////////////////////////////
 // Default interaction profile editor
 
-void OpenXRInteractionProfileEditor::select_action_for(const String p_io_path) {
+void OpenXRInteractionProfileEditor::select_action_for(const String &p_io_path) {
 	selecting_for_io_path = p_io_path;
 	select_action_dialog->open();
 }
 
-void OpenXRInteractionProfileEditor::_on_action_selected(const String p_action) {
+void OpenXRInteractionProfileEditor::_on_action_selected(const String &p_action) {
 	undo_redo->create_action(TTR("Add binding"));
 	undo_redo->add_do_method(this, "_add_binding", p_action, selecting_for_io_path);
 	undo_redo->add_undo_method(this, "_remove_binding", p_action, selecting_for_io_path);
@@ -228,7 +228,7 @@ void OpenXRInteractionProfileEditor::_on_action_selected(const String p_action) 
 	selecting_for_io_path = "";
 }
 
-void OpenXRInteractionProfileEditor::_on_remove_pressed(const String p_action, const String p_for_io_path) {
+void OpenXRInteractionProfileEditor::_on_remove_pressed(const String &p_action, const String &p_for_io_path) {
 	undo_redo->create_action(TTR("Remove binding"));
 	undo_redo->add_do_method(this, "_remove_binding", p_action, p_for_io_path);
 	undo_redo->add_undo_method(this, "_add_binding", p_action, p_for_io_path);
@@ -242,11 +242,13 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 
 	Label *path_label = memnew(Label);
 	path_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	if (p_io_path->openxr_extension_name.is_empty()) {
+	if (p_io_path->openxr_extension_names.is_empty()) {
 		path_label->set_text(p_io_path->display_name);
 	} else {
 		path_label->set_text(p_io_path->display_name + "*");
-		path_hb->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), p_io_path->openxr_extension_name));
+
+		String extension_names = p_io_path->openxr_extension_names.replace(",", " or ").replace(XR_OPENXR_1_1_NAME, "OpenXR 1.1");
+		path_hb->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), extension_names));
 	}
 	path_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	path_hb->add_child(path_label);
@@ -334,7 +336,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 		return;
 	}
 
-	PackedStringArray requested_extensions = OpenXRAPI::get_all_requested_extensions();
+	PackedStringArray requested_extensions = OpenXRAPI::get_all_requested_extensions(0);
 
 	// out with the old...
 	while (interaction_profile_hb->get_child_count() > 0) {
@@ -369,7 +371,14 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 
 		for (int j = 0; j < profile_def->io_paths.size(); j++) {
 			const OpenXRInteractionProfileMetadata::IOPath *io_path = &profile_def->io_paths[j];
-			if (io_path->top_level_path == top_level_paths[i] && (io_path->openxr_extension_name.is_empty() || requested_extensions.has(io_path->openxr_extension_name))) {
+
+			const Vector<String> extensions = io_path->openxr_extension_names.split(",", false);
+			bool extension_is_requested = extensions.is_empty(); // If none, then yes we can use this.
+			for (const String &extension : extensions) {
+				extension_is_requested |= requested_extensions.has(extension);
+			}
+
+			if (io_path->top_level_path == top_level_paths[i] && extension_is_requested) {
 				_add_io_path(container, io_path);
 			}
 		}
@@ -396,7 +405,7 @@ OpenXRInteractionProfileEditor::OpenXRInteractionProfileEditor() {
 	interaction_profile_sc->add_child(interaction_profile_hb);
 }
 
-void OpenXRInteractionProfileEditor::setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile) {
+void OpenXRInteractionProfileEditor::setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRInteractionProfile> &p_interaction_profile) {
 	OpenXRInteractionProfileEditorBase::setup(p_action_map, p_interaction_profile);
 
 	select_action_dialog = memnew(OpenXRSelectActionDialog(p_action_map));

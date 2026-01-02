@@ -37,7 +37,7 @@
 #import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #if defined(RD_ENABLED)
@@ -118,6 +118,7 @@ public:
 	virtual String get_cache_path() const override;
 	virtual String get_temp_path() const override;
 	virtual String get_resource_dir() const override;
+	virtual String get_bundle_resource_dir() const override;
 
 	virtual String get_locale() const override;
 

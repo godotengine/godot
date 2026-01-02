@@ -30,6 +30,9 @@
 
 #pragma once
 
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+
 class GodotBody3D;
 class GodotSoftBody3D;
 

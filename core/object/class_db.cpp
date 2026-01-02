@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
+#include "core/templates/sort_array.h"
 #include "core/version.h"
 
 #ifdef DEBUG_ENABLED
@@ -91,8 +92,6 @@ public:
 	PlaceholderExtensionInstance(const StringName &p_class_name) {
 		class_name = p_class_name;
 	}
-
-	~PlaceholderExtensionInstance() {}
 
 	void set(const StringName &p_name, const Variant &p_value, bool &r_valid) {
 		r_valid = is_runtime_property(p_name);
@@ -197,6 +196,8 @@ public:
 		obj->_extension = ClassDB::get_placeholder_extension(ti->name);
 		obj->_extension_instance = memnew(PlaceholderExtensionInstance(ti->name));
 
+		obj->_reset_gdtype();
+
 #ifdef TOOLS_ENABLED
 		if (obj->_extension->track_instance) {
 			obj->_extension->track_instance(obj->_extension->tracking_userdata, obj);
@@ -240,28 +241,46 @@ bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inh
 	return _is_parent_class(p_class, p_inherits);
 }
 
-void ClassDB::get_class_list(List<StringName> *p_classes) {
+// This function only sorts items added by this function.
+// If `p_classes` is not empty before calling and a global sort is needed, caller must handle that separately.
+void ClassDB::get_class_list(LocalVector<StringName> &p_classes) {
 	Locker::Lock lock(Locker::STATE_READ);
 
-	for (const KeyValue<StringName, ClassInfo> &E : classes) {
-		p_classes->push_back(E.key);
+	if (classes.is_empty()) {
+		return;
 	}
 
-	p_classes->sort_custom<StringName::AlphCompare>();
+	p_classes.reserve(p_classes.size() + classes.size());
+	for (const KeyValue<StringName, ClassInfo> &cls : classes) {
+		p_classes.push_back(cls.key);
+	}
+
+	SortArray<StringName> sorter;
+	sorter.sort(&p_classes[p_classes.size() - classes.size()], classes.size());
 }
 
 #ifdef TOOLS_ENABLED
-void ClassDB::get_extensions_class_list(List<StringName> *p_classes) {
+// This function only sorts items added by this function.
+// If `p_classes` is not empty before calling and a global sort is needed, caller must handle that separately.
+void ClassDB::get_extensions_class_list(LocalVector<StringName> &p_classes) {
 	Locker::Lock lock(Locker::STATE_READ);
+
+	uint32_t original_size = p_classes.size();
 
 	for (const KeyValue<StringName, ClassInfo> &E : classes) {
 		if (E.value.api != API_EXTENSION && E.value.api != API_EDITOR_EXTENSION) {
 			continue;
 		}
-		p_classes->push_back(E.key);
+		p_classes.push_back(E.key);
 	}
 
-	p_classes->sort_custom<StringName::AlphCompare>();
+	// Nothing appended.
+	if (p_classes.size() == original_size) {
+		return;
+	}
+
+	SortArray<StringName> sorter;
+	sorter.sort(&p_classes[original_size], p_classes.size() - original_size);
 }
 
 void ClassDB::get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes) {
@@ -545,6 +564,12 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 		}
 		ERR_FAIL_NULL_V_MSG(ti, nullptr, vformat("Cannot get class '%s'.", String(p_class)));
 		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, vformat("Class '%s' is disabled.", String(p_class)));
+#ifndef DISABLE_DEPRECATED
+		// Force legacy unexposed classes to skip the exposed check to preserve backcompat.
+		if (ti->gdextension && ti->gdextension->legacy_unexposed_class) {
+			p_exposed_only = false;
+		}
+#endif // DISABLE_DEPRECATED
 		if (p_exposed_only) {
 			ERR_FAIL_COND_V_MSG(!ti->exposed, nullptr, vformat("Class '%s' isn't exposed.", String(p_class)));
 		}
@@ -603,6 +628,13 @@ bool ClassDB::_can_instantiate(ClassInfo *p_class_info, bool p_exposed_only) {
 	if (!p_class_info) {
 		return false;
 	}
+
+#ifndef DISABLE_DEPRECATED
+	// Force legacy unexposed classes to skip the exposed check to preserve backcompat.
+	if (p_class_info->gdextension && p_class_info->gdextension->legacy_unexposed_class) {
+		p_exposed_only = false;
+	}
+#endif // DISABLE_DEPRECATED
 
 	if (p_exposed_only && !p_class_info->exposed) {
 		return false;
@@ -726,9 +758,18 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->call_virtual_with_data = nullptr;
 	placeholder_extension->recreate_instance = &PlaceholderExtensionInstance::placeholder_class_recreate_instance;
 
+	placeholder_extension->create_gdtype();
+
 	return placeholder_extension;
 }
 #endif
+
+const GDType *ClassDB::get_gdtype(const StringName &p_class) {
+	Locker::Lock lock(Locker::STATE_READ);
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, nullptr);
+	return type->gdtype;
+}
 
 void ClassDB::set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance) {
 	ERR_FAIL_NULL(p_object);
@@ -748,6 +789,8 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 
 	p_object->_extension = ti->gdextension;
 	p_object->_extension_instance = p_instance;
+
+	p_object->_reset_gdtype();
 
 #ifdef TOOLS_ENABLED
 	if (p_object->_extension->track_instance) {
@@ -840,17 +883,20 @@ use_script:
 	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
-void ClassDB::_add_class(const StringName &p_class, const StringName &p_inherits) {
+void ClassDB::_add_class(const GDType &p_class, const GDType *p_inherits) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
-	const StringName &name = p_class;
+	const StringName &name = p_class.get_name();
 
-	ERR_FAIL_COND_MSG(classes.has(name), vformat("Class '%s' already exists.", String(p_class)));
+	ERR_FAIL_COND_MSG(classes.has(name), vformat("Class '%s' already exists.", name));
 
 	classes[name] = ClassInfo();
 	ClassInfo &ti = classes[name];
 	ti.name = name;
-	ti.inherits = p_inherits;
+	ti.gdtype = &p_class;
+	if (p_inherits) {
+		ti.inherits = p_inherits->get_name();
+	}
 	ti.api = current_api;
 
 	if (ti.inherits) {
@@ -1542,13 +1588,9 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 	ClassInfo *check = type;
 	while (check) {
 		for (const PropertyInfo &pi : check->property_list) {
+			p_list->push_back(pi);
 			if (p_validator) {
-				// Making a copy as we may modify it.
-				PropertyInfo pi_mut = pi;
-				p_validator->validate_property(pi_mut);
-				p_list->push_back(pi_mut);
-			} else {
-				p_list->push_back(pi);
+				p_validator->validate_property(p_list->back()->get());
 			}
 		}
 
@@ -2323,6 +2365,8 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 #ifdef TOOLS_ENABLED
 	c.is_runtime = p_extension->is_runtime;
 #endif
+
+	c.gdtype = p_extension->gdtype;
 
 	classes[p_extension->class_name] = c;
 }

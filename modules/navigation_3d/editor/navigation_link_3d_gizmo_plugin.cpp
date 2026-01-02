@@ -33,7 +33,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "scene/3d/navigation/navigation_link_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 NavigationLink3DGizmoPlugin::NavigationLink3DGizmoPlugin() {
 	create_material("navigation_link_material", NavigationServer3D::get_singleton()->get_debug_navigation_link_connection_color());

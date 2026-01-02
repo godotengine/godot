@@ -1,0 +1,6 @@
+GH-74242
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3DExtension/methods/_intersect_ray/arguments': size changed value in new API, from 8 to 9.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3DExtension/methods/_intersect_ray/arguments/7': type changed value in new API, from "PhysicsServer3DExtensionRayResult*" to "bool".
+
+Added new second-to-last parameter to virtual method.

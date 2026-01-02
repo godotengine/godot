@@ -39,6 +39,7 @@
 #include "scene/resources/text_paragraph.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
+#include "servers/rendering/rendering_server.h"
 
 /*************************************************************************/
 /*  Font                                                                 */
@@ -608,6 +609,13 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
 			TS->font_set_keep_rounding_remainders(cache[p_cache_index], keep_rounding_remainders);
 			TS->font_set_oversampling(cache[p_cache_index], oversampling_override);
+			for (const KeyValue<String, bool> &E : script_support_overrides) {
+				TS->font_set_script_support_override(cache[p_cache_index], E.key, E.value);
+			}
+			for (const KeyValue<String, bool> &E : language_support_overrides) {
+				TS->font_set_language_support_override(cache[p_cache_index], E.key, E.value);
+			}
+			TS->font_set_opentype_feature_overrides(cache[p_cache_index], feature_overrides);
 		}
 	}
 }
@@ -2769,53 +2777,83 @@ void FontFile::render_glyph(int p_cache_index, const Vector2i &p_size, int32_t p
 }
 
 void FontFile::set_language_support_override(const String &p_language, bool p_supported) {
-	_ensure_rid(0);
-	TS->font_set_language_support_override(cache[0], p_language, p_supported);
+	language_support_overrides[p_language] = p_supported;
+	for (int i = 0; i < cache.size(); i++) {
+		_ensure_rid(i);
+		TS->font_set_language_support_override(cache[i], p_language, p_supported);
+	}
 }
 
 bool FontFile::get_language_support_override(const String &p_language) const {
-	_ensure_rid(0);
-	return TS->font_get_language_support_override(cache[0], p_language);
+	if (language_support_overrides.has(p_language)) {
+		return language_support_overrides[p_language];
+	} else {
+		return false;
+	}
 }
 
 void FontFile::remove_language_support_override(const String &p_language) {
-	_ensure_rid(0);
-	TS->font_remove_language_support_override(cache[0], p_language);
+	if (language_support_overrides.has(p_language)) {
+		language_support_overrides.erase(p_language);
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_remove_language_support_override(cache[i], p_language);
+		}
+	}
 }
 
 Vector<String> FontFile::get_language_support_overrides() const {
-	_ensure_rid(0);
-	return TS->font_get_language_support_overrides(cache[0]);
+	PackedStringArray out;
+	for (const KeyValue<String, bool> &E : language_support_overrides) {
+		out.push_back(E.key);
+	}
+	return out;
 }
 
 void FontFile::set_script_support_override(const String &p_script, bool p_supported) {
-	_ensure_rid(0);
-	TS->font_set_script_support_override(cache[0], p_script, p_supported);
+	script_support_overrides[p_script] = p_supported;
+	for (int i = 0; i < cache.size(); i++) {
+		_ensure_rid(i);
+		TS->font_set_script_support_override(cache[i], p_script, p_supported);
+	}
 }
 
 bool FontFile::get_script_support_override(const String &p_script) const {
-	_ensure_rid(0);
-	return TS->font_get_script_support_override(cache[0], p_script);
+	if (script_support_overrides.has(p_script)) {
+		return script_support_overrides[p_script];
+	} else {
+		return false;
+	}
 }
 
 void FontFile::remove_script_support_override(const String &p_script) {
-	_ensure_rid(0);
-	TS->font_remove_script_support_override(cache[0], p_script);
+	if (script_support_overrides.has(p_script)) {
+		script_support_overrides.erase(p_script);
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_remove_script_support_override(cache[i], p_script);
+		}
+	}
 }
 
 Vector<String> FontFile::get_script_support_overrides() const {
-	_ensure_rid(0);
-	return TS->font_get_script_support_overrides(cache[0]);
+	PackedStringArray out;
+	for (const KeyValue<String, bool> &E : script_support_overrides) {
+		out.push_back(E.key);
+	}
+	return out;
 }
 
 void FontFile::set_opentype_feature_overrides(const Dictionary &p_overrides) {
-	_ensure_rid(0);
-	TS->font_set_opentype_feature_overrides(cache[0], p_overrides);
+	feature_overrides = p_overrides;
+	for (int i = 0; i < cache.size(); i++) {
+		_ensure_rid(i);
+		TS->font_set_opentype_feature_overrides(cache[i], p_overrides);
+	}
 }
 
 Dictionary FontFile::get_opentype_feature_overrides() const {
-	_ensure_rid(0);
-	return TS->font_get_opentype_feature_overrides(cache[0]);
+	return feature_overrides;
 }
 
 int32_t FontFile::get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector) const {

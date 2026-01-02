@@ -56,6 +56,8 @@ extern int godot_js_fetch_is_chunked(int p_id);
 #endif
 
 class HTTPClientWeb : public HTTPClient {
+	GDSOFTCLASS(HTTPClientWeb, HTTPClient);
+
 private:
 	int js_id = 0;
 	Status status = STATUS_DISCONNECTED;

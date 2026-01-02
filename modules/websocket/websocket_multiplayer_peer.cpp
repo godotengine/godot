@@ -178,7 +178,7 @@ int WebSocketMultiplayerPeer::get_max_packet_size() const {
 	return get_outbound_buffer_size() - PROTO_SIZE;
 }
 
-Error WebSocketMultiplayerPeer::create_server(int p_port, IPAddress p_bind_ip, Ref<TLSOptions> p_options) {
+Error WebSocketMultiplayerPeer::create_server(int p_port, IPAddress p_bind_ip, const Ref<TLSOptions> &p_options) {
 	ERR_FAIL_COND_V(get_connection_status() != CONNECTION_DISCONNECTED, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_options.is_valid() && !p_options->is_server(), ERR_INVALID_PARAMETER);
 	_clear();
@@ -194,7 +194,7 @@ Error WebSocketMultiplayerPeer::create_server(int p_port, IPAddress p_bind_ip, R
 	return OK;
 }
 
-Error WebSocketMultiplayerPeer::create_client(const String &p_url, Ref<TLSOptions> p_options) {
+Error WebSocketMultiplayerPeer::create_client(const String &p_url, const Ref<TLSOptions> &p_options) {
 	ERR_FAIL_COND_V(get_connection_status() != CONNECTION_DISCONNECTED, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_options.is_valid() && p_options->is_server(), ERR_INVALID_PARAMETER);
 	_clear();

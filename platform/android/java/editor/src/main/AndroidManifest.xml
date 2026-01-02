@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto">
 
+    <queries>
+        <package android:name="org.godotengine.godot_gradle_build_environment" />
+    </queries>
+
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
@@ -46,20 +50,13 @@
         <activity
             android:name=".GodotEditor"
             android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
-            android:exported="true"
+            android:exported="false"
             android:icon="@mipmap/themed_icon"
             android:launchMode="singleTask"
             android:screenOrientation="userLandscape">
             <layout
                 android:defaultWidth="@dimen/editor_default_window_width"
                 android:defaultHeight="@dimen/editor_default_window_height" />
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
 
             <!-- Intent filter used to intercept hybrid PANEL launch for the current editor project, and route it
             properly through the editor 'run' logic (e.g: debugger setup) -->
@@ -77,6 +74,18 @@
                 <category android:name="org.godotengine.xr.hybrid.IMMERSIVE" />
             </intent-filter>
         </activity>
+        <activity-alias
+            android:name=".ProjectManager"
+            android:exported="true"
+            android:icon="@mipmap/themed_icon"
+            android:targetActivity=".GodotEditor">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <activity
             android:name=".GodotGame"
             android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
@@ -110,6 +119,7 @@
             android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:process=":GodotXRGame"
             android:launchMode="singleTask"
+            android:taskAffinity=":xr"
             android:icon="@mipmap/ic_play_window"
             android:label="@string/godot_game_activity_name"
             android:exported="false"

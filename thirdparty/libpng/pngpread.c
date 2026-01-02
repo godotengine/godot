@@ -229,6 +229,14 @@ png_push_read_chunk(png_structrp png_ptr, png_inforp info_ptr)
          png_benign_error(png_ptr, "Too many IDATs found");
    }
 
+   else if ((png_ptr->mode & PNG_HAVE_IDAT) != 0)
+   {
+      /* These flags must be set consistently for all non-IDAT chunks,
+       * including the unknown chunks.
+       */
+      png_ptr->mode |= PNG_HAVE_CHUNK_AFTER_IDAT | PNG_AFTER_IDAT;
+   }
+
    if (chunk_name == png_IHDR)
    {
       if (png_ptr->push_length != 13)

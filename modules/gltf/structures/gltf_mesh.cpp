@@ -54,7 +54,7 @@ String GLTFMesh::get_original_name() {
 	return original_name;
 }
 
-void GLTFMesh::set_original_name(String p_name) {
+void GLTFMesh::set_original_name(const String &p_name) {
 	original_name = p_name;
 }
 
@@ -62,24 +62,24 @@ Ref<ImporterMesh> GLTFMesh::get_mesh() {
 	return mesh;
 }
 
-void GLTFMesh::set_mesh(Ref<ImporterMesh> p_mesh) {
+void GLTFMesh::set_mesh(const Ref<ImporterMesh> &p_mesh) {
 	mesh = p_mesh;
 }
 
 TypedArray<Material> GLTFMesh::get_instance_materials() {
-	return instance_materials;
+	return TypedArray<Material>(instance_materials);
 }
 
-void GLTFMesh::set_instance_materials(TypedArray<Material> p_instance_materials) {
-	instance_materials = p_instance_materials;
+void GLTFMesh::set_instance_materials(const TypedArray<Material> &p_instance_materials) {
+	instance_materials = TypedArray<Material>(p_instance_materials);
 }
 
 Vector<float> GLTFMesh::get_blend_weights() {
-	return blend_weights;
+	return Vector<float>(blend_weights);
 }
 
-void GLTFMesh::set_blend_weights(Vector<float> p_blend_weights) {
-	blend_weights = p_blend_weights;
+void GLTFMesh::set_blend_weights(const Vector<float> &p_blend_weights) {
+	blend_weights = Vector<float>(p_blend_weights);
 }
 
 Variant GLTFMesh::get_additional_data(const StringName &p_extension_name) {

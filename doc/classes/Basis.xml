@@ -74,7 +74,7 @@
 				Returns the [url=https://en.wikipedia.org/wiki/Determinant]determinant[/url] of this basis's matrix. For advanced math, this number can be used to determine a few attributes:
 				- If the determinant is exactly [code]0.0[/code], the basis is not invertible (see [method inverse]).
 				- If the determinant is a negative number, the basis represents a negative scale.
-				[b]Note:[/b] If the basis's scale is the same for every axis, its determinant is always that scale by the power of 2.
+				[b]Note:[/b] If the basis's scale is the same for every axis, its determinant is always that scale by the power of 3.
 			</description>
 		</method>
 		<method name="from_euler" qualifiers="static">

@@ -60,7 +60,7 @@ void EMWSPeer::_esws_on_close(void *p_obj, int p_code, const char *p_reason, int
 	peer->ready_state = STATE_CLOSED;
 }
 
-Error EMWSPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_options) {
+Error EMWSPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_tls_options) {
 	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_tls_options.is_valid() && p_tls_options->is_server(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
@@ -112,7 +112,7 @@ Error EMWSPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_option
 	return OK;
 }
 
-Error EMWSPeer::accept_stream(Ref<StreamPeer> p_stream) {
+Error EMWSPeer::accept_stream(const Ref<StreamPeer> &p_stream) {
 	WARN_PRINT_ONCE("Acting as WebSocket server is not supported in Web platforms.");
 	return ERR_UNAVAILABLE;
 }
@@ -179,7 +179,7 @@ void EMWSPeer::_clear() {
 	packet_buffer.clear();
 }
 
-void EMWSPeer::close(int p_code, String p_reason) {
+void EMWSPeer::close(int p_code, const String &p_reason) {
 	if (p_code < 0) {
 		if (peer_sock != -1) {
 			godot_js_websocket_destroy(peer_sock);

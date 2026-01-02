@@ -6,13 +6,15 @@ Import("env")
 thirdparty_obj = []
 thirdparty_dir = "#thirdparty/vulkan"
 thirdparty_volk_dir = "#thirdparty/volk"
+thirdparty_spirv_headers_dir = "#thirdparty/spirv-headers"
+thirdparty_respirv_dir = "#thirdparty/re-spirv"
 
 # Use bundled Vulkan headers
-env.Prepend(CPPEXTPATH=[thirdparty_dir, thirdparty_dir + "/include"])
+env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
 
 if env["use_volk"]:
     env.AppendUnique(CPPDEFINES=["USE_VOLK"])
-    env.Prepend(CPPEXTPATH=[thirdparty_volk_dir])
+    env.Prepend(CPPPATH=[thirdparty_volk_dir])
 
 if env["platform"] == "android":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_ANDROID_KHR"])
@@ -34,7 +36,7 @@ env_thirdparty_vma.disable_warnings()
 thirdparty_sources_vma = [thirdparty_dir + "/vk_mem_alloc.cpp"]
 
 if env["use_volk"]:
-    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_STATIC_VULKAN_FUNCTIONS=1"])
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=[("VMA_STATIC_VULKAN_FUNCTIONS", 1)])
     env_thirdparty_volk = env.Clone()
     env_thirdparty_volk.disable_warnings()
 
@@ -43,13 +45,19 @@ if env["use_volk"]:
 elif env["platform"] == "android":
     # Our current NDK version only provides old Vulkan headers,
     # so we have to limit VMA.
-    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1000000"])
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=[("VMA_VULKAN_VERSION", 1000000)])
 elif env["platform"] == "macos" or env["platform"] == "ios":
     # MoltenVK supports only Vulkan 1.1 API, limit VMA to the same version.
-    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1001000"])
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=[("VMA_VULKAN_VERSION", 1001000)])
 
 env_thirdparty_vma.add_source_files(thirdparty_obj, thirdparty_sources_vma)
 
+# Build re-spirv
+env_thirdparty_respirv = env.Clone()
+env_thirdparty_respirv.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "/include"])
+env_thirdparty_respirv.disable_warnings()
+thirdparty_sources_respirv = [thirdparty_respirv_dir + "/re-spirv.cpp"]
+env_thirdparty_respirv.add_source_files(thirdparty_obj, thirdparty_sources_respirv)
 
 env.drivers_sources += thirdparty_obj
 

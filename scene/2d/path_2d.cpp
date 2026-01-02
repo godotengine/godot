@@ -32,6 +32,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "scene/main/timer.h"
+#include "scene/resources/mesh.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/themes/editor_scale.h"
@@ -127,11 +128,11 @@ void Path2D::_debug_free() {
 	ERR_FAIL_NULL(RS::get_singleton());
 
 	if (debug_instance.is_valid()) {
-		RS::get_singleton()->free(debug_instance);
+		RS::get_singleton()->free_rid(debug_instance);
 		debug_instance = RID();
 	}
 	if (debug_mesh_rid.is_valid()) {
-		RS::get_singleton()->free(debug_mesh_rid);
+		RS::get_singleton()->free_rid(debug_mesh_rid);
 		debug_mesh_rid = RID();
 	}
 }

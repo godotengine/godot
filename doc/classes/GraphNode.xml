@@ -130,6 +130,20 @@
 				Returns the right (output) custom [Texture2D] of the slot with the given [param slot_index].
 			</description>
 		</method>
+		<method name="get_slot_metadata_left" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the left (input) metadata of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_metadata_right" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the right (output) metadata of the slot with the given [param slot_index].
+			</description>
+		</method>
 		<method name="get_slot_type_left" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="slot_index" type="int" />
@@ -247,6 +261,22 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				Toggles the right (output) side of the slot with the given [param slot_index]. If [param enable] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
+			</description>
+		</method>
+		<method name="set_slot_metadata_left">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the custom metadata for the left (input) side of the slot with the given [param slot_index] to [param value].
+			</description>
+		</method>
+		<method name="set_slot_metadata_right">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the custom metadata for the right (output) side of the slot with the given [param slot_index] to [param value].
 			</description>
 		</method>
 		<method name="set_slot_type_left">

@@ -2,54 +2,38 @@
 from misc.utility.scons_hints import *
 
 import os
+import re
+import sys
 from pathlib import Path
 
 import methods
+from methods import print_error
+
+# Sync with `misc/scripts/install_d3d12_sdk_windows.py` when updating Mesa.
+# Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
+req_version_major = 25
+req_version_minor = 3
 
 Import("env")
-
 env_d3d12_rdd = env.Clone()
 
-thirdparty_obj = []
-
-
-# DirectX Headers (must take precedence over Windows SDK's).
-
-env.Prepend(CPPEXTPATH=["#thirdparty/directx_headers/include/directx"])
-env_d3d12_rdd.Prepend(CPPEXTPATH=["#thirdparty/directx_headers/include/directx"])
-env_d3d12_rdd.Prepend(CPPEXTPATH=["#thirdparty/directx_headers/include/dxguids"])
-
-
-# Direct3D 12 Memory Allocator.
-
-env.Append(CPPEXTPATH=["#thirdparty/d3d12ma"])
-env_d3d12_rdd.Append(CPPEXTPATH=["#thirdparty/d3d12ma"])
-
-
 # Agility SDK.
-
 if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
     env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_ENABLED"])
     if env["agility_sdk_multiarch"]:
         env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_MULTIARCH_ENABLED"])
 
-
 # PIX.
-
 if env["use_pix"]:
     env_d3d12_rdd.Append(CPPDEFINES=["PIX_ENABLED"])
-    env_d3d12_rdd.Append(CPPEXTPATH=[env["pix_path"] + "/Include"])
-
+    env_d3d12_rdd.Append(CPPPATH=[env["pix_path"] + "/Include"])
 
 # Direct composition.
-
 if "dcomp" in env.get("supported", []):
     env_d3d12_rdd.Append(CPPDEFINES=["DCOMP_ENABLED"])
     env.Append(CPPDEFINES=["DCOMP_ENABLED"])  # Used in header included in platform.
 
-
 # Mesa (SPIR-V to DXIL functionality).
-
 mesa_libs = env["mesa_libs"]
 if env.msvc and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-msvc"):
     mesa_libs = env["mesa_libs"] + "-" + env["arch"] + "-msvc"
@@ -128,6 +112,18 @@ mesa_ver = Path(mesa_absdir + "/VERSION.info")
 if not mesa_ver.is_file():
     mesa_ver = Path(mesa_absdir + "/VERSION")
 
+match = re.match(r"([0-9]*).([0-9]*).([0-9]*)-?([0-9.+]*)", mesa_ver.read_text().strip())
+if (
+    match is None
+    or int(match.group(1)) != req_version_major
+    or (int(match.group(1)) == req_version_major and int(match.group(2)) < req_version_minor)
+):
+    print_error(
+        "The Direct3D 12 rendering driver dependencies are outdated or missing.\n"
+        "You can re-install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
+    )
+    sys.exit(255)
+
 # These defines are inspired by the Meson build scripts in the original repo.
 extra_defines += [
     "__STDC_CONSTANT_MACROS",
@@ -137,6 +133,7 @@ extra_defines += [
     ("PACKAGE_BUGREPORT", '\\"https://gitlab.freedesktop.org/mesa/mesa/-/issues\\"'),
     "PIPE_SUBSYSTEM_WINDOWS_USER",
     ("_Static_assert", "static_assert"),
+    "HAVE_STRUCT_TIMESPEC",
 ]
 
 if env.msvc:
@@ -148,31 +145,38 @@ if env.msvc:
         "_SCL_SECURE_NO_WARNINGS",
         "_SCL_SECURE_NO_DEPRECATE",
         "_ALLOW_KEYWORD_MACROS",
-        ("_HAS_EXCEPTIONS", 0),
         "NOMINMAX",
-        "HAVE_STRUCT_TIMESPEC",
     ]
 else:
     extra_defines += [
-        "HAVE_STRUCT_TIMESPEC",
+        # Match current version used by MinGW. MSVC and Direct3D 12 headers use 500.
+        ("__REQUIRED_RPCNDR_H_VERSION__", 475),
     ]
     if methods.using_gcc(env) and methods.get_compiler_version(env)["major"] < 13:
         # `region` & `endregion` not recognized as valid pragmas.
         env_d3d12_rdd.Append(CCFLAGS=["-Wno-unknown-pragmas"])
-        env.Append(CCFLAGS=["-Wno-unknown-pragmas"])
 
 # This is needed since rendering_device_d3d12.cpp needs to include some Mesa internals.
-# FIXME: Should be CPPEXTPATH, but doing so introduces an include-order bug when combined with
-# godot-nir-static; this necessitates warning macro wrappers. See #106376.
 env_d3d12_rdd.Prepend(CPPPATH=mesa_private_inc_paths)
 # For the same reason as above, the defines must be the same as in the 3rd-party code itself.
 env_d3d12_rdd.Append(CPPDEFINES=extra_defines)
 
+# Thirdparty.
+thirdparty_obj = []
 
-# Add all.
+env_thirdparty = env_d3d12_rdd.Clone()
+env_thirdparty.disable_warnings()
 
+env_thirdparty.Prepend(
+    CPPPATH=[
+        "#thirdparty/directx_headers/include/directx",
+        "#thirdparty/directx_headers/include/dxguids",
+        "#thirdparty/d3d12ma",
+    ]
+)
+
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/d3d12ma/D3D12MemAlloc.cpp")
 env.drivers_sources += thirdparty_obj
-
 
 # Godot source files.
 

@@ -18,9 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.4\n"
 
-msgid "All Recognized"
-msgstr "همه ی موارد شناخته شده اند"
-
 msgid "Save"
 msgstr "ذخیره"
 
@@ -38,6 +35,9 @@ msgstr "انتخاب پوشه کنونی"
 
 msgid "Select This Folder"
 msgstr "برگزیدن این پوشه"
+
+msgid "All Recognized"
+msgstr "همه ی موارد شناخته شده اند"
 
 msgid "Open a File"
 msgstr "یک پرونده را باز کن"

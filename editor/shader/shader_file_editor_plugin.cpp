@@ -32,12 +32,12 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/split_container.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 /*** SHADER SCRIPT EDITOR ****/
 
@@ -62,13 +62,13 @@ void ShaderFileEditor::_version_selected(int p_option) {
 			continue;
 		}
 
-		Ref<Texture2D> icon;
+		Ref<Texture2D> outcome_icon;
 		if (bytecode->get_stage_compile_error(RD::ShaderStage(i)) != String()) {
-			icon = get_editor_theme_icon(SNAME("ImportFail"));
+			outcome_icon = get_editor_theme_icon(SNAME("ImportFail"));
 		} else {
-			icon = get_editor_theme_icon(SNAME("ImportCheck"));
+			outcome_icon = get_editor_theme_icon(SNAME("ImportCheck"));
 		}
-		stages[i]->set_button_icon(icon);
+		stages[i]->set_button_icon(outcome_icon);
 
 		if (first_found == -1) {
 			first_found = i;
@@ -133,12 +133,12 @@ void ShaderFileEditor::_update_options() {
 	StringName current_version;
 
 	for (int i = 0; i < version_list.size(); i++) {
-		String title = version_list[i];
-		if (title.is_empty()) {
-			title = "default";
+		String version_title = version_list[i];
+		if (version_title.is_empty()) {
+			version_title = "default";
 		}
 
-		Ref<Texture2D> icon;
+		Ref<Texture2D> outcome_icon;
 
 		Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(version_list[i]);
 		ERR_FAIL_COND(bytecode.is_null());
@@ -152,12 +152,12 @@ void ShaderFileEditor::_update_options() {
 		}
 
 		if (failed) {
-			icon = get_editor_theme_icon(SNAME("ImportFail"));
+			outcome_icon = get_editor_theme_icon(SNAME("ImportFail"));
 		} else {
-			icon = get_editor_theme_icon(SNAME("ImportCheck"));
+			outcome_icon = get_editor_theme_icon(SNAME("ImportCheck"));
 		}
 
-		versions->add_item(title, icon);
+		versions->add_item(version_title, outcome_icon);
 		versions->set_item_metadata(i, version_list[i]);
 
 		if (i == c) {
@@ -244,6 +244,16 @@ ShaderFileEditor *ShaderFileEditor::singleton = nullptr;
 
 ShaderFileEditor::ShaderFileEditor() {
 	singleton = this;
+
+	set_name(TTRC("ShaderFile"));
+	set_icon_name("RDShaderFile");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_file_bottom_panel", TTRC("Toggle ShaderFile Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_ALL);
+	set_global(false);
+	set_transient(true);
+	set_custom_minimum_size(Size2(300, 200) * EDSCALE);
+
 	HSplitContainer *main_hs = memnew(HSplitContainer);
 
 	add_child(main_hs);
@@ -251,7 +261,7 @@ ShaderFileEditor::ShaderFileEditor() {
 	versions = memnew(ItemList);
 	versions->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	versions->connect(SceneStringName(item_selected), callable_mp(this, &ShaderFileEditor::_version_selected));
-	versions->set_custom_minimum_size(Size2i(200 * EDSCALE, 0));
+	versions->set_custom_minimum_size(Size2i(100 * EDSCALE, 0));
 	versions->set_theme_type_variation("TreeSecondary");
 	main_hs->add_child(versions);
 
@@ -267,7 +277,7 @@ ShaderFileEditor::ShaderFileEditor() {
 		"Compute"
 	};
 
-	stage_hb = memnew(HBoxContainer);
+	stage_hb = memnew(HFlowContainer);
 	main_vb->add_child(stage_hb);
 
 	Ref<ButtonGroup> bg;
@@ -301,21 +311,14 @@ bool ShaderFileEditorPlugin::handles(Object *p_object) const {
 
 void ShaderFileEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(shader_editor);
-
+		shader_editor->make_visible();
 	} else {
-		button->hide();
-		if (shader_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
+		shader_editor->close();
 	}
 }
 
 ShaderFileEditorPlugin::ShaderFileEditorPlugin() {
 	shader_editor = memnew(ShaderFileEditor);
-
-	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("ShaderFile"), shader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_file_bottom_panel", TTRC("Toggle ShaderFile Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(shader_editor);
+	shader_editor->close();
 }

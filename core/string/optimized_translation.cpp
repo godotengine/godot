@@ -44,11 +44,27 @@ struct CompressedString {
 
 void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	// This method compresses a Translation instance.
-	// Right now, it doesn't handle context or plurals, so Translation subclasses using plurals or context (i.e TranslationPO) shouldn't be compressed.
+	// Right now, it doesn't handle context or plurals.
 #ifdef TOOLS_ENABLED
 	ERR_FAIL_COND(p_from.is_null());
+
 	List<StringName> keys;
-	p_from->get_message_list(&keys);
+	{
+		List<StringName> raw_keys;
+		p_from->get_message_list(&raw_keys);
+
+		for (const StringName &key : raw_keys) {
+			const String key_str = key.operator String();
+			int p = key_str.find_char(0x04);
+			if (p == -1) {
+				keys.push_back(key);
+			} else {
+				const String &msgctxt = key_str.substr(0, p);
+				const String &msgid = key_str.substr(p + 1);
+				WARN_PRINT(vformat("OptimizedTranslation does not support context, ignoring message '%s' with context '%s'.", msgid, msgctxt));
+			}
+		}
+	}
 
 	int size = Math::larger_prime(keys.size());
 
@@ -298,10 +314,24 @@ StringName OptimizedTranslation::get_plural_message(const StringName &p_src_text
 	return get_message(p_src_text, p_context);
 }
 
+Vector<String> OptimizedTranslation::_get_message_list() const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+	return {};
+}
+
+void OptimizedTranslation::get_message_list(List<StringName> *r_messages) const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+}
+
+int OptimizedTranslation::get_message_count() const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+	return 0;
+}
+
 void OptimizedTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table"));
-	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table"));
-	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings"));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "load_from", PROPERTY_HINT_RESOURCE_TYPE, "Translation", PROPERTY_USAGE_EDITOR));
 }
 

@@ -227,6 +227,18 @@
 				If [param ignore] is [code]true[/code], ignore clipping on items drawn with this canvas item until this is called again with [param ignore] set to [code]false[/code].
 			</description>
 		</method>
+		<method name="canvas_item_add_ellipse">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="major" type="float" />
+			<param index="3" name="minor" type="float" />
+			<param index="4" name="color" type="Color" />
+			<param index="5" name="antialiased" type="bool" default="false" />
+			<description>
+				Draws an ellipse with semi-major axis [param major] and semi-minor axis [param minor] on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_ellipse].
+			</description>
+		</method>
 		<method name="canvas_item_add_lcd_texture_rect_region">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -1242,7 +1254,7 @@
 			<param index="2" name="size" type="Vector2i" />
 			<description>
 				Generates and returns an [Image] containing the radiance map for the specified [param environment] RID's sky. This supports built-in sky material and custom sky shaders. If [param bake_irradiance] is [code]true[/code], the irradiance map is saved instead of the radiance map. The radiance map is used to render reflected light, while the irradiance map is used to render ambient light. See also [method sky_bake_panorama].
-				[b]Note:[/b] The image is saved in linear color space without any tonemapping performed, which means it will look too dark if viewed directly in an image editor.
+				[b]Note:[/b] The image is saved using linear encoding without any tonemapping performed, which means it will look too dark if viewed directly in an image editor.
 				[b]Note:[/b] [param size] should be a 2:1 aspect ratio for the generated panorama to have square pixels. For radiance maps, there is no point in using a height greater than [member Sky.radiance_size], as it won't increase detail. Irradiance maps only contain low-frequency data, so there is usually no point in going past a size of 128×64 pixels when saving an irradiance map.
 			</description>
 		</method>
@@ -1488,7 +1500,14 @@
 				Sets the variables to be used with the screen-space reflections (SSR) post-process effect. See [Environment] for more details.
 			</description>
 		</method>
-		<method name="environment_set_ssr_roughness_quality">
+		<method name="environment_set_ssr_half_size">
+			<return type="void" />
+			<param index="0" name="half_size" type="bool" />
+			<description>
+				Sets whether screen-space reflections will be rendered at full or half size. Half size is faster, but may look pixelated or cause flickering.
+			</description>
+		</method>
+		<method name="environment_set_ssr_roughness_quality" deprecated="This option no longer does anything.">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.EnvironmentSSRRoughnessQuality" />
 			<description>
@@ -1502,6 +1521,14 @@
 			<param index="3" name="white" type="float" />
 			<description>
 				Sets the variables to be used with the "tonemap" post-process effect. See [Environment] for more details.
+			</description>
+		</method>
+		<method name="environment_set_tonemap_agx_contrast">
+			<return type="void" />
+			<param index="0" name="env" type="RID" />
+			<param index="1" name="agx_contrast" type="float" />
+			<description>
+				See [member Environment.tonemap_agx_contrast] for more details.
 			</description>
 		</method>
 		<method name="environment_set_volumetric_fog">
@@ -2348,6 +2375,15 @@
 				Sets a shader material's shader.
 			</description>
 		</method>
+		<method name="material_set_use_debanding">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				When using the Mobile renderer, [method material_set_use_debanding] can be used to enable or disable the debanding feature of 3D materials ([BaseMaterial3D] and [ShaderMaterial]).
+				[method material_set_use_debanding] has no effect when using the Compatibility or Forward+ renderer. In Forward+, [Viewport] debanding can be used instead.
+				See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding] and [method RenderingServer.viewport_set_use_debanding].
+			</description>
+		</method>
 		<method name="mesh_add_surface">
 			<return type="void" />
 			<param index="0" name="mesh" type="RID" />
@@ -2742,6 +2778,14 @@
 			<param index="2" name="transform" type="Transform2D" />
 			<description>
 				Sets the [Transform2D] for this instance. For use when multimesh is used in 2D. Equivalent to [method MultiMesh.set_instance_transform_2d].
+			</description>
+		</method>
+		<method name="multimesh_instances_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Prevents physics interpolation for all instances during the current physics tick.
+				This is useful when moving all instances to new locations, to give instantaneous changes rather than interpolation from the previous locations.
 			</description>
 		</method>
 		<method name="multimesh_set_buffer">
@@ -3338,12 +3382,12 @@
 				Sets the render reflection mask for this reflection probe. Only instances with a matching layer will have reflections applied from this probe. Equivalent to [member ReflectionProbe.reflection_mask].
 			</description>
 		</method>
-		<method name="reflection_probe_set_resolution">
+		<method name="reflection_probe_set_resolution" deprecated="This method has not done anything since Godot 3.">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="resolution" type="int" />
 			<description>
-				Sets the resolution to use when rendering the specified reflection probe. The [param resolution] is specified for each cubemap face: for instance, specifying [code]512[/code] will allocate 6 faces of 512×512 each (plus mipmaps for roughness levels).
+				Deprecated. This method does nothing.
 			</description>
 		</method>
 		<method name="reflection_probe_set_size">
@@ -3418,14 +3462,24 @@
 				Sets the screen-space roughness limiter parameters, such as whether it should be enabled and its thresholds. Equivalent to [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/enabled], [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/amount] and [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/limit].
 			</description>
 		</method>
-		<method name="set_boot_image">
+		<method name="set_boot_image" deprecated="Use [method set_boot_image_with_stretch] instead.">
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="scale" type="bool" />
 			<param index="3" name="use_filter" type="bool" default="true" />
 			<description>
-				Sets a boot image. The color defines the background color. If [param scale] is [code]true[/code], the image will be scaled to fit the screen size. If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
+				Sets a boot image. The [param color] defines the background color. The value of [param scale] indicates if the image will be scaled to fit the screen size. If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
+			</description>
+		</method>
+		<method name="set_boot_image_with_stretch">
+			<return type="void" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="stretch_mode" type="int" enum="RenderingServer.SplashStretchMode" />
+			<param index="3" name="use_filter" type="bool" default="true" />
+			<description>
+				Sets a boot image. The [param color] defines the background color. The value of [param stretch_mode] indicates how the image will be stretched (see [enum SplashStretchMode] for possible values). If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
 		</method>
 		<method name="set_debug_generate_wireframes">
@@ -3574,7 +3628,7 @@
 			<param index="3" name="size" type="Vector2i" />
 			<description>
 				Generates and returns an [Image] containing the radiance map for the specified [param sky] RID. This supports built-in sky material and custom sky shaders. If [param bake_irradiance] is [code]true[/code], the irradiance map is saved instead of the radiance map. The radiance map is used to render reflected light, while the irradiance map is used to render ambient light. See also [method environment_bake_panorama].
-				[b]Note:[/b] The image is saved in linear color space without any tonemapping performed, which means it will look too dark if viewed directly in an image editor. [param energy] values above [code]1.0[/code] can be used to brighten the resulting image.
+				[b]Note:[/b] The image is saved using linear encoding without any tonemapping performed, which means it will look too dark if viewed directly in an image editor. [param energy] values above [code]1.0[/code] can be used to brighten the resulting image.
 				[b]Note:[/b] [param size] should be a 2:1 aspect ratio for the generated panorama to have square pixels. For radiance maps, there is no point in using a height greater than [member Sky.radiance_size], as it won't increase detail. Irradiance maps only contain low-frequency data, so there is usually no point in going past a size of 128×64 pixels when saving an irradiance map.
 			</description>
 		</method>
@@ -3747,7 +3801,7 @@
 			<param index="7" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
 			<description>
 				Creates a texture based on a native handle that was created outside of Godot's renderer.
-				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. It will give you much more control over the texture's format and usage.
+				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. This way, the texture's format and usage can be controlled more effectively.
 			</description>
 		</method>
 		<method name="texture_get_format" qualifiers="const">
@@ -3763,6 +3817,7 @@
 			<param index="1" name="srgb" type="bool" default="false" />
 			<description>
 				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
+				[param srgb] should be [code]true[/code] when the texture uses nonlinear sRGB encoding and [code]false[/code] when the texture uses linear encoding.
 				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
 			</description>
 		</method>
@@ -3778,6 +3833,7 @@
 			<param index="1" name="srgb" type="bool" default="false" />
 			<description>
 				Returns a texture [RID] that can be used with [RenderingDevice].
+				[param srgb] should be [code]true[/code] when the texture uses nonlinear sRGB encoding and [code]false[/code] when the texture uses linear encoding.
 			</description>
 		</method>
 		<method name="texture_proxy_create" deprecated="ProxyTexture was removed in Godot 4.">
@@ -3801,6 +3857,8 @@
 			<param index="1" name="layer_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
 			<description>
 				Creates a new texture object based on a texture created directly on the [RenderingDevice]. If the texture contains layers, [param layer_type] is used to define the layer type.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The RenderingServer's [method free_rid] won't free the underlying [param rd_texture], you will want to free the [param rd_texture] using [method RenderingDevice.free_rid].
 			</description>
 		</method>
 		<method name="texture_replace">
@@ -4242,9 +4300,8 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility renderer, this will be an [code]RGBA16[/code] framebuffer. When using the Mobile renderer, it will be an [code]RGB10_A2[/code] framebuffer.
-				Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen).
-				Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
+				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) [code]RGBA16[/code] format framebuffer. Additionally, 2D rendering will be performed on linear values and will be converted using the appropriate transfer function immediately before blitting to the screen (if the Viewport is attached to the screen).
+				Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
 			</description>
 		</method>
 		<method name="viewport_set_use_occlusion_culling">
@@ -5276,6 +5333,7 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="17" enum="ViewportDebugDraw">
 			Draws SDFGI probe data. This is the data structure that is used to give indirect lighting dynamic objects moving within the scene.
+			When in the editor, left-clicking a probe will display additional bright dots that show its occlusion information. A white dot means the light is not occluded at all at the dot's position, while a red dot means the light is fully occluded. Intermediate values are possible.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="18" enum="ViewportDebugDraw">
@@ -5460,8 +5518,7 @@
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_AGX" value="4" enum="EnvironmentToneMapper">
-			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
-			[b]Note:[/b] [member Environment.tonemap_white] is fixed at a value of [code]16.29[/code], which makes [constant ENV_TONE_MAPPER_AGX] unsuitable for use with the Mobile rendering method.
+			Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
 		</constant>
 		<constant name="ENV_SSR_ROUGHNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
 			Lowest quality of roughness filter for screen-space reflections. Rough materials will not have blurrier screen-space reflections compared to smooth (non-rough) materials. This is the fastest option.
@@ -5951,6 +6008,24 @@
 		</constant>
 		<constant name="PIPELINE_SOURCE_MAX" value="5" enum="PipelineSource">
 			Represents the size of the [enum PipelineSource] enum.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_DISABLED" value="0" enum="SplashStretchMode">
+			No stretching is applied.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_KEEP" value="1" enum="SplashStretchMode">
+			Stretches image to fullscreen while preserving aspect ratio.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_KEEP_WIDTH" value="2" enum="SplashStretchMode">
+			Stretches the height of the image based on the width of the screen.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_KEEP_HEIGHT" value="3" enum="SplashStretchMode">
+			Stretches the width of the image based on the height of the screen.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_COVER" value="4" enum="SplashStretchMode">
+			Stretches the image to cover the entire screen while preserving aspect ratio.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_IGNORE" value="5" enum="SplashStretchMode">
+			Stretches the image to cover the entire screen but doesn't preserve aspect ratio.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>

@@ -107,50 +107,57 @@ void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas
 	}
 }
 
-void RendererCanvasCull::_collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int p_z) {
+void RendererCanvasCull::_collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int &r_ysort_children_count, int p_z, uint32_t p_canvas_cull_mask) {
 	int child_item_count = p_canvas_item->child_items.size();
 	RendererCanvasCull::Item **child_items = p_canvas_item->child_items.ptrw();
 	for (int i = 0; i < child_item_count; i++) {
 		if (child_items[i]->visible) {
-			// To y-sort according to the item's final position, physics interpolation
-			// and transform snapping need to be applied before y-sorting.
-			Transform2D child_xform;
-			if (!_interpolation_data.interpolation_enabled || !child_items[i]->interpolated) {
-				child_xform = child_items[i]->xform_curr;
+			if (child_items[i]->visibility_layer & p_canvas_cull_mask) {
+				// To y-sort according to the item's final position, physics interpolation
+				// and transform snapping need to be applied before y-sorting.
+				Transform2D child_xform;
+				if (!_interpolation_data.interpolation_enabled || !child_items[i]->interpolated || !child_items[i]->on_interpolate_transform_list) {
+					child_xform = child_items[i]->xform_curr;
+				} else {
+					real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+					TransformInterpolator::interpolate_transform_2d(child_items[i]->xform_prev, child_items[i]->xform_curr, child_xform, f);
+				}
+
+				if (snapping_2d_transforms_to_pixel) {
+					child_xform.columns[2] = (child_xform.columns[2] + Point2(0.5, 0.5)).floor();
+				}
+
+				r_items[r_index] = child_items[i];
+				child_items[i]->ysort_xform = p_canvas_item->ysort_xform * child_xform;
+				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
+				child_items[i]->ysort_modulate = p_modulate;
+				child_items[i]->ysort_index = r_index;
+				child_items[i]->ysort_parent_abs_z_index = p_z;
+
+				if (!child_items[i]->repeat_source) {
+					child_items[i]->repeat_size = p_canvas_item->repeat_size;
+					child_items[i]->repeat_times = p_canvas_item->repeat_times;
+					child_items[i]->repeat_source_item = p_canvas_item->repeat_source_item;
+				}
+
+				// Y sorted canvas items are flattened into r_items. Calculate their absolute z index to use when rendering r_items.
+				int abs_z = 0;
+				if (child_items[i]->z_relative) {
+					abs_z = CLAMP(p_z + child_items[i]->z_index, RS::CANVAS_ITEM_Z_MIN, RS::CANVAS_ITEM_Z_MAX);
+				} else {
+					abs_z = child_items[i]->z_index;
+				}
+
+				r_index++;
+
+				if (child_items[i]->sort_y) {
+					_collect_ysort_children(child_items[i], child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, r_ysort_children_count, abs_z, p_canvas_cull_mask);
+				}
 			} else {
-				real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
-				TransformInterpolator::interpolate_transform_2d(child_items[i]->xform_prev, child_items[i]->xform_curr, child_xform, f);
-			}
-
-			if (snapping_2d_transforms_to_pixel) {
-				child_xform.columns[2] = (child_xform.columns[2] + Point2(0.5, 0.5)).floor();
-			}
-
-			r_items[r_index] = child_items[i];
-			child_items[i]->ysort_xform = p_canvas_item->ysort_xform * child_xform;
-			child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
-			child_items[i]->ysort_modulate = p_modulate;
-			child_items[i]->ysort_index = r_index;
-			child_items[i]->ysort_parent_abs_z_index = p_z;
-
-			if (!child_items[i]->repeat_source) {
-				child_items[i]->repeat_size = p_canvas_item->repeat_size;
-				child_items[i]->repeat_times = p_canvas_item->repeat_times;
-				child_items[i]->repeat_source_item = p_canvas_item->repeat_source_item;
-			}
-
-			// Y sorted canvas items are flattened into r_items. Calculate their absolute z index to use when rendering r_items.
-			int abs_z = 0;
-			if (child_items[i]->z_relative) {
-				abs_z = CLAMP(p_z + child_items[i]->z_index, RS::CANVAS_ITEM_Z_MIN, RS::CANVAS_ITEM_Z_MAX);
-			} else {
-				abs_z = child_items[i]->z_index;
-			}
-
-			r_index++;
-
-			if (child_items[i]->sort_y) {
-				_collect_ysort_children(child_items[i], child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, abs_z);
+				r_ysort_children_count--;
+				if (child_items[i]->sort_y) {
+					r_ysort_children_count -= child_items[i]->ysort_children_count;
+				}
 			}
 		}
 	}
@@ -164,7 +171,10 @@ int RendererCanvasCull::_count_ysort_children(RendererCanvasCull::Item *p_canvas
 		if (child_items[i]->visible) {
 			ysort_children_count++;
 			if (child_items[i]->sort_y) {
-				ysort_children_count += _count_ysort_children(child_items[i]);
+				if (child_items[i]->ysort_children_count == -1) {
+					child_items[i]->ysort_children_count = _count_ysort_children(child_items[i]);
+				}
+				ysort_children_count += child_items[i]->ysort_children_count;
 			}
 		}
 	}
@@ -338,7 +348,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		// and is passed as `p_parent_xform` afterwards. No need to recalculate.
 		final_xform = p_parent_xform;
 	} else {
-		if (!_interpolation_data.interpolation_enabled || !ci->interpolated) {
+		if (!_interpolation_data.interpolation_enabled || !ci->interpolated || !ci->on_interpolate_transform_list) {
 			self_xform = ci->xform_curr;
 		} else {
 			real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
@@ -439,7 +449,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			ci->ysort_parent_abs_z_index = parent_z;
 			child_items[0] = ci;
 			int i = 1;
-			_collect_ysort_children(ci, p_material_owner, Color(1, 1, 1, 1), child_items, i, p_z);
+			_collect_ysort_children(ci, p_material_owner, Color(1, 1, 1, 1), child_items, i, child_item_count, p_z, p_canvas_cull_mask);
 
 			SortArray<Item *, ItemYSort> sorter;
 			sorter.sort(child_items, child_item_count);
@@ -1419,56 +1429,56 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 	}
 }
 
-void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color, bool p_antialiased) {
+void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos, float p_major, float p_minor, const Color &p_color, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
-	static const int circle_segments = 64;
+	static const int ellipse_segments = 64;
 
 	{
-		Item::CommandPolygon *circle = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_NULL(circle);
+		Item::CommandPolygon *ellipse = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_NULL(ellipse);
 
-		circle->primitive = RS::PRIMITIVE_TRIANGLES;
+		ellipse->primitive = RS::PRIMITIVE_TRIANGLES;
 
 		Vector<int> indices;
 		Vector<Vector2> points;
 
-		points.resize(circle_segments + 2);
+		points.resize(ellipse_segments + 2);
 		Vector2 *points_ptr = points.ptrw();
 
-		// Store circle center in the last point.
-		points_ptr[circle_segments + 1] = p_pos;
+		// Store ellipse center in the last point.
+		points_ptr[ellipse_segments + 1] = p_pos;
 
-		const real_t circle_point_step = Math::TAU / circle_segments;
+		const real_t ellipse_point_step = Math::TAU / ellipse_segments;
 
-		for (int i = 0; i < circle_segments + 1; i++) {
-			float angle = i * circle_point_step;
-			points_ptr[i].x = Math::cos(angle) * p_radius;
-			points_ptr[i].y = Math::sin(angle) * p_radius;
+		for (int i = 0; i < ellipse_segments + 1; i++) {
+			float angle = i * ellipse_point_step;
+			points_ptr[i].x = Math::cos(angle) * p_major;
+			points_ptr[i].y = Math::sin(angle) * p_minor;
 			points_ptr[i] += p_pos;
 		}
 
-		indices.resize(circle_segments * 3);
+		indices.resize(ellipse_segments * 3);
 		int *indices_ptr = indices.ptrw();
 
-		for (int i = 0; i < circle_segments; i++) {
-			indices_ptr[i * 3 + 0] = circle_segments + 1;
+		for (int i = 0; i < ellipse_segments; i++) {
+			indices_ptr[i * 3 + 0] = ellipse_segments + 1;
 			indices_ptr[i * 3 + 1] = i;
 			indices_ptr[i * 3 + 2] = i + 1;
 		}
 
 		Vector<Color> color;
 		color.push_back(p_color);
-		circle->polygon.create(indices, points, color);
+		ellipse->polygon.create(indices, points, color);
 	}
 
 	if (p_antialiased) {
 		float border_size = FEATHER_SIZE;
 
-		const float diameter = p_radius * 2.0f;
-		if (0.0f <= diameter && diameter < 1.0f) {
-			border_size *= p_radius;
+		const float max_axis = fmax(p_major, p_minor) * 2.0f;
+		if (0.0f <= max_axis && max_axis < 1.0f) {
+			border_size *= max_axis * 0.5f;
 		}
 
 		Item::CommandPolygon *feather = canvas_item->alloc_command<Item::CommandPolygon>();
@@ -1481,25 +1491,25 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 		Vector<Color> colors;
 		Vector<Vector2> points;
 
-		points.resize(2 * circle_segments + 2);
-		colors.resize(2 * circle_segments + 2);
+		points.resize(2 * ellipse_segments + 2);
+		colors.resize(2 * ellipse_segments + 2);
 
-		const real_t circle_point_step = Math::TAU / circle_segments;
+		const real_t ellipse_point_step = Math::TAU / ellipse_segments;
 
 		Vector2 *points_ptr = points.ptrw();
 		Color *colors_ptr = colors.ptrw();
 
-		for (int i = 0; i < circle_segments + 1; i++) {
-			const float angle = i * circle_point_step;
+		for (int i = 0; i < ellipse_segments + 1; i++) {
+			const float angle = i * ellipse_point_step;
 			const float c = Math::cos(angle);
 			const float s = Math::sin(angle);
 
-			points_ptr[i * 2].x = c * p_radius;
-			points_ptr[i * 2].y = s * p_radius;
+			points_ptr[i * 2].x = c * p_major;
+			points_ptr[i * 2].y = s * p_minor;
 			points_ptr[i * 2] += p_pos;
 
-			points_ptr[i * 2 + 1].x = c * (p_radius + border_size);
-			points_ptr[i * 2 + 1].y = s * (p_radius + border_size);
+			points_ptr[i * 2 + 1].x = c * (p_major + border_size);
+			points_ptr[i * 2 + 1].y = s * (p_minor + border_size);
 			points_ptr[i * 2 + 1] += p_pos;
 
 			colors_ptr[i * 2] = p_color;
@@ -1508,6 +1518,10 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 
 		feather->polygon.create(indices, points, colors);
 	}
+}
+
+void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color, bool p_antialiased) {
+	canvas_item_add_ellipse(p_item, p_pos, p_radius, p_radius, p_color, p_antialiased);
 }
 
 void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose) {

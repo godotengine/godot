@@ -35,6 +35,7 @@
 #include "scroll_bar.h"
 
 class PanelContainer;
+class TextureRect;
 
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
@@ -48,6 +49,13 @@ public:
 		SCROLL_MODE_RESERVE,
 	};
 
+	enum ScrollHintMode {
+		SCROLL_HINT_MODE_DISABLED,
+		SCROLL_HINT_MODE_ALL,
+		SCROLL_HINT_MODE_TOP_AND_LEFT,
+		SCROLL_HINT_MODE_BOTTOM_AND_RIGHT,
+	};
+
 private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
@@ -55,7 +63,7 @@ private:
 
 	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
-	void update_scrollbars();
+	void _update_scrollbars();
 
 	Vector2 drag_speed;
 	Vector2 drag_accum;
@@ -67,23 +75,39 @@ private:
 	bool beyond_deadzone = false;
 	bool scroll_on_drag_hover = false;
 
+	TextureRect *scroll_hint_top_left = nullptr;
+	TextureRect *scroll_hint_bottom_right = nullptr;
+
 	ScrollMode horizontal_scroll_mode = SCROLL_MODE_AUTO;
 	ScrollMode vertical_scroll_mode = SCROLL_MODE_AUTO;
+
+	void _update_scroll_hints();
 
 	int deadzone = 0;
 	bool follow_focus = false;
 	int scroll_border = 20;
 	int scroll_speed = 12;
 
+	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
+	bool tile_scroll_hint = false;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
+
+		Ref<Texture2D> scroll_hint_vertical;
+		Ref<Texture2D> scroll_hint_horizontal;
+
+		int scrollbar_h_separation = 0;
+		int scrollbar_v_separation = 0;
 	} theme_cache;
 
 	void _cancel_drag();
 
 	bool _is_h_scroll_visible() const;
 	bool _is_v_scroll_visible() const;
+
+	Rect2 _get_margins() const;
 
 	bool draw_focus_border = false;
 	bool focus_border_is_drawn = false;
@@ -129,8 +153,14 @@ public:
 	void set_vertical_scroll_mode(ScrollMode p_mode);
 	ScrollMode get_vertical_scroll_mode() const;
 
-	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
+	int get_deadzone() const;
+
+	void set_scroll_hint_mode(ScrollHintMode p_mode);
+	ScrollHintMode get_scroll_hint_mode() const;
+
+	void set_tile_scroll_hint(bool p_enable);
+	bool is_scroll_hint_tiled();
 
 	bool is_following_focus() const;
 	void set_follow_focus(bool p_follow);
@@ -150,3 +180,4 @@ public:
 };
 
 VARIANT_ENUM_CAST(ScrollContainer::ScrollMode);
+VARIANT_ENUM_CAST(ScrollContainer::ScrollHintMode);

@@ -72,15 +72,13 @@ Overall, I concluded that the gains in some cases did not outweigh the losses
 in others, so I abandoned this code. */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "pcre2_internal.h"
+
+
 
 #define NLBLOCK mb             /* Block containing newline information */
 #define PSSTART start_subject  /* Field containing processed string start */
 #define PSEND   end_subject    /* Field containing processed string end */
-
-#include "pcre2_internal.h"
 
 #define PUBLIC_DFA_MATCH_OPTIONS \
   (PCRE2_ANCHORED|PCRE2_ENDANCHORED|PCRE2_NOTBOL|PCRE2_NOTEOL|PCRE2_NOTEMPTY| \
@@ -2330,7 +2328,7 @@ for (;;)
         case 0x2029:
 #endif  /* Not EBCDIC */
         if (mb->bsr_convention == PCRE2_BSR_ANYCRLF) break;
-        /* Fall through */
+        PCRE2_FALLTHROUGH /* Fall through */
 
         case CHAR_LF:
         ADD_NEW(state_offset + 1, 0);
@@ -2442,7 +2440,7 @@ for (;;)
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
 
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_PLUS:
       case OP_MINPLUS:
       case OP_POSPLUS:
@@ -2486,7 +2484,7 @@ for (;;)
       case OP_NOTPOSQUERYI:
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_QUERY:
       case OP_MINQUERY:
       case OP_POSQUERY:
@@ -2527,7 +2525,7 @@ for (;;)
       case OP_NOTPOSSTARI:
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_STAR:
       case OP_MINSTAR:
       case OP_POSSTAR:
@@ -2564,7 +2562,7 @@ for (;;)
       case OP_NOTEXACTI:
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_EXACT:
       case OP_NOTEXACT:
       count = current_state->count;  /* Number already matched */
@@ -2599,7 +2597,7 @@ for (;;)
       case OP_NOTPOSUPTOI:
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_UPTO:
       case OP_MINUPTO:
       case OP_POSUPTO:
@@ -2940,6 +2938,9 @@ for (;;)
         PCRE2_SPTR callpat = start_code + GET(code, 1);
         uint32_t recno = (callpat == mb->start_code)? 0 :
           GET2(callpat, 1 + LINK_SIZE);
+
+        /* Argument list has not been supported yet. */
+        if (code[1 + LINK_SIZE] == OP_CREF) return PCRE2_ERROR_DFA_UITEM;
 
         if (rws->free < RWS_RSIZE + RWS_OVEC_RSIZE)
           {
@@ -3341,10 +3342,12 @@ pcre2_dfa_match(const pcre2_code *code, PCRE2_SPTR subject, PCRE2_SIZE length,
   pcre2_match_context *mcontext, int *workspace, PCRE2_SIZE wscount)
 {
 int rc;
-int was_zero_terminated = 0;
 
 const pcre2_real_code *re = (const pcre2_real_code *)code;
+uint32_t original_options = options;
 
+PCRE2_UCHAR null_str[1] = { 0xcd };
+PCRE2_SPTR original_subject = subject;
 PCRE2_SPTR start_match;
 PCRE2_SPTR end_subject;
 PCRE2_SPTR bumpalong_limit;
@@ -3386,44 +3389,46 @@ rws->free = RWS_BASE_SIZE - RWS_ANCHOR_SIZE;
 
 /* Recognize NULL, length 0 as an empty string. */
 
-if (subject == NULL && length == 0) subject = (PCRE2_SPTR)"";
+if (subject == NULL && length == 0) subject = null_str;
 
 /* Plausibility checks */
 
-if ((options & ~PUBLIC_DFA_MATCH_OPTIONS) != 0) return PCRE2_ERROR_BADOPTION;
-if (re == NULL || subject == NULL || workspace == NULL || match_data == NULL)
-  return PCRE2_ERROR_NULL;
+if (match_data == NULL) return PCRE2_ERROR_NULL;
+if (re == NULL || subject == NULL || workspace == NULL)
+  { rc = PCRE2_ERROR_NULL; goto EXIT; }
+if ((options & ~PUBLIC_DFA_MATCH_OPTIONS) != 0)
+  { rc = PCRE2_ERROR_BADOPTION; goto EXIT; }
 
 if (length == PCRE2_ZERO_TERMINATED)
   {
   length = PRIV(strlen)(subject);
-  was_zero_terminated = 1;
   }
 
-if (wscount < 20) return PCRE2_ERROR_DFA_WSSIZE;
-if (start_offset > length) return PCRE2_ERROR_BADOFFSET;
+if (wscount < 20) { rc = PCRE2_ERROR_DFA_WSSIZE; goto EXIT; }
+if (start_offset > length) { rc = PCRE2_ERROR_BADOFFSET; goto EXIT; }
 
 /* Partial matching and PCRE2_ENDANCHORED are currently not allowed at the same
 time. */
 
 if ((options & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) != 0 &&
    ((re->overall_options | options) & PCRE2_ENDANCHORED) != 0)
-  return PCRE2_ERROR_BADOPTION;
+  { rc = PCRE2_ERROR_BADOPTION; goto EXIT; }
 
 /* Invalid UTF support is not available for DFA matching. */
 
 if ((re->overall_options & PCRE2_MATCH_INVALID_UTF) != 0)
-  return PCRE2_ERROR_DFA_UINVALID_UTF;
+  { rc = PCRE2_ERROR_DFA_UINVALID_UTF; goto EXIT; }
 
 /* Check that the first field in the block is the magic number. If it is not,
 return with PCRE2_ERROR_BADMAGIC. */
 
-if (re->magic_number != MAGIC_NUMBER) return PCRE2_ERROR_BADMAGIC;
+if (re->magic_number != MAGIC_NUMBER)
+  { rc = PCRE2_ERROR_BADMAGIC; goto EXIT; }
 
 /* Check the code unit width. */
 
 if ((re->flags & PCRE2_MODE_MASK) != PCRE2_CODE_UNIT_WIDTH/8)
-  return PCRE2_ERROR_BADMODE;
+  { rc = PCRE2_ERROR_BADMODE; goto EXIT; }
 
 /* PCRE2_NOTEMPTY and PCRE2_NOTEMPTY_ATSTART are match-time flags in the
 options variable for this function. Users of PCRE2 who are not calling the
@@ -3449,8 +3454,8 @@ of the workspace. */
 if ((options & PCRE2_DFA_RESTART) != 0)
   {
   if ((workspace[0] & (-2)) != 0 || workspace[1] < 1 ||
-    workspace[1] > (int)((wscount - 2)/INTS_PER_STATEBLOCK))
-      return PCRE2_ERROR_DFA_BADRESTART;
+      workspace[1] > (int)((wscount - 2)/INTS_PER_STATEBLOCK))
+    { rc = PCRE2_ERROR_DFA_BADRESTART; goto EXIT; }
   }
 
 /* Set some local values */
@@ -3498,7 +3503,7 @@ else
   if (mcontext->offset_limit != PCRE2_UNSET)
     {
     if ((re->overall_options & PCRE2_USE_OFFSET_LIMIT) == 0)
-      return PCRE2_ERROR_BADOFFSETLIMIT;
+      { rc = PCRE2_ERROR_BADOFFSETLIMIT; goto EXIT; }
     bumpalong_limit = subject + mcontext->offset_limit;
     }
   mb->callout = mcontext->callout;
@@ -3565,9 +3570,12 @@ switch(re->newline_convention)
   mb->nltype = NLTYPE_ANYCRLF;
   break;
 
+  /* LCOV_EXCL_START */
   default:
   PCRE2_DEBUG_UNREACHABLE();
-  return PCRE2_ERROR_INTERNAL;
+  rc = PCRE2_ERROR_INTERNAL;
+  goto EXIT;
+  /* LCOV_EXCL_STOP */
   }
 
 /* Check a UTF string for validity if required. For 8-bit and 16-bit strings,
@@ -3588,7 +3596,7 @@ if (utf && (options & PCRE2_NO_UTF_CHECK) == 0)
 #if PCRE2_CODE_UNIT_WIDTH != 32
     unsigned int i;
     if (start_match < end_subject && NOT_FIRSTCU(*start_match))
-      return PCRE2_ERROR_BADUTFOFFSET;
+      { rc = PCRE2_ERROR_BADUTFOFFSET; goto EXIT; }
     for (i = re->max_lookbehind; i > 0 && check_subject > subject; i--)
       {
       check_subject--;
@@ -3609,12 +3617,12 @@ if (utf && (options & PCRE2_NO_UTF_CHECK) == 0)
   /* Validate the relevant portion of the subject. After an error, adjust the
   offset to be an absolute offset in the whole string. */
 
-  match_data->rc = PRIV(valid_utf)(check_subject,
+  rc = PRIV(valid_utf)(check_subject,
     length - (PCRE2_SIZE)(check_subject - subject), &(match_data->startchar));
-  if (match_data->rc != 0)
+  if (rc != 0)
     {
     match_data->startchar += (PCRE2_SIZE)(check_subject - subject);
-    return match_data->rc;
+    goto EXIT;
     }
   }
 #endif  /* SUPPORT_UNICODE */
@@ -3678,9 +3686,10 @@ if ((match_data->flags & PCRE2_MD_COPIED_SUBJECT) != 0)
 /* Fill in fields that are always returned in the match data. */
 
 match_data->code = re;
-match_data->subject = NULL;  /* Default for no match */
+match_data->subject = NULL;  /* Default for match error */
 match_data->mark = NULL;
 match_data->matchedby = PCRE2_MATCHEDBY_DFA_INTERPRETER;
+match_data->options = original_options;
 
 /* Call the main matching function, looping for a non-anchored regex after a
 failed match. If not restarting, perform certain optimizations at the start of
@@ -4032,29 +4041,40 @@ for (;;)
 
   if (rc != PCRE2_ERROR_NOMATCH || anchored)
     {
+    if (rc == PCRE2_ERROR_NOMATCH) goto NOMATCH_EXIT;
+
     if (rc == PCRE2_ERROR_PARTIAL && match_data->oveccount > 0)
       {
       match_data->ovector[0] = (PCRE2_SIZE)(start_match - subject);
       match_data->ovector[1] = (PCRE2_SIZE)(end_subject - subject);
       }
-    match_data->subject_length = length;
-    match_data->leftchar = (PCRE2_SIZE)(mb->start_used_ptr - subject);
-    match_data->rightchar = (PCRE2_SIZE)(mb->last_used_ptr - subject);
-    match_data->startchar = (PCRE2_SIZE)(start_match - subject);
-    match_data->rc = rc;
 
-    if (rc >= 0 &&(options & PCRE2_COPY_MATCHED_SUBJECT) != 0)
+    if (rc >= 0 || rc == PCRE2_ERROR_PARTIAL)
       {
-      length = CU2BYTES(length + was_zero_terminated);
-      match_data->subject = match_data->memctl.malloc(length,
-        match_data->memctl.memory_data);
-      if (match_data->subject == NULL) return PCRE2_ERROR_NOMEMORY;
-      memcpy((void *)match_data->subject, subject, length);
+      match_data->subject_length = length;
+      match_data->start_offset = start_offset;
+      match_data->leftchar = (PCRE2_SIZE)(mb->start_used_ptr - subject);
+      match_data->rightchar = (PCRE2_SIZE)(mb->last_used_ptr - subject);
+      match_data->startchar = (PCRE2_SIZE)(start_match - subject);
+      }
+
+    if (rc >= 0 && (options & PCRE2_COPY_MATCHED_SUBJECT) != 0)
+      {
+      if (length != 0)
+        {
+        match_data->subject = match_data->memctl.malloc(CU2BYTES(length),
+          match_data->memctl.memory_data);
+        if (match_data->subject == NULL)
+          { rc = PCRE2_ERROR_NOMEMORY; goto EXIT; }
+        memcpy((void *)match_data->subject, subject, CU2BYTES(length));
+        }
+      else
+        match_data->subject = NULL;
       match_data->flags |= PCRE2_MD_COPIED_SUBJECT;
       }
-    else
+    else if (rc >= 0 || rc == PCRE2_ERROR_PARTIAL)
       {
-      if (rc >= 0 || rc == PCRE2_ERROR_PARTIAL) match_data->subject = subject;
+      match_data->subject = original_subject;
       }
     goto EXIT;
     }
@@ -4088,6 +4108,9 @@ for (;;)
   }   /* "Bumpalong" loop */
 
 NOMATCH_EXIT:
+match_data->subject = original_subject;
+match_data->subject_length = length;
+match_data->start_offset = start_offset;
 rc = PCRE2_ERROR_NOMATCH;
 
 EXIT:
@@ -4098,6 +4121,7 @@ while (rws->next != NULL)
   mb->memctl.free(next, mb->memctl.memory_data);
   }
 
+match_data->rc = rc;
 return rc;
 }
 

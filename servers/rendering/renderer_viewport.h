@@ -33,7 +33,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "storage/render_scene_buffers.h"
 
 class RendererViewport {
@@ -216,7 +216,9 @@ public:
 	RID viewport_allocate();
 	void viewport_initialize(RID p_rid);
 
+#ifndef XR_DISABLED
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
+#endif // XR_DISABLED
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 

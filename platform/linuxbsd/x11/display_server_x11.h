@@ -40,10 +40,10 @@
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
-#include "servers/display_server.h"
+#include "servers/audio/audio_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #if defined(SPEECHD_ENABLED)
 #include "tts_linux.h"
@@ -164,7 +164,6 @@ class DisplayServerX11 : public DisplayServer {
 	struct WindowData {
 		Window x11_window;
 		Window x11_xim_window;
-		Window parent;
 		::XIC xic;
 		bool ime_active = false;
 		bool ime_in_progress = false;
@@ -201,7 +200,6 @@ class DisplayServerX11 : public DisplayServer {
 		bool resize_disabled = false;
 		bool no_min_btn = false;
 		bool no_max_btn = false;
-		Vector2i last_position_before_fs;
 		bool focused = true;
 		bool minimized = false;
 		bool maximized = false;
@@ -237,6 +235,7 @@ class DisplayServerX11 : public DisplayServer {
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
+	void _create_xic(WindowData &wd);
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, Window p_parent_window);
 
 	String internal_clipboard;
@@ -247,7 +246,7 @@ class DisplayServerX11 : public DisplayServer {
 	int xmblen = 0;
 	unsigned long last_timestamp = 0;
 	::Time last_keyrelease_time = 0;
-	::XIM xim;
+	::XIM xim = nullptr;
 	::XIMStyle xim_style;
 
 	static int _xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
@@ -259,6 +258,8 @@ class DisplayServerX11 : public DisplayServer {
 	static void _xim_preedit_caret_callback(::XIM xim, ::XPointer client_data,
 			::XIMPreeditCaretCallbackStruct *call_data);
 	static void _xim_destroy_callback(::XIM im, ::XPointer client_data,
+			::XPointer call_data);
+	static void _xim_instantiate_callback(::Display *display, ::XPointer client_data,
 			::XPointer call_data);
 
 	Point2i last_mouse_pos;
@@ -352,9 +353,10 @@ class DisplayServerX11 : public DisplayServer {
 	bool _window_maximize_check(WindowID p_window, const char *p_atom_name) const;
 	bool _window_fullscreen_check(WindowID p_window) const;
 	bool _window_minimize_check(WindowID p_window) const;
-	void _validate_mode_on_map(WindowID p_window);
+	void _validate_fullscreen_on_map(WindowID p_window);
 	void _update_size_hints(WindowID p_window);
-	void _update_actions_hints(WindowID p_window);
+	void _update_motif_wm_hints(WindowID p_window);
+	void _update_wm_state_hints(WindowID p_window);
 	void _set_wm_fullscreen(WindowID p_window, bool p_enabled, bool p_exclusive);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
 	void _set_wm_minimized(WindowID p_window, bool p_enabled);
@@ -377,7 +379,7 @@ class DisplayServerX11 : public DisplayServer {
 	SafeFlag events_thread_done;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);
-	bool _wait_for_events() const;
+	bool _wait_for_events(int timeout_seconds = 1, int timeout_microseconds = 0) const;
 	void _poll_events();
 	void _check_pending_events(LocalVector<XEvent> &r_events);
 
@@ -416,7 +418,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;

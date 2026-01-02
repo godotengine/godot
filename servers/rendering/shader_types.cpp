@@ -30,6 +30,8 @@
 
 #include "shader_types.h"
 
+#include "scene/resources/shader.h"
+
 const HashMap<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(RS::ShaderMode p_mode) const {
 	return shader_modes[p_mode].functions;
 }
@@ -516,11 +518,13 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["EMISSION"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_FOG].functions["fog"].main_function = true;
 
+	// Must be kept in sync with the Shader::Mode enum.
 	shader_types_list.push_back("spatial");
 	shader_types_list.push_back("canvas_item");
 	shader_types_list.push_back("particles");
 	shader_types_list.push_back("sky");
 	shader_types_list.push_back("fog");
+	DEV_ASSERT(shader_types_list.size() == Shader::MODE_MAX);
 
 	for (const String &type : shader_types_list) {
 		shader_types.insert(type);

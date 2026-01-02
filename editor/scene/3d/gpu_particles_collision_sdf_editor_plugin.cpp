@@ -42,7 +42,6 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_bake() {
 			if (path.is_empty()) {
 				path = "res://" + col_sdf->get_name() + "_data.exr";
 			} else {
-				String ext = path.get_extension();
 				path = path.get_basename() + "." + col_sdf->get_name() + "_data.exr";
 			}
 			probe_file->set_current_path(path);

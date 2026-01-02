@@ -9,7 +9,7 @@ for information about creating and running GDScript integration tests.
 
 # GDScript Autocompletion tests
 
-The `script/completion` folder contains test for the GDScript autocompletion.
+The `scripts/completion` folder contains tests for the GDScript autocompletion.
 
 Each test case consists of at least one `.gd` file, which contains the code, and one `.cfg` file, which contains expected results and configuration. Inside of the GDScript file the character `➡` represents the cursor position, at which autocompletion is invoked.
 

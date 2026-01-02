@@ -246,12 +246,12 @@ void NavMeshGenerator2D::set_generator_parsers(LocalVector<NavMeshGeometryParser
 }
 
 void NavMeshGenerator2D::generator_parse_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_root_node) {
-	List<Node *> parse_nodes;
+	Vector<Node *> parse_nodes;
 
 	if (p_navigation_mesh->get_source_geometry_mode() == NavigationPolygon::SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
 		parse_nodes.push_back(p_root_node);
 	} else {
-		p_root_node->get_tree()->get_nodes_in_group(p_navigation_mesh->get_source_geometry_group_name(), &parse_nodes);
+		parse_nodes = p_root_node->get_tree()->get_nodes_in_group(p_navigation_mesh->get_source_geometry_group_name());
 	}
 
 	Transform2D root_node_transform = Transform2D();

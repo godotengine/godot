@@ -32,59 +32,17 @@
 
 #import "metal_utils.h"
 
+#import "core/io/file_access.h"
 #import "core/io/marshalls.h"
+#import "core/templates/fixed_vector.h"
 #import "servers/rendering/rendering_device.h"
+
+#include "thirdparty/spirv-reflect/spirv_reflect.h"
 
 #import <Metal/Metal.h>
 #import <spirv.hpp>
 #import <spirv_msl.hpp>
 #import <spirv_parser.hpp>
-
-Mutex MetalDeviceProfile::profiles_lock;
-HashMap<uint32_t, MetalDeviceProfile> MetalDeviceProfile::profiles;
-
-const MetalDeviceProfile *MetalDeviceProfile::get_profile(MetalDeviceProfile::Platform p_platform, MetalDeviceProfile::GPU p_gpu) {
-	DEV_ASSERT(p_platform == Platform::macOS || p_platform == Platform::iOS);
-
-	MutexLock lock(profiles_lock);
-
-	uint32_t key = (uint32_t)p_platform << 16 | (uint32_t)p_gpu;
-	if (MetalDeviceProfile *profile = profiles.getptr(key)) {
-		return profile;
-	}
-
-	MetalDeviceProfile res;
-	res.platform = p_platform;
-	res.gpu = p_gpu;
-	if (p_platform == Platform::macOS) {
-		res.features.mslVersionMajor = 3;
-		res.features.mslVersionMinor = 2;
-		res.features.argument_buffers_tier = ArgumentBuffersTier::Tier2;
-		res.features.simdPermute = true;
-	} else if (p_platform == Platform::iOS) {
-		switch (p_gpu) {
-			case GPU::Apple1:
-			case GPU::Apple2:
-			case GPU::Apple3:
-			case GPU::Apple4:
-			case GPU::Apple5: {
-				res.features.simdPermute = false;
-				res.features.argument_buffers_tier = ArgumentBuffersTier::Tier1;
-			} break;
-			case GPU::Apple6:
-			case GPU::Apple7:
-			case GPU::Apple8:
-			case GPU::Apple9: {
-				res.features.argument_buffers_tier = ArgumentBuffersTier::Tier2;
-				res.features.simdPermute = true;
-			} break;
-		}
-		res.features.mslVersionMajor = 3;
-		res.features.mslVersionMinor = 1;
-	}
-
-	return &profiles.insert(key, res)->value;
-}
 
 void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 	if (compiler_props.is_valid()) {
@@ -99,25 +57,30 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 		case MetalDeviceProfile::Platform::iOS:
 			sdk = "iphoneos";
 			break;
+		case MetalDeviceProfile::Platform::visionOS:
+			sdk = "xros";
+			break;
 	}
 
-	Vector<String> parts{ "echo", R"("")", "|", "/usr/bin/xcrun", "-sdk", sdk, "metal", "-E", "-dM", "-x", "metal", "-", "|", "grep", "-E", R"(\"__METAL_VERSION__|__ENVIRONMENT_OS\")" };
+	Vector<String> parts{ "echo", R"("")", "|", "/usr/bin/xcrun", "-sdk", sdk, "metal", "-E", "-dM", "-x", "metal" };
 
-	// Compile metal shaders for the minimum supported target instead of the host machine
-	if (min_os_version.is_valid()) {
-		switch (device_profile->platform) {
-			case MetalDeviceProfile::Platform::macOS: {
-				parts.push_back("-mmacosx-version-min=" + min_os_version.to_compiler_os_version());
-				break;
-			}
-			case MetalDeviceProfile::Platform::iOS: {
-				parts.push_back("-mios-version-min=" + min_os_version.to_compiler_os_version());
-				break;
-			}
+	switch (device_profile->platform) {
+		case MetalDeviceProfile::Platform::macOS: {
+			parts.push_back("-mtargetos=macos" + device_profile->min_os_version.to_compiler_os_version());
+			break;
+		}
+		case MetalDeviceProfile::Platform::iOS: {
+			parts.push_back("-mtargetos=ios" + device_profile->min_os_version.to_compiler_os_version());
+			break;
+		}
+		case MetalDeviceProfile::Platform::visionOS: {
+			parts.push_back("-mtargetos=xros" + device_profile->min_os_version.to_compiler_os_version());
+			break;
 		}
 	}
 
-	String s = " ";
+	parts.append_array({ "-", "|", "grep", "-E", R"(\"__METAL_VERSION__|__ENVIRONMENT_OS\")" });
+
 	List<String> args = { "-c", String(" ").join(parts) };
 
 	String r_pipe;
@@ -147,8 +110,6 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 			break;
 		}
 	}
-
-	return;
 }
 
 Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, const StageData &p_stage_data, Vector<uint8_t> &r_binary_data) {
@@ -179,6 +140,9 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 		case MetalDeviceProfile::Platform::iOS:
 			sdk = "iphoneos";
 			break;
+		case MetalDeviceProfile::Platform::visionOS:
+			sdk = "xros";
+			break;
 	}
 
 	// Build the .metallib binary.
@@ -186,19 +150,19 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 		List<String> args{ "-sdk", sdk, "metal", "-O3" };
 
 		// Compile metal shaders for the minimum supported target instead of the host machine.
-		if (min_os_version.is_valid()) {
-			switch (device_profile->platform) {
-				case MetalDeviceProfile::Platform::macOS: {
-					args.push_back("-mmacosx-version-min=" + min_os_version.to_compiler_os_version());
-					break;
-				}
-				case MetalDeviceProfile::Platform::iOS: {
-					args.push_back("-mios-version-min=" + min_os_version.to_compiler_os_version());
-					break;
-				}
+		switch (device_profile->platform) {
+			case MetalDeviceProfile::Platform::macOS: {
+				args.push_back("-mtargetos=macos" + device_profile->min_os_version.to_compiler_os_version());
+				break;
 			}
-		} else {
-			WARN_PRINT_ONCE(vformat("Minimum target OS version is not set, so baking shaders for Metal will target the default version of your toolchain: %s", compiler_props.os_version_min_required.to_compiler_os_version()));
+			case MetalDeviceProfile::Platform::iOS: {
+				args.push_back("-mtargetos=ios" + device_profile->min_os_version.to_compiler_os_version());
+				break;
+			}
+			case MetalDeviceProfile::Platform::visionOS: {
+				args.push_back("-mtargetos=xros" + device_profile->min_os_version.to_compiler_os_version());
+				break;
+			}
 		}
 
 		if (p_stage_data.is_position_invariant) {
@@ -253,10 +217,31 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 
-bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) {
+static spv::ExecutionModel SHADER_STAGE_REMAP[RDD::SHADER_STAGE_MAX] = {
+	[RDD::SHADER_STAGE_VERTEX] = spv::ExecutionModelVertex,
+	[RDD::SHADER_STAGE_FRAGMENT] = spv::ExecutionModelFragment,
+	[RDD::SHADER_STAGE_TESSELATION_CONTROL] = spv::ExecutionModelTessellationControl,
+	[RDD::SHADER_STAGE_TESSELATION_EVALUATION] = spv::ExecutionModelTessellationEvaluation,
+	[RDD::SHADER_STAGE_COMPUTE] = spv::ExecutionModelGLCompute,
+};
+
+spv::ExecutionModel get_stage(uint32_t p_stages_mask, RDD::ShaderStage p_stage) {
+	if (p_stages_mask & (1 << p_stage)) {
+		return SHADER_STAGE_REMAP[p_stage];
+	}
+	return spv::ExecutionModel::ExecutionModelMax;
+}
+
+spv::ExecutionModel map_stage(RDD::ShaderStage p_stage) {
+	return SHADER_STAGE_REMAP[p_stage];
+}
+
+bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_shader) {
 	using namespace spirv_cross;
 	using spirv_cross::CompilerMSL;
 	using spirv_cross::Resource;
+
+	const LocalVector<ReflectShaderStage> &p_spirv = p_shader.shader_stages;
 
 	if (export_mode) {
 		_initialize_toolchain_properties();
@@ -266,26 +251,10 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 	shaders.resize(p_spirv.size());
 	mtl_shaders.resize(p_spirv.size());
 	mtl_reflection_binding_set_uniforms_data.resize(reflection_binding_set_uniforms_data.size());
-	mtl_reflection_specialization_data.resize(reflection_specialization_data.size());
 
 	mtl_reflection_data.set_needs_view_mask_buffer(reflection_data.has_multiview);
 	mtl_reflection_data.profile = *device_profile;
 
-	// set_indexes will contain the starting offsets of each descriptor set in the binding set uniforms data
-	// including the last one, which is the size of reflection_binding_set_uniforms_count.
-	LocalVector<uint32_t> set_indexes;
-	uint32_t set_indexes_size = reflection_binding_set_uniforms_count.size() + 1;
-	{
-		// calculate the starting offsets of each descriptor set in the binding set uniforms data
-		uint32_t size = reflection_binding_set_uniforms_count.size();
-		set_indexes.resize(set_indexes_size);
-		uint32_t offset = 0;
-		for (uint32_t i = 0; i < size; i++) {
-			set_indexes[i] = offset;
-			offset += reflection_binding_set_uniforms_count.get(i);
-		}
-		set_indexes[set_indexes_size - 1] = offset;
-	}
 	CompilerMSL::Options msl_options{};
 
 	// Determine Metal language version.
@@ -296,7 +265,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 			msl_version = compiler_props.metal_version;
 			mtl_reflection_data.os_min_version = compiler_props.os_version_min_required;
 		} else {
-			msl_version = make_msl_version(device_profile->features.mslVersionMajor, device_profile->features.mslVersionMinor);
+			msl_version = device_profile->features.msl_version;
 			mtl_reflection_data.os_min_version = MinOsVersion();
 		}
 		uint32_t msl_ver_maj = 0;
@@ -313,12 +282,12 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		msl_options.ios_support_base_vertex_instance = true;
 	}
 
-	bool disable_argument_buffers = false;
-	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_DISABLE_ARGUMENT_BUFFERS"); v == "1") {
-		disable_argument_buffers = true;
-	}
+	// We don't currently allow argument buffers when using dynamic buffers as
+	// the current implementation does not update the argument buffer each time
+	// the dynamic buffer changes. This is a future TODO.
+	bool argument_buffers_allowed = get_shader_reflection().has_dynamic_buffers == false;
 
-	if (device_profile->features.argument_buffers_tier >= MetalDeviceProfile::ArgumentBuffersTier::Tier2 && !disable_argument_buffers) {
+	if (device_profile->features.use_argument_buffers && argument_buffers_allowed) {
 		msl_options.argument_buffers_tier = CompilerMSL::Options::ArgumentBuffersTier::Tier2;
 		msl_options.argument_buffers = true;
 		mtl_reflection_data.set_uses_argument_buffers(true);
@@ -329,8 +298,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		mtl_reflection_data.set_uses_argument_buffers(false);
 	}
 	msl_options.force_active_argument_buffer_resources = true;
-	// We can't use this, as we have to add the descriptor sets via compiler.add_msl_resource_binding.
-	// msl_options.pad_argument_buffer_resources = true;
+	msl_options.pad_argument_buffer_resources = true;
 	msl_options.texture_buffer_native = true; // Enable texture buffer support.
 	msl_options.use_framebuffer_fetch_subpasses = false;
 	msl_options.pad_fragment_output_components = true;
@@ -341,7 +309,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		msl_options.multiview_layered_rendering = true;
 		msl_options.view_mask_buffer_index = VIEW_MASK_BUFFER_INDEX;
 	}
-	if (msl_version >= make_msl_version(3, 2)) {
+	if (msl_version >= MSL_VERSION_32) {
 		// All 3.2+ versions support device coherence, so we can disable texture fences.
 		msl_options.readwrite_texture_fences = false;
 	}
@@ -352,14 +320,236 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 	options.emit_line_directives = true;
 #endif
 
+	// Assign MSL bindings for all the descriptor sets.
+	typedef std::pair<MSLResourceBinding, uint32_t> MSLBindingInfo;
+	LocalVector<MSLBindingInfo> spirv_bindings;
+	MSLResourceBinding push_constant_resource_binding;
+	{
+		enum IndexType {
+			Texture,
+			Buffer,
+			Sampler,
+			Max,
+		};
+
+		uint32_t dset_count = p_shader.uniform_sets.size();
+		uint32_t size = reflection_binding_set_uniforms_data.size();
+		spirv_bindings.resize(size);
+
+		uint32_t indices[IndexType::Max] = { 0 };
+		auto next_index = [&indices](IndexType p_t, uint32_t p_stride) -> uint32_t {
+			uint32_t v = indices[p_t];
+			indices[p_t] += p_stride;
+			return v;
+		};
+
+		uint32_t idx_dset = 0;
+		MSLBindingInfo *iter = spirv_bindings.ptr();
+		UniformData *found = mtl_reflection_binding_set_uniforms_data.ptrw();
+		UniformData::IndexType shader_index_type = msl_options.argument_buffers ? UniformData::IndexType::ARG : UniformData::IndexType::SLOT;
+
+		for (const ReflectDescriptorSet &dset : p_shader.uniform_sets) {
+			// Reset the index count for each descriptor set, as this is an index in to the argument table.
+			uint32_t next_arg_buffer_index = 0;
+			auto next_arg_index = [&next_arg_buffer_index](uint32_t p_stride) -> uint32_t {
+				uint32_t v = next_arg_buffer_index;
+				next_arg_buffer_index += p_stride;
+				return v;
+			};
+
+			for (const ReflectUniform &uniform : dset) {
+				const SpvReflectDescriptorBinding &binding = uniform.get_spv_reflect();
+
+				found->active_stages = uniform.stages;
+
+				RD::UniformType type = RD::UniformType(uniform.type);
+				uint32_t binding_stride = 1; // If this is an array, stride will be the length of the array.
+				if (uniform.length > 1) {
+					switch (type) {
+						case RDC::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
+						case RDC::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC:
+						case RDC::UNIFORM_TYPE_UNIFORM_BUFFER:
+						case RDC::UNIFORM_TYPE_STORAGE_BUFFER:
+							// Buffers's length is its size, in bytes, so there is no stride.
+							break;
+						default: {
+							binding_stride = uniform.length;
+							found->array_length = uniform.length;
+						} break;
+					}
+				}
+
+				// Determine access type.
+				switch (binding.descriptor_type) {
+					case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE: {
+						if (!(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE)) {
+							if (!(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_READABLE)) {
+								found->access = MTLBindingAccessReadWrite;
+							} else {
+								found->access = MTLBindingAccessWriteOnly;
+							}
+						}
+					} break;
+					case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+					case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
+						if (!(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE)) {
+							if (!(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_READABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_READABLE)) {
+								found->access = MTLBindingAccessReadWrite;
+							} else {
+								found->access = MTLBindingAccessWriteOnly;
+							}
+						}
+					} break;
+					default:
+						break;
+				}
+
+				switch (found->access) {
+					case MTLBindingAccessReadOnly:
+						found->usage = MTLResourceUsageRead;
+						break;
+					case MTLBindingAccessWriteOnly:
+						found->usage = MTLResourceUsageWrite;
+						break;
+					case MTLBindingAccessReadWrite:
+						found->usage = MTLResourceUsageRead | MTLResourceUsageWrite;
+						break;
+				}
+
+				iter->second = uniform.stages;
+				MSLResourceBinding &rb = iter->first;
+				rb.desc_set = idx_dset;
+				rb.binding = uniform.binding;
+				rb.count = binding_stride;
+
+				switch (type) {
+					case RDC::UNIFORM_TYPE_SAMPLER: {
+						found->data_type = MTLDataTypeSampler;
+						found->get_indexes(UniformData::IndexType::SLOT).sampler = next_index(Sampler, binding_stride);
+						found->get_indexes(UniformData::IndexType::ARG).sampler = next_arg_index(binding_stride);
+
+						rb.basetype = SPIRType::BaseType::Sampler;
+
+					} break;
+					case RDC::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE:
+					case RDC::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER: {
+						found->data_type = MTLDataTypeTexture;
+						found->get_indexes(UniformData::IndexType::SLOT).texture = next_index(Texture, binding_stride);
+						found->get_indexes(UniformData::IndexType::SLOT).sampler = next_index(Sampler, binding_stride);
+						found->get_indexes(UniformData::IndexType::ARG).texture = next_arg_index(binding_stride);
+						found->get_indexes(UniformData::IndexType::ARG).sampler = next_arg_index(binding_stride);
+						rb.basetype = SPIRType::BaseType::SampledImage;
+					} break;
+					case RDC::UNIFORM_TYPE_TEXTURE:
+					case RDC::UNIFORM_TYPE_IMAGE:
+					case RDC::UNIFORM_TYPE_TEXTURE_BUFFER: {
+						found->data_type = MTLDataTypeTexture;
+						found->get_indexes(UniformData::IndexType::SLOT).texture = next_index(Texture, binding_stride);
+						found->get_indexes(UniformData::IndexType::ARG).texture = next_arg_index(binding_stride);
+						rb.basetype = SPIRType::BaseType::Image;
+					} break;
+					case RDC::UNIFORM_TYPE_IMAGE_BUFFER:
+						CRASH_NOW_MSG("Unimplemented!"); // TODO.
+						break;
+					case RDC::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
+					case RDC::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC:
+					case RDC::UNIFORM_TYPE_UNIFORM_BUFFER:
+					case RDC::UNIFORM_TYPE_STORAGE_BUFFER: {
+						found->data_type = MTLDataTypePointer;
+						found->get_indexes(UniformData::IndexType::SLOT).buffer = next_index(Buffer, binding_stride);
+						found->get_indexes(UniformData::IndexType::ARG).buffer = next_arg_index(binding_stride);
+						rb.basetype = SPIRType::BaseType::Void;
+					} break;
+					case RDC::UNIFORM_TYPE_INPUT_ATTACHMENT: {
+						found->data_type = MTLDataTypeTexture;
+						found->get_indexes(UniformData::IndexType::SLOT).texture = next_index(Texture, binding_stride);
+						found->get_indexes(UniformData::IndexType::ARG).texture = next_arg_index(binding_stride);
+						rb.basetype = SPIRType::BaseType::Image;
+					} break;
+					case RDC::UNIFORM_TYPE_MAX:
+					default:
+						CRASH_NOW_MSG("Unreachable");
+				}
+
+				// Specify the MSL resource bindings based on how the binding mode used by the shader.
+				rb.msl_buffer = found->get_indexes(shader_index_type).buffer;
+				rb.msl_texture = found->get_indexes(shader_index_type).texture;
+				rb.msl_sampler = found->get_indexes(shader_index_type).sampler;
+
+				if (found->data_type == MTLDataTypeTexture) {
+					const SpvReflectImageTraits &image = uniform.get_spv_reflect().image;
+
+					switch (image.dim) {
+						case SpvDim1D: {
+							if (image.arrayed) {
+								found->texture_type = MTLTextureType1DArray;
+							} else {
+								found->texture_type = MTLTextureType1D;
+							}
+						} break;
+						case SpvDimSubpassData:
+						case SpvDim2D: {
+							if (image.arrayed && image.ms) {
+								found->texture_type = MTLTextureType2DMultisampleArray;
+							} else if (image.arrayed) {
+								found->texture_type = MTLTextureType2DArray;
+							} else if (image.ms) {
+								found->texture_type = MTLTextureType2DMultisample;
+							} else {
+								found->texture_type = MTLTextureType2D;
+							}
+						} break;
+						case SpvDim3D: {
+							found->texture_type = MTLTextureType3D;
+						} break;
+						case SpvDimCube: {
+							if (image.arrayed) {
+								found->texture_type = MTLTextureTypeCubeArray;
+							} else {
+								found->texture_type = MTLTextureTypeCube;
+							}
+						} break;
+						case SpvDimRect: {
+							// Ignored.
+						} break;
+						case SpvDimBuffer: {
+							found->texture_type = MTLTextureTypeTextureBuffer;
+						} break;
+						case SpvDimTileImageDataEXT: {
+							// Godot does not use this extension.
+							// See: https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_shader_tile_image.html
+						} break;
+						case SpvDimMax: {
+							// Add all enumerations to silence the compiler warning
+							// and generate future warnings, should a new one be added.
+						} break;
+					}
+				}
+
+				iter++;
+				found++;
+			}
+			idx_dset++;
+		}
+
+		if (reflection_data.push_constant_size > 0) {
+			push_constant_resource_binding.desc_set = ResourceBindingPushConstantDescriptorSet;
+			push_constant_resource_binding.basetype = SPIRType::BaseType::Void;
+			if (msl_options.argument_buffers) {
+				push_constant_resource_binding.msl_buffer = dset_count;
+			} else {
+				push_constant_resource_binding.msl_buffer = next_index(Buffer, 1);
+			}
+			mtl_reflection_data.push_constant_binding = push_constant_resource_binding.msl_buffer;
+		}
+	}
+
 	for (uint32_t i = 0; i < p_spirv.size(); i++) {
 		StageData &stage_data = mtl_shaders.write[i];
-		RD::ShaderStageSPIRVData const &v = p_spirv[i];
+		const ReflectShaderStage &v = p_spirv[i];
 		RD::ShaderStage stage = v.shader_stage;
-		char const *stage_name = RD::SHADER_STAGE_NAMES[stage];
-		uint32_t const *const ir = reinterpret_cast<uint32_t const *const>(v.spirv.ptr());
-		size_t word_count = v.spirv.size() / sizeof(uint32_t);
-		Parser parser(ir, word_count);
+		Span<uint32_t> spirv = v.spirv();
+		Parser parser(spirv.ptr(), spirv.size());
 		try {
 			parser.parse();
 		} catch (CompilerError &e) {
@@ -369,6 +559,18 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		CompilerMSL compiler(std::move(parser.get_parsed_ir()));
 		compiler.set_msl_options(msl_options);
 		compiler.set_common_options(options);
+
+		spv::ExecutionModel execution_model = map_stage(stage);
+		for (uint32_t jj = 0; jj < spirv_bindings.size(); jj++) {
+			MSLResourceBinding &rb = spirv_bindings.ptr()[jj].first;
+			rb.stage = execution_model;
+			compiler.add_msl_resource_binding(rb);
+		}
+
+		if (push_constant_resource_binding.desc_set == ResourceBindingPushConstantDescriptorSet) {
+			push_constant_resource_binding.stage = execution_model;
+			compiler.add_msl_resource_binding(push_constant_resource_binding);
+		}
 
 		std::unordered_set<VariableID> active = compiler.get_active_interface_variables();
 		ShaderResources resources = compiler.get_shader_resources();
@@ -386,275 +588,12 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		EntryPoint &entry_point_stage = entry_pts_stages.front();
 		SPIREntryPoint &entry_point = compiler.get_entry_point(entry_point_stage.name, entry_point_stage.execution_model);
 
-		// Process specialization constants.
-		if (!compiler.get_specialization_constants().empty()) {
-			uint32_t size = reflection_specialization_data.size();
-			for (SpecializationConstant const &constant : compiler.get_specialization_constants()) {
-				uint32_t j = 0;
-				while (j < size) {
-					const ReflectionSpecializationData &res = reflection_specialization_data.ptr()[j];
-					if (res.constant_id == constant.constant_id) {
-						mtl_reflection_specialization_data.ptrw()[j].used_stages |= 1 << stage;
-						// emulate labeled for loop and continue
-						goto outer_continue;
-					}
-					++j;
-				}
-				if (j == size) {
-					WARN_PRINT(String(stage_name) + ": unable to find constant_id: " + itos(constant.constant_id));
-				}
-			outer_continue:;
+		for (auto ext : compiler.get_declared_extensions()) {
+			if (ext == "SPV_KHR_non_semantic_info" || ext == "SPV_KHR_printf") {
+				mtl_reflection_data.set_needs_debug_logging(true);
+				break;
 			}
 		}
-
-		// Process bindings.
-		uint32_t uniform_sets_size = reflection_binding_set_uniforms_count.size();
-		using BT = SPIRType::BaseType;
-
-		// Always clearer than a boolean.
-		enum class Writable {
-			No,
-			Maybe,
-		};
-
-		// Returns a std::optional containing the value of the
-		// decoration, if it exists.
-		auto get_decoration = [&compiler](spirv_cross::ID id, spv::Decoration decoration) {
-			uint32_t res = -1;
-			if (compiler.has_decoration(id, decoration)) {
-				res = compiler.get_decoration(id, decoration);
-			}
-			return res;
-		};
-
-		auto descriptor_bindings = [&compiler, &active, this, &set_indexes, uniform_sets_size, stage, &get_decoration](SmallVector<Resource> &p_resources, Writable p_writable) {
-			for (Resource const &res : p_resources) {
-				uint32_t dset = get_decoration(res.id, spv::DecorationDescriptorSet);
-				uint32_t dbin = get_decoration(res.id, spv::DecorationBinding);
-				UniformData *found = nullptr;
-				if (dset != (uint32_t)-1 && dbin != (uint32_t)-1 && dset < uniform_sets_size) {
-					uint32_t begin = set_indexes[dset];
-					uint32_t end = set_indexes[dset + 1];
-					for (uint32_t j = begin; j < end; j++) {
-						const ReflectionBindingData &ref_bind = reflection_binding_set_uniforms_data[j];
-						if (dbin == ref_bind.binding) {
-							found = &mtl_reflection_binding_set_uniforms_data.write[j];
-							break;
-						}
-					}
-				}
-
-				ERR_FAIL_NULL_V_MSG(found, ERR_CANT_CREATE, "UniformData not found");
-
-				bool is_active = active.find(res.id) != active.end();
-				if (is_active) {
-					found->active_stages |= 1 << stage;
-				}
-
-				BindingInfoData &primary = found->get_binding_for_stage(stage);
-
-				SPIRType const &a_type = compiler.get_type(res.type_id);
-				BT basetype = a_type.basetype;
-
-				switch (basetype) {
-					case BT::Struct: {
-						primary.data_type = MTLDataTypePointer;
-					} break;
-
-					case BT::Image:
-					case BT::SampledImage: {
-						primary.data_type = MTLDataTypeTexture;
-					} break;
-
-					case BT::Sampler: {
-						primary.data_type = MTLDataTypeSampler;
-						primary.array_length = 1;
-						for (uint32_t const &a : a_type.array) {
-							primary.array_length *= a;
-						}
-					} break;
-
-					default: {
-						ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Unexpected BaseType");
-					} break;
-				}
-
-				// Find array length of image.
-				if (basetype == BT::Image || basetype == BT::SampledImage) {
-					primary.array_length = 1;
-					for (uint32_t const &a : a_type.array) {
-						primary.array_length *= a;
-					}
-					primary.is_multisampled = a_type.image.ms;
-
-					SPIRType::ImageType const &image = a_type.image;
-					primary.image_format = image.format;
-
-					switch (image.dim) {
-						case spv::Dim1D: {
-							if (image.arrayed) {
-								primary.texture_type = MTLTextureType1DArray;
-							} else {
-								primary.texture_type = MTLTextureType1D;
-							}
-						} break;
-						case spv::DimSubpassData: {
-							[[fallthrough]];
-						}
-						case spv::Dim2D: {
-							if (image.arrayed && image.ms) {
-								primary.texture_type = MTLTextureType2DMultisampleArray;
-							} else if (image.arrayed) {
-								primary.texture_type = MTLTextureType2DArray;
-							} else if (image.ms) {
-								primary.texture_type = MTLTextureType2DMultisample;
-							} else {
-								primary.texture_type = MTLTextureType2D;
-							}
-						} break;
-						case spv::Dim3D: {
-							primary.texture_type = MTLTextureType3D;
-						} break;
-						case spv::DimCube: {
-							if (image.arrayed) {
-								primary.texture_type = MTLTextureTypeCube;
-							}
-						} break;
-						case spv::DimRect: {
-						} break;
-						case spv::DimBuffer: {
-							// VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER
-							primary.texture_type = MTLTextureTypeTextureBuffer;
-						} break;
-						case spv::DimTileImageDataEXT: {
-							// Godot does not use this extension.
-							// See: https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_shader_tile_image.html
-						} break;
-						case spv::DimMax: {
-							// Add all enumerations to silence the compiler warning
-							// and generate future warnings, should a new one be added.
-						} break;
-					}
-				}
-
-				// Update writable.
-				if (p_writable == Writable::Maybe) {
-					if (basetype == BT::Struct) {
-						Bitset flags = compiler.get_buffer_block_flags(res.id);
-						if (!flags.get(spv::DecorationNonWritable)) {
-							if (flags.get(spv::DecorationNonReadable)) {
-								primary.access = MTLBindingAccessWriteOnly;
-							} else {
-								primary.access = MTLBindingAccessReadWrite;
-							}
-						}
-					} else if (basetype == BT::Image) {
-						switch (a_type.image.access) {
-							case spv::AccessQualifierWriteOnly:
-								primary.access = MTLBindingAccessWriteOnly;
-								break;
-							case spv::AccessQualifierReadWrite:
-								primary.access = MTLBindingAccessReadWrite;
-								break;
-							case spv::AccessQualifierReadOnly:
-								break;
-							case spv::AccessQualifierMax:
-								[[fallthrough]];
-							default:
-								if (!compiler.has_decoration(res.id, spv::DecorationNonWritable)) {
-									if (compiler.has_decoration(res.id, spv::DecorationNonReadable)) {
-										primary.access = MTLBindingAccessWriteOnly;
-									} else {
-										primary.access = MTLBindingAccessReadWrite;
-									}
-								}
-								break;
-						}
-					}
-				}
-
-				switch (primary.access) {
-					case MTLBindingAccessReadOnly:
-						primary.usage = MTLResourceUsageRead;
-						break;
-					case MTLBindingAccessWriteOnly:
-						primary.usage = MTLResourceUsageWrite;
-						break;
-					case MTLBindingAccessReadWrite:
-						primary.usage = MTLResourceUsageRead | MTLResourceUsageWrite;
-						break;
-				}
-
-				primary.index = compiler.get_automatic_msl_resource_binding(res.id);
-
-				// A sampled image contains two bindings, the primary
-				// is to the image, and the secondary is to the associated sampler.
-				if (basetype == BT::SampledImage) {
-					uint32_t binding = compiler.get_automatic_msl_resource_binding_secondary(res.id);
-					if (binding != (uint32_t)-1) {
-						BindingInfoData &secondary = found->get_secondary_binding_for_stage(stage);
-						secondary.data_type = MTLDataTypeSampler;
-						secondary.index = binding;
-						secondary.access = MTLBindingAccessReadOnly;
-					}
-				}
-
-				// An image may have a secondary binding if it is used
-				// for atomic operations.
-				if (basetype == BT::Image) {
-					uint32_t binding = compiler.get_automatic_msl_resource_binding_secondary(res.id);
-					if (binding != (uint32_t)-1) {
-						BindingInfoData &secondary = found->get_secondary_binding_for_stage(stage);
-						secondary.data_type = MTLDataTypePointer;
-						secondary.index = binding;
-						secondary.access = MTLBindingAccessReadWrite;
-					}
-				}
-			}
-			return Error::OK;
-		};
-
-		if (!resources.uniform_buffers.empty()) {
-			Error err = descriptor_bindings(resources.uniform_buffers, Writable::No);
-			ERR_FAIL_COND_V(err != OK, false);
-		}
-		if (!resources.storage_buffers.empty()) {
-			Error err = descriptor_bindings(resources.storage_buffers, Writable::Maybe);
-			ERR_FAIL_COND_V(err != OK, false);
-		}
-		if (!resources.storage_images.empty()) {
-			Error err = descriptor_bindings(resources.storage_images, Writable::Maybe);
-			ERR_FAIL_COND_V(err != OK, false);
-		}
-		if (!resources.sampled_images.empty()) {
-			Error err = descriptor_bindings(resources.sampled_images, Writable::No);
-			ERR_FAIL_COND_V(err != OK, false);
-		}
-		if (!resources.separate_images.empty()) {
-			Error err = descriptor_bindings(resources.separate_images, Writable::No);
-			ERR_FAIL_COND_V(err != OK, false);
-		}
-		if (!resources.separate_samplers.empty()) {
-			Error err = descriptor_bindings(resources.separate_samplers, Writable::No);
-			ERR_FAIL_COND_V(err != OK, false);
-		}
-		if (!resources.subpass_inputs.empty()) {
-			Error err = descriptor_bindings(resources.subpass_inputs, Writable::No);
-			ERR_FAIL_COND_V(err != OK, false);
-		}
-
-		if (!resources.push_constant_buffers.empty()) {
-			for (Resource const &res : resources.push_constant_buffers) {
-				uint32_t binding = compiler.get_automatic_msl_resource_binding(res.id);
-				if (binding != (uint32_t)-1) {
-					stage_data.push_constant_binding = binding;
-				}
-			}
-		}
-
-		ERR_FAIL_COND_V_MSG(!resources.atomic_counters.empty(), false, "Atomic counters not supported");
-		ERR_FAIL_COND_V_MSG(!resources.acceleration_structures.empty(), false, "Acceleration structures not supported");
-		ERR_FAIL_COND_V_MSG(!resources.shader_record_buffers.empty(), false, "Shader record buffers not supported");
 
 		if (!resources.stage_inputs.empty()) {
 			for (Resource const &res : resources.stage_inputs) {
@@ -722,13 +661,6 @@ uint32_t RenderingShaderContainerMetal::_to_bytes_reflection_binding_uniform_ext
 	return sizeof(UniformData);
 }
 
-uint32_t RenderingShaderContainerMetal::_to_bytes_reflection_specialization_extra_data(uint8_t *p_bytes, uint32_t p_index) const {
-	if (p_bytes != nullptr) {
-		*(SpecializationData *)p_bytes = mtl_reflection_specialization_data[p_index];
-	}
-	return sizeof(SpecializationData);
-}
-
 uint32_t RenderingShaderContainerMetal::_to_bytes_shader_extra_data(uint8_t *p_bytes, uint32_t p_index) const {
 	if (p_bytes != nullptr) {
 		*(StageData *)p_bytes = mtl_shaders[p_index];
@@ -751,16 +683,6 @@ uint32_t RenderingShaderContainerMetal::_from_bytes_reflection_binding_uniform_e
 	return sizeof(UniformData);
 }
 
-uint32_t RenderingShaderContainerMetal::_from_bytes_reflection_specialization_extra_data_start(const uint8_t *p_bytes) {
-	mtl_reflection_specialization_data.resize(reflection_specialization_data.size());
-	return 0;
-}
-
-uint32_t RenderingShaderContainerMetal::_from_bytes_reflection_specialization_extra_data(const uint8_t *p_bytes, uint32_t p_index) {
-	mtl_reflection_specialization_data.ptrw()[p_index] = *(SpecializationData *)p_bytes;
-	return sizeof(SpecializationData);
-}
-
 uint32_t RenderingShaderContainerMetal::_from_bytes_shader_extra_data_start(const uint8_t *p_bytes) {
 	mtl_shaders.resize(shaders.size());
 	return 0;
@@ -774,7 +696,6 @@ uint32_t RenderingShaderContainerMetal::_from_bytes_shader_extra_data(const uint
 RenderingShaderContainerMetal::MetalShaderReflection RenderingShaderContainerMetal::get_metal_shader_reflection() const {
 	MetalShaderReflection res;
 
-	res.specialization_constants = mtl_reflection_specialization_data;
 	uint32_t uniform_set_count = reflection_binding_set_uniforms_count.size();
 	uint32_t start = 0;
 	res.uniform_sets.resize(uniform_set_count);
@@ -802,7 +723,6 @@ Ref<RenderingShaderContainer> RenderingShaderContainerFormatMetal::create_contai
 	result.instantiate();
 	result->set_export_mode(export_mode);
 	result->set_device_profile(device_profile);
-	result->set_min_os_version(min_os_version);
 	return result;
 }
 
@@ -814,8 +734,8 @@ RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatMetal::
 	return SHADER_SPIRV_VERSION_1_6;
 }
 
-RenderingShaderContainerFormatMetal::RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export, const MinOsVersion p_min_os_version) :
-		export_mode(p_export), min_os_version(p_min_os_version), device_profile(p_device_profile) {
+RenderingShaderContainerFormatMetal::RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export) :
+		export_mode(p_export), device_profile(p_device_profile) {
 }
 
 String MinOsVersion::to_compiler_os_version() const {

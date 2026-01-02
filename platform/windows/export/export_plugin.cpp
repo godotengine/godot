@@ -35,12 +35,14 @@
 #include "template_modifier.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/resources/image_texture.h"
 
 #include "modules/svg/image_loader_svg.h"
 
@@ -120,7 +122,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 		Ref<Image> src_image = _load_icon_or_splash_image(p_src_path, &err);
 		ERR_FAIL_COND_V(err != OK || src_image.is_null() || src_image->is_empty(), ERR_CANT_OPEN);
 
-		for (size_t i = 0; i < std::size(icon_size); ++i) {
+		for (size_t i = 0; i < std_size(icon_size); ++i) {
 			int size = (icon_size[i] == 0) ? 256 : icon_size[i];
 
 			Ref<Image> res_image = src_image->duplicate();
@@ -131,7 +133,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 	}
 
 	uint16_t valid_icon_count = 0;
-	for (size_t i = 0; i < std::size(icon_size); ++i) {
+	for (size_t i = 0; i < std_size(icon_size); ++i) {
 		if (images.has(icon_size[i])) {
 			valid_icon_count++;
 		} else {
@@ -153,7 +155,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 
 	// Write ICONDIRENTRY.
 	uint32_t img_offset = 6 + 16 * valid_icon_count;
-	for (size_t i = 0; i < std::size(icon_size); ++i) {
+	for (size_t i = 0; i < std_size(icon_size); ++i) {
 		if (images.has(icon_size[i])) {
 			const IconData &di = images[icon_size[i]];
 			fw->store_8(icon_size[i]); // Width in pixels.
@@ -170,7 +172,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 	}
 
 	// Write image data.
-	for (size_t i = 0; i < std::size(icon_size); ++i) {
+	for (size_t i = 0; i < std_size(icon_size); ++i) {
 		if (images.has(icon_size[i])) {
 			const IconData &di = images[icon_size[i]];
 			fw->store_buffer(di.data.ptr(), di.data.size());
@@ -497,10 +499,10 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), cleanup_script));
 }
 
 Error EditorExportPlatformWindows::_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon) {
@@ -802,9 +804,9 @@ String EditorExportPlatformWindows::_get_exe_arch(const String &p_path) const {
 }
 
 Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
-	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data
+	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data.
 
-	if (p_embedded_size + p_embedded_start >= 0x100000000) { // Check for total executable size
+	if (p_embedded_size + p_embedded_start >= 0x100000000) { // Check for total executable size.
 		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Windows executables cannot be >= 4 GiB."));
 		return ERR_INVALID_DATA;
 	}
@@ -815,7 +817,7 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		return ERR_CANT_OPEN;
 	}
 
-	// Jump to the PE header and check the magic number
+	// Jump to the PE header and check the magic number.
 	{
 		f->seek(0x3c);
 		uint32_t pe_pos = f->get_32();
@@ -828,27 +830,36 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		}
 	}
 
-	// Process header
-
+	// Process header.
+	uint32_t sect_alignment = 0x1000;
+	uint32_t image_size = 0;
 	int num_sections;
-	{
-		int64_t header_pos = f->get_position();
 
+	int64_t header_pos = f->get_position();
+	int64_t opt_header_pos = 0;
+	{
 		f->seek(header_pos + 2);
 		num_sections = f->get_16();
 		f->seek(header_pos + 16);
 		uint16_t opt_header_size = f->get_16();
+		opt_header_pos = f->get_position() + 2;
 
-		// Skip rest of header + optional header to go to the section headers
-		f->seek(f->get_position() + 2 + opt_header_size);
+		f->seek(opt_header_pos + 32);
+		sect_alignment = f->get_32();
+
+		f->seek(opt_header_pos + 56);
+		image_size = f->get_32();
+
+		// Skip rest of header + optional header to go to the section headers.
+		f->seek(opt_header_pos + opt_header_size);
 	}
 
-	// Search for the "pck" section
+	// Search for the "pck" section.
 
 	int64_t section_table_pos = f->get_position();
 
-	bool found = false;
-	for (int i = 0; i < num_sections; ++i) {
+	int pck_old_pos = -1;
+	for (int i = 0; i < num_sections; i++) {
 		int64_t section_header_pos = section_table_pos + i * 40;
 		f->seek(section_header_pos);
 
@@ -857,23 +868,48 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		section_name[8] = '\0';
 
 		if (strcmp((char *)section_name, "pck") == 0) {
-			// "pck" section found, let's patch!
+			pck_old_pos = i;
 
-			// Set virtual size to a little to avoid it taking memory (zero would give issues)
-			f->seek(section_header_pos + 8);
-			f->store_32(8);
-
-			f->seek(section_header_pos + 16);
-			f->store_32(p_embedded_size);
-			f->seek(section_header_pos + 20);
-			f->store_32(p_embedded_start);
-
-			found = true;
+			// Update virtual size of previous section to avoid gaps in the virtual addresses.
+			f->seek(section_table_pos + (i - 1) * 40 + 8);
+			uint32_t virt_size = f->get_32();
+			f->seek(section_table_pos + (i - 1) * 40 + 8);
+			f->store_32(virt_size + sect_alignment);
 			break;
 		}
 	}
+	if (pck_old_pos >= 0) {
+		// Move section data.
+		uint8_t section_data[40];
+		for (int i = pck_old_pos; i < num_sections - 1; i++) {
+			f->seek(section_table_pos + (i + 1) * 40);
+			f->get_buffer(section_data, 40);
+			f->seek(section_table_pos + i * 40);
+			f->store_buffer(section_data, 40);
+		}
 
-	if (!found) {
+		// Add "pck" at the end.
+		f->seek(section_table_pos + (num_sections - 1) * 40);
+		uint8_t section_name[8] = { 'p', 'c', 'k', '\0', '\0', '\0', '\0', '\0' };
+		f->store_buffer(section_name, 8); // Name.
+		f->store_32(8); // VirtualSize, set to a little to avoid it taking memory (zero would give issues).
+		f->store_32(image_size); // VirtualAddress.
+		f->store_32(p_embedded_size); // SizeOfRawData.
+		f->store_32(p_embedded_start); // PointerToRawData.
+		f->store_32(0); // PointerToRelocations, not used.
+		f->store_32(0); // PointerToLinenumbers, not used.
+		f->store_16(0); // NumberOfRelocations.
+		f->store_16(0); // NumberOfLinenumbers.
+		f->store_32(0x40000000); // Characteristics: Read.
+
+		// Update image virtual size.
+		f->seek(opt_header_pos + 56);
+		f->store_32(image_size + sect_alignment);
+	}
+
+	f->close();
+
+	if (pck_old_pos == -1) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
 		return ERR_FILE_CORRUPT;
 	}
@@ -1094,7 +1130,7 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 #undef CLEANUP_AND_RETURN
 }
 
-EditorExportPlatformWindows::EditorExportPlatformWindows() {
+void EditorExportPlatformWindows::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);

@@ -89,21 +89,27 @@ public:
 				uint32_t use_light_soft_shadows : 1;
 				uint32_t use_directional_soft_shadows : 1;
 				uint32_t decal_use_mipmaps : 1;
+
 				uint32_t projector_use_mipmaps : 1;
 				uint32_t disable_fog : 1;
 				uint32_t use_depth_fog : 1;
 				uint32_t use_fog_aerial_perspective : 1;
+
 				uint32_t use_fog_sun_scatter : 1;
 				uint32_t use_fog_height_density : 1;
 				uint32_t use_lightmap_bicubic_filter : 1;
+				uint32_t use_material_debanding : 1;
+
 				uint32_t multimesh : 1;
 				uint32_t multimesh_format_2d : 1;
 				uint32_t multimesh_has_color : 1;
 				uint32_t multimesh_has_custom_data : 1;
+
 				uint32_t scene_use_ambient_cubemap : 1;
 				uint32_t scene_use_reflection_cubemap : 1;
 				uint32_t scene_roughness_limiter_enabled : 1;
-				uint32_t padding_0 : 2;
+				uint32_t padding_0 : 1;
+
 				uint32_t soft_shadow_samples : 6;
 				uint32_t penumbra_shadow_samples : 6;
 			};
@@ -290,7 +296,8 @@ public:
 		}
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
-			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && !uses_world_coordinates && !wireframe && !stencil_enabled;
+			bool backface_culling = cull_mode == RS::CULL_MODE_BACK;
+			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && !uses_point_size && !uses_world_coordinates && !wireframe && !stencil_enabled && backface_culling;
 		}
 
 		virtual void set_code(const String &p_Code);
@@ -338,6 +345,7 @@ public:
 	SceneForwardMobileShaderRD shader;
 	ShaderCompiler compiler;
 	bool use_fp16 = false;
+	bool emulate_point_size = false;
 
 	RID default_shader;
 	RID default_material;

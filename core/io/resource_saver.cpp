@@ -97,15 +97,14 @@ void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_recognize_path, "resource", "path");
 }
 
-Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, vformat("Can't save empty resource to path '%s'.", p_path));
+Error ResourceSaver::save(RequiredParam<Resource> rp_resource, const String &p_path, uint32_t p_flags) {
+	EXTRACT_PARAM_OR_FAIL_V_MSG(p_resource, rp_resource, ERR_INVALID_PARAMETER, vformat("Can't save empty resource to path '%s'.", p_path));
 	String path = p_path;
 	if (path.is_empty()) {
 		path = p_resource->get_path();
 	}
 	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_INVALID_PARAMETER, "Can't save resource to empty path. Provide non-empty path or a Resource with non-empty resource_path.");
 
-	String extension = path.get_extension();
 	Error err = ERR_FILE_UNRECOGNIZED;
 
 	for (int i = 0; i < saver_count; i++) {
@@ -255,8 +254,8 @@ void ResourceSaver::add_custom_savers() {
 
 	String custom_saver_base_class = ResourceFormatSaver::get_class_static();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 
 	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);

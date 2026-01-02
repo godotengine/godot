@@ -64,6 +64,11 @@ private:
 		INSTALL_PATH,
 	};
 
+	enum ValidationFlags {
+		INVALID_PATH_INPUT = 1,
+		INVALID_RENDERER_SELECT = 2
+	};
+
 	Mode mode = MODE_NEW;
 	bool is_folder_empty = true;
 	ConfirmationDialog *nonempty_confirmation = nullptr;
@@ -80,6 +85,7 @@ private:
 	HBoxContainer *default_files_container = nullptr;
 	Ref<ButtonGroup> renderer_button_group;
 	bool rendering_device_supported = false;
+	bool rendering_device_checked = false;
 	Label *rd_not_supported = nullptr;
 
 	Label *msg = nullptr;
@@ -102,6 +108,8 @@ private:
 
 	String original_project_path;
 	bool duplicate_can_edit = false;
+
+	BitField<ValidationFlags> invalid_flags;
 
 	void _set_message(const String &p_msg, MessageType p_type, InputType input_type = PROJECT_PATH);
 	void _validate_path();
@@ -151,7 +159,7 @@ public:
 	void set_duplicate_can_edit(bool p_duplicate_can_edit);
 
 	void ask_for_path_and_show();
-	void show_dialog(bool p_reset_name = true);
+	void show_dialog(bool p_reset_name = true, bool p_is_confirmed = true);
 
 	ProjectDialog();
 };

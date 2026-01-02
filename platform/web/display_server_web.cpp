@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/callable_method_pointer.h"
+#include "core/os/main_loop.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef GLES3_ENABLED
@@ -427,7 +428,7 @@ TypedArray<Dictionary> DisplayServerWeb::tts_get_voices() const {
 	return voices;
 }
 
-void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	if (p_interrupt) {
 		tts_stop();
 	}
@@ -452,14 +453,14 @@ void DisplayServerWeb::tts_resume() {
 }
 
 void DisplayServerWeb::tts_stop() {
-	for (const KeyValue<int, CharString> &E : utterance_ids) {
+	for (const KeyValue<int64_t, CharString> &E : utterance_ids) {
 		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
 	}
 	utterance_ids.clear();
 	godot_js_tts_stop();
 }
 
-void DisplayServerWeb::js_utterance_callback(int p_event, int p_id, int p_pos) {
+void DisplayServerWeb::js_utterance_callback(int p_event, int64_t p_id, int p_pos) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
 		callable_mp_static(DisplayServerWeb::_js_utterance_callback).call_deferred(p_event, p_id, p_pos);
@@ -470,7 +471,7 @@ void DisplayServerWeb::js_utterance_callback(int p_event, int p_id, int p_pos) {
 	_js_utterance_callback(p_event, p_id, p_pos);
 }
 
-void DisplayServerWeb::_js_utterance_callback(int p_event, int p_id, int p_pos) {
+void DisplayServerWeb::_js_utterance_callback(int p_event, int64_t p_id, int p_pos) {
 	DisplayServerWeb *ds = (DisplayServerWeb *)DisplayServer::get_singleton();
 	if (ds->utterance_ids.has(p_id)) {
 		int pos = 0;
@@ -795,7 +796,7 @@ void DisplayServerWeb::_vk_input_text_callback(const String &p_text, int p_curso
 		return;
 	}
 	// Call input_text
-	ds->input_text_callback.call(p_text);
+	ds->input_text_callback.call(p_text, true);
 	// Insert key right to reach position.
 	Input *input = Input::get_singleton();
 	Ref<InputEventKey> k;

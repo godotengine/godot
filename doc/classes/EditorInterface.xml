@@ -19,6 +19,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_root_node">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Makes [param node] root of the currently opened scene. Only works if the scene is empty. If the [param node] is a scene instance, an inheriting scene will be created.
+			</description>
+		</method>
 		<method name="close_scene">
 			<return type="int" enum="Error" />
 			<description>
@@ -87,6 +94,12 @@
 			<return type="Node" />
 			<description>
 				Returns the edited (current) scene's root [Node].
+			</description>
+		</method>
+		<method name="get_editor_language" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the language currently used for the editor interface.
 			</description>
 		</method>
 		<method name="get_editor_main_screen" qualifiers="const">
@@ -162,6 +175,24 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_node_3d_rotate_snap" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the amount of degrees the 3D editor's rotational snapping is set to.
+			</description>
+		</method>
+		<method name="get_node_3d_scale_snap" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the amount of units the 3D editor's scale snapping is set to.
+			</description>
+		</method>
+		<method name="get_node_3d_translate_snap" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the amount of units the 3D editor's translation snapping is set to.
+			</description>
+		</method>
 		<method name="get_open_scene_roots" qualifiers="const">
 			<return type="Node[]" />
 			<description>
@@ -229,6 +260,19 @@
 				- [member Viewport.gui_embed_subwindows] is [code]false[/code]. This is forced to [code]true[/code] on platforms that don't support multiple windows such as Web, or when the [code]--single-window[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used.
 			</description>
 		</method>
+		<method name="is_node_3d_snap_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the 3D editor currently has snapping mode enabled, and [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="is_object_edited" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="object" type="Object" />
+			<description>
+				Returns [code]true[/code] if the object has been marked as edited through [method set_object_edited].
+			</description>
+		</method>
 		<method name="is_playing_scene" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -292,7 +336,7 @@
 			<param index="4" name="type_blocklist" type="StringName[]" default="[]" />
 			<description>
 				Pops up an editor dialog for creating an object.
-				The [param callback] must take a single argument of type [StringName] which will contain the type name of the selected object or be empty if no item is selected.
+				The [param callback] must take a single argument of type [String], which will contain the type name of the selected object (or the script path of the type, if the type is created from a script), or be an empty string if no item is selected.
 				The [param base_type] specifies the base type of objects to display. For example, if you set this to "Resource", all types derived from [Resource] will display in the create dialog.
 				The [param current_type] will be passed in the search box of the create dialog, and the specified type can be immediately selected when the dialog pops up. If the [param current_type] is not derived from [param base_type], there will be no result of the type in the dialog.
 				The [param dialog_title] allows you to define a custom title for the dialog. This is useful if you want to accurately hint the usage of the dialog. If the [param dialog_title] is an empty string, the dialog will use "Create New 'Base Type'" as the default title.
@@ -451,6 +495,16 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]AssetLib[/code] for default tabs).
+			</description>
+		</method>
+		<method name="set_object_edited">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="edited" type="bool" />
+			<description>
+				If [param edited] is [code]true[/code], the object is marked as edited.
+				[b]Note:[/b] This is primarily used by the editor for [Resource] based objects to track their modified state. For example, any changes to an open scene, a resource in the inspector, or an edited script will cause this method to be called with [code]true[/code]. Saving the scene, script, or resource resets the edited state by calling this method with [code]false[/code].
+				[b]Note:[/b] Each call to this method increments the object's edited version. This is used to track changes in the editor and to trigger when thumbnails should be regenerated for resources.
 			</description>
 		</method>
 		<method name="set_plugin_enabled">

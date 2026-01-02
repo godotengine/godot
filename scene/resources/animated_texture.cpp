@@ -30,6 +30,9 @@
 
 #include "animated_texture.h"
 
+#include "core/os/os.h"
+#include "servers/rendering/rendering_server.h"
+
 void AnimatedTexture::_update_proxy() {
 	RWLockRead r(rw_lock);
 
@@ -286,6 +289,6 @@ AnimatedTexture::AnimatedTexture() {
 
 AnimatedTexture::~AnimatedTexture() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(proxy);
-	RS::get_singleton()->free(proxy_ph);
+	RS::get_singleton()->free_rid(proxy);
+	RS::get_singleton()->free_rid(proxy_ph);
 }

@@ -50,6 +50,9 @@ public:
 	VehicleConstraint &			GetConstraint()								{ return mConstraint; }
 	const VehicleConstraint &	GetConstraint() const						{ return mConstraint; }
 
+	/// Recreate the settings for this controller
+	virtual Ref<VehicleControllerSettings> GetSettings() const = 0;
+
 protected:
 	// The functions below are only for the VehicleConstraint
 	friend class VehicleConstraint;

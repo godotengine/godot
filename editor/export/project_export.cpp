@@ -50,10 +50,14 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+
+#include <zstd.h>
 
 void ProjectExportTextureFormatError::_on_fix_texture_format_pressed() {
 	export_dialog->hide();
@@ -99,10 +103,12 @@ void ProjectExportDialog::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", Rect2(get_position(), get_size()));
+				show_script_key->set_pressed(false);
 			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			_script_encryption_key_visibility_changed(show_script_key->is_pressed());
 			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
@@ -197,11 +203,15 @@ void ProjectExportDialog::_update_presets() {
 	}
 
 	int current_idx = -1;
+	int preset_count = EditorExport::get_singleton()->get_export_preset_count();
 	presets->clear();
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+	for (int i = 0; i < preset_count; i++) {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
 		if (preset == current) {
 			current_idx = i;
+		} else if (current.is_null()) {
+			current_idx = i;
+			_edit_preset(i);
 		}
 
 		String preset_name = preset->get_name();
@@ -211,6 +221,9 @@ void ProjectExportDialog::_update_presets() {
 		preset->update_files();
 		presets->add_item(preset_name, preset->get_platform()->get_logo());
 	}
+
+	settings_vb->set_visible(current_idx != -1);
+	empty_label->set_visible(current_idx == -1);
 
 	if (current_idx != -1) {
 		presets->select(current_idx);
@@ -243,19 +256,14 @@ void ProjectExportDialog::_update_export_all() {
 
 void ProjectExportDialog::_edit_preset(int p_index) {
 	if (p_index < 0 || p_index >= presets->get_item_count()) {
-		name->set_text("");
-		name->set_editable(false);
-		export_path->hide();
-		advanced_options->set_disabled(true);
-		runnable->set_disabled(true);
 		parameters->edit(nullptr);
 		presets->deselect_all();
 		duplicate_preset->set_disabled(true);
 		delete_preset->set_disabled(true);
-		sections->hide();
 		patches->clear();
 		export_error->hide();
 		export_templates_error->hide();
+		export_texture_format_error->hide();
 		return;
 	}
 
@@ -265,10 +273,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	updating = true;
 
 	presets->select(p_index);
-	sections->show();
-
-	name->set_editable(true);
-	export_path->show();
 	duplicate_preset->set_disabled(false);
 	delete_preset->set_disabled(false);
 	get_ok_button()->set_disabled(false);
@@ -283,9 +287,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->get_path_edit()->clear();
 	export_path->setup(extension_vector, false, true, false);
 	export_path->update_property();
-	advanced_options->set_disabled(false);
-	advanced_options->set_pressed(current->are_advanced_options_enabled());
-	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
 	if (parameters->get_edited_object() != current.ptr()) {
 		current->update_value_overrides();
@@ -298,6 +299,19 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	include_label->set_text(_get_resource_export_header(current->get_export_filter()));
 	exclude_filters->set_text(current->get_exclude_filter());
 	server_strip_message->set_visible(current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED);
+
+	bool patch_delta_encoding_enabled = current->is_patch_delta_encoding_enabled();
+	patch_delta_encoding->set_pressed(patch_delta_encoding_enabled);
+	patch_delta_zstd_level->set_editable(patch_delta_encoding_enabled);
+	patch_delta_zstd_level->set_value(current->get_patch_delta_zstd_level());
+	patch_delta_min_reduction->set_editable(patch_delta_encoding_enabled);
+	patch_delta_min_reduction->set_value(current->get_patch_delta_min_reduction() * 100);
+	patch_delta_include_filter->set_editable(patch_delta_encoding_enabled);
+	patch_delta_exclude_filter->set_editable(patch_delta_encoding_enabled);
+	if (!updating_patch_delta_filters) {
+		patch_delta_include_filter->set_text(current->get_patch_delta_include_filter());
+		patch_delta_exclude_filter->set_text(current->get_patch_delta_exclude_filter());
+	}
 
 	patches->clear();
 	TreeItem *patch_root = patches->create_item();
@@ -395,6 +409,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	enc_in_filters->set_editable(enc_pck_mode);
 	enc_ex_filters->set_editable(enc_pck_mode);
 	script_key->set_editable(enc_pck_mode);
+	show_script_key->set_disabled(!enc_pck_mode);
 	seed_input->set_editable(enc_pck_mode);
 
 	bool enc_directory_mode = current->get_enc_directory();
@@ -418,7 +433,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		script_key_error->hide();
 	}
 
-	int script_export_mode = current->get_script_export_mode();
+	int script_export_mode = int(current->get_script_export_mode());
 	script_mode->select(script_export_mode);
 
 	updating = false;
@@ -491,11 +506,13 @@ void ProjectExportDialog::_advanced_options_pressed() {
 	if (updating) {
 		return;
 	}
+	EditorSettings::get_singleton()->set_setting("_export_preset_advanced_mode", advanced_options->is_pressed());
+	EditorSettings::get_singleton()->save();
 
 	Ref<EditorExportPreset> current = get_current_preset();
-	ERR_FAIL_COND(current.is_null());
-
-	current->set_advanced_options_enabled(advanced_options->is_pressed());
+	if (current.is_valid()) {
+		current->notify_property_list_changed();
+	}
 	_update_presets();
 }
 
@@ -529,8 +546,31 @@ void ProjectExportDialog::_name_changed(const String &p_string) {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
-	current->set_name(p_string);
+	int current_index = presets->get_current();
+
+	String trimmed_name = p_string.strip_edges();
+	if (trimmed_name.is_empty()) {
+		ERR_PRINT_ED("Invalid preset name: preset name cannot be empty!");
+		name->set_text(current->get_name());
+		return;
+	}
+
+	if (EditorExport::get_singleton()->has_preset_with_name(trimmed_name, current_index)) {
+		ERR_PRINT_ED(vformat("Invalid preset name: a preset with the name '%s' already exists!", trimmed_name));
+		name->set_text(current->get_name());
+		return;
+	}
+
+	current->set_name(trimmed_name);
 	_update_presets();
+}
+
+void ProjectExportDialog::_name_editing_finished() {
+	if (updating) {
+		return;
+	}
+
+	_name_changed(name->get_text());
 }
 
 void ProjectExportDialog::set_export_path(const String &p_value) {
@@ -581,7 +621,7 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 }
 
 void ProjectExportDialog::_open_key_help_link() {
-	OS::get_singleton()->shell_open(vformat("%s/contributing/development/compiling/compiling_with_script_encryption_key.html", GODOT_VERSION_DOCS_URL));
+	OS::get_singleton()->shell_open(vformat("%s/engine_details/development/compiling/compiling_with_script_encryption_key.html", GODOT_VERSION_DOCS_URL));
 }
 
 void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
@@ -597,6 +637,10 @@ void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
 	enc_in_filters->set_editable(p_pressed);
 	enc_ex_filters->set_editable(p_pressed);
 	script_key->set_editable(p_pressed);
+	show_script_key->set_disabled(!p_pressed);
+	if (!p_pressed) {
+		show_script_key->set_pressed(false);
+	}
 
 	_update_current_preset();
 }
@@ -644,6 +688,12 @@ void ProjectExportDialog::_script_encryption_key_changed(const String &p_key) {
 	updating_script_key = false;
 }
 
+void ProjectExportDialog::_script_encryption_key_visibility_changed(bool p_visible) {
+	show_script_key->set_button_icon(get_editor_theme_icon(p_visible ? SNAME("GuiVisibilityVisible") : SNAME("GuiVisibilityHidden")));
+	show_script_key->set_tooltip_text(p_visible ? TTRC("Hide encryption key") : TTRC("Show encryption key"));
+	script_key->set_secret(!p_visible);
+}
+
 bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
 	bool is_valid = false;
 
@@ -653,7 +703,7 @@ bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
 	return is_valid;
 }
 
-void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
+void ProjectExportDialog::_script_export_mode_changed(EditorExportPreset::ScriptExportMode p_mode) {
 	if (updating) {
 		return;
 	}
@@ -702,12 +752,18 @@ void ProjectExportDialog::_duplicate_preset() {
 	if (make_runnable) {
 		preset->set_runnable(make_runnable);
 	}
-	preset->set_advanced_options_enabled(current->are_advanced_options_enabled());
 	preset->set_dedicated_server(current->is_dedicated_server());
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
 	preset->set_exclude_filter(current->get_exclude_filter());
+	preset->set_customized_files(current->get_customized_files());
+	preset->set_selected_files(current->get_selected_files());
 	preset->set_patches(current->get_patches());
+	preset->set_patch_delta_encoding_enabled(current->is_patch_delta_encoding_enabled());
+	preset->set_patch_delta_zstd_level(current->get_patch_delta_zstd_level());
+	preset->set_patch_delta_min_reduction(current->get_patch_delta_min_reduction());
+	preset->set_patch_delta_include_filter(current->get_patch_delta_include_filter());
+	preset->set_patch_delta_exclude_filter(current->get_patch_delta_exclude_filter());
 	preset->set_custom_features(current->get_custom_features());
 	preset->set_enc_in_filter(current->get_enc_in_filter());
 	preset->set_enc_ex_filter(current->get_enc_ex_filter());
@@ -737,7 +793,7 @@ void ProjectExportDialog::_delete_preset() {
 
 void ProjectExportDialog::_delete_preset_confirm() {
 	int idx = presets->get_current();
-	_edit_preset(-1);
+	_edit_preset(idx - 1);
 	export_button->set_disabled(true);
 	get_ok_button()->set_disabled(true);
 	EditorExport::get_singleton()->remove_export_preset(idx);
@@ -1052,7 +1108,14 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 
 		String path = p_dir->get_file_path(i);
 
-		file->set_icon(0, EditorNode::get_singleton()->get_class_icon(type));
+		Ref<Texture2D> icon;
+		if (!type.is_empty()) {
+			icon = EditorNode::get_singleton()->get_class_icon(type);
+		}
+		if (icon.is_null()) {
+			icon = get_editor_theme_icon(SNAME("File"));
+		}
+		file->set_icon(0, icon);
 		file->set_editable(0, true);
 		file->set_metadata(0, path);
 
@@ -1162,6 +1225,75 @@ void ProjectExportDialog::_set_file_export_mode(int p_id) {
 	current->set_file_export_mode(path, file_export_mode);
 	item->set_metadata(1, file_export_mode);
 	_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
+}
+
+void ProjectExportDialog::_patch_delta_encoding_changed(bool p_pressed) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_patch_delta_encoding_enabled(p_pressed);
+
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_patch_delta_include_filter_changed(const String &p_filter) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_patch_delta_include_filter(patch_delta_include_filter->get_text());
+
+	updating_patch_delta_filters = true;
+	_update_current_preset();
+	updating_patch_delta_filters = false;
+}
+
+void ProjectExportDialog::_patch_delta_exclude_filter_changed(const String &p_filter) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_patch_delta_exclude_filter(patch_delta_exclude_filter->get_text());
+
+	updating_patch_delta_filters = true;
+	_update_current_preset();
+	updating_patch_delta_filters = false;
+}
+
+void ProjectExportDialog::_patch_delta_zstd_level_changed(double p_value) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_patch_delta_zstd_level((int)p_value);
+
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_patch_delta_min_reduction_changed(double p_value) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_patch_delta_min_reduction(p_value / 100.0);
+
+	_update_current_preset();
 }
 
 void ProjectExportDialog::_patch_tree_button_clicked(Object *p_item, int p_column, int p_id, int p_mouse_button_index) {
@@ -1278,27 +1410,6 @@ void ProjectExportDialog::_open_export_template_manager() {
 	EditorNode::get_singleton()->open_export_template_manager();
 }
 
-void ProjectExportDialog::_validate_export_path(const String &p_path) {
-	// Disable export via OK button or Enter key if LineEdit has an empty filename
-	bool invalid_path = (p_path.get_file().get_basename().is_empty());
-
-	// Check if state change before needlessly messing with signals
-	if (invalid_path && export_project->get_ok_button()->is_disabled()) {
-		return;
-	}
-	if (!invalid_path && !export_project->get_ok_button()->is_disabled()) {
-		return;
-	}
-
-	if (invalid_path) {
-		export_project->get_ok_button()->set_disabled(true);
-		export_project->get_line_edit()->disconnect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
-	} else {
-		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
-	}
-}
-
 void ProjectExportDialog::_export_project() {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
@@ -1323,16 +1434,6 @@ void ProjectExportDialog::_export_project() {
 			export_project->set_current_file(default_filename);
 		}
 	}
-
-	// Ensure that signal is connected if previous attempt left it disconnected
-	// with _validate_export_path.
-	// FIXME: This is a hack, we should instead change EditorFileDialog to allow
-	// disabling validation by the "text_submitted" signal.
-	if (!export_project->get_line_edit()->is_connected(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted))) {
-		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
-	}
-
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	export_project->popup_file_dialog();
 }
@@ -1432,6 +1533,7 @@ void ProjectExportDialog::_bind_methods() {
 
 ProjectExportDialog::ProjectExportDialog() {
 	set_title(TTR("Export"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
@@ -1448,6 +1550,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	VBoxContainer *preset_vb = memnew(VBoxContainer);
 	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	preset_vb->set_stretch_ratio(0.35);
 	hbox->add_child(preset_vb);
 
 	Label *l = memnew(Label(TTR("Presets")));
@@ -1468,6 +1571,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	presets = memnew(ItemList);
 	presets->set_theme_type_variation("ItemListSecondary");
 	presets->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	presets->set_custom_minimum_size(Size2(0, 200 * EDSCALE));
 	SET_DRAG_FORWARDING_GCD(presets, ProjectExportDialog);
 	mc->add_child(presets);
 	presets->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_edit_preset));
@@ -1484,13 +1588,31 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	// Preset settings.
 
-	VBoxContainer *settings_vb = memnew(VBoxContainer);
+	settings_vb = memnew(VBoxContainer);
+	settings_vb->hide();
 	settings_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(settings_vb);
 
+	PanelContainer *panel = memnew(PanelContainer);
+	panel->set_theme_type_variation(SNAME("PanelForeground"));
+	settings_vb->add_child(panel);
+
+	VBoxContainer *top_settings = memnew(VBoxContainer);
+	top_settings->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	panel->add_child(top_settings);
+
+	HBoxContainer *name_hbox = memnew(HBoxContainer);
+	Label *name_label = memnew(Label);
+	name_label->set_theme_type_variation("HeaderSmall");
+	name_label->set_text(TTR("Name:"));
+	name_hbox->add_child(name_label);
 	name = memnew(LineEdit);
-	settings_vb->add_margin_child(TTR("Name:"), name);
-	name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_name_changed));
+	name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectExportDialog::_name_changed));
+	name->connect(SceneStringName(focus_exited), callable_mp(this, &ProjectExportDialog::_name_editing_finished));
+	name_hbox->add_child(name);
+
+	top_settings->add_child(name_hbox);
 
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
@@ -1500,16 +1622,17 @@ ProjectExportDialog::ProjectExportDialog() {
 	advanced_options = memnew(CheckButton);
 	advanced_options->set_text(TTR("Advanced Options"));
 	advanced_options->set_tooltip_text(TTR("If checked, the advanced options will be shown."));
+	advanced_options->set_pressed(EDITOR_GET("_export_preset_advanced_mode"));
 	advanced_options->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_advanced_options_pressed));
 
 	HBoxContainer *preset_configs_container = memnew(HBoxContainer);
 	preset_configs_container->add_spacer(true);
 	preset_configs_container->add_child(advanced_options);
 	preset_configs_container->add_child(runnable);
-	settings_vb->add_child(preset_configs_container);
+	top_settings->add_child(preset_configs_container);
 
 	export_path = memnew(EditorPropertyPath);
-	settings_vb->add_child(export_path);
+	top_settings->add_child(export_path);
 	export_path->set_label(TTR("Export Path"));
 	export_path->set_object_and_property(this, "export_path");
 	export_path->set_save_mode();
@@ -1616,11 +1739,58 @@ ProjectExportDialog::ProjectExportDialog() {
 			exclude_filters);
 	exclude_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
-	// Patch packages.
+	// Patching.
+
+	ScrollContainer *patch_scroll_container = memnew(ScrollContainer);
+	patch_scroll_container->set_name(TTRC("Patching"));
+	patch_scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	sections->add_child(patch_scroll_container);
 
 	VBoxContainer *patch_vb = memnew(VBoxContainer);
-	sections->add_child(patch_vb);
-	patch_vb->set_name(TTR("Patches"));
+	patch_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	patch_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patch_scroll_container->add_child(patch_vb);
+
+	patch_delta_encoding = memnew(CheckButton);
+	patch_delta_encoding->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_patch_delta_encoding_changed));
+	patch_delta_encoding->set_text(TTRC("Enable Delta Encoding"));
+	patch_delta_encoding->set_tooltip_text(TTRC("If checked, any change to a file already present in the base packs will be exported as the difference between the old file and the new file.\n"
+												"Enabling this comes at the cost of longer export times as well as longer load times for patched resources."));
+	patch_vb->add_child(patch_delta_encoding);
+
+	patch_delta_zstd_level = memnew(SpinBox);
+	patch_delta_zstd_level->set_min(ZSTD_minCLevel());
+	patch_delta_zstd_level->set_max(ZSTD_maxCLevel());
+	patch_delta_zstd_level->set_step(1);
+	patch_delta_zstd_level->set_tooltip_text(
+			vformat(TTR("The Zstandard compression level to use when generating delta-encoded patches.\n"
+						"Higher positive levels will reduce patch sizes, at the cost of longer export time, but do not affect the time it takes to apply patches.\n"
+						"Negative levels will reduce the time it takes to apply patches, at the cost of worse compression.\n"
+						"Levels above 19 require more memory both during export and when applying patches, usually for very little benefit.\n"
+						"Level 0 will cause Zstandard to use its default compression level, which is currently level %d."),
+					ZSTD_CLEVEL_DEFAULT));
+	patch_delta_zstd_level->connect(SceneStringName(value_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_zstd_level_changed));
+	patch_vb->add_margin_child(TTRC("Delta Encoding Compression Level"), patch_delta_zstd_level);
+
+	patch_delta_min_reduction = memnew(SpinBox);
+	patch_delta_min_reduction->set_min(0.0);
+	patch_delta_min_reduction->set_max(100.0);
+	patch_delta_min_reduction->set_step(1.0);
+	patch_delta_min_reduction->set_suffix("%");
+	patch_delta_min_reduction->set_tooltip_text(TTRC("How much smaller, when compared to the new file, a delta-encoded patch needs to be for it to be exported.\n"
+													 "If the patch is not at least this much smaller, the new file will be exported as-is."));
+	patch_delta_min_reduction->connect(SceneStringName(value_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_min_reduction_changed));
+	patch_vb->add_margin_child(TTRC("Delta Encoding Minimum Size Reduction"), patch_delta_min_reduction);
+
+	patch_delta_include_filter = memnew(LineEdit);
+	patch_delta_include_filter->set_accessibility_name(TTRC("Delta Encoding Include Filters"));
+	patch_delta_include_filter->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_include_filter_changed));
+	patch_vb->add_margin_child(TTRC("Filters to include files/folders from being delta-encoded\n(comma-separated, e.g: *.gdc, scripts/*)"), patch_delta_include_filter);
+
+	patch_delta_exclude_filter = memnew(LineEdit);
+	patch_delta_exclude_filter->set_accessibility_name(TTRC("Delta Encoding Exclude Filters"));
+	patch_delta_exclude_filter->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_exclude_filter_changed));
+	patch_vb->add_margin_child(TTRC("Filters to exclude files/folders from being delta-encoded\n(comma-separated, e.g: *.ctex, textures/*)"), patch_delta_exclude_filter);
 
 	patches = memnew(Tree);
 	patches->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1699,13 +1869,24 @@ ProjectExportDialog::ProjectExportDialog() {
 			enc_ex_filters);
 
 	script_key = memnew(LineEdit);
+	script_key->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	script_key->set_accessibility_name(TTRC("Encryption Key (256-bits as hexadecimal):"));
 	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
+	script_key->set_secret(true);
+
+	show_script_key = memnew(Button);
+	show_script_key->set_toggle_mode(true);
+	show_script_key->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_script_encryption_key_visibility_changed));
+
+	HBoxContainer *encryption_hb = memnew(HBoxContainer);
+	encryption_hb->add_child(script_key);
+	encryption_hb->add_child(show_script_key);
+
 	script_key_error = memnew(Label);
 	script_key_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	script_key_error->set_text(String::utf8("•  ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
 	script_key_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
-	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hexadecimal):"), script_key);
+	sec_vb->add_margin_child(TTRC("Encryption Key (256-bits as hexadecimal):"), encryption_hb);
 	sec_vb->add_child(script_key_error);
 	sections->add_child(sec_scroll_container);
 
@@ -1742,15 +1923,22 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->connect("tab_changed", callable_mp(this, &ProjectExportDialog::_tab_changed));
 
 	// Disable by default.
-	name->set_editable(false);
-	export_path->hide();
-	advanced_options->set_disabled(true);
-	runnable->set_disabled(true);
 	duplicate_preset->set_disabled(true);
 	delete_preset->set_disabled(true);
 	script_key_error->hide();
-	sections->hide();
 	parameters->edit(nullptr);
+
+	// Label shown when no presets are present.
+
+	empty_label = memnew(Label(TTRC("No presets found.\nCreate one so that its parameters can be edited here.")));
+	empty_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	empty_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	empty_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	empty_label->set_clip_text(true); // Necessary to avoid overexpanding the dialog vertically.
+	empty_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	empty_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	empty_label->hide();
+	hbox->add_child(empty_label);
 
 	// Deletion dialog.
 
@@ -1769,7 +1957,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->set_tooltip_text(TTR("Export the project as a playable build (Godot executable and project data) for the selected preset."));
 	export_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_project));
-	// Disable initially before we select a valid preset
+	// Disable initially before we select a valid preset.
 	export_button->set_disabled(true);
 
 	export_all_dialog = memnew(ConfirmationDialog);
@@ -1845,7 +2033,6 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(export_project);
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
-	export_project->get_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_validate_export_path));
 
 	export_project->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
 	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));

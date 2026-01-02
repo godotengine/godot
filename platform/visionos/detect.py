@@ -24,9 +24,10 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
+        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
         # APPLE_TOOLCHAIN_PATH Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
-        (("APPLE_TOOLCHAIN_PATH", "IOS_TOOLCHAIN_PATH"), "Path to the Apple toolchain", ""),
-        ("VISIONOS_SDK_PATH", "Path to the visionOS SDK", ""),
+        ("APPLE_TOOLCHAIN_PATH", "Path to the Apple toolchain", ""),
+        (("APPLE_SDK_PATH", "VISIONOS_SDK_PATH"), "Path to the visionOS SDK", ""),
         ("apple_target_triple", "Triple for corresponding target Apple platform toolchain", ""),
         BoolVariable("simulator", "Build for Simulator", False),
         BoolVariable("generate_bundle", "Generate an APP bundle after building visionOS/macOS binaries", False),
@@ -102,15 +103,16 @@ def configure(env: "SConsEnvironment"):
     ## Compile flags
 
     if env["simulator"]:
-        detect_darwin_sdk_path("visionossimulator", env)
-        env.Append(ASFLAGS=["-mtargetos=xros2.0-simulator"])
-        env.Append(CCFLAGS=["-mtargetos=xros2.0-simulator"])
+        env["APPLE_PLATFORM"] = "visionossimulator"
+        env.Append(ASFLAGS=["-mtargetos=xros26.0-simulator"])
+        env.Append(CCFLAGS=["-mtargetos=xros26.0-simulator"])
         env.Append(CPPDEFINES=["VISIONOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
-        detect_darwin_sdk_path("visionos", env)
-        env.Append(ASFLAGS=["-mtargetos=xros2.0"])
-        env.Append(CCFLAGS=["-mtargetos=xros2.0"])
+        env["APPLE_PLATFORM"] = "visionos"
+        env.Append(ASFLAGS=["-mtargetos=xros26.0"])
+        env.Append(CCFLAGS=["-mtargetos=xros26.0"])
+    detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     if env["arch"] == "arm64":
         env.Append(
@@ -118,7 +120,7 @@ def configure(env: "SConsEnvironment"):
                 "-fobjc-arc -arch arm64 -fmessage-length=0"
                 " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
                 " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies"
-                " -isysroot $VISIONOS_SDK_PATH".split()
+                " -isysroot $APPLE_SDK_PATH".split()
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
@@ -128,8 +130,8 @@ def configure(env: "SConsEnvironment"):
 
     env.Prepend(
         CPPPATH=[
-            "$VISIONOS_SDK_PATH/usr/include",
-            "$VISIONOS_SDK_PATH/System/Library/Frameworks/AudioUnit.framework/Headers",
+            "$APPLE_SDK_PATH/usr/include",
+            "$APPLE_SDK_PATH/System/Library/Frameworks/AudioUnit.framework/Headers",
         ]
     )
 
@@ -148,9 +150,9 @@ def configure(env: "SConsEnvironment"):
         env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
         env.Prepend(
             CPPPATH=[
-                "$VISIONOS_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
-                "$VISIONOS_SDK_PATH/System/Library/Frameworks/MetalFX.framework/Headers",
-                "$VISIONOS_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/MetalFX.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
             ]
         )
         env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])

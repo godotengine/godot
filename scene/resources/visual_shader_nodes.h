@@ -1896,6 +1896,7 @@ public:
 
 	virtual int get_input_port_count() const override;
 	virtual String get_input_port_name(int p_port) const override;
+	virtual PortType get_input_port_type(int p_port) const override;
 
 	virtual int get_output_port_count() const override;
 	virtual String get_output_port_name(int p_port) const override;

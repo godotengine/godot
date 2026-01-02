@@ -19,6 +19,9 @@
 			If [code]true[/code], the user can resize the GraphElement.
 			[b]Note:[/b] Dragging the handle will only emit the [signal resize_request] and [signal resize_end] signals, the GraphElement needs to be resized manually.
 		</member>
+		<member name="scaling_menus" type="bool" setter="set_scaling_menus" getter="is_scaling_menus" default="false">
+			If [code]true[/code], [PopupMenu]s that are descendants of the GraphElement are scaled with the [GraphEdit] zoom.
+		</member>
 		<member name="selectable" type="bool" setter="set_selectable" getter="is_selectable" default="true">
 			If [code]true[/code], the user can select the GraphElement.
 		</member>

@@ -40,11 +40,11 @@
 #include "core/os/os.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
-#include "servers/audio_server.h"
-#include "servers/display_server.h"
+#include "servers/audio/audio_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
@@ -312,7 +312,9 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool exclusive = false;
-		bool context_created = false;
+		bool rendering_context_window_created = false;
+		bool gl_native_window_created = false;
+		bool gl_angle_window_created = false;
 		bool mpass = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;
@@ -341,6 +343,7 @@ class DisplayServerWindows : public DisplayServer {
 		Size2 min_size;
 		Size2 max_size;
 		int width = 0, height = 0;
+		int width_with_decorations = 0, height_with_decorations = 0;
 
 		Size2 window_rect;
 		Point2 last_pos;
@@ -374,6 +377,8 @@ class DisplayServerWindows : public DisplayServer {
 		bool initialized = false;
 
 		HWND parent_hwnd = 0;
+
+		bool no_redirection_bitmap = false;
 	};
 
 #ifdef SDL_ENABLED
@@ -384,7 +389,18 @@ class DisplayServerWindows : public DisplayServer {
 	uint64_t time_since_popup = 0;
 	Ref<Image> icon;
 
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd);
+	Error _create_window(WindowID p_window_id, WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
+	void _destroy_window(WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
+
+#ifdef RD_ENABLED
+	Error _create_rendering_context_window(WindowID p_window_id, const String &p_rendering_driver);
+	void _destroy_rendering_context_window(WindowID p_window_id);
+#endif
+
+#ifdef GLES3_ENABLED
+	Error _create_gl_window(WindowID p_window_id);
+#endif
+
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	RBMap<WindowID, WindowData> windows;
 
@@ -443,7 +459,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<int64_t, Vector2> pointer_last_pos;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, bool p_no_redirection_bitmap, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
@@ -490,6 +506,8 @@ class DisplayServerWindows : public DisplayServer {
 	LRESULT _handle_early_window_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	Point2i _get_screens_origin() const;
 
+	Vector2i _get_screen_expand_offset(int p_screen) const;
+
 	enum class WinKeyModifierMask {
 		ALT_GR = (1 << 1),
 		SHIFT = (1 << 2),
@@ -530,7 +548,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;

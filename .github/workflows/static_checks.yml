@@ -1,6 +1,7 @@
 name: 📊 Static Checks
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   static-checks:
@@ -34,13 +35,3 @@ jobs:
         uses: pre-commit/action@v3.0.1
         with:
           extra_args: --files ${{ env.CHANGED_FILES }}
-
-      - name: Class reference schema checks
-        run: |
-          sudo apt-get update
-          sudo apt-get install libxml2-utils
-          xmllint --quiet --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
-
-      - name: Run C compiler on `gdextension_interface.h`
-        run: |
-          gcc -c core/extension/gdextension_interface.h

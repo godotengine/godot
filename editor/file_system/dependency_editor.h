@@ -30,19 +30,22 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/tree.h"
 
 class EditorFileDialog;
 class EditorFileSystemDirectory;
+class ItemList;
+class PopupMenu;
+class Tree;
+class TreeItem;
+class VBoxContainer;
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
 
 	Tree *tree = nullptr;
 	Button *fixdeps = nullptr;
+	Label *warning_label = nullptr;
 
 	EditorFileDialog *search = nullptr;
 
@@ -59,6 +62,9 @@ class DependencyEditor : public AcceptDialog {
 
 	void _update_file();
 
+protected:
+	void _notification(int p_what);
+
 public:
 	void edit(const String &p_path);
 	DependencyEditor();
@@ -67,6 +73,9 @@ public:
 class DependencyEditorOwners : public AcceptDialog {
 	GDCLASS(DependencyEditorOwners, AcceptDialog);
 
+	Label *owners_count = nullptr;
+	Label *empty = nullptr;
+	MarginContainer *owners_mc = nullptr;
 	ItemList *owners = nullptr;
 	PopupMenu *file_options = nullptr;
 	String editing;
@@ -135,17 +144,28 @@ public:
 class DependencyErrorDialog : public ConfirmationDialog {
 	GDCLASS(DependencyErrorDialog, ConfirmationDialog);
 
-private:
+	StringName icon_name_fail;
+	StringName icon_name_check;
+
 	String for_file;
-	Mode mode;
-	Button *fdep = nullptr;
-	Label *text = nullptr;
+
+	TreeItem *replacing_item = nullptr;
+	bool errors_fixed = false;
+
 	Tree *files = nullptr;
+
+	EditorFileDialog *replacement_file_dialog = nullptr;
+	DependencyEditor *deps_editor = nullptr;
+
 	void ok_pressed() override;
-	void custom_action(const String &) override;
+
+	void _on_files_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
+	void _on_replacement_file_selected(const String &p_path);
+	void _check_for_resolved();
 
 public:
-	void show(const String &p_for_file, const Vector<String> &report);
+	void show(const String &p_for_file, const HashMap<String, HashSet<String>> &p_report);
+
 	DependencyErrorDialog();
 };
 

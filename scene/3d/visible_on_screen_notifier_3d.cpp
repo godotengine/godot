@@ -98,7 +98,7 @@ VisibleOnScreenNotifier3D::~VisibleOnScreenNotifier3D() {
 	RID base_old = get_base();
 	set_base(RID());
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(base_old);
+	RS::get_singleton()->free_rid(base_old);
 }
 
 //////////////////////////////////////

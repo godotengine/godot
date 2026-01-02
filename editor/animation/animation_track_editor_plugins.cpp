@@ -97,7 +97,7 @@ bool AnimationTrackEditColor::is_key_selectable_by_distance() const {
 	return false;
 }
 
-void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
+void AnimationTrackEditColor::draw_key_link(int p_index_from, int p_index_to, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	int fh = (font->get_height(font_size) * 0.8);
@@ -116,15 +116,15 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 	}
 
 	Vector<Color> color_samples;
-	color_samples.append(get_animation()->track_get_key_value(get_track(), p_index));
+	color_samples.append(get_animation()->track_get_key_value(get_track(), p_index_from));
 
 	if (get_animation()->track_get_type(get_track()) == Animation::TYPE_VALUE) {
 		if (get_animation()->track_get_interpolation_type(get_track()) != Animation::INTERPOLATION_NEAREST &&
 				(get_animation()->value_track_get_update_mode(get_track()) == Animation::UPDATE_CONTINUOUS ||
 						get_animation()->value_track_get_update_mode(get_track()) == Animation::UPDATE_CAPTURE) &&
-				!Math::is_zero_approx(get_animation()->track_get_key_transition(get_track(), p_index))) {
-			float start_time = get_animation()->track_get_key_time(get_track(), p_index);
-			float end_time = get_animation()->track_get_key_time(get_track(), p_index + 1);
+				!Math::is_zero_approx(get_animation()->track_get_key_transition(get_track(), p_index_from))) {
+			float start_time = get_animation()->track_get_key_time(get_track(), p_index_from);
+			float end_time = get_animation()->track_get_key_time(get_track(), p_index_to);
 
 			Color color_next = get_animation()->value_track_interpolate(get_track(), end_time);
 
@@ -142,7 +142,7 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 			color_samples.append(color_samples[0]);
 		}
 	} else {
-		color_samples.append(get_animation()->track_get_key_value(get_track(), p_index + 1));
+		color_samples.append(get_animation()->track_get_key_value(get_track(), p_index_to));
 	}
 
 	for (int i = 0; i < color_samples.size() - 1; i++) {
@@ -747,13 +747,13 @@ void AnimationTrackEditVolumeDB::draw_fg(int p_clip_left, int p_clip_right) {
 	draw_line(Vector2(p_clip_left, db0), Vector2(p_clip_right, db0), Color(1, 1, 1, 0.3));
 }
 
-void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
+void AnimationTrackEditVolumeDB::draw_key_link(int p_index_from, int p_index_to, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	if (p_x > p_clip_right || p_next_x < p_clip_left) {
 		return;
 	}
 
-	float db = get_animation()->track_get_key_value(get_track(), p_index);
-	float db_n = get_animation()->track_get_key_value(get_track(), p_index + 1);
+	float db = get_animation()->track_get_key_value(get_track(), p_index_from);
+	float db_n = get_animation()->track_get_key_value(get_track(), p_index_to);
 
 	db = CLAMP(db, -60, 24);
 	db_n = CLAMP(db_n, -60, 24);

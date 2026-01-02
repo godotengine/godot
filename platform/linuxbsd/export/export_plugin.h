@@ -89,5 +89,5 @@ public:
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual void cleanup() override;
 
-	EditorExportPlatformLinuxBSD();
+	virtual void initialize() override;
 };

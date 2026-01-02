@@ -80,7 +80,7 @@ String GLTFPhysicsShape::get_shape_type() const {
 	return shape_type;
 }
 
-void GLTFPhysicsShape::set_shape_type(String p_shape_type) {
+void GLTFPhysicsShape::set_shape_type(const String &p_shape_type) {
 	shape_type = p_shape_type;
 }
 
@@ -88,7 +88,7 @@ Vector3 GLTFPhysicsShape::get_size() const {
 	return size;
 }
 
-void GLTFPhysicsShape::set_size(Vector3 p_size) {
+void GLTFPhysicsShape::set_size(const Vector3 &p_size) {
 	size = p_size;
 }
 
@@ -128,7 +128,7 @@ Ref<ImporterMesh> GLTFPhysicsShape::get_importer_mesh() const {
 	return importer_mesh;
 }
 
-void GLTFPhysicsShape::set_importer_mesh(Ref<ImporterMesh> p_importer_mesh) {
+void GLTFPhysicsShape::set_importer_mesh(const Ref<ImporterMesh> &p_importer_mesh) {
 	importer_mesh = p_importer_mesh;
 }
 
@@ -267,7 +267,7 @@ Ref<Shape3D> GLTFPhysicsShape::to_resource(bool p_cache_shapes) {
 	return _shape_cache;
 }
 
-Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary p_dictionary) {
+Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary &p_dictionary) {
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFPhysicsShape>(), "Failed to parse GLTFPhysicsShape, missing required field 'type'.");
 	Ref<GLTFPhysicsShape> gltf_shape;
 	gltf_shape.instantiate();

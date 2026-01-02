@@ -1,0 +1,5 @@
+GH-98972
+--------
+Validate extension JSON: Error: Field 'classes/TranslationServer/methods/standardize_locale/arguments': size changed value in new API, from 1 to 2.
+
+Optional argument added. Compatibility method registered.
