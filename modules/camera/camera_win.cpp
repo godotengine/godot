@@ -637,6 +637,10 @@ bool CameraFeedWindows::set_format(int p_index, const Dictionary &p_parameters) 
 	selected_format = p_index;
 	parameters = p_parameters.duplicate();
 
+	// Reset base dimensions to force texture recreation on next activation.
+	base_width = 0;
+	base_height = 0;
+
 	return true;
 }
 
@@ -704,7 +708,15 @@ void CameraWindows::update_feeds() {
 }
 
 void CameraWindows::remove_all_feeds() {
-	// remove existing devices.
+	// Deactivate all feeds before removing them.
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedWindows> feed = feeds[i];
+		if (feed.is_valid() && feed->is_active()) {
+			feed->deactivate_feed();
+		}
+	}
+
+	// Remove existing devices.
 	for (int i = feeds.size() - 1; i >= 0; i--) {
 		remove_feed(feeds[i]);
 	}
