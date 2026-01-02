@@ -134,8 +134,6 @@ class ExtendGDScriptParser : public GDScriptParser {
 
 	const LSP::DocumentSymbol *search_symbol_defined_at_line(int p_line, const LSP::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;
 
-	Array member_completions;
-
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
