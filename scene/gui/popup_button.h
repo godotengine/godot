@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  menu_button.h                                                         */
+/*  popup_button.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,42 +30,48 @@
 
 #pragma once
 
-#include "scene/gui/popup_button.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/property_list_helper.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "scene/gui/button.h"
+#include "scene/gui/popup.h"
 
-class MenuButton : public PopupButton {
-	GDCLASS(MenuButton, PopupButton);
+class PopupButton : public Button {
+	GDCLASS(PopupButton, Button);
 
-	bool disable_shortcuts = false;
-	PopupMenu *menu = nullptr;
+	bool switch_on_hover = false;
 
-	static inline PropertyListHelper base_property_helper;
-	PropertyListHelper property_helper;
+	Popup *popup = nullptr;
+
+	void _setup_popup();
+
+	void _popup_visibility_changed();
 
 protected:
-	void _notification(int p_what);
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
-	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
-	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
+	void _notification(int p_notification);
 	static void _bind_methods();
 
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
-	virtual void switched_on_hover(PopupButton *p_to) override;
-	virtual void about_to_popup() override;
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void switched_on_hover(PopupButton *p_to) {}
+
+	virtual Popup *create_popup();
+	virtual void about_to_popup();
+	virtual void setup_popup_position();
+	virtual void post_popup();
+
+	void ensure_popup();
+
+	GDVIRTUAL0R(Popup *, _create_popup)
+	GDVIRTUAL0(_about_to_popup)
+	GDVIRTUAL0(_setup_popup_position)
+	GDVIRTUAL0(_post_popup)
 
 public:
-	PopupMenu *get_popup() const;
-	void set_disable_shortcuts(bool p_disabled);
+	virtual void pressed() override;
 
-	void set_item_count(int p_count);
-	int get_item_count() const;
+	Popup *get_generic_popup();
+	void show_popup();
 
-#ifdef TOOLS_ENABLED
-	PackedStringArray get_configuration_warnings() const override;
-#endif
+	void set_switch_on_hover(bool p_enabled) { switch_on_hover = p_enabled; }
+	bool is_switch_on_hover() { return switch_on_hover; }
 
-	MenuButton();
+	PopupButton();
 };
