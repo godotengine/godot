@@ -37,7 +37,7 @@
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
 
-struct CapabilityInfo {
+struct FormatInfo {
 	int width;
 	int height;
 };
@@ -46,7 +46,7 @@ struct CameraInfo {
 	int index;
 	String device_id;
 	String label;
-	CapabilityInfo capability;
+	Vector<FormatInfo> formats;
 };
 
 using CameraDriverWebGetCamerasCallback = void (*)(void *p_context, const Vector<CameraInfo> &p_camera_info);
@@ -55,7 +55,7 @@ class CameraDriverWeb {
 private:
 	static CameraDriverWeb *singleton;
 	static Array _camera_info_key;
-	static int _get_max_or_direct(const Variant &p_val);
+	static int _get_int_value(const Variant &p_val);
 	WASM_EXPORT static void _on_get_cameras_callback(void *context, void *callback, const char *json_ptr);
 
 public:
