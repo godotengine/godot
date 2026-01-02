@@ -209,6 +209,7 @@ public:
 	AVCaptureDevice *get_device() const;
 
 	CameraFeedMacOS();
+	~CameraFeedMacOS();
 
 	void set_device(AVCaptureDevice *p_device);
 
@@ -223,6 +224,12 @@ AVCaptureDevice *CameraFeedMacOS::get_device() const {
 CameraFeedMacOS::CameraFeedMacOS() {
 	device = nullptr;
 	capture_session = nullptr;
+}
+
+CameraFeedMacOS::~CameraFeedMacOS() {
+	if (is_active()) {
+		deactivate_feed();
+	}
 }
 
 void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
@@ -339,7 +346,7 @@ void CameraMacOS::update_feeds() {
 	}
 #endif
 
-	// remove devices that are gone..
+	// Deactivate feeds that are gone before removing them.
 	for (int i = feeds.size() - 1; i >= 0; i--) {
 		Ref<CameraFeedMacOS> feed = (Ref<CameraFeedMacOS>)feeds[i];
 		if (feed.is_null()) {
@@ -347,7 +354,9 @@ void CameraMacOS::update_feeds() {
 		}
 
 		if (![devices containsObject:feed->get_device()]) {
-			// remove it from our array, this will also destroy it ;)
+			if (feed->is_active()) {
+				feed->deactivate_feed();
+			}
 			remove_feed(feed);
 		};
 	};
