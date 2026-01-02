@@ -2880,14 +2880,20 @@ int TileMapLayer::get_cell_alternative_tile(const Vector2i &p_coords) const {
 }
 
 TileData *TileMapLayer::get_cell_tile_data(const Vector2i &p_coords) const {
-	int source_id = get_cell_source_id(p_coords);
-	if (source_id == TileSet::INVALID_SOURCE) {
+	// Single lookup instead of three separate find() calls.
+	HashMap<Vector2i, CellData>::ConstIterator E = tile_map_layer_data.find(p_coords);
+	if (!E) {
 		return nullptr;
 	}
 
-	Ref<TileSetAtlasSource> source = tile_set->get_source(source_id);
+	const TileMapCell &cell = E->value.cell;
+	if (cell.source_id == TileSet::INVALID_SOURCE) {
+		return nullptr;
+	}
+
+	Ref<TileSetAtlasSource> source = tile_set->get_source(cell.source_id);
 	if (source.is_valid()) {
-		return source->get_tile_data(get_cell_atlas_coords(p_coords), get_cell_alternative_tile(p_coords));
+		return source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
 	}
 
 	return nullptr;
