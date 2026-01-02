@@ -35,7 +35,11 @@
 #endif
 
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+#ifdef __cplusplus
 #include <cstdlib> // alloca
+#else
+#include <cstdlib.h> // via mbedtls this gets compiled as C code
+#endif
 // FreeBSD and OpenBSD use pthread_set_name_np, while other platforms,
 // include NetBSD, use pthread_setname_np. NetBSD's version however requires
 // a different format, we handle this directly in thread_posix.
