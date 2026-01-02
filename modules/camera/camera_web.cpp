@@ -183,6 +183,15 @@ CameraFeedWeb::~CameraFeedWeb() {
 
 void CameraWeb::_on_get_cameras_callback(void *p_context, const Vector<CameraInfo> &p_camera_info) {
 	CameraWeb *server = static_cast<CameraWeb *>(p_context);
+
+	// Deactivate all feeds before removing them.
+	for (int i = 0; i < server->feeds.size(); i++) {
+		Ref<CameraFeedWeb> feed = server->feeds[i];
+		if (feed.is_valid() && feed->is_active()) {
+			feed->deactivate_feed();
+		}
+	}
+
 	for (int i = server->feeds.size() - 1; i >= 0; i--) {
 		server->remove_feed(server->feeds[i]);
 	}
