@@ -757,6 +757,14 @@ void CameraAndroid::update_feeds() {
 	camera_status_t c_status = ACameraManager_getCameraIdList(cameraManager, &cameraIds);
 	ERR_FAIL_COND(c_status != ACAMERA_OK);
 
+	// Deactivate all feeds before removing to ensure proper cleanup.
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedAndroid> feed = feeds[i];
+		if (feed.is_valid() && feed->is_active()) {
+			feed->deactivate_feed();
+		}
+	}
+
 	// remove existing devices
 	for (int i = feeds.size() - 1; i >= 0; i--) {
 		remove_feed(feeds[i]);
@@ -809,6 +817,16 @@ void CameraAndroid::update_feeds() {
 }
 
 void CameraAndroid::remove_all_feeds() {
+	// Deactivate all feeds before removing to ensure proper cleanup.
+	// This prevents "Device is closed but session is not notified" warnings
+	// that can occur if feeds are destroyed while still active.
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedAndroid> feed = feeds[i];
+		if (feed.is_valid() && feed->is_active()) {
+			feed->deactivate_feed();
+		}
+	}
+
 	// remove existing devices
 	for (int i = feeds.size() - 1; i >= 0; i--) {
 		remove_feed(feeds[i]);
