@@ -242,6 +242,12 @@ void EditorScenePostImportPlugin::_bind_methods() {
 
 /////////////////////////////////////////////////////////
 
+void ResourceImporterScene::_fit_primitive_to_mesh() {
+	MeshInstance3D *mesh_node = cast_to<MeshInstance3D>(SceneImportSettingsDialog::get_singleton()->get_selected_node());
+	SceneImportSettingsDialog::get_singleton()->request_generate_collider();
+	SceneImportSettingsDialog::get_singleton()->regenerate_collisions(mesh_node, true);
+}
+
 const String ResourceImporterScene::material_extension[3] = { ".tres", ".res", ".material" };
 
 String ResourceImporterScene::get_importer_name() const {
@@ -1678,9 +1684,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						shapes = collision_map[m];
 					} else {
 						shapes = get_collision_shapes(
-								m,
+								m->get_mesh(),
 								node_settings,
-								p_applied_root_scale);
+								p_applied_root_scale,
+								false);
 					}
 
 					if (shapes.size()) {
@@ -2165,6 +2172,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "primitive/radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), 1.0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), Vector3()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), Vector3()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::CALLABLE, "primitive/fit_to_mesh", PROPERTY_HINT_TOOL_BUTTON, "Fit To Mesh,KeepAspect", PROPERTY_USAGE_EDITOR), _fit_mesh_callable));
 
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/occluder", PROPERTY_HINT_ENUM, "Disabled,Mesh + Occluder,Occluder Only", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "occluder/simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01", PROPERTY_USAGE_DEFAULT), 0.1f));
@@ -2295,6 +2303,13 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 				}
 
 				return false;
+			}
+
+			if (p_option == "primitive/fit_to_mesh") {
+				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
+				return generate_physics &&
+						physics_shape >= SHAPE_TYPE_BOX &&
+						physics_shape < SHAPE_TYPE_AUTOMATIC;
 			}
 
 			if (p_option == "primitive/position" || p_option == "primitive/rotation") {
@@ -3380,6 +3395,7 @@ void ResourceImporterScene::show_advanced_options(const String &p_path) {
 
 ResourceImporterScene::ResourceImporterScene(const String &p_scene_import_type) {
 	_scene_import_type = p_scene_import_type;
+	_fit_mesh_callable = callable_mp(this, &ResourceImporterScene::_fit_primitive_to_mesh);
 }
 
 void ResourceImporterScene::add_scene_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority) {
