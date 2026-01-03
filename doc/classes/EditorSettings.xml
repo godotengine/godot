@@ -909,7 +909,7 @@
 			To check if these buttons are swapped at runtime, use [method DisplayServer.get_swap_cancel_ok].
 		</member>
 		<member name="interface/editor/automatically_open_screenshots" type="bool" setter="" getter="">
-			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
+			If [code]true[/code], automatically opens the folder containing the screenshot in the system file manager after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
 		</member>
 		<member name="interface/editor/bottom_dock_tab_style" type="int" setter="" getter="">
 			Tab style of editor docks located at the bottom.
