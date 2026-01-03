@@ -73,6 +73,7 @@ class SceneState : public RefCounted {
 	struct DeferredNodePathProperties {
 		ObjectID base;
 		StringName property;
+		String property_hint_string;
 		Variant value;
 	};
 
@@ -104,6 +105,8 @@ class SceneState : public RefCounted {
 	int _find_base_scene_node_remap_key(int p_idx) const;
 
 	Node *_recover_node_path_index(Node *p_base, int p_idx) const;
+
+	void _get_class_from_hint_string(const String &p_hint_string, StringName &r_class_name, Ref<Script> &r_script) const;
 
 #ifdef TOOLS_ENABLED
 public:

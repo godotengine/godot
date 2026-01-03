@@ -366,6 +366,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 				Dictionary missing_resource_properties;
 
+				List<PropertyInfo> p_list;
+				node->get_property_list(&p_list);
+
 				for (int j = 0; j < nprop_count; j++) {
 					bool valid;
 
@@ -389,6 +392,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						dnp.value = props[nprops[j].value];
 						dnp.base = node->get_instance_id();
 						dnp.property = snames[name_idx];
+						for (const PropertyInfo &E : p_list) {
+							if (E.name == snames[name_idx]) {
+								dnp.property_hint_string = E.hint_string;
+								break;
+							}
+						}
 						deferred_node_paths.push_back(dnp);
 						continue;
 					}
@@ -419,9 +428,17 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							callable_mp((Object *)node, &Object::remove_meta).call_deferred(SceneStringName(_custom_type_script));
 						} else {
 							node->set_script(props[nprops[j].value]);
+
+							// Script can modify property list, so get the updated list.
+							p_list.clear();
+							node->get_property_list(&p_list);
 						}
 #else
 						node->set_script(props[nprops[j].value]);
+
+						// Script can modify property list, so get the updated list.
+						p_list.clear();
+						node->get_property_list(&p_list);
 #endif // TOOLS_ENABLED
 
 						//restore old state for new script, if exists
@@ -457,6 +474,26 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								} else {
 									set_array = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
 								}
+							} else {
+								String hint_string;
+								for (const PropertyInfo &E : p_list) {
+									if (E.name == snames[nprops[j].name]) {
+										hint_string = E.hint_string;
+										break;
+									}
+								}
+
+								Variant::Type subtype;
+								PropertyHint subtype_hint;
+								String subtype_hint_string;
+								PropertyUtils::parse_array_hint_string(hint_string, subtype, subtype_hint, &subtype_hint_string);
+
+								StringName subtype_class_name;
+								Ref<Script> subtype_script;
+								if (subtype == Variant::OBJECT) {
+									_get_class_from_hint_string(subtype_hint_string, subtype_class_name, subtype_script);
+								}
+								set_array = Array(set_array, subtype, subtype_class_name, subtype_script);
 							}
 
 							value = setup_resources_in_array(set_array, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
@@ -474,6 +511,36 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								} else {
 									set_dict = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(), get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
 								}
+							} else {
+								String hint_string;
+								for (const PropertyInfo &E : p_list) {
+									if (E.name == snames[nprops[j].name]) {
+										hint_string = E.hint_string;
+										break;
+									}
+								}
+
+								Variant::Type key_subtype;
+								PropertyHint key_subtype_hint;
+								String key_subtype_hint_string;
+								Variant::Type value_subtype;
+								PropertyHint value_subtype_hint;
+								String value_subtype_hint_string;
+								PropertyUtils::parse_dictionary_hint_string(hint_string, key_subtype, key_subtype_hint, value_subtype, value_subtype_hint, &key_subtype_hint_string, &value_subtype_hint_string);
+
+								StringName key_subtype_class_name;
+								Ref<Script> key_subtype_script;
+								if (key_subtype == Variant::OBJECT) {
+									_get_class_from_hint_string(key_subtype_hint_string, key_subtype_class_name, key_subtype_script);
+								}
+
+								StringName value_subtype_class_name;
+								Ref<Script> value_subtype_script;
+								if (value_subtype == Variant::OBJECT) {
+									_get_class_from_hint_string(value_subtype_hint_string, value_subtype_class_name, value_subtype_script);
+								}
+
+								set_dict = Dictionary(set_dict, key_subtype, key_subtype_class_name, key_subtype_script, value_subtype, value_subtype_class_name, value_subtype_script);
 							}
 
 							value = setup_resources_in_dictionary(set_dict, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
@@ -600,9 +667,26 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			Array paths = dnp.value;
 
 			bool valid;
-			Array array = base->get(dnp.property, &valid);
+			Variant get_value = base->get(dnp.property, &valid);
+
 			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
-			array = array.duplicate();
+			Array array;
+			if (get_value.get_type() == Variant::ARRAY) {
+				array = get_value;
+				array = array.duplicate();
+			} else {
+				Variant::Type subtype;
+				PropertyHint subtype_hint;
+				String subtype_hint_string;
+				PropertyUtils::parse_array_hint_string(dnp.property_hint_string, subtype, subtype_hint, &subtype_hint_string);
+
+				StringName subtype_class_name;
+				Ref<Script> subtype_script;
+				if (subtype == Variant::OBJECT) {
+					_get_class_from_hint_string(subtype_hint_string, subtype_class_name, subtype_script);
+				}
+				array.set_typed(subtype, subtype_class_name, subtype_script);
+			}
 
 			array.resize(paths.size());
 			for (int i = 0; i < array.size(); i++) {
@@ -613,9 +697,36 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			Dictionary paths = dnp.value;
 
 			bool valid;
-			Dictionary dict = base->get(dnp.property, &valid);
+			Variant get_value = base->get(dnp.property, &valid);
 			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
-			dict = dict.duplicate();
+			Dictionary dict;
+			if (get_value.get_type() == Variant::DICTIONARY) {
+				dict = get_value;
+				dict = dict.duplicate();
+			} else {
+				Variant::Type key_subtype;
+				PropertyHint key_subtype_hint;
+				String key_subtype_hint_string;
+				Variant::Type value_subtype;
+				PropertyHint value_subtype_hint;
+				String value_subtype_hint_string;
+				PropertyUtils::parse_dictionary_hint_string(dnp.property_hint_string, key_subtype, key_subtype_hint, value_subtype, value_subtype_hint, &key_subtype_hint_string, &value_subtype_hint_string);
+
+				StringName key_subtype_class_name;
+				Ref<Script> key_subtype_script;
+				if (key_subtype == Variant::OBJECT) {
+					_get_class_from_hint_string(key_subtype_hint_string, key_subtype_class_name, key_subtype_script);
+				}
+
+				StringName value_subtype_class_name;
+				Ref<Script> value_subtype_script;
+				if (value_subtype == Variant::OBJECT) {
+					_get_class_from_hint_string(value_subtype_hint_string, value_subtype_class_name, value_subtype_script);
+				}
+
+				dict.set_typed(key_subtype, key_subtype_class_name, key_subtype_script, value_subtype, value_subtype_class_name, value_subtype_script);
+			}
+
 			bool convert_key = dict.get_typed_key_builtin() == Variant::OBJECT &&
 					ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
 			bool convert_value = dict.get_typed_value_builtin() == Variant::OBJECT &&
@@ -901,80 +1012,54 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				value = missing_resource_properties[E.name];
 			}
 		} else if (E.type == Variant::ARRAY && E.hint == PROPERTY_HINT_TYPE_STRING) {
-			int hint_subtype_separator = E.hint_string.find_char(':');
-			if (hint_subtype_separator >= 0) {
-				String subtype_string = E.hint_string.substr(0, hint_subtype_separator);
-				int slash_pos = subtype_string.find_char('/');
-				PropertyHint subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
-				if (slash_pos >= 0) {
-					subtype_hint = PropertyHint(subtype_string.get_slicec('/', 1).to_int());
-					subtype_string = subtype_string.substr(0, slash_pos);
-				}
-				Variant::Type subtype = Variant::Type(subtype_string.to_int());
-
-				if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
-					use_deferred_node_path_bit = true;
-					Array array = value;
-					Array new_array;
-					for (int i = 0; i < array.size(); i++) {
-						Variant elem = array[i];
-						if (elem.get_type() == Variant::OBJECT) {
-							if (Node *n = Object::cast_to<Node>(elem)) {
-								new_array.push_back(p_node->get_path_to(n));
-								continue;
-							}
+			Variant::Type subtype;
+			PropertyHint subtype_hint;
+			PropertyUtils::parse_array_hint_string(E.hint_string, subtype, subtype_hint);
+			if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
+				use_deferred_node_path_bit = true;
+				Array array = value;
+				Array new_array;
+				for (int i = 0; i < array.size(); i++) {
+					Variant elem = array[i];
+					if (elem.get_type() == Variant::OBJECT) {
+						if (Node *n = Object::cast_to<Node>(elem)) {
+							new_array.push_back(p_node->get_path_to(n));
+							continue;
 						}
-						new_array.push_back(elem);
 					}
-					value = new_array;
+					new_array.push_back(elem);
 				}
+				value = new_array;
 			}
 		} else if (E.type == Variant::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
-			int key_value_separator = E.hint_string.find_char(';');
-			if (key_value_separator >= 0) {
-				int key_subtype_separator = E.hint_string.find_char(':');
-				String key_subtype_string = E.hint_string.substr(0, key_subtype_separator);
-				int key_slash_pos = key_subtype_string.find_char('/');
-				PropertyHint key_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
-				if (key_slash_pos >= 0) {
-					key_subtype_hint = PropertyHint(key_subtype_string.get_slicec('/', 1).to_int());
-					key_subtype_string = key_subtype_string.substr(0, key_slash_pos);
-				}
-				Variant::Type key_subtype = Variant::Type(key_subtype_string.to_int());
-				bool convert_key = key_subtype == Variant::OBJECT && key_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+			Variant::Type key_subtype;
+			PropertyHint key_subtype_hint;
+			Variant::Type value_subtype;
+			PropertyHint value_subtype_hint;
+			PropertyUtils::parse_dictionary_hint_string(E.hint_string, key_subtype, key_subtype_hint, value_subtype, value_subtype_hint);
 
-				int value_subtype_separator = E.hint_string.find_char(':', key_value_separator) - (key_value_separator + 1);
-				String value_subtype_string = E.hint_string.substr(key_value_separator + 1, value_subtype_separator);
-				int value_slash_pos = value_subtype_string.find_char('/');
-				PropertyHint value_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
-				if (value_slash_pos >= 0) {
-					value_subtype_hint = PropertyHint(value_subtype_string.get_slicec('/', 1).to_int());
-					value_subtype_string = value_subtype_string.substr(0, value_slash_pos);
-				}
-				Variant::Type value_subtype = Variant::Type(value_subtype_string.to_int());
-				bool convert_value = value_subtype == Variant::OBJECT && value_subtype_hint == PROPERTY_HINT_NODE_TYPE;
-
-				if (convert_key || convert_value) {
-					use_deferred_node_path_bit = true;
-					Dictionary dict = value;
-					Dictionary new_dict;
-					for (const KeyValue<Variant, Variant> &kv : dict) {
-						Variant new_key = kv.key;
-						if (convert_key && new_key.get_type() == Variant::OBJECT) {
-							if (Node *n = Object::cast_to<Node>(new_key)) {
-								new_key = p_node->get_path_to(n);
-							}
+			bool convert_key = key_subtype == Variant::OBJECT && key_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+			bool convert_value = value_subtype == Variant::OBJECT && value_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+			if (convert_key || convert_value) {
+				use_deferred_node_path_bit = true;
+				Dictionary dict = value;
+				Dictionary new_dict;
+				for (const KeyValue<Variant, Variant> &kv : dict) {
+					Variant new_key = kv.key;
+					if (convert_key && new_key.get_type() == Variant::OBJECT) {
+						if (Node *n = Object::cast_to<Node>(new_key)) {
+							new_key = p_node->get_path_to(n);
 						}
-						Variant new_value = kv.value;
-						if (convert_value && new_value.get_type() == Variant::OBJECT) {
-							if (Node *n = Object::cast_to<Node>(new_value)) {
-								new_value = p_node->get_path_to(n);
-							}
-						}
-						new_dict[new_key] = new_value;
 					}
-					value = new_dict;
+					Variant new_value = kv.value;
+					if (convert_value && new_value.get_type() == Variant::OBJECT) {
+						if (Node *n = Object::cast_to<Node>(new_value)) {
+							new_value = p_node->get_path_to(n);
+						}
+					}
+					new_dict[new_key] = new_value;
 				}
+				value = new_dict;
 			}
 		}
 
@@ -1981,6 +2066,15 @@ Node *SceneState::_recover_node_path_index(Node *p_base, int p_idx) const {
 
 	NodePath recovered_path(full_path, false);
 	return p_base->get_node_or_null(recovered_path);
+}
+
+void SceneState::_get_class_from_hint_string(const String &p_hint_string, StringName &r_class_name, Ref<Script> &r_script) const {
+	if (ClassDB::class_exists(p_hint_string)) {
+		r_class_name = p_hint_string;
+	} else if (ScriptServer::is_global_class(p_hint_string)) {
+		r_class_name = ScriptServer::get_global_class_native_base(p_hint_string);
+		r_script = ResourceLoader::load(ScriptServer::get_global_class_path(p_hint_string), "Script");
+	}
 }
 
 int32_t SceneState::get_node_unique_id(int p_idx) const {
