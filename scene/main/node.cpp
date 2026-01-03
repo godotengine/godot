@@ -2527,17 +2527,17 @@ int Node::get_persistent_group_count() const {
 }
 
 void Node::print_tree_pretty() {
-	print_line(_get_tree_string_pretty("", true));
+	print_line_rich(_get_tree_string_pretty("", true));
 }
 
 void Node::print_tree() {
-	print_line(_get_tree_string(this));
+	print_line_rich(_get_tree_string(this));
 }
 
 String Node::_get_tree_string_pretty(const String &p_prefix, bool p_last) {
 	String new_prefix = p_last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
 	_update_children_cache();
-	String return_tree = p_prefix + new_prefix + String(get_name()) + "\n";
+	String return_tree = vformat("[color=#808080]%s%s[/color][b]%s[/b]: [color=#808080]%s[/color]\n", p_prefix, new_prefix, get_name(), this->to_string());
 	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
 		new_prefix = p_last ? String::utf8("   ") : String::utf8(" ┃ ");
 		return_tree += data.children_cache[i]->_get_tree_string_pretty(p_prefix + new_prefix, i == data.children_cache.size() - 1);
@@ -2551,7 +2551,7 @@ String Node::get_tree_string_pretty() {
 
 String Node::_get_tree_string(const Node *p_node) {
 	_update_children_cache();
-	String return_tree = String(p_node->get_path_to(this)) + "\n";
+	String return_tree = vformat("[b]%s[/b]: [color=#808080]%s[/color]\n", p_node->get_path_to(this), this->to_string());
 	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
 		return_tree += data.children_cache[i]->_get_tree_string(p_node);
 	}
