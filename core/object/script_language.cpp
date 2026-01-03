@@ -37,6 +37,10 @@
 #include "core/io/resource_loader.h"
 #include "core/templates/sort_array.h"
 
+#if TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif
+
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
 bool ScriptServer::languages_ready = false;
@@ -817,6 +821,20 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 				values[n] = p_values[n];
 			}
 		}
+
+#if TOOLS_ENABLED
+		if (values.has(n) && E.type == Variant::OBJECT) {
+			if (!E.hint_string.is_empty()) {
+				Object *obj = Object::cast_to<Object>(values[n]);
+				if (obj) {
+					if (!EditorNode::get_singleton()->is_object_of_custom_type(obj, E.hint_string) && !obj->is_class(E.hint_string)) {
+						values[n] = Variant();
+						WARN_PRINT(vformat("Exported variable type mismatch (expected \"%s\", got \"%s\"). Removing the node from variable \"%s\".", E.hint_string, obj->get_class(), n));
+					}
+				}
+			}
+		}
+#endif
 	}
 
 	properties = p_properties;
