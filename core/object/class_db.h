@@ -170,7 +170,8 @@ public:
 
 	template <typename T>
 	static Object *creator(bool p_notify_postinitialize) {
-		Object *ret = new ("") T;
+		// Cannot use memnew here because memnew calls _postinitialize automatically.
+		Object *ret = new (DefaultAllocator{}) T;
 		ret->_initialize();
 		if (p_notify_postinitialize) {
 			ret->_postinitialize();
