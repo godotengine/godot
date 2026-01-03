@@ -1980,6 +1980,47 @@ vec4 textureArray_bicubic(sampler2DArray tex, vec3 uv, vec2 texture_size) {
 #endif //LIGHTMAP_BICUBIC_FILTER
 #endif // RENDER_MOTION_VECTORS
 
+#ifdef ALPHA_HASH_USED
+
+float hash_2d(vec2 p) {
+	return fract(1.0e4 * sin(17.0 * p.x + 0.1 * p.y) *
+			(0.1 + abs(sin(13.0 * p.y + p.x))));
+}
+
+float hash_3d(vec3 p) {
+	return hash_2d(vec2(hash_2d(p.xy), p.z));
+}
+
+float compute_alpha_hash_threshold(vec3 pos, float hash_scale) {
+	vec3 dx = dFdx(pos);
+	vec3 dy = dFdy(pos);
+	float delta_max_sqr = max(length(dx), length(dy));
+	float pix_scale = 1.0 / (hash_scale * delta_max_sqr);
+
+	vec2 pix_scales =
+			vec2(exp2(floor(log2(pix_scale))), exp2(ceil(log2(pix_scale))));
+
+	vec2 a_thresh = vec2(hash_3d(floor(pix_scales.x * pos.xyz)),
+			hash_3d(floor(pix_scales.y * pos.xyz)));
+
+	float lerp_factor = fract(log2(pix_scale));
+
+	float a_interp = (1.0 - lerp_factor) * a_thresh.x + lerp_factor * a_thresh.y;
+
+	float min_lerp = min(lerp_factor, 1.0 - lerp_factor);
+
+	vec3 cases = vec3(a_interp * a_interp / (2.0 * min_lerp * (1.0 - min_lerp)),
+			(a_interp - 0.5 * min_lerp) / (1.0 - min_lerp),
+			1.0 - ((1.0 - a_interp) * (1.0 - a_interp) / (2.0 * min_lerp * (1.0 - min_lerp))));
+
+	float alpha_hash_threshold =
+			(a_interp < (1.0 - min_lerp)) ? ((a_interp < min_lerp) ? cases.x : cases.y) : cases.z;
+
+	return clamp(alpha_hash_threshold, 0.00001, 1.0);
+}
+
+#endif // ALPHA_HASH_USED
+
 void main() {
 #ifndef RENDER_MOTION_VECTORS
 	//lay out everything, whatever is unused is optimized away anyway
@@ -2119,8 +2160,8 @@ void main() {
 
 #ifndef USE_SHADOW_TO_OPACITY
 
-#if defined(ALPHA_SCISSOR_USED)
-#ifdef RENDER_MATERIAL
+#ifdef ALPHA_SCISSOR_USED
+#ifdef MODE_RENDER_MATERIAL
 	if (alpha < alpha_scissor_threshold) {
 		alpha = 0.0;
 	} else {
@@ -2130,18 +2171,37 @@ void main() {
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
-	alpha = 1.0;
-#endif // RENDER_MATERIAL
-#else
-#ifdef MODE_RENDER_DEPTH
-#ifdef USE_OPAQUE_PREPASS
+#endif // MODE_RENDER_MATERIAL
+#endif // ALPHA_SCISSOR_USED
 
+// alpha hash can be used in unison with alpha antialiasing
+#ifdef ALPHA_HASH_USED
+	vec3 object_pos = (inverse(model_matrix) * scene_data.inv_view_matrix * vec4(vertex, 1.0)).xyz;
+#ifdef MODE_RENDER_MATERIAL
+	if (alpha < compute_alpha_hash_threshold(object_pos, alpha_hash_scale)) {
+		alpha = 0.0;
+	} else {
+		alpha = 1.0;
+	}
+#else
+	if (alpha < compute_alpha_hash_threshold(object_pos, alpha_hash_scale)) {
+		discard;
+	}
+#endif // MODE_RENDER_MATERIAL
+#endif // ALPHA_HASH_USED
+
+// If we are not edge antialiasing, we need to remove the output alpha channel from scissor and hash
+#if (defined(ALPHA_SCISSOR_USED) || defined(ALPHA_HASH_USED)) && !defined(MODE_RENDER_MATERIAL)
+	alpha = 1.0;
+#endif
+
+#ifdef MODE_RENDER_DEPTH
+#if defined(USE_OPAQUE_PREPASS)
 	if (alpha < opaque_prepass_threshold) {
 		discard;
 	}
 #endif // USE_OPAQUE_PREPASS
 #endif // MODE_RENDER_DEPTH
-#endif // !ALPHA_SCISSOR_USED
 
 #endif // !USE_SHADOW_TO_OPACITY
 
