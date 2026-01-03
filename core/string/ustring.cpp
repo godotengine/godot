@@ -30,6 +30,10 @@
 
 #include "ustring.h"
 
+#include <cctype>
+#include <cstdint>
+#include <algorithm>
+
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Array);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
@@ -4939,44 +4943,152 @@ String String::validate_filename() const {
 	return name;
 }
 
+static inline bool _ascii_is_digit(char c) {
+	return c >= '0' && c <= '9';
+}
+
+static inline bool _ascii_is_hex(char c) {
+	unsigned char uc = static_cast<unsigned char>(std::tolower(static_cast<unsigned char>(c)));
+	return (uc >= '0' && uc <= '9') || (uc >= 'a' && uc <= 'f');
+}
+
 bool String::is_valid_ip_address() const {
-	if (find_char(':') >= 0) {
-		Vector<String> ip = split(":");
-		for (int i = 0; i < ip.size(); i++) {
-			const String &n = ip[i];
-			if (n.is_empty()) {
-				continue;
+	auto is_valid_ipv4 = [&](const String &s)->bool {
+		if (s.is_empty()) return false;
+		Vector<String> parts = s.split(".");
+		if (parts.size() != 4) return false;
+		for (int i = 0; i < parts.size(); ++i) {
+			const String &p = parts[i];
+			if (p.is_empty()) return false;
+			if (p.find(" ") != -1) return false;
+			for (int k = 0; k < p.length(); ++k) {
+				uint32_t ch = p[k];
+				if (ch > 127) return false;
+				char cc = static_cast<char>(ch);
+				if (!_ascii_is_digit(cc)) return false;
 			}
-			if (n.is_valid_hex_number(false)) {
-				int64_t nint = n.hex_to_int();
-				if (nint < 0 || nint > 0xffff) {
-					return false;
-				}
-				continue;
+			if (p.length() > 1 && p[0] == '0') return false;
+			int val = p.to_int();
+			if (val < 0 || val > 255) return false;
+		}
+		return true;
+	};
+
+	auto is_valid_ipv6 = [&](const String &addr)->bool {
+		if (addr.is_empty()) return false;
+		if (addr.find(":::") != -1) return false;
+		if (addr.length() > 1) {
+			if (addr[0] == ':' && !addr.begins_with("::")) return false;
+			if (addr[addr.length() - 1] == ':' && !addr.ends_with("::")) return false;
+		}
+
+		Vector<String> parts_double = addr.split("::");
+		if (parts_double.size() > 2) return false;
+
+		String left_str = parts_double[0];
+		String right_str = (parts_double.size() == 2) ? parts_double[1] : String();
+
+		Vector<String> left_parts;
+		if (!left_str.is_empty()) left_parts = left_str.split(":");
+		Vector<String> right_parts;
+		if (!right_str.is_empty()) right_parts = right_str.split(":");
+
+		String ipv4_suffix;
+		if (!right_parts.is_empty()) {
+			const String &last = right_parts[right_parts.size() - 1];
+			if (last.find(".") != -1) ipv4_suffix = last;
+		} else if (parts_double.size() == 1 && !left_parts.is_empty()) {
+			const String &last = left_parts[left_parts.size() - 1];
+			if (last.find(".") != -1) ipv4_suffix = last;
+		}
+
+		if (!ipv4_suffix.is_empty()) {
+			if (!is_valid_ipv4(ipv4_suffix)) return false;
+		}
+
+		for (int i = 0; i < left_parts.size(); ++i) {
+			if (left_parts[i].is_empty()) return false;
+		}
+		for (int i = 0; i < right_parts.size(); ++i) {
+			if (i == right_parts.size() - 1 && !ipv4_suffix.is_empty() && right_parts[i] == ipv4_suffix) continue;
+			if (right_parts[i].is_empty()) return false;
+		}
+
+		int hex_count = left_parts.size();
+		if (!right_parts.is_empty()) {
+			if (!ipv4_suffix.is_empty() && right_parts[right_parts.size() - 1] == ipv4_suffix)
+				hex_count += right_parts.size() - 1;
+			else
+				hex_count += right_parts.size();
+		}
+
+		int expected_groups = ipv4_suffix.is_empty() ? 8 : 6;
+
+		Vector<String> full_hex_parts;
+		if (parts_double.size() == 2) {
+			if (hex_count >= expected_groups) return false;
+			int zeros_to_insert = expected_groups - hex_count;
+			for (int i = 0; i < left_parts.size(); ++i) full_hex_parts.push_back(left_parts[i]);
+			for (int z = 0; z < zeros_to_insert; ++z) full_hex_parts.push_back(String("0"));
+			for (int i = 0; i < right_parts.size(); ++i) {
+				if (i == right_parts.size() - 1 && !ipv4_suffix.is_empty() && right_parts[i] == ipv4_suffix) break;
+				full_hex_parts.push_back(right_parts[i]);
 			}
-			if (!n.is_valid_ip_address()) {
-				return false;
+		} else {
+			if (hex_count != expected_groups) return false;
+			for (int i = 0; i < left_parts.size(); ++i) full_hex_parts.push_back(left_parts[i]);
+			for (int i = 0; i < right_parts.size(); ++i) {
+				if (i == right_parts.size() - 1 && !ipv4_suffix.is_empty() && right_parts[i] == ipv4_suffix) break;
+				full_hex_parts.push_back(right_parts[i]);
 			}
 		}
 
-	} else {
-		Vector<String> ip = split(".");
-		if (ip.size() != 4) {
-			return false;
-		}
-		for (int i = 0; i < ip.size(); i++) {
-			const String &n = ip[i];
-			if (!n.is_valid_int()) {
-				return false;
-			}
-			int val = n.to_int();
-			if (val < 0 || val > 255) {
-				return false;
+		for (int i = 0; i < full_hex_parts.size(); ++i) {
+			const String &g = full_hex_parts[i];
+			if (g.length() < 1 || g.length() > 4) return false;
+			for (int k = 0; k < g.length(); ++k) {
+				uint32_t ch = g[k];
+				if (ch > 127) return false;
+				char cc = static_cast<char>(ch);
+				if (!_ascii_is_hex(cc)) return false;
 			}
 		}
+
+		return true;
+	};
+
+	String s = *this;
+	if (s.is_empty()) return false;
+
+	int slash_idx = s.find("/");
+	if (slash_idx == -1) {
+		if (s.find(".") != -1) return is_valid_ipv4(s);
+		if (s.find_char(':') >= 0) return is_valid_ipv6(s);
+		return false;
 	}
 
-	return true;
+	Vector<String> sp = s.split("/");
+	if (sp.size() != 2) return false;
+	String left = sp[0];
+	String right = sp[1];
+	if (right.is_empty()) return false;
+	if (right.find(" ") != -1) return false;
+	for (int i = 0; i < right.length(); ++i) {
+		uint32_t ch = right[i];
+		if (ch > 127) return false;
+		char cc = static_cast<char>(ch);
+		if (!_ascii_is_digit(cc)) return false;
+	}
+	int prefix = right.to_int();
+
+	if (left.find(".") != -1) {
+		if (!is_valid_ipv4(left)) return false;
+		return (prefix >= 0 && prefix <= 32);
+	} else if (left.find_char(':') >= 0) {
+		if (!is_valid_ipv6(left)) return false;
+		return (prefix >= 0 && prefix <= 128);
+	}
+	return false;
 }
 
 bool String::is_resource_file() const {
