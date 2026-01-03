@@ -7,6 +7,7 @@
 		A container that displays the contents of underlying [SubViewport] child nodes. It uses the combined size of the [SubViewport]s as minimum size, unless [member stretch] is enabled.
 		[b]Note:[/b] Changing a [SubViewportContainer]'s [member Control.scale] will cause its contents to appear distorted. To change its visual size without causing distortion, adjust the node's margins instead (if it's not already in a container).
 		[b]Note:[/b] The [SubViewportContainer] forwards mouse-enter and mouse-exit notifications to its sub-viewports.
+		[b]Note:[/b] The SubViewportContainer will automatically modify sub-viewports' [member SubViewport.render_target_update_mode] and [member Viewport.handle_input_locally], unless [member adjust_viewport_properties] is disabled.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,6 +22,10 @@
 	</methods>
 	<members>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="1" />
+		<member name="adjust_viewport_properties" type="bool" setter="set_adjust_viewport_properties" getter="is_adjust_viewport_properties_enabled" default="true">
+			If [code]true[/code], sub-viewports' [member SubViewport.render_target_update_mode] will be automatically set based on container's visibility. [member Viewport.handle_input_locally] will be set to [code]false[/code]. This matches the default intended [SubViewportContainer] usage, but you can disable this property for custom behavior.
+			The property takes effect when [SubViewportContainer] enters the scene tree or changes visibility (including inside the editor). Setting this property from [code]false[/code] to [code]true[/code] will take effect immediately.
+		</member>
 		<member name="mouse_target" type="bool" setter="set_mouse_target" getter="is_mouse_target_enabled" default="false">
 			Configure, if either the [SubViewportContainer] or alternatively the [Control] nodes of its [SubViewport] children should be available as targets of mouse-related functionalities, like identifying the drop target in drag-and-drop operations or cursor shape of hovered [Control] node.
 			If [code]false[/code], the [Control] nodes inside its [SubViewport] children are considered as targets.

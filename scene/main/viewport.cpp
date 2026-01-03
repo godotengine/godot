@@ -5598,12 +5598,14 @@ void SubViewport::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "size") {
-		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
-		if (parent_svc && parent_svc->is_stretch_enabled()) {
-			p_property.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY;
-		} else {
-			p_property.usage = PROPERTY_USAGE_DEFAULT;
+	SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
+	if (parent_svc) {
+		if (parent_svc->is_stretch_enabled() && p_property.name == "size") {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+		}
+
+		if (parent_svc->is_adjust_viewport_properties_enabled() && (p_property.name == "render_target_update_mode" || p_property.name == "handle_input_locally")) {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 }
