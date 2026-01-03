@@ -2326,16 +2326,6 @@ void ColorPickerPopupPanel::_input_from_window(const Ref<InputEvent> &p_event) {
 
 /////////////////
 
-void ColorPickerButton::_about_to_popup() {
-	if (!get_tree()->get_root()->is_embedding_subwindows()) {
-		get_viewport()->set_disable_input(true);
-	}
-	set_pressed(true);
-	if (picker) {
-		picker->set_old_color(color);
-	}
-}
-
 void ColorPickerButton::_color_changed(const Color &p_color) {
 	color = p_color;
 	queue_accessibility_update();
@@ -2357,23 +2347,39 @@ void ColorPickerButton::_modal_closed() {
 	}
 }
 
-void ColorPickerButton::pressed() {
-	_update_picker();
+Popup *ColorPickerButton::create_popup() {
+	popup_panel = memnew(ColorPickerPopupPanel);
+	popup_panel->set_wrap_controls(true);
+	add_child(popup_panel, false, INTERNAL_MODE_FRONT);
+	popup_panel->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));
+	popup_panel->connect("tree_exiting", callable_mp(this, &ColorPickerButton::_modal_closed));
 
-	// Checking if the popup was open before, so we can keep it closed instead of reopening it.
-	// Popups get closed when it's clicked outside of them.
-	if (popup_was_open) {
-		// Reset popup_was_open value.
-		popup_was_open = popup->is_visible();
-		return;
+	picker = memnew(ColorPicker);
+	picker->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	picker->set_pick_color(color);
+	picker->set_edit_alpha(edit_alpha);
+	picker->set_edit_intensity(edit_intensity);
+	picker->set_display_old_color(true);
+	popup_panel->add_child(picker);
+	picker->connect(SceneStringName(minimum_size_changed), callable_mp((Window *)popup_panel, &Window::reset_size));
+	picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
+
+	emit_signal(SNAME("picker_created"));
+	return popup_panel;
+}
+
+void ColorPickerButton::about_to_popup() {
+	if (!get_tree()->get_root()->is_embedding_subwindows()) {
+		get_viewport()->set_disable_input(true);
 	}
-
-	Size2 minsize = popup->get_contents_minimum_size();
-	float viewport_height = get_viewport_rect().size.y;
-
-	popup->reset_size();
+	picker->set_old_color(color);
 	picker->_update_presets();
 	picker->_update_recent_presets();
+}
+
+void ColorPickerButton::setup_popup_position() {
+	Size2 minsize = popup_panel->get_contents_minimum_size();
+	float viewport_height = get_viewport_rect().size.y;
 
 	// Determine in which direction to show the popup. By default popup horizontally centered below the button.
 	// But if the popup doesn't fit below and the button is in the bottom half of the viewport, show above.
@@ -2384,26 +2390,15 @@ void ColorPickerButton::pressed() {
 
 	float h_offset = (get_size().x - minsize.x) / 2;
 	float v_offset = show_above ? -minsize.y : get_size().y;
-	popup->set_position(get_screen_position() + Vector2(h_offset, v_offset));
-	popup->popup();
+	popup_panel->set_position(get_screen_position() + Vector2(h_offset, v_offset));
+}
+
+void ColorPickerButton::post_popup() {
 	if (!picker->is_hex_visible() && picker->get_picker_shape() != ColorPicker::SHAPE_NONE) {
 		callable_mp(picker, &ColorPicker::set_focus_on_picker_shape).call_deferred();
 	} else if (DisplayServer::get_singleton()->has_hardware_keyboard()) {
 		picker->set_focus_on_line_edit();
 	}
-}
-
-void ColorPickerButton::gui_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
-
-	Ref<InputEventMouseButton> mouse_button = p_event;
-	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo();
-	bool mouse_left_pressed = mouse_button.is_valid() && mouse_button->get_button_index() == MouseButton::LEFT && mouse_button->is_pressed();
-	if (mouse_left_pressed || ui_accept) {
-		popup_was_open = popup && popup->is_visible();
-	}
-
-	BaseButton::gui_input(p_event);
 }
 
 void ColorPickerButton::_notification(int p_what) {
@@ -2425,18 +2420,6 @@ void ColorPickerButton::_notification(int p_what) {
 			if (color.r > 1 || color.g > 1 || color.b > 1) {
 				// Draw an indicator to denote that the color is "overbright" and can't be displayed accurately in the preview
 				draw_texture(theme_cache.overbright_indicator, theme_cache.normal_style->get_offset());
-			}
-		} break;
-
-		case NOTIFICATION_WM_CLOSE_REQUEST: {
-			if (popup) {
-				popup->hide();
-			}
-		} break;
-
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (popup && !is_visible_in_tree()) {
-				popup->hide();
 			}
 		} break;
 	}
@@ -2487,34 +2470,13 @@ bool ColorPickerButton::is_editing_intensity() const {
 }
 
 ColorPicker *ColorPickerButton::get_picker() {
-	_update_picker();
+	ensure_popup();
 	return picker;
 }
 
 PopupPanel *ColorPickerButton::get_popup() {
-	_update_picker();
-	return popup;
-}
-
-void ColorPickerButton::_update_picker() {
-	if (!picker) {
-		popup = memnew(ColorPickerPopupPanel);
-		popup->set_wrap_controls(true);
-		picker = memnew(ColorPicker);
-		picker->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-		popup->add_child(picker);
-		add_child(popup, false, INTERNAL_MODE_FRONT);
-		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
-		popup->connect("about_to_popup", callable_mp(this, &ColorPickerButton::_about_to_popup));
-		popup->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));
-		popup->connect("tree_exiting", callable_mp(this, &ColorPickerButton::_modal_closed));
-		picker->connect(SceneStringName(minimum_size_changed), callable_mp((Window *)popup, &Window::reset_size));
-		picker->set_pick_color(color);
-		picker->set_edit_alpha(edit_alpha);
-		picker->set_edit_intensity(edit_intensity);
-		picker->set_display_old_color(true);
-		emit_signal(SNAME("picker_created"));
-	}
+	ensure_popup();
+	return popup_panel;
 }
 
 void ColorPickerButton::_bind_methods() {
@@ -2526,11 +2488,11 @@ void ColorPickerButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPickerButton::is_editing_alpha);
 	ClassDB::bind_method(D_METHOD("set_edit_intensity", "show"), &ColorPickerButton::set_edit_intensity);
 	ClassDB::bind_method(D_METHOD("is_editing_intensity"), &ColorPickerButton::is_editing_intensity);
-	ClassDB::bind_method(D_METHOD("_about_to_popup"), &ColorPickerButton::_about_to_popup);
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("popup_closed"));
 	ADD_SIGNAL(MethodInfo("picker_created"));
+
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_intensity"), "set_edit_intensity", "is_editing_intensity");
@@ -2538,11 +2500,6 @@ void ColorPickerButton::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ColorPickerButton, normal_style, "normal");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ColorPickerButton, background_icon, "bg");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, ColorPickerButton, overbright_indicator, "overbright_indicator", "ColorPicker");
-}
-
-ColorPickerButton::ColorPickerButton(const String &p_text) :
-		Button(p_text) {
-	set_toggle_mode(true);
 }
 
 /////////////////

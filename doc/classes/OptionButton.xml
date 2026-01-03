@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptionButton" inherits="Button" keywords="select, dropdown" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OptionButton" inherits="PopupButton" keywords="select, dropdown" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A button that brings up a dropdown with selectable options when pressed.
 	</brief_description>
@@ -220,15 +220,8 @@
 				Sets the tooltip of the item at index [param idx].
 			</description>
 		</method>
-		<method name="show_popup">
-			<return type="void" />
-			<description>
-				Adjusts popup position and sizing for the [OptionButton], then shows the [PopupMenu]. Prefer this over using [code]get_popup().popup()[/code].
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" overrides="BaseButton" enum="BaseButton.ActionMode" default="0" />
 		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" overrides="Button" enum="HorizontalAlignment" default="0" />
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
 			If [code]true[/code], the currently selected item can be selected again.
@@ -243,7 +236,6 @@
 		<member name="selected" type="int" setter="_select_int" getter="get_selected" default="-1">
 			The index of the currently selected item, or [code]-1[/code] if no item is selected.
 		</member>
-		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>
 	<signals>
 		<signal name="item_focused">

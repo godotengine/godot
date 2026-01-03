@@ -30,15 +30,16 @@
 
 #pragma once
 
-#include "scene/gui/button.h"
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/popup_button.h"
 #include "scene/property_list_helper.h"
 
-class OptionButton : public Button {
-	GDCLASS(OptionButton, Button);
+class PopupMenu;
+
+class OptionButton : public PopupButton {
+	GDCLASS(OptionButton, PopupButton);
 
 	bool disable_shortcuts = false;
-	PopupMenu *popup = nullptr;
+	PopupMenu *menu = nullptr;
 	int current = -1;
 	bool fit_to_longest_item = true;
 	Vector2 _cached_size;
@@ -74,8 +75,6 @@ class OptionButton : public Button {
 	void _refresh_size_cache();
 	void _dummy_setter() {} // Stub for PropertyListHelper (_set() doesn't use it).
 
-	virtual void pressed() override;
-
 protected:
 	Size2 get_minimum_size() const override;
 	virtual void _queue_update_size_cache() override;
@@ -91,6 +90,7 @@ protected:
 	static void _bind_methods();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+	virtual void about_to_popup() override;
 
 public:
 	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
@@ -141,7 +141,6 @@ public:
 	void remove_item(int p_idx);
 
 	PopupMenu *get_popup() const;
-	void show_popup();
 
 	void set_disable_shortcuts(bool p_disabled);
 
@@ -149,6 +148,5 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 #endif
 
-	OptionButton(const String &p_text = String());
-	~OptionButton();
+	OptionButton();
 };
