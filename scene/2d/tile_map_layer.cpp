@@ -243,9 +243,9 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 	// Check if anything changed that might change the quadrant shape.
 	// If so, recreate everything.
-	bool quadrant_shape_changed = dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ENABLED] || dirty.flags[DIRTY_FLAGS_TILE_SET] ||
-			(is_y_sort_enabled() && (dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN] || dirty.flags[DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED] || dirty.flags[DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM])) ||
-			(!is_y_sort_enabled() && dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE]);
+	bool quadrant_shape_changed = dirty.flags[DIRTY_FLAGS_LAYER_AXIS_SORT_ENABLED] || dirty.flags[DIRTY_FLAGS_TILE_SET] ||
+			(is_axis_sort_enabled() && (dirty.flags[DIRTY_FLAGS_LAYER_AXIS_SORT_ORIGIN] || dirty.flags[DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED] || dirty.flags[DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM])) ||
+			(!is_axis_sort_enabled() && dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE]);
 
 	// Free all quadrants.
 	if (!_rendering_was_cleaned_up && (forced_cleanup || quadrant_shape_changed)) {
@@ -304,8 +304,8 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 				rendering_quadrant->canvas_items.clear();
 
 				// Sort the quadrant cells.
-				if (is_y_sort_enabled() && x_draw_order_reversed) {
-					rendering_quadrant->cells.sort_custom<CellDataYSortedXReversedComparator>();
+				if (is_axis_sort_enabled()) {
+					rendering_quadrant->cells.sort_custom<CellDataAxisSortComparator>();
 				} else {
 					rendering_quadrant->cells.sort();
 				}
@@ -520,9 +520,9 @@ void TileMapLayer::_rendering_notification(int p_what) {
 }
 
 void TileMapLayer::_rendering_quadrants_update_cell(CellData &r_cell_data, SelfList<RenderingQuadrant>::List &r_dirty_rendering_quadrant_list) {
-	// Check if the cell is valid and retrieve its y_sort_origin.
+	// Check if the cell is valid and retrieve its axis_sort_origin.
 	bool is_valid = false;
-	int tile_y_sort_origin = 0;
+	Vector2i tile_axis_sort_origin = Vector2i(0, 0);
 	TileSetSource *source;
 	if (tile_set->has_source(r_cell_data.cell.source_id)) {
 		source = *tile_set->get_source(r_cell_data.cell.source_id);
@@ -535,7 +535,7 @@ void TileMapLayer::_rendering_quadrants_update_cell(CellData &r_cell_data, SelfL
 			} else {
 				tile_data = atlas_source->get_tile_data(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile);
 			}
-			tile_y_sort_origin = tile_data->get_y_sort_origin();
+			tile_axis_sort_origin = tile_data->get_axis_sort_origin();
 		}
 	}
 
@@ -543,8 +543,8 @@ void TileMapLayer::_rendering_quadrants_update_cell(CellData &r_cell_data, SelfL
 		// Get the quadrant coords.
 		Vector2 canvas_items_position;
 		Vector2i quadrant_coords;
-		if (is_y_sort_enabled()) {
-			canvas_items_position = Vector2(0, tile_set->map_to_local(r_cell_data.coords).y + tile_y_sort_origin + y_sort_origin);
+		if (is_axis_sort_enabled()) {
+			canvas_items_position = tile_set->map_to_local(r_cell_data.coords) + tile_axis_sort_origin + axis_sort_origin;
 			quadrant_coords = canvas_items_position * 100;
 		} else {
 			const Vector2i &coords = r_cell_data.coords;
@@ -979,7 +979,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 }
 
 void TileMapLayer::_physics_quadrants_update_cell(CellData &r_cell_data, SelfList<PhysicsQuadrant>::List &r_dirty_physics_quadrant_list) {
-	// Check if the cell is valid and retrieve its y_sort_origin.
+	// Check if the cell is valid and retrieve its axis_sort_origin.
 	bool is_valid = false;
 	TileSetSource *source;
 	if (tile_set->has_source(r_cell_data.cell.source_id)) {
@@ -2021,9 +2021,9 @@ void TileMapLayer::_renamed() {
 }
 
 void TileMapLayer::_update_notify_local_transform() {
-	bool notify = is_using_kinematic_bodies() || is_y_sort_enabled();
+	bool notify = is_using_kinematic_bodies() || is_axis_sort_enabled();
 	if (!notify) {
-		if (is_y_sort_enabled()) {
+		if (is_axis_sort_enabled()) {
 			notify = true;
 		}
 	}
@@ -2232,8 +2232,8 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tile_set", "tile_set"), &TileMapLayer::set_tile_set);
 	ClassDB::bind_method(D_METHOD("get_tile_set"), &TileMapLayer::get_tile_set);
 
-	ClassDB::bind_method(D_METHOD("set_y_sort_origin", "y_sort_origin"), &TileMapLayer::set_y_sort_origin);
-	ClassDB::bind_method(D_METHOD("get_y_sort_origin"), &TileMapLayer::get_y_sort_origin);
+	ClassDB::bind_method(D_METHOD("set_axis_sort_origin", "axis_sort_origin"), &TileMapLayer::set_axis_sort_origin);
+	ClassDB::bind_method(D_METHOD("get_axis_sort_origin"), &TileMapLayer::get_axis_sort_origin);
 	ClassDB::bind_method(D_METHOD("set_x_draw_order_reversed", "x_draw_order_reversed"), &TileMapLayer::set_x_draw_order_reversed);
 	ClassDB::bind_method(D_METHOD("is_x_draw_order_reversed"), &TileMapLayer::is_x_draw_order_reversed);
 	ClassDB::bind_method(D_METHOD("set_rendering_quadrant_size", "size"), &TileMapLayer::set_rendering_quadrant_size);
@@ -2270,7 +2270,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tile_set", "get_tile_set");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "occlusion_enabled"), "set_occlusion_enabled", "is_occlusion_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "axis_sort_origin"), "set_axis_sort_origin", "get_axis_sort_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "x_draw_order_reversed"), "set_x_draw_order_reversed", "is_x_draw_order_reversed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
 	ADD_GROUP("Physics", "");
@@ -2297,7 +2297,7 @@ void TileMapLayer::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (is_y_sort_enabled()) {
+	if (is_axis_sort_enabled()) {
 		if (p_property.name == "rendering_quadrant_size") {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
@@ -3305,12 +3305,12 @@ void TileMapLayer::set_self_modulate(const Color &p_self_modulate) {
 	emit_signal(CoreStringName(changed));
 }
 
-void TileMapLayer::set_y_sort_enabled(bool p_y_sort_enabled) {
-	if (is_y_sort_enabled() == p_y_sort_enabled) {
+void TileMapLayer::set_axis_sort_enabled(bool p_axis_sort_enabled) {
+	if (is_axis_sort_enabled() == p_axis_sort_enabled) {
 		return;
 	}
-	CanvasItem::set_y_sort_enabled(p_y_sort_enabled);
-	dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ENABLED] = true;
+	CanvasItem::set_axis_sort_enabled(p_axis_sort_enabled);
+	dirty.flags[DIRTY_FLAGS_LAYER_AXIS_SORT_ENABLED] = true;
 	_queue_internal_update();
 	emit_signal(CoreStringName(changed));
 
@@ -3318,18 +3318,18 @@ void TileMapLayer::set_y_sort_enabled(bool p_y_sort_enabled) {
 	_update_notify_local_transform();
 }
 
-void TileMapLayer::set_y_sort_origin(int p_y_sort_origin) {
-	if (y_sort_origin == p_y_sort_origin) {
+void TileMapLayer::set_axis_sort_origin(Vector2i p_axis_sort_origin) {
+	if (axis_sort_origin == p_axis_sort_origin) {
 		return;
 	}
-	y_sort_origin = p_y_sort_origin;
-	dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN] = true;
+	axis_sort_origin = p_axis_sort_origin;
+	dirty.flags[DIRTY_FLAGS_LAYER_AXIS_SORT_ORIGIN] = true;
 	_queue_internal_update();
 	emit_signal(CoreStringName(changed));
 }
 
-int TileMapLayer::get_y_sort_origin() const {
-	return y_sort_origin;
+Vector2i TileMapLayer::get_axis_sort_origin() const {
+	return axis_sort_origin;
 }
 
 void TileMapLayer::set_x_draw_order_reversed(bool p_x_draw_order_reversed) {

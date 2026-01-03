@@ -682,14 +682,14 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["z_index"] = tile_data_z_index_editor;
 	}
 
-	ADD_TILE_DATA_EDITOR(group, TTR("Y Sort Origin"), "y_sort_origin");
-	if (!tile_data_editors.has("y_sort_origin")) {
-		TileDataYSortEditor *tile_data_y_sort_editor = memnew(TileDataYSortEditor);
-		tile_data_y_sort_editor->hide();
-		tile_data_y_sort_editor->setup_property_editor(Variant::INT, "y_sort_origin");
-		tile_data_y_sort_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
-		tile_data_y_sort_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
-		tile_data_editors["y_sort_origin"] = tile_data_y_sort_editor;
+	ADD_TILE_DATA_EDITOR(group, TTR("Axis Sort Origin"), "axis_sort_origin");
+	if (!tile_data_editors.has("axis_sort_origin")) {
+		TileDataAxisSortEditor *tile_data_axis_sort_editor = memnew(TileDataAxisSortEditor);
+		tile_data_axis_sort_editor->hide();
+		tile_data_axis_sort_editor->setup_property_editor(Variant::INT, "axis_sort_origin");
+		tile_data_axis_sort_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
+		tile_data_axis_sort_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
+		tile_data_editors["axis_sort_origin"] = tile_data_axis_sort_editor;
 	}
 
 	for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
@@ -2451,7 +2451,8 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "modulate", TTR("The color multiplier to use when rendering the tile."));
 			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "material", TTR("The material to use for this tile. This can be used to apply a different blend mode or custom shaders to a single tile."));
 			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "z_index", TTR("The sorting order for this tile. Higher values will make the tile render in front of others on the same layer. The index is relative to the TileMap's own Z index."));
-			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "y_sort_origin", TTR("The vertical offset to use for tile sorting based on its Y coordinate (in pixels). This allows using layers as if they were on different height for top-down games. Adjusting this can help alleviate issues with sorting certain tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile is placed on."));
+			// MARKER DESCRIPTION NEEDS TO BE UPDATED. SOLVE THIS COMMENT BEFORE FINAL PULL REQUEST.
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "axis_sort_origin", TTR("The vertical offset to use for tile sorting based on its Y coordinate (in pixels). This allows using layers as if they were on different height for top-down games. Adjusting this can help alleviate issues with sorting certain tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile is placed on."));
 			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "terrain_set", TTR("The index of the terrain set this tile belongs to. [code]-1[/code] means it will not be used in terrains."));
 			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "terrain", TTR("The index of the terrain inside the terrain set this tile belongs to. [code]-1[/code] means it will not be used in terrains."));
 			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "probability", TTR("The relative probability of this tile appearing when painting with \"Place Random Tile\" enabled."));

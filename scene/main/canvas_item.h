@@ -100,7 +100,10 @@ private:
 
 	int z_index = 0;
 	bool z_relative = true;
-	bool y_sort_enabled = false;
+	bool axis_sort_enabled = false;
+	bool axis_sort_y_as_main = true;
+	bool axis_sort_x_ascending = true;
+	bool axis_sort_y_ascending = true;
 
 	Window *window = nullptr;
 	bool visible = true;
@@ -300,8 +303,14 @@ public:
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
 
-	virtual void set_y_sort_enabled(bool p_enabled);
-	virtual bool is_y_sort_enabled() const;
+	virtual void set_axis_sort_enabled(bool p_enabled);
+	virtual bool is_axis_sort_enabled() const;
+	virtual void set_axis_sort_y_as_main(bool p_enabled);
+	virtual bool is_axis_sort_y_as_main() const;
+	virtual void set_axis_sort_x_ascending(bool p_enabled);
+	virtual bool is_axis_sort_x_ascending() const;
+	virtual void set_axis_sort_y_ascending(bool p_enabled);
+	virtual bool is_axis_sort_y_ascending() const;
 
 	/* DRAWING API */
 

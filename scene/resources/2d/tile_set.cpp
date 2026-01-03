@@ -6166,7 +6166,7 @@ TileData *TileData::duplicate() {
 	output->material = material;
 	output->modulate = modulate;
 	output->z_index = z_index;
-	output->y_sort_origin = y_sort_origin;
+	output->axis_sort_origin = axis_sort_origin;
 	output->occluders = occluders;
 #ifndef PHYSICS_2D_DISABLED
 	// Physics
@@ -6249,12 +6249,12 @@ int TileData::get_z_index() const {
 	return z_index;
 }
 
-void TileData::set_y_sort_origin(int p_y_sort_origin) {
-	y_sort_origin = p_y_sort_origin;
+void TileData::set_axis_sort_origin(Vector2i p_axis_sort_origin) {
+	axis_sort_origin = p_axis_sort_origin;
 	emit_signal(CoreStringName(changed));
 }
-int TileData::get_y_sort_origin() const {
-	return y_sort_origin;
+Vector2i TileData::get_axis_sort_origin() const {
+	return axis_sort_origin;
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -7094,8 +7094,8 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_modulate"), &TileData::get_modulate);
 	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &TileData::set_z_index);
 	ClassDB::bind_method(D_METHOD("get_z_index"), &TileData::get_z_index);
-	ClassDB::bind_method(D_METHOD("set_y_sort_origin", "y_sort_origin"), &TileData::set_y_sort_origin);
-	ClassDB::bind_method(D_METHOD("get_y_sort_origin"), &TileData::get_y_sort_origin);
+	ClassDB::bind_method(D_METHOD("set_axis_sort_origin", "axis_sort_origin"), &TileData::set_axis_sort_origin);
+	ClassDB::bind_method(D_METHOD("get_axis_sort_origin"), &TileData::get_axis_sort_origin);
 
 	ClassDB::bind_method(D_METHOD("set_occluder_polygons_count", "layer_id", "polygons_count"), &TileData::set_occluder_polygons_count);
 	ClassDB::bind_method(D_METHOD("get_occluder_polygons_count", "layer_id"), &TileData::get_occluder_polygons_count);
@@ -7161,7 +7161,7 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "axis_sort_origin"), "set_axis_sort_origin", "get_axis_sort_origin");
 
 	ADD_GROUP("Terrains", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrain_set"), "set_terrain_set", "get_terrain_set");

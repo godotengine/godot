@@ -703,15 +703,48 @@ int CanvasItem::get_effective_z_index() const {
 	return effective_z_index;
 }
 
-void CanvasItem::set_y_sort_enabled(bool p_enabled) {
+void CanvasItem::set_axis_sort_enabled(bool p_enabled) {
 	ERR_THREAD_GUARD;
-	y_sort_enabled = p_enabled;
-	RS::get_singleton()->canvas_item_set_sort_children_by_y(canvas_item, y_sort_enabled);
+	axis_sort_enabled = p_enabled;
+	RS::get_singleton()->canvas_item_set_sort_children_by_axis(canvas_item, axis_sort_enabled);
 }
 
-bool CanvasItem::is_y_sort_enabled() const {
+bool CanvasItem::is_axis_sort_enabled() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return y_sort_enabled;
+	return axis_sort_enabled;
+}
+
+void CanvasItem::set_axis_sort_y_as_main(bool p_enabled) {
+	ERR_THREAD_GUARD;
+	axis_sort_y_as_main = p_enabled;
+	RS::get_singleton()->canvas_item_set_sort_children_by_axis_y_as_main(canvas_item, axis_sort_y_as_main);
+}
+
+bool CanvasItem::is_axis_sort_y_as_main() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return axis_sort_y_as_main;
+}
+
+void CanvasItem::set_axis_sort_x_ascending(bool p_enabled) {
+	ERR_THREAD_GUARD;
+	axis_sort_x_ascending = p_enabled;
+	RS::get_singleton()->canvas_item_set_sort_children_by_axis_x_ascending(canvas_item, axis_sort_x_ascending);
+}
+
+bool CanvasItem::is_axis_sort_x_ascending() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return axis_sort_x_ascending;
+}
+
+void CanvasItem::set_axis_sort_y_ascending(bool p_enabled) {
+	ERR_THREAD_GUARD;
+	axis_sort_y_ascending = p_enabled;
+	RS::get_singleton()->canvas_item_set_sort_children_by_axis_y_ascending(canvas_item, axis_sort_y_ascending);
+}
+
+bool CanvasItem::is_axis_sort_y_ascending() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return axis_sort_y_ascending;
 }
 
 void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, real_t p_dash, bool p_aligned, bool p_antialiased) {
@@ -1379,8 +1412,14 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_z_as_relative", "enable"), &CanvasItem::set_z_as_relative);
 	ClassDB::bind_method(D_METHOD("is_z_relative"), &CanvasItem::is_z_relative);
 
-	ClassDB::bind_method(D_METHOD("set_y_sort_enabled", "enabled"), &CanvasItem::set_y_sort_enabled);
-	ClassDB::bind_method(D_METHOD("is_y_sort_enabled"), &CanvasItem::is_y_sort_enabled);
+	ClassDB::bind_method(D_METHOD("set_axis_sort_enabled", "enabled"), &CanvasItem::set_axis_sort_enabled);
+	ClassDB::bind_method(D_METHOD("is_axis_sort_enabled"), &CanvasItem::is_axis_sort_enabled);
+	ClassDB::bind_method(D_METHOD("set_axis_sort_y_as_main", "enabled"), &CanvasItem::set_axis_sort_y_as_main);
+	ClassDB::bind_method(D_METHOD("is_axis_sort_y_as_main"), &CanvasItem::is_axis_sort_y_as_main);
+	ClassDB::bind_method(D_METHOD("set_axis_sort_x_ascending", "enabled"), &CanvasItem::set_axis_sort_x_ascending);
+	ClassDB::bind_method(D_METHOD("is_axis_sort_x_ascending"), &CanvasItem::is_axis_sort_x_ascending);
+	ClassDB::bind_method(D_METHOD("set_axis_sort_y_ascending", "enabled"), &CanvasItem::set_axis_sort_y_ascending);
+	ClassDB::bind_method(D_METHOD("is_axis_sort_y_ascending"), &CanvasItem::is_axis_sort_y_ascending);
 
 	ClassDB::bind_method(D_METHOD("set_draw_behind_parent", "enable"), &CanvasItem::set_draw_behind_parent);
 	ClassDB::bind_method(D_METHOD("is_draw_behind_parent_enabled"), &CanvasItem::is_draw_behind_parent_enabled);
@@ -1480,7 +1519,11 @@ void CanvasItem::_bind_methods() {
 	ADD_GROUP("Ordering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_index", "get_z_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "z_as_relative"), "set_z_as_relative", "is_z_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "y_sort_enabled"), "set_y_sort_enabled", "is_y_sort_enabled");
+	ADD_SUBGROUP("Axis Sort", "axis_sort_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_sort_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_axis_sort_enabled", "is_axis_sort_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_sort_y_as_main"), "set_axis_sort_y_as_main", "is_axis_sort_y_as_main");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_sort_x_ascending"), "set_axis_sort_x_ascending", "is_axis_sort_x_ascending");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_sort_y_ascending"), "set_axis_sort_y_ascending", "is_axis_sort_y_ascending");
 
 	ADD_GROUP("Texture", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");

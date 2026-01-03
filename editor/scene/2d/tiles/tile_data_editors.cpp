@@ -1447,7 +1447,7 @@ void TileDataPositionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 	p_canvas_item->draw_texture(position_icon, p_transform.xform(Vector2(value)) - position_icon->get_size() / 2, color);
 }
 
-void TileDataYSortEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected) {
+void TileDataAxisSortEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected) {
 	TileData *tile_data = _get_tile_data(p_cell);
 	ERR_FAIL_NULL(tile_data);
 
@@ -1460,13 +1460,13 @@ void TileDataYSortEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D 
 	Vector2 texture_origin = tile_data->get_texture_origin();
 	TileSetSource *source = *(tile_set->get_source(p_cell.source_id));
 	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-	if (atlas_source->is_position_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, Vector2(0, tile_data->get_y_sort_origin()))) {
+	if (atlas_source->is_position_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, tile_data->get_axis_sort_origin())) {
 		Ref<Texture2D> position_icon = TileSetEditor::get_singleton()->get_editor_theme_icon(SNAME("EditorPosition"));
-		p_canvas_item->draw_texture(position_icon, p_transform.xform(Vector2(0, tile_data->get_y_sort_origin())) - position_icon->get_size() / 2, color);
+		p_canvas_item->draw_texture(position_icon, p_transform.xform(tile_data->get_axis_sort_origin()) - position_icon->get_size() / 2, color);
 	} else {
 		Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 		int font_size = TileSetEditor::get_singleton()->get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
-		String text = vformat("%s", tile_data->get_y_sort_origin());
+		String text = vformat("%s", tile_data->get_axis_sort_origin());
 
 		Vector2 string_size = font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 		p_canvas_item->draw_string_outline(font, p_transform.xform(-texture_origin) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, 1, Color(0, 0, 0, 1));

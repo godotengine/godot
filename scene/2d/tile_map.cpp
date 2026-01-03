@@ -354,22 +354,22 @@ Color TileMap::get_layer_modulate(int p_layer) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, Color(), get_modulate);
 }
 
-void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
-	TILEMAP_CALL_FOR_LAYER(p_layer, set_y_sort_enabled, p_y_sort_enabled);
+void TileMap::set_layer_axis_sort_enabled(int p_layer, bool p_axis_sort_enabled) {
+	TILEMAP_CALL_FOR_LAYER(p_layer, set_axis_sort_enabled, p_axis_sort_enabled);
 	update_configuration_warnings();
 }
 
-bool TileMap::is_layer_y_sort_enabled(int p_layer) const {
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, false, is_y_sort_enabled);
+bool TileMap::is_layer_axis_sort_enabled(int p_layer) const {
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, false, is_axis_sort_enabled);
 }
 
-void TileMap::set_layer_y_sort_origin(int p_layer, int p_y_sort_origin) {
-	TILEMAP_CALL_FOR_LAYER(p_layer, set_y_sort_origin, p_y_sort_origin);
+void TileMap::set_layer_axis_sort_origin(int p_layer, Vector2i p_axis_sort_origin) {
+	TILEMAP_CALL_FOR_LAYER(p_layer, set_axis_sort_origin, p_axis_sort_origin);
 	update_configuration_warnings();
 }
 
-int TileMap::get_layer_y_sort_origin(int p_layer) const {
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, 0, get_y_sort_origin);
+Vector2i TileMap::get_layer_axis_sort_origin(int p_layer) const {
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, Vector2i(0, 0), get_axis_sort_origin);
 }
 
 void TileMap::set_layer_z_index(int p_layer, int p_z_index) {
@@ -446,11 +446,11 @@ TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() const {
 }
 #endif // NAVIGATION_2D_DISABLED
 
-void TileMap::set_y_sort_enabled(bool p_enable) {
-	if (is_y_sort_enabled() == p_enable) {
+void TileMap::set_axis_sort_enabled(bool p_enable) {
+	if (is_axis_sort_enabled() == p_enable) {
 		return;
 	}
-	Node2D::set_y_sort_enabled(p_enable);
+	Node2D::set_axis_sort_enabled(p_enable);
 	_emit_changed();
 	update_configuration_warnings();
 }
@@ -843,25 +843,25 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 	warnings.push_back(RTR("The TileMap node is deprecated as it is superseded by the use of multiple TileMapLayer nodes.\nTo convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with this node selected, click the toolbox icon in the top-right corner and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."));
 
 	// Retrieve the set of Z index values with a Y-sorted layer.
-	RBSet<int> y_sorted_z_index;
+	RBSet<int> axis_sorted_z_index;
 	for (const TileMapLayer *layer : layers) {
-		if (layer->is_y_sort_enabled()) {
-			y_sorted_z_index.insert(layer->get_z_index());
+		if (layer->is_axis_sort_enabled()) {
+			axis_sorted_z_index.insert(layer->get_z_index());
 		}
 	}
 
 	// Check if we have a non-sorted layer in a Z-index with a Y-sorted layer.
 	for (const TileMapLayer *layer : layers) {
-		if (!layer->is_y_sort_enabled() && y_sorted_z_index.has(layer->get_z_index())) {
+		if (!layer->is_axis_sort_enabled() && axis_sorted_z_index.has(layer->get_z_index())) {
 			warnings.push_back(RTR("A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\nThis may lead to unwanted behaviors, as a layer that is not Y-sorted will be Y-sorted as a whole with tiles from Y-sorted layers."));
 			break;
 		}
 	}
 
-	if (!is_y_sort_enabled()) {
+	if (!is_axis_sort_enabled()) {
 		// Check if Y-sort is enabled on a layer but not on the node.
 		for (const TileMapLayer *layer : layers) {
-			if (layer->is_y_sort_enabled()) {
+			if (layer->is_axis_sort_enabled()) {
 				warnings.push_back(RTR("A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap node itself."));
 				break;
 			}
@@ -870,7 +870,7 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 		// Check if Y-sort is enabled on the node, but not on any of the layers.
 		bool need_warning = true;
 		for (const TileMapLayer *layer : layers) {
-			if (layer->is_y_sort_enabled()) {
+			if (layer->is_axis_sort_enabled()) {
 				need_warning = false;
 				break;
 			}
@@ -882,10 +882,10 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 
 	// Check if we are in isometric mode without Y-sort enabled.
 	if (tile_set.is_valid() && tile_set->get_tile_shape() == TileSet::TILE_SHAPE_ISOMETRIC) {
-		bool warn = !is_y_sort_enabled();
+		bool warn = !is_axis_sort_enabled();
 		if (!warn) {
 			for (const TileMapLayer *layer : layers) {
-				if (!layer->is_y_sort_enabled()) {
+				if (!layer->is_axis_sort_enabled()) {
 					warn = true;
 					break;
 				}
@@ -925,10 +925,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_layer_enabled", "layer"), &TileMap::is_layer_enabled);
 	ClassDB::bind_method(D_METHOD("set_layer_modulate", "layer", "modulate"), &TileMap::set_layer_modulate);
 	ClassDB::bind_method(D_METHOD("get_layer_modulate", "layer"), &TileMap::get_layer_modulate);
-	ClassDB::bind_method(D_METHOD("set_layer_y_sort_enabled", "layer", "y_sort_enabled"), &TileMap::set_layer_y_sort_enabled);
-	ClassDB::bind_method(D_METHOD("is_layer_y_sort_enabled", "layer"), &TileMap::is_layer_y_sort_enabled);
-	ClassDB::bind_method(D_METHOD("set_layer_y_sort_origin", "layer", "y_sort_origin"), &TileMap::set_layer_y_sort_origin);
-	ClassDB::bind_method(D_METHOD("get_layer_y_sort_origin", "layer"), &TileMap::get_layer_y_sort_origin);
+	ClassDB::bind_method(D_METHOD("set_layer_axis_sort_enabled", "layer", "axis_sort_enabled"), &TileMap::set_layer_axis_sort_enabled);
+	ClassDB::bind_method(D_METHOD("is_layer_axis_sort_enabled", "layer"), &TileMap::is_layer_axis_sort_enabled);
+	ClassDB::bind_method(D_METHOD("set_layer_axis_sort_origin", "layer", "axis_sort_origin"), &TileMap::set_layer_axis_sort_origin);
+	ClassDB::bind_method(D_METHOD("get_layer_axis_sort_origin", "layer"), &TileMap::get_layer_axis_sort_origin);
 	ClassDB::bind_method(D_METHOD("set_layer_z_index", "layer", "z_index"), &TileMap::set_layer_z_index);
 	ClassDB::bind_method(D_METHOD("get_layer_z_index", "layer"), &TileMap::get_layer_z_index);
 #ifndef NAVIGATION_2D_DISABLED
@@ -1030,8 +1030,8 @@ TileMap::TileMap() {
 		base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults->get_name(), &TileMap::set_layer_name, &TileMap::get_layer_name);
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "enabled"), defaults->is_enabled(), &TileMap::set_layer_enabled, &TileMap::is_layer_enabled);
 		base_property_helper.register_property(PropertyInfo(Variant::COLOR, "modulate"), defaults->get_modulate(), &TileMap::set_layer_modulate, &TileMap::get_layer_modulate);
-		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "y_sort_enabled"), defaults->is_y_sort_enabled(), &TileMap::set_layer_y_sort_enabled, &TileMap::is_layer_y_sort_enabled);
-		base_property_helper.register_property(PropertyInfo(Variant::INT, "y_sort_origin", PROPERTY_HINT_NONE, "suffix:px"), defaults->get_y_sort_origin(), &TileMap::set_layer_y_sort_origin, &TileMap::get_layer_y_sort_origin);
+		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "axis_sort_enabled"), defaults->is_axis_sort_enabled(), &TileMap::set_layer_axis_sort_enabled, &TileMap::is_layer_axis_sort_enabled);
+		base_property_helper.register_property(PropertyInfo(Variant::VECTOR2I, "axis_sort_origin", PROPERTY_HINT_NONE, "suffix:px"), defaults->get_axis_sort_origin(), &TileMap::set_layer_axis_sort_origin, &TileMap::get_layer_axis_sort_origin);
 		base_property_helper.register_property(PropertyInfo(Variant::INT, "z_index"), defaults->get_z_index(), &TileMap::set_layer_z_index, &TileMap::get_layer_z_index);
 #ifndef NAVIGATION_2D_DISABLED
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "navigation_enabled"), defaults->is_navigation_enabled(), &TileMap::set_layer_navigation_enabled, &TileMap::is_layer_navigation_enabled);

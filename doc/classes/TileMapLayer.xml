@@ -294,6 +294,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="axis_sort_origin" type="Vector2i" setter="set_axis_sort_origin" getter="get_axis_sort_origin" default="Vector2i(0, 0)">
+			This axis sort origin value is added to each tile's axis sort origin value. This allows, for example, to fake a different height level by changing origin's Y value. This can be useful for top-down view games.
+		</member>
 		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="is_collision_enabled" default="true">
 			Enable or disable collisions.
 		</member>
@@ -319,7 +322,7 @@
 		</member>
 		<member name="rendering_quadrant_size" type="int" setter="set_rendering_quadrant_size" getter="get_rendering_quadrant_size" default="16">
 			The [TileMapLayer]'s rendering quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quadrant size groups together [code]16 * 16 = 256[/code] tiles.
-			The quadrant size does not apply on a Y-sorted [TileMapLayer], as tiles are grouped by Y position instead in that case.
+			The quadrant size does not apply on a axis sorted [TileMapLayer], as tiles are grouped by coordinates instead in that case.
 			[b]Note:[/b] As quadrants are created according to the map's coordinate system, the quadrant's "square shape" might not look like square in the [TileMapLayer]'s local coordinate system.
 		</member>
 		<member name="tile_map_data" type="PackedByteArray" setter="set_tile_map_data_from_array" getter="get_tile_map_data_as_array" default="PackedByteArray()">
@@ -332,10 +335,6 @@
 			If [code]true[/code], this [TileMapLayer] collision shapes will be instantiated as kinematic bodies. This can be needed for moving [TileMapLayer] nodes (i.e. moving platforms).
 		</member>
 		<member name="x_draw_order_reversed" type="bool" setter="set_x_draw_order_reversed" getter="is_x_draw_order_reversed" default="false">
-			If [member CanvasItem.y_sort_enabled] is enabled, setting this to [code]true[/code] will reverse the order the tiles are drawn on the X-axis.
-		</member>
-		<member name="y_sort_origin" type="int" setter="set_y_sort_origin" getter="get_y_sort_origin" default="0">
-			This Y-sort origin value is added to each tile's Y-sort origin value. This allows, for example, to fake a different height level. This can be useful for top-down view games.
 		</member>
 	</members>
 	<signals>
