@@ -261,7 +261,46 @@
 			<param index="0" name="path_a" type="String" />
 			<param index="1" name="path_b" type="String" />
 			<description>
-				Returns [code]true[/code] if paths [param path_a] and [param path_b] resolve to the same file system object. Returns [code]false[/code] otherwise, even if the files are bit-for-bit identical (e.g., identical copies of the file that are not symbolic links).
+				Returns [code]true[/code] if paths [param path_a] and [param path_b] resolve to the same file system object (taking into account case sensitivity, relative paths, symbolic links, and hard links). Returns [code]false[/code] otherwise, even if the files are exactly identical (copies of a file that are not symbolic links).
+				[codeblocks]
+				[gdscript]
+				var dir = DirAccess.open("/")
+				# Prints "true" on a case-insensitive filesystem, "false" otherwise.
+				print(dir.is_equivalent("/sbin/md5sum", "/sBin/MD5Sum"))
+
+				var icon_1_path = ProjectSettings.globalize_path("res://icon.svg")
+				var icon_2_path = ProjectSettings.globalize_path("res://icon2.svg")
+
+				dir.create_link(icon_1_path, icon_2_path)
+				# Prints `true`, icon_2_path points to a symbolic link.
+				print(dir.is_equivalent(icon_1_path, icon_2_path))
+				dir.remove(icon_2_path)
+
+				dir.copy(icon_1_path, icon_2_path)
+				# Prints `false`, icon_2_path points to an identical copy.
+				print(dir.is_equivalent(icon_1_path, icon_2_path))
+				dir.remove(icon_2_path)
+				[/gdscript]
+				[csharp]
+				using var dir = DirAccess.Open("/");
+
+				// Prints "True" on a case-insensitive filesystem, "False" otherwise.
+				GD.Print(dir.IsEquivalent("/sbin/md5sum", "/sBin/MD5Sum"));
+
+				var icon1Path = ProjectSettings.GlobalizePath("res://icon.svg")
+				var icon2Path = ProjectSettings.GlobalizePath("res://icon2.svg")
+
+				dir.CreateLink(icon1Path, icon2Path);
+				// Prints `True`, symbolic link.
+				GD.Print(dir.IsEquivalent(icon1Path, icon2Path));
+				dir.Remove(icon2Path);
+
+				dir.Copy(icon1Path, icon2Path);
+				// Prints `False`, identical file copy.
+				GD.Print(dir.IsEquivalent(icon1Path, icon2Path));
+				dir.Remove(icon2Path);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="is_link">
