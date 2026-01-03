@@ -1728,6 +1728,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/sharp_corners", false);
 	GLOBAL_DEF("display/window/size/minimize_disabled", false);
 	GLOBAL_DEF("display/window/size/maximize_disabled", false);
+	GLOBAL_DEF("display/window/size/enable_toggle_fullscreen_shortcut", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution

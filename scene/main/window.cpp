@@ -540,6 +540,14 @@ Window::Mode Window::get_mode() const {
 	return mode;
 }
 
+void Window::set_fullscreen_shortcut_enabled(bool p_enabled) {
+	fullscreen_shortcut_enabled = p_enabled;
+}
+
+bool Window::is_fullscreen_shortcut_enabled() const {
+	return fullscreen_shortcut_enabled;
+}
+
 void Window::set_flag(Flags p_flag, bool p_enabled) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
@@ -1532,6 +1540,7 @@ void Window::_notification(int p_what) {
 					// It's the root window!
 					visible = true; // Always visible.
 					window_id = DisplayServer::MAIN_WINDOW_ID;
+					fullscreen_shortcut_enabled = GLOBAL_GET("display/window/size/enable_toggle_fullscreen_shortcut");
 					focused_window = this;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 					_update_from_window();
@@ -1853,6 +1862,15 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	if (p_ev->get_device() != InputEvent::DEVICE_ID_INTERNAL && is_inside_tree()) {
 		emit_signal(SceneStringName(window_input), p_ev);
+	}
+
+	if (fullscreen_shortcut_enabled && p_ev->is_action_pressed("ui_toggle_fullscreen")) {
+		if (mode == MODE_FULLSCREEN || mode == MODE_EXCLUSIVE_FULLSCREEN) {
+			set_mode(toggle_fullscreen_previous_mode);
+		} else {
+			toggle_fullscreen_previous_mode = mode;
+			set_mode(MODE_FULLSCREEN);
+		}
 	}
 
 	if (is_inside_tree()) {
@@ -3222,6 +3240,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enabled"), &Window::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &Window::get_flag);
 
+	ClassDB::bind_method(D_METHOD("set_fullscreen_shortcut_enabled", "enabled"), &Window::set_fullscreen_shortcut_enabled);
+	ClassDB::bind_method(D_METHOD("is_fullscreen_shortcut_enabled"), &Window::is_fullscreen_shortcut_enabled);
+
 	ClassDB::bind_method(D_METHOD("is_maximize_allowed"), &Window::is_maximize_allowed);
 
 	ClassDB::bind_method(D_METHOD("request_attention"), &Window::request_attention);
@@ -3406,6 +3427,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_wm_hint"), "set_flag", "get_flag", FLAG_POPUP_WM_HINT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "minimize_disabled"), "set_flag", "get_flag", FLAG_MINIMIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "maximize_disabled"), "set_flag", "get_flag", FLAG_MAXIMIZE_DISABLED);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fullscreen_shortcut_enabled"), "set_fullscreen_shortcut_enabled", "is_fullscreen_shortcut_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
 
 	ADD_GROUP("Limits", "");

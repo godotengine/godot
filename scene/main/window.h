@@ -128,12 +128,14 @@ private:
 	mutable Size2i max_size;
 	mutable Vector<Vector2> mpath;
 	mutable Mode mode = MODE_WINDOWED;
+	mutable Mode toggle_fullscreen_previous_mode = mode;
 	mutable bool flags[FLAG_MAX] = {};
 	bool visible = true;
 	bool focused = false;
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 	bool force_native = false;
 
+	bool fullscreen_shortcut_enabled = false;
 	bool transient = false;
 	bool transient_to_focused = false;
 	bool exclusive = false;
@@ -329,6 +331,9 @@ public:
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
+
+	void set_fullscreen_shortcut_enabled(bool p_enabled);
+	bool is_fullscreen_shortcut_enabled() const;
 
 	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;
