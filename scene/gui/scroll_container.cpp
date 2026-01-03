@@ -568,9 +568,13 @@ void ScrollContainer::_notification(int p_what) {
 
 				} else {
 					if (time_since_motion == 0 || time_since_motion > 0.1) {
+						double delta = get_process_delta_time();
+						if (delta == 0) {
+							delta = CMP_EPSILON;
+						}
 						Vector2 diff = drag_accum - last_drag_accum;
 						last_drag_accum = drag_accum;
-						drag_speed = diff / get_process_delta_time();
+						drag_speed = diff / delta;
 					}
 
 					time_since_motion += get_process_delta_time();
