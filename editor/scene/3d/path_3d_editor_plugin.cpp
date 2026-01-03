@@ -549,6 +549,7 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 
 	// Connecting to a signal once, rather than plaguing the implementation with calls to `Node3DEditor::update_transform_gizmo`.
 	path->connect("curve_changed", callable_mp(this, &Path3DGizmo::_update_transform_gizmo));
+	path->connect("curve_changed", callable_mp(Path3DEditorPlugin::singleton, &Path3DEditorPlugin::_update_toolbar));
 	path->connect("debug_color_changed", callable_mp(this, &Path3DGizmo::redraw));
 
 	Path3DEditorPlugin::singleton->curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
