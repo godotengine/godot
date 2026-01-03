@@ -90,7 +90,8 @@ class GodotPinJoint2D : public GodotJoint2D {
 	real_t initial_angle = 0.0;
 	real_t bias_velocity = 0.0;
 	real_t jn_max = 0.0;
-	real_t j_acc = 0.0;
+	real_t j_acc_upper = 0.0;
+	real_t j_acc_lower = 0.0;
 	real_t i_sum = 0.0;
 	Vector2 P;
 	real_t softness = 0.0;
@@ -98,6 +99,8 @@ class GodotPinJoint2D : public GodotJoint2D {
 	real_t angular_limit_upper = 0.0;
 	real_t motor_target_velocity = 0.0;
 	bool is_joint_at_limit = false;
+	bool is_joint_at_limit_lower = false;
+	bool is_joint_at_limit_upper = false;
 	bool motor_enabled = false;
 	bool angular_limit_enabled = false;
 
