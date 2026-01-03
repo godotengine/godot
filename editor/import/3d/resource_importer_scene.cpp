@@ -401,46 +401,38 @@ void ResourceImporterScene::_pre_fix_global(Node *p_scene, const HashMap<StringN
 }
 
 static bool _teststr(const String &p_what, const String &p_str) {
-	String what = p_what;
+	const String beginning_chars[] = { "$", "-", "_" };
+	const String delimiters[] = { " ", "_" };
 
-	// Remove trailing spaces and numbers, some apps like blender add ".number" to duplicates
-	// (dot is replaced with _ as invalid character) so also compensate for this.
-	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '_')) {
-		what = what.substr(0, what.length() - 1);
+	for (const String &character : beginning_chars) {
+		for (const String &delimiter : delimiters) {
+			const String str = delimiter + character + p_str;
+
+			if (p_what.containsn(str + delimiter) || p_what.containsn(str + "_") || p_what.to_lower().ends_with(str)) {
+				return true;
+			}
+		}
 	}
 
-	if (what.containsn("$" + p_str)) { // Blender and other stuff.
-		return true;
-	}
-	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
-		return true;
-	}
-	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
-		return true;
-	}
 	return false;
 }
 
 static String _fixstr(const String &p_what, const String &p_str) {
+	const String beginning_chars[] = { "$", "-", "_" };
+	const String delimiters[] = { " ", "_" };
+
 	String what = p_what;
 
-	// Remove trailing spaces and numbers, some apps like blender add ".number" to duplicates
-	// (dot is replaced with _ as invalid character) so also compensate for this.
-	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '_')) {
-		what = what.substr(0, what.length() - 1);
+	for (const String &character : beginning_chars) {
+		for (const String &delimiter : delimiters) {
+			const String str = delimiter + character + p_str;
+
+			if (what.containsn(str + delimiter) || what.containsn(str + "_") || what.to_lower().ends_with(str)) {
+				what = what.replacen(str, "");
+			}
+		}
 	}
 
-	String end = p_what.substr(what.length());
-
-	if (what.containsn("$" + p_str)) { // Blender and other stuff.
-		return what.replace("$" + p_str, "") + end;
-	}
-	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
-		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
-	}
-	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
-		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
-	}
 	return what;
 }
 
@@ -653,7 +645,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		}
 	}
 
-	String name = p_node->get_name();
 	NodePath original_path = p_root->get_path_to(p_node); // Used to detect renames due to import hints.
 
 	Ref<Resource> original_meta = memnew(Resource); // Create temp resource to hold original meta
@@ -661,7 +652,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 
 	bool isroot = p_node == p_root;
 
-	if (!isroot && _teststr(name, "noimp")) {
+	if (!isroot && _teststr(p_node->get_name(), "noimp")) {
 		p_node->set_owner(nullptr);
 		memdelete(p_node);
 		return nullptr;
@@ -765,22 +756,35 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		return p_node;
 	}
 
-	if (_teststr(name, "colonly") || _teststr(name, "convcolonly")) {
+	const bool has_suffix_colonly = _teststr(p_node->get_name(), "colonly");
+	const bool has_suffix_convcolonly = _teststr(p_node->get_name(), "convcolonly");
+	const bool has_suffix_rigid = _teststr(p_node->get_name(), "rigid");
+	const bool has_suffix_col = _teststr(p_node->get_name(), "col");
+	const bool has_suffix_convcol = _teststr(p_node->get_name(), "convcol");
+	const bool has_suffix_navmesh = _teststr(p_node->get_name(), "navmesh");
+	const bool has_suffix_vehicle = _teststr(p_node->get_name(), "vehicle");
+	const bool has_suffix_wheel = _teststr(p_node->get_name(), "wheel");
+	const bool has_suffix_occ = _teststr(p_node->get_name(), "occ");
+	const bool has_suffix_occonly = _teststr(p_node->get_name(), "occonly");
+
+	bool has_any_node_type_suffixes = true;
+
+	if (has_suffix_colonly || has_suffix_convcolonly) {
 		if (isroot) {
 			return p_node;
 		}
 
 		String fixed_name;
-		if (_teststr(name, "colonly")) {
-			fixed_name = _fixstr(name, "colonly");
-		} else if (_teststr(name, "convcolonly")) {
-			fixed_name = _fixstr(name, "convcolonly");
+		if (has_suffix_colonly) {
+			fixed_name = _fixstr(p_node->get_name(), "colonly");
+		} else if (has_suffix_convcolonly) {
+			fixed_name = _fixstr(p_node->get_name(), "convcolonly");
 		}
 
 		if (fixed_name.is_empty()) {
 			p_node->set_owner(nullptr);
 			memdelete(p_node);
-			ERR_FAIL_V_MSG(nullptr, vformat("Skipped node `%s` because its name is empty after removing the suffix.", name));
+			ERR_FAIL_V_MSG(nullptr, vformat("Skipped node `%s` because its name is empty after removing the suffix.", p_node->get_name()));
 		}
 
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
@@ -791,10 +795,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				Vector<Ref<Shape3D>> shapes;
 				if (r_collision_map.has(mesh)) {
 					shapes = r_collision_map[mesh];
-				} else if (_teststr(name, "colonly")) {
+				} else if (has_suffix_colonly) {
 					_pre_gen_shape_list(mesh, shapes, false);
 					r_collision_map[mesh] = shapes;
-				} else if (_teststr(name, "convcolonly")) {
+				} else if (has_suffix_convcolonly) {
 					_pre_gen_shape_list(mesh, shapes, true);
 					r_collision_map[mesh] = shapes;
 				}
@@ -845,7 +849,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			colshape->set_owner(sb->get_owner());
 		}
 
-	} else if (_teststr(name, "rigid") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+	} else if (has_suffix_rigid && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		if (isroot) {
 			return p_node;
 		}
@@ -862,7 +866,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			}
 
 			RigidBody3D *rigid_body = memnew(RigidBody3D);
-			rigid_body->set_name(_fixstr(name, "rigid_body"));
+			rigid_body->set_name(_fixstr(p_node->get_name(), "rigid_body"));
 			_copy_meta(p_node, rigid_body);
 			p_node->replace_by(rigid_body);
 			rigid_body->set_transform(mi->get_transform());
@@ -874,7 +878,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			_add_shapes(rigid_body, shapes);
 		}
 
-	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+	} else if ((has_suffix_col || has_suffix_convcol) && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
 		Ref<ImporterMesh> mesh = mi->get_mesh();
@@ -884,18 +888,18 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			String fixed_name;
 			if (r_collision_map.has(mesh)) {
 				shapes = r_collision_map[mesh];
-			} else if (_teststr(name, "col")) {
+			} else if (has_suffix_col) {
 				_pre_gen_shape_list(mesh, shapes, false);
 				r_collision_map[mesh] = shapes;
-			} else if (_teststr(name, "convcol")) {
+			} else if (has_suffix_convcol) {
 				_pre_gen_shape_list(mesh, shapes, true);
 				r_collision_map[mesh] = shapes;
 			}
 
-			if (_teststr(name, "col")) {
-				fixed_name = _fixstr(name, "col");
-			} else if (_teststr(name, "convcol")) {
-				fixed_name = _fixstr(name, "convcol");
+			if (has_suffix_col) {
+				fixed_name = _fixstr(p_node->get_name(), "col");
+			} else if (has_suffix_convcol) {
+				fixed_name = _fixstr(p_node->get_name(), "convcol");
 			}
 
 			if (!fixed_name.is_empty()) {
@@ -913,7 +917,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			}
 		}
 
-	} else if (_teststr(name, "navmesh") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+	} else if (has_suffix_navmesh && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		if (isroot) {
 			return p_node;
 		}
@@ -924,7 +928,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
 		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
 
-		nmi->set_name(_fixstr(name, "navmesh"));
+		nmi->set_name(_fixstr(p_node->get_name(), "navmesh"));
 		Ref<NavigationMesh> nmesh = mesh->create_navigation_mesh();
 		nmi->set_navigation_mesh(nmesh);
 		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
@@ -933,33 +937,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		p_node->set_owner(nullptr);
 		memdelete(p_node);
 		p_node = nmi;
-	} else if (_teststr(name, "occ") || _teststr(name, "occonly")) {
-		if (isroot) {
-			return p_node;
-		}
-		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
-		if (mi) {
-			Ref<ImporterMesh> mesh = mi->get_mesh();
-
-			if (mesh.is_valid()) {
-				if (r_occluder_arrays) {
-					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
-				}
-				if (_teststr(name, "occ")) {
-					String fixed_name = _fixstr(name, "occ");
-					if (!fixed_name.is_empty()) {
-						if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
-							mi->set_name(fixed_name);
-						}
-					}
-				} else {
-					p_node->set_owner(nullptr);
-					memdelete(p_node);
-					p_node = nullptr;
-				}
-			}
-		}
-	} else if (_teststr(name, "vehicle")) {
+	} else if (has_suffix_vehicle) {
 		if (isroot) {
 			return p_node;
 		}
@@ -979,7 +957,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		s->set_transform(Transform3D());
 
 		p_node = bv;
-	} else if (_teststr(name, "wheel")) {
+	} else if (has_suffix_wheel) {
 		if (isroot) {
 			return p_node;
 		}
@@ -999,7 +977,41 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		s->set_transform(Transform3D());
 
 		p_node = bv;
-	} else if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+	} else {
+		has_any_node_type_suffixes = false;
+	}
+
+	if (has_suffix_occ || has_suffix_occonly) {
+		if (isroot) {
+			return p_node;
+		}
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+		if (mi) {
+			Ref<ImporterMesh> mesh = mi->get_mesh();
+
+			if (mesh.is_valid()) {
+				if (r_occluder_arrays) {
+					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
+				}
+				if (has_suffix_occ) {
+					String fixed_name = _fixstr(p_node->get_name(), "occ");
+					if (!fixed_name.is_empty()) {
+						if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
+							mi->set_name(fixed_name);
+						}
+					}
+				} else {
+					p_node->set_owner(nullptr);
+					memdelete(p_node);
+					p_node = nullptr;
+				}
+			}
+		}
+
+		has_any_node_type_suffixes = true;
+	}
+
+	if (!has_any_node_type_suffixes && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		//last attempt, maybe collision inside the mesh data
 
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
@@ -1017,7 +1029,9 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				_pre_gen_shape_list(mesh, shapes, true);
 				r_collision_map[mesh] = shapes;
 				mesh->set_name(_fixstr(mesh->get_name(), "convcol"));
-			} else if (_teststr(mesh->get_name(), "occ")) {
+			}
+
+			if (_teststr(mesh->get_name(), "occ")) {
 				if (r_occluder_arrays) {
 					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
 				}
