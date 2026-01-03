@@ -255,6 +255,7 @@ void LinkButton::_notification(int p_what) {
 
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
 				} break;
+				case DRAW_FOCUS_PRESSED:
 				case DRAW_HOVER_PRESSED:
 				case DRAW_PRESSED: {
 					if (has_theme_color(SNAME("font_pressed_color"))) {
