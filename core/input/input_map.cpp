@@ -900,7 +900,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 }
 
 void InputMap::load_default() {
-	HashMap<String, List<Ref<InputEvent>>> builtins = get_builtins_with_feature_overrides_applied();
+	const HashMap<String, List<Ref<InputEvent>>> &builtins = get_builtins_with_feature_overrides_applied();
 
 	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 		String name = E.key;
