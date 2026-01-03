@@ -345,7 +345,10 @@ void CharacterBody2D::_apply_floor_snap(bool p_wall_as_floor) {
 	real_t length = MAX(floor_snap_length, margin);
 
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
-	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
+	// Ignore recovery when treating wall as floor. Recovery happens
+	// only if we cancelled an earlier recovery motion, in which case
+	// it may report a collision with vertical wall unexpectedly.
+	parameters.recovery_as_collision = !p_wall_as_floor;
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer2D::MotionResult result;
