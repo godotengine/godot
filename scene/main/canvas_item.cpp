@@ -362,7 +362,7 @@ void CanvasItem::_notification(int p_what) {
 			_update_texture_filter_changed(false);
 			_update_texture_repeat_changed(false);
 
-			if (!block_transform_notify && !xform_change.in_list()) {
+			if (notify_transform && !block_transform_notify && !xform_change.in_list()) {
 				get_tree()->xform_change_list.add(&xform_change);
 			}
 
@@ -1073,21 +1073,19 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	 * notification anyway).
 	 */
 
-	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
-		return; //nothing to do
+	if (p_node->_is_global_invalid()) {
+		return;
 	}
 
 	p_node->_set_global_invalid(true);
 
-	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
-		if (!p_node->block_transform_notify) {
-			if (p_node->is_inside_tree()) {
-				if (is_accessible_from_caller_thread()) {
-					get_tree()->xform_change_list.add(&p_node->xform_change);
-				} else {
-					// Should be rare, but still needs to be handled.
-					callable_mp(p_node, &CanvasItem::_notify_transform_deferred).call_deferred();
-				}
+	if (p_node->is_inside_tree()) {
+		if (p_node->notify_transform && !p_node->block_transform_notify && !p_node->xform_change.in_list()) {
+			if (is_accessible_from_caller_thread()) {
+				get_tree()->xform_change_list.add(&p_node->xform_change);
+			} else {
+				// Should be rare, but still needs to be handled.
+				callable_mp(p_node, &CanvasItem::_notify_transform_deferred).call_deferred();
 			}
 		}
 	}
