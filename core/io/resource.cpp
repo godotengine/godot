@@ -77,7 +77,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 	}
 
 	{
-		MutexLock lock(ResourceCache::lock);
+		MutexLock lock(ResourceCache::resources_mutex);
 
 		if (!path_cache.is_empty()) {
 			ResourceCache::resources.erase(path_cache);
@@ -681,7 +681,7 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		return;
 	}
 
-	MutexLock lock(ResourceCache::lock);
+	MutexLock lock(ResourceCache::resources_mutex);
 
 	if (p_remapped) {
 		ResourceLoader::remapped_list.add(&remapped_list);
@@ -779,8 +779,8 @@ Resource::~Resource() {
 	if (unlikely(path_cache.is_empty())) {
 		return;
 	}
+	MutexLock lock(ResourceCache::resources_mutex);
 
-	MutexLock lock(ResourceCache::lock);
 	// Only unregister from the cache if this is the actual resource listed there.
 	// (Other resources can have the same value in `path_cache` if loaded with `CACHE_IGNORE`.)
 	HashMap<String, Resource *>::Iterator E = ResourceCache::resources.find(path_cache);
@@ -794,10 +794,13 @@ HashMap<String, Resource *> ResourceCache::resources;
 HashMap<String, HashMap<String, String>> ResourceCache::resource_path_cache;
 #endif
 
-Mutex ResourceCache::lock;
+Mutex ResourceCache::resources_mutex;
 #ifdef TOOLS_ENABLED
 RWLock ResourceCache::path_cache_lock;
 #endif
+
+Mutex ResourceCache::listener_mutex;
+Vector<EvictionListenRecord> ResourceCache::eviction_listeners;
 
 void ResourceCache::clear() {
 	if (!resources.is_empty()) {
@@ -815,20 +818,16 @@ void ResourceCache::clear() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-	Resource **res = nullptr;
+	MutexLock lock(resources_mutex);
+  
+	Resource **res = resources.getptr(p_path);
 
-	{
-		MutexLock mutex_lock(lock);
-
-		res = resources.getptr(p_path);
-
-		if (res && (*res)->get_reference_count() == 0) {
-			// This resource is in the process of being deleted, ignore its existence.
-			(*res)->path_cache = String();
-			resources.erase(p_path);
-			res = nullptr;
-		}
-	}
+  if (res && (*res)->get_reference_count() == 0) {
+    // This resource is in the process of being deleted, ignore its existence.
+    (*res)->path_cache = String();
+    resources.erase(p_path);
+    res = nullptr;
+  }
 
 	if (!res) {
 		return false;
@@ -837,10 +836,27 @@ bool ResourceCache::has(const String &p_path) {
 	return true;
 }
 
+bool ResourceCache::evict(const String &p_path) {
+	bool was_present = false;
+	{
+		MutexLock lock(resources_mutex);
+		was_present = resources.erase(p_path);
+	}
+
+	if (was_present) {
+		MutexLock lock(listener_mutex);
+		for (const EvictionListenRecord &rec : eviction_listeners) {
+			rec.listener(rec.context, p_path);
+		}
+	}
+
+	return was_present;
+}
+
 Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 	Ref<Resource> ref;
 	{
-		MutexLock mutex_lock(lock);
+		MutexLock lock(resources_mutex);
 		Resource **res = resources.getptr(p_path);
 
 		if (res) {
@@ -859,7 +875,7 @@ Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 }
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
-	MutexLock mutex_lock(lock);
+	MutexLock lock(resources_mutex);
 
 	LocalVector<String> to_remove;
 
@@ -882,6 +898,29 @@ void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 }
 
 int ResourceCache::get_cached_resource_count() {
-	MutexLock mutex_lock(lock);
+	MutexLock lock(resources_mutex);
 	return resources.size();
+}
+
+void ResourceCache::listen_for_eviction(void *p_context, void (*p_listener)(void *p_context, const String &p_path)) {
+	ResourceCache::unlisten_for_eviction(p_context);
+
+	MutexLock lock(listener_mutex);
+
+	EvictionListenRecord rec;
+	rec.context = p_context;
+	rec.listener = p_listener;
+	eviction_listeners.push_back(rec);
+}
+
+void ResourceCache::unlisten_for_eviction(void *p_context) {
+	MutexLock lock(listener_mutex);
+
+	for (int i = 0; i < eviction_listeners.size();) {
+		if (eviction_listeners[i].context == p_context) {
+			eviction_listeners.remove_at(i);
+			continue;
+		}
+		++i;
+	}
 }

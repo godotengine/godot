@@ -495,13 +495,23 @@ void GDScriptCache::clear() {
 	singleton->static_gdscript_cache.clear();
 }
 
+void GDScriptCache::_on_resource_evicted(void *p_context, const String &p_path) {
+	DEV_ASSERT(p_context == singleton);
+	DEV_ASSERT(singleton != nullptr);
+	if (p_path.ends_with(".gd")) {
+		GDScriptCache::remove_script(p_path);
+	}
+}
+
 GDScriptCache::GDScriptCache() {
 	singleton = this;
+	ResourceCache::listen_for_eviction(singleton, GDScriptCache::_on_resource_evicted);
 }
 
 GDScriptCache::~GDScriptCache() {
 	if (!cleared) {
 		clear();
 	}
+	ResourceCache::unlisten_for_eviction(singleton);
 	singleton = nullptr;
 }

@@ -195,11 +195,18 @@ public:
 
 VARIANT_ENUM_CAST(Resource::DeepDuplicateMode);
 
+struct EvictionListenRecord {
+	void (*listener)(void *p_context, const String &p_path);
+	void *context;
+};
+
 class ResourceCache {
 	friend class Resource;
-	friend class ResourceLoader; // Need the lock.
-	static Mutex lock;
+	friend class ResourceLoader; //need the lock
+	static Mutex resources_mutex;
 	static HashMap<String, Resource *> resources;
+	static Mutex listener_mutex;
+	static Vector<EvictionListenRecord> eviction_listeners;
 #ifdef TOOLS_ENABLED
 	static HashMap<String, HashMap<String, String>> resource_path_cache; // Each tscn has a set of resource paths and IDs.
 	static RWLock path_cache_lock;
@@ -213,4 +220,8 @@ public:
 	static Ref<Resource> get_ref(const String &p_path);
 	static void get_cached_resources(List<Ref<Resource>> *p_resources);
 	static int get_cached_resource_count();
+
+	static bool evict(const String &p_path);
+	static void listen_for_eviction(void *p_context, void (*p_listener)(void *p_context, const String &p_path));
+	static void unlisten_for_eviction(void *p_context);
 };
