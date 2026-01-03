@@ -1236,6 +1236,12 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		p_theme->set_constant("shadow_outline_size", "Label", 1 * EDSCALE);
 		p_theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
 		p_theme->set_constant("outline_size", "Label", 0);
+
+		// Label with no vertical margins.
+
+		p_theme->set_type_variation("LabelVMarginless", "Label");
+		Ref<StyleBoxEmpty> v_marginless_style = EditorThemeManager::make_empty_stylebox(p_config.base_empty_style->get_margin(SIDE_LEFT), 0, p_config.base_empty_style->get_margin(SIDE_RIGHT), 0);
+		p_theme->set_stylebox(CoreStringName(normal), "Label", v_marginless_style);
 	}
 
 	// SpinBox.
@@ -1842,6 +1848,8 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		// Flat button variations.
 		{
+			p_theme->set_type_variation(SceneStringName(FlatButton), "Button");
+
 			Ref<StyleBoxEmpty> style_flat_button = EditorThemeManager::make_empty_stylebox();
 			Ref<StyleBoxFlat> style_flat_button_hover = p_config.button_style_hover->duplicate();
 			Ref<StyleBoxFlat> style_flat_button_pressed = p_config.button_style_pressed->duplicate();
@@ -1866,6 +1874,13 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_stylebox(SceneStringName(hover), "FlatMenuButton", style_flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", style_flat_button_pressed);
 			p_theme->set_stylebox("disabled", "FlatMenuButton", style_flat_button);
+
+			// Variation for the AssetLib thumbnails.
+
+			p_theme->set_type_variation("ThumbnailButton", SceneStringName(FlatButton));
+			p_theme->set_color("icon_pressed_color", "ThumbnailButton", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_color", "ThumbnailButton", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_pressed_color", "ThumbnailButton", p_config.icon_normal_color);
 
 			// Variation for Editor Log filter buttons.
 
@@ -2361,11 +2376,11 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_stylebox(CoreStringName(normal), "EditorHelpBitContent", style);
 	}
 
-	// Asset Library.
+	// Asset Store.
 	p_theme->set_stylebox("bg", "AssetLib", p_config.base_empty_style);
 	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.content_panel_style);
 	p_theme->set_stylebox("downloads", "AssetLib", p_theme->get_stylebox(SceneStringName(panel), SNAME("Tree")));
-	p_theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5)); // FIXME: Use a defined color instead.
+	p_theme->set_color("faded_text", "AssetLib", p_config.font_disabled_color);
 	p_theme->set_icon("dismiss", "AssetLib", p_theme->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 
 	// Debugger.

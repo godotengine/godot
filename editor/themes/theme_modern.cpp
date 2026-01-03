@@ -1206,6 +1206,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("shadow_outline_size", "Label", 1 * EDSCALE);
 		p_theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
 		p_theme->set_constant("outline_size", "Label", 0);
+
+		// Label with no vertical margins.
+
+		p_theme->set_type_variation("LabelVMarginless", "Label");
+		Ref<StyleBoxEmpty> v_marginless_style = EditorThemeManager::make_empty_stylebox(label_style->get_margin(SIDE_LEFT), 0, label_style->get_margin(SIDE_RIGHT), 0);
+		p_theme->set_stylebox(CoreStringName(normal), "Label", v_marginless_style);
 	}
 
 	// SpinBox.
@@ -1854,6 +1860,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Flat button variations.
 		{
+			p_theme->set_type_variation(SceneStringName(FlatButton), "Button");
 			p_theme->set_stylebox(CoreStringName(normal), SceneStringName(FlatButton), p_config.base_empty_wide_style);
 			p_theme->set_stylebox(SceneStringName(hover), SceneStringName(FlatButton), p_config.flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), SceneStringName(FlatButton), p_config.flat_button_pressed);
@@ -1865,6 +1872,13 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", p_config.flat_button_pressed);
 			p_theme->set_stylebox("hover_pressed", "FlatMenuButton", p_config.flat_button_pressed);
 			p_theme->set_stylebox("disabled", "FlatMenuButton", p_config.base_empty_wide_style);
+
+			// Variation for the AssetLib thumbnails.
+
+			p_theme->set_type_variation("ThumbnailButton", SceneStringName(FlatButton));
+			p_theme->set_color("icon_pressed_color", "ThumbnailButton", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_color", "ThumbnailButton", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_pressed_color", "ThumbnailButton", p_config.icon_normal_color);
 
 			// Variation for Editor Log filter buttons.
 
@@ -2493,11 +2507,16 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(CoreStringName(normal), "EditorHelpBitContent", editor_help_content_style);
 	}
 
-	// Asset Library.
+	// Asset Store.
+	// Ref<StyleBoxFlat> assetlib_panel_style = p_config.base_style->duplicate();
+	// assetlib_panel_style->set_bg_color(p_config.surface_low_color);
+	// assetlib_panel_style->set_content_margin_all(p_config.base_margin * 2 * EDSCALE);
+
 	p_theme->set_stylebox("bg", "AssetLib", EditorThemeManager::make_empty_stylebox(p_config.base_margin, p_config.base_margin, p_config.base_margin, p_config.base_margin));
+	// p_theme->set_stylebox(SceneStringName(panel), "AssetLib", assetlib_panel_style);
 	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.foreground_panel);
 	p_theme->set_stylebox("downloads", "AssetLib", p_theme->get_stylebox(SceneStringName(panel), SNAME("ScrollContainerSecondary")));
-	p_theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5)); // FIXME: Use a defined color instead.
+	p_theme->set_color("faded_text", "AssetLib", p_config.font_disabled_color);
 	p_theme->set_icon("dismiss", "AssetLib", p_theme->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 
 	// Debugger.

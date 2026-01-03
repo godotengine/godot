@@ -112,7 +112,7 @@ void ProjectManager::_notification(int p_what) {
 			SceneTree::get_singleton()->get_root()->set_title(GODOT_VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 			const String line1 = TTR("You don't have any projects yet.");
-			const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Library!");
+			const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Store!");
 			empty_list_message->set_text(vformat("[center][b]%s[/b] %s[/center]", line1, line2));
 
 			_titlebar_resized();
@@ -239,7 +239,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		title_bar_logo->set_button_icon(get_editor_theme_icon("TitleBarLogo"));
 
 		_set_main_view_icon(MAIN_VIEW_PROJECTS, get_editor_theme_icon("ProjectList"));
-		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon("AssetLib"));
+		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon("AssetStore"));
 
 		// Project list.
 		{
@@ -295,7 +295,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		// Dialogs
 		migration_guide_button->set_button_icon(get_editor_theme_icon("ExternalLink"));
 
-		// Asset library popup.
+		// Asset store popup.
 		if (asset_library) {
 			// Removes extra border margins.
 			asset_library->add_theme_style_override(SceneStringName(panel), memnew(StyleBoxEmpty));
@@ -391,7 +391,6 @@ void ProjectManager::_open_asset_library_confirmed() {
 		EditorSettings::get_singleton()->save();
 	}
 
-	asset_library->disable_community_support();
 	_select_main_view(MAIN_VIEW_ASSETLIB);
 }
 
@@ -487,10 +486,10 @@ void ProjectManager::_update_list_placeholder() {
 
 	const int network_mode = EDITOR_GET("network/connection/network_mode");
 	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
-		empty_list_open_assetlib->set_text(TTRC("Go Online and Open Asset Library"));
+		empty_list_open_assetlib->set_text(TTRC("Go Online and Open Asset Store"));
 		empty_list_online_warning->set_visible(true);
 	} else {
-		empty_list_open_assetlib->set_text(TTRC("Open Asset Library"));
+		empty_list_open_assetlib->set_text(TTRC("Open Asset Store"));
 		empty_list_online_warning->set_visible(false);
 	}
 
@@ -1623,7 +1622,7 @@ ProjectManager::ProjectManager() {
 				empty_list_import_project->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_import_project));
 
 				empty_list_open_assetlib = memnew(Button);
-				empty_list_open_assetlib->set_text(TTRC("Open Asset Library"));
+				empty_list_open_assetlib->set_text(TTRC("Open Asset Store"));
 				empty_list_open_assetlib->set_theme_type_variation("PanelBackgroundButton");
 				empty_list_actions->add_child(empty_list_open_assetlib);
 				empty_list_open_assetlib->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_asset_library_confirmed));
@@ -1634,7 +1633,7 @@ ProjectManager::ProjectManager() {
 				empty_list_online_warning->set_custom_minimum_size(Size2(220, 0) * EDSCALE);
 				empty_list_online_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 				empty_list_online_warning->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-				empty_list_online_warning->set_text(TTRC("Note: The Asset Library requires an online connection and involves sending data over the internet."));
+				empty_list_online_warning->set_text(TTRC("Note: The Asset Store requires an online connection and involves sending data over the internet."));
 				empty_list_placeholder->add_child(empty_list_online_warning);
 			}
 
@@ -1720,18 +1719,18 @@ ProjectManager::ProjectManager() {
 		}
 	}
 
-	// Asset library view.
+	// Asset store view.
 	if (AssetLibraryEditorPlugin::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name("AssetLibraryTab");
-		_add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Library"), Ref<Texture2D>(), asset_library);
+		_add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Store"), Ref<Texture2D>(), asset_library);
 		asset_library->connect("install_asset", callable_mp(this, &ProjectManager::_install_project));
 	} else {
 		VBoxContainer *asset_library_filler = memnew(VBoxContainer);
 		asset_library_filler->set_name("AssetLibraryTab");
-		Button *asset_library_toggle = _add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Library"), Ref<Texture2D>(), asset_library_filler);
+		Button *asset_library_toggle = _add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Store"), Ref<Texture2D>(), asset_library_filler);
 		asset_library_toggle->set_disabled(true);
-		asset_library_toggle->set_tooltip_text(TTRC("Asset Library not available (due to using Web editor, or because SSL support disabled)."));
+		asset_library_toggle->set_tooltip_text(TTRC("Asset Store not available (due to using Web editor, or because SSL support disabled)."));
 	}
 
 	// Footer bar.
