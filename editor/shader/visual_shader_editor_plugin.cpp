@@ -8492,3 +8492,18 @@ Ref<Resource> VisualShaderConversionPlugin::convert(const Ref<Resource> &p_resou
 
 	return shader;
 }
+
+bool EditorExportVisualShader::_begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) {
+	return GLOBAL_GET("editor/export/convert_visual_shaders_to_text_shaders");
+}
+
+Ref<Resource> EditorExportVisualShader::_customize_resource(const Ref<Resource> &p_resource, const String &p_path) {
+	Ref<VisualShader> visual_shader = p_resource;
+	if (visual_shader.is_valid() && !visual_shader->has_node_embeds()) {
+		Ref<Shader> shader;
+		shader.instantiate();
+		shader->set_code(visual_shader->get_code());
+		return shader;
+	}
+	return Ref<Resource>();
+}

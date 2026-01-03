@@ -9177,6 +9177,10 @@ EditorNode::EditorNode() {
 
 	EditorExport::get_singleton()->add_export_plugin(dedicated_server_export_plugin);
 
+	Ref<EditorExportVisualShader> visual_shader_export;
+	visual_shader_export.instantiate();
+	EditorExport::get_singleton()->add_export_plugin(visual_shader_export);
+
 	Ref<ShaderBakerExportPlugin> shader_baker_export_plugin;
 	shader_baker_export_plugin.instantiate();
 

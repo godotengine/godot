@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "editor/editor_properties.h"
+#include "editor/export/editor_export_plugin.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
@@ -51,6 +53,19 @@ class Tree;
 
 class VisualShaderEditor;
 class MaterialEditor;
+
+class EditorExportVisualShader : public EditorExportPlugin {
+	GDCLASS(EditorExportVisualShader, EditorExportPlugin);
+
+	bool convert_shaders = true;
+
+protected:
+	virtual bool _begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) override;
+	virtual Ref<Resource> _customize_resource(const Ref<Resource> &p_resource, const String &p_path) override;
+
+public:
+	virtual String get_name() const override { return "VisualShader"; }
+};
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);
