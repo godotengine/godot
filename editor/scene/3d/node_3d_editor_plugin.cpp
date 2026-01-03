@@ -554,6 +554,10 @@ void Node3DEditorViewport::_view_settings_confirmed(real_t p_interp_delta) {
 	_update_camera(p_interp_delta);
 }
 
+bool Node3DEditorViewport::_is_rotation_arc_visible() const {
+	return _edit.mode == TRANSFORM_ROTATE && _edit.accumulated_rotation_angle != 0.0 && _edit.gizmo_initiated;
+}
+
 void Node3DEditorViewport::_update_navigation_controls_visibility() {
 	bool show_viewport_rotation_gizmo = EDITOR_GET("editors/3d/navigation/show_viewport_rotation_gizmo") && (!previewing_cinema && !previewing_camera);
 	rotation_control->set_visible(show_viewport_rotation_gizmo);
@@ -563,8 +567,13 @@ void Node3DEditorViewport::_update_navigation_controls_visibility() {
 	look_control->set_visible(show_viewport_navigation_gizmo);
 }
 
-bool Node3DEditorViewport::_is_rotation_arc_visible() const {
-	return _edit.mode == TRANSFORM_ROTATE && _edit.accumulated_rotation_angle != 0.0 && _edit.gizmo_initiated;
+void Node3DEditorViewport::_update_ui_interaction_state() {
+	Control::MouseFilter filter = _edit.instant ? MOUSE_FILTER_IGNORE : MOUSE_FILTER_PASS;
+
+	view_display_menu->set_mouse_filter(filter);
+	rotation_control->set_mouse_filter(filter);
+	position_control->set_mouse_filter(filter);
+	look_control->set_mouse_filter(filter);
 }
 
 void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
@@ -5572,6 +5581,7 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 		_edit.display_rotation_angle = 0.0;
 		_edit.gizmo_initiated = false;
 		update_transform_gizmo_view();
+		_update_ui_interaction_state();
 		set_process_input(instant);
 	}
 }
@@ -6001,6 +6011,7 @@ void Node3DEditorViewport::finish_transform() {
 	_edit.gizmo_initiated = false;
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	spatial_editor->update_transform_gizmo();
+	_update_ui_interaction_state();
 	surface->queue_redraw();
 	set_process_input(false);
 	clicked = ObjectID();

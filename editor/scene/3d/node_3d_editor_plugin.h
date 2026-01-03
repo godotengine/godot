@@ -476,6 +476,7 @@ private:
 	void _view_settings_confirmed(real_t p_interp_delta);
 	void _update_camera(real_t p_interp_delta);
 	void _update_navigation_controls_visibility();
+	void _update_ui_interaction_state();
 	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
