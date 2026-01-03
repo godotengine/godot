@@ -5114,6 +5114,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_audio_listener_3d"), &Viewport::get_audio_listener_3d);
 	ClassDB::bind_method(D_METHOD("get_camera_3d"), &Viewport::get_camera_3d);
+	ClassDB::bind_method(D_METHOD("is_camera_3d_override_enabled"), &Viewport::is_camera_3d_override_enabled);
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_3d", "enable"), &Viewport::set_as_audio_listener_3d);
 	ClassDB::bind_method(D_METHOD("is_audio_listener_3d"), &Viewport::is_audio_listener_3d);
 
