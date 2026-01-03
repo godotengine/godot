@@ -3156,19 +3156,19 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	Vector<Plane> planes = p_camera_data->main_projection.get_projection_planes(p_camera_data->main_transform);
 	cull.frustum = Frustum(planes);
 
-	Vector<RID> directional_lights;
+	directional_light_instances.clear();
+	lights_with_shadow.clear();
+
 	// directional lights
 	{
 		cull.shadow_count = 0;
-
-		Vector<Instance *> lights_with_shadow;
 
 		for (Instance *E : scenario->directional_lights) {
 			if (!E->visible || !(E->layer_mask & p_visible_layers)) {
 				continue;
 			}
 
-			if (directional_lights.size() >= RendererSceneRender::MAX_DIRECTIONAL_LIGHTS) {
+			if (directional_light_instances.size() >= RendererSceneRender::MAX_DIRECTIONAL_LIGHTS) {
 				break;
 			}
 
@@ -3181,7 +3181,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 					lights_with_shadow.push_back(E);
 				}
 				//add to list
-				directional_lights.push_back(light->instance);
+				directional_light_instances.push_back(light->instance);
 			}
 		}
 
@@ -3456,15 +3456,15 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		}
 
 		if (p_reflection_probe.is_null()) {
-			sdfgi_update_data.directional_lights = &directional_lights;
+			sdfgi_update_data.directional_lights = &directional_light_instances;
 			sdfgi_update_data.positional_light_instances = scenario->dynamic_lights.ptr();
 			sdfgi_update_data.positional_light_count = scenario->dynamic_lights.size();
 		}
 	}
 
 	//append the directional lights to the lights culled
-	for (int i = 0; i < directional_lights.size(); i++) {
-		scene_cull_result.light_instances.push_back(directional_lights[i]);
+	for (int i = 0; i < directional_light_instances.size(); i++) {
+		scene_cull_result.light_instances.push_back(directional_light_instances[i]);
 	}
 
 	RID camera_attributes;
