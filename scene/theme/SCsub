@@ -11,6 +11,6 @@ SConscript("icons/SCsub")
 
 env.CommandNoCache(
     "#scene/theme/default_font.gen.h",
-    "#thirdparty/fonts/OpenSans_SemiBold.woff2",
+    ["#thirdparty/fonts/OpenSans_SemiBold.woff2", "#thirdparty/fonts/Inter_SymbolSubset.woff2"],
     env.Run(default_theme_builders.make_fonts_header),
 )

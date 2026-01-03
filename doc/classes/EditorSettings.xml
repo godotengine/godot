@@ -1031,6 +1031,9 @@
 			If enabled, displays internal engine errors in toast notifications (toggleable by clicking the "bell" icon at the bottom of the editor). No matter the value of this setting, non-internal engine errors will always be visible in toast notifications.
 			The default [b]Auto[/b] value will only enable this if the editor was compiled with the [code]dev_build=yes[/code] SCons option (the default is [code]dev_build=no[/code]).
 		</member>
+		<member name="interface/editor/show_shortcuts_as_symbols" type="int" setter="" getter="">
+			If enabled, shortcuts in the editor menus are represented as symbols instead of words (e.g. "⌃ ⎇ ⌦" instead of "Ctrl+Alt+Del").
+		</member>
 		<member name="interface/editor/show_update_spinner" type="int" setter="" getter="">
 			If enabled, displays an icon in the top-right corner of the editor that spins when the editor redraws a frame. This can be used to diagnose situations where the engine is constantly redrawing, which should be avoided as this increases CPU and GPU utilization for no good reason. To further troubleshoot these situations, start the editor with the [code]--debug-canvas-item-redraw[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			Consider enabling this if you are developing editor plugins to ensure they only make the editor redraw when required.

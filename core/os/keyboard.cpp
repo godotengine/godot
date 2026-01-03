@@ -245,6 +245,87 @@ static const _KeyCodeText _keycodes[] = {
 	/* clang-format on */
 };
 
+static const _KeyCodeText _keycodes_alt[] = {
+	/* clang-format off */
+	{Key::ESCAPE                ,"⎋"},
+	{Key::TAB                   ,"⇥"},
+	{Key::BACKTAB               ,"⇤"},
+	{Key::BACKSPACE             ,"⌫"},
+	{Key::ENTER                 ,"↵"},
+
+	{Key::INSERT                ,"⎀"},
+	{Key::KEY_DELETE            ,"⌦"},
+	{Key::HOME                  ,"↖︎"},
+	{Key::END                   ,"↘︎"},
+	{Key::LEFT                  ,"←"},
+	{Key::UP                    ,"↑"},
+	{Key::RIGHT                 ,"→"},
+	{Key::DOWN                  ,"↓"},
+	{Key::PAGEUP                ,"⇞"},
+	{Key::PAGEDOWN              ,"⇟"},
+	{Key::SHIFT                 ,"⇧"},
+	{Key::CTRL                  ,"⌃"},
+#if defined(MACOS_ENABLED)
+	{Key::META                  ,"⌘"},
+	{Key::CMD_OR_CTRL           ,"⌘"},
+	{Key::ALT                   ,"⌥"},
+#elif defined(WINDOWS_ENABLED)
+	{Key::META                  ,"❖"},
+	{Key::CMD_OR_CTRL           ,"⌃"},
+	{Key::ALT                   ,"⎇"},
+#else
+	{Key::META                  ,"◆"},
+	{Key::CMD_OR_CTRL           ,"⌃"},
+	{Key::ALT                   ,"⎇"},
+#endif
+	{Key::CAPSLOCK              ,"⇪"},
+
+	{Key::HYPER                 ,"✦"},
+
+	{Key::JIS_EISU              ,"英数"},
+	{Key::JIS_KANA              ,"かな"},
+	{Key::UNKNOWN               ,"�"},
+	{Key::SPACE                 ,"␣"},
+	{Key::EXCLAM                ,"!"},
+	{Key::QUOTEDBL              ,"\""},
+	{Key::NUMBERSIGN            ,"#"},
+	{Key::DOLLAR                ,"$"},
+	{Key::PERCENT               ,"%"},
+	{Key::AMPERSAND             ,"&"},
+	{Key::APOSTROPHE            ,"'"},
+	{Key::PARENLEFT             ,"("},
+	{Key::PARENRIGHT            ,")"},
+	{Key::ASTERISK              ,"*"},
+	{Key::PLUS                  ,"+"},
+	{Key::COMMA                 ,","},
+	{Key::MINUS                 ,"-"},
+	{Key::PERIOD                ,"."},
+	{Key::SLASH                 ,"/"},
+
+	{Key::COLON                 ,":"},
+	{Key::SEMICOLON             ,";'"},
+	{Key::LESS                  ,"<"},
+	{Key::EQUAL                 ,"="},
+	{Key::GREATER               ,">"},
+	{Key::QUESTION              ,"?"},
+	{Key::AT                    ,"@"},
+
+	{Key::BRACKETLEFT           ,"["},
+	{Key::BACKSLASH             ,"\\"},
+	{Key::BRACKETRIGHT          ,"]"},
+	{Key::ASCIICIRCUM           ,"^"},
+	{Key::UNDERSCORE            ,"_"},
+	{Key::QUOTELEFT             ,"‘"},
+	{Key::BRACELEFT             ,"{"},
+	{Key::BAR                   ,"|"},
+	{Key::BRACERIGHT            ,"}"},
+	{Key::ASCIITILDE            ,"~"},
+	{Key::YEN                   ,"¥"},
+	{Key::SECTION               ,"§"},
+	{Key::NONE                  ,nullptr}
+	/* clang-format on */
+};
+
 bool keycode_has_unicode(Key p_keycode) {
 	switch (p_keycode) {
 		case Key::ESCAPE:
@@ -401,6 +482,57 @@ String keycode_get_string(Key p_code) {
 	return String("+").join(keycode_string);
 }
 
+String keycode_get_string_alt(Key p_code) {
+	Vector<String> keycode_string;
+	if ((p_code & KeyModifierMask::SHIFT) != Key::NONE) {
+		keycode_string.push_back(String::utf8(find_keycode_name_alt(Key::SHIFT)));
+	}
+	if ((p_code & KeyModifierMask::ALT) != Key::NONE) {
+		keycode_string.push_back(String::utf8(find_keycode_name_alt(Key::ALT)));
+	}
+	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE) {
+		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+			keycode_string.push_back(String::utf8(find_keycode_name_alt(Key::META)));
+		} else {
+			keycode_string.push_back(String::utf8(find_keycode_name_alt(Key::CTRL)));
+		}
+	}
+	if ((p_code & KeyModifierMask::CTRL) != Key::NONE) {
+		keycode_string.push_back(String::utf8(find_keycode_name_alt(Key::CTRL)));
+	}
+	if ((p_code & KeyModifierMask::META) != Key::NONE) {
+		keycode_string.push_back(String::utf8(find_keycode_name_alt(Key::META)));
+	}
+
+	p_code &= KeyModifierMask::CODE_MASK;
+	if ((char32_t)p_code == 0) {
+		// The key was just a modifier without any code.
+		return String(" ").join(keycode_string);
+	}
+
+	const _KeyCodeText *kct = &_keycodes_alt[0];
+	while (kct->text) {
+		if (kct->code == p_code) {
+			keycode_string.push_back(String::utf8(kct->text));
+			return String(" ").join(keycode_string);
+		}
+		kct++;
+	}
+
+	kct = &_keycodes[0];
+	while (kct->text) {
+		if (kct->code == p_code) {
+			keycode_string.push_back(String::utf8(kct->text));
+			return String(" ").join(keycode_string);
+		}
+		kct++;
+	}
+
+	// The key is a single character.
+	keycode_string.push_back(String::chr((char32_t)p_code));
+	return String(" ").join(keycode_string);
+}
+
 Key find_keycode(const String &p_codestr) {
 	Key keycode = Key::NONE;
 	Vector<String> code_parts = p_codestr.split("+");
@@ -437,6 +569,19 @@ Key find_keycode(const String &p_codestr) {
 
 const char *find_keycode_name(Key p_keycode) {
 	const _KeyCodeText *kct = &_keycodes[0];
+
+	while (kct->text) {
+		if (kct->code == p_keycode) {
+			return kct->text;
+		}
+		kct++;
+	}
+
+	return "";
+}
+
+const char *find_keycode_name_alt(Key p_keycode) {
+	const _KeyCodeText *kct = &_keycodes_alt[0];
 
 	while (kct->text) {
 		if (kct->code == p_keycode) {

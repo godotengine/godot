@@ -1052,6 +1052,9 @@ void EditorNode::_notification(int p_what) {
 			follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 			use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
 
+			PopupMenu::AltShortcuts alt_short = EDITOR_GET("interface/editor/show_shortcuts_as_symbols");
+			PopupMenu::set_default_alt_shortcuts(alt_short);
+
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				class_icon_cache.clear();
 				_update_theme();
@@ -8244,6 +8247,9 @@ EditorNode::EditorNode() {
 	int ed_root_dir = EDITOR_GET("interface/editor/ui_layout_direction");
 	Control::set_root_layout_direction(ed_root_dir);
 	Window::set_root_layout_direction(ed_root_dir);
+
+	PopupMenu::AltShortcuts alt_short = EDITOR_GET("interface/editor/show_shortcuts_as_symbols");
+	PopupMenu::set_default_alt_shortcuts(alt_short);
 
 	ResourceLoader::set_abort_on_missing_resources(false);
 	ResourceLoader::set_error_notify_func(&EditorNode::add_io_error);

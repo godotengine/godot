@@ -1378,6 +1378,19 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		dynamic_font->set_antialiasing(p_font_antialiasing);
 		dynamic_font->set_multichannel_signed_distance_field(p_font_msdf);
 		dynamic_font->set_generate_mipmaps(p_font_generate_mipmaps);
+
+		Ref<FontFile> symbol_font;
+		symbol_font.instantiate();
+		symbol_font->set_data_ptr(_font_Inter_SymbolSubset, _font_Inter_SymbolSubset_size);
+		symbol_font->set_subpixel_positioning(p_font_subpixel);
+		symbol_font->set_hinting(p_font_hinting);
+		symbol_font->set_antialiasing(p_font_antialiasing);
+		symbol_font->set_multichannel_signed_distance_field(p_font_msdf);
+		symbol_font->set_generate_mipmaps(p_font_generate_mipmaps);
+
+		TypedArray<Font> fallbacks;
+		fallbacks.push_back(symbol_font);
+		dynamic_font->set_fallbacks(fallbacks);
 #endif
 		default_font = dynamic_font;
 	}
