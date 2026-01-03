@@ -104,8 +104,11 @@ void EditorExportPreset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("are_advanced_options_enabled"), &EditorExportPreset::are_advanced_options_enabled);
 	ClassDB::bind_method(D_METHOD("is_dedicated_server"), &EditorExportPreset::is_dedicated_server);
 	ClassDB::bind_method(D_METHOD("get_export_filter"), &EditorExportPreset::get_export_filter);
+	ClassDB::bind_method(D_METHOD("set_include_filter", "include"), &EditorExportPreset::set_include_filter);
 	ClassDB::bind_method(D_METHOD("get_include_filter"), &EditorExportPreset::get_include_filter);
+	ClassDB::bind_method(D_METHOD("set_exclude_filter", "exclude"), &EditorExportPreset::set_exclude_filter);
 	ClassDB::bind_method(D_METHOD("get_exclude_filter"), &EditorExportPreset::get_exclude_filter);
+	ClassDB::bind_method(D_METHOD("set_custom_features", "custom_features"), &EditorExportPreset::set_custom_features);
 	ClassDB::bind_method(D_METHOD("get_custom_features"), &EditorExportPreset::get_custom_features);
 	ClassDB::bind_method(D_METHOD("get_patches"), &EditorExportPreset::get_patches);
 	ClassDB::bind_method(D_METHOD("get_export_path"), &EditorExportPreset::get_export_path);

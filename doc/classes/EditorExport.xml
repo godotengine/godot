@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExport" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Manages export platforms and presets for exporting Godot projects.
+	</brief_description>
+	<description>
+		Singleton class that handles the export system in Godot. It maintains collections of export platforms (like Windows, Linux, macOS, Android, iOS, Web) and export presets (configurations for each platform). This class is responsible for loading and saving export configurations, as well as providing access to export functionality through the editor.
+		Export platforms define how projects are exported to specific target platforms, while export presets store the configuration settings for each export target.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_export_platform">
+			<return type="void" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Adds an export platform to the available platform list. The platform is initialized and becomes available for creating export presets.
+			</description>
+		</method>
+		<method name="get_export_platform">
+			<return type="EditorExportPlatform" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the export platform at the specified index. Returns [code]null[/code] if the index is out of range.
+			</description>
+		</method>
+		<method name="get_export_platform_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of available export platforms.
+			</description>
+		</method>
+		<method name="get_export_platform_index_by_name">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the index of the export platform with the specified name. Returns [code]-1[/code] if no platform with that name is found.
+			</description>
+		</method>
+		<method name="get_export_preset">
+			<return type="EditorExportPreset" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the export preset at the specified index. Returns [code]null[/code] if the index is out of range.
+			</description>
+		</method>
+		<method name="get_export_preset_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of export presets.
+			</description>
+		</method>
+		<method name="has_preset_with_name" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="exclude_index" type="int" default="-1" />
+			<description>
+				Returns [code]true[/code] if an export preset with the specified name exists. The [param exclude_index] parameter can be used to exclude a specific preset from the check (useful when checking for name conflicts during renaming).
+			</description>
+		</method>
+		<method name="remove_export_platform">
+			<return type="void" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Removes the specified export platform from the available platform list. The platform is cleaned up before removal.
+			</description>
+		</method>
+		<method name="remove_export_preset">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes the export preset at the specified index. The preset configuration is saved after removal.
+			</description>
+		</method>
+	</methods>
+</class>
