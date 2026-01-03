@@ -134,6 +134,7 @@ EditorQuickOpenDialog::EditorQuickOpenDialog() {
 	search_box->connect(SceneStringName(gui_input), callable_mp(container, &QuickOpenResultContainer::handle_search_box_input));
 	register_text_enter(search_box);
 	get_ok_button()->hide();
+	set_process_shortcut_input(true);
 }
 
 String EditorQuickOpenDialog::get_dialog_title(const Vector<StringName> &p_base_types) {
@@ -276,6 +277,46 @@ void EditorQuickOpenDialog::cancel_pressed() {
 	}
 	container->cleanup();
 	search_box->clear();
+}
+
+void EditorQuickOpenDialog::shortcut_input(const Ref<InputEvent> &p_event) {
+	if (p_event.is_null() || !p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+
+	Ref<Shortcut> quick_open_shortcut = ED_GET_SHORTCUT("editor/quick_open");
+	Ref<Shortcut> quick_open_scene_shortcut = ED_GET_SHORTCUT("editor/quick_open_scene");
+	Ref<Shortcut> quick_open_script_shortcut = ED_GET_SHORTCUT("editor/quick_open_script");
+
+	Vector<StringName> new_base_types;
+
+	if (quick_open_shortcut.is_valid() && quick_open_shortcut->matches_event(p_event)) {
+		new_base_types.push_back("Resource");
+	} else if (quick_open_scene_shortcut.is_valid() && quick_open_scene_shortcut->matches_event(p_event)) {
+		new_base_types.push_back("PackedScene");
+	} else if (quick_open_script_shortcut.is_valid() && quick_open_script_shortcut->matches_event(p_event)) {
+		new_base_types.push_back("Script");
+	} else {
+		return;
+	}
+
+	// Check if we're already showing this dialog type
+	const Vector<StringName> &current_base_types = container->get_base_types();
+	if (current_base_types.size() == 1 && new_base_types.size() == 1) {
+		if (current_base_types[0] == new_base_types[0]) {
+			// Already showing the requested dialog type, ignore
+			return;
+		}
+	}
+
+	// Switch to the new dialog type
+	container->init(new_base_types);
+	container->set_instant_preview_toggle_visible(false);
+	set_title(get_dialog_title(new_base_types));
+	search_box->clear();
+	search_box->grab_focus();
+
+	set_input_as_handled();
 }
 
 void EditorQuickOpenDialog::_search_box_text_changed(const String &p_query) {
@@ -918,6 +959,10 @@ bool QuickOpenResultContainer::has_nothing_selected() const {
 String QuickOpenResultContainer::get_selected() const {
 	ERR_FAIL_COND_V_MSG(has_nothing_selected(), String(), "Tried to get selected file, but nothing was selected.");
 	return candidates[selection_index].file_path;
+}
+
+const Vector<StringName> &QuickOpenResultContainer::get_base_types() const {
+	return base_types;
 }
 
 QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const Vector<StringName> &p_base_types) {
