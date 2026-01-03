@@ -392,45 +392,55 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			if (!Math::is_zero_approx(base_adjustment)) {
 				StringName scale_base_bone_name = profile->get_scale_base_bone();
 				int src_bone_idx = src_skeleton->find_bone(scale_base_bone_name);
-				Transform3D src_rest = src_skeleton->get_bone_rest(src_bone_idx);
-				src_skeleton->set_bone_rest(src_bone_idx, Transform3D(src_rest.basis, Vector3(src_rest.origin.x, src_rest.origin.y + base_adjustment, src_rest.origin.z)));
+				if (src_bone_idx >= 0) {
+					Vector3 up_vector = Vector3(0, base_adjustment, 0);
 
-				TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
-				while (nodes.size()) {
-					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-					List<StringName> anims;
-					ap->get_animation_list(&anims);
-					for (const StringName &name : anims) {
-						Ref<Animation> anim = ap->get_animation(name);
-						int track_len = anim->get_track_count();
-						for (int i = 0; i < track_len; i++) {
-							if (anim->track_get_path(i).get_subname_count() != 1 || anim->track_get_type(i) != Animation::TYPE_POSITION_3D) {
-								continue;
-							}
+					int src_parent = src_skeleton->get_bone_parent(src_bone_idx);
+					if (src_parent >= 0) {
+						Quaternion global_diff = src_skeleton->get_bone_global_rest(src_parent).basis.get_rotation_quaternion();
+						up_vector = global_diff.xform_inv(up_vector);
+					}
 
-							if (anim->track_is_compressed(i)) {
-								continue; // Shouldn't occur in internal_process().
-							}
+					Transform3D src_rest = src_skeleton->get_bone_rest(src_bone_idx);
+					src_skeleton->set_bone_rest(src_bone_idx, Transform3D(src_rest.basis, src_rest.origin + up_vector));
 
-							String track_path = String(anim->track_get_path(i).get_concatenated_names());
-							Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
-							ERR_CONTINUE(!node);
+					TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
+					while (nodes.size()) {
+						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
+						List<StringName> anims;
+						ap->get_animation_list(&anims);
+						for (const StringName &name : anims) {
+							Ref<Animation> anim = ap->get_animation(name);
+							int track_len = anim->get_track_count();
+							for (int i = 0; i < track_len; i++) {
+								if (anim->track_get_path(i).get_subname_count() != 1 || anim->track_get_type(i) != Animation::TYPE_POSITION_3D) {
+									continue;
+								}
 
-							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
-							if (!track_skeleton || track_skeleton != src_skeleton) {
-								continue;
-							}
+								if (anim->track_is_compressed(i)) {
+									continue; // Shouldn't occur in internal_process().
+								}
 
-							StringName bn = anim->track_get_path(i).get_concatenated_subnames();
-							if (bn != scale_base_bone_name) {
-								continue;
-							}
+								String track_path = String(anim->track_get_path(i).get_concatenated_names());
+								Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
+								ERR_CONTINUE(!node);
 
-							int key_len = anim->track_get_key_count(i);
-							for (int j = 0; j < key_len; j++) {
-								Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
-								pos.y += base_adjustment;
-								anim->track_set_key_value(i, j, pos);
+								Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+								if (!track_skeleton || track_skeleton != src_skeleton) {
+									continue;
+								}
+
+								StringName bn = anim->track_get_path(i).get_concatenated_subnames();
+								if (bn != scale_base_bone_name) {
+									continue;
+								}
+
+								int key_len = anim->track_get_key_count(i);
+								for (int j = 0; j < key_len; j++) {
+									Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
+									pos += up_vector;
+									anim->track_set_key_value(i, j, pos);
+								}
 							}
 						}
 					}
@@ -740,10 +750,9 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 							if (is_using_modifier) {
 								int prof_idx = profile->find_bone(bn);
 								if (prof_idx < 0) {
-									if (keep_bone_rest.has(bone_idx)) {
-										warning_detected = true;
-									}
 									continue; // If is_using_modifier, the original skeleton rest is not changed.
+								} else if (keep_bone_rest.has(bone_idx)) {
+									warning_detected = true;
 								}
 							}
 
