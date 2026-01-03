@@ -44,6 +44,9 @@
 #include "core/os/time.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "core/logstream/log_stream.h"
+#include "core/logstream/log_stream_file_sink.h"
+#include "editor/log_stream_websocket_sink.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
@@ -133,6 +136,7 @@
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
+#include "editor/log_stream_dock.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_preview_plugins.h"
 #include "editor/inspector/editor_properties.h"
@@ -8089,6 +8093,48 @@ void EditorNode::notify_settings_overrides_changed() {
 	settings_overrides_changed = true;
 }
 
+void EditorNode::_setup_logstream_from_settings() {
+	EditorSettings *es = EditorSettings::get_singleton();
+	if (!es) {
+		return;
+	}
+
+	LogStreamRouter::Config cfg;
+	cfg.enabled = es->get_setting("logstream/enabled");
+	cfg.max_entries = es->get_setting("logstream/max_entries");
+	LogStreamRouter::create_singleton(cfg);
+	LogStreamRouter *router = LogStreamRouter::get_singleton();
+	if (!router) {
+		return;
+	}
+	router->configure(cfg);
+	router->clear_sinks();
+
+	// File sink
+	LogStreamFileSink::Config fc;
+	fc.enabled = es->get_setting("logstream/file_logging/enabled");
+	fc.path = es->get_setting("logstream/file_logging/path");
+	fc.jsonl = String(es->get_setting("logstream/file_logging/format")) != "plain";
+	fc.max_size_mb = es->get_setting("logstream/file_logging/max_size_mb");
+	router->add_sink(memnew(LogStreamFileSink(fc)));
+
+	// WebSocket sink
+	EditorLogStreamWebSocketSink::Config wc;
+	wc.enabled = es->get_setting("logstream/websocket/enabled");
+	wc.port = es->get_setting("logstream/websocket/port");
+	wc.batch_size = es->get_setting("logstream/websocket/batch_size");
+	wc.batch_msec = es->get_setting("logstream/websocket/batch_msec");
+	wc.auth_token = es->get_setting("logstream/websocket/auth_token");
+	websocket_sink = memnew(EditorLogStreamWebSocketSink(wc));
+	router->add_sink(websocket_sink);
+}
+
+void EditorNode::_poll_websocket_sink() {
+	if (websocket_sink) {
+		websocket_sink->poll_server();
+	}
+}
+
 // Returns the list of project settings to add to new projects. This is used by the
 // project manager creation dialog, but also applies to empty `project.godot` files
 // to cover the command line workflow of creating projects using `touch project.godot`.
@@ -8928,6 +8974,19 @@ EditorNode::EditorNode() {
 
 	log = memnew(EditorLog);
 	editor_dock_manager->add_dock(log);
+	log_stream_dock = memnew(LogStreamDock);
+	editor_dock_manager->add_dock(log_stream_dock);
+	_setup_logstream_from_settings();
+
+	// Timer for polling WebSocket sink (needed to accept connections even when idle)
+	websocket_poll_timer = memnew(Timer);
+	websocket_poll_timer->set_wait_time(0.1); // Poll every 100ms
+	websocket_poll_timer->set_autostart(true);
+	websocket_poll_timer->connect("timeout", callable_mp(this, &EditorNode::_poll_websocket_sink));
+	add_child(websocket_poll_timer);
+
+	// React to settings changes for logstream.
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_setup_logstream_from_settings));
 
 	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
 

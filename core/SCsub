@@ -168,6 +168,9 @@ env.core_sources += thirdparty_obj
 # Godot source files
 env.add_source_files(env.core_sources, "*.cpp")
 
+# LogStream sources
+env.add_source_files(env.core_sources, "logstream/*.cpp")
+
 # Generate disabled classes
 env.CommandNoCache(
     "disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(core_builders.disabled_class_builder)

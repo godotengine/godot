@@ -401,6 +401,20 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set(m_name, m_default_value);                                                             \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string, m_usage);
 
+	// LogStream defaults
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "logstream/enabled", true, "");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "logstream/max_entries", 5000, "100,20000,100");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "logstream/file_logging/enabled", true, "");
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "logstream/file_logging/path", "user://logs/editor.log", "");
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "logstream/file_logging/format", "jsonl,plain", "");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "logstream/file_logging/max_size_mb", 0, "0,1024,16");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "logstream/websocket/enabled", false, "");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "logstream/websocket/port", 17865, "1,65535,1");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "logstream/websocket/batch_size", 50, "1,500,1");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "logstream/websocket/batch_msec", 100, "10,2000,10");
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "logstream/websocket/auth_token", "", "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "logstream/ui/persist_filters", true, "");
+
 	/* Languages */
 
 	{
