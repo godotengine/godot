@@ -40,6 +40,7 @@
 #include "editor/inspector/editor_properties.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
@@ -154,6 +155,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 	for (const StringName &E : nodes) {
 		GraphNode *node = memnew(GraphNode);
 		graph->add_child(node);
+		node->set_theme(blend_msdf_fonts_theme);
 
 		node->set_draggable(!read_only);
 
@@ -1218,6 +1220,18 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	singleton = this;
 	updating = false;
 	use_position_from_popup_menu = false;
+
+	//////////
+	blend_msdf_fonts_theme.instantiate();
+
+	Ref<Font> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", EditorStringName(EditorFonts));
+	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
+
+	blend_msdf_fonts_theme->set_font(SceneStringName(font), "Label", label_font);
+	blend_msdf_fonts_theme->set_font(SceneStringName(font), "GraphNodeTitleLabel", label_bold_font);
+	blend_msdf_fonts_theme->set_font(SceneStringName(font), "LineEdit", label_font);
+	blend_msdf_fonts_theme->set_font(SceneStringName(font), "Button", label_font);
+	//////////
 
 	graph = memnew(GraphEdit);
 	add_child(graph);
