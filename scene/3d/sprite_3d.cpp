@@ -31,6 +31,7 @@
 #include "sprite_3d.h"
 
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/mesh.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -298,10 +299,15 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
 		last_shader = shader_rid;
 	}
-	if (last_texture != p_texture->get_rid()) {
-		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
+	RID texture_rid = p_texture->get_rid();
+	Ref<DPITexture> svg_texture = p_texture;
+	if (svg_texture.is_valid() && oversampling != 1.0) {
+		texture_rid = svg_texture->get_rid_for_scale(oversampling);
+	}
+	if (last_texture != texture_rid) {
+		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture_rid);
 		RS::get_singleton()->material_set_param(get_material(), "albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
-		last_texture = p_texture->get_rid();
+		last_texture = texture_rid;
 	}
 	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
 		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
@@ -826,10 +832,18 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 		return;
 	}
 	if (texture.is_valid()) {
+		Ref<DPITexture> svg_texture = texture;
+		if (svg_texture.is_valid() && oversampling != 1.0) {
+			svg_texture->unreference_scaling_level(oversampling);
+		}
 		texture->disconnect(CoreStringName(changed), callable_mp((SpriteBase3D *)this, &Sprite3D::_queue_redraw));
 	}
 	texture = p_texture;
 	if (texture.is_valid()) {
+		Ref<DPITexture> svg_texture = texture;
+		if (svg_texture.is_valid() && oversampling != 1.0) {
+			svg_texture->reference_scaling_level(oversampling);
+		}
 		texture->connect(CoreStringName(changed), callable_mp((SpriteBase3D *)this, &Sprite3D::_queue_redraw));
 	}
 
@@ -839,6 +853,28 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 
 Ref<Texture2D> Sprite3D::get_texture() const {
 	return texture;
+}
+
+void Sprite3D::set_oversampling(float p_oversampling) {
+	if (p_oversampling == oversampling) {
+		return;
+	}
+	ERR_FAIL_COND(p_oversampling < 0.1 || p_oversampling > 100.0);
+
+	Ref<DPITexture> svg_texture = texture;
+	if (svg_texture.is_valid() && oversampling != 1.0) {
+		svg_texture->unreference_scaling_level(oversampling);
+	}
+	oversampling = p_oversampling;
+	if (svg_texture.is_valid() && oversampling != 1.0) {
+		svg_texture->reference_scaling_level(oversampling);
+	}
+	_queue_redraw();
+	emit_signal(SceneStringName(texture_changed));
+}
+
+float Sprite3D::get_oversampling() const {
+	return oversampling;
 }
 
 void Sprite3D::set_region_enabled(bool p_region) {
@@ -984,6 +1020,9 @@ void Sprite3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void Sprite3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &Sprite3D::set_oversampling);
+	ClassDB::bind_method(D_METHOD("get_oversampling"), &Sprite3D::get_oversampling);
+
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite3D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite3D::get_texture);
 
@@ -1006,6 +1045,7 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite3D::get_hframes);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0.1,100.0,0.01"), "set_oversampling", "get_oversampling");
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
@@ -1020,6 +1060,13 @@ void Sprite3D::_bind_methods() {
 }
 
 Sprite3D::Sprite3D() {
+}
+
+Sprite3D::~Sprite3D() {
+	Ref<DPITexture> svg_texture = texture;
+	if (svg_texture.is_valid() && oversampling != 1.0) {
+		svg_texture->unreference_scaling_level(oversampling);
+	}
 }
 
 ////////////////////////////////////////
