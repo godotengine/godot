@@ -115,8 +115,8 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	}
 
 	@Override
-	public void onActivityDestroyed() {
-		requestRenderThreadExitAndWait();
+	public boolean blockingExitRenderer(long blockingTimeInMs) {
+		return requestRenderThreadExitAndWait(blockingTimeInMs);
 	}
 
 	@Override

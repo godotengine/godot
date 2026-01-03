@@ -108,6 +108,8 @@ class Godot private constructor(val context: Context) {
 			}
 		}
 
+		private const val EXIT_RENDERER_TIMEOUT_IN_MS = 750L
+
 		// Supported build flavors
 		private const val EDITOR_FLAVOR = "editor"
 		private const val TEMPLATE_FLAVOR = "template"
@@ -750,7 +752,12 @@ class Godot private constructor(val context: Context) {
 			plugin.onMainDestroy()
 		}
 
-		renderView?.onActivityDestroyed()
+		if (renderView?.blockingExitRenderer(EXIT_RENDERER_TIMEOUT_IN_MS) != true) {
+			Log.w(TAG, "Unable to exit the renderer within $EXIT_RENDERER_TIMEOUT_IN_MS ms.. Force quitting the process.")
+			onGodotTerminating()
+			forceQuit(0)
+		}
+
 		this.primaryHost = null
 	}
 
