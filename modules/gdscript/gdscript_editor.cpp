@@ -52,6 +52,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/animation/animation_player.h"
 #endif
 
 Vector<String> GDScriptLanguage::get_comment_delimiters() const {
@@ -3203,6 +3204,44 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						r_result.insert(option.display, option);
 					}
 				}
+
+				if ((p_argidx == 1 || p_argidx == 2) && p_call && ClassDB::is_parent_class(class_name, SNAME("AnimationPlayer")) && (method == SNAME("play_section_with_markers") || method == SNAME("play_section_with_markers_backwards"))) {
+					if (p_call->arguments.size() > 0 && p_call->arguments[0]->reduced && p_call->arguments[0]->reduced_value.is_string()) {
+						StringName animation_name = p_call->arguments[0]->reduced_value;
+						AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(base);
+						if (animation_player->has_animation(animation_name)) {
+							PackedStringArray marker_names = animation_player->get_animation(animation_name)->get_marker_names();
+							int64_t from = 0;
+							int64_t to = marker_names.size();
+							if (p_call->arguments.size() > 1 && p_call->arguments[1]->reduced && p_call->arguments[1]->reduced_value.is_string() && p_call->arguments[1]->reduced_value.booleanize()) {
+								if (p_argidx == 1) {
+									// For the start marker, only suggest markers that come before the end marker.
+									// Note that this code path can only happen if the start and end markers are both filled, and then the user tries to rewrite the start marker argument,
+									// so the end marker argument would move forward from slot 2 to slot 1 here.
+									int64_t idx = marker_names.rfind(p_call->arguments[1]->reduced_value);
+									if (idx >= 0) {
+										to = idx;
+									}
+								} else {
+									// For the end marker, only suggest markers that come after the start marker.
+									int64_t idx = marker_names.find(p_call->arguments[1]->reduced_value);
+									if (idx >= 0) {
+										from = idx + 1;
+									}
+								}
+							}
+
+							for (int64_t i = from; i < to; i++) {
+								ScriptLanguage::CodeCompletionOption option(marker_names[i].quote(), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+								r_result.insert(option.display, option);
+							}
+						}
+					}
+					// Empty marker is always valid.
+					ScriptLanguage::CodeCompletionOption option("\"\"", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					r_result.insert(option.display, option);
+				}
+
 				if (EDITOR_GET("text_editor/completion/complete_file_paths")) {
 					if (p_argidx == 0 && method == SNAME("change_scene_to_file") && ClassDB::is_parent_class(class_name, SNAME("SceneTree"))) {
 						HashMap<String, ScriptLanguage::CodeCompletionOption> list;
