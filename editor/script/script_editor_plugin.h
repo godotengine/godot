@@ -578,6 +578,7 @@ public:
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
+	void close_file(const String &p_file);
 
 	void ensure_select_current();
 
