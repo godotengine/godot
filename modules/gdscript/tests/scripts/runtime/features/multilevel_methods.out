@@ -1,0 +1,24 @@
+GDTEST_OK
+A
+C
+B
+Missing `PROPERTY_USAGE_SCRIPT_VARIABLE` flag.
+var script: Script
+  hint=RESOURCE_TYPE hint_string="Script" usage=DEFAULT|NEVER_DUPLICATE class_name=&"Script"
+var exported_property: Array
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE|ARRAY class_name=&""
+Missing `PROPERTY_USAGE_SCRIPT_VARIABLE` flag.
+var surname: String
+  hint=NONE hint_string="" usage=DEFAULT class_name=&""
+Missing `PROPERTY_USAGE_SCRIPT_VARIABLE` flag.
+var password: int
+  hint=NONE hint_string="" usage=DEFAULT class_name=&""
+surname: B-man
+password: 2137
+Setting password to: 420
+true
+false
+Get revert C
+fake
+Get revert C
+<null>

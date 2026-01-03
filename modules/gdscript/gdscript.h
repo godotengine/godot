@@ -385,7 +385,7 @@ public:
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
-	virtual void validate_property(PropertyInfo &p_property) const;
+	virtual void validate_property(PropertyInfo &r_property) const;
 
 	virtual bool property_can_revert(const StringName &p_name) const;
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const;

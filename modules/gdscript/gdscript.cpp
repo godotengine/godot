@@ -1860,20 +1860,19 @@ Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool
 	return Variant::NIL;
 }
 
-void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
+void GDScriptInstance::validate_property(PropertyInfo &r_property) const {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
 		if (likely(sptr->valid)) {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._validate_property);
 			if (E) {
-				Variant property = (Dictionary)p_property;
+				Variant property = (Dictionary)r_property;
 				const Variant *args[1] = { &property };
 
 				Callable::CallError err;
 				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
 				if (err.error == Callable::CallError::CALL_OK) {
-					p_property = PropertyInfo::from_dict(property);
-					return;
+					r_property = PropertyInfo::from_dict(property);
 				}
 			}
 		}
@@ -1942,8 +1941,10 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 
 		msort.sort();
 		msort.reverse();
-		for (int i = 0; i < msort.size(); i++) {
-			props.push_front(sptr->member_indices[msort[i].name].property_info);
+		for (_GDScriptMemberSort &member : msort) {
+			PropertyInfo info = sptr->member_indices[member.name].property_info;
+			validate_property(info);
+			props.push_front(info);
 		}
 
 #ifdef TOOLS_ENABLED
@@ -1951,7 +1952,6 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 #endif // TOOLS_ENABLED
 
 		for (PropertyInfo &prop : props) {
-			validate_property(prop);
 			p_properties->push_back(prop);
 		}
 
