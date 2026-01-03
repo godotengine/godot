@@ -324,3 +324,13 @@ real_t GodotConeTwistJoint3D::get_param(PhysicsServer3D::ConeTwistJointParam p_p
 
 	return 0;
 }
+
+float GodotConeTwistJoint3D::get_applied_force() const {
+	WARN_PRINT_ONCE("ConeTwistJoint3D->get_applied_force only works with Jolt Physics.");
+	return 0;
+}
+
+float GodotConeTwistJoint3D::get_applied_torque() const {
+	WARN_PRINT_ONCE("ConeTwistJoint3D->get_applied_torque only works with Jolt Physics.");
+	return 0;
+}

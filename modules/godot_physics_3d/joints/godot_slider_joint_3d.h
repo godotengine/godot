@@ -236,6 +236,9 @@ public:
 	void set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::SliderJointParam p_param) const;
 
+	float get_applied_force() const;
+	float get_applied_torque() const;
+
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
 

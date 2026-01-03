@@ -316,4 +316,7 @@ public:
 
 	void set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_value);
 	bool get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const;
+
+	float get_applied_force() const;
+	float get_applied_torque() const;
 };

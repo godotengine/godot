@@ -676,6 +676,8 @@ public:
 	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) = 0;
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const = 0;
 
+	virtual float pin_joint_get_applied_force(RID p_joint) const = 0;
+
 	enum HingeJointParam {
 		HINGE_JOINT_BIAS,
 		HINGE_JOINT_LIMIT_UPPER,
@@ -702,6 +704,9 @@ public:
 
 	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_enabled) = 0;
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const = 0;
+
+	virtual float hinge_joint_get_applied_force(RID p_joint) const = 0;
+	virtual float hinge_joint_get_applied_torque(RID p_joint) const = 0;
 
 	enum SliderJointParam {
 		SLIDER_JOINT_LINEAR_LIMIT_UPPER,
@@ -736,6 +741,9 @@ public:
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) = 0;
 	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const = 0;
 
+	virtual float slider_joint_get_applied_force(RID p_joint) const = 0;
+	virtual float slider_joint_get_applied_torque(RID p_joint) const = 0;
+
 	enum ConeTwistJointParam {
 		CONE_TWIST_JOINT_SWING_SPAN,
 		CONE_TWIST_JOINT_TWIST_SPAN,
@@ -749,6 +757,9 @@ public:
 
 	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) = 0;
 	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const = 0;
+
+	virtual float cone_twist_joint_get_applied_force(RID p_joint) const = 0;
+	virtual float cone_twist_joint_get_applied_torque(RID p_joint) const = 0;
 
 	enum G6DOFJointAxisParam {
 		G6DOF_JOINT_LINEAR_LOWER_LIMIT,
@@ -793,6 +804,9 @@ public:
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const = 0;
+
+	virtual float generic_6dof_joint_get_applied_force(RID p_joint) const = 0;
+	virtual float generic_6dof_joint_get_applied_torque(RID p_joint) const = 0;
 
 	/* QUERY API */
 
