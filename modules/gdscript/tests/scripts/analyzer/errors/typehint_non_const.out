@@ -1,0 +1,7 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 15: Member "ItemStatic" under base "UserDef" is not a valid type.
+>> ERROR at line 16: "Item" is a variable but does not contain a type.
+>> ERROR at line 17: "ItemStatic" is a variable but does not contain a type.
+>> ERROR at line 11: Member "ItemStatic" under base "UserDef" is not a valid type.
+>> ERROR at line 12: "Item" is a variable but does not contain a type.
+>> ERROR at line 13: "ItemStatic" is a variable but does not contain a type.
