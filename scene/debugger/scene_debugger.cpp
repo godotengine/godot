@@ -295,6 +295,12 @@ Error SceneDebugger::_msg_live_node_prop_res(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_live_node_prop_res_array(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 7, ERR_INVALID_DATA);
+	LiveEditor::get_singleton()->_node_set_res_array_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6]);
+	return OK;
+}
+
 Error SceneDebugger::_msg_live_node_prop(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 	LiveEditor::get_singleton()->_node_set_func(p_args[0], p_args[1], p_args[2]);
@@ -304,6 +310,12 @@ Error SceneDebugger::_msg_live_node_prop(const Array &p_args) {
 Error SceneDebugger::_msg_live_res_prop_res(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 	LiveEditor::get_singleton()->_res_set_res_func(p_args[0], p_args[1], p_args[2]);
+	return OK;
+}
+
+Error SceneDebugger::_msg_live_res_prop_res_array(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 7, ERR_INVALID_DATA);
+	LiveEditor::get_singleton()->_res_set_res_array_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6]);
 	return OK;
 }
 
@@ -566,8 +578,10 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["live_node_path"] = _msg_live_node_path;
 	message_handlers["live_res_path"] = _msg_live_res_path;
 	message_handlers["live_node_prop_res"] = _msg_live_node_prop_res;
+	message_handlers["live_node_prop_res_array"] = _msg_live_node_prop_res_array;
 	message_handlers["live_node_prop"] = _msg_live_node_prop;
 	message_handlers["live_res_prop_res"] = _msg_live_res_prop_res;
+	message_handlers["live_res_prop_res_array"] = _msg_live_res_prop_res_array;
 	message_handlers["live_res_prop"] = _msg_live_res_prop;
 	message_handlers["live_node_call"] = _msg_live_node_call;
 	message_handlers["live_res_call"] = _msg_live_res_call;
@@ -1137,6 +1151,32 @@ void LiveEditor::_node_set_res_func(int p_id, const StringName &p_prop, const St
 	_node_set_func(p_id, p_prop, r);
 }
 
+void LiveEditor::_node_set_res_array_func(int p_id, const StringName &p_prop, const Variant &p_value, const uint32_t &p_typed_builtin, const StringName &p_typed_class_name, const String &p_typed_script_path, const Array &p_res_indexes_array) {
+	Array array = p_value;
+
+	Array res_array;
+	Variant script;
+	if (!p_typed_script_path.is_empty()) {
+		script = ResourceLoader::load(p_typed_script_path);
+	}
+
+	res_array.set_typed(p_typed_builtin, p_typed_class_name, script);
+	res_array.resize(array.size());
+
+	for (int i = 0; i < array.size(); i++) {
+		if (array[i].get_type() != Variant::NIL && p_res_indexes_array.has(i)) {
+			Ref<Resource> res = ResourceLoader::load(array[i]);
+			if (res.is_valid()) {
+				res_array[i] = res;
+			}
+		} else {
+			res_array[i] = array[i];
+		}
+	}
+
+	_node_set_func(p_id, p_prop, res_array);
+}
+
 void LiveEditor::_node_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree) {
@@ -1226,6 +1266,32 @@ void LiveEditor::_res_set_res_func(int p_id, const StringName &p_prop, const Str
 		return;
 	}
 	_res_set_func(p_id, p_prop, r);
+}
+
+void LiveEditor::_res_set_res_array_func(int p_id, const StringName &p_prop, const Variant &p_value, const uint32_t &p_typed_builtin, const StringName &p_typed_class_name, const String &p_typed_script_path, const Array &p_res_indexes_array) {
+	Array array = p_value;
+
+	Array res_array;
+	Variant script;
+	if (!p_typed_script_path.is_empty()) {
+		script = ResourceLoader::load(p_typed_script_path);
+	}
+
+	res_array.set_typed(p_typed_builtin, p_typed_class_name, script);
+	res_array.resize(array.size());
+
+	for (int i = 0; i < array.size(); i++) {
+		if (array[i].get_type() != Variant::NIL && p_res_indexes_array.has(i)) {
+			Ref<Resource> res = ResourceLoader::load(array[i]);
+			if (res.is_valid()) {
+				res_array[i] = res;
+			}
+		} else {
+			res_array[i] = array[i];
+		}
+	}
+
+	_res_set_func(p_id, p_prop, res_array);
 }
 
 void LiveEditor::_res_call_func(int p_id, const StringName &p_method, const Variant **p_args, int p_argcount) {

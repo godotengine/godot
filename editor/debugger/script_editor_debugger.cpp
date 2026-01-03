@@ -1493,6 +1493,42 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 		NodePath path = EditorNode::get_singleton()->get_edited_scene()->get_path_to(node);
 		int pathid = _get_node_path_cache(path);
 
+		if (p_value.is_array()) {
+			Array array = p_value;
+			bool has_resources = false;
+
+			for (int i = 0; i < array.size(); i++) {
+				Ref<Resource> item_res = array[i];
+				if (item_res.is_valid() && !item_res->get_path().is_empty()) {
+					has_resources = true;
+				}
+			}
+
+			if (has_resources) {
+				Array res_array;
+				Array res_indexes_array;
+				res_array.resize(array.size());
+				for (int i = 0; i < array.size(); i++) {
+					Ref<Resource> item_res = array[i];
+					if (item_res.is_valid() && !item_res->get_path().is_empty()) {
+						res_array[i] = item_res->get_path();
+						res_indexes_array.push_back(i);
+					} else {
+						res_array[i] = array[i];
+					}
+				}
+
+				String script_path;
+				Ref<Script> array_script = array.get_typed_script();
+				if (array_script.is_valid()) {
+					script_path = array_script->get_path();
+				}
+
+				Array msg = { pathid, p_property, res_array, array.get_typed_builtin(), array.get_typed_class_name(), script_path, res_indexes_array };
+				_put_msg("scene:live_node_prop_res_array", msg);
+				return;
+			}
+		}
 		if (p_value.is_ref_counted()) {
 			Ref<Resource> res = p_value;
 			if (res.is_valid() && !res->get_path().is_empty()) {
@@ -1513,6 +1549,42 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
+		if (p_value.is_array()) {
+			Array array = p_value;
+			bool has_resources = false;
+
+			for (int i = 0; i < array.size(); i++) {
+				Ref<Resource> item_res = array[i];
+				if (item_res.is_valid() && !item_res->get_path().is_empty()) {
+					has_resources = true;
+				}
+			}
+
+			if (has_resources) {
+				Array res_array;
+				Array res_indexes_array;
+				res_array.resize(array.size());
+				for (int i = 0; i < array.size(); i++) {
+					Ref<Resource> item_res = array[i];
+					if (item_res.is_valid() && !item_res->get_path().is_empty()) {
+						res_array[i] = item_res->get_path();
+						res_indexes_array.push_back(i);
+					} else {
+						res_array[i] = array[i];
+					}
+				}
+
+				String script_path;
+				Ref<Script> array_script = array.get_typed_script();
+				if (array_script.is_valid()) {
+					script_path = array_script->get_path();
+				}
+
+				Array msg = { pathid, p_property, res_array, array.get_typed_builtin(), array.get_typed_class_name(), script_path, res_indexes_array };
+				_put_msg("scene:live_res_prop_res_array", msg);
+				return;
+			}
+		}
 		if (p_value.is_ref_counted()) {
 			Ref<Resource> res2 = p_value;
 			if (res2.is_valid() && !res2->get_path().is_empty()) {
