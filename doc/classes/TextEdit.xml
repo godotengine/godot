@@ -1565,7 +1565,19 @@
 		<constant name="MENU_EMOJI_AND_SYMBOL" value="30" enum="MenuItems">
 			Opens system emoji and symbol picker.
 		</constant>
-		<constant name="MENU_MAX" value="31" enum="MenuItems">
+		<constant name="MENU_SUBMENU_VARIATION" value="31" enum="MenuItems">
+			ID of "Emoji Style" submenu.
+		</constant>
+		<constant name="MENU_VARIATION_CLEAR" value="32" enum="MenuItems">
+			Removes all emoji related variation selectors (VS-15 and VS-16) from select text.
+		</constant>
+		<constant name="MENU_VARIATION_COLOR" value="33" enum="MenuItems">
+			Adds color emoji variation selectors (VS-16) to the select text.
+		</constant>
+		<constant name="MENU_VARIATION_TEXT" value="34" enum="MenuItems">
+			Adds text symbols variation selectors (VS-15) to the select text.
+		</constant>
+		<constant name="MENU_MAX" value="35" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
 		</constant>
 		<constant name="ACTION_NONE" value="0" enum="EditAction">

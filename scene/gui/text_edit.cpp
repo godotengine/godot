@@ -4646,6 +4646,60 @@ void TextEdit::menu_option(int p_option) {
 		case MENU_EMOJI_AND_SYMBOL: {
 			show_emoji_and_symbol_picker();
 		} break;
+		case MENU_VARIATION_CLEAR: {
+			if (!editable || !has_selection()) {
+				return;
+			}
+
+			String old_text = get_selected_text();
+			String new_text;
+			for (int i = 0; i < old_text.length(); i++) {
+				const char32_t &c = old_text[i];
+				if (c == 0xFE0F || c == 0xFE0E) {
+					continue;
+				}
+				new_text += c;
+			}
+			_replace_text_internal(-1, new_text);
+		} break;
+		case MENU_VARIATION_COLOR: {
+			if (!editable || !has_selection()) {
+				return;
+			}
+
+			String old_text = get_selected_text();
+			String new_text;
+			for (int i = 0; i < old_text.length(); i++) {
+				const char32_t &c = old_text[i];
+				if (c == 0xFE0F || c == 0xFE0E) {
+					continue;
+				}
+				new_text += c;
+				if (!is_whitespace(c) && !is_linebreak(c) && !is_control(c)) {
+					new_text += (char32_t)0xFE0F;
+				}
+			}
+			_replace_text_internal(-1, new_text);
+		} break;
+		case MENU_VARIATION_TEXT: {
+			if (!editable || !has_selection()) {
+				return;
+			}
+
+			String old_text = get_selected_text();
+			String new_text;
+			for (int i = 0; i < old_text.length(); i++) {
+				const char32_t &c = old_text[i];
+				if (c == 0xFE0F || c == 0xFE0E) {
+					continue;
+				}
+				new_text += c;
+				if (!is_whitespace(c) && !is_linebreak(c) && !is_control(c)) {
+					new_text += (char32_t)0xFE0E;
+				}
+			}
+			_replace_text_internal(-1, new_text);
+		} break;
 	}
 }
 
@@ -7235,6 +7289,10 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_INSERT_WJ);
 	BIND_ENUM_CONSTANT(MENU_INSERT_SHY);
 	BIND_ENUM_CONSTANT(MENU_EMOJI_AND_SYMBOL);
+	BIND_ENUM_CONSTANT(MENU_SUBMENU_VARIATION);
+	BIND_ENUM_CONSTANT(MENU_VARIATION_CLEAR);
+	BIND_ENUM_CONSTANT(MENU_VARIATION_COLOR);
+	BIND_ENUM_CONSTANT(MENU_VARIATION_TEXT);
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	/* Versioning */
@@ -7910,15 +7968,25 @@ void TextEdit::_paste_internal(int p_caret) {
 		// Nothing to paste.
 		return;
 	}
+	_replace_text_internal(p_caret, clipboard);
+}
+
+void TextEdit::_replace_text_internal(int p_caret, const String &p_text) {
+	ERR_FAIL_COND(p_caret >= get_caret_count() || p_caret < -1);
+	if (!editable) {
+		return;
+	}
+
+	String new_text = p_text;
 
 	// Paste a full line. Ignore '\r' characters that may have been added to the clipboard by the OS.
-	if (get_caret_count() == 1 && !has_selection(0) && !cut_copy_line.is_empty() && cut_copy_line == clipboard.remove_char('\r')) {
-		insert_text(clipboard, get_caret_line(), 0);
+	if (get_caret_count() == 1 && !has_selection(0) && !cut_copy_line.is_empty() && cut_copy_line == new_text.remove_char('\r')) {
+		insert_text(new_text, get_caret_line(), 0);
 		return;
 	}
 
 	// Paste text at each caret or one line per caret.
-	Vector<String> clipboard_lines = clipboard.split("\n");
+	Vector<String> clipboard_lines = new_text.split("\n");
 	bool insert_line_per_caret = p_caret == -1 && get_caret_count() > 1 && clipboard_lines.size() == get_caret_count();
 
 	begin_complex_operation();
@@ -7935,10 +8003,10 @@ void TextEdit::_paste_internal(int p_caret) {
 		}
 
 		if (insert_line_per_caret) {
-			clipboard = clipboard_lines[i];
+			new_text = clipboard_lines[i];
 		}
 
-		insert_text_at_caret(clipboard, caret_index);
+		insert_text_at_caret(new_text, caret_index);
 	}
 	end_multicaret_edit();
 	end_complex_operation();
@@ -8003,6 +8071,11 @@ void TextEdit::_generate_context_menu() {
 	menu_dir->add_radio_check_item(ETR("Left-to-Right"), MENU_DIR_LTR);
 	menu_dir->add_radio_check_item(ETR("Right-to-Left"), MENU_DIR_RTL);
 
+	menu_var = memnew(PopupMenu);
+	menu_var->add_radio_check_item(ETR("Clear Style"), MENU_VARIATION_CLEAR);
+	menu_var->add_radio_check_item(ETR("Use Color Emoji"), MENU_VARIATION_COLOR);
+	menu_var->add_radio_check_item(ETR("Use Text Symbols"), MENU_VARIATION_TEXT);
+
 	menu_ctl = memnew(PopupMenu);
 	menu_ctl->add_item(ETR("Left-to-Right Mark (LRM)"), MENU_INSERT_LRM);
 	menu_ctl->add_item(ETR("Right-to-Left Mark (RLM)"), MENU_INSERT_RLM);
@@ -8042,9 +8115,11 @@ void TextEdit::_generate_context_menu() {
 	menu->add_separator();
 	menu->add_check_item(ETR("Display Control Characters"), MENU_DISPLAY_UCC);
 	menu->add_submenu_node_item(ETR("Insert Control Character"), menu_ctl, MENU_SUBMENU_INSERT_UCC);
+	menu->add_submenu_node_item(ETR("Emoji Style"), menu_var, MENU_SUBMENU_VARIATION);
 
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
 	menu_dir->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
+	menu_var->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
 	menu_ctl->connect(SceneStringName(id_pressed), callable_mp(this, &TextEdit::menu_option));
 }
 
@@ -8096,6 +8171,7 @@ void TextEdit::_update_context_menu() {
 	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_RTL, text_direction == TEXT_DIRECTION_RTL)
 	MENU_ITEM_CHECKED(menu, MENU_DISPLAY_UCC, draw_control_chars)
 	MENU_ITEM_DISABLED(menu, MENU_SUBMENU_INSERT_UCC, !editable)
+	MENU_ITEM_DISABLED(menu, MENU_SUBMENU_VARIATION, !editable || !has_selection() || !TS->has_feature(TextServer::FEATURE_SHAPING))
 
 #undef MENU_ITEM_ACTION_DISABLED
 #undef MENU_ITEM_ACTION

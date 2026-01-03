@@ -1750,14 +1750,16 @@ void LineEdit::paste_text() {
 	}
 
 	// Strip escape characters like \n and \t as they can't be displayed on LineEdit.
-	String paste_buffer = DisplayServer::get_singleton()->clipboard_get().strip_escapes();
+	_replace_text_internal(DisplayServer::get_singleton()->clipboard_get().strip_escapes());
+}
 
-	if (!paste_buffer.is_empty()) {
+void LineEdit::_replace_text_internal(const String &p_text) {
+	if (!p_text.is_empty()) {
 		int prev_len = text.length();
 		if (selection.enabled) {
 			selection_delete();
 		}
-		insert_text_at_caret(paste_buffer);
+		insert_text_at_caret(p_text);
 
 		if (!text_changed_dirty) {
 			if (is_inside_tree() && text.length() != prev_len) {
@@ -2805,6 +2807,60 @@ void LineEdit::menu_option(int p_option) {
 		case MENU_EMOJI_AND_SYMBOL: {
 			show_emoji_and_symbol_picker();
 		} break;
+		case MENU_VARIATION_CLEAR: {
+			if (!editable || !has_selection()) {
+				return;
+			}
+
+			String old_text = get_selected_text();
+			String new_text;
+			for (int i = 0; i < old_text.length(); i++) {
+				const char32_t &c = old_text[i];
+				if (c == 0xFE0F || c == 0xFE0E) {
+					continue;
+				}
+				new_text += c;
+			}
+			_replace_text_internal(new_text);
+		} break;
+		case MENU_VARIATION_COLOR: {
+			if (!editable || !has_selection()) {
+				return;
+			}
+
+			String old_text = get_selected_text();
+			String new_text;
+			for (int i = 0; i < old_text.length(); i++) {
+				const char32_t &c = old_text[i];
+				if (c == 0xFE0F || c == 0xFE0E) {
+					continue;
+				}
+				new_text += c;
+				if (!is_whitespace(c) && !is_linebreak(c) && !is_control(c)) {
+					new_text += (char32_t)0xFE0F;
+				}
+			}
+			_replace_text_internal(new_text);
+		} break;
+		case MENU_VARIATION_TEXT: {
+			if (!editable || !has_selection()) {
+				return;
+			}
+
+			String old_text = get_selected_text();
+			String new_text;
+			for (int i = 0; i < old_text.length(); i++) {
+				const char32_t &c = old_text[i];
+				if (c == 0xFE0F || c == 0xFE0E) {
+					continue;
+				}
+				new_text += c;
+				if (!is_whitespace(c) && !is_linebreak(c) && !is_control(c)) {
+					new_text += (char32_t)0xFE0E;
+				}
+			}
+			_replace_text_internal(new_text);
+		} break;
 	}
 
 	// Mirror paste/drag behavior, emit text_changed signal if a control character was inserted.
@@ -3201,6 +3257,11 @@ void LineEdit::_generate_context_menu() {
 	menu_dir->add_radio_check_item(ETR("Left-to-Right"), MENU_DIR_LTR);
 	menu_dir->add_radio_check_item(ETR("Right-to-Left"), MENU_DIR_RTL);
 
+	menu_var = memnew(PopupMenu);
+	menu_var->add_radio_check_item(ETR("Clear Style"), MENU_VARIATION_CLEAR);
+	menu_var->add_radio_check_item(ETR("Use Color Emoji"), MENU_VARIATION_COLOR);
+	menu_var->add_radio_check_item(ETR("Use Text Symbols"), MENU_VARIATION_TEXT);
+
 	menu_ctl = memnew(PopupMenu);
 	menu_ctl->add_item(ETR("Left-to-Right Mark (LRM)"), MENU_INSERT_LRM);
 	menu_ctl->add_item(ETR("Right-to-Left Mark (RLM)"), MENU_INSERT_RLM);
@@ -3240,9 +3301,11 @@ void LineEdit::_generate_context_menu() {
 	menu->add_separator();
 	menu->add_check_item(ETR("Display Control Characters"), MENU_DISPLAY_UCC);
 	menu->add_submenu_node_item(ETR("Insert Control Character"), menu_ctl, MENU_SUBMENU_INSERT_UCC);
+	menu->add_submenu_node_item(ETR("Emoji Style"), menu_var, MENU_SUBMENU_VARIATION);
 
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
 	menu_dir->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
+	menu_var->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
 	menu_ctl->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
 
 	menu->connect(SceneStringName(focus_entered), callable_mp(this, &LineEdit::_validate_caret_can_draw));
@@ -3297,6 +3360,7 @@ void LineEdit::_update_context_menu() {
 	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_RTL, text_direction == TEXT_DIRECTION_RTL)
 	MENU_ITEM_CHECKED(menu, MENU_DISPLAY_UCC, draw_control_chars)
 	MENU_ITEM_DISABLED(menu, MENU_SUBMENU_INSERT_UCC, !editable)
+	MENU_ITEM_DISABLED(menu, MENU_SUBMENU_VARIATION, !editable || !has_selection() || !TS->has_feature(TextServer::FEATURE_SHAPING))
 
 #undef MENU_ITEM_ACTION_DISABLED
 #undef MENU_ITEM_ACTION
@@ -3459,6 +3523,10 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_INSERT_WJ);
 	BIND_ENUM_CONSTANT(MENU_INSERT_SHY);
 	BIND_ENUM_CONSTANT(MENU_EMOJI_AND_SYMBOL);
+	BIND_ENUM_CONSTANT(MENU_SUBMENU_VARIATION);
+	BIND_ENUM_CONSTANT(MENU_VARIATION_CLEAR);
+	BIND_ENUM_CONSTANT(MENU_VARIATION_COLOR);
+	BIND_ENUM_CONSTANT(MENU_VARIATION_TEXT);
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_DEFAULT);
