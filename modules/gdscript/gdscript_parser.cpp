@@ -4733,14 +4733,35 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	} else if (p_annotation->name == SNAME("@export_multiline")) {
 		use_default_variable_type_check = false;
 
-		if (export_type.builtin_type != Variant::STRING && export_type.builtin_type != Variant::DICTIONARY) {
+		if (is_dict) {
+			DataType value_type = export_type.get_container_element_type_or_variant(0);
+
+			// Ensure that the dictionary value type is string for typed dictionaries with `@export_multiline`
+			if (value_type.builtin_type != Variant::STRING) {
+				Vector<Variant::Type> expected_types = { Variant::STRING, Variant::DICTIONARY };
+				push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+				return false;
+			};
+		} else if (export_type.builtin_type != Variant::STRING && export_type.builtin_type != Variant::DICTIONARY) {
 			Vector<Variant::Type> expected_types = { Variant::STRING, Variant::DICTIONARY };
 			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
 			return false;
 		}
 
 		if (export_type.builtin_type == Variant::DICTIONARY) {
-			variable->export_info.type = Variant::DICTIONARY;
+			is_dict = true;
+			export_type = export_type.get_container_element_type_or_variant(0);
+
+			// Infer the dictionary value type to be string with `@export_multiline` to avoid invalid values
+			DataType value_type;
+			value_type.kind = DataType::Kind::BUILTIN;
+			value_type.type_source = DataType::TypeSource::INFERRED;
+			value_type.builtin_type = Variant::STRING;
+			export_type.set_container_element_type(0, value_type);
+		}
+
+		if (is_dict) {
+			variable->export_info.type = export_type.builtin_type;
 		}
 	} else if (p_annotation->name == SNAME("@export")) {
 		use_default_variable_type_check = false;
@@ -4818,90 +4839,6 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 			push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
 			return false;
 		}
-
-		if (is_dict) {
-			String key_prefix = itos(variable->export_info.type);
-			if (variable->export_info.hint) {
-				key_prefix += "/" + itos(variable->export_info.hint);
-			}
-			key_prefix += ":" + variable->export_info.hint_string;
-
-			// Now parse value.
-			export_type = export_type.get_container_element_type(0);
-
-			if (export_type.is_variant() || export_type.has_no_type()) {
-				export_type.kind = GDScriptParser::DataType::BUILTIN;
-			}
-			switch (export_type.kind) {
-				case GDScriptParser::DataType::BUILTIN:
-					variable->export_info.type = export_type.builtin_type;
-					variable->export_info.hint = PROPERTY_HINT_NONE;
-					variable->export_info.hint_string = String();
-					break;
-				case GDScriptParser::DataType::NATIVE:
-				case GDScriptParser::DataType::SCRIPT:
-				case GDScriptParser::DataType::CLASS: {
-					const StringName class_name = _find_narrowest_native_or_global_class(export_type);
-					if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
-						variable->export_info.type = Variant::OBJECT;
-						variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
-						variable->export_info.hint_string = class_name;
-					} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
-						variable->export_info.type = Variant::OBJECT;
-						variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
-						variable->export_info.hint_string = class_name;
-					} else {
-						push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
-						return false;
-					}
-				} break;
-				case GDScriptParser::DataType::ENUM: {
-					if (export_type.is_meta_type) {
-						variable->export_info.type = Variant::DICTIONARY;
-					} else {
-						variable->export_info.type = Variant::INT;
-						variable->export_info.hint = PROPERTY_HINT_ENUM;
-
-						String enum_hint_string;
-						bool first = true;
-						for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
-							if (!first) {
-								enum_hint_string += ",";
-							} else {
-								first = false;
-							}
-							enum_hint_string += E.key.operator String().capitalize().xml_escape();
-							enum_hint_string += ":";
-							enum_hint_string += String::num_int64(E.value).xml_escape();
-						}
-
-						variable->export_info.hint_string = enum_hint_string;
-						variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
-						variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
-					}
-				} break;
-				default:
-					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
-					return false;
-			}
-
-			if (variable->export_info.hint == PROPERTY_HINT_NODE_TYPE && !ClassDB::is_parent_class(p_class->base_type.native_type, SNAME("Node"))) {
-				push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
-				return false;
-			}
-
-			String value_prefix = itos(variable->export_info.type);
-			if (variable->export_info.hint) {
-				value_prefix += "/" + itos(variable->export_info.hint);
-			}
-			value_prefix += ":" + variable->export_info.hint_string;
-
-			variable->export_info.type = Variant::DICTIONARY;
-			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
-			variable->export_info.hint_string = key_prefix + ";" + value_prefix;
-			variable->export_info.usage = PROPERTY_USAGE_DEFAULT;
-			variable->export_info.class_name = StringName();
-		}
 	} else if (p_annotation->name == SNAME("@export_enum")) {
 		use_default_variable_type_check = false;
 
@@ -4940,6 +4877,95 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		variable->export_info.type = original_export_type_builtin;
 		variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
 		variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
+		variable->export_info.usage = PROPERTY_USAGE_DEFAULT;
+		variable->export_info.class_name = StringName();
+	}
+
+	if (is_dict) {
+		bool is_multiline = variable->export_info.hint == PROPERTY_HINT_MULTILINE_TEXT;
+
+		String key_prefix = itos(variable->export_info.type);
+		if (!is_multiline && variable->export_info.hint) {
+			key_prefix += "/" + itos(variable->export_info.hint);
+		}
+		key_prefix += ":" + variable->export_info.hint_string;
+
+		// Now parse value.
+		export_type = export_type.get_container_element_type(0);
+
+		if (export_type.is_variant() || export_type.has_no_type()) {
+			export_type.kind = GDScriptParser::DataType::BUILTIN;
+		}
+		switch (export_type.kind) {
+			case GDScriptParser::DataType::BUILTIN:
+				variable->export_info.type = export_type.builtin_type;
+				variable->export_info.hint = PROPERTY_HINT_NONE;
+				variable->export_info.hint_string = String();
+				break;
+			case GDScriptParser::DataType::NATIVE:
+			case GDScriptParser::DataType::SCRIPT:
+			case GDScriptParser::DataType::CLASS: {
+				const StringName class_name = _find_narrowest_native_or_global_class(export_type);
+				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					variable->export_info.hint_string = class_name;
+				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
+					variable->export_info.hint_string = class_name;
+				} else {
+					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+					return false;
+				}
+			} break;
+			case GDScriptParser::DataType::ENUM: {
+				if (export_type.is_meta_type) {
+					variable->export_info.type = Variant::DICTIONARY;
+				} else {
+					variable->export_info.type = Variant::INT;
+					variable->export_info.hint = PROPERTY_HINT_ENUM;
+
+					String enum_hint_string;
+					bool first = true;
+					for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
+						if (!first) {
+							enum_hint_string += ",";
+						} else {
+							first = false;
+						}
+						enum_hint_string += E.key.operator String().capitalize().xml_escape();
+						enum_hint_string += ":";
+						enum_hint_string += String::num_int64(E.value).xml_escape();
+					}
+
+					variable->export_info.hint_string = enum_hint_string;
+					variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+					variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
+				}
+			} break;
+			default:
+				push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+				return false;
+		}
+
+		if (variable->export_info.hint == PROPERTY_HINT_NODE_TYPE && !ClassDB::is_parent_class(p_class->base_type.native_type, SNAME("Node"))) {
+			push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
+			return false;
+		}
+
+		String value_prefix = itos(variable->export_info.type);
+		if (is_multiline) {
+			variable->export_info.hint = PROPERTY_HINT_MULTILINE_TEXT;
+		}
+		if (variable->export_info.hint) {
+			value_prefix += "/" + itos(variable->export_info.hint);
+		}
+		value_prefix += ":" + variable->export_info.hint_string;
+
+		variable->export_info.type = Variant::DICTIONARY;
+		variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
+		variable->export_info.hint_string = key_prefix + ";" + value_prefix;
 		variable->export_info.usage = PROPERTY_USAGE_DEFAULT;
 		variable->export_info.class_name = StringName();
 	}
