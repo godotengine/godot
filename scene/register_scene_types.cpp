@@ -974,7 +974,6 @@ void register_scene_types() {
 
 	/* REGISTER RESOURCES */
 
-	GDREGISTER_ABSTRACT_CLASS(Shader);
 	GDREGISTER_CLASS(ParticleProcessMaterial);
 	SceneTree::add_idle_callback(ParticleProcessMaterial::flush_changes);
 	ParticleProcessMaterial::init_shaders();
