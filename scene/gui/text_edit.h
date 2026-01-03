@@ -585,6 +585,9 @@ private:
 	double minimap_scroll_ratio = 0.0;
 	double minimap_scroll_click_pos = 0.0;
 
+	int visible_rectangle_start = 0;
+	int visible_rectangle_end = 0;
+
 	void _update_minimap_hover();
 	void _update_minimap_click();
 	void _update_minimap_drag();

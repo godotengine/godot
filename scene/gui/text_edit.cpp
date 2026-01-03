@@ -1132,40 +1132,86 @@ void TextEdit::_notification(int p_what) {
 				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 				int tab_size = text.get_tab_size();
 
-				// Calculate viewport size and y offset.
-				int viewport_height = (draw_amount - 1) * minimap_line_height;
-				int control_height = _get_control_height() - viewport_height;
-				int viewport_offset_y = std::round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
-
-				// Calculate the first line.
-				int num_lines_before = std::round((viewport_offset_y) / minimap_line_height);
-				int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_vis_line;
-				if (minimap_line >= 0) {
-					minimap_line -= get_next_visible_line_index_offset_from(first_vis_line, 0, -num_lines_before).x;
-					minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
+				// Calculate the first line using scroll ratio.
+				double scroll_ratio = 0.0;
+				if (v_scroll->get_max() > 0) {
+					scroll_ratio = v_scroll->get_value() / v_scroll->get_max();
 				}
-				int minimap_draw_amount = minimap_visible_lines + get_line_wrap_count(minimap_line + 1);
+				int total_lines = text.size();
+				int total_visible_rows = get_total_visible_line_count(); // Include line wraps.
+
+				// Continuously adjust target to pad above, making the viewport shift down gradually.
+				// The minimap should always show minimap_visible_lines worth of content.
+				// As we scroll, the viewport rectangle should move from top to bottom of the minimap.
+
+				// The maximum row we can start from while keeping minimap full.
+				int max_start_row = MAX(0, total_visible_rows - minimap_visible_lines);
+
+				// Calculate the unreachable rows (rows beyond where scroll_ratio can reach).
+				// At max scroll (e.g., 0.93), we're missing 7% of the total range.
+				double unreachable_ratio = 1.0 - (v_scroll->get_max() > 0 ? (v_scroll->get_max() / (v_scroll->get_max() + v_scroll->get_page())) : 0.0);
+				int unreachable_rows = (int)(unreachable_ratio * total_visible_rows);
+
+				// Scale normally against max_start_row, then add compensation to reduce padding above.
+				int target_visible_row = 0;
+				if (max_start_row > 0) {
+					target_visible_row = (int)(scroll_ratio * max_start_row);
+					// Add the proportional unreachable rows to push content down (less padding above).
+					target_visible_row += (int)(scroll_ratio * unreachable_rows);
+					// Clamp to valid range.
+					target_visible_row = MIN(target_visible_row, max_start_row);
+				}
+
+				// Find the actual line number and wrap index that corresponds to this visible row.
+				int minimap_line = -1;
+				int minimap_wrap_index = 0;
+
+				int current_visible_row = 0;
+				for (int i = 0; i < total_lines; i++) {
+					if (!_is_line_hidden(i)) {
+						int wraps_in_line = get_line_wrap_count(i);
+						int rows_in_line = 1 + wraps_in_line;
+
+						if (current_visible_row + rows_in_line > target_visible_row) {
+							// Target is within this line.
+							minimap_line = i;
+							minimap_wrap_index = target_visible_row - current_visible_row;
+							break;
+						}
+						current_visible_row += rows_in_line;
+					}
+				}
+				if (minimap_line < 0) {
+					minimap_line = 0;
+					minimap_wrap_index = 0;
+				}
+				int max_minimap_height = minimap_visible_lines * 3;
 
 				// Draw the minimap.
 
-				// Add visual feedback when dragging or hovering the visible area rectangle.
-				Color viewport_color = theme_cache.caret_color;
-				if (dragging_minimap) {
-					viewport_color.a = 0.25;
-				} else if (hovering_minimap) {
-					viewport_color.a = 0.175;
-				} else {
-					viewport_color.a = 0.1;
-				}
+				Ref<FontVariation> font;
+				font.instantiate();
+				font->set_base_font(get_theme_font(SNAME("font")));
+				font->set_spacing(TextServer::SPACING_TOP, -3);
+				font->set_spacing(TextServer::SPACING_BOTTOM, -3);
+				int font_size = 12;
 
-				if (rtl) {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y, minimap_width, viewport_height), viewport_color);
-				} else {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), viewport_offset_y, minimap_width, viewport_height), viewport_color);
-				}
+				int mark_padding = 0;
+				visible_rectangle_start = 0;
+				visible_rectangle_end = 0;
+				int first_visible_line_index = get_first_visible_line();
+				int first_visible_wrap_index = first_visible_line_wrap_ofs;
+				int last_fully_visible_line_index = get_last_full_visible_line();
+				int last_fully_visible_wrap_index = get_last_full_visible_line_wrap_index();
+				int current_y_position = 0;
 
-				for (int i = 0; i < minimap_draw_amount; i++) {
-					minimap_line++;
+				int i = 0;
+				bool first_line = true; // Track if this is the first line to handle starting wrap index.
+				while (current_y_position < max_minimap_height && minimap_line < (int)text.size()) {
+					if (!first_line) {
+						minimap_line++;
+					}
+					first_line = false;
 
 					if (minimap_line < 0 || minimap_line >= (int)text.size()) {
 						break;
@@ -1203,10 +1249,26 @@ void TextEdit::_notification(int p_what) {
 						wrap_indent_line = _get_wrapped_indent_level(minimap_line, first_indent_line);
 						wrap_indent_line = MIN(wrap_indent_line, (minimap_width / minimap_char_size.x) * 0.6);
 					}
-					for (int line_wrap_index = 0; line_wrap_index < line_wrap_amount + 1; line_wrap_index++) {
+
+					bool is_comment_line = false;
+					bool is_region_line = false;
+					int indents = 0;
+					int indent_width = 0;
+
+					// Check for comment/region markers in the first wrap (wrap_rows[0]).
+					String first_wrap_trimmed = wrap_rows[0].strip_edges();
+					is_comment_line = first_wrap_trimmed.begins_with("#mark ");
+					is_region_line = first_wrap_trimmed.begins_with("#region ");
+					indents = wrap_rows[0].length() - wrap_rows[0].lstrip("\t").length();
+					indent_width = indents * tab_size;
+
+					// Start from minimap_wrap_index on the first line, 0 otherwise.
+					int starting_wrap_index = (i == 0) ? minimap_wrap_index : 0;
+
+					for (int line_wrap_index = starting_wrap_index; line_wrap_index < line_wrap_amount + 1; line_wrap_index++) {
 						if (line_wrap_index != 0) {
 							i++;
-							if (i >= minimap_draw_amount) {
+							if (current_y_position >= max_minimap_height) {
 								break;
 							}
 						}
@@ -1222,18 +1284,46 @@ void TextEdit::_notification(int p_what) {
 							last_wrap_column += wrap_rows[line_wrap_index - 1].length();
 						}
 
+						String trimmed_line = str.strip_edges();
+
+						int to_erase = 0;
+						if (line_wrap_index == 0) {
+							to_erase = is_comment_line ? 5 : (is_region_line ? 7 : 0);
+						}
+
+						String comment_label = trimmed_line.erase(0, to_erase).strip_edges();
+						int highlight_height = (is_comment_line || is_region_line) ? font->get_multiline_string_size(comment_label, HORIZONTAL_ALIGNMENT_LEFT, minimap_width - indent_width, font_size, -1, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE).y : 2;
+
+						int line_y_pos = i * 3 + mark_padding;
+
 						if (highlight_current_line && highlighted_lines.has(Pair<int, int>(minimap_line, line_wrap_index))) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, line_y_pos, minimap_width, highlight_height), theme_cache.current_line_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), line_y_pos, minimap_width, highlight_height), theme_cache.current_line_color);
 							}
 						} else if (line_background_color.a > 0) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, line_y_pos, minimap_width, highlight_height), line_background_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), line_y_pos, minimap_width, highlight_height), line_background_color);
 							}
+						}
+
+						if (minimap_line < first_visible_line_index || (minimap_line == first_visible_line_index && line_wrap_index < first_visible_wrap_index)) {
+							visible_rectangle_start = line_y_pos + highlight_height;
+						}
+						if (minimap_line < last_fully_visible_line_index || (minimap_line == last_fully_visible_line_index && line_wrap_index <= last_fully_visible_wrap_index)) {
+							visible_rectangle_end = line_y_pos + highlight_height;
+						}
+
+						if (is_comment_line || is_region_line) {
+							Color text_color = Color(color_map[color_map.size() - 1].second, 1.0);
+							Vector2 text_pos = Vector2(xmargin_end + 2 + indent_width, minimap_line_height * i + font_size - 2 + mark_padding);
+							draw_multiline_string(font, text_pos, comment_label, HORIZONTAL_ALIGNMENT_LEFT, minimap_width - indent_width, font_size, -1, text_color, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE);
+							mark_padding += highlight_height - 2;
+							current_y_position = line_y_pos + highlight_height;
+							continue;
 						}
 
 						Color next_color = current_color;
@@ -1282,9 +1372,9 @@ void TextEdit::_notification(int p_what) {
 
 							if (characters > 0) {
 								if (rtl) {
-									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(size.width - xpos - minimap_char_size.x * characters, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(size.width - xpos - minimap_char_size.x * characters, minimap_line_height * i + mark_padding), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
 								} else {
-									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(xpos, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(xpos, minimap_line_height * i + mark_padding), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
 								}
 							}
 
@@ -1309,7 +1399,26 @@ void TextEdit::_notification(int p_what) {
 								break;
 							}
 						}
+						current_y_position = line_y_pos + highlight_height;
 					}
+					i++;
+				}
+
+				// Add visual feedback when dragging or hovering the visible area rectangle.
+				Color viewport_color = theme_cache.caret_color;
+				if (dragging_minimap) {
+					viewport_color.a = 0.25;
+				} else if (hovering_minimap) {
+					viewport_color.a = 0.175;
+				} else {
+					viewport_color.a = 0.1;
+				}
+
+				// Visible area rectangle calculated within line loop.
+				if (rtl) {
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, visible_rectangle_start, minimap_width, visible_rectangle_end - visible_rectangle_start), viewport_color);
+				} else {
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), visible_rectangle_start, minimap_width, visible_rectangle_end - visible_rectangle_start), viewport_color);
 				}
 			}
 
@@ -2481,6 +2590,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				can_drag_minimap = false;
 				set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
 				click_select_held->stop();
+				queue_redraw();
 				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
@@ -5096,48 +5206,53 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 }
 
 int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
-	float rows = p_pos.y - _get_current_stylebox()->get_margin(SIDE_TOP);
-	rows /= (minimap_char_size.y + minimap_line_spacing);
-	rows += _get_v_scroll_offset();
-
-	// Calculate visible lines.
-	int minimap_visible_lines = get_minimap_visible_lines();
-	int visible_rows = get_visible_line_count() + 1;
-	int first_vis_line = get_first_visible_line() - 1;
-	int draw_amount = visible_rows + 1;
-	draw_amount += get_line_wrap_count(first_vis_line + 1);
+	// Calculate which row in the minimap was clicked (0 = top of minimap).
+	float clicked_y = p_pos.y - _get_current_stylebox()->get_margin(SIDE_TOP);
 	int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
+	int clicked_minimap_row = clicked_y / minimap_line_height;
 
-	// Calculate viewport size and y offset.
-	int viewport_height = (draw_amount - 1) * minimap_line_height;
-	int control_height = _get_control_height() - viewport_height;
-	int viewport_offset_y = std::round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
-
-	// Calculate the first line.
-	int num_lines_before = std::round((viewport_offset_y) / minimap_line_height);
-	int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_vis_line;
-	if (first_vis_line > 0 && minimap_line >= 0) {
-		minimap_line -= get_next_visible_line_index_offset_from(first_vis_line, 0, -num_lines_before).x;
-		minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
+	// Get current scroll state.
+	double scroll_ratio = 0.0;
+	if (v_scroll->get_max() > 0) {
+		scroll_ratio = v_scroll->get_value() / v_scroll->get_max();
 	}
 
-	if (minimap_line < 0) {
-		minimap_line = 0;
+	int total_lines = text.size();
+	int total_visible_rows = get_total_visible_line_count();
+	int minimap_visible_lines = get_minimap_visible_lines();
+
+	// Calculate the starting row using same logic as drawing code.
+	int max_start_row = MAX(0, total_visible_rows - minimap_visible_lines);
+	double unreachable_ratio = 1.0 - (v_scroll->get_max() > 0 ? (v_scroll->get_max() / (v_scroll->get_max() + v_scroll->get_page())) : 0.0);
+	int unreachable_rows = (int)(unreachable_ratio * total_visible_rows);
+
+	int minimap_start_row = 0;
+	if (max_start_row > 0) {
+		minimap_start_row = (int)(scroll_ratio * max_start_row);
+		minimap_start_row += (int)(scroll_ratio * unreachable_rows);
+		minimap_start_row = MIN(minimap_start_row, max_start_row);
 	}
 
-	int row = minimap_line + Math::floor(rows);
-	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || _is_hiding_enabled()) {
-		int f_ofs = get_next_visible_line_index_offset_from(minimap_line, first_visible_line_wrap_ofs, rows + (1 * SIGN(rows))).x - 1;
-		if (rows < 0) {
-			row = minimap_line - f_ofs;
-		} else {
-			row = minimap_line + f_ofs;
+	// The clicked row in document space.
+	int target_visible_row = minimap_start_row + clicked_minimap_row;
+	target_visible_row = CLAMP(target_visible_row, 0, total_visible_rows - 1);
+
+	// Convert visible row to actual line number.
+	int current_visible_row = 0;
+	for (int i = 0; i < total_lines; i++) {
+		if (!_is_line_hidden(i)) {
+			int wraps_in_line = get_line_wrap_count(i);
+			int rows_in_line = 1 + wraps_in_line;
+
+			if (current_visible_row + rows_in_line > target_visible_row) {
+				// Target is within this line.
+				return i;
+			}
+			current_visible_row += rows_in_line;
 		}
 	}
 
-	row = CLAMP(row, 0, text.size() - 1);
-
-	return row;
+	return CLAMP(total_lines - 1, 0, total_lines - 1);
 }
 
 bool TextEdit::is_dragging_cursor() const {
@@ -8901,9 +9016,8 @@ void TextEdit::_update_minimap_hover() {
 		return;
 	}
 
-	const int row = get_minimap_line_at_pos(mp);
-
-	bool new_hovering_minimap = row >= get_first_visible_line() && row <= get_last_full_visible_line();
+	// Use visible rectangle coordinates from drawing.
+	bool new_hovering_minimap = mp.y >= visible_rectangle_start && mp.y <= visible_rectangle_end;
 	if (new_hovering_minimap != hovering_minimap) {
 		// Only redraw if the hovering status changed.
 		hovering_minimap = new_hovering_minimap;
@@ -8922,15 +9036,14 @@ void TextEdit::_update_minimap_click() {
 	minimap_clicked = true;
 	dragging_minimap = true;
 
-	int row = get_minimap_line_at_pos(mp);
-
-	if (row >= get_first_visible_line() && (row < get_last_full_visible_line() || row >= (text.size() - 1))) {
+	if (mp.y >= visible_rectangle_start && mp.y <= visible_rectangle_end) {
 		minimap_scroll_ratio = v_scroll->get_as_ratio();
 		minimap_scroll_click_pos = mp.y;
 		can_drag_minimap = true;
 		return;
 	}
 
+	int row = get_minimap_line_at_pos(mp);
 	Point2i next_line = get_next_visible_line_index_offset_from(row, 0, -get_visible_line_count() / 2);
 	int first_line = MAX(0, row - next_line.x + 1);
 	double delta = get_scroll_pos_for_line(first_line, next_line.y) - get_v_scroll();
