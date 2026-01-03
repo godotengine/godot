@@ -700,6 +700,7 @@ private:
 		int hover_button_index_in_column = -1;
 
 		bool rtl = false;
+		int font_height = -1;
 	} cache;
 
 	int _get_title_button_height() const;
