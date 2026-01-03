@@ -2099,6 +2099,7 @@ void fragment_shader(in SceneData scene_data) {
 	}
 
 	//process ssr
+	vec3 ssr_light = vec3(0.0);
 	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
 		bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
 
@@ -2127,8 +2128,9 @@ void fragment_shader(in SceneData scene_data) {
 		// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
 		ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
 
-		// Alpha is premultiplied.
-		indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
+		// SSR is stored separately and will be applied after specular occlusion.
+		ssr_light = ssr.rgb;
+		indirect_specular_light = indirect_specular_light * (1.0 - ssr.a);
 	}
 
 	//finalize ambient light here
@@ -2177,6 +2179,8 @@ void fragment_shader(in SceneData scene_data) {
 		indirect_specular_light *= specular_occlusion;
 #endif // BENT_NORMAL_MAP_USED
 #endif // SPECULAR_OCCLUSION_DISABLED
+	   // Apply SSR after specular occlusion, so it doesn't get affected by the occlusion term.
+		indirect_specular_light += ssr_light;
 		ambient_light *= albedo.rgb;
 
 		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
