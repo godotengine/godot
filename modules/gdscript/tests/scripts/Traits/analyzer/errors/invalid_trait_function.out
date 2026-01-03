@@ -1,0 +1,11 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 23: "some_func" function is already declared in trait "TraitA". Traits do not extend/override members from using traits.
+>> ERROR at line 27: Class uses trait "TraitA" but does not implement function "some_func() -> Variant".
+>> ERROR at line 37: Function signature of "some_func_2" should be "some_func_2(Node) -> Variant" as declared in trait "TraitA".
+>> ERROR at line 41: Function signature of "some_func_3" should be "some_func_3(VariantVariant,) -> Variant" as declared in trait "TraitA".
+>> ERROR at line 34: "some_func_4" variable conflicts with an already-existing function in trait "TraitA".
+>> ERROR at line 30: "TraitA" trait use is already declared.
+>> ERROR at line 31: "move_and_collide" function from trait "BadTrait" conflicts with an already-existing native method of the using class.
+>> ERROR at line 32: Can not use "BadTrait2" trait since it shadows members from previous traits.
+>> ERROR at line 45: Cannot call a trait's functions directly; call through a class that uses it instead.
+>> ERROR at line 46: Cannot call a trait's functions directly; call through a class that uses it instead.
