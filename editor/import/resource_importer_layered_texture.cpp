@@ -267,11 +267,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	}
 
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
-	f->store_8('G');
-	f->store_8('S');
-	f->store_8('T');
-	f->store_8('L');
-
+	f->store_32(CompressedTextureLayered::FOURCC);
 	f->store_32(CompressedTextureLayered::FORMAT_VERSION);
 	f->store_32(p_images.size()); // For 2d layers or 3d depth.
 	f->store_32(mode);

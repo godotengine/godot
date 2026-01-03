@@ -149,11 +149,7 @@ Ref<Resource> ResourceFormatLoaderImage::load(const String &p_path, const String
 		return Ref<Resource>();
 	}
 
-	uint8_t header[4] = { 0, 0, 0, 0 };
-	f->get_buffer(header, 4);
-
-	bool unrecognized = header[0] != 'G' || header[1] != 'D' || header[2] != 'I' || header[3] != 'M';
-	if (unrecognized) {
+	if (f->get_32() != Image::FOURCC) {
 		if (r_error) {
 			*r_error = ERR_FILE_UNRECOGNIZED;
 		}

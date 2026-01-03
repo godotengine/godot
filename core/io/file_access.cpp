@@ -228,7 +228,7 @@ Ref<FileAccess> FileAccess::open_encrypted_pass(const String &p_path, ModeFlags 
 Ref<FileAccess> FileAccess::open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode) {
 	Ref<FileAccessCompressed> fac;
 	fac.instantiate();
-	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
+	fac->configure(FileAccessCompressed::FOURCC_DEFAULT, (Compression::Mode)p_compress_mode);
 	Error err = fac->open_internal(p_path, p_mode_flags);
 	last_file_open_error = err;
 	if (err) {

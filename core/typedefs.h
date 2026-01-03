@@ -302,6 +302,10 @@ constexpr T get_num_bits(T x) {
 	return floor_log2(x);
 }
 
+constexpr uint32_t make_fourcc(const char p_sig[5]) {
+	return static_cast<uint32_t>((p_sig[3] << 24U) | (p_sig[2] << 16U) | (p_sig[1] << 8U) | (p_sig[0]));
+}
+
 // Swap 16, 32 and 64 bits value for endianness.
 #if defined(__GNUC__)
 #define BSWAP16(x) __builtin_bswap16(x)

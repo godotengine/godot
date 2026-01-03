@@ -94,6 +94,9 @@ class ResourceLoaderBinary {
 	HashMap<String, Ref<Resource>> dependency_cache;
 
 public:
+	static constexpr uint32_t FOURCC_REGULAR = make_fourcc("RSRC");
+	static constexpr uint32_t FOURCC_COMPRESSED = make_fourcc("RSCC");
+
 	Ref<Resource> get_resource();
 	Error load();
 	void set_translation_remapped(bool p_remapped);

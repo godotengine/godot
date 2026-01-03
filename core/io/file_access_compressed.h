@@ -35,6 +35,12 @@
 
 class FileAccessCompressed : public FileAccess {
 	GDSOFTCLASS(FileAccessCompressed, FileAccess);
+
+public:
+	static constexpr uint32_t FOURCC_DEFAULT = make_fourcc("GCPF");
+	static constexpr uint32_t FOURCC_INTERNAL = make_fourcc("GCMP");
+
+private:
 	Compression::Mode cmode = Compression::MODE_ZSTD;
 	bool writing = false;
 	uint64_t write_pos = 0;
@@ -59,14 +65,14 @@ class FileAccessCompressed : public FileAccess {
 	Vector<ReadBlock> read_blocks;
 	uint64_t read_total = 0;
 
-	String magic = "GCMP";
+	uint32_t magic = FOURCC_INTERNAL;
 	mutable Vector<uint8_t> buffer;
 	Ref<FileAccess> f;
 
 	void _close();
 
 public:
-	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, uint32_t p_block_size = 4096);
+	void configure(uint32_t p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, uint32_t p_block_size = 4096);
 
 	Error open_after_magic(Ref<FileAccess> p_base);
 

@@ -537,7 +537,7 @@ String ShaderGLES3::_version_get_sha1(Version *p_version) const {
 }
 
 #ifndef WEB_ENABLED // not supported in webgl
-static const char *shader_file_header = "GLSC";
+static const uint32_t shader_file_header = make_fourcc("GLSC");
 static const uint32_t cache_file_version = 3;
 #endif
 
@@ -558,9 +558,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 		return false;
 	}
 
-	char header[5] = {};
-	f->get_buffer((uint8_t *)header, 4);
-	ERR_FAIL_COND_V(header != String(shader_file_header), false);
+	ERR_FAIL_COND_V(f->get_32() != shader_file_header, false);
 
 	uint32_t file_version = f->get_32();
 	if (file_version != cache_file_version) {
@@ -643,7 +641,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 	Error error;
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, &error);
 	ERR_FAIL_COND(f.is_null());
-	f->store_buffer((const uint8_t *)shader_file_header, 4);
+	f->store_32(shader_file_header);
 	f->store_32(cache_file_version);
 	f->store_32(variant_count);
 
