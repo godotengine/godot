@@ -44,6 +44,21 @@ void CameraFeedLinux::update_buffer_thread_func(void *p_func) {
 	}
 }
 
+bool CameraFeedLinux::is_format_supported(uint32_t p_pixel_format) {
+	switch (p_pixel_format) {
+		case V4L2_PIX_FMT_MJPEG:
+		case V4L2_PIX_FMT_JPEG:
+		case V4L2_PIX_FMT_YUYV:
+		case V4L2_PIX_FMT_YYUV:
+		case V4L2_PIX_FMT_YVYU:
+		case V4L2_PIX_FMT_UYVY:
+		case V4L2_PIX_FMT_VYUY:
+			return true;
+		default:
+			return false;
+	}
+}
+
 void CameraFeedLinux::_update_buffer() {
 	while (!exit_flag.is_set()) {
 		_read_frame();
@@ -105,6 +120,10 @@ void CameraFeedLinux::_query_device(const String &p_device_name) {
 }
 
 void CameraFeedLinux::_add_format(v4l2_fmtdesc p_description, v4l2_frmsize_discrete p_size, int p_frame_numerator, int p_frame_denominator) {
+	if (!CameraFeedLinux::is_format_supported(p_description.pixelformat)) {
+		return;
+	}
+
 	FeedFormat feed_format;
 	feed_format.width = p_size.width;
 	feed_format.height = p_size.height;
