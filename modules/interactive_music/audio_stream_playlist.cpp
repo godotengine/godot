@@ -50,11 +50,19 @@ void AudioStreamPlaylist::set_list_stream(int p_stream_index, Ref<AudioStream> p
 	ERR_FAIL_INDEX(p_stream_index, MAX_STREAMS);
 
 	AudioServer::get_singleton()->lock();
+	if (p_stream_index >= stream_count) {
+		stream_count = p_stream_index + 1;
+	}
 	audio_streams[p_stream_index] = p_stream;
 	for (AudioStreamPlaybackPlaylist *E : playbacks) {
 		E->_update_playback_instances();
 	}
 	AudioServer::get_singleton()->unlock();
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		notify_property_list_changed();
+	}
+#endif
 }
 
 Ref<AudioStream> AudioStreamPlaylist::get_list_stream(int p_stream_index) const {
