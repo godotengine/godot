@@ -167,6 +167,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 	ClassDB::bind_method(D_METHOD("set_use_accumulated_input", "enable"), &Input::set_use_accumulated_input);
 	ClassDB::bind_method(D_METHOD("is_using_accumulated_input"), &Input::is_using_accumulated_input);
+	ClassDB::bind_method(D_METHOD("set_joypad_enabled", "enable"), &Input::set_joypad_enabled);
+	ClassDB::bind_method(D_METHOD("is_joypad_enabled"), &Input::is_joypad_enabled);
 	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::flush_buffered_events);
 	ClassDB::bind_method(D_METHOD("set_emulate_mouse_from_touch", "enable"), &Input::set_emulate_mouse_from_touch);
 	ClassDB::bind_method(D_METHOD("is_emulating_mouse_from_touch"), &Input::is_emulating_mouse_from_touch);
@@ -175,6 +177,7 @@ void Input::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joypad_enabled"), "set_joypad_enabled", "is_joypad_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
 
@@ -367,7 +370,7 @@ static JoyButton _combine_device(JoyButton p_value, int p_device) {
 bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (disable_input || !joypad_enabled) {
 		return false;
 	}
 
@@ -574,7 +577,7 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
+	if (disable_input || !joypad_enabled) {
 		return 0;
 	}
 
@@ -1019,6 +1022,9 @@ bool Input::has_joy_light(int p_device) const {
 
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
 	_THREAD_SAFE_METHOD_
+	if (!joypad_enabled) {
+		return;
+	}
 	if (p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
 		return;
 	}
@@ -1032,6 +1038,9 @@ void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_st
 
 void Input::stop_joy_vibration(int p_device) {
 	_THREAD_SAFE_METHOD_
+	if (!joypad_enabled) {
+		return;
+	}
 	VibrationInfo vibration;
 	vibration.weak_magnitude = 0;
 	vibration.strong_magnitude = 0;
@@ -1309,6 +1318,14 @@ bool Input::is_using_accumulated_input() {
 	return use_accumulated_input;
 }
 
+void Input::set_joypad_enabled(bool p_enable) {
+	joypad_enabled = p_enable;
+}
+
+bool Input::is_joypad_enabled() {
+	return joypad_enabled;
+}
+
 void Input::release_pressed_events() {
 	flush_buffered_events(); // this is needed to release actions strengths
 
@@ -1331,6 +1348,9 @@ void Input::set_event_dispatch_function(EventDispatchFunc p_function) {
 
 void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 	_THREAD_SAFE_METHOD_;
+	if (!joypad_enabled) {
+		return;
+	}
 	Joypad &joy = joy_names[p_device];
 	ERR_FAIL_INDEX((int)p_button, (int)JoyButton::MAX);
 
@@ -1358,7 +1378,9 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 
 void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	_THREAD_SAFE_METHOD_;
-
+	if (!joypad_enabled) {
+		return;
+	}
 	ERR_FAIL_INDEX((int)p_axis, (int)JoyAxis::MAX);
 
 	Joypad &joy = joy_names[p_device];
@@ -2001,6 +2023,7 @@ Input::Input() {
 	gravity_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gravity", false);
 	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
 	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
+	joypad_enabled = GLOBAL_DEF_BASIC("input_devices/joypad/joypad_enabled", true);
 }
 
 Input::~Input() {

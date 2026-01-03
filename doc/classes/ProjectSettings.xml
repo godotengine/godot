@@ -1653,6 +1653,12 @@
 			If [code]false[/code], no input will be lost.
 			[b]Note:[/b] You should in nearly all cases prefer the [code]false[/code] setting. The legacy behavior is to enable supporting old projects that rely on the old logic, without changes to script.
 		</member>
+		<member name="input_devices/joypad/joypad_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables joypad input events and allows the use of joypad-related functions such as [method Input.is_joy_button_pressed], [method Input.get_joy_axis], [method Input.start_joy_vibration], and [method Input.stop_joy_vibration].
+			This also affects [method Input.is_action_just_pressed], [method Input.is_action_just_released], and [method Input.is_action_pressed].
+			To control this at runtime, use [member Input.joypad_enabled].
+			[b]Note:[/b] Disabling this option does not stop Godot from capturing/connecting to the joypad itself.
+		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].

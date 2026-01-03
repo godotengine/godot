@@ -1555,6 +1555,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (arg == "--single-threaded-scene") {
 			single_threaded_scene = true;
+		} else if (arg == "--disable-joypad") {
+			GLOBAL_DEF_BASIC("input_devices/joypad/joypad_enabled", false);
 		} else if (arg == "--build-solutions") { // Build the scripting solution such C#
 
 			auto_build_solutions = true;
