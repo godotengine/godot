@@ -5308,6 +5308,9 @@ String GDScriptParser::DataType::to_string() const {
 			if (is_meta_type) {
 				return GDScriptNativeClass::get_class_static();
 			}
+			if (native_type == WeakRef::get_class_static() && has_container_element_type(0)) {
+				return vformat("WeakRef[%s]", get_container_element_type(0).to_string());
+			}
 			return native_type.operator String();
 		case CLASS:
 			if (class_type->identifier != nullptr) {
@@ -5464,6 +5467,34 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 				result.class_name = GDScriptNativeClass::get_class_static();
 			} else {
 				result.class_name = native_type;
+				if (result.class_name == WeakRef::get_class_static() && has_container_element_type(0)) {
+					const DataType ref_type = get_container_element_type(0);
+					String ref_hint;
+					switch (ref_type.kind) {
+						case NATIVE:
+							ref_hint = ref_type.native_type;
+							break;
+						case SCRIPT:
+							if (ref_type.script_type.is_valid() && ref_type.script_type->get_global_name() != StringName()) {
+								ref_hint = ref_type.script_type->get_global_name();
+							} else {
+								ref_hint = ref_type.native_type;
+							}
+							break;
+						case CLASS:
+							if (ref_type.class_type != nullptr && ref_type.class_type->get_global_name() != StringName()) {
+								ref_hint = ref_type.class_type->get_global_name();
+							} else {
+								ref_hint = ref_type.native_type;
+							}
+							break;
+						default:
+							DEV_ASSERT(false); // should never be called
+							break;
+					}
+					result.hint = PROPERTY_HINT_WEAKREF_TYPE;
+					result.hint_string = ref_hint;
+				}
 			}
 			break;
 		case SCRIPT:

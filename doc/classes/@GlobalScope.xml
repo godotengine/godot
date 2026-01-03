@@ -2975,7 +2975,10 @@
 		<constant name="PROPERTY_HINT_FILE_PATH" value="44" enum="PropertyHint">
 			Like [constant PROPERTY_HINT_FILE], but the property is stored as a raw path, not UID. That means the reference will be broken if you move the file. Consider using [constant PROPERTY_HINT_FILE] when possible.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_WEAKREF_TYPE" value="45" enum="PropertyHint">
+			Hints that a property is a [WeakRef] and that the object being referenced is of the type specified in the hint string. The hint string contains the class name (e.g. [code]"Node"[/code]).
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="46" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

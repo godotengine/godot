@@ -582,7 +582,11 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							prop.is_bitfield = retinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 							prop.type = "int";
 						} else if (retinfo.class_name != StringName()) {
-							prop.type = retinfo.class_name;
+							if (retinfo.hint == PROPERTY_HINT_WEAKREF_TYPE) {
+								prop.type = "WeakRef[" + retinfo.hint_string + "]";
+							} else {
+								prop.type = retinfo.class_name;
+							}
 						} else if (retinfo.type == Variant::ARRAY && retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 							prop.type = retinfo.hint_string + "[]";
 						} else if (retinfo.type == Variant::DICTIONARY && retinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {

@@ -144,6 +144,13 @@ public:
 					return !was_freed;
 				}
 
+#ifdef DEBUG_ENABLED
+				if (native_type == WeakRef::get_class_static() && obj->get_class_name() == WeakRef::get_class_static() && has_container_element_type(0)) {
+					WeakRef *wr = (WeakRef *)obj;
+					GDScriptDataType ref_type = get_container_element_type(0);
+					return ref_type.is_type(wr->get_ref(), p_allow_implicit_conversion);
+				}
+#endif
 				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
 					return false;
 				}
@@ -269,7 +276,9 @@ public:
 		OPCODE_TYPE_TEST_ARRAY,
 		OPCODE_TYPE_TEST_DICTIONARY,
 		OPCODE_TYPE_TEST_NATIVE,
+		OPCODE_TYPE_TEST_NATIVE_WEAKREF,
 		OPCODE_TYPE_TEST_SCRIPT,
+		OPCODE_TYPE_TEST_SCRIPT_WEAKREF,
 		OPCODE_SET_KEYED,
 		OPCODE_SET_KEYED_VALIDATED,
 		OPCODE_SET_INDEXED_VALIDATED,
@@ -292,10 +301,14 @@ public:
 		OPCODE_ASSIGN_TYPED_ARRAY,
 		OPCODE_ASSIGN_TYPED_DICTIONARY,
 		OPCODE_ASSIGN_TYPED_NATIVE,
+		OPCODE_ASSIGN_TYPED_NATIVE_WEAKREF,
 		OPCODE_ASSIGN_TYPED_SCRIPT,
+		OPCODE_ASSIGN_TYPED_SCRIPT_WEAKREF,
 		OPCODE_CAST_TO_BUILTIN,
 		OPCODE_CAST_TO_NATIVE,
+		OPCODE_CAST_TO_NATIVE_WEAKREF,
 		OPCODE_CAST_TO_SCRIPT,
+		OPCODE_CAST_TO_SCRIPT_WEAKREF,
 		OPCODE_CONSTRUCT, // Only for basic types!
 		OPCODE_CONSTRUCT_VALIDATED, // Only for basic types!
 		OPCODE_CONSTRUCT_ARRAY,
