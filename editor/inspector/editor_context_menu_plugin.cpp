@@ -117,10 +117,10 @@ bool EditorContextMenuPluginManager::has_plugins_for_slot(ContextMenuSlot p_slot
 	return false;
 }
 
-void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths) {
+void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths, int p_id_offset) {
 	bool separator_added = false;
 	const int icon_size = p_popup->get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
-	int id = EditorContextMenuPlugin::BASE_ID;
+	int id = EditorContextMenuPlugin::BASE_ID + p_id_offset;
 
 	for (Ref<EditorContextMenuPlugin> &plugin : plugin_list) {
 		if (plugin->slot != p_slot) {
