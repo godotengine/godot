@@ -12,6 +12,16 @@
 		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/2728</link>
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
 	</tutorials>
+	<methods>
+		<method name="contains_point" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+				Returns whether a given global [Vector2] point lies within the [CollisionShape2D]'s underlying [Shape2D]. 
+				[b]Note:[/b] If the [CollisionShape2D] is not owned by a [Node2D], it will return [code]false[/code].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="debug_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0, 0, 0)">
 			The collision shape color that is displayed in the editor, or in the running project if [b]Debug &gt; Visible Collision Shapes[/b] is checked at the top of the editor.
