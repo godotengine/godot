@@ -128,7 +128,24 @@ class GDScriptAnalyzer {
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property, bool p_is_arg = false, bool p_is_readonly = false) const;
 	GDScriptParser::DataType make_global_class_meta_type(const StringName &p_class_name, const GDScriptParser::Node *p_source);
+
+	/**
+	 * @brief Attempts to look up the function signature for a function based on name and base type.
+	 *
+	 * @param[in]  p_source             The source node in context of which the signature is being resolved. Used for error reporting.
+	 * @param[in]  p_is_constructor     If the target function call is a constructor. In this case `p_function` is always "new".
+	 * @param[in]  base_type            The target type to resolve the function on. If looking for a function `SomeClass.a_function()`, this is `SomeClass`.
+	 * @param[in]  p_function           The name of the target function.
+	 * @param[out] r_return_type        The return type of the found function.
+	 * @param[out] r_par_types          A list of the parameters types of the found function, in order from left to right.
+	 * @param[out] r_default_arg_count  The number of parameters which have default values.
+	 * @param[out] r_method_flags       The flags of the found function.
+	 * @param[out] r_native_class       If DEBUG_ENABLED=1, and the found function is a native method, the string name of the owning native class. Otherwise an empty string name.
+	 *
+	 * @return True if the function signature was successfully resolved, false otherwise. See the remaining output variables for other data.
+	 */
 	bool get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class = nullptr);
+
 	bool function_signature_from_info(const MethodInfo &p_info, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags);
 	void validate_call_arg(const List<GDScriptParser::DataType> &p_par_types, int p_default_args_count, bool p_is_vararg, const GDScriptParser::CallNode *p_call);
 	void validate_call_arg(const MethodInfo &p_method, const GDScriptParser::CallNode *p_call);

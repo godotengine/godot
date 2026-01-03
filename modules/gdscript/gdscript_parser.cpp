@@ -150,6 +150,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
+		register_annotation(MethodInfo("@override"), AnnotationInfo::FUNCTION, &GDScriptParser::override_annotation);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
@@ -335,6 +336,7 @@ void GDScriptParser::override_completion_context(const Node *p_for_node, Complet
 	context.current_function = current_function;
 	context.current_suite = current_suite;
 	context.current_line = tokenizer->get_cursor_line();
+	context.current_column = tokenizer->get_cursor_column();
 	context.current_argument = p_argument;
 	context.node = p_node;
 	context.parser = this;
@@ -357,6 +359,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node
 	context.current_function = current_function;
 	context.current_suite = current_suite;
 	context.current_line = tokenizer->get_cursor_line();
+	context.current_column = tokenizer->get_cursor_column();
 	context.current_argument = p_argument;
 	context.node = p_node;
 	context.parser = this;
@@ -379,6 +382,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Typ
 	context.current_function = current_function;
 	context.current_suite = current_suite;
 	context.current_line = tokenizer->get_cursor_line();
+	context.current_column = tokenizer->get_cursor_column();
 	context.builtin_type = p_builtin_type;
 	context.parser = this;
 	if (!completion_call_stack.is_empty()) {
@@ -4478,6 +4482,20 @@ bool GDScriptParser::abstract_annotation(AnnotationNode *p_annotation, Node *p_t
 		return true;
 	}
 	ERR_FAIL_V_MSG(false, R"("@abstract" annotation can only be applied to classes and functions.)");
+}
+
+bool GDScriptParser::override_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	if (p_target->type == Node::FUNCTION) {
+		FunctionNode *function_node = static_cast<FunctionNode *>(p_target);
+		if (function_node->is_static) {
+			push_error(R"("@override" annotation cannot be applied to static functions.)", p_annotation);
+			return false;
+		}
+		// The only thing we can do here is record that we have the annotation. The analyzer gets to do the rest.
+		function_node->has_override_annot = true;
+		return true;
+	}
+	ERR_FAIL_V_MSG(false, R"("@override" annotation can only be applied to functions.)");
 }
 
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {

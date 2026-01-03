@@ -784,6 +784,30 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@override">
+			<return type="void" />
+			<description>
+				Marks a function as being an override. Override functions must override a function defined in a parent class, otherwise an error is raised.
+				Functions that override methods but do not have this annotation will raise a warning.
+				[codeblock]
+				class Shape:
+					func draw()
+
+				class Circle extends Shape:
+					@override
+					func draw(): # No error, no warnings
+						print("Drawing a circle.")
+
+				class Square extends Shape:
+					func draw(): # Warning due to missing @override
+						print("Drawing a square.")
+
+					@override
+					func junk(): # Error as no parent defines junk()
+						pass
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@rpc">
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
