@@ -57,6 +57,7 @@ void DebugAdapterParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("req_variables", "params"), &DebugAdapterParser::req_variables);
 	ClassDB::bind_method(D_METHOD("req_next", "params"), &DebugAdapterParser::req_next);
 	ClassDB::bind_method(D_METHOD("req_stepIn", "params"), &DebugAdapterParser::req_stepIn);
+	ClassDB::bind_method(D_METHOD("req_stepOut", "params"), &DebugAdapterParser::req_stepOut);
 	ClassDB::bind_method(D_METHOD("req_evaluate", "params"), &DebugAdapterParser::req_evaluate);
 	ClassDB::bind_method(D_METHOD("req_godot/put_msg", "params"), &DebugAdapterParser::req_godot_put_msg);
 }
@@ -488,6 +489,13 @@ Dictionary DebugAdapterParser::req_next(const Dictionary &p_params) const {
 
 Dictionary DebugAdapterParser::req_stepIn(const Dictionary &p_params) const {
 	EditorDebuggerNode::get_singleton()->get_default_debugger()->debug_step();
+	DebugAdapterProtocol::get_singleton()->_stepping = true;
+
+	return prepare_success_response(p_params);
+}
+
+Dictionary DebugAdapterParser::req_stepOut(const Dictionary &p_params) const {
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->debug_out();
 	DebugAdapterProtocol::get_singleton()->_stepping = true;
 
 	return prepare_success_response(p_params);
