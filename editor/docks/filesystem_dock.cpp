@@ -3803,7 +3803,33 @@ void FileSystemDock::_reselect_items_selected_on_drag_begin(bool reset) {
 	}
 }
 
+bool FileSystemDock::_handle_mouse_button_input(Ref<InputEvent> p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed()) {
+		// Forward/Mouse5
+		if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
+			_fw_history();
+			return true;
+		}
+		// Back/Mouse4
+		if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
+			_bw_history();
+			return true;
+		}
+	}
+	return false;
+}
+
 void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
+	// Thumb button check
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (_handle_mouse_button_input(p_event)) {
+			accept_event();
+			return;
+		}
+	}
+
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		TreeItem *item = tree->get_item_at_position(mm->get_position());
@@ -3867,6 +3893,15 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 }
 
 void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
+	// Thumb button check
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (_handle_mouse_button_input(p_event)) {
+			accept_event();
+			return;
+		}
+	}
+
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && holding_branch) {
 		const int item_idx = files->get_item_at_position(mm->get_position(), true);
