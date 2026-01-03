@@ -3346,7 +3346,7 @@ void VisualShaderEditor::_port_edited(const StringName &p_property, const Varian
 	ERR_FAIL_COND(vsn.is_null());
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set Input Default Port"));
+	undo_redo->create_action(vformat(TTR("Set Input Port Default: %s"), vsn->get_input_port_name(editing_port)), UndoRedo::MERGE_ENDS);
 
 	Ref<VisualShaderNodeCustom> custom = Object::cast_to<VisualShaderNodeCustom>(vsn.ptr());
 	if (custom.is_valid()) {
