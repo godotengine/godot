@@ -37,6 +37,7 @@
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/reflection_probe.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 	helper.instantiate();
@@ -46,6 +47,15 @@ ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 
 	gizmo_color.a = 0.5;
 	create_material("reflection_internal_material", gizmo_color);
+
+	preview_sphere.instantiate();
+	preview_sphere->set_radius(0.5f);
+
+	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
+	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	mat->set_roughness(0.0f);
+	mat->set_metallic(1.0f);
+	add_material("reflection_probe_sphere_material", mat);
 
 	create_icon_material("reflection_probe_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoReflectionProbe"), EditorStringName(EditorIcons)));
 	create_handle_material("handles");
@@ -205,6 +215,11 @@ void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(internal_lines, material_internal);
 
 		p_gizmo->add_handles(handles, get_material("handles"));
+
+		Transform3D preview_transform;
+		preview_transform.set_origin(probe->get_origin_offset());
+
+		p_gizmo->add_mesh(preview_sphere, get_material("reflection_probe_sphere_material", p_gizmo), preview_transform);
 	}
 
 	Ref<Material> icon = get_material("reflection_probe_icon", p_gizmo);
