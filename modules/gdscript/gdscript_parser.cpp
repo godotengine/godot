@@ -993,19 +993,19 @@ void GDScriptParser::parse_class_name() {
 void GDScriptParser::parse_extends() {
 	current_class->extends_used = true;
 
-	int chain_index = 0;
-
 	if (match(GDScriptTokenizer::Token::LITERAL)) {
-		if (previous.literal.get_type() != Variant::STRING) {
+		if (previous.literal.get_type() == Variant::STRING) {
+			current_class->extends_path = previous.literal;
+		} else {
 			push_error(vformat(R"(Only strings or identifiers can be used after "extends", found "%s" instead.)", Variant::get_type_name(previous.literal.get_type())));
 		}
-		current_class->extends_path = previous.literal;
 
 		if (!match(GDScriptTokenizer::Token::PERIOD)) {
 			return;
 		}
 	}
 
+	int chain_index = 0;
 	make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index++);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected superclass name after "extends".)")) {
