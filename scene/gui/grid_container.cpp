@@ -182,6 +182,7 @@ void GridContainer::_notification(int p_what) {
 			}
 
 			valid_controls_index = 0;
+			cell_sizes.clear();
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
@@ -217,14 +218,23 @@ void GridContainer::_notification(int p_what) {
 					s.y++;
 				}
 
+				Point2 p;
 				if (rtl) {
-					Point2 p(col_ofs - s.width, row_ofs);
+					p = Point2(col_ofs - s.width, row_ofs);
 					fit_child_in_rect(c, Rect2(p, s));
 					col_ofs -= s.width + theme_cache.h_separation;
 				} else {
-					Point2 p(col_ofs, row_ofs);
+					p = Point2(col_ofs, row_ofs);
 					fit_child_in_rect(c, Rect2(p, s));
 					col_ofs += s.width + theme_cache.h_separation;
+				}
+
+				if (row == 0 && col > 0) {
+					cell_sizes.append(p.x);
+				}
+
+				if (row > 0 && col == 0) {
+					cell_sizes.append(p.y);
 				}
 			}
 		} break;
