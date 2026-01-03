@@ -207,6 +207,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	ResourceImporterScene *_resource_importer_scene = nullptr;
 
 	void _re_import();
+	void _project_settings_changed();
 
 	String base_path;
 

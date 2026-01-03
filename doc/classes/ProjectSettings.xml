@@ -973,6 +973,10 @@
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
 			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
 		</member>
+		<member name="display/window/hdr/request_hdr_output" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], HDR output is requested for the main window and the editor. The main window and editor will automatically switch between HDR and SDR if it is moved between displays, display capabilities change, or system settings are modified. This will internally force [member Viewport.use_hdr_2d] to be enabled on the main [Viewport]. All other [SubViewport] of the [Window] must have their [member Viewport.use_hdr_2d] property enabled to produce HDR output.
+			[b]Note:[/b] This property is only read when the project starts. To change this property at runtime, set [member Window.hdr_output_requested].
+		</member>
 		<member name="display/window/ios/allow_high_refresh_rate" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], iOS devices that support high refresh rate/"ProMotion" will be allowed to render at up to 120 frames per second.
 		</member>
