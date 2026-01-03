@@ -3464,6 +3464,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	switch (completion_context.type) {
 		case GDScriptParser::COMPLETION_NONE:
+		case GDScriptParser::COMPLETION_DECLARATION:
 			break;
 		case GDScriptParser::COMPLETION_ANNOTATION: {
 			List<MethodInfo> annotations;
@@ -4411,6 +4412,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		case GDScriptParser::COMPLETION_METHOD:
 		case GDScriptParser::COMPLETION_ASSIGN:
 		case GDScriptParser::COMPLETION_CALL_ARGUMENTS:
+		case GDScriptParser::COMPLETION_DECLARATION:
+		case GDScriptParser::COMPLETION_INHERIT_TYPE:
 		case GDScriptParser::COMPLETION_IDENTIFIER:
 		case GDScriptParser::COMPLETION_PROPERTY_METHOD:
 		case GDScriptParser::COMPLETION_SUBSCRIPT: {
@@ -4603,8 +4606,14 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			}
 		} break;
 		case GDScriptParser::COMPLETION_OVERRIDE_METHOD: {
+			// This logic applies to any method declaration (override or not),
+			// but shows parent documentation on virtual method overrides.
 			GDScriptParser::DataType base_type = context.current_class->base_type;
+			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
+				return OK;
+			}
 
+			base_type = context.current_class->get_datatype();
 			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
 				return OK;
 			}

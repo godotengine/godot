@@ -925,6 +925,8 @@ bool GDScriptParser::has_class(const GDScriptParser::ClassNode *p_class) const {
 GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	ClassNode *n_class = alloc_node<ClassNode>();
 
+	make_completion_context(COMPLETION_DECLARATION, n_class);
+
 	ClassNode *previous_class = current_class;
 	current_class = n_class;
 	n_class->outer = previous_class;
@@ -980,6 +982,8 @@ void GDScriptParser::parse_class_name() {
 		current_class->identifier = parse_identifier();
 		current_class->fqcn = String(current_class->identifier->name);
 	}
+
+	make_completion_context(COMPLETION_DECLARATION, current_class);
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
 		// Allow extends on the same line.
@@ -1213,6 +1217,8 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static) {
 
 GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, bool p_allow_property) {
 	VariableNode *variable = alloc_node<VariableNode>();
+
+	make_completion_context(COMPLETION_DECLARATION, variable);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected variable name after "var".)")) {
 		complete_extents(variable);
@@ -1450,6 +1456,8 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 	ConstantNode *constant = alloc_node<ConstantNode>();
 
+	make_completion_context(COMPLETION_DECLARATION, constant);
+
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected constant name after "const".)")) {
 		complete_extents(constant);
 		return nullptr;
@@ -1518,6 +1526,8 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	SignalNode *signal = alloc_node<SignalNode>();
 
+	make_completion_context(COMPLETION_DECLARATION, signal);
+
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected signal name after "signal".)")) {
 		complete_extents(signal);
 		return nullptr;
@@ -1563,6 +1573,8 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	EnumNode *enum_node = alloc_node<EnumNode>();
 	bool named = false;
+
+	make_completion_context(COMPLETION_DECLARATION, enum_node);
 
 	if (match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		enum_node->identifier = parse_identifier();
