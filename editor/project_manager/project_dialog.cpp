@@ -924,6 +924,21 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 				rendering_device_checked = true;
 			}
 
+			// Apply the current default renderer setting.
+			String default_renderer_type = "forward_plus";
+			if (EditorSettings::get_singleton()->has_setting("project_manager/default_renderer")) {
+				default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
+			}
+			List<BaseButton *> buttons;
+			renderer_button_group->get_buttons(&buttons);
+			for (BaseButton *button : buttons) {
+				if (button->get_meta(SNAME("rendering_method")) == default_renderer_type) {
+					button->set_pressed(true);
+					_renderer_selected();
+					break;
+				}
+			}
+
 			name_container->show();
 			install_path_container->hide();
 			renderer_container->show();
