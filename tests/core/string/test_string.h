@@ -1934,6 +1934,52 @@ TEST_CASE("[String] Strip escapes") {
 	CHECK(s.strip_escapes() == "Test Test Test");
 }
 
+TEST_CASE("[String] json_escape") {
+	// Short-form escape sequences
+	CHECK(String("\b").json_escape() == "\\b");
+	CHECK(String("\t").json_escape() == "\\t");
+	CHECK(String("\n").json_escape() == "\\n");
+	CHECK(String("\f").json_escape() == "\\f");
+	CHECK(String("\r").json_escape() == "\\r");
+
+	// Quotes and backslash
+	CHECK(String("\"").json_escape() == "\\\"");
+	CHECK(String("\\").json_escape() == "\\\\");
+
+	// ASCII control characters use \uXXXX format
+	CHECK(String::chr(0).json_escape() == "\\u0000"); // null
+	CHECK(String::chr(1).json_escape() == "\\u0001"); // ctrl+a
+	CHECK(String("\v").json_escape() == "\\u000B"); // vertical tab
+	CHECK(String::chr(0x1F).json_escape() == "\\u001F"); // unit separator
+
+	// C1 control characters also use \uXXXX format
+	CHECK(String::chr(0x7F).json_escape() == "\\u007F"); // Delete
+	CHECK(String::chr(0x80).json_escape() == "\\u0080"); // Padding character
+	CHECK(String::chr(0x9F).json_escape() == "\\u009F"); // Application program command
+
+	// Test all control characters 0x00-0x1F
+	for (int i = 0; i <= 0x1F; i++) {
+		String result = String::chr(i).json_escape();
+		String expected = (i == 8) ? "\\b" : (i == 9) ? "\\t"
+				: (i == 10)							  ? "\\n"
+				: (i == 12)							  ? "\\f"
+				: (i == 13)							  ? "\\r"
+													  : vformat("\\u%04X", i);
+		CHECK_MESSAGE(result == expected, vformat("Control char 0x%02X failed", i));
+	}
+
+	// Test C1 control characters 0x7F-0x9F
+	for (int i = 0x7F; i <= 0x9F; i++) {
+		String result = String::chr(i).json_escape();
+		String expected = vformat("\\u%04X", i);
+		CHECK_MESSAGE(result == expected, vformat("Control char 0x%02X failed", i));
+	}
+
+	// Regular characters and mixed content
+	CHECK(String("Hello World").json_escape() == "Hello World");
+	CHECK(String("Test\u0001\tEnd").json_escape() == "Test\\u0001\\tEnd");
+}
+
 TEST_CASE("[String] Similarity") {
 	String a = "Test";
 	String b = "West";
