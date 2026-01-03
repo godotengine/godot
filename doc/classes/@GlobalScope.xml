@@ -2624,6 +2624,7 @@
 			if error:
 				printerr("Still failing!")
 			[/codeblock]
+			See [method error_string] to convert error codes to human-readable strings.
 			[b]Note:[/b] Many functions do not return an error code, but will print error messages to standard output.
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
