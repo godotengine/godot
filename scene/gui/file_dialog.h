@@ -252,12 +252,11 @@ private:
 	FlowContainer *flow_checkbox_options = nullptr;
 	GridContainer *grid_select_options = nullptr;
 
-	ConfirmationDialog *delete_dialog = nullptr;
-	ConfirmationDialog *make_dir_dialog = nullptr;
 	LineEdit *new_dir_name = nullptr;
-	AcceptDialog *mkdirerr = nullptr;
-	AcceptDialog *exterr = nullptr;
-	ConfirmationDialog *confirm_save = nullptr;
+	ConfirmationDialog *make_dir_dialog = nullptr;
+	AcceptDialog *error_dialog = nullptr;
+	ConfirmationDialog *confirm_dialog = nullptr;
+	Callable confirm_callback;
 
 	struct ThemeCache {
 		int thumbnail_size = 64;
@@ -352,9 +351,11 @@ private:
 	void _native_popup();
 	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter);
 	void _native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
+	void _show_error(const String &p_error);
+	void _show_confirm(const String &p_what, const Callable &p_callback);
+	void _end_confirm();
 
 	bool _is_open_should_be_disabled();
-	void _thumbnail_callback(const Ref<Texture2D> &p_texture, const String &p_path);
 
 	TypedArray<Dictionary> _get_options() const;
 	void _update_option_controls();
