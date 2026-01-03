@@ -592,6 +592,7 @@ public:
 	void set_root(Node *p_root);
 	void set_editor(AnimationTrackEditor *p_editor);
 	String get_node_name() const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	AnimationTrackEditGroup();
 };
@@ -768,21 +769,34 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _move_selection_commit();
 	void _move_selection_cancel();
 
+	bool scaling_selection = false;
+	float scaling_selection_pivot = 0.0f;
+	float scaling_selection_drag_start = 0.0f;
+	float scaling_selection_drag = 0.0f;
+	void _scale_selection_begin(float p_pivot, float p_drag_start);
+	void _scale_selection(float p_offset);
+	void _scale_selection_commit(bool p_dynamic = true);
+	void _scale_selection_cancel();
+
 	AnimationTrackKeyEdit *key_edit = nullptr;
 	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
 	void _update_key_edit();
+	bool _update_scale_control();
 	void _clear_key_edit();
 
 	Control *box_selection_container = nullptr;
 
 	Control *box_selection = nullptr;
 	void _box_selection_draw();
+	void _scale_control_draw();
 	bool box_selecting = false;
 	Vector2 box_selecting_from;
 	Vector2 box_selecting_to;
 	Rect2 box_select_rect;
 	Vector2 prev_scroll_position;
 	void _scroll_input(const Ref<InputEvent> &p_event);
+
+	Control *scale_control = nullptr;
 
 	Vector<Ref<AnimationTrackEditPlugin>> track_edit_plugins;
 
@@ -910,6 +924,7 @@ public:
 	void _clear_selection(bool p_update = false);
 	void _key_selected(int p_key, bool p_single, int p_track);
 	void _key_deselected(int p_key, int p_track);
+	void _zoom_changed();
 
 	enum {
 		EDIT_COPY_TRACKS,
@@ -951,6 +966,7 @@ public:
 
 	void set_animation(const Ref<Animation> &p_anim, bool p_read_only);
 	Ref<Animation> get_current_animation() const;
+	Control *get_scale_control() const;
 	void set_root(Node *p_root);
 	Node *get_root() const;
 	void update_keying();
@@ -978,6 +994,9 @@ public:
 	bool is_selection_active() const;
 	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
+	bool is_scaling_selection() const;
+	bool is_position_over_scale_handle(const Point2 &p_global_pos) const;
+
 	bool is_snap_timeline_enabled() const;
 	bool is_snap_keys_enabled() const;
 	bool is_insert_at_current_time_enabled() const;
@@ -986,6 +1005,9 @@ public:
 	bool can_add_reset_key() const;
 	void _on_filter_updated(const String &p_filter);
 	float get_moving_selection_offset() const;
+	float get_scaling_selection_pivot() const;
+	float get_scaling_selection_drag_start() const;
+	float get_scaling_selection_drag() const;
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();
 	bool is_grouping_tracks();
