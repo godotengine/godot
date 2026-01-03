@@ -64,7 +64,7 @@ private val benchmarkTracker = Collections.synchronizedMap(LinkedHashMap<Pair<St
  * Note: Only enabled on 'editorDev' build variant.
  */
 fun beginBenchmarkMeasure(scope: String, label: String) {
-	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "dev") {
+	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "debug") {
 		return
 	}
 	val key = Pair(scope, label)
@@ -84,7 +84,7 @@ fun beginBenchmarkMeasure(scope: String, label: String) {
  */
 @JvmOverloads
 fun endBenchmarkMeasure(scope: String, label: String, dumpBenchmark: Boolean = false) {
-	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "dev") {
+	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "debug") {
 		return
 	}
 	val key = Pair(scope, label)
@@ -109,7 +109,7 @@ fun endBenchmarkMeasure(scope: String, label: String, dumpBenchmark: Boolean = f
  */
 @JvmOverloads
 fun dumpBenchmark(fileAccessHandler: FileAccessHandler? = null, filepath: String? = benchmarkFile) {
-	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "dev") {
+	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "debug") {
 		return
 	}
 	if (!useBenchmark || benchmarkTracker.isEmpty()) {
