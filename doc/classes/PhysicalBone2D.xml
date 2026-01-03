@@ -7,6 +7,7 @@
 		The [PhysicalBone2D] node is a [RigidBody2D]-based node that can be used to make [Bone2D]s in a [Skeleton2D] react to physics.
 		[b]Note:[/b] To make the [Bone2D]s visually follow the [PhysicalBone2D] node, use a [SkeletonModification2DPhysicalBones] modification on the [Skeleton2D] parent.
 		[b]Note:[/b] The [PhysicalBone2D] node does not automatically create a [Joint2D] node to keep [PhysicalBone2D] nodes together. They must be created manually. For most cases, you want to use a [PinJoint2D] node. The [PhysicalBone2D] node will automatically configure the [Joint2D] node once it's been added as a child node.
+		[b]Note:[/b] The physics engine in Godot is [b]not[/b] deterministic, the nature of physics engine determinism is very complex and has to do with many factors, and the physics is not guaranteed to run the same way for seemingly identical situations.
 	</description>
 	<tutorials>
 	</tutorials>
