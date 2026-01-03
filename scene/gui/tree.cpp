@@ -3024,12 +3024,14 @@ Rect2 Tree::search_item_rect(TreeItem *p_from, TreeItem *p_item) {
 
 void Tree::_range_click_timeout() {
 	if (range_item_last && !range_drag_enabled && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
-		Point2 pos = get_local_mouse_position() - theme_cache.panel_style->get_offset();
+		Point2 pos = range_click_start_pos;
 		if (show_column_titles) {
 			pos.y -= _get_title_button_height();
 
 			if (pos.y < 0) {
 				range_click_timer->stop();
+				range_item_last = nullptr;
+				range_click_start_pos = Point2();
 				return;
 			}
 		}
@@ -3059,6 +3061,8 @@ void Tree::_range_click_timeout() {
 
 		if (!click_handled) {
 			range_click_timer->stop();
+			range_item_last = nullptr;
+			range_click_start_pos = Point2();
 		}
 
 		if (propagate_mouse_activated) {
@@ -3068,6 +3072,8 @@ void Tree::_range_click_timeout() {
 
 	} else {
 		range_click_timer->stop();
+		range_item_last = nullptr;
+		range_click_start_pos = Point2();
 	}
 }
 
@@ -3088,7 +3094,10 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 	if (!skip && p_pos.y < item_h) {
 		// Check event!
 		if (range_click_timer->get_time_left() > 0 && p_item != range_item_last) {
-			return -1;
+			// Cancel ongoing range click when clicking a different item.
+			range_click_timer->stop();
+			range_item_last = nullptr;
+			range_click_start_pos = Point2();
 		}
 
 		if (!p_item->disable_folding && !hide_folding && p_item->first_child && (p_pos.x < (x_ofs + theme_cache.item_margin))) {
@@ -3249,6 +3258,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 							if (range_click_timer->get_time_left() == 0) {
 								range_item_last = p_item;
 								range_up_last = up;
+								range_click_start_pos = p_pos;
 
 								range_click_timer->set_wait_time(0.6);
 								range_click_timer->set_one_shot(true);
@@ -4041,6 +4051,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				range_click_timer->stop();
+				range_item_last = nullptr;
+				range_click_start_pos = Point2();
 
 				if (pressing_for_editor) {
 					if (range_drag_enabled) {
