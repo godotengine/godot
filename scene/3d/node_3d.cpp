@@ -391,8 +391,10 @@ void Node3D::fti_notify_node_changed(bool p_transform_changed) {
 
 void Node3D::set_transform(const Transform3D &p_transform) {
 	ERR_THREAD_GUARD;
+	if (!data.local_transform.basis.is_equal_approx(p_transform.basis)) {
+		_replace_dirty_mask(DIRTY_EULER_ROTATION_AND_SCALE); // Make rot/scale dirty.
+	}
 	data.local_transform = p_transform;
-	_replace_dirty_mask(DIRTY_EULER_ROTATION_AND_SCALE); // Make rot/scale dirty.
 
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
