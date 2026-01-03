@@ -131,4 +131,6 @@ public:
 
 	void set_use_async_iterations(bool p_enabled);
 	bool get_use_async_iterations() const;
+
+	void force_update();
 };

@@ -201,6 +201,14 @@ Ref<NavLinkIteration3D> NavLink3D::get_iteration() {
 	return iteration;
 }
 
+void NavLink3D::force_update() {
+	iteration_dirty = true;
+	iteration_building = false;
+	iteration_ready = false;
+
+	sync();
+}
+
 NavLink3D::NavLink3D() :
 		sync_dirty_request_list_element(this) {
 	type = NavigationEnums3D::PathSegmentType::PATH_SEGMENT_TYPE_LINK;

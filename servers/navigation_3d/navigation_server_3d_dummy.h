@@ -70,6 +70,7 @@ public:
 	bool map_get_use_async_iterations(RID p_map) const override { return false; }
 
 	RID region_create() override { return RID(); }
+	void region_force_update(RID p_region) override {}
 	uint32_t region_get_iteration_id(RID p_region) const override { return 0; }
 	void region_set_use_async_iterations(RID p_region, bool p_enabled) override {}
 	bool region_get_use_async_iterations(RID p_region) const override { return false; }
@@ -104,6 +105,7 @@ public:
 	AABB region_get_bounds(RID p_region) const override { return AABB(); }
 
 	RID link_create() override { return RID(); }
+	void link_force_update(RID p_link) override {}
 	uint32_t link_get_iteration_id(RID p_link) const override { return 0; }
 	void link_set_map(RID p_link, RID p_map) override {}
 	RID link_get_map(RID p_link) const override { return RID(); }

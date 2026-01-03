@@ -233,11 +233,13 @@ ClosestPointQueryResult NavMap3D::get_closest_point_info(const Vector3 &p_point)
 void NavMap3D::add_region(NavRegion3D *p_region) {
 	DEV_ASSERT(!regions.has(p_region));
 
+	RWLockWrite write_lock(rwlock_regions);
 	regions.push_back(p_region);
 	iteration_dirty = true;
 }
 
 void NavMap3D::remove_region(NavRegion3D *p_region) {
+	RWLockWrite write_lock(rwlock_regions);
 	if (regions.erase_unordered(p_region)) {
 		iteration_dirty = true;
 	}
@@ -246,11 +248,13 @@ void NavMap3D::remove_region(NavRegion3D *p_region) {
 void NavMap3D::add_link(NavLink3D *p_link) {
 	DEV_ASSERT(!links.has(p_link));
 
+	RWLockWrite write_lock(rwlock_links);
 	links.push_back(p_link);
 	iteration_dirty = true;
 }
 
 void NavMap3D::remove_link(NavLink3D *p_link) {
+	RWLockWrite write_lock(rwlock_links);
 	if (links.erase_unordered(p_link)) {
 		iteration_dirty = true;
 	}
@@ -371,6 +375,9 @@ void NavMap3D::_build_iteration() {
 
 	next_map_iteration.clear();
 
+	rwlock_regions.read_lock();
+	rwlock_links.read_lock();
+
 	next_map_iteration.region_iterations.resize(regions.size());
 	next_map_iteration.link_iterations.resize(links.size());
 
@@ -386,6 +393,9 @@ void NavMap3D::_build_iteration() {
 		const Ref<NavLinkIteration3D> link_iteration = link->get_iteration();
 		next_map_iteration.link_iterations[link_id_count++] = link_iteration;
 	}
+
+	rwlock_regions.read_unlock();
+	rwlock_links.read_unlock();
 
 	next_map_iteration.map_up = get_up();
 
@@ -426,13 +436,27 @@ void NavMap3D::_sync_iteration() {
 	iteration_ready = false;
 }
 
-void NavMap3D::sync() {
+void NavMap3D::process(double p_delta_time) {
+	sync_navigation();
+
 	// Performance Monitor.
 	performance_data.pm_region_count = regions.size();
 	performance_data.pm_agent_count = agents.size();
 	performance_data.pm_link_count = links.size();
 	performance_data.pm_obstacle_count = obstacles.size();
 
+	performance_data.pm_polygon_count = 0;
+	performance_data.pm_edge_count = 0;
+	performance_data.pm_edge_merge_count = 0;
+
+	for (NavRegion3D *region : regions) {
+		performance_data.pm_polygon_count += region->get_pm_polygon_count();
+		performance_data.pm_edge_count += region->get_pm_edge_count();
+		performance_data.pm_edge_merge_count += region->get_pm_edge_merge_count();
+	}
+}
+
+void NavMap3D::sync_navigation() {
 	_sync_async_tasks();
 
 	_sync_dirty_map_update_requests();
@@ -456,21 +480,9 @@ void NavMap3D::sync() {
 	}
 
 	map_settings_dirty = false;
-
-	_sync_avoidance();
-
-	performance_data.pm_polygon_count = 0;
-	performance_data.pm_edge_count = 0;
-	performance_data.pm_edge_merge_count = 0;
-
-	for (NavRegion3D *region : regions) {
-		performance_data.pm_polygon_count += region->get_pm_polygon_count();
-		performance_data.pm_edge_count += region->get_pm_edge_count();
-		performance_data.pm_edge_merge_count += region->get_pm_edge_merge_count();
-	}
 }
 
-void NavMap3D::_sync_avoidance() {
+void NavMap3D::sync_avoidance() {
 	_sync_dirty_avoidance_update_requests();
 
 	if (obstacles_dirty || agents_dirty) {
@@ -593,6 +605,7 @@ void NavMap3D::_update_rvo_simulation() {
 }
 
 void NavMap3D::compute_single_avoidance_step_2d(uint32_t index, NavAgent3D **agent) {
+	(*(agent + index))->sync();
 	(*(agent + index))->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
 	(*(agent + index))->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
 	(*(agent + index))->get_rvo_agent_2d()->update(&rvo_simulation_2d);
@@ -600,6 +613,7 @@ void NavMap3D::compute_single_avoidance_step_2d(uint32_t index, NavAgent3D **age
 }
 
 void NavMap3D::compute_single_avoidance_step_3d(uint32_t index, NavAgent3D **agent) {
+	(*(agent + index))->sync();
 	(*(agent + index))->get_rvo_agent_3d()->computeNeighbors(&rvo_simulation_3d);
 	(*(agent + index))->get_rvo_agent_3d()->computeNewVelocity(&rvo_simulation_3d);
 	(*(agent + index))->get_rvo_agent_3d()->update(&rvo_simulation_3d);
@@ -607,6 +621,8 @@ void NavMap3D::compute_single_avoidance_step_3d(uint32_t index, NavAgent3D **age
 }
 
 void NavMap3D::step(double p_delta_time) {
+	sync_avoidance();
+
 	rvo_simulation_2d.setTimeStep(float(p_delta_time));
 	rvo_simulation_3d.setTimeStep(float(p_delta_time));
 
@@ -616,6 +632,7 @@ void NavMap3D::step(double p_delta_time) {
 			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 		} else {
 			for (NavAgent3D *agent : active_2d_avoidance_agents) {
+				agent->sync();
 				agent->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
 				agent->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
 				agent->get_rvo_agent_2d()->update(&rvo_simulation_2d);
@@ -630,6 +647,7 @@ void NavMap3D::step(double p_delta_time) {
 			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 		} else {
 			for (NavAgent3D *agent : active_3d_avoidance_agents) {
+				agent->sync();
 				agent->get_rvo_agent_3d()->computeNeighbors(&rvo_simulation_3d);
 				agent->get_rvo_agent_3d()->computeNewVelocity(&rvo_simulation_3d);
 				agent->get_rvo_agent_3d()->update(&rvo_simulation_3d);
@@ -850,6 +868,26 @@ void NavMap3D::set_use_async_iterations(bool p_enabled) {
 
 bool NavMap3D::get_use_async_iterations() const {
 	return use_async_iterations;
+}
+
+void NavMap3D::force_update() {
+	if (iteration_build_thread_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(iteration_build_thread_task_id);
+		iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
+		iteration_building = false;
+		iteration_ready = true;
+	}
+
+	iteration_dirty = true;
+	iteration_building = false;
+	iteration_ready = false;
+
+	bool used_use_async_iterations = use_async_iterations;
+	use_async_iterations = false;
+
+	sync_navigation();
+
+	use_async_iterations = used_use_async_iterations;
 }
 
 NavMap3D::NavMap3D() {

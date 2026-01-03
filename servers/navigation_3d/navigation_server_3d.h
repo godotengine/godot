@@ -107,6 +107,7 @@ public:
 	/* REGION API */
 
 	virtual RID region_create() = 0;
+	virtual void region_force_update(RID p_region) = 0;
 	virtual uint32_t region_get_iteration_id(RID p_region) const = 0;
 
 	virtual void region_set_use_async_iterations(RID p_region, bool p_enabled) = 0;
@@ -158,6 +159,7 @@ public:
 	/* LINK API */
 
 	virtual RID link_create() = 0;
+	virtual void link_force_update(RID p_link) = 0;
 	virtual uint32_t link_get_iteration_id(RID p_link) const = 0;
 
 	virtual void link_set_map(RID p_link, RID p_map) = 0;

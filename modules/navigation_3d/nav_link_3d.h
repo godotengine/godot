@@ -115,4 +115,6 @@ public:
 	void cancel_sync_request();
 
 	Ref<NavLinkIteration3D> get_iteration();
+
+	void force_update();
 };
