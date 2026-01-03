@@ -31,6 +31,7 @@
 #include "zip_packer.h"
 
 #include "core/io/zip_io.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 
 Error ZIPPacker::open(const String &p_path, ZipAppend p_append) {
