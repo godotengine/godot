@@ -1588,8 +1588,21 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 
 	ERR_FAIL_NULL(ss);
 
-	// TODO: Handle touch.
+	// Touch handling.
+	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
+		if (!ss->wl_touch) {
+			ss->cursor_surface = wl_compositor_create_surface(ss->registry->wl_compositor);
+			wl_surface_commit(ss->cursor_surface);
 
+			ss->wl_touch = wl_seat_get_touch(wl_seat);
+			wl_touch_add_listener(ss->wl_touch, &wl_touch_listener, ss);
+		}
+	} else {
+		if (ss->wl_touch) {
+			wl_touch_destroy(ss->wl_touch);
+			ss->wl_touch = nullptr;
+		}
+	}
 	// Pointer handling.
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
 		if (!ss->wl_pointer) {
@@ -1711,6 +1724,262 @@ void WaylandThread::_cursor_frame_callback_on_done(void *data, struct wl_callbac
 	ss->cursor_time_ms = time_ms;
 
 	seat_state_update_cursor(ss);
+}
+
+void WaylandThread::_wl_touch_on_down(void *data, struct wl_touch *wl_touch,
+		uint32_t serial, uint32_t time, struct wl_surface *surface,
+		int32_t id, wl_fixed_t x, wl_fixed_t y) {
+	WindowState *ws = wl_surface_get_window_state(surface);
+	if (!ws) {
+		return;
+	}
+
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	PointerData &pd = ss->pointer_data_buffer;
+
+	double scale = window_state_get_scale_factor(ws);
+	Vector2 position = Vector2(wl_fixed_to_double(x), wl_fixed_to_double(y));
+
+	TouchData &bf = ss->touch_data_buffer;
+	TouchPoint &td = bf.touchs[id];
+
+	td.relative = Vector2();
+	td.position = position;
+	td.time = time;
+	td.double_tap = false;
+	td.canceled = false;
+
+	if ((td.time - td.last_time) < 400 && (td.position * scale).distance_to(td.last_position * scale) < 5) {
+		td.double_tap = true;
+	}
+
+	td.last_position = position;
+	td.last_time = time;
+	td.pressed = true;
+	td.is_activing = true;
+	bf.touched_id = pd.pointed_id;
+	bf.last_touched_id = pd.last_pointed_id;
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Touch down in window %d, id: %d", ws->id, id));
+
+	if (wl_touch_get_version(wl_touch) < WL_TOUCH_FRAME_SINCE_VERSION) {
+		_wl_touch_on_frame(data, wl_touch);
+	}
+}
+
+void WaylandThread::_wl_touch_on_up(void *data, struct wl_touch *wl_touch,
+		uint32_t serial, uint32_t time, int32_t id) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	TouchData &bf = ss->touch_data_buffer;
+
+	if (!bf.touchs.has(id)) {
+		return;
+	}
+
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+	WindowState *ws = nullptr;
+
+	if (bf.touched_id != DisplayServer::INVALID_WINDOW_ID) {
+		ws = wayland_thread->window_get_state(bf.touched_id);
+		ERR_FAIL_NULL(ws);
+	}
+
+	if (ws == nullptr) {
+		return;
+	}
+
+	TouchPoint &td = bf.touchs[id];
+
+	td.relative = Vector2();
+	td.pressed = false;
+	td.is_activing = true;
+	td.time = time;
+	td.last_time = time;
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Touch up in window %d, id: %d", ws->id, id));
+
+	if (wl_touch_get_version(wl_touch) < WL_TOUCH_FRAME_SINCE_VERSION) {
+		_wl_touch_on_frame(data, wl_touch);
+	}
+}
+
+void WaylandThread::_wl_touch_on_motion(void *data, struct wl_touch *wl_touch,
+		uint32_t time, int32_t id, wl_fixed_t x_w, wl_fixed_t y_w) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	TouchData &bf = ss->touch_data_buffer;
+
+	if (!bf.touchs.has(id)) {
+		return;
+	}
+
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
+	TouchPoint &td = bf.touchs[id];
+
+	Vector2 position = Vector2(wl_fixed_to_double(x_w), wl_fixed_to_double(y_w));
+
+	WindowState *ws = nullptr;
+
+	if (bf.touched_id != DisplayServer::INVALID_WINDOW_ID) {
+		ws = wayland_thread->window_get_state(bf.touched_id);
+		ERR_FAIL_NULL(ws);
+	}
+
+	if (ws == nullptr) {
+		return;
+	}
+
+	td.position = position;
+	td.time = time;
+	td.index = id;
+	td.pressed = true;
+	td.is_activing = true;
+
+	if (td.time != td.last_time) {
+		td.relative = Vector2(td.position - td.last_position);
+	}
+	td.last_time = time;
+	td.last_position = position;
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Touch motion in window %d, id: %d", ws->id, id));
+
+	if (wl_touch_get_version(wl_touch) < WL_TOUCH_FRAME_SINCE_VERSION) {
+		_wl_touch_on_frame(data, wl_touch);
+	}
+}
+
+void WaylandThread::_wl_touch_on_frame(void *data, struct wl_touch *wl_touch) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
+	TouchData &bf = ss->touch_data_buffer;
+
+	if (bf.touched_id != bf.last_touched_id) {
+		if (bf.last_touched_id != DisplayServer::INVALID_WINDOW_ID) {
+			Ref<WindowEventMessage> msg;
+			msg.instantiate();
+			msg->id = bf.last_touched_id;
+			msg->event = DisplayServer::WINDOW_EVENT_MOUSE_EXIT;
+
+			wayland_thread->push_message(msg);
+		}
+
+		if (bf.touched_id != DisplayServer::INVALID_WINDOW_ID) {
+			Ref<WindowEventMessage> msg;
+			msg.instantiate();
+			msg->id = bf.touched_id;
+			msg->event = DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
+
+			wayland_thread->push_message(msg);
+		}
+	}
+
+	WindowState *ws = nullptr;
+
+	if (bf.touched_id != DisplayServer::INVALID_WINDOW_ID) {
+		ws = ss->wayland_thread->window_get_state(bf.touched_id);
+		ERR_FAIL_NULL(ws);
+	} else if (bf.last_touched_id != DisplayServer::INVALID_WINDOW_ID) {
+		ws = ss->wayland_thread->window_get_state(bf.last_touched_id);
+		ERR_FAIL_NULL(ws);
+	}
+
+	if (ws == nullptr) {
+		bf.last_touched_id = bf.touched_id;
+		return;
+	}
+
+	double scale = window_state_get_scale_factor(ws);
+	for (KeyValue<int32_t, TouchPoint> &pair : bf.touchs) {
+		TouchPoint &td = pair.value;
+		if (!td.is_activing) {
+			continue;
+		}
+		td.is_activing = false;
+		if (td.relative != Vector2()) {
+			Ref<InputEventScreenDrag> ev;
+			ev.instantiate();
+
+			ev->set_window_id(bf.touched_id);
+			ev->set_position(td.position * scale);
+			uint32_t time_delta = td.time - td.last_time;
+
+			ev->set_relative(td.relative * scale);
+			ev->set_relative_screen_position(td.relative);
+			ev->set_velocity(td.relative * scale / time_delta);
+			ev->set_screen_velocity(td.relative / time_delta);
+
+			ev->set_index(td.index);
+
+			Ref<InputEventMessage> msg;
+			msg.instantiate();
+			msg->event = ev;
+			wayland_thread->push_message(msg);
+		} else {
+			Ref<InputEventScreenTouch> ev;
+			ev.instantiate();
+
+			ev->set_window_id(bf.touched_id);
+			ev->set_pressed(td.pressed);
+			ev->set_position(td.position * scale);
+			ev->set_index(td.index);
+			ev->set_double_tap(td.double_tap);
+			td.double_tap = false;
+
+			Ref<InputEventMessage> msg;
+			msg.instantiate();
+			msg->event = ev;
+			wayland_thread->push_message(msg);
+		}
+	}
+}
+
+void WaylandThread::_wl_touch_on_cancel(void *data, struct wl_touch *wl_touch) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
+	TouchData &bf = ss->touch_data_buffer;
+
+	for (KeyValue<int32_t, TouchPoint> &pair : bf.touchs) {
+		TouchPoint &td = pair.value;
+		if (td.is_activing == true) {
+			td.canceled = true;
+			td.is_activing = false;
+			Ref<InputEventScreenTouch> ev;
+			ev.instantiate();
+			ev->set_pressed(false);
+			ev->set_position(td.position);
+			ev->set_index(td.index);
+			ev->set_double_tap(td.double_tap);
+			ev->set_canceled(td.canceled);
+			ev->set_window_id(bf.touched_id);
+
+			Ref<InputEventMessage> msg;
+			msg.instantiate();
+			msg->event = ev;
+			wayland_thread->push_message(msg);
+		}
+	}
+}
+
+void WaylandThread::_wl_touch_on_shape(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t major, wl_fixed_t minor) {
+}
+
+void WaylandThread::_wl_touch_on_orientation(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t orientation) {
 }
 
 void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -3453,8 +3722,8 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	bool using_fractional = p_ws->preferred_fractional_scale > 0;
 
 	// If neither is true we no-op.
-	bool scale_changed = false;
-	bool size_changed = false;
+	bool scale_changed = true;
+	bool size_changed = true;
 
 	if (p_ws->rect.size.width != p_width || p_ws->rect.size.height != p_height) {
 		p_ws->rect.size.width = p_width;
