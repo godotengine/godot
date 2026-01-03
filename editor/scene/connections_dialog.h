@@ -86,7 +86,7 @@ public:
 				}
 
 				// The source object may already be bound, ignore it to prevent display of the source object.
-				if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
+				if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == static_cast<Object *>(binds[0]))) {
 					binds.remove_at(0);
 				}
 			} else {

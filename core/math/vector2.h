@@ -166,6 +166,13 @@ struct [[nodiscard]] Vector2 {
 	constexpr bool operator<=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
 	constexpr bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
 
+	bool operator==(const Vector2i &p_vector2i) const;
+	bool operator!=(const Vector2i &p_vector2i) const;
+	bool operator<(const Vector2i &p_vector2i) const;
+	bool operator>(const Vector2i &p_vector2i) const;
+	bool operator<=(const Vector2i &p_vector2i) const;
+	bool operator>=(const Vector2i &p_vector2i) const;
+
 	real_t angle() const;
 	static Vector2 from_angle(real_t p_angle);
 

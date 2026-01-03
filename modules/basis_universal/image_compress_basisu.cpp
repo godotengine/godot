@@ -37,9 +37,12 @@
 #include "servers/rendering/rendering_server.h"
 
 GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wdeprecated-enum-enum-conversion")
 GODOT_GCC_WARNING_IGNORE("-Wenum-conversion")
 GODOT_GCC_WARNING_IGNORE("-Wshadow")
 GODOT_GCC_WARNING_IGNORE("-Wunused-value")
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-anon-enum-enum-conversion")
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(5054) // "operator '*': deprecated between enumerations of different types".
 
 #include <transcoder/basisu_transcoder.h>
 #ifdef TOOLS_ENABLED
@@ -50,6 +53,8 @@ static bool initialized = false;
 #endif
 
 GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
+GODOT_MSVC_WARNING_POP
 
 void basis_universal_init() {
 	basist::basisu_transcoder_init();

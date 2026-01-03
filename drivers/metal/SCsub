@@ -35,11 +35,6 @@ env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env_metal.drivers_sources += thirdparty_obj
 
-# Enable C++20 for the Objective-C++ Metal code, which uses C++20 concepts.
-if "-std=gnu++17" in env_metal["CXXFLAGS"]:
-    env_metal["CXXFLAGS"].remove("-std=gnu++17")
-env_metal.Append(CXXFLAGS=["-std=gnu++20"])
-
 # Enable module support
 env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
