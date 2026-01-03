@@ -814,6 +814,7 @@ public:
 
 	static ValidatedUtilityFunction get_validated_utility_function(const StringName &p_name);
 	static PTRUtilityFunction get_ptr_utility_function(const StringName &p_name);
+	static PTRUtilityFunction get_ptr_utility_function_with_compatibility(const StringName &p_name, uint32_t p_hash);
 
 	enum UtilityFunctionType {
 		UTILITY_FUNC_TYPE_MATH,
@@ -827,10 +828,13 @@ public:
 	static int get_utility_function_argument_count(const StringName &p_name);
 	static Variant::Type get_utility_function_argument_type(const StringName &p_name, int p_arg);
 	static String get_utility_function_argument_name(const StringName &p_name, int p_arg);
+	static Vector<Variant> get_utility_function_default_arguments(const StringName &p_name);
+	static int get_utility_function_default_argument_index(const StringName &p_name, int p_arg);
 	static bool has_utility_function_return_value(const StringName &p_name);
 	static Variant::Type get_utility_function_return_type(const StringName &p_name);
 	static bool is_utility_function_vararg(const StringName &p_name);
 	static uint32_t get_utility_function_hash(const StringName &p_name);
+	static Vector<uint32_t> get_utility_function_compatibility_hashes(const StringName &p_name);
 
 	static void get_utility_function_list(List<StringName> *r_functions);
 	static int get_utility_function_count();

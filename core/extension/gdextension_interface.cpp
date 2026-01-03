@@ -871,12 +871,11 @@ static void gdextension_variant_get_constant_value(GDExtensionVariantType p_type
 }
 static GDExtensionPtrUtilityFunction gdextension_variant_get_ptr_utility_function(GDExtensionConstStringNamePtr p_function, GDExtensionInt p_hash) {
 	StringName function = *reinterpret_cast<const StringName *>(p_function);
-	uint32_t hash = Variant::get_utility_function_hash(function);
-	if (hash != p_hash) {
-		ERR_PRINT_ONCE("Error getting utility function " + function + ", hash mismatch.");
-		return nullptr;
+	GDExtensionPtrUtilityFunction ptr = (GDExtensionPtrUtilityFunction)Variant::get_ptr_utility_function_with_compatibility(function, p_hash);
+	if (!ptr) {
+		ERR_PRINT("Error getting utility function " + function + ", missing or hash mismatch.");
 	}
-	return (GDExtensionPtrUtilityFunction)Variant::get_ptr_utility_function(function);
+	return ptr;
 }
 
 //string helpers
