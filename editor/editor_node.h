@@ -358,6 +358,8 @@ private:
 	AcceptDialog *execute_output_dialog = nullptr;
 
 	Ref<Theme> theme;
+	Ref<Theme> project_theme;
+	Ref<Font> project_font;
 
 	bool follow_system_theme = false;
 	bool use_system_accent_color = false;
@@ -527,6 +529,7 @@ private:
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
 	void _update_theme(bool p_skip_creation = false);
+	void _update_project_theme(bool p_also_update_previews);
 	void _build_icon_type_cache();
 	void _enable_pending_addons();
 
