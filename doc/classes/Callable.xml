@@ -93,7 +93,7 @@
 			<return type="Callable" />
 			<description>
 				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
-				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left. Also, keep in mind that the returned [Callable] is not considered strictly unique, see [operator operator ==].
 			</description>
 		</method>
 		<method name="bindv">
@@ -266,6 +266,10 @@
 			<param index="0" name="right" type="Callable" />
 			<description>
 				Returns [code]true[/code] if both [Callable]s invoke different targets.
+				[b]Note:[/b] Beware that when comparing the same [Callable] with arguments bound via [method bind], the comparison only compares the number of bound arguments and not the arguments themselves; thus, keep in mind the following:
+				[codeblock]
+				print.bind("banana") != print.bind("apple") // false
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -273,6 +277,10 @@
 			<param index="0" name="right" type="Callable" />
 			<description>
 				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
+				[b]Note:[/b] Beware that when comparing the same [Callable] with arguments bound via [method bind], the comparison only compares the number of bound arguments and not the arguments themselves; thus, keep in mind the following:
+				[codeblock]
+				print.bind("banana") == print.bind("apple") // true
+				[/codeblock]
 			</description>
 		</operator>
 	</operators>
