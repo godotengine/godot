@@ -51,6 +51,7 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/line_edit.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -2481,6 +2482,15 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 	const Color code_color = p_owner_node->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
 	const Color kbd_color = p_owner_node->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
 	const Color code_dark_color = Color(code_color, 0.8);
+	const Color note_color = p_owner_node->get_theme_color(SNAME("note_color"), SNAME("EditorHelp"));
+	const Color warning_color = p_owner_node->get_theme_color(SNAME("warning_color"), SNAME("EditorHelp"));
+	const Color important_color = p_owner_node->get_theme_color(SNAME("important_color"), SNAME("EditorHelp"));
+	const Color tip_color = p_owner_node->get_theme_color(SNAME("tip_color"), SNAME("EditorHelp"));
+
+	const Ref<Texture2D> note_icon = p_owner_node->get_theme_icon(SNAME("NodeInfo"), SNAME("EditorIcons"));
+	const Ref<Texture2D> warning_icon = p_owner_node->get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons"));
+	const Ref<Texture2D> important_icon = p_owner_node->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
+	const Ref<Texture2D> tip_icon = p_owner_node->get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons"));
 
 	const Color link_color = p_owner_node->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
 	const Color link_method_color = p_owner_node->get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -2816,6 +2826,45 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			if (pos < bbcode.length()) {
 				p_rt->add_newline();
 			}
+		} else if (tag == "note") {
+			// Note block.
+			p_rt->push_color(note_color);
+			p_rt->push_font(doc_bold_font);
+			p_rt->add_image(note_icon, note_icon->get_width(), note_icon->get_height(), note_color * (EditorThemeManager::is_dark_theme() ? Color(1, 1, 1) : Color(3.92, 3.92, 3.92)));
+			p_rt->add_text(" " + TTR("Note:") + " ");
+			p_rt->pop();
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "warning") {
+			// Warning block.
+			p_rt->push_color(warning_color);
+			p_rt->push_font(doc_bold_font);
+			// The source icon is already colored, so don't tint it further.
+			p_rt->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height());
+			p_rt->add_text(" " + TTR("Warning:") + " ");
+			p_rt->pop();
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "important") {
+			// Important block.
+			p_rt->push_color(important_color);
+			p_rt->push_font(doc_bold_font);
+			// The source icon is already colored, adjust it to match text color.
+			p_rt->add_image(important_icon, important_icon->get_width(), important_icon->get_height(), important_color / warning_color);
+			p_rt->add_text(" " + TTR("Important:") + " ");
+			p_rt->pop();
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "tip") {
+			// Tip block.
+			p_rt->push_color(tip_color);
+			p_rt->push_font(doc_bold_font);
+			// The source icon is already colored, adjust it to match text color.
+			p_rt->add_image(tip_icon, tip_icon->get_width(), tip_icon->get_height(), Color(2.68, 1, 1.69) * tip_color);
+			p_rt->add_text(" " + TTR("Tip:") + " ");
+			p_rt->pop();
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
 		} else if (tag == "kbd") {
 			int end_pos = bbcode.find("[/kbd]", brk_end + 1);
 			if (end_pos < 0) {

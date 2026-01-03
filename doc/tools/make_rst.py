@@ -89,7 +89,7 @@ BASE_STRINGS = [
     "This operator may be changed or removed in future versions.",
     "This theme property may be changed or removed in future versions.",
     # See also `make_rst_class()` and `editor/doc/editor_help.cpp`.
-    "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.",
+    "[note]The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.[/note]",
 ]
 strings_l10n: dict[str, str] = {}
 writing_translation = False
@@ -1306,7 +1306,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 # Add copy note to built-in properties returning `Packed*Array`.
                 if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
                     # See also `BASE_STRINGS` and `editor/doc/editor_help.cpp`.
-                    copy_note = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
+                    copy_note = f"[note]The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details.[/note]"
                     f.write(f"{format_text_block(copy_note, property_def, state)}\n\n")
 
                 index += 1
@@ -1791,6 +1791,7 @@ RESERVED_CROSSLINK_TAGS = [
     "theme_item",
     "param",
 ]
+RESERVED_ADMONITION_TAGS = ["important", "note", "tip", "warning"]
 
 
 def is_in_tagset(tag_text: str, tagset: list[str]) -> bool:
@@ -1869,6 +1870,7 @@ def format_text_block(
 
     pos = 0
     tag_depth = 0
+    admonition_pos = -1
     while True:
         pos = text.find("[", pos)
         if pos == -1:
@@ -2350,6 +2352,37 @@ def format_text_block(
                     tag_text = ":kbd:" + tag_text
                     tag_depth += 1
                     escape_pre = True
+            elif tag_state.name in RESERVED_ADMONITION_TAGS:
+                if tag_state.closing and admonition_pos == -1:
+                    print_error(
+                        f'{state.current_class}.xml: Closing admonition tag "[{tag_state.raw}]" has no opening counterpart.',
+                        state,
+                    )
+                    break
+                elif tag_state.closing:
+                    # removeprefix() and removesuffix() are not available in Python < 3.9, so we have to remove everything manually.
+                    admonition_type = tag_state.name[1:] if tag_state.name[0] == "/" else tag_state.name
+                    admonition_contents = text[admonition_pos : pos + len(tag_state.name) + 3]
+                    admonition_contents = admonition_contents[
+                        len(f"[{admonition_type}]") : -len(f"[/{admonition_type}]")
+                    ].strip()
+                    lines = admonition_contents.splitlines()
+                    for i in range(len(lines)):
+                        lines[i] = "    " + lines[i]
+                    admonition_contents = "\n".join(lines)
+                    admonition_text = f".. {admonition_type}::\n\n{admonition_contents}"
+                    if pre_text.rstrip() != "":
+                        pre_text = text[:admonition_pos].rstrip() + "\n\n"
+                    pre_text = pre_text + admonition_text
+                    tag_text = ""
+                    if post_text.lstrip() != "":
+                        post_text = "\n\n" + post_text.lstrip()
+                    admonition_pos = -1
+                    tag_depth -= 1
+                else:
+                    tag_text = f"[{tag_state.name}]"
+                    admonition_pos = pos
+                    tag_depth += 1
 
             # Invalid syntax.
             else:

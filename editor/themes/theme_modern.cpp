@@ -74,6 +74,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_config.highlight_color = Color(p_config.accent_color.r, p_config.accent_color.g, p_config.accent_color.b, 0.275);
 		p_config.highlight_disabled_color = p_config.highlight_color.lerp(p_config.dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
 
+		p_config.info_color = Color(0.7, 0.8, 1);
 		p_config.success_color = Color(0.45, 0.95, 0.5);
 		p_config.warning_color = Color(0.83, 0.78, 0.62);
 		p_config.error_color = Color(1, 0.47, 0.42);
@@ -87,6 +88,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		if (!p_config.dark_icon_and_font) {
 			// Darken some colors to be readable on a light background.
+			p_config.info_color = Color(0.35, 0.6, 0.9);
 			p_config.success_color = p_config.success_color.lerp(p_config.mono_color_font, 0.35);
 			p_config.warning_color = Color(0.83, 0.49, 0.01);
 			p_config.error_color = Color(0.8, 0.22, 0.22);
@@ -2451,6 +2453,10 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("override_color", "EditorHelp", p_config.warning_color);
 		p_theme->set_color("selection_color", "EditorHelp", p_config.selection_color);
 		p_theme->set_color("link_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_font, 0.8));
+		p_theme->set_color("note_color", "EditorHelp", p_config.info_color);
+		p_theme->set_color("warning_color", "EditorHelp", p_config.warning_color);
+		p_theme->set_color("important_color", "EditorHelp", p_config.warning_color.lerp(p_config.error_color, 0.5));
+		p_theme->set_color("tip_color", "EditorHelp", p_config.success_color.lerp(p_config.mono_color, 0.2));
 		p_theme->set_color("code_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_font, 0.6));
 		p_theme->set_color("kbd_color", "EditorHelp", p_config.accent_color.lerp(kbd_color, 0.6));
 		p_theme->set_color("code_bg_color", "EditorHelp", _get_base_color(p_config, 1.6, 0.8));
