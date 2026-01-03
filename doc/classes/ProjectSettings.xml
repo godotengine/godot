@@ -1702,8 +1702,11 @@
 			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
 			[b]Note:[/b] Not to be confused with [TextServerFallback].
 		</member>
-		<member name="internationalization/locale/include_text_server_data" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], text server break iteration rule sets, dictionaries and other optional data are included in the exported project.
+		<member name="internationalization/locale/include_text_server_break_iterator_data" type="int" setter="" getter="" default="1">
+			Specifies if text server break iteration rule sets, dictionaries, and other optional data is included in the exported project.
+			- [b]Always[/b] ([code]0[/code]) - full data is always included.
+			- [b]Auto[/b] ([code]1[/code]) - full data is included only if it's required for one of locales used by project.
+			- [b]Never[/b] ([code]2[/code]) - full data is never included.
 			[b]Note:[/b] "ICU / HarfBuzz / Graphite" text server data includes dictionaries for Burmese, Chinese, Japanese, Khmer, Lao and Thai as well as Unicode Standard Annex #29 and Unicode Standard Annex #14 word and line breaking rules. Data is about 4 MB large.
 			[b]Note:[/b] [TextServerFallback] does not use additional data.
 		</member>

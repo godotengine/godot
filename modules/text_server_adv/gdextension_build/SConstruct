@@ -705,6 +705,12 @@ if env["static_icu_data"]:
     env_icu.Command(
         "../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/icudt_godot.dat", methods.make_icu_data
     )
+    env_icu.Depends("../../../thirdparty/icu4c/icudata_base.gen.h", "../../../thirdparty/icu4c/icudt_godot_base.dat")
+    env_icu.Command(
+        "../../../thirdparty/icu4c/icudata_base.gen.h",
+        "../../../thirdparty/icu4c/icudt_godot_base.dat",
+        methods.make_icu_data_base,
+    )
     env.Append(CPPDEFINES=["ICU_STATIC_DATA"])
     env.Append(CPPPATH=["../../../thirdparty/icu4c/"])
 else:

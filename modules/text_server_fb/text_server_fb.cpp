@@ -175,11 +175,11 @@ bool TextServerFallback::_load_support_data(const String &p_filename) {
 	return false; // No extra data used.
 }
 
-bool TextServerFallback::_save_support_data(const String &p_filename) const {
+bool TextServerFallback::_save_support_data(const String &p_filename, const String &p_config) const {
 	return false; // No extra data used.
 }
 
-PackedByteArray TextServerFallback::_get_support_data() const {
+PackedByteArray TextServerFallback::_get_support_data(const String &p_config) const {
 	return PackedByteArray(); // No extra data used.
 }
 

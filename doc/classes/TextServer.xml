@@ -1113,6 +1113,7 @@
 		</method>
 		<method name="get_support_data" qualifiers="const">
 			<return type="PackedByteArray" />
+			<param index="0" name="config" type="String" default="&quot;full&quot;" />
 			<description>
 				Returns default TextServer database (e.g. ICU break iterators and dictionaries).
 			</description>
@@ -1233,6 +1234,7 @@
 		<method name="save_support_data" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="filename" type="String" />
+			<param index="1" name="config" type="String" default="&quot;full&quot;" />
 			<description>
 				Saves optional TextServer database (e.g. ICU break iterators and dictionaries) to the file.
 				[b]Note:[/b] This function is used by during project export, to include TextServer database.
