@@ -141,7 +141,8 @@ void GodotBody2D::set_active(bool p_active) {
 		if (mode == PhysicsServer2D::BODY_MODE_STATIC) {
 			// Static bodies can't be active.
 			active = false;
-		} else if (get_space()) {
+		}
+		if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
 		}
 	} else if (get_space()) {
