@@ -266,6 +266,7 @@ public:
 		bool uses_screen_texture_mipmaps = false;
 		bool uses_z_clip_scale = false;
 		RS::CullMode cull_mode = RS::CULL_MODE_DISABLED;
+		bool keep_backface_normals = false;
 
 		bool stencil_enabled = false;
 		uint32_t stencil_flags = 0;

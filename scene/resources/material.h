@@ -279,6 +279,7 @@ public:
 		FLAG_DISABLE_SPECULAR_OCCLUSION,
 		FLAG_USE_Z_CLIP_SCALE,
 		FLAG_USE_FOV_OVERRIDE,
+		FLAG_KEEP_BACKFACE_NORMALS,
 		FLAG_MAX
 	};
 
@@ -603,6 +604,7 @@ private:
 	DepthDrawMode depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
 	DepthTest depth_test = DEPTH_TEST_DEFAULT;
 	CullMode cull_mode = CULL_BACK;
+	bool keep_backface_normals = true;
 	bool flags[FLAG_MAX] = {};
 	SpecularMode specular_mode = SPECULAR_SCHLICK_GGX;
 	DiffuseMode diffuse_mode = DIFFUSE_BURLEY;

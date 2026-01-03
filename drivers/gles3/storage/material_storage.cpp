@@ -1391,6 +1391,7 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
 		actions.render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
 		actions.render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
+		actions.render_mode_defines["keep_backface_normals"] = "#define AVOID_SIDE_CHECK\n";
 		actions.render_mode_defines["particle_trails"] = "#define USE_PARTICLE_TRAILS\n";
 		actions.render_mode_defines["depth_prepass_alpha"] = "#define USE_OPAQUE_PREPASS\n";
 
@@ -3004,6 +3005,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_DISABLED);
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_FRONT);
 	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_BACK);
+	actions.render_mode_flags["keep_backface_normals"] = &keep_backface_normals;
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
