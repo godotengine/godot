@@ -3591,7 +3591,15 @@ EditorHelpBit::HelpData EditorHelpBit::_get_constant_help_data(const StringName 
 
 	HelpData result;
 
-	const DocData::ClassDoc *class_doc = EditorHelp::get_doc(p_class_name);
+	const int dot_pos = String(p_class_name).rfind_char('.');
+	String class_name = p_class_name;
+	String constant_name = p_constant_name;
+	String enum_name = "";
+	if (dot_pos >= 0) {
+		class_name = String(p_class_name).left(dot_pos);
+		enum_name = String(p_class_name).substr(dot_pos + 1);
+	}
+	const DocData::ClassDoc *class_doc = EditorHelp::get_doc(class_name);
 	if (class_doc) {
 		// Non-native constants shouldn't be cached, nor translated.
 		const bool is_native = !class_doc->is_script_doc;
@@ -3618,7 +3626,11 @@ EditorHelpBit::HelpData EditorHelpBit::_get_constant_help_data(const StringName 
 				current.value = constant.value;
 			}
 
-			if (constant.name == p_constant_name) {
+			// Needs to differentiate:
+			// Constant X from a named Enum vs. Class Constant X
+			// Constant X from a named Enum vs. Constant X from an Unnamed Enum
+			bool unnamedMatch = enum_name.is_empty() && constant.enumeration == "@unnamed_enums";
+			if (constant.name == constant_name && (constant.enumeration == enum_name || unnamedMatch)) {
 				result = current;
 
 				if (!is_native) {
