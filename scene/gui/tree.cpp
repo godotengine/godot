@@ -2342,6 +2342,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			if (p_item->cells[i].icon.is_valid()) {
 				text_width -= _get_cell_icon_size(p_item->cells[i]).x + theme_cache.h_separation;
 			}
+			if (p_item->cells[i].mode == TreeItem::CELL_MODE_CHECK) {
+				text_width -= (theme_cache.checked->get_width() + theme_cache.h_separation);
+			}
 
 			p_item->cells.write[i].text_buf->set_width(text_width);
 
