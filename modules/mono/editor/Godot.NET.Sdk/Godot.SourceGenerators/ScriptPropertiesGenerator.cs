@@ -618,7 +618,14 @@ namespace Godot.SourceGenerators
                 }
             }
 
-            var propUsage = PropertyUsageFlags.Default | PropertyUsageFlags.ScriptVariable;
+            var usageValue = exportAttr.ConstructorArguments[2].Value;
+            // All properties should have PropertyUsageFlags.ScriptVariable, similar to @export_custom in GDScript
+            var propUsage = usageValue switch
+            {
+                null => PropertyUsageFlags.Default | PropertyUsageFlags.ScriptVariable,
+                int intValue => (PropertyUsageFlags)intValue | PropertyUsageFlags.ScriptVariable,
+                _ => (PropertyUsageFlags)(long)usageValue | PropertyUsageFlags.ScriptVariable
+            };
 
             if (memberVariantType == VariantType.Nil)
                 propUsage |= PropertyUsageFlags.NilIsVariant;
