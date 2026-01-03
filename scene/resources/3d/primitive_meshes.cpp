@@ -3659,6 +3659,9 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &TextMesh::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &TextMesh::is_uppercase);
 
+	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &TextMesh::set_auto_translate);
+	ClassDB::bind_method(D_METHOD("is_auto_translating"), &TextMesh::is_auto_translating);
+
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
@@ -3669,6 +3672,7 @@ void TextMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
 	ADD_GROUP("Mesh", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
@@ -3688,7 +3692,7 @@ void TextMesh::_notification(int p_what) {
 	switch (p_what) {
 		case MainLoop::NOTIFICATION_TRANSLATION_CHANGED: {
 			// Language update might change the appearance of some characters.
-			xl_text = tr(text);
+			xl_text = auto_translate ? tr(text) : text;
 			dirty_text = true;
 			request_update();
 		} break;
@@ -3739,7 +3743,7 @@ VerticalAlignment TextMesh::get_vertical_alignment() const {
 void TextMesh::set_text(const String &p_string) {
 	if (text != p_string) {
 		text = p_string;
-		xl_text = tr(text);
+		xl_text = auto_translate ? tr(text) : text;
 		dirty_text = true;
 		request_update();
 	}
@@ -3973,4 +3977,17 @@ void TextMesh::set_uppercase(bool p_uppercase) {
 
 bool TextMesh::is_uppercase() const {
 	return uppercase;
+}
+
+void TextMesh::set_auto_translate(bool p_enable) {
+	if (auto_translate != p_enable) {
+		auto_translate = p_enable;
+		xl_text = auto_translate ? tr(text) : text;
+		dirty_text = true;
+		request_update();
+	}
+}
+
+bool TextMesh::is_auto_translating() const {
+	return auto_translate;
 }

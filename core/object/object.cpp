@@ -1783,22 +1783,30 @@ void Object::set_translation_domain(const StringName &p_domain) {
 }
 
 String Object::tr(const StringName &p_message, const StringName &p_context) const {
+#ifndef DISABLE_DEPRECATED
 	if (!_can_translate || !TranslationServer::get_singleton()) {
 		return p_message;
 	}
+#else
+	if (!TranslationServer::get_singleton()) {
+		return p_message;
+	}
+#endif // DISABLE_DEPRECATED
 
 	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain());
 	return domain->translate(p_message, p_context);
 }
 
 String Object::tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
+#ifndef DISABLE_DEPRECATED
 	if (!_can_translate || !TranslationServer::get_singleton()) {
-		// Return message based on English plural rule if translation is not possible.
-		if (p_n == 1) {
-			return p_message;
-		}
-		return p_message_plural;
+		return p_n == 1 ? p_message : p_message_plural; // Fallback to English plural rule.
 	}
+#else
+	if (!TranslationServer::get_singleton()) {
+		return p_n == 1 ? p_message : p_message_plural; // Fallback to English plural rule.
+	}
+#endif // DISABLE_DEPRECATED
 
 	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain());
 	return domain->translate_plural(p_message, p_message_plural, p_n, p_context);
@@ -1963,8 +1971,11 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_blocking_signals"), &Object::is_blocking_signals);
 	ClassDB::bind_method(D_METHOD("notify_property_list_changed"), &Object::notify_property_list_changed);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_message_translation", "enable"), &Object::set_message_translation);
 	ClassDB::bind_method(D_METHOD("can_translate_messages"), &Object::can_translate_messages);
+#endif // DISABLE_DEPRECATED
+
 	ClassDB::bind_method(D_METHOD("tr", "message", "context"), &Object::tr, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("tr_n", "message", "plural_message", "n", "context"), &Object::tr_n, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_translation_domain"), &Object::get_translation_domain);
@@ -2340,7 +2351,11 @@ void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
 
 void Object::_construct_object(bool p_reference) {
 	_block_signals = false;
+
+#ifndef DISABLE_DEPRECATED
 	_can_translate = true;
+#endif // DISABLE_DEPRECATED
+
 	_emitting = false;
 	_is_queued_for_deletion = false;
 	_predelete_ok = false;
