@@ -41,6 +41,9 @@ static PhysicsServer2D *_createGodotPhysics2DCallback() {
 #else
 	bool using_threads = false;
 #endif
+#ifndef DISABLE_DEPRECATED
+	GodotBody2D::kinematic_body_initial_teleport = GLOBAL_GET("physics/2d/kinematic_body_initial_teleport");
+#endif
 
 	PhysicsServer2D *physics_server_2d = memnew(GodotPhysicsServer2D(using_threads));
 

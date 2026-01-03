@@ -40,6 +40,9 @@ static PhysicsServer3D *_createGodotPhysics3DCallback() {
 #else
 	bool using_threads = false;
 #endif
+#ifndef DISABLE_DEPRECATED
+	GodotBody3D::kinematic_body_initial_teleport = GLOBAL_GET("physics/3d/kinematic_body_initial_teleport");
+#endif
 
 	PhysicsServer3D *physics_server_3d = memnew(GodotPhysicsServer3D(using_threads));
 

@@ -374,6 +374,13 @@
 				Use [method body_add_shape] to add shapes to it, use [method body_set_state] to set its transform, and use [method body_set_space] to add the body to a space.
 			</description>
 		</method>
+		<method name="body_flush_kinematic_transform">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Updates the transform of a kinematic body to the pending transform immediately without modifying velocities or colliding with other bodies.
+			</description>
+		</method>
 		<method name="body_get_canvas_instance_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
@@ -1102,6 +1109,7 @@
 		</constant>
 		<constant name="BODY_MODE_KINEMATIC" value="1" enum="BodyMode">
 			Constant for kinematic bodies. In this mode, a body can be only moved by user code and collides with other bodies along its path.
+			[b]Note:[/b] Kinematic bodies do not immediately move to their new transform when set using [method body_set_state]. If you intend to teleport a kinematic body, set its transform and then call [method body_flush_kinematic_transform].
 		</constant>
 		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
 			Constant for rigid bodies. In this mode, a body can be pushed by other bodies and has forces applied.
