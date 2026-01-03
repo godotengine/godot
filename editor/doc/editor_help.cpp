@@ -3694,7 +3694,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 							if (item_descr.is_empty()) {
 								item_descr = "[color=<EditorHelpBitCommentColor>][i]" + TTR("No description available.") + "[/i][/color]";
 							}
-							current.description += vformat("\n[b]%s:[/b] %s", item_name, item_descr);
+							current.description += vformat("\n[b]%s = %s:[/b] %s", item_name, constant.value, item_descr);
 						}
 					}
 					current.description = current.description.lstrip("\n");
