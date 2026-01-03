@@ -186,6 +186,9 @@
 #include "editor/shader/shader_baker/shader_baker_export_plugin_platform_metal.h"
 #endif
 
+#include "main/app_icon.gen.h"
+#include "main/app_run_icon.gen.h"
+
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
 #ifndef PHYSICS_2D_DISABLED
@@ -5356,6 +5359,8 @@ void EditorNode::_project_run_started() {
 	} else if (action_on_play == ACTION_ON_PLAY_OPEN_DEBUGGER) {
 		editor_dock_manager->focus_dock(EditorDebuggerNode::get_singleton());
 	}
+	Ref<Image> icon = memnew(Image(app_run_icon_png));
+	DisplayServer::get_singleton()->set_icon(icon);
 }
 
 void EditorNode::_project_run_stopped() {
@@ -5363,6 +5368,8 @@ void EditorNode::_project_run_stopped() {
 	if (action_on_stop == ACTION_ON_STOP_CLOSE_BUTTOM_PANEL) {
 		bottom_panel->hide_bottom_panel();
 	}
+	Ref<Image> icon = memnew(Image(app_icon_png));
+	DisplayServer::get_singleton()->set_icon(icon);
 }
 
 void EditorNode::notify_all_debug_sessions_exited() {
