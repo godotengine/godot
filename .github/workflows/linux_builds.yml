@@ -36,6 +36,7 @@ jobs:
             doc-test: true
             proj-conv: true
             api-compat: true
+            api-compat-load: true
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
@@ -238,10 +239,17 @@ jobs:
           git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
       # Check API backwards compatibility
-      - name: Check for GDExtension compatibility
+      - name: Check for GDExtension compatibility – JSON check
         if: matrix.api-compat
         run: |
           ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}"
+
+      - name: Test GDExtension compatibility – load methods
+        uses: ./.github/actions/godot-compat-test
+        if: matrix.api-compat-load
+        with:
+          bin: ${{ matrix.bin }}
+          reftags: "4.5-stable,4.4-stable"
 
       # Download and run the test project
       - name: Test Godot project
