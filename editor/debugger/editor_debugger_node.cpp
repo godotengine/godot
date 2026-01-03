@@ -321,9 +321,7 @@ void EditorDebuggerNode::stop(bool p_force) {
 
 	// Also close all debugging sessions.
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		if (dbg->is_session_active()) {
-			dbg->_stop_and_notify();
-		}
+		dbg->_stop_and_notify();
 	});
 	_break_state_changed();
 	breakpoints.clear();
