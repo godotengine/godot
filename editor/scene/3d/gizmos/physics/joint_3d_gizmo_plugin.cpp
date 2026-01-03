@@ -300,8 +300,14 @@ void Joint3DGizmoPlugin::incremental_update_gizmos() {
 		if (!E) {
 			E = current_gizmos.begin();
 		}
-		redraw(*E);
-		last_drawn = *E;
+
+		EditorNode3DGizmo *next_gizmo = *E;
+		Node3D *node = next_gizmo->get_node_3d();
+		if (node->is_visible_in_tree()) {
+			redraw(next_gizmo);
+		}
+
+		last_drawn = next_gizmo;
 	}
 }
 
