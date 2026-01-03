@@ -102,6 +102,7 @@ void EditorTitleBar::_notification(int p_what) {
 			get_window()->set_nonclient_area(get_global_transform().xform(Rect2i(get_position(), get_size())));
 		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
+			return;
 			if (!center_control) {
 				break;
 			}

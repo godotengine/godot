@@ -38,6 +38,7 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
+#include "editor/run/game_view_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
@@ -189,7 +190,7 @@ void EmbeddedProcessMacOS::mouse_set_mode(DisplayServer::MouseMode p_mode) {
 	mouse_mode = p_mode;
 	// If the mouse is anything other than visible, we must ensure the Game view is active and the layer focused.
 	if (mouse_mode != DisplayServer::MOUSE_MODE_VISIBLE) {
-		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
+		GameView::get_singleton()->make_visible();
 		layer_host->grab_focus();
 	}
 	DisplayServer::get_singleton()->mouse_set_mode(p_mode);

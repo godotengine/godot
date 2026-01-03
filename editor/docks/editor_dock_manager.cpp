@@ -38,6 +38,7 @@
 #include "scene/main/window.h"
 
 #include "editor/docks/editor_dock.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
@@ -556,9 +557,14 @@ void EditorDockManager::_update_tab_style(EditorDock *p_dock) {
 
 	tab_container->get_tab_bar()->set_font_color_override_all(index, p_dock->title_color);
 
-	const TabStyle style = (tab_container == EditorNode::get_bottom_panel())
-			? (TabStyle)EDITOR_GET("interface/editor/bottom_dock_tab_style").operator int()
-			: (TabStyle)EDITOR_GET("interface/editor/dock_tab_style").operator int();
+	TabStyle style;
+	if (tab_container == EditorNode::get_bottom_panel()) {
+		style = (TabStyle)EDITOR_GET("interface/editor/bottom_dock_tab_style").operator int();
+	} else if (tab_container == EditorNode::get_editor_main_screen()) {
+		style = (TabStyle)EDITOR_GET("interface/editor/main_screen_dock_tab_style").operator int();
+	} else {
+		style = (TabStyle)EDITOR_GET("interface/editor/dock_tab_style").operator int();
+	}
 
 	const Ref<Texture2D> icon = _get_dock_icon(p_dock, callable_mp((Control *)tab_container, &Control::get_editor_theme_icon));
 	bool assign_icon = p_dock->force_show_icon;
@@ -1199,6 +1205,7 @@ void DockContextPopup::_dock_select_draw() {
 		dock_select_rects[DockConstants::DOCK_SLOT_RIGHT_BR] = Rect2(Point2(dock_size.x * 5, dock_size.y), dock_size);
 	}
 	dock_select_rects[DockConstants::DOCK_SLOT_BOTTOM] = Rect2(center_panel_width, dock_size.y, center_panel_width, dock_size.y);
+	dock_select_rects[DockConstants::DOCK_SLOT_MAIN_SCREEN] = Rect2(center_panel_width, 0, center_panel_width, dock_size.y);
 
 	int rtl_dir = dock_select->is_layout_rtl() ? -1 : 1;
 	real_t tab_height = 3.0 * EDSCALE;
@@ -1218,7 +1225,7 @@ void DockContextPopup::_dock_select_draw() {
 
 	// Draw all dock slots.
 	for (int i = 0; i < DockConstants::DOCK_SLOT_MAX; i++) {
-		int max_tabs = (i == DockConstants::DOCK_SLOT_BOTTOM) ? 6 : 3;
+		int max_tabs = (i == DockConstants::DOCK_SLOT_BOTTOM || i == DockConstants::DOCK_SLOT_MAIN_SCREEN) ? 6 : 3;
 		const EditorDockManager::DockSlot &dock_slot = dock_manager->dock_slots[i];
 
 		Rect2 dock_slot_draw_rect = dock_select_rects[i].grow_individual(-dock_spacing, -dock_top_spacing, -dock_spacing, -dock_spacing);
