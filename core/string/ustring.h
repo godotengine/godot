@@ -701,6 +701,12 @@ public:
 	}
 };
 
+// This exposes `String` as `Godot::String`.
+// This solves GH-104038.
+namespace Godot {
+using String = String;
+}
+
 // Zero-constructing String initializes _cowdata.ptr() to nullptr and thus empty.
 template <>
 struct is_zero_constructible<String> : std::true_type {};
