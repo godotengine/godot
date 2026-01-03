@@ -32,9 +32,15 @@
 
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_patched.h"
+#include "core/io/resource.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/version.h"
+
+#include "modules/modules_enabled.gen.h" // For gdscript.
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript_cache.h"
+#endif
 
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	for (int i = 0; i < sources.size(); i++) {
@@ -46,23 +52,80 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t 
 	return ERR_FILE_UNRECOGNIZED;
 }
 
+Error PackedData::remove_pack(const String &p_path) {
+	if (!is_pack_loaded(p_path)) {
+		return ERR_FILE_UNRECOGNIZED;
+	}
+
+	Vector<PathMD5> reload_packs;
+	Vector<HashMap<PathMD5, PackedFile, PathMD5>::Iterator> to_remove;
+	for (HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.begin(); E; ++E) {
+		PackedFile pf = E->value;
+		if (pf.pack.name != p_path) {
+			continue;
+		}
+
+		PathMD5 pmd5 = pf.pack.replaced_pack;
+		if (pmd5.set) {
+			if (!reload_packs.has(pmd5)) {
+				reload_packs.push_back(pmd5);
+			}
+		}
+
+		remove_path(pf.filepath);
+		to_remove.push_back(E);
+	}
+
+	for (const HashMap<PathMD5, PackedFile, PathMD5>::Iterator &E : to_remove) {
+		files.remove(E);
+	}
+	remove_loaded_pack(p_path);
+
+	// For reloading files unloaded by more recent packs, we simply need to reload packs with replace_files disabled.
+	for (PathMD5 pmd5 : reload_packs) {
+		if (!loaded_packs.has(pmd5)) {
+			continue;
+		}
+		LoadedPackInfo pack_info = loaded_packs[pmd5];
+		Error err = add_pack(pack_info.name, false, pack_info.offset);
+		if (err) {
+			return err;
+		}
+	}
+
+	return OK;
+}
+
 void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted, bool p_bundle, bool p_delta) {
 	String simplified_path = p_path.simplify_path().trim_prefix("res://");
 	PathMD5 pmd5(simplified_path.md5_buffer());
 
+	// When running on the editor, the base files are not loaded from a main pack file.
+	// This extra check prevents packs from overriding those base files.
+#ifdef TOOLS_ENABLED
+	bool exists = files.has(pmd5) || FileAccess::exists(simplified_path);
+#else
 	bool exists = files.has(pmd5);
+#endif
+
+	PackInfo pi;
+	pi.name = p_pkg_path;
+	if (p_replace_files && exists) {
+		pi.replaced_pack = PathMD5(files[pmd5].pack.name.md5_buffer());
+	}
 
 	PackedFile pf;
 	pf.encrypted = p_encrypted;
 	pf.bundle = p_bundle;
 	pf.delta = p_delta;
-	pf.pack = p_pkg_path;
+	pf.pack = pi;
 	pf.offset = p_ofs;
 	pf.size = p_size;
 	for (int i = 0; i < 16; i++) {
 		pf.md5[i] = p_md5[i];
 	}
 	pf.src = p_src;
+	pf.filepath = simplified_path.replace_first("res://", "");
 
 	if (p_delta) {
 		delta_patches[pmd5].push_back(pf);
@@ -73,6 +136,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 
 	if (!exists) {
 		// Search for directory.
+		String p = pf.filepath;
 		PackedDir *cd = root;
 
 		if (simplified_path.contains_char('/')) { // In a subdirectory.
@@ -119,10 +183,54 @@ void PackedData::remove_path(const String &p_path) {
 			}
 		}
 	}
+	String filename = simplified_path.get_file();
+	cd->files.erase(filename);
 
-	cd->files.erase(simplified_path.get_file());
+	// Clear empty folders.
+	while (cd && cd->files.is_empty() && cd->subdirs.is_empty()) {
+		String name = cd->name;
+		cd = cd->parent;
+		if (cd) {
+			cd->subdirs.erase(name);
+		}
+	}
 
 	files.erase(pmd5);
+
+	String res_path = "res://" + p_path;
+
+	// Remove paths from cache.
+	if (ResourceCache::has(res_path)) {
+		ResourceCache::remove_cached_resource(res_path);
+	}
+
+	// GDScript also caches scripts internally, so they too must be removed.
+#ifdef MODULE_GDSCRIPT_ENABLED
+	if (GDScriptCache::get_cached_script(res_path).is_valid()) {
+		GDScriptCache::remove_script(res_path);
+	}
+#endif
+}
+
+void PackedData::add_loaded_pack(const String &p_path, const uint64_t &p_offset) {
+	if (!is_pack_loaded(p_path)) {
+		LoadedPackInfo pack_info;
+		pack_info.name = p_path;
+		pack_info.offset = p_offset;
+
+		PathMD5 pmd5(p_path.md5_buffer());
+		loaded_packs.insert(pmd5, pack_info);
+	}
+}
+
+void PackedData::remove_loaded_pack(const String &p_path) {
+	PathMD5 pmd5(p_path.md5_buffer());
+	loaded_packs.erase(pmd5);
+}
+
+bool PackedData::is_pack_loaded(const String &p_pack_path) const {
+	PathMD5 pmd5(p_pack_path.md5_buffer());
+	return loaded_packs.has(pmd5);
 }
 
 void PackedData::add_pack_source(PackSource *p_source) {
@@ -333,6 +441,8 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		f = fae;
 	}
 
+	PackedData::get_singleton()->add_loaded_pack(p_path, p_offset);
+
 	for (int i = 0; i < file_count; i++) {
 		uint32_t sl = f->get_32();
 		CharString cs;
@@ -513,11 +623,11 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 	if (pf.bundle) {
 		String simplified_path = p_path.simplify_path();
 		f = FileAccess::open(simplified_path, FileAccess::READ | FileAccess::SKIP_PACK);
-		ERR_FAIL_COND_MSG(f.is_null(), vformat(R"(Can't open pack-referenced file "%s" from sparse pack "%s".)", simplified_path, pf.pack));
+		ERR_FAIL_COND_MSG(f.is_null(), vformat(R"(Can't open pack-referenced file "%s" from sparse pack "%s".)", simplified_path, pf.pack.name));
 		off = 0; // For the sparse pack offset is always zero.
 	} else {
-		f = FileAccess::open(pf.pack, FileAccess::READ);
-		ERR_FAIL_COND_MSG(f.is_null(), vformat(R"(Can't open pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
+		f = FileAccess::open(pf.pack.name, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), vformat(R"(Can't open pack-referenced file "%s" from pack "%s".)", p_path, pf.pack.name));
 		f->seek(pf.offset);
 		off = pf.offset;
 	}
@@ -525,7 +635,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 	if (pf.encrypted) {
 		Ref<FileAccessEncrypted> fae;
 		fae.instantiate();
-		ERR_FAIL_COND_MSG(fae.is_null(), vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
+		ERR_FAIL_COND_MSG(fae.is_null(), vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack.name));
 
 		Vector<uint8_t> key;
 		key.resize(32);
@@ -534,7 +644,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
-		ERR_FAIL_COND_MSG(err, vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
+		ERR_FAIL_COND_MSG(err, vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack.name));
 		f = fae;
 		off = 0;
 	}

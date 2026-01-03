@@ -618,6 +618,27 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 	return true;
 }
 
+bool ProjectSettings::_unload_resource_pack(const String &p_pack) {
+	if (PackedData::get_singleton()->is_disabled()) {
+		return false;
+	}
+
+	bool ok = PackedData::get_singleton()->remove_pack(p_pack) == OK;
+	if (!ok) {
+		return false;
+	}
+
+	return true;
+}
+
+bool ProjectSettings::_is_pack_loaded(const String &p_pack) {
+	if (PackedData::get_singleton()->is_disabled()) {
+		return false;
+	}
+
+	return PackedData::get_singleton()->is_pack_loaded(p_pack);
+}
+
 void ProjectSettings::_convert_to_last_version(int p_from_version) {
 #ifndef DISABLE_DEPRECATED
 	if (p_from_version <= 3) {
@@ -1629,6 +1650,8 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::load_resource_pack, DEFVAL(true), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("unload_resource_pack", "pack"), &ProjectSettings::_unload_resource_pack);
+	ClassDB::bind_method(D_METHOD("is_pack_loaded", "name"), &ProjectSettings::_is_pack_loaded);
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
