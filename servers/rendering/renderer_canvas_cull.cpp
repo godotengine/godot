@@ -724,6 +724,30 @@ void RendererCanvasCull::canvas_item_set_update_when_visible(RID p_item, bool p_
 	canvas_item->update_when_visible = p_update;
 }
 
+// Compensate the width added by the antialiasing feather by reducing the base line width.
+// For line widths lower than or equal to 1.0, this is done with a multiplier,
+// while line widths greater than 1.0 use a constant offset clamped to a width of 1.0.
+// While the offset is not equal to `FEATHER_SIZE`, this is empirically determined
+// to give a good result on various foreground/background colors.
+// This method assumes the check for whether the line is antialiased
+// has already been done.
+float RendererCanvasCull::canvas_item_get_compensated_antialiasing_width(float p_width) const {
+	if (p_width > 0.0f) {
+		if (p_width <= (FEATHER_SIZE * 2.0f + CMP_EPSILON)) {
+			return p_width * 0.5f;
+		} else if (p_width <= (FEATHER_SIZE * 4.0f + CMP_EPSILON)) {
+			// Progressively lerp between the two methods (multiplier and offset).
+			return Math::remap(p_width, FEATHER_SIZE * 2.0f, FEATHER_SIZE * 4.0f, p_width * 0.5f, p_width - FEATHER_SIZE);
+			//p_width = MAX(p_width - FEATHER_SIZE, FEATHER_SIZE * 2.0f);
+		} else {
+			// Use a constant offset.
+			return p_width - FEATHER_SIZE;
+		}
+	}
+
+	return p_width;
+}
+
 void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
@@ -733,6 +757,11 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 
 	Vector2 diff = (p_from - p_to);
 	Vector2 dir = diff.orthogonal().normalized();
+
+	if (p_antialiased) {
+		p_width = canvas_item_get_compensated_antialiasing_width(p_width);
+	}
+
 	Vector2 t = dir * p_width * 0.5;
 
 	Vector2 begin_left;
@@ -964,6 +993,10 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_NULL(pline);
+
+	if (p_antialiased) {
+		p_width = canvas_item_get_compensated_antialiasing_width(p_width);
+	}
 
 	if (p_width < 0) {
 		if (p_antialiased) {
@@ -1219,6 +1252,9 @@ void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Poin
 	ERR_FAIL_COND(p_points.is_empty() || p_points.size() % 2 != 0);
 	ERR_FAIL_COND(p_colors.size() != 1 && p_colors.size() * 2 != p_points.size());
 
+	// We don't need to compensate width for antialiasing here,
+	// since the width is already compensated in `canvas_item_add_line()`.
+
 	// TODO: `canvas_item_add_line`(`multiline`, `polyline`) share logic, should factor out.
 	if (p_width < 0) {
 		if (p_antialiased) {
@@ -1269,27 +1305,30 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
+	// Adjust the rectangle size to account for the antialiasing width.
+	const Rect2 &rect_adjusted = p_antialiased ? p_rect.grow(-FEATHER_SIZE * 0.5) : p_rect;
+
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
 	ERR_FAIL_NULL(rect);
 	rect->modulate = p_color;
-	rect->rect = p_rect;
+	rect->rect = rect_adjusted;
 
 	// Add feathers.
 	if (p_antialiased) {
 		float border_size = FEATHER_SIZE;
 
-		const real_t size = MIN(p_rect.size.width, p_rect.size.height);
+		const real_t size = MIN(rect_adjusted.size.width, rect_adjusted.size.height);
 		if (0.0f <= size && size < 1.0f) {
 			border_size *= size;
 		}
 
-		const Vector2 vec_down = Vector2(0.0f, p_rect.size.height);
-		const Vector2 vec_right = Vector2(p_rect.size.width, 0.0f);
+		const Vector2 vec_down = Vector2(0.0f, rect_adjusted.size.height);
+		const Vector2 vec_right = Vector2(rect_adjusted.size.width, 0.0f);
 
-		const Vector2 begin_left = p_rect.position;
-		const Vector2 begin_right = p_rect.position + vec_down;
-		const Vector2 end_left = p_rect.position + vec_right;
-		const Vector2 end_right = p_rect.position + p_rect.size;
+		const Vector2 begin_left = rect_adjusted.position;
+		const Vector2 begin_right = rect_adjusted.position + vec_down;
+		const Vector2 end_left = rect_adjusted.position + vec_right;
+		const Vector2 end_right = rect_adjusted.position + rect_adjusted.size;
 
 		const Vector2 dir = Vector2(0.0f, -1.0f);
 		const Vector2 dir2 = Vector2(-1.0f, 0.0f);
@@ -1434,6 +1473,11 @@ void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos
 	ERR_FAIL_NULL(canvas_item);
 
 	static const int ellipse_segments = 64;
+
+	if (p_antialiased) {
+		// Adjust the diameter to account for the antialiasing width.
+		p_radius = MAX(0.0f, p_radius - FEATHER_SIZE * 0.5f);
+	}
 
 	{
 		Item::CommandPolygon *ellipse = canvas_item->alloc_command<Item::CommandPolygon>();
