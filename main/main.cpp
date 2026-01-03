@@ -4873,6 +4873,7 @@ bool Main::iteration() {
 		GodotProfileZoneGrouped(_profile_zone, "2D physics");
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+		PhysicsServer2D::get_singleton()->flush_queries();
 #endif // PHYSICS_2D_DISABLED
 
 		message_queue->flush();
