@@ -1225,6 +1225,15 @@ void vertex() {)";
 				lessThan(COLOR.rgb, vec3(0.04045)));
 	}
 )";
+	} else {
+		code += R"(
+	if (OUTPUT_IS_SRGB) {
+		COLOR.rgb = mix(
+				(pow(COLOR.rgb, vec3(1.0 / 2.4)) * (1.0 + 0.055)) - vec3(0.055),
+				COLOR.rgb * 12.92,
+				lessThan(COLOR.rgb, vec3(0.0031308)));
+	}
+)";
 	}
 	if (flags[FLAG_USE_POINT_SIZE]) {
 		code += R"(
