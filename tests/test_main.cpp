@@ -124,6 +124,7 @@
 #include "tests/scene/test_animation_blend_tree.h"
 #include "tests/scene/test_animation_player.h"
 #include "tests/scene/test_audio_stream_wav.h"
+#include "tests/scene/test_base_button.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_button.h"
 #include "tests/scene/test_camera_2d.h"
