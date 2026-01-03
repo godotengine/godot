@@ -150,6 +150,13 @@ void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binorm
 	normal = omc_axis.zzz * axis + vec3(-s_axis.y, s_axis.x, c);
 }
 
+mat3 adjoint(in mat4 m) {
+	return mat3(
+			cross(m[1].xyz, m[2].xyz),
+			cross(m[2].xyz, m[0].xyz),
+			cross(m[0].xyz, m[1].xyz));
+}
+
 #ifdef USE_INSTANCING
 layout(location = 12) in highp vec4 instance_xform0;
 layout(location = 13) in highp vec4 instance_xform1;
@@ -168,6 +175,7 @@ layout(location = 21) in highp uvec4 prev_instance_color_custom_data;
 #endif // USE_INSTANCING
 #endif // RENDER_MOTION_VECTORS
 
+#define FLAGS_NEGATIVE_DETERMINANT (1 << 1)
 #define FLAGS_NON_UNIFORM_SCALE (1 << 4)
 
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
@@ -599,7 +607,8 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	highp mat3 model_normal_matrix;
 
 	if (bool(model_flags_input & uint(FLAGS_NON_UNIFORM_SCALE))) {
-		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
+		float det_sign = bool(model_flags_input & uint(FLAGS_NEGATIVE_DETERMINANT)) ? -1.0 : 1.0;
+		model_normal_matrix = det_sign * adjoint(model_matrix);
 	} else {
 		model_normal_matrix = mat3(model_matrix);
 	}
@@ -1027,6 +1036,7 @@ void main() {
 #define IN_SHADOW_PASS false
 #endif
 
+#define FLAGS_NEGATIVE_DETERMINANT (1 << 1)
 #define FLAGS_NON_UNIFORM_SCALE (1 << 4)
 
 /* Varyings */
@@ -1980,6 +1990,13 @@ vec4 textureArray_bicubic(sampler2DArray tex, vec3 uv, vec2 texture_size) {
 #endif //LIGHTMAP_BICUBIC_FILTER
 #endif // RENDER_MOTION_VECTORS
 
+mat3 adjoint(in mat4 m) {
+	return mat3(
+			cross(m[1].xyz, m[2].xyz),
+			cross(m[2].xyz, m[0].xyz),
+			cross(m[0].xyz, m[1].xyz));
+}
+
 void main() {
 #ifndef RENDER_MOTION_VECTORS
 	//lay out everything, whatever is unused is optimized away anyway
@@ -2092,7 +2109,8 @@ void main() {
 
 	highp mat3 model_normal_matrix;
 	if (bool(model_flags & uint(FLAGS_NON_UNIFORM_SCALE))) {
-		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
+		float det_sign = bool(model_flags & uint(FLAGS_NEGATIVE_DETERMINANT)) ? -1.0 : 1.0;
+		model_normal_matrix = det_sign * adjoint(model_matrix);
 	} else {
 		model_normal_matrix = mat3(model_matrix);
 	}
