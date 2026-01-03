@@ -388,6 +388,18 @@ class DisplayServerWindows : public DisplayServer {
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
 	Ref<Image> icon;
+	Vector<BYTE> icon_buffer;
+	HICON cached_hicon = nullptr;
+
+	Vector<uint8_t> big_icon_buffer;
+	Vector<uint8_t> small_icon_buffer;
+	HICON cached_hicon_big = nullptr;
+	HICON cached_hicon_small = nullptr;
+
+	Vector<uint8_t> status_icon_buffer;
+	HICON cached_status_hicon = nullptr;
+
+	Mutex icon_mutex;
 
 	Error _create_window(WindowID p_window_id, WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
 	void _destroy_window(WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
