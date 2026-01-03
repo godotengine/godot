@@ -274,6 +274,11 @@ class DisplayServerWindows : public DisplayServer {
 
 	RBMap<int, Vector2> touch_state;
 
+	Vector<BYTE> icon_buffer_big;
+	HICON icon_big = nullptr;
+	Vector<BYTE> icon_buffer_small;
+	HICON icon_small = nullptr;
+
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
@@ -387,7 +392,6 @@ class DisplayServerWindows : public DisplayServer {
 	HHOOK mouse_monitor = nullptr;
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
-	Ref<Image> icon;
 
 	Error _create_window(WindowID p_window_id, WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
 	void _destroy_window(WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
@@ -413,6 +417,8 @@ class DisplayServerWindows : public DisplayServer {
 	struct IndicatorData {
 		RID menu_rid;
 		Callable callback;
+		Vector<BYTE> icon_buffer;
+		HICON icon = nullptr;
 	};
 
 	IndicatorID indicator_id_counter = 0;
