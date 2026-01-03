@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Skin" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A resource that stores the bones' [Transform3D] poses.
 	</brief_description>
 	<description>
+		Skin is a resource class that serialized the bones' poses to binds.
+		Add binds manually with the methods [method Skin.add_bind], and [method Skin.add_named_bind], get them with [method Skin.get_bind_bone], [method Skin.get_bind_count], [method Skin.get_bind_name], and [method Skin.get_bind_pose]. 
+		And asing them with [method Skin.set_bind_bone], [method Skin.set_bind_count], [method Skin.set_bind_name], and [method Skin.set_bind_pose]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,6 +16,13 @@
 			<param index="0" name="bone" type="int" />
 			<param index="1" name="pose" type="Transform3D" />
 			<description>
+				Adds a bone's bind of index [param bone] with the pose [param pose].
+				[codeblock]
+				var skin = Skin.new()
+				var bone_transform = Transform3D.INDENTITY
+				func _ready():
+					skin.add_bind(1, bone_transform)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="add_named_bind">
@@ -19,22 +30,26 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="pose" type="Transform3D" />
 			<description>
+				adds a new bind of pose [param pose] of name [param name].
 			</description>
 		</method>
 		<method name="clear_binds">
 			<return type="void" />
 			<description>
+				Clears all bones' binds and named poses' binds.
 			</description>
 		</method>
 		<method name="get_bind_bone" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="bind_index" type="int" />
 			<description>
+				Returns the bone with the index of the given [param bind_index].
 			</description>
 		</method>
 		<method name="get_bind_count" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the bind count
 			</description>
 		</method>
 		<method name="get_bind_name" qualifiers="const">
@@ -47,6 +62,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="bind_index" type="int" />
 			<description>
+				Returns the pose from the bind index of the given [param bind_index]
 			</description>
 		</method>
 		<method name="set_bind_bone">
@@ -54,12 +70,14 @@
 			<param index="0" name="bind_index" type="int" />
 			<param index="1" name="bone" type="int" />
 			<description>
+				Asings the bind [param bind_index] to the given [param bone]
 			</description>
 		</method>
 		<method name="set_bind_count">
 			<return type="void" />
 			<param index="0" name="bind_count" type="int" />
 			<description>
+				Asings the bind count to the given [param bind_count].
 			</description>
 		</method>
 		<method name="set_bind_name">
@@ -67,6 +85,7 @@
 			<param index="0" name="bind_index" type="int" />
 			<param index="1" name="name" type="StringName" />
 			<description>
+				Asings [param name] to the given [param bind_index].
 			</description>
 		</method>
 		<method name="set_bind_pose">
@@ -74,6 +93,7 @@
 			<param index="0" name="bind_index" type="int" />
 			<param index="1" name="pose" type="Transform3D" />
 			<description>
+				Asings the pose [param pose] to the given [param bind_index]
 			</description>
 		</method>
 	</methods>
