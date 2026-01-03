@@ -7997,7 +7997,7 @@ void EditorNode::_update_main_menu_type() {
 		main_menu_button->set_switch_on_hover(true);
 
 		for (PopupMenu *menu : main_menu_items) {
-			if (menu != apple_menu) {
+			if (menu != apple_menu && menu != window_menu) {
 				main_menu_button->get_popup()->add_submenu_node_item(menu->get_name(), menu);
 			}
 		}
@@ -8025,7 +8025,7 @@ void EditorNode::_update_main_menu_type() {
 		main_menu_bar->set_switch_on_hover(true);
 
 		for (PopupMenu *menu : main_menu_items) {
-			if (menu != apple_menu || menu_type == MENU_TYPE_GLOBAL) {
+			if ((menu != apple_menu && menu != window_menu) || menu_type == MENU_TYPE_GLOBAL) {
 				main_menu_bar->add_child(menu);
 			}
 		}
@@ -8747,6 +8747,14 @@ EditorNode::EditorNode() {
 	settings_menu = memnew(PopupMenu);
 	settings_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	_add_to_main_menu(TTRC("Editor"), settings_menu);
+
+#ifdef MACOS_ENABLED
+	if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::WINDOW_MENU_ID)) {
+		window_menu = memnew(PopupMenu);
+		window_menu->set_system_menu(NativeMenu::WINDOW_MENU_ID);
+		_add_to_main_menu(TTRC("Window"), window_menu);
+	}
+#endif
 
 	help_menu = memnew(PopupMenu);
 	help_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
