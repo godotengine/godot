@@ -70,6 +70,8 @@
 			<description>
 				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis such as the keyboard, the value returned will be 0 or 1.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+				[b]Note:[/b] If you try to make a vector of inputs using this function, for example, using [code]Vector2(Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"), Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up"))[/code], remember that in this case the deadzone gets checked for each axis separately and not by checking the resulting vector length.
+				So in a scenario when a joypad's stick is moved all the way diagonally expect the resulting vector length to not be [code]1.0[/code]. In this case, you should consider using [method get_vector] instead.
 			</description>
 		</method>
 		<method name="get_axis" qualifiers="const">
