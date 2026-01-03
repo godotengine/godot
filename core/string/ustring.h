@@ -309,6 +309,8 @@ public:
 	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<char32_t> span() const { return Span(ptr(), length()); }
 
+	static Span<char32_t> strip_edges_span(Span<char32_t> p_span, bool p_left, bool p_right);
+
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
 	_FORCE_INLINE_ void clear() { resize_uninitialized(0); }
