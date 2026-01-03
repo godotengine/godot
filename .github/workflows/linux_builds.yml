@@ -35,6 +35,7 @@ jobs:
             build-mono: true
             doc-test: true
             proj-conv: true
+            proj-export: true
             api-compat: true
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
@@ -118,7 +119,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libwayland-bin  # TODO: Figure out somehow how to embed this one.
-          if [ "${{ matrix.proj-test }}" == "true" ]; then
+          if [ "${{ matrix.proj-test }}" == "true" -o "${{ matrix.proj-export }}" == "true" ]; then
             sudo apt-get install mesa-vulkan-drivers
           fi
 
@@ -247,6 +248,13 @@ jobs:
       - name: Test Godot project
         uses: ./.github/actions/godot-project-test
         if: matrix.proj-test
+        with:
+          bin: ${{ matrix.bin }}
+
+      # Test project export
+      - name: Test project export
+        uses: ./.github/actions/godot-project-export
+        if: matrix.proj-export
         with:
           bin: ${{ matrix.bin }}
 
