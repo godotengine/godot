@@ -2715,6 +2715,486 @@ VisualShaderNodeTransformVecMult::VisualShaderNodeTransformVecMult() {
 	set_input_port_default_value(1, Vector3());
 }
 
+////////////// VectorCoordinateTransform
+
+String VisualShaderNodeVectorCoordinateTransform::get_caption() const {
+	return "VectorCoordinateTransform";
+}
+
+int VisualShaderNodeVectorCoordinateTransform::get_input_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeVectorCoordinateTransform::PortType VisualShaderNodeVectorCoordinateTransform::get_input_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR_3D;
+}
+
+String VisualShaderNodeVectorCoordinateTransform::get_input_port_name(int p_port) const {
+	return "Input";
+}
+
+int VisualShaderNodeVectorCoordinateTransform::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeVectorCoordinateTransform::PortType VisualShaderNodeVectorCoordinateTransform::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR_3D;
+}
+
+String VisualShaderNodeVectorCoordinateTransform::get_output_port_name(int p_port) const {
+	return ""; //no output port means the editor will be used as port
+}
+
+String VisualShaderNodeVectorCoordinateTransform::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
+	String code;
+
+	code += "varying mat3 TBN;\n";
+	code += "varying vec3 position_ws;\n";
+
+	return code;
+}
+
+String VisualShaderNodeVectorCoordinateTransform::generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code;
+
+	if (p_type == VisualShader::TYPE_VERTEX) {
+		// The TBN matrix must be in world space and of direction type vector.
+		// For all tangent space transformations will be done based on world space.
+		// It is detected whether world_vertex_coordinates is active via a built-in preprocessor.
+		// Note: Binormal is negative so it produces slightly different results than Unity.
+		code += "#ifdef WORLD_VERTEX_COORDS\n";
+		code += "	TBN = mat3(TANGENT, -BINORMAL, NORMAL);\n"; // If the vector is direction conversion type we must normalize for better performance.
+		code += "	position_ws = VERTEX;\n"; // We need the position in world space to transform our vector to a position conversion type.
+		code += "#else\n";
+		code += "	vec3 t = mat3(MODEL_MATRIX) * TANGENT;\n";
+		code += "	vec3 b = mat3(MODEL_MATRIX) * BINORMAL;\n";
+		code += "	vec3 n = mat3(MODEL_MATRIX) * NORMAL;\n";
+		code += "	TBN = mat3(normalize(t), normalize(-b), normalize(n));\n"; // If the vector is direction conversion type we must normalize for better performance.
+		code += "	position_ws = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;\n"; // We need the position in world space to transform our vector to a position conversion type.
+		code += "#endif\n";
+	}
+
+	return code;
+}
+
+String VisualShaderNodeVectorCoordinateTransform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String identity = "	" + p_output_vars[0] + " = " + p_input_vars[0] + ";\n";
+	String matrix;
+	String code;
+	code += "	{\n";
+	if (from_space == SPACE_MODEL) {
+		if (to_space == SPACE_MODEL) {
+			return identity;
+		} else if (to_space == SPACE_WORLD) {
+			matrix = "MODEL_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += vformat("		%s = (" + matrix + " * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				if (normalize_output) {
+					code += vformat("		%s = normalize(mat3(" + matrix + ") * " + p_input_vars[0] + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = mat3(" + matrix + ") * " + p_input_vars[0] + ";\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_VIEW) {
+			matrix = (p_type == VisualShader::TYPE_VERTEX) ? "MODELVIEW_MATRIX" : "VIEW_MATRIX * MODEL_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += vformat("		%s = (" + matrix + " * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				if (normalize_output) {
+					code += vformat("		%s = normalize(mat3(" + matrix + ") * " + p_input_vars[0] + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = mat3(" + matrix + ") * " + p_input_vars[0] + ";\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_TANGENT) {
+			matrix = "TBN";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		vec3 world = (MODEL_MATRIX * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n";
+				code += "		" + p_input_vars[0] + " = world - position_ws;\n";
+				code += vformat("		%s = " + p_input_vars[0] + " * " + matrix + ";\n", p_output_vars[0]);
+			} else {
+				code += "		vec3 world = mat3(MODEL_MATRIX) * " + p_input_vars[0] + ";\n";
+				if (normalize_output) {
+					code += vformat("		%s = normalize(world * " + matrix + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = world * " + matrix + ";\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_SCREEN) {
+			matrix = (p_type == VisualShader::TYPE_VERTEX) ? "PROJECTION_MATRIX * MODELVIEW_MATRIX" : "PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		vec4 clip = " + matrix + " * vec4(" + p_input_vars[0] + ", 1.0);\n";
+			} else {
+				if (normalize_output) {
+					code += "		vec4 clip = vec4(normalize(mat3(" + matrix + ") * " + p_input_vars[0] + "), 1.0);\n";
+				} else {
+					code += "		vec4 clip = vec4(mat3(" + matrix + ") * " + p_input_vars[0] + ", 1.0);\n";
+				}
+			}
+			code += "		clip.xyz /= clip.w;\n";
+			code += "		clip.xy = clip.xy * 0.5 + 0.5;\n";
+			code += vformat("		%s = clip.xyz;\n", p_output_vars[0]);
+		}
+	} else if (from_space == SPACE_WORLD) {
+		if (to_space == SPACE_MODEL) {
+			matrix = "inverse(MODEL_MATRIX)";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += vformat("		%s = (" + matrix + " * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				if (normalize_output) {
+					code += vformat("		%s = normalize(mat3(" + matrix + ") * " + p_input_vars[0] + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = mat3(" + matrix + ") * " + p_input_vars[0] + ";\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_WORLD) {
+			return identity;
+		} else if (to_space == SPACE_VIEW) {
+			matrix = "VIEW_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += vformat("		%s = (" + matrix + " * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				if (normalize_output) {
+					code += vformat("		%s = normalize(mat3(" + matrix + ") * " + p_input_vars[0] + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = mat3(" + matrix + ") * " + p_input_vars[0] + "\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_TANGENT) {
+			matrix = "TBN";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		" + p_input_vars[0] + " = " + p_input_vars[0] + " - position_ws;\n";
+				code += vformat("		%s = " + p_input_vars[0] + " * " + matrix + ";\n", p_output_vars[0]);
+			} else {
+				if (normalize_output) {
+					code += vformat("		%s = normalize(" + p_input_vars[0] + " * " + matrix + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = " + p_input_vars[0] + " * " + matrix + ";\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_SCREEN) {
+			matrix = "PROJECTION_MATRIX * VIEW_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		vec4 clip = " + matrix + " * vec4(" + p_input_vars[0] + ", 1.0);\n";
+			} else {
+				if (normalize_output) {
+					code += "		vec4 clip = vec4(normalize(mat3(" + matrix + ") * " + p_input_vars[0] + "), 1.0);\n";
+				} else {
+					code += "		vec4 clip = vec4(mat3(" + matrix + ") * " + p_input_vars[0] + ", 1.0);\n";
+				}
+			}
+			code += "		clip.xyz /= clip.w;\n";
+			code += "		clip.xy = clip.xy * 0.5 + 0.5;\n";
+			code += vformat("		%s = clip.xyz;\n", p_output_vars[0]);
+		}
+	} else if (from_space == SPACE_VIEW) {
+		if (to_space == SPACE_MODEL) {
+			matrix = (p_type == VisualShader::TYPE_VERTEX) ? "inverse(MODELVIEW_MATRIX)" : "inverse(MODEL_MATRIX) * INV_VIEW_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += vformat("		%s = (" + matrix + " * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				if (normalize_output) {
+					code += vformat("		%s = normalize(mat3(" + matrix + ") * " + p_input_vars[0] + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = mat3(" + matrix + ") * " + p_input_vars[0] + ";\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_WORLD) {
+			matrix = "INV_VIEW_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += vformat("		%s = (" + matrix + " * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				if (normalize_output) {
+					code += vformat("		%s = normalize(mat3(" + matrix + ") * " + p_input_vars[0] + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = mat3(" + matrix + ") * " + p_input_vars[0] + ";\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_VIEW) {
+			return identity;
+		} else if (to_space == SPACE_TANGENT) {
+			matrix = "TBN";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		vec3 world = (INV_VIEW_MATRIX * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n";
+				code += "		" + p_input_vars[0] + " = world - position_ws;\n";
+				code += vformat("		%s = " + p_input_vars[0] + " * " + matrix + ";\n", p_output_vars[0]);
+			} else {
+				code += "		vec3 world = mat3(INV_VIEW_MATRIX) * " + p_input_vars[0] + ";\n";
+				if (normalize_output) {
+					code += vformat("		%s = normalize(world * " + matrix + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = world * " + matrix + ";\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_SCREEN) {
+			matrix = "PROJECTION_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		vec4 clip = " + matrix + " * vec4(" + p_input_vars[0] + ", 1.0);\n";
+			} else {
+				if (normalize_output) {
+					code += "		vec4 clip = vec4(normalize(mat3(" + matrix + ") * " + p_input_vars[0] + "), 1.0);\n";
+				} else {
+					code += "		vec4 clip = vec4(mat3(" + matrix + ") * " + p_input_vars[0] + ", 1.0);\n";
+				}
+			}
+			code += "		clip.xyz /= clip.w;\n";
+			code += "		clip.xy = clip.xy * 0.5 + 0.5;\n";
+			code += vformat("		%s = clip.xyz;\n", p_output_vars[0]);
+		}
+	} else if (from_space == SPACE_TANGENT) {
+		if (to_space == SPACE_MODEL) {
+			matrix = "transpose(TBN)";
+			code += "		vec3 world = " + p_input_vars[0] + " * " + matrix + ";\n";
+			matrix = "inverse(MODEL_MATRIX)";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		" + p_input_vars[0] + " = world + position_ws;\n";
+				code += vformat("		%s = (" + matrix + " * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				if (normalize_output) {
+					code += "		" + p_input_vars[0] + " = normalize(world);\n";
+				} else {
+					code += "		" + p_input_vars[0] + " = world;\n";
+				}
+				code += vformat("		%s = mat3(" + matrix + ") * " + p_input_vars[0] + ";\n", p_output_vars[0]);
+			}
+		} else if (to_space == SPACE_WORLD) {
+			matrix = "transpose(TBN)";
+			code += "		vec3 world = " + p_input_vars[0] + " * " + matrix + ";\n";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		" + p_input_vars[0] + " = world + position_ws;\n";
+			} else {
+				if (normalize_output) {
+					code += "		" + p_input_vars[0] + " = normalize(world);\n";
+				} else {
+					code += "		" + p_input_vars[0] + " = world;\n";
+				}
+			}
+			code += vformat("		%s = " + p_input_vars[0] + ";\n", p_output_vars[0]);
+		} else if (to_space == SPACE_VIEW) {
+			matrix = "transpose(TBN)";
+			code += "		vec3 world = " + p_input_vars[0] + " * " + matrix + ";\n";
+			matrix = "VIEW_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		" + p_input_vars[0] + " = world + position_ws;\n";
+				code += vformat("		%s = (" + matrix + " * vec4(" + p_input_vars[0] + ", 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				if (normalize_output) {
+					code += "		" + p_input_vars[0] + " = normalize(world);\n";
+				} else {
+					code += "		" + p_input_vars[0] + " = world;\n";
+				}
+				code += vformat("		%s = mat3(" + matrix + ") * " + p_input_vars[0] + ";\n", p_output_vars[0]);
+			}
+		} else if (to_space == SPACE_TANGENT) {
+			return identity;
+		} else if (to_space == SPACE_SCREEN) {
+			matrix = "transpose(TBN)";
+			code += "		vec3 world = " + p_input_vars[0] + " * " + matrix + ";\n";
+			matrix = "PROJECTION_MATRIX * VIEW_MATRIX";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		" + p_input_vars[0] + " = world + position_ws;\n";
+				code += "		vec4 clip = " + matrix + " * vec4(" + p_input_vars[0] + ", 1.0);\n";
+			} else {
+				if (normalize_output) {
+					code += "		vec4 clip = vec4(normalize(mat3(" + matrix + ") * world), 1.0);\n";
+				} else {
+					code += "		vec4 clip = vec4(mat3(" + matrix + ") * world, 1.0);\n";
+				}
+			}
+			code += "		clip.xyz /= clip.w;\n";
+			code += "		clip.xy = clip.xy * 0.5 + 0.5;\n";
+			code += vformat("		%s = clip.xyz;\n", p_output_vars[0]);
+		}
+	} else if (from_space == SPACE_SCREEN) {
+		if (to_space == SPACE_MODEL) {
+			matrix = "INV_PROJECTION_MATRIX";
+			code += "		vec3 pos_cs = vec3(" + p_input_vars[0] + ".xy * 2.0 - 1.0, " + p_input_vars[0] + ".z);\n";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		vec4 world = " + matrix + " * vec4(pos_cs, 1.0);\n";
+				code += "		world.xyz /= world.w;\n";
+				matrix = "inverse(MODEL_MATRIX) * INV_VIEW_MATRIX";
+				code += vformat("		%s = (" + matrix + " * vec4(world.xyz, 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				code += "		vec4 world = mat3(" + matrix + ") * pos_cs;\n";
+				matrix = "inverse(MODEL_MATRIX) * INV_VIEW_MATRIX";
+				if (normalize_output) {
+					code += vformat("		%s = normalize((" + matrix + " * world).xyz);\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = (" + matrix + " * world).xyz;\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_WORLD) {
+			matrix = "INV_PROJECTION_MATRIX";
+			code += "		vec3 pos_cs = vec3(" + p_input_vars[0] + ".xy * 2.0 - 1.0, " + p_input_vars[0] + ".z);\n";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		vec4 world = " + matrix + " * vec4(pos_cs, 1.0);\n";
+				code += "		world.xyz /= world.w;\n";
+				matrix = "INV_VIEW_MATRIX";
+				code += vformat("		%s = (" + matrix + " * vec4(world.xyz, 1.0)).xyz;\n", p_output_vars[0]);
+			} else {
+				code += "		vec4 world = mat3(" + matrix + ") * pos_cs;\n";
+				matrix = "INV_VIEW_MATRIX";
+				if (normalize_output) {
+					code += vformat("		%s = normalize((" + matrix + " * world).xyz);\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = (" + matrix + " * world).xyz;\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_VIEW) {
+			matrix = "INV_PROJECTION_MATRIX";
+			code += "		vec3 pos_cs = vec3(" + p_input_vars[0] + ".xy * 2.0 - 1.0, " + p_input_vars[0] + ".z);\n";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		vec4 world = " + matrix + " * vec4(pos_cs, 1.0);\n";
+				code += "		world.xyz /= world.w;\n";
+				code += vformat("		%s = world.xyz;\n", p_output_vars[0]);
+			} else {
+				code += "		vec3 world = mat3(" + matrix + ") * pos_cs;\n";
+				matrix = "VIEW_MATRIX";
+				if (normalize_output) {
+					code += vformat("		%s = normalize(mat3(" + matrix + ") * world.xyz);\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = mat3(" + matrix + ") * world.xyz;\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_TANGENT) {
+			matrix = "INV_VIEW_MATRIX * INV_PROJECTION_MATRIX";
+			code += "		vec3 pos_cs = vec3(" + p_input_vars[0] + ".xy * 2.0 - 1.0, " + p_input_vars[0] + ".z);\n";
+			if (vector_type == VECTOR_TYPE_POSITION) {
+				code += "		vec4 world = " + matrix + " * vec4(pos_cs, 1.0);\n";
+				code += "		world.xyz /= world.w;\n";
+				matrix = "TBN";
+				code += vformat("		%s = (world.xyz - position_ws) * " + matrix + ";\n", p_output_vars[0]);
+			} else {
+				code += "		vec3 world = mat3(" + matrix + ") * pos_cs;\n";
+				matrix = "TBN";
+				if (normalize_output) {
+					code += vformat("		%s = normalize(world * " + matrix + ");\n", p_output_vars[0]);
+				} else {
+					code += vformat("		%s = world * " + matrix + ";\n", p_output_vars[0]);
+				}
+			}
+		} else if (to_space == SPACE_SCREEN) {
+			return identity;
+		}
+	}
+	code += "	}\n";
+
+	return code;
+}
+
+void VisualShaderNodeVectorCoordinateTransform::set_from_space(Space p_from_space) {
+	ERR_FAIL_INDEX(int(p_from_space), int(SPACE_MAX));
+	if (from_space == p_from_space) {
+		return;
+	}
+	from_space = p_from_space;
+	emit_changed();
+}
+
+VisualShaderNodeVectorCoordinateTransform::Space VisualShaderNodeVectorCoordinateTransform::get_from_space() const {
+	return from_space;
+}
+
+void VisualShaderNodeVectorCoordinateTransform::set_to_space(Space p_to_space) {
+	ERR_FAIL_INDEX(int(p_to_space), int(SPACE_MAX));
+	if (to_space == p_to_space) {
+		return;
+	}
+	to_space = p_to_space;
+	emit_changed();
+}
+
+VisualShaderNodeVectorCoordinateTransform::Space VisualShaderNodeVectorCoordinateTransform::get_to_space() const {
+	return to_space;
+}
+
+void VisualShaderNodeVectorCoordinateTransform::set_vector_type(VectorType p_vector_type) {
+	ERR_FAIL_INDEX(int(p_vector_type), int(VECTOR_TYPE_MAX));
+	if (vector_type == p_vector_type) {
+		return;
+	}
+	vector_type = p_vector_type;
+	emit_changed();
+}
+
+VisualShaderNodeVectorCoordinateTransform::VectorType VisualShaderNodeVectorCoordinateTransform::get_vector_type() const {
+	return vector_type;
+}
+
+void VisualShaderNodeVectorCoordinateTransform::set_normalize_output(bool p_normalize_output) {
+	if (normalize_output == p_normalize_output) {
+		return;
+	}
+	normalize_output = p_normalize_output;
+	emit_changed();
+}
+
+bool VisualShaderNodeVectorCoordinateTransform::get_normalize_output() const {
+	return normalize_output;
+}
+
+Vector<StringName> VisualShaderNodeVectorCoordinateTransform::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("from_space");
+	props.push_back("to_space");
+	props.push_back("vector_type");
+	if (vector_type == VectorType::VECTOR_TYPE_DIRECTION) {
+		props.push_back("normalize_output");
+	}
+	return props;
+}
+
+bool VisualShaderNodeVectorCoordinateTransform::is_show_prop_names() const {
+	return true;
+}
+
+HashMap<StringName, String> VisualShaderNodeVectorCoordinateTransform::get_editable_properties_names() const {
+	HashMap<StringName, String> names;
+	names.insert("from_space", RTR("From Space"));
+	names.insert("to_space", RTR("To Space"));
+	names.insert("vector_type", RTR("Vector Type"));
+	if (vector_type == VectorType::VECTOR_TYPE_DIRECTION) {
+		names.insert("normalize_output", RTR("Normalize"));
+	}
+	return names;
+}
+
+void VisualShaderNodeVectorCoordinateTransform::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_from_space", "from_space"), &VisualShaderNodeVectorCoordinateTransform::set_from_space);
+	ClassDB::bind_method(D_METHOD("get_from_space"), &VisualShaderNodeVectorCoordinateTransform::get_from_space);
+
+	ClassDB::bind_method(D_METHOD("set_to_space", "to_space"), &VisualShaderNodeVectorCoordinateTransform::set_to_space);
+	ClassDB::bind_method(D_METHOD("get_to_space"), &VisualShaderNodeVectorCoordinateTransform::get_to_space);
+
+	ClassDB::bind_method(D_METHOD("set_vector_type", "vector_type"), &VisualShaderNodeVectorCoordinateTransform::set_vector_type);
+	ClassDB::bind_method(D_METHOD("get_vector_type"), &VisualShaderNodeVectorCoordinateTransform::get_vector_type);
+
+	ClassDB::bind_method(D_METHOD("set_normalize_output", "normalize_output"), &VisualShaderNodeVectorCoordinateTransform::set_normalize_output);
+	ClassDB::bind_method(D_METHOD("get_normalize_output"), &VisualShaderNodeVectorCoordinateTransform::get_normalize_output);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "from_space", PROPERTY_HINT_ENUM, "Model,World,View,Tangent,Screen"), "set_from_space", "get_from_space");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "to_space", PROPERTY_HINT_ENUM, "Model,World,View,Tangent,Screen"), "set_to_space", "get_to_space");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vector_type", PROPERTY_HINT_ENUM, "Position,Direction"), "set_vector_type", "get_vector_type");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize_output"), "set_normalize_output", "get_normalize_output");
+
+	BIND_ENUM_CONSTANT(SPACE_MODEL);
+	BIND_ENUM_CONSTANT(SPACE_WORLD);
+	BIND_ENUM_CONSTANT(SPACE_VIEW);
+	BIND_ENUM_CONSTANT(SPACE_TANGENT);
+	BIND_ENUM_CONSTANT(SPACE_SCREEN);
+	BIND_ENUM_CONSTANT(SPACE_MAX);
+
+	BIND_ENUM_CONSTANT(VECTOR_TYPE_POSITION);
+	BIND_ENUM_CONSTANT(VECTOR_TYPE_DIRECTION);
+	BIND_ENUM_CONSTANT(VECTOR_TYPE_MAX);
+}
+
+VisualShaderNodeVectorCoordinateTransform::VisualShaderNodeVectorCoordinateTransform() {
+	simple_decl = false;
+	set_input_port_default_value(0, Vector3());
+}
+
 ////////////// Float Func
 
 String VisualShaderNodeFloatFunc::get_caption() const {
