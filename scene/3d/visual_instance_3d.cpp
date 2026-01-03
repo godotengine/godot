@@ -217,6 +217,7 @@ void GeometryInstance3D::set_material_override(const Ref<Material> &p_material) 
 		material_override->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 	RS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+	notify_property_list_changed(); // Instance uniforms may be changed.
 }
 
 Ref<Material> GeometryInstance3D::get_material_override() const {
@@ -224,8 +225,15 @@ Ref<Material> GeometryInstance3D::get_material_override() const {
 }
 
 void GeometryInstance3D::set_material_overlay(const Ref<Material> &p_material) {
+	if (material_overlay.is_valid()) {
+		material_overlay->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 	material_overlay = p_material;
+	if (material_overlay.is_valid()) {
+		material_overlay->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 	RS::get_singleton()->instance_geometry_set_material_overlay(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+	notify_property_list_changed(); // Instance uniforms may be changed.
 }
 
 Ref<Material> GeometryInstance3D::get_material_overlay() const {

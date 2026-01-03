@@ -366,13 +366,17 @@ int MeshInstance3D::get_surface_override_material_count() const {
 void MeshInstance3D::set_surface_override_material(int p_surface, const Ref<Material> &p_material) {
 	ERR_FAIL_INDEX(p_surface, surface_override_materials.size());
 
-	surface_override_materials.write[p_surface] = p_material;
-
 	if (surface_override_materials[p_surface].is_valid()) {
+		surface_override_materials[p_surface]->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
+	surface_override_materials.write[p_surface] = p_material;
+	if (surface_override_materials[p_surface].is_valid()) {
+		surface_override_materials[p_surface]->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 		RS::get_singleton()->instance_set_surface_override_material(get_instance(), p_surface, surface_override_materials[p_surface]->get_rid());
 	} else {
 		RS::get_singleton()->instance_set_surface_override_material(get_instance(), p_surface, RID());
 	}
+	notify_property_list_changed(); // Instance uniforms may be changed.
 }
 
 Ref<Material> MeshInstance3D::get_surface_override_material(int p_surface) const {

@@ -1203,13 +1203,19 @@ bool CanvasItem::is_draw_behind_parent_enabled() const {
 
 void CanvasItem::set_material(const Ref<Material> &p_material) {
 	ERR_THREAD_GUARD;
+	if (material.is_valid()) {
+		material->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 	material = p_material;
+	if (material.is_valid()) {
+		material->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 	RID rid;
 	if (material.is_valid()) {
 		rid = material->get_rid();
 	}
 	RS::get_singleton()->canvas_item_set_material(canvas_item, rid);
-	notify_property_list_changed(); //properties for material exposed
+	notify_property_list_changed(); // Instance uniforms may be changed.
 }
 
 void CanvasItem::set_use_parent_material(bool p_use_parent_material) {
