@@ -2862,6 +2862,23 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	}
 }
 
+void Control::set_autofocus(bool p_enable) {
+	if (data.autofocus == p_enable) {
+		return;
+	}
+	data.autofocus = p_enable;
+}
+
+bool Control::get_autofocus() const {
+	return data.autofocus;
+}
+
+void Control::attempt_autofocus() {
+	if (get_autofocus() && _is_focusable()) {
+		grab_focus();
+	}
+}
+
 // Rendering.
 
 void Control::set_default_cursor_shape(CursorShape p_shape) {
@@ -3970,6 +3987,7 @@ void Control::_notification(int p_notification) {
 			} else {
 				update_minimum_size();
 				_size_changed();
+				attempt_autofocus();
 			}
 		} break;
 
@@ -4136,6 +4154,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_focus_previous", "previous"), &Control::set_focus_previous);
 	ClassDB::bind_method(D_METHOD("get_focus_previous"), &Control::get_focus_previous);
 
+	ClassDB::bind_method(D_METHOD("set_autofocus", "enable"), &Control::set_autofocus);
+	ClassDB::bind_method(D_METHOD("get_autofocus"), &Control::get_autofocus);
+
 	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
 
 	ClassDB::bind_method(D_METHOD("accessibility_drag"), &Control::accessibility_drag);
@@ -4279,7 +4300,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tooltip_text", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip_text", "get_tooltip_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tooltip_auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_tooltip_auto_translate_mode", "get_tooltip_auto_translate_mode");
 
-	ADD_GROUP("Focus", "focus_");
+	ADD_GROUP("Focus", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::NODE_PATH, "focus_neighbor_left", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbor", "get_focus_neighbor", SIDE_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::NODE_PATH, "focus_neighbor_top", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbor", "get_focus_neighbor", SIDE_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::NODE_PATH, "focus_neighbor_right", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbor", "get_focus_neighbor", SIDE_RIGHT);
@@ -4288,6 +4309,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "focus_previous", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_previous", "get_focus_previous");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All,Accessibility"), "set_focus_mode", "get_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_behavior_recursive", PROPERTY_HINT_ENUM, "Inherited,Disabled,Enabled"), "set_focus_behavior_recursive", "get_focus_behavior_recursive");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autofocus"), "set_autofocus", "get_autofocus");
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass (Propagate Up),Ignore"), "set_mouse_filter", "get_mouse_filter");
