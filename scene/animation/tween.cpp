@@ -34,9 +34,14 @@
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 
-#define CHECK_VALID()                                                                                      \
-	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree."); \
-	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
+#define CHECK_VALID()                                                                                                                \
+	if (!name.is_empty()) {                                                                                                          \
+		ERR_FAIL_COND_V_MSG(!valid, nullptr, vformat("Tween \"%s\" invalid. Either finished or created outside scene tree.", name)); \
+		ERR_FAIL_COND_V_MSG(started, nullptr, vformat("Can't append to a Tween \"%s\" that has started. Use stop() first.", name));  \
+	} else {                                                                                                                         \
+		ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree.");                       \
+		ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");                        \
+	}
 
 Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
 	{ &Linear::in, &Linear::in, &Linear::in, &Linear::in }, // Linear is the same for each easing.
@@ -78,7 +83,11 @@ void Tweener::_bind_methods() {
 void Tween::_start_tweeners() {
 	if (tweeners.is_empty()) {
 		dead = true;
-		ERR_FAIL_MSG("Tween without commands, aborting.");
+		if (!name.is_empty()) {
+			ERR_FAIL_MSG(vformat("Tween \"%s\" has no commands, aborting.", name));
+		} else {
+			ERR_FAIL_MSG("Tween has no commands, aborting.");
+		}
 	}
 
 	for (Ref<Tweener> &tweener : tweeners[current_step]) {
@@ -192,8 +201,14 @@ void Tween::pause() {
 }
 
 void Tween::play() {
-	ERR_FAIL_COND_MSG(!valid, "Tween invalid. Either finished or created outside scene tree.");
-	ERR_FAIL_COND_MSG(dead, "Can't play finished Tween, use stop() first to reset its state.");
+	if (!name.is_empty()) {
+		ERR_FAIL_COND_MSG(!valid, vformat("Tween \"%s\" invalid. Either finished or created outside scene tree.", name));
+		ERR_FAIL_COND_MSG(dead, vformat("Can't play finished Tween \"%s\", use stop() first to reset its state.", name));
+	} else {
+		ERR_FAIL_COND_MSG(!valid, "Tween invalid. Either finished or created outside scene tree.");
+		ERR_FAIL_COND_MSG(dead, "Can't play finished Tween, use stop() first to reset its state.");
+	}
+
 	running = true;
 }
 
@@ -309,7 +324,11 @@ RequiredResult<Tween> Tween::chain() {
 }
 
 bool Tween::custom_step(double p_delta) {
-	ERR_FAIL_COND_V_MSG(in_step, true, "Can't call custom_step() during another Tween step.");
+	if (!name.is_empty()) {
+		ERR_FAIL_COND_V_MSG(in_step, true, vformat("Can't call custom_step() during another Tween step for Tween named \"%s\".", name));
+	} else {
+		ERR_FAIL_COND_V_MSG(in_step, true, "Can't call custom_step() during another Tween step.");
+	}
 
 	bool r = running;
 	running = true;
@@ -341,10 +360,10 @@ bool Tween::step(double p_delta) {
 
 	if (!started) {
 		if (tweeners.is_empty()) {
-			String tween_id;
+			String tween_id = name.is_empty() ? "Tween" : vformat("Tween \"%s\"", name);
 			Node *node = get_bound_node();
 			if (node) {
-				tween_id = vformat("Tween (bound to %s)", node->is_inside_tree() ? (String)node->get_path() : (String)node->get_name());
+				tween_id = vformat("%s (bound to %s)", tween_id, node->is_inside_tree() ? (String)node->get_path() : (String)node->get_name());
 			} else {
 				tween_id = to_string();
 			}
@@ -403,7 +422,11 @@ bool Tween::step(double p_delta) {
 						} else {
 							// Looped twice without using any time, this is 100% certain infinite loop.
 							in_step = false;
-							ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
+							if (!name.is_empty()) {
+								ERR_FAIL_V_MSG(false, vformat("Infinite loop detected in Tween \"%s\". Check set_loops() description for more info.", name));
+							} else {
+								ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
+							}
 						}
 					}
 #endif
@@ -462,10 +485,21 @@ Variant Tween::interpolate_variant(const Variant &p_initial_val, const Variant &
 String Tween::_to_string() {
 	String ret = Object::_to_string();
 	Node *node = get_bound_node();
+	if (!name.is_empty()) {
+		ret += vformat(" \"%s\"", name);
+	}
 	if (node) {
 		ret += vformat(" (bound to %s)", node->get_name());
 	}
 	return ret;
+}
+
+void Tween::set_name(const StringName &p_name) {
+	name = p_name;
+}
+
+StringName Tween::get_name() const {
+	return name;
 }
 
 void Tween::_bind_methods() {
@@ -498,6 +532,9 @@ void Tween::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("parallel"), &Tween::parallel);
 	ClassDB::bind_method(D_METHOD("chain"), &Tween::chain);
+
+	ClassDB::bind_method(D_METHOD("set_name", "name"), &Tween::set_name);
+	ClassDB::bind_method(D_METHOD("get_name"), &Tween::get_name);
 
 	ClassDB::bind_static_method("Tween", D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
 
@@ -546,10 +583,19 @@ double PropertyTweener::_get_custom_interpolated_value(const Variant &p_value) {
 	Variant result;
 	Callable::CallError ce;
 	custom_method.callp(&argptr, 1, result, ce);
+	Ref<Tween> tween = _get_tween();
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(false, "Error calling custom method from PropertyTweener: " + Variant::get_callable_error_text(custom_method, &argptr, 1, ce) + ".");
+		if (!tween->get_name().is_empty()) {
+			ERR_FAIL_V_MSG(false, vformat("Error calling custom method from PropertyTweener in Tween \"%s\": %s.", tween->get_name(), Variant::get_callable_error_text(custom_method, &argptr, 1, ce)));
+		} else {
+			ERR_FAIL_V_MSG(false, vformat("Error calling custom method from PropertyTweener: %s.", Variant::get_callable_error_text(custom_method, &argptr, 1, ce)));
+		}
 	} else if (result.get_type() != Variant::FLOAT) {
-		ERR_FAIL_V_MSG(false, vformat("Wrong return type in PropertyTweener custom method. Expected float, got %s.", Variant::get_type_name(result.get_type())));
+		if (!tween->get_name().is_empty()) {
+			ERR_FAIL_V_MSG(false, vformat("Wrong return type in PropertyTweener custom method in Tween \"%s\". Expected float, got %s.", tween->get_name(), Variant::get_type_name(result.get_type())));
+		} else {
+			ERR_FAIL_V_MSG(false, vformat("Wrong return type in PropertyTweener custom method. Expected float, got %s.", Variant::get_type_name(result.get_type())));
+		}
 	}
 	return result;
 }
@@ -752,7 +798,12 @@ bool CallbackTweener::step(double &r_delta) {
 		Callable::CallError ce;
 		callback.callp(nullptr, 0, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce) + ".");
+			Ref<Tween> tween = _get_tween();
+			if (!tween->get_name().is_empty()) {
+				ERR_FAIL_V_MSG(false, vformat("Error calling method from CallbackTweener in Tween \"%s\": %s.", tween->get_name(), Variant::get_callable_error_text(callback, nullptr, 0, ce)));
+			} else {
+				ERR_FAIL_V_MSG(false, vformat("Error calling method from CallbackTweener: %s.", Variant::get_callable_error_text(callback, nullptr, 0, ce)));
+			}
 		}
 
 		r_delta = elapsed_time - delay;
@@ -829,7 +880,11 @@ bool MethodTweener::step(double &r_delta) {
 	Callable::CallError ce;
 	callback.callp(argptr, 1, result, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_callable_error_text(callback, argptr, 1, ce) + ".");
+		if (!tween->get_name().is_empty()) {
+			ERR_FAIL_V_MSG(false, vformat("Error calling method from MethodTweener in Tween \"%s\": %s.", tween->get_name(), Variant::get_callable_error_text(callback, argptr, 1, ce)));
+		} else {
+			ERR_FAIL_V_MSG(false, vformat("Error calling method from MethodTweener: %s.", Variant::get_callable_error_text(callback, argptr, 1, ce)));
+		}
 	}
 
 	if (time < duration) {

@@ -137,6 +137,13 @@
 				Returns the number of remaining loops for this [Tween] (see [method set_loops]). A return value of [code]-1[/code] indicates an infinitely looping [Tween], and a return value of [code]0[/code] indicates that the [Tween] has already finished.
 			</description>
 		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name set using [method set_name] for this [Tween], or an empty StringName if none was set.
+				[b]Warning:[/b] Note that a [Tween]'s name is not guaranteed to uniquely identify it.
+			</description>
+		</method>
 		<method name="get_total_elapsed_time" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -242,6 +249,26 @@
 				Sets the number of times the tweening sequence will be repeated, i.e. [code]set_loops(2)[/code] will run the animation twice.
 				Calling this method without arguments will make the [Tween] run infinitely, until either it is killed with [method kill], the [Tween]'s bound node is freed, or all the animated objects have been freed (which makes further animation impossible).
 				[b]Warning:[/b] Make sure to always add some duration/delay when using infinite loops. To prevent the game freezing, 0-duration looped animations (e.g. a single [CallbackTweener] with no delay) are stopped after a small number of loops, which may produce unexpected results. If a [Tween]'s lifetime depends on some node, always use [method bind_node].
+			</description>
+		</method>
+		<method name="set_name">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Sets a name for this [Tween] to use in error statements and when displayed as a string. This is useful for determining exactly which [Tween] is raising errors when many [Tween]s are being used at the same time.
+				[codeblock]
+				var unnamed_tween = create_tween()
+				unnamed_tween.tween_callback(func(): print("This tween is looping forever"))
+				unnamed_tween.set_loops(-1)
+				# ERROR: Infinite loop detected. Check set_loops() description for more info.
+
+				var named_tween = create_tween()
+				named_tween.set_name("SlideDown")
+				named_tween.tween_callback(func(): print("This tween is looping forever"))
+				named_tween.set_loops(-1)
+				# ERROR: Infinite loop detected in Tween "SlideDown". Check set_loops() description for more info.
+				[/codeblock]
+				See also [method get_name].
 			</description>
 		</method>
 		<method name="set_parallel">
