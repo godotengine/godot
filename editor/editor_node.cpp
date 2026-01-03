@@ -2624,7 +2624,7 @@ void EditorNode::_dialog_action(String p_file) {
 		case SCENE_SAVE_SCENE:
 		case SCENE_MULTI_SAVE_AS_SCENE:
 		case SCENE_SAVE_AS_SCENE: {
-			int scene_idx = (current_menu_option == SCENE_SAVE_SCENE || current_menu_option == SCENE_SAVE_AS_SCENE || current_menu_option == SCENE_MULTI_SAVE_AS_SCENE) ? -1 : tab_closing_idx;
+			int scene_idx = (current_menu_option == SCENE_MULTI_SAVE_AS_SCENE) ? -1 : tab_context_idx;
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				bool same_open_scene = false;
@@ -2656,6 +2656,7 @@ void EditorNode::_dialog_action(String p_file) {
 				_proceed_save_asing_scene_tabs();
 			}
 
+			tab_context_idx = -1;
 		} break;
 
 		case SAVE_AND_RUN: {
@@ -3277,6 +3278,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 	switch (p_option) {
 		case SCENE_NEW_SCENE: {
+			tab_context_idx = -1; // Don't use a specific tab as context.
 			new_scene();
 
 		} break;
@@ -3308,14 +3310,17 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			quick_open_dialog->popup_dialog({ "Script" }, callable_mp(this, &EditorNode::_quick_opened));
 		} break;
 		case SCENE_OPEN_PREV: {
+			tab_context_idx = -1; // Don't use a specific tab as context.
 			if (!prev_closed_scenes.is_empty()) {
 				load_scene(prev_closed_scenes.back()->get());
 			}
 		} break;
 		case EditorSceneTabs::SCENE_CLOSE_OTHERS: {
 			tab_closing_menu_option = -1;
+			int selected_tab = tab_context_idx >= 0 ? tab_context_idx : editor_data.get_edited_scene();
+			tab_context_idx = -1;
 			for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-				if (i == editor_data.get_edited_scene()) {
+				if (i == selected_tab) {
 					continue;
 				}
 				tabs_to_close.push_back(editor_data.get_scene_path(i));
@@ -3324,7 +3329,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case EditorSceneTabs::SCENE_CLOSE_RIGHT: {
 			tab_closing_menu_option = -1;
-			for (int i = editor_data.get_edited_scene() + 1; i < editor_data.get_edited_scene_count(); i++) {
+			int selected_tab = tab_context_idx >= 0 ? tab_context_idx : editor_data.get_edited_scene();
+			tab_context_idx = -1;
+			for (int i = selected_tab + 1; i < editor_data.get_edited_scene_count(); i++) {
 				tabs_to_close.push_back(editor_data.get_scene_path(i));
 			}
 			_proceed_closing_scene_tabs();
@@ -3337,11 +3344,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_proceed_closing_scene_tabs();
 		} break;
 		case SCENE_CLOSE: {
-			_scene_tab_closed(editor_data.get_edited_scene());
+			int scene_to_close = tab_context_idx >= 0 ? tab_context_idx : editor_data.get_edited_scene();
+			tab_context_idx = -1;
+			_scene_tab_closed(scene_to_close);
 		} break;
 		case SCENE_TAB_CLOSE:
 		case SCENE_SAVE_SCENE: {
-			int scene_idx = (p_option == SCENE_SAVE_SCENE) ? -1 : tab_closing_idx;
+			int scene_idx = (p_option == SCENE_SAVE_SCENE && tab_context_idx < 0) ? -1 : tab_context_idx;
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 			if (scene && !scene->get_scene_file_path().is_empty()) {
 				if (DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
@@ -3358,13 +3367,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				} else {
 					show_save_accept(vformat(TTR("%s no longer exists! Please specify a new save location."), scene->get_scene_file_path().get_base_dir()), TTR("OK"));
 				}
+				tab_context_idx = -1;
 				break;
 			}
 			[[fallthrough]];
 		}
 		case SCENE_MULTI_SAVE_AS_SCENE:
 		case SCENE_SAVE_AS_SCENE: {
-			int scene_idx = (p_option == SCENE_SAVE_SCENE || p_option == SCENE_SAVE_AS_SCENE || p_option == SCENE_MULTI_SAVE_AS_SCENE) ? -1 : tab_closing_idx;
+			int scene_idx = (p_option == SCENE_MULTI_SAVE_AS_SCENE) ? -1 : tab_context_idx;
 
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 
@@ -3421,12 +3431,15 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case SCENE_TAB_SET_AS_MAIN_SCENE: {
-			const String scene_path = editor_data.get_scene_path(editor_data.get_edited_scene());
+			int selected_tab = tab_context_idx >= 0 ? tab_context_idx : editor_data.get_edited_scene();
+			const String scene_path = editor_data.get_scene_path(selected_tab);
 			if (scene_path.is_empty()) {
 				current_menu_option = SAVE_AND_SET_MAIN_SCENE;
 				_menu_option_confirm(SCENE_SAVE_AS_SCENE, true);
 				file->set_title(TTR("Save new main scene..."));
+				// tab_context_idx will be reset when the dialog completes.
 			} else {
+				tab_context_idx = -1;
 				ProjectSettings::get_singleton()->set("application/run/main_scene", ResourceUID::path_to_uid(scene_path));
 				ProjectSettings::get_singleton()->save();
 				FileSystemDock::get_singleton()->update_all();
@@ -3434,11 +3447,21 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case SCENE_SAVE_ALL_SCENES: {
+			tab_context_idx = -1; // Don't use a specific tab as context.
 			_save_all_scenes();
 		} break;
 
 		case EditorSceneTabs::SCENE_RUN: {
-			project_run_bar->play_current_scene();
+			if (tab_context_idx >= 0 && tab_context_idx != editor_data.get_edited_scene()) {
+				String scene_path = editor_data.get_scene_path(tab_context_idx);
+				tab_context_idx = -1;
+				if (!scene_path.is_empty()) {
+					project_run_bar->play_custom_scene(scene_path);
+				}
+			} else {
+				tab_context_idx = -1;
+				project_run_bar->play_current_scene();
+			}
 		} break;
 
 		case PROJECT_EXPORT: {
@@ -3539,7 +3562,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case EditorSceneTabs::SCENE_SHOW_IN_FILESYSTEM: {
-			String path = editor_data.get_scene_path(editor_data.get_edited_scene());
+			int selected_tab = tab_context_idx >= 0 ? tab_context_idx : editor_data.get_edited_scene();
+			String path = editor_data.get_scene_path(selected_tab);
+			tab_context_idx = -1;
 			if (!path.is_empty()) {
 				FileSystemDock::get_singleton()->navigate_to_path(path);
 			}
@@ -4060,14 +4085,14 @@ void EditorNode::_discard_changes(const String &p_str) {
 	switch (current_menu_option) {
 		case SCENE_CLOSE:
 		case SCENE_TAB_CLOSE: {
-			Node *scene = editor_data.get_edited_scene_root(tab_closing_idx);
+			Node *scene = editor_data.get_edited_scene_root(tab_context_idx);
 			if (scene != nullptr) {
 				_update_prev_closed_scenes(scene->get_scene_file_path(), true);
 			}
 
 			// Don't close tabs when exiting the editor (required for "restore_scenes_on_load" setting).
 			if (!_is_closing_editor()) {
-				_remove_scene(tab_closing_idx);
+				_remove_scene(tab_context_idx);
 				scene_tabs->update_scene_tabs();
 			}
 			_proceed_closing_scene_tabs();
@@ -5415,7 +5440,7 @@ bool EditorNode::close_scene() {
 		return false;
 	}
 
-	tab_closing_idx = tab_index;
+	tab_context_idx = tab_index;
 	current_menu_option = SCENE_CLOSE;
 	_discard_changes();
 	changing_scene = false;
@@ -6535,7 +6560,7 @@ void EditorNode::_restart_editor(bool p_goto_project_manager) {
 
 void EditorNode::_scene_tab_closed(int p_tab) {
 	current_menu_option = SCENE_TAB_CLOSE;
-	tab_closing_idx = p_tab;
+	tab_context_idx = p_tab;
 	Node *scene = editor_data.get_edited_scene_root(p_tab);
 	if (!scene) {
 		_discard_changes();
