@@ -35,6 +35,8 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
+struct EditorProgress;
+
 class EditorBuildProfile : public RefCounted {
 	GDCLASS(EditorBuildProfile, RefCounted);
 
@@ -157,6 +159,8 @@ class EditorBuildProfileManager : public AcceptDialog {
 	ConfirmationDialog *confirm_dialog = nullptr;
 	Button *profile_actions[ACTION_MAX];
 
+	RichTextLabel *info = nullptr;
+
 	Tree *class_list = nullptr;
 	EditorHelpBit *description_bit = nullptr;
 
@@ -170,6 +174,8 @@ class EditorBuildProfileManager : public AcceptDialog {
 	void _profile_action(int p_action);
 	void _action_confirm();
 	void _hide_requested();
+
+	void _meta_clicked(const String &p_meta);
 
 	void _update_edited_profile();
 	void _fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected);
@@ -185,9 +191,8 @@ class EditorBuildProfileManager : public AcceptDialog {
 	void _class_list_item_edited();
 	void _class_list_item_collapsed(Object *p_item);
 
-	bool project_scan_canceled = false;
-
 	void _detect_from_project();
+	void _detect_from_project_finished();
 
 	void _force_detect_classes_changed(const String &p_text);
 
@@ -198,7 +203,22 @@ class EditorBuildProfileManager : public AcceptDialog {
 		Vector<String> build_deps;
 	};
 
-	void _find_files(EditorFileSystemDirectory *p_dir, const HashMap<String, DetectedFile> &p_cache, HashMap<String, DetectedFile> &r_detected);
+	struct ScanData {
+		EditorFileSystemDirectory *dir = nullptr;
+		HashMap<String, DetectedFile> cache;
+		HashMap<String, DetectedFile> detected;
+		String current_file;
+		SafeFlag new_file;
+		Thread *thread = nullptr;
+		SafeFlag project_root;
+		SafeFlag finished;
+		SafeFlag canceled;
+	};
+	ScanData *scan_data = nullptr;
+
+	EditorProgress *progress = nullptr;
+
+	static void _find_files(void *p_scan_data);
 
 	static EditorBuildProfileManager *singleton;
 
