@@ -75,13 +75,18 @@ namespace Godot
 
         private NodePath(godot_node_path nativeValueToOwn)
         {
-            NativeValue = (godot_node_path.movable)nativeValueToOwn;
-            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+            TakeOwnershipOfDisposableValue(nativeValueToOwn);
         }
 
         // Explicit name to make it very clear
         internal static NodePath CreateTakingOwnershipOfDisposableValue(godot_node_path nativeValueToOwn)
             => new NodePath(nativeValueToOwn);
+
+        internal void TakeOwnershipOfDisposableValue(godot_node_path nativeValueToOwn)
+        {
+            NativeValue = (godot_node_path.movable)nativeValueToOwn;
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+        }
 
         /// <summary>
         /// Constructs an empty <see cref="NodePath"/>.
