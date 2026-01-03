@@ -282,6 +282,7 @@ void QuickSettingsDialog::_bind_methods() {
 
 QuickSettingsDialog::QuickSettingsDialog() {
 	set_title(TTRC("Quick Settings"));
+	set_session_id("QuickSettings");
 	set_ok_button_text(TTRC("Close"));
 
 	VBoxContainer *main_vbox = memnew(VBoxContainer);

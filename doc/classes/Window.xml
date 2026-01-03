@@ -127,6 +127,12 @@
 				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member position].
 			</description>
 		</method>
+		<method name="get_session_id">
+			<return type="String" />
+			<description>
+				Returns the session id of the window.
+			</description>
+		</method>
 		<method name="get_size_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -542,6 +548,14 @@
 				Sets layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 			</description>
 		</method>
+		<method name="set_session_id">
+			<return type="void" />
+			<param index="0" name="session_id" type="String" />
+			<description>
+				Set the key this window will use when restoring its properties after opening and closing this window.
+				This key must be a string that is [b]unique[/b] across the project and [b]consistent[/b] across restarts.
+			</description>
+		</method>
 		<method name="set_unparent_when_invisible">
 			<return type="void" />
 			<param index="0" name="unparent" type="bool" />
@@ -706,6 +720,12 @@
 			The window's position in pixels.
 			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]true[/code], the window's position is in the coordinates of its parent [Viewport].
 			[b]Note:[/b] This property only works if [member initial_position] is set to [constant WINDOW_INITIAL_POSITION_ABSOLUTE].
+		</member>
+		<member name="session_id" type="String" setter="set_session_id" getter="get_session_id" default="&quot;&quot;">
+			The unique id that will be used to restore the properties of the window on restart.
+			For this property to function it must be set before the window enters the scene tree.
+			If it has been set in time, the position, size, screen and mode will be restored.
+			[b]Note:[/b] This must be [b]unique[/b] across all windows in the app and [b]consistent[/b] across restarts.
 		</member>
 		<member name="sharp_corners" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will override the OS window style to display sharp corners.

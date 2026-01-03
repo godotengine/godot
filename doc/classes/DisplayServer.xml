@@ -2457,6 +2457,14 @@
 				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
+		<method name="window_set_session_id">
+			<return type="void" />
+			<param index="0" name="session_id" type="String" />
+			<description>
+				Set the key this window will use when restoring its properties after opening and closing this window.
+				This key must be a string that is [b]unique[/b] across the project and [b]consistent[/b] across restarts.
+			</description>
+		</method>
 		<method name="window_set_size">
 			<return type="void" />
 			<param index="0" name="size" type="Vector2i" />
