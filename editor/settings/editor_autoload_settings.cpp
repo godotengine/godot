@@ -160,7 +160,7 @@ void EditorAutoloadSettings::_autoload_add() {
 		dialog->config("Node", fpath.path_join(vformat("%s.gd", autoload_add_name->get_text())), false, false);
 		dialog->popup_centered();
 	} else {
-		if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
+		if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text(), true)) {
 			autoload_add_path->set_text("");
 		}
 
@@ -775,7 +775,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	undo_redo->commit_action();
 }
 
-bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path) {
+bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path, bool p_use_undo) {
 	String name = p_name;
 
 	String error;
@@ -795,6 +795,13 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 	}
 
 	name = "autoload/" + name;
+
+	if (!p_use_undo) {
+		ProjectSettings::get_singleton()->set(name, "*" + p_path);
+		update_autoload();
+		emit_signal(autoload_changed);
+		return true;
+	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
@@ -819,33 +826,14 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 	return true;
 }
 
-void EditorAutoloadSettings::autoload_remove(const String &p_name) {
-	String name = "autoload/" + p_name;
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
-	int order = ProjectSettings::get_singleton()->get_order(name);
-
-	undo_redo->create_action(TTR("Remove Autoload"));
-
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, Variant());
-
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", name, order);
-
-	undo_redo->add_do_method(this, "update_autoload");
-	undo_redo->add_undo_method(this, "update_autoload");
-
-	undo_redo->add_do_method(this, "emit_signal", autoload_changed);
-	undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
-
-	undo_redo->commit_action();
+void EditorAutoloadSettings::autoload_remove(const StringName &p_name) {
+	ProjectSettings::get_singleton()->remove_autoload(p_name);
+	update_autoload();
+	emit_signal(autoload_changed);
 }
 
 void EditorAutoloadSettings::_bind_methods() {
 	ClassDB::bind_method("update_autoload", &EditorAutoloadSettings::update_autoload);
-	ClassDB::bind_method("autoload_add", &EditorAutoloadSettings::autoload_add);
-	ClassDB::bind_method("autoload_remove", &EditorAutoloadSettings::autoload_remove);
 
 	ADD_SIGNAL(MethodInfo("autoload_changed"));
 }

@@ -68,12 +68,12 @@ void EditorPlugin::remove_custom_type(const String &p_type) {
 
 void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_path) {
 	if (p_path.begins_with("res://")) {
-		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, p_path);
+		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, p_path, false);
 	} else {
 		const Ref<Script> plugin_script = static_cast<Ref<Script>>(get_script());
 		ERR_FAIL_COND(plugin_script.is_null());
 		const String script_base_path = plugin_script->get_path().get_base_dir();
-		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, script_base_path.path_join(p_path));
+		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, script_base_path.path_join(p_path), false);
 	}
 }
 
