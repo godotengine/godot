@@ -4160,9 +4160,6 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 		_convert_skeleton_to_gltf(skel, p_state, p_gltf_parent, p_gltf_root, gltf_node);
 		// We ignore the Godot Engine node that is the skeleton.
 		return;
-	} else if (Object::cast_to<MultiMeshInstance3D>(p_current)) {
-		MultiMeshInstance3D *multi = Object::cast_to<MultiMeshInstance3D>(p_current);
-		_convert_multi_mesh_instance_to_gltf(multi, p_gltf_parent, p_gltf_root, gltf_node, p_state);
 #ifdef MODULE_CSG_ENABLED
 	} else if (Object::cast_to<CSGShape3D>(p_current)) {
 		CSGShape3D *shape = Object::cast_to<CSGShape3D>(p_current);
@@ -4320,55 +4317,6 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 #endif // MODULE_GRIDMAP_ENABLED
 }
 
-void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
-		MultiMeshInstance3D *p_multi_mesh_instance,
-		GLTFNodeIndex p_parent_node_index,
-		GLTFNodeIndex p_root_node_index,
-		Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state) {
-	ERR_FAIL_NULL(p_multi_mesh_instance);
-	Ref<MultiMesh> multi_mesh = p_multi_mesh_instance->get_multimesh();
-	if (multi_mesh.is_null()) {
-		return;
-	}
-	Ref<GLTFMesh> gltf_mesh;
-	gltf_mesh.instantiate();
-	Ref<Mesh> mesh = multi_mesh->get_mesh();
-	if (mesh.is_null()) {
-		return;
-	}
-	gltf_mesh->set_original_name(multi_mesh->get_name());
-	gltf_mesh->set_name(multi_mesh->get_name());
-	gltf_mesh->set_mesh(ImporterMesh::from_mesh(mesh));
-	GLTFMeshIndex mesh_index = p_state->meshes.size();
-	p_state->meshes.push_back(gltf_mesh);
-	for (int32_t instance_i = 0; instance_i < multi_mesh->get_instance_count();
-			instance_i++) {
-		Transform3D transform;
-		if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_2D) {
-			Transform2D xform_2d = multi_mesh->get_instance_transform_2d(instance_i);
-			transform.origin =
-					Vector3(xform_2d.get_origin().x, 0, xform_2d.get_origin().y);
-			real_t rotation = xform_2d.get_rotation();
-			Quaternion quaternion(Vector3(0, 1, 0), rotation);
-			Size2 scale = xform_2d.get_scale();
-			transform.basis.set_quaternion_scale(quaternion,
-					Vector3(scale.x, 0, scale.y));
-			transform = p_multi_mesh_instance->get_transform() * transform;
-		} else if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_3D) {
-			transform = p_multi_mesh_instance->get_transform() *
-					multi_mesh->get_instance_transform(instance_i);
-		}
-		Ref<GLTFNode> new_gltf_node;
-		new_gltf_node.instantiate();
-		new_gltf_node->mesh = mesh_index;
-		new_gltf_node->transform = transform;
-		new_gltf_node->set_original_name(p_multi_mesh_instance->get_name());
-		new_gltf_node->set_name(_gen_unique_name(p_state, p_multi_mesh_instance->get_name()));
-		p_gltf_node->children.push_back(p_state->nodes.size());
-		p_state->nodes.push_back(new_gltf_node);
-	}
-}
-
 void GLTFDocument::_convert_skeleton_to_gltf(Skeleton3D *p_skeleton3d, Ref<GLTFState> p_state, GLTFNodeIndex p_parent_node_index, GLTFNodeIndex p_root_node_index, Ref<GLTFNode> p_gltf_node) {
 	Skeleton3D *skeleton = p_skeleton3d;
 	Ref<GLTFSkeleton> gltf_skeleton;
@@ -4509,6 +4457,9 @@ bool GLTFDocument::_does_skinned_mesh_require_placeholder_node(Ref<GLTFState> p_
 
 void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
+	if (gltf_node->has_additional_data(StringName("SkipNodeGeneration"))) {
+		return;
+	}
 	Node3D *current_node = nullptr;
 	// Check if any GLTFDocumentExtension classes want to generate a node for us.
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
