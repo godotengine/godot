@@ -124,6 +124,7 @@ public:
 
 private:
 	mutable AHashMap<StringName, int> property_cache;
+	mutable void *guard_source_tree = nullptr;
 
 public:
 	void set_node_state_base_path(const StringName p_base_path) {
@@ -146,6 +147,7 @@ public:
 
 	void make_cache_dirty() {
 		property_cache.clear();
+		guard_source_tree = nullptr;
 	}
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
