@@ -2631,6 +2631,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (bool(GLOBAL_GET("display/window/size/always_on_top"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP_BIT;
 		}
+		if (bool(GLOBAL_GET("display/window/size/exclude_from_capture"))) {
+			window_flags |= DisplayServer::WINDOW_FLAG_EXCLUDE_FROM_CAPTURE_BIT;
+		}
 		if (bool(GLOBAL_GET("display/window/size/transparent"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_TRANSPARENT_BIT;
 		}
