@@ -125,6 +125,12 @@ void EditorDock::close() {
 	}
 }
 
+void EditorDock::try_hide() {
+	if (!dock_window) {
+		hide();
+	}
+}
+
 void EditorDock::set_title(const String &p_title) {
 	if (title == p_title) {
 		return;
