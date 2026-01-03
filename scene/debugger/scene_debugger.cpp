@@ -890,16 +890,13 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 		Array prop = { pi.name, pi.type };
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
-		if (res.is_valid() && !res->get_path().is_empty()) {
-			var = res->get_path();
-		} else { //only send information that can be sent..
-			int len = 0; //test how big is this to encode
-			encode_variant(var, nullptr, len);
-			if (len > p_max_size) { //limit to max size
-				hint = PROPERTY_HINT_OBJECT_TOO_BIG;
-				hint_string = "";
-				var = Variant();
-			}
+		// Only send information that can be sent.
+		int len = 0; // Test how big is this to encode.
+		encode_variant(var, nullptr, len);
+		if (len > p_max_size) { // Limit to max size.
+			hint = PROPERTY_HINT_OBJECT_TOO_BIG;
+			hint_string = "";
+			var = Variant();
 		}
 		prop.push_back(hint);
 		prop.push_back(hint_string);
