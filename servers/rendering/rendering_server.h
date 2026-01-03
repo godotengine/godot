@@ -1574,6 +1574,7 @@ public:
 	virtual void canvas_item_set_modulate(RID p_item, const Color &p_color) = 0;
 	virtual void canvas_item_set_self_modulate(RID p_item, const Color &p_color) = 0;
 	virtual void canvas_item_set_visibility_layer(RID p_item, uint32_t p_visibility_layer) = 0;
+	virtual uint32_t canvas_item_get_z_render(RID p_item) = 0;
 
 	virtual void canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) = 0;
 	virtual void canvas_item_set_use_identity_transform(RID p_item, bool p_enabled) = 0;

@@ -973,6 +973,8 @@ public:
 
 	FUNC2(canvas_item_set_visibility_layer, RID, uint32_t)
 
+	FUNC1R(uint32_t, canvas_item_get_z_render, RID)
+
 	FUNC2(canvas_item_set_update_when_visible, RID, bool)
 
 	FUNC2(canvas_item_set_transform, RID, const Transform2D &)
