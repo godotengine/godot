@@ -1,0 +1,7 @@
+GDTEST_OK
+~~ WARNING at line 2: (CONFUSABLE_LOCAL_USAGE) The identifier "FileAccess" will be shadowed below in the block.
+~~ WARNING at line 4: (SHADOWED_GLOBAL_IDENTIFIER) The variable "FileAccess" has the same name as a native class.
+~~ WARNING at line 15: (SHADOWED_GLOBAL_IDENTIFIER) The variable "FileAccess" has the same name as a native class.
+false
+Called shadows file_exists with path: no file here
+Called shadows file_exists with path: no file here
