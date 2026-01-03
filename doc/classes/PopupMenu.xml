@@ -650,6 +650,10 @@
 		<member name="hide_on_item_selection" type="bool" setter="set_hide_on_item_selection" getter="is_hide_on_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when an item is selected.
 		</member>
+		<member name="hide_on_parent_unfocused" type="bool" setter="set_hide_on_parent_unfocused" getter="is_hide_on_parent_unfocused" default="true">
+			If [code]true[/code], hides the [PopupMenu] when its transient parent loses focus.
+			[b]Note:[/b] On Windows and macOS popups automatically hides themselves after minimizing their parent window.
+		</member>
 		<member name="hide_on_state_item_selection" type="bool" setter="set_hide_on_state_item_selection" getter="is_hide_on_state_item_selection" default="false">
 			If [code]true[/code], hides the [PopupMenu] when a state item is selected.
 		</member>
