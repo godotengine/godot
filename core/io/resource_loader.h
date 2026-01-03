@@ -126,6 +126,30 @@ public:
 		LOAD_THREAD_DISTRIBUTE,
 	};
 
+	enum FilterTarget {
+		FILTER_TARGET_TYPE_HINT,
+		FILTER_TARGET_PATH,
+		FILTER_TARGET_FILE_NAME,
+		FILTER_TARGET_FILE_EXTENSION,
+		FILTER_TARGET_BASE_DIR,
+		FILTER_TARGET_RESOURCE_NAME,
+		FILTER_TARGET_RESOURCE_PATH,
+		FILTER_TARGET_RESOURCE_CLASS,
+		FILTER_TARGET_REFERENCE_COUNT,
+	};
+
+	enum FilterComparator {
+		FILTER_COMP_EQUALS,
+		FILTER_COMP_NOT_EQUAL,
+		FILTER_COMP_BEGINS_WITH,
+		FILTER_COMP_ENDS_WITH,
+		FILTER_COMP_CONTAINS,
+		FILTER_COMP_GREATER,
+		FILTER_COMP_LESS,
+		FILTER_COMP_GREATER_OR_EQUAL,
+		FILTER_COMP_LESS_OR_EQUAL,
+	};
+
 	struct LoadToken : public RefCounted {
 		String local_path;
 		String user_path;
@@ -230,7 +254,16 @@ private:
 
 	static String _validate_local_path(const String &p_path);
 
+	static const Variant _get_cached_info(const FilterTarget &p_target, const String &p_path, const Ref<Resource> &p_res);
+	static bool _is_info_matching_filter(const Variant &p_attribute_value, const FilterComparator &p_filter, const Variant &p_value);
+	static bool _is_key_value_matching_filter(const String &p_path, const Ref<Resource> &p_res, const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value);
+
 public:
+	static Dictionary get_cached_entries();
+	static Dictionary get_cached_paths_infos(const FilterTarget &p_info);
+	static Dictionary get_cached_entries_filtered(const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit);
+	static Dictionary get_cached_paths_infos_filtered(const FilterTarget &p_info, const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit);
+
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
@@ -319,3 +352,6 @@ public:
 	static void initialize();
 	static void finalize();
 };
+
+VARIANT_ENUM_CAST(ResourceLoader::FilterTarget)
+VARIANT_ENUM_CAST(ResourceLoader::FilterComparator)
