@@ -8499,6 +8499,15 @@ void Node3DEditor::_selection_changed() {
 
 	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
+	active_node = nullptr;
+	const List<Node *> &top_selection = editor_selection->get_top_selected_node_list();
+	if (!top_selection.is_empty()) {
+		Node3D *last_selected = Object::cast_to<Node3D>(top_selection.back()->get());
+		if (last_selected) {
+			active_node = last_selected;
+		}
+	}
+
 	for (const KeyValue<ObjectID, Object *> &E : selection) {
 		Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
 		if (!sp) {
@@ -8510,7 +8519,7 @@ void Node3DEditor::_selection_changed() {
 			continue;
 		}
 
-		if (sp == editor_selection->get_top_selected_node_list().back()->get()) {
+		if (sp == active_node) {
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance, active_selection_box->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray, active_selection_box_xray->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_offset, active_selection_box->get_rid());

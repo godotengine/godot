@@ -56,6 +56,13 @@
 				Edits the given [Script]. The line and column on which to open the script can also be specified. The script will be open with the user-configured editor for the script's language which may be an external editor.
 			</description>
 		</method>
+		<method name="get_active_node_3d" qualifiers="const">
+			<return type="Node3D" />
+			<description>
+				Returns the active [Node3D] in the 3D editor. The active node is the primary selected node when multiple nodes are selected in the editor. Returns [code]null[/code] if no 3D node is currently active.
+				[b]Note:[/b] This method is useful for editor plugins that need to determine which node to operate on during multi-selection scenarios.
+			</description>
+		</method>
 		<method name="get_base_control" qualifiers="const">
 			<return type="Control" />
 			<description>
