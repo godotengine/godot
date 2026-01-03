@@ -3122,7 +3122,11 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 				if (p_binary_op->reduced_value.get_type() == Variant::STRING) {
 					push_error(vformat(R"(%s in operator %s.)", p_binary_op->reduced_value, Variant::get_operator_name(p_binary_op->variant_op)), p_binary_op);
 				} else {
-					push_error(vformat(R"(Invalid operands to operator %s, %s and %s.)",
+					String message = "Invalid operands to operator %s, %s and %s.";
+					if (p_binary_op->variant_op == Variant::OP_MODULE && (p_binary_op->left_operand->reduced_value.get_type() == Variant::FLOAT || p_binary_op->right_operand->reduced_value.get_type() == Variant::FLOAT)) {
+						message += " Use \"fmod(x, y)\" instead.";
+					}
+					push_error(vformat(message,
 									   Variant::get_operator_name(p_binary_op->variant_op),
 									   Variant::get_type_name(p_binary_op->left_operand->reduced_value.get_type()),
 									   Variant::get_type_name(p_binary_op->right_operand->reduced_value.get_type())),
@@ -3158,7 +3162,11 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 		bool valid = false;
 		result = get_operation_type(p_binary_op->variant_op, left_type, right_type, valid, p_binary_op);
 		if (!valid) {
-			push_error(vformat(R"(Invalid operands "%s" and "%s" for "%s" operator.)", left_type.to_string(), right_type.to_string(), Variant::get_operator_name(p_binary_op->variant_op)), p_binary_op);
+			String message = vformat(R"(Invalid operands "%s" and "%s" for "%s" operator.)", left_type.to_string(), right_type.to_string(), Variant::get_operator_name(p_binary_op->variant_op));
+			if (p_binary_op->variant_op == Variant::OP_MODULE && (left_type.builtin_type == Variant::FLOAT || right_type.builtin_type == Variant::FLOAT)) {
+				message += " Use \"fmod(x, y)\" instead.";
+			}
+			push_error(message, p_binary_op);
 		} else if (!result.is_hard_type()) {
 			mark_node_unsafe(p_binary_op);
 		}
