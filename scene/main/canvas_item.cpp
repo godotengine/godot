@@ -665,8 +665,8 @@ void CanvasItem::item_rect_changed(bool p_size_changed) {
 
 void CanvasItem::set_z_index(int p_z) {
 	ERR_THREAD_GUARD;
-	ERR_FAIL_COND(p_z < RS::CANVAS_ITEM_Z_MIN);
-	ERR_FAIL_COND(p_z > RS::CANVAS_ITEM_Z_MAX);
+	ERR_FAIL_COND_MSG(p_z < RS::CANVAS_ITEM_Z_MIN, vformat("Tried to set z-index to %d, but minimum allowed z-index is %d.", p_z, RS::CANVAS_ITEM_Z_MIN));
+	ERR_FAIL_COND_MSG(p_z > RS::CANVAS_ITEM_Z_MAX, vformat("Tried to set z-index to %d, but maximum allowed z-index is %d.", p_z, RS::CANVAS_ITEM_Z_MAX));
 	z_index = p_z;
 	RS::get_singleton()->canvas_item_set_z_index(canvas_item, z_index);
 	update_configuration_warnings();
