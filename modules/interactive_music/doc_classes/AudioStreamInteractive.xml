@@ -198,6 +198,9 @@
 		<constant name="TRANSITION_TO_TIME_START" value="1" enum="TransitionToTime">
 			Transition to the start of the destination clip.
 		</constant>
+		<constant name="TRANSITION_TO_TIME_PREVIOUS_POSITION" value="2" enum="TransitionToTime">
+			Transition to the last played position in the destination clip, if there was a previous transition from that clip. Otherwise, plays from the start of the destination clip.
+		</constant>
 		<constant name="FADE_DISABLED" value="0" enum="FadeMode">
 			Do not use fade for the transition. This is useful when transitioning from a clip-end to clip-beginning, and each clip has their begin/end.
 		</constant>
