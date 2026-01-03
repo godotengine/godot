@@ -175,6 +175,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_avoidance"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_AVOIDANCE, Variant::INT>);
 		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_storage_annotation);
+		register_annotation(MethodInfo("@always_duplicate"), AnnotationInfo::VARIABLE, &GDScriptParser::always_duplicate_annotation);
+		register_annotation(MethodInfo("@never_duplicate"), AnnotationInfo::VARIABLE, &GDScriptParser::never_duplicate_annotation);
 		register_annotation(MethodInfo("@export_custom", PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_ENUM, "PropertyHint"), PropertyInfo(Variant::STRING, "hint_string"), PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_BITFIELD, "PropertyUsageFlags")), AnnotationInfo::VARIABLE, &GDScriptParser::export_custom_annotation, varray(PROPERTY_USAGE_DEFAULT));
 		register_annotation(MethodInfo("@export_tool_button", PropertyInfo(Variant::STRING, "text"), PropertyInfo(Variant::STRING, "icon")), AnnotationInfo::VARIABLE, &GDScriptParser::export_tool_button_annotation, varray(""));
 		// Export grouping annotations.
@@ -4966,8 +4968,54 @@ bool GDScriptParser::export_storage_annotation(AnnotationNode *p_annotation, Nod
 	variable->exported = true;
 
 	// Save the info because the compiler uses export info for overwriting member info.
+	// we keep previous usage in case some annotation like @always_duplicate or @never_duplicate made a change on it
+	uint32_t usage = variable->export_info.usage;
 	variable->export_info = variable->get_datatype().to_property_info(variable->identifier->name);
+	variable->export_info.usage |= usage;
+	variable->export_info.usage &= ~PROPERTY_USAGE_EDITOR;
 	variable->export_info.usage |= PROPERTY_USAGE_STORAGE;
+
+	return true;
+}
+
+bool GDScriptParser::always_duplicate_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	bool is_resource_var = variable->export_info.hint == PROPERTY_HINT_RESOURCE_TYPE;
+	is_resource_var |= ClassDB::is_parent_class(variable->get_datatype().native_type, SNAME("Resource"));
+	if (!is_resource_var) {
+		push_error(vformat(R"(Annotation "%s" can only be applied to Resource variables.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	variable->export_info.usage &= ~PROPERTY_USAGE_NEVER_DUPLICATE;
+	variable->export_info.usage |= PROPERTY_USAGE_ALWAYS_DUPLICATE;
+
+	return true;
+}
+
+bool GDScriptParser::never_duplicate_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	bool is_resource_var = variable->export_info.hint == PROPERTY_HINT_RESOURCE_TYPE;
+	is_resource_var |= ClassDB::is_parent_class(variable->get_datatype().native_type, SNAME("Resource"));
+	if (!is_resource_var) {
+		push_error(vformat(R"(Annotation "%s" can only be applied to Resource variables.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	variable->export_info.usage &= ~PROPERTY_USAGE_ALWAYS_DUPLICATE;
+	variable->export_info.usage |= PROPERTY_USAGE_NEVER_DUPLICATE;
 
 	return true;
 }

@@ -2872,9 +2872,8 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 					}
 					prop_info.hint = export_info.hint;
 					prop_info.hint_string = export_info.hint_string;
-					prop_info.usage = export_info.usage;
 				}
-				prop_info.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+				prop_info.usage = export_info.usage | PROPERTY_USAGE_SCRIPT_VARIABLE;
 				minfo.property_info = prop_info;
 
 				if (variable->is_static) {

@@ -397,7 +397,10 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 	AFTER_USER_CODE
 
 	for (const PropertyInfo &E : plist) {
-		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+		if (!(E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_ALWAYS_DUPLICATE))) {
+			continue;
+		}
+		if (E.usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
 			continue;
 		}
 		if (E.name == "script") {
