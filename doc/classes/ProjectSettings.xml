@@ -1274,7 +1274,7 @@
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 			The default scale factor for [Control]s, when not overridden by a [Theme].
-			[b]Note:[/b] This property is only read when the project starts. To change the default scale at runtime, set [member ThemeDB.fallback_base_scale] instead.
+			[b]Note:[/b] This property is only read when the project starts. To change the default theme scale at runtime, set [member ThemeDB.fallback_base_scale] instead. However, to adjust the scale of all 2D elements at runtime, it's preferable to use [member Window.content_scale_factor] on the root [Window] node instead (as this also affects overridden [Theme]s). See [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]Multiple resolutions[/url] in the documentation for details.
 		</member>
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
 			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
