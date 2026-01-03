@@ -2526,7 +2526,10 @@ int ObjectDB::get_object_count() {
 ObjectID ObjectDB::add_instance(Object *p_object) {
 	spin_lock.lock();
 	if (unlikely(slot_count == slot_max)) {
-		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
+		if (unlikely(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS))) {
+			spin_lock.unlock();
+			CRASH_NOW_MSG("Out of object slots. Cannot allocate more objects.");
+		}
 
 		uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
 		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
