@@ -101,8 +101,7 @@ void DynamicFontImportSettingsDialog::_add_glyph_range_item(int32_t p_start, int
 		TreeItem *item = glyph_tree->create_item(glyph_root);
 		ERR_FAIL_NULL(item);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_text(0, _pad_zeros(String::num_int64(start, 16)) + " - " + _pad_zeros(String::num_int64(start + page_size, 16)));
-		item->set_text(1, p_name);
+		item->set_text(0, p_name + " (" + _pad_zeros(String::num_int64(start, 16)) + "-" + _pad_zeros(String::num_int64(start + page_size, 16)) + ")");
 		item->set_metadata(0, Vector2i(start, start + page_size));
 		start += page_size;
 	}
@@ -110,8 +109,7 @@ void DynamicFontImportSettingsDialog::_add_glyph_range_item(int32_t p_start, int
 		TreeItem *item = glyph_tree->create_item(glyph_root);
 		ERR_FAIL_NULL(item);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_text(0, _pad_zeros(String::num_int64(start, 16)) + " - " + _pad_zeros(String::num_int64(p_end, 16)));
-		item->set_text(1, p_name);
+		item->set_text(0, p_name + " (" + _pad_zeros(String::num_int64(start, 16)) + "-" + _pad_zeros(String::num_int64(p_end, 16)) + ")");
 		item->set_metadata(0, Vector2i(start, p_end));
 	}
 }
@@ -502,10 +500,11 @@ void DynamicFontImportSettingsDialog::_edit_range(int32_t p_start, int32_t p_end
 			ERR_FAIL_NULL(item);
 			item->set_text(0, _pad_zeros(String::num_int64(c, 16)));
 			item->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
+			item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 			item->set_selectable(0, false);
 			item->set_custom_bg_color(0, glyph_table->get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
 		}
-		if (font_main->has_char(c)) {
+		if (c != 0 && font_main->has_char(c)) {
 			item->set_text(col + 1, String::chr(c));
 			item->set_custom_color(col + 1, Color(1, 1, 1));
 			if (import_variation_data->selected_chars.has(c) || import_variation_data->selected_glyphs.has(font_main->get_glyph_index(16, c))) {
@@ -621,6 +620,7 @@ void DynamicFontImportSettingsDialog::_notification(int p_what) {
 
 			add_var->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			label_warn->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			glyph_tree->add_theme_color_override(SNAME("font_disabled_color"), glyph_tree->get_theme_color(SceneStringName(font_color)));
 		} break;
 	}
 }
@@ -839,9 +839,6 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	text_settings_data->options = options_text;
 
 	inspector_text->edit(text_settings_data.ptr());
-
-	int gww = get_theme_font(SceneStringName(font))->get_string_size("00000").x + 50;
-	glyph_table->set_column_custom_minimum_width(0, gww);
 	glyph_table->clear();
 	vars_list->clear();
 
@@ -1252,6 +1249,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	glyph_table->set_columns(17);
 	glyph_table->set_column_expand(0, false);
 	glyph_table->set_hide_root(true);
+	glyph_table->set_hide_folding(true);
 	glyph_table->set_allow_reselect(true);
 	glyph_table->set_select_mode(Tree::SELECT_SINGLE);
 	glyph_table->set_column_titles_visible(true);
@@ -1270,11 +1268,10 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	glyph_tree = memnew(Tree);
 	glyph_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	glyph_tree->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
-	glyph_tree->set_columns(2);
+	glyph_tree->set_columns(1);
 	glyph_tree->set_hide_root(true);
-	glyph_tree->set_column_expand(0, false);
-	glyph_tree->set_column_expand(1, true);
-	glyph_tree->set_column_custom_minimum_width(0, 120 * EDSCALE);
+	glyph_tree->set_column_expand(0, true);
+	glyph_tree->set_hide_folding(true);
 	glyph_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_tree->set_theme_type_variation("TreeSecondary");
 	glyph_root = glyph_tree->create_item();
