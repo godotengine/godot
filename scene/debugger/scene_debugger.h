@@ -104,6 +104,7 @@ private:
 	static Error _msg_live_res_prop(const Array &p_args);
 	static Error _msg_live_node_call(const Array &p_args);
 	static Error _msg_live_res_call(const Array &p_args);
+	static Error _msg_live_audio_server_call(const Array &p_args);
 	static Error _msg_live_create_node(const Array &p_args);
 	static Error _msg_live_instantiate_node(const Array &p_args);
 	static Error _msg_live_remove_node(const Array &p_args);

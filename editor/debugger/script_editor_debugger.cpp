@@ -65,6 +65,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
+#include "servers/audio_server.h"
 #include "servers/debugger/servers_debugger.h"
 #include "servers/display/display_server.h"
 
@@ -1477,6 +1478,18 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 			msg.push_back(*p_args[i]);
 		}
 		_put_msg("scene:live_res_call", msg);
+
+		return;
+	}
+
+	AudioServer *audio_server = Object::cast_to<AudioServer>(p_base);
+
+	if (audio_server) {
+		Array msg = { p_name };
+		for (int i = 0; i < p_argcount; i++) {
+			msg.push_back(*p_args[i]);
+		}
+		_put_msg("scene:live_audio_server_call", msg);
 
 		return;
 	}
