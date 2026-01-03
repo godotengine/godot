@@ -827,8 +827,9 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 	const int slice_count = images.size();
 	const int slice_width = images[0]->get_width();
 	const int slice_height = images[0]->get_height();
+	const int slice_pixels = slice_width * slice_height;
 
-	const int slices_per_texture = Image::MAX_HEIGHT / slice_height;
+	const int slices_per_texture = Image::MAX_PIXELS / slice_pixels;
 	const int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
 	const int last_count = slice_count % slices_per_texture;
 
