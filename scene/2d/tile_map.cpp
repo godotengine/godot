@@ -570,7 +570,7 @@ void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<Til
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_pattern, p_position, p_pattern);
 }
 
-HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) {
+HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const TerrainConstraints &p_constraints) {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, (HashMap<Vector2i, TileSet::TerrainsPattern>()), terrain_fill_constraints, p_to_replace, p_terrain_set, p_constraints);
 }
 
