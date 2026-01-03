@@ -65,6 +65,9 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/surface_tool.h"
+#ifndef XR_DISABLED
+#include "scene/3d/xr/xr_debugger.h"
+#endif
 #endif // _3D_DISABLED
 
 SceneDebugger::SceneDebugger() {
@@ -73,6 +76,9 @@ SceneDebugger::SceneDebugger() {
 #ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
 	RuntimeNodeSelect::singleton = memnew(RuntimeNodeSelect);
+#ifndef XR_DISABLED
+	XRDebugger::singleton = memnew(XRDebugger);
+#endif // XR_DISABLED
 
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
 #endif // DEBUG_ENABLED
@@ -90,6 +96,12 @@ SceneDebugger::~SceneDebugger() {
 		memdelete(RuntimeNodeSelect::singleton);
 		RuntimeNodeSelect::singleton = nullptr;
 	}
+#ifndef XR_DISABLED
+	if (XRDebugger::singleton) {
+		memdelete(XRDebugger::singleton);
+		XRDebugger::singleton = nullptr;
+	}
+#endif // XR_DISABLED
 #endif // DEBUG_ENABLED
 
 	singleton = nullptr;
@@ -144,6 +156,9 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 
 Error SceneDebugger::_msg_setup_scene(const Array &p_args) {
 	SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
+#ifndef XR_DISABLED
+	XRDebugger::get_singleton()->initialize();
+#endif
 	return OK;
 }
 
