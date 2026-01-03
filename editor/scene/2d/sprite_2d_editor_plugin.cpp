@@ -55,6 +55,7 @@ void Sprite2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = nullptr;
 		options->hide();
+		debug_uv_dialog->hide();
 	}
 }
 
@@ -135,6 +136,9 @@ void Sprite2DEditor::_menu_option(int p_option) {
 }
 
 void Sprite2DEditor::_popup_debug_uv_dialog() {
+	if (!node) {
+		return;
+	}
 	String error_message;
 	if (node->get_owner() != get_tree()->get_edited_scene_root() && node != get_tree()->get_edited_scene_root()) {
 		error_message = TTR("Can't convert a sprite from a foreign scene.");
@@ -468,6 +472,9 @@ void Sprite2DEditor::_debug_uv_input(const Ref<InputEvent> &p_input) {
 }
 
 void Sprite2DEditor::_debug_uv_draw() {
+	if (!node) {
+		return;
+	}
 	debug_uv->draw_set_transform(-draw_offset * draw_zoom, 0, Vector2(draw_zoom, draw_zoom));
 
 	Ref<Texture2D> tex = node->get_texture();
@@ -491,6 +498,9 @@ void Sprite2DEditor::_debug_uv_draw() {
 }
 
 void Sprite2DEditor::_center_view() {
+	if (!node) {
+		return;
+	}
 	Ref<Texture2D> tex = node->get_texture();
 	ERR_FAIL_COND(tex.is_null());
 	Vector2 zoom_factor = (debug_uv->get_size() - Vector2(1, 1) * 50 * EDSCALE) / tex->get_size();
@@ -528,6 +538,9 @@ void Sprite2DEditor::_update_zoom_and_pan(bool p_zoom_at_center) {
 		draw_offset += center / previous_zoom - center / draw_zoom;
 	}
 
+	if (!node) {
+		return;
+	}
 	Ref<Texture2D> tex = node->get_texture();
 	ERR_FAIL_COND(tex.is_null());
 
@@ -574,8 +587,12 @@ void Sprite2DEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", callable_mp(this, &Sprite2DEditor::_node_removed));
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			panner->setup_warped_panning(debug_uv_dialog, EDITOR_GET("editors/panning/warped_mouse_panning"));
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &Sprite2DEditor::_node_removed));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_button_icon(get_editor_theme_icon(SNAME("Sprite2D")));
