@@ -38,21 +38,36 @@
 class ZIPReader : public RefCounted {
 	GDCLASS(ZIPReader, RefCounted)
 
-	Ref<FileAccess> fa;
 	unzFile uzf = nullptr;
+
+	Ref<FileAccess> fa;
+
+	Vector<uint8_t> source;
+	uint64_t source_cursor = 0;
+
+	static void *_zipio_mem_open(voidpf p_opaque, const char *p_fname, int p_mode);
+	static uLong _zipio_mem_read(voidpf p_opaque, voidpf p_stream, void *p_buf, uLong p_size);
+	static uLong _zipio_mem_write(voidpf p_opaque, voidpf p_stream, const void *p_buf, uLong p_size);
+	static long _zipio_mem_tell(voidpf p_opaque, voidpf p_stream);
+	static long _zipio_mem_seek(voidpf p_opaque, voidpf p_stream, uLong p_offset, int p_origin);
+	static int _zipio_mem_close(voidpf p_opaque, voidpf p_stream);
+	static int _zipio_mem_testerror(voidpf p_opaque, voidpf p_stream);
 
 protected:
 	static void _bind_methods();
 
 public:
 	Error open(const String &p_path);
+	Error open_buffer(const Vector<uint8_t> &p_buffer);
 	Error close();
 
+	// Operations on the ZIP archive.
 	PackedStringArray get_files();
-	PackedByteArray read_file(const String &p_path, bool p_case_sensitive);
-	bool file_exists(const String &p_path, bool p_case_sensitive);
 	int get_compression_level(const String &p_path, bool p_case_sensitive);
 
-	ZIPReader();
+	// Operations on files within the ZIP archive.
+	PackedByteArray read_file(const String &p_path, bool p_case_sensitive);
+	bool file_exists(const String &p_path, bool p_case_sensitive);
+
 	~ZIPReader();
 };
