@@ -120,37 +120,36 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case OBJECT_UNIQUE_RESOURCES: {
+			if (!current) {
+				break;
+			}
+
 			if (!p_confirmed) {
-				Vector<String> resource_propnames;
+				properties_to_unique.clear();
+				List<PropertyInfo> props;
+				current->get_property_list(&props);
 
-				if (current) {
-					List<PropertyInfo> props;
-					current->get_property_list(&props);
+				for (const PropertyInfo &property : props) {
+					if (!(property.usage & PROPERTY_USAGE_STORAGE)) {
+						continue;
+					}
+					if (property.usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
+						continue;
+					}
 
-					for (const PropertyInfo &property : props) {
-						if (!(property.usage & PROPERTY_USAGE_STORAGE)) {
-							continue;
-						}
-						if (property.usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
-							continue;
-						}
-
-						Variant v = current->get(property.name);
-						Ref<RefCounted> ref = v;
-						Ref<Resource> res = ref;
-						if (v.is_ref_counted() && ref.is_valid() && res.is_valid()) {
-							// Valid resource which would be duplicated if action is confirmed.
-							resource_propnames.append(property.name);
-						}
+					const Ref<Resource> res = current->get(property.name);
+					if (res.is_valid()) {
+						// Valid resource which would be duplicated if action is confirmed.
+						properties_to_unique.push_back(property.name);
 					}
 				}
 
 				unique_resources_list_tree->clear();
-				if (resource_propnames.size()) {
+				if (!properties_to_unique.is_empty()) {
 					const EditorPropertyNameProcessor::Style name_style = inspector->get_property_name_style();
 
 					TreeItem *root = unique_resources_list_tree->create_item();
-					for (const String &E : resource_propnames) {
+					for (const StringName &E : properties_to_unique) {
 						const String propname = EditorPropertyNameProcessor::get_singleton()->process_name(E, name_style);
 
 						TreeItem *ti = unique_resources_list_tree->create_item(root);
@@ -166,38 +165,25 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 			} else {
 				editor_data->apply_changes_in_editors();
 
-				if (current) {
-					List<PropertyInfo> props;
-					current->get_property_list(&props);
-					HashMap<Ref<Resource>, Ref<Resource>> duplicates;
-					for (const PropertyInfo &prop_info : props) {
-						if (!(prop_info.usage & PROPERTY_USAGE_STORAGE)) {
-							continue;
-						}
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Make Sub-Resources Unique"));
 
-						Variant v = current->get(prop_info.name);
-						if (v.is_ref_counted()) {
-							Ref<RefCounted> ref = v;
-							if (ref.is_valid()) {
-								Ref<Resource> res = ref;
-								if (res.is_valid()) {
-									if (!duplicates.has(res)) {
-										duplicates[res] = res->duplicate();
-									}
-									res = duplicates[res];
+				HashMap<Ref<Resource>, Ref<Resource>> duplicates;
+				for (const StringName &property : properties_to_unique) {
+					Ref<Resource> res = current->get(property);
+					ERR_CONTINUE(res.is_null());
 
-									current->set(prop_info.name, res);
-									get_inspector_singleton()->update_property(prop_info.name);
-								}
-							}
-						}
+					if (!duplicates.has(res)) {
+						duplicates[res] = res->duplicate();
 					}
+					Ref<Resource> dupe = duplicates[res];
+
+					undo_redo->add_do_property(current, property, dupe);
+					undo_redo->add_do_reference(dupe.ptr());
+					undo_redo->add_undo_property(current, property, res);
+					undo_redo->add_undo_reference(res.ptr());
 				}
-
-				int history_id = EditorUndoRedoManager::get_singleton()->get_history_id_for_object(current);
-				EditorUndoRedoManager::get_singleton()->clear_history(history_id);
-
-				EditorNode::get_singleton()->edit_item(current, inspector);
+				undo_redo->commit_action();
 			}
 
 		} break;
@@ -855,11 +841,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	unique_resources_list_tree->set_columns(1);
 	unique_resources_list_tree->set_custom_minimum_size(Size2(0, 200 * EDSCALE));
 	container->add_child(unique_resources_list_tree);
-
-	Label *bottom_label = memnew(Label);
-	bottom_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	bottom_label->set_text(TTRC("This cannot be undone. Are you sure?"));
-	container->add_child(bottom_label);
 
 	unique_resources_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &InspectorDock::_menu_confirm_current));
 
