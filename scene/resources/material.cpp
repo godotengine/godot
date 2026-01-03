@@ -2674,6 +2674,12 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
+	if (p_property.name == "next_pass") {
+		if (stencil_mode == STENCIL_MODE_OUTLINE || stencil_mode == STENCIL_MODE_XRAY) {
+			p_property.usage |= PROPERTY_USAGE_ALWAYS_DUPLICATE;
+		}
+	}
+
 	if (flags[FLAG_SUBSURFACE_MODE_SKIN] && (p_property.name == "subsurf_scatter_transmittance_color" || p_property.name == "subsurf_scatter_transmittance_texture")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
