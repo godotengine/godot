@@ -42,6 +42,7 @@
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/doc/editor_help.h"
 #include "editor/doc/editor_help_search.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
@@ -55,11 +56,11 @@
 #include "editor/gui/code_editor.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/gui/window_wrapper.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/editor_scene_tabs.h"
-#include "editor/script/editor_script.h"
 #include "editor/script/find_in_files.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -386,17 +387,6 @@ void ScriptEditorQuickOpen::_text_changed(const String &p_newtext) {
 	_update_search();
 }
 
-void ScriptEditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the tree.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			search_options->gui_input(key);
-			search_box->accept_event();
-		}
-	}
-}
-
 void ScriptEditorQuickOpen::_update_search() {
 	search_options->clear();
 	TreeItem *root = search_options->create_item();
@@ -430,12 +420,6 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect(SceneStringName(confirmed), callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
-
-			search_box->set_clear_button_enabled(true);
-			[[fallthrough]];
-		}
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -449,23 +433,26 @@ void ScriptEditorQuickOpen::_bind_methods() {
 }
 
 ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	add_child(vbc);
-	search_box = memnew(LineEdit);
-	vbc->add_margin_child(TTRC("Search:"), search_box);
-	search_box->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditorQuickOpen::_text_changed));
-	search_box->connect(SceneStringName(gui_input), callable_mp(this, &ScriptEditorQuickOpen::_sbox_input));
-	search_options = memnew(Tree);
-	vbc->add_margin_child(TTRC("Matches:"), search_options, true);
 	set_ok_button_text(TTRC("Open"));
 	get_ok_button()->set_disabled(true);
-	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect("item_activated", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
+
+	search_box = memnew(FilterLineEdit);
+	vbc->add_margin_child(TTRC("Search:"), search_box);
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditorQuickOpen::_text_changed));
+	register_text_enter(search_box);
+
+	search_options = memnew(Tree);
+	search_box->set_forward_control(search_options);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	search_options->add_theme_constant_override("draw_guides", 1);
+	vbc->add_margin_child(TTRC("Matches:"), search_options, true);
+	search_options->connect("item_activated", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 }
 
 /////////////////////////////////

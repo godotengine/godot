@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  property_selector.h                                                   */
+/*  filter_line_edit.cpp                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,59 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "filter_line_edit.h"
 
-#include "scene/gui/dialogs.h"
+void FilterLineEdit::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		set_right_icon(get_editor_theme_icon(SNAME("Search")));
+	}
+}
 
-class EditorHelpBit;
-class FilterLineEdit;
-class LineEdit;
-class Tree;
-class TreeItem;
+void FilterLineEdit::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_NULL(forward_control);
 
-class PropertySelector : public ConfirmationDialog {
-	GDCLASS(PropertySelector, ConfirmationDialog);
+	Ref<InputEventKey> key = p_event;
+	if (key.is_null()) {
+		LineEdit::gui_input(p_event);
+		return;
+	}
 
-	FilterLineEdit *search_box = nullptr;
-	Tree *search_options = nullptr;
+	// Redirect navigational key events to the control.
+	if (key->is_action(SNAME("ui_up"), true) || key->is_action(SNAME("ui_down"), true) || key->is_action(SNAME("ui_page_up")) || key->is_action(SNAME("ui_page_down"))) {
+		forward_control->gui_input(key);
+		accept_event();
+		return;
+	}
+	LineEdit::gui_input(p_event);
+}
 
-	void _text_changed(const String &p_newtext);
-	void _update_search();
-	void _confirmed();
-	void _item_selected();
-	void _hide_requested();
+void FilterLineEdit::set_forward_control(Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	forward_control = p_control;
+}
 
-	EditorHelpBit *help_bit = nullptr;
-
-	bool properties = false;
-	String selected;
-	Variant::Type type;
-	String base_type;
-	ObjectID script;
-	Object *instance = nullptr;
-	bool virtuals_only = false;
-
-	Vector<Variant::Type> type_filter;
-
-	void _create_subproperties(TreeItem *p_parent_item, Variant::Type p_type);
-	void _create_subproperty(TreeItem *p_parent_item, const String &p_name, Variant::Type p_type);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void select_method_from_base_type(const String &p_base, const String &p_current = "", bool p_virtuals_only = false);
-	void select_method_from_script(const Ref<Script> &p_script, const String &p_current = "");
-	void select_method_from_basic_type(Variant::Type p_type, const String &p_current = "");
-	void select_method_from_instance(Object *p_instance, const String &p_current = "");
-
-	void select_property_from_base_type(const String &p_base, const String &p_current = "");
-	void select_property_from_script(const Ref<Script> &p_script, const String &p_current = "");
-	void select_property_from_basic_type(Variant::Type p_type, const String &p_current = "");
-	void select_property_from_instance(Object *p_instance, const String &p_current = "");
-
-	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
-
-	PropertySelector();
-};
+FilterLineEdit::FilterLineEdit() {
+	set_clear_button_enabled(true);
+}
