@@ -76,6 +76,10 @@ void ImageTexture::set_image(const Ref<Image> &p_image) {
 	format = p_image->get_format();
 	mipmaps = p_image->has_mipmaps();
 
+#ifdef TOOLS_ENABLED
+	image_path = p_image->get_path();
+#endif
+
 	if (texture.is_null()) {
 		texture = RenderingServer::get_singleton()->texture_2d_create(p_image);
 	} else {
@@ -112,11 +116,24 @@ void ImageTexture::update(const Ref<Image> &p_image) {
 }
 
 Ref<Image> ImageTexture::get_image() const {
+	Ref<Image> image;
 	if (image_stored) {
-		return RenderingServer::get_singleton()->texture_2d_get(texture);
-	} else {
-		return Ref<Image>();
+		image = RenderingServer::get_singleton()->texture_2d_get(texture);
+
+#ifdef TOOLS_ENABLED
+		if (image.is_valid() && !image_path.is_empty()) {
+			Ref<Image> source = ResourceCache::get_ref(image_path);
+			if (source.is_null()) {
+				source = ResourceLoader::load(image_path);
+			}
+			if (image != source && image->is_data_equel(source)) {
+				image = source; // Use the source Image to prevent the same data from being saved multiple times.
+			}
+		}
+#endif
 	}
+
+	return image;
 }
 
 int ImageTexture::get_width() const {

@@ -1690,7 +1690,12 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 						Ref<Resource> sres = v;
 						if (sres.is_valid()) {
 							resource_set.insert(sres);
-							saved_resources.push_back(sres);
+							if (sres->is_built_in()) {
+								saved_resources.push_back(sres);
+							} else { // It may be imported.
+								String id = itos(external_resources.size() + 1) + "_" + Resource::generate_scene_unique_id();
+								external_resources[sres] = id;
+							}
 						} else {
 							_find_resources(v);
 						}
