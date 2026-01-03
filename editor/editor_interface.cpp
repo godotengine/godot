@@ -732,6 +732,30 @@ PackedStringArray EditorInterface::get_open_scenes() const {
 	return ret;
 }
 
+PackedStringArray EditorInterface::get_unsaved_scenes() const {
+	PackedStringArray ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+
+	for (EditorData::EditedScene &edited_scene : scenes) {
+		if (edited_scene.root == nullptr) {
+			continue;
+		}
+		String scene_path = edited_scene.root->get_scene_file_path();
+		if (EditorUndoRedoManager::get_singleton()->is_history_unsaved(edited_scene.history_id)) {
+			ret.push_back(scene_path);
+			continue;
+		}
+		// Check if scene has unsaved changes in built-in resources.
+		for (int j = 0; j < EditorNode::get_editor_data().get_editor_plugin_count(); j++) {
+			if (!EditorNode::get_editor_data().get_editor_plugin(j)->get_unsaved_status(scene_path).is_empty()) {
+				ret.push_back(scene_path);
+				continue;
+			}
+		}
+	}
+	return ret;
+}
+
 TypedArray<Node> EditorInterface::get_open_scene_roots() const {
 	TypedArray<Node> ret;
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
@@ -909,6 +933,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_object_edited", "object"), &EditorInterface::is_object_edited);
 
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_unsaved_scenes"), &EditorInterface::get_unsaved_scenes);
 	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
 

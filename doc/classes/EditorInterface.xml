@@ -242,6 +242,12 @@
 				Returns the editor's [EditorSelection] instance.
 			</description>
 		</method>
+		<method name="get_unsaved_scenes" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of file paths of currently unsaved scenes.
+			</description>
+		</method>
 		<method name="inspect_object">
 			<return type="void" />
 			<param index="0" name="object" type="Object" />
