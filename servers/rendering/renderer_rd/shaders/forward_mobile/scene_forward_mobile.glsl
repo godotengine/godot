@@ -292,7 +292,7 @@ void vertex_shader(in vec3 vertex,
 		model_normal_matrix = mat3(model_matrix);
 	}
 
-	mat4 matrix;
+	mat4 instance_matrix;
 	mat4 read_model_matrix = model_matrix;
 
 	if (sc_multimesh()) {
@@ -309,28 +309,28 @@ void vertex_shader(in vec3 vertex,
 #endif
 		{
 			uint boffset = offset + bone_attrib.x * stride;
-			matrix = mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.x;
+			instance_matrix = mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.x;
 #ifdef COLOR_USED
 			pcolor = transforms.data[boffset + 3] * weight_attrib.x;
 #endif
 		}
 		if (weight_attrib.y > 0.001) {
 			uint boffset = offset + bone_attrib.y * stride;
-			matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.y;
+			instance_matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.y;
 #ifdef COLOR_USED
 			pcolor += transforms.data[boffset + 3] * weight_attrib.y;
 #endif
 		}
 		if (weight_attrib.z > 0.001) {
 			uint boffset = offset + bone_attrib.z * stride;
-			matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.z;
+			instance_matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.z;
 #ifdef COLOR_USED
 			pcolor += transforms.data[boffset + 3] * weight_attrib.z;
 #endif
 		}
 		if (weight_attrib.w > 0.001) {
 			uint boffset = offset + bone_attrib.w * stride;
-			matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.w;
+			instance_matrix += mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], transforms.data[boffset + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weight_attrib.w;
 #ifdef COLOR_USED
 			pcolor += transforms.data[boffset + 3] * weight_attrib.w;
 #endif
@@ -347,10 +347,10 @@ void vertex_shader(in vec3 vertex,
 		uint offset = stride * (INSTANCE_INDEX + multimesh_offset);
 
 		if (sc_multimesh_format_2d()) {
-			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+			instance_matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 2;
 		} else {
-			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], transforms.data[offset + 2], vec4(0.0, 0.0, 0.0, 1.0));
+			instance_matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], transforms.data[offset + 2], vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 3;
 		}
 
@@ -367,17 +367,16 @@ void vertex_shader(in vec3 vertex,
 
 #endif
 		//transpose
-		matrix = transpose(matrix);
-
+		instance_matrix = transpose(instance_matrix);
 #if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
 		// Normally we can bake the multimesh transform into the model matrix, but when using double precision
 		// we avoid baking it in so we can emulate high precision.
-		read_model_matrix = model_matrix * matrix;
+		read_model_matrix = model_matrix * instance_matrix;
 #if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
 		model_matrix = read_model_matrix;
 #endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
 #endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
-		model_normal_matrix = model_normal_matrix * mat3(matrix);
+		model_normal_matrix = model_normal_matrix * mat3(instance_matrix);
 	}
 
 #ifdef UV_USED
@@ -445,9 +444,9 @@ void vertex_shader(in vec3 vertex,
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;
 	if (sc_multimesh()) {
-		modelview = modelview * matrix;
+		modelview = modelview * transform_matrix;
 
-		vec3 instance_origin = mat3(model_matrix) * matrix[3].xyz;
+		vec3 instance_origin = mat3(model_matrix) * instance_matrix[3].xyz;
 		model_origin = double_add_vec3(model_origin, model_precision, instance_origin, vec3(0.0), model_precision);
 	}
 
