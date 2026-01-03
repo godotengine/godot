@@ -1294,7 +1294,7 @@ void SplitContainer::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, SplitContainer, touch_dragger_hover_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, minimum_grab_thickness);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, autohide);
+	BIND_THEME_ITEM_CONSTANT_WITH_HINT(SplitContainer, autohide, PROPERTY_HINT_ENUM, "Disabled,Enabled");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, touch_dragger_icon, "touch_dragger");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, touch_dragger_icon_h, "h_touch_dragger");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, touch_dragger_icon_v, "v_touch_dragger");

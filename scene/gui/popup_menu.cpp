@@ -3278,7 +3278,7 @@ void PopupMenu::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, item_start_padding);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, item_end_padding);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, icon_max_width);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, gutter_compact);
+	BIND_THEME_ITEM_CONSTANT_WITH_HINT(PopupMenu, gutter_compact, PROPERTY_HINT_ENUM, "Disabled,Enabled");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked_disabled);

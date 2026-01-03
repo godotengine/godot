@@ -51,6 +51,11 @@ class ThemeContext;
 				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name); \
 			})
 
+#define BIND_THEME_ITEM_CONSTANT_WITH_HINT(m_class, m_prop, m_hint, m_hint_string) \
+	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), #m_prop, #m_prop, [](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {                          \
+				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                   \
+				p_cast->theme_cache.m_prop = p_cast->get_theme_item(Theme::DATA_TYPE_CONSTANT, p_item_name, p_type_name); }, m_hint, m_hint_string)
+
 #define BIND_THEME_ITEM_CUSTOM(m_data_type, m_class, m_prop, m_item_name)                                   \
 	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, m_item_name,        \
 			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {            \
@@ -106,6 +111,8 @@ public:
 		StringName item_name;
 		StringName type_name;
 		bool external = false;
+		PropertyHint hint = PROPERTY_HINT_NONE;
+		String hint_string;
 
 		ThemeItemSetter setter;
 
@@ -168,7 +175,7 @@ public:
 
 	// Theme item binding.
 
-	void bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter);
+	void bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String());
 	void bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter);
 	void update_class_instance_items(Node *p_instance);
 
