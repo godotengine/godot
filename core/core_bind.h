@@ -345,6 +345,7 @@ public:
 	Vector<int> triangulate_delaunay(const Vector<Vector2> &p_points);
 	Vector<Point2> convex_hull(const Vector<Point2> &p_points);
 	TypedArray<PackedVector2Array> decompose_polygon_in_convex(const Vector<Vector2> &p_polygon);
+	TypedArray<PackedVector2Array> decompose_many_polygons_in_convex(const TypedArray<PackedVector2Array> &p_polygons_and_holes);
 
 	enum PolyBooleanOperation {
 		OPERATION_UNION,
@@ -354,6 +355,7 @@ public:
 	};
 	// 2D polygon boolean operations.
 	TypedArray<PackedVector2Array> merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Union (add).
+	TypedArray<PackedVector2Array> merge_many_polygons(const TypedArray<PackedVector2Array> &p_polygons); // Union (add), bulk.
 	TypedArray<PackedVector2Array> clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Difference (subtract).
 	TypedArray<PackedVector2Array> intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Common area (multiply).
 	TypedArray<PackedVector2Array> exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // All but common area (xor).
