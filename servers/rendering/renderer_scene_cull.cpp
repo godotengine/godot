@@ -3080,7 +3080,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						}
 					}
 				} else if ((1 << base_type) & RS::INSTANCE_GEOMETRY_MASK) {
-					if (idata.flags & InstanceData::FLAG_USES_BAKED_LIGHT) {
+					if ((idata.flags & InstanceData::FLAG_USES_BAKED_LIGHT) && (cull_data.visible_layers & idata.layer_mask)) {
 						cull_result.sdfgi_region_geometry_instances[j].push_back(idata.instance_geometry);
 						mesh_visible = true;
 					}
