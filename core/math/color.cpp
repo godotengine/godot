@@ -445,6 +445,26 @@ Color Color::get_named_color(int p_idx) {
 	return named_colors[p_idx].color;
 }
 
+String Color::to_named() const {
+	NamedColor closest_named_color = {};
+	float closest_distance_squared = Math::INF;
+
+	for (const NamedColor &named_color : named_colors) {
+		Color delta = named_color.color - *this;
+		float distance_squared = (delta.r * delta.r) + (delta.g * delta.g) + (delta.b * delta.b) + (delta.a * delta.a);
+
+		if (distance_squared == 0) {
+			return named_color.name;
+		}
+		if (distance_squared < closest_distance_squared) {
+			closest_named_color = named_color;
+			closest_distance_squared = distance_squared;
+		}
+	}
+
+	return closest_named_color.name;
+}
+
 // For a version that errors on invalid values instead of returning
 // a default color, use the Color(String) constructor instead.
 Color Color::from_string(const String &p_string, const Color &p_default) {
