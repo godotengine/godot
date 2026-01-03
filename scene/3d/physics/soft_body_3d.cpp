@@ -705,7 +705,7 @@ void SoftBody3D::apply_central_force(const Vector3 &p_force) {
 }
 
 void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path, int p_insert_at) {
-	ERR_FAIL_COND_MSG(p_insert_at < -1 || p_insert_at >= pinned_points.size(), "Invalid index for pin point insertion position.");
+	ERR_FAIL_COND_MSG(p_insert_at < -1 || p_insert_at > pinned_points.size(), vformat("Invalid index %d for pin point insertion position.", p_insert_at));
 	_pin_point_on_physics_server(p_point_index, pin);
 	if (pin) {
 		_add_pinned_point(p_point_index, p_spatial_attachment_path, p_insert_at);
