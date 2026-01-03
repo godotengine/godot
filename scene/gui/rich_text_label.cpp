@@ -1155,11 +1155,13 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 			Vector2 ul_start;
 			bool ul_started = false;
+			bool off_ul = false;
 			Color ul_color_prev;
 			Color ul_color;
 
 			Vector2 dot_ul_start;
 			bool dot_ul_started = false;
+			bool off_dot = false;
 			Color dot_ul_color_prev;
 			Color dot_ul_color;
 
@@ -1239,12 +1241,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						if (ul_started && new_ul_color != ul_color_prev) {
 							float y_off = upos;
 							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+							if (off_ul) {
+								y_off += underline_width * 3;
+							}
 							draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
 							ul_start = p_ofs + Vector2(off_step.x, off_step.y);
 							ul_color = new_ul_color;
 							ul_color_prev = new_ul_color;
 						} else if (!ul_started) {
 							ul_started = true;
+							if (dot_ul_started) {
+								off_ul = true;
+							}
 							ul_start = p_ofs + Vector2(off_step.x, off_step.y);
 							ul_color = new_ul_color;
 							ul_color_prev = new_ul_color;
@@ -1253,12 +1261,19 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						ul_started = false;
 						float y_off = upos;
 						float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+						if (off_ul) {
+							y_off += underline_width * 3;
+						}
+						off_ul = false;
 						draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
 					}
 					if (_find_hint(it, nullptr) && underline_hint) {
 						if (dot_ul_started && font_color != dot_ul_color_prev) {
 							float y_off = upos;
 							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+							if (off_dot) {
+								y_off += underline_width * 3;
+							}
 							draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
 							dot_ul_start = p_ofs + Vector2(off_step.x, off_step.y);
 							dot_ul_color_prev = font_color;
@@ -1266,6 +1281,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 							dot_ul_color.a *= float(theme_cache.underline_alpha) / 100.0;
 						} else if (!dot_ul_started) {
 							dot_ul_started = true;
+							if (ul_started) {
+								off_dot = true;
+							}
 							dot_ul_start = p_ofs + Vector2(off_step.x, off_step.y);
 							dot_ul_color_prev = font_color;
 							dot_ul_color = font_color;
@@ -1275,6 +1293,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						dot_ul_started = false;
 						float y_off = upos;
 						float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+						if (off_dot) {
+							y_off += underline_width * 3;
+						}
+						off_dot = false;
 						draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
 					}
 					Color user_st_color = Color(0, 0, 0, 0);
@@ -1488,12 +1510,20 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								ul_started = false;
 								float y_off = upos;
 								float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+								if (off_ul) {
+									y_off += underline_width * 3;
+								}
+								off_ul = false;
 								draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
 							}
 							if (dot_ul_started) {
 								dot_ul_started = false;
 								float y_off = upos;
 								float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+								if (off_dot) {
+									y_off += underline_width * 3;
+								}
+								off_dot = false;
 								draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
 							}
 							if (st_started) {
