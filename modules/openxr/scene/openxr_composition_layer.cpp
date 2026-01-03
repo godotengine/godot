@@ -66,7 +66,7 @@ OpenXRCompositionLayer::OpenXRCompositionLayer() {
 	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayer::update_transform));
 
 	set_process_internal(true);
-	set_notify_local_transform(true);
+	set_notify_transform(true);
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// In the editor, create the fallback right away.
@@ -196,7 +196,7 @@ bool OpenXRCompositionLayer::_should_use_fallback_node() {
 	if (Engine::get_singleton()->is_editor_hint() || openxr_api == nullptr) {
 		return true;
 	} else if (openxr_session_running) {
-		return enable_hole_punch || (!is_natively_supported() && !use_android_surface);
+		return enable_hole_punch || !is_natively_supported();
 	}
 	return false;
 }
@@ -210,7 +210,7 @@ void OpenXRCompositionLayer::_create_fallback_node() {
 }
 
 void OpenXRCompositionLayer::_remove_fallback_node() {
-	ERR_FAIL_COND(fallback != nullptr);
+	ERR_FAIL_COND(fallback == nullptr);
 	remove_child(fallback);
 	fallback->queue_free();
 	fallback = nullptr;
@@ -245,7 +245,7 @@ void OpenXRCompositionLayer::_clear_composition_layer() {
 }
 
 void OpenXRCompositionLayer::_viewport_size_changed() {
-	if (layer_viewport && openxr_session_running && composition_layer_extension && is_natively_supported() && is_visible() && is_inside_tree()) {
+	if (layer_viewport && openxr_session_running && composition_layer_extension && is_natively_supported() && is_visible_in_tree() && is_inside_tree()) {
 		composition_layer_extension->composition_layer_set_viewport(composition_layer, layer_viewport->get_viewport_rid(), layer_viewport->get_size());
 	}
 }
@@ -270,7 +270,13 @@ void OpenXRCompositionLayer::_on_openxr_session_stopping() {
 
 void OpenXRCompositionLayer::update_transform() {
 	if (composition_layer_extension) {
-		composition_layer_extension->composition_layer_set_transform(composition_layer, get_transform());
+		Transform3D xf;
+		if (Object::cast_to<XROrigin3D>(get_parent()) != nullptr) {
+			xf = get_transform();
+		} else {
+			xf = get_global_transform();
+		}
+		composition_layer_extension->composition_layer_set_transform(composition_layer, xf);
 	}
 }
 
@@ -279,7 +285,7 @@ void OpenXRCompositionLayer::update_fallback_mesh() {
 }
 
 bool OpenXRCompositionLayer::_should_register() {
-	return !registered && openxr_session_running && is_inside_tree() && is_visible() && is_natively_supported();
+	return !registered && openxr_session_running && is_inside_tree() && is_visible_in_tree() && is_natively_supported();
 }
 
 bool OpenXRCompositionLayer::is_viewport_in_use(SubViewport *p_viewport) {
@@ -325,7 +331,8 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 
 	if (fallback) {
 		_reset_fallback_material();
-	} else if (openxr_session_running && composition_layer_extension && is_visible() && is_inside_tree()) {
+	}
+	if (openxr_session_running && composition_layer_extension && is_visible_in_tree() && is_inside_tree() && is_natively_supported()) {
 		if (layer_viewport) {
 			composition_layer_extension->composition_layer_set_viewport(composition_layer, layer_viewport->get_viewport_rid(), layer_viewport->get_size());
 		} else {
@@ -676,7 +683,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_natively_supported() && openxr_session_running && is_inside_tree()) {
-				if (is_visible()) {
+				if (is_visible_in_tree()) {
 					_setup_composition_layer();
 				} else {
 					_clear_composition_layer();
@@ -684,14 +691,14 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 			}
 			update_configuration_warnings();
 		} break;
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			update_transform();
 			update_configuration_warnings();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (layer_viewport && is_viewport_in_use(layer_viewport)) {
 				_clear_composition_layer();
-			} else if (openxr_session_running && is_visible()) {
+			} else if (openxr_session_running && is_visible_in_tree()) {
 				_setup_composition_layer();
 			}
 		} break;
@@ -756,13 +763,27 @@ void OpenXRCompositionLayer::_validate_property(PropertyInfo &p_property) const 
 	}
 }
 
+XROrigin3D *OpenXRCompositionLayer::_get_xrorigin3d_ancestor() const {
+	Node *parent = get_parent();
+	while (parent != nullptr) {
+		XROrigin3D *origin = Object::cast_to<XROrigin3D>(parent);
+		if (origin != nullptr) {
+			return origin;
+		}
+
+		parent = parent->get_parent();
+	}
+
+	return nullptr;
+}
+
 PackedStringArray OpenXRCompositionLayer::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
-	if (is_visible() && is_inside_tree()) {
-		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
+	if (is_visible_in_tree() && is_inside_tree()) {
+		XROrigin3D *origin = _get_xrorigin3d_ancestor();
 		if (origin == nullptr) {
-			warnings.push_back(RTR("OpenXR composition layers must have an XROrigin3D node as their parent."));
+			warnings.push_back(RTR("OpenXR composition layers must have an XROrigin3D node as their ancestor."));
 		}
 	}
 

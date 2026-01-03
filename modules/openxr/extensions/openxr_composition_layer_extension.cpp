@@ -282,9 +282,15 @@ void OpenXRCompositionLayerExtension::CompositionLayer::set_alpha_blend(bool p_a
 }
 
 void OpenXRCompositionLayerExtension::CompositionLayer::set_transform(const Transform3D &p_transform) {
+	// Convert world transform into play/reference space.
 	Transform3D reference_frame = XRServer::get_singleton()->get_reference_frame();
 	Transform3D transform = reference_frame.inverse() * p_transform;
 	Quaternion quat(transform.basis.orthonormalized());
+
+	// Prevent invalid quaternion
+	if (Math::is_zero_approx(quat.length())) {
+		quat = Quaternion(); // identity quaternion
+	}
 
 	XrPosef pose = {
 		{ (float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w },
