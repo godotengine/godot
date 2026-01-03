@@ -45,12 +45,12 @@
 	<signals>
 		<signal name="pre_sort_children">
 			<description>
-				Emitted when children are going to be sorted.
+				Emitted when children are going to be sorted. Sorting occurs when child nodes are added, removed, reordered, or have their visibility changed. Sorting also occurs when the container or its parents have their visibility changed.
 			</description>
 		</signal>
 		<signal name="sort_children">
 			<description>
-				Emitted when sorting the children is needed.
+				Emitted when sorting the children is needed. Sorting occurs when child nodes are added, removed, reordered, or have their visibility changed. Sorting also occurs when the container or its parents have their visibility changed.
 			</description>
 		</signal>
 	</signals>
