@@ -1,6 +1,10 @@
 name: 🤖 Android Builds
 on:
   workflow_call:
+    secrets:
+      SERVICE_ACCOUNT_KEY:
+        required: true
+
   workflow_dispatch:
 
 # Global Settings
@@ -116,3 +120,40 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}-picoos
           path: picoos
+
+      - name: Generate Instrumented test APKs
+        if: matrix.target == 'template_debug' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        run: |
+          cd platform/android/java
+          ./gradlew :app:assembleAndroidTest :app:assembleInstrumentedDebug -Pperform_signing=true
+          cd ../../..
+
+      - name: Create credentials file
+        if: matrix.target == 'template_debug' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+
+      - name: Set up gcloud CLI
+        if: matrix.target == 'template_debug' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Run tests on Firebase Test Lab
+        if: matrix.target == 'template_debug' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        run: |
+          set +e
+          output=$(gcloud firebase test android run \
+            --type instrumentation \
+            --app platform/android/java/app/build/outputs/apk/instrumented/debug/android_debug.apk \
+            --test platform/android/java/app/build/outputs/apk/androidTest/instrumented/debug/app-instrumented-debug-androidTest.apk \
+            --device model=pa3q,version=35,orientation=landscape \
+            --device model=java,version=30,orientation=landscape \
+            --device model=MediumPhone.arm,version=26,orientation=landscape \
+            --timeout 2m 2>&1)
+          exit_code=$?
+          echo "$output"
+          if [[ $exit_code -eq 1 && "$output" == *"TEST_QUOTA_EXCEEDED"* ]]; then
+            echo "::warning title=Firebase Test Lab::Test quota exceeded."
+            exit_code=0
+          fi
+          exit "$exit_code"
