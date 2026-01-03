@@ -656,10 +656,12 @@
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			The color applied to this [CanvasItem]. This property does affect child [CanvasItem]s, unlike [member self_modulate] which only affects the node itself.
+			[b]Note:[/b] Shader materials assigned to [member material] can override this value for the final render when [code]COLOR[/code] is set.
 		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" default="Color(1, 1, 1, 1)">
 			The color applied to this [CanvasItem]. This property does [b]not[/b] affect child [CanvasItem]s, unlike [member modulate] which affects both the node itself and its children.
 			[b]Note:[/b] Internal children are also not affected by this property (see the [code]include_internal[/code] parameter in [method Node.add_child]). For built-in nodes this includes sliders in [ColorPicker], and the tab bar in [TabContainer].
+			[b]Note:[/b] Shader materials assigned to [member material] can override this value for the final render when [code]COLOR[/code] is set.
 		</member>
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" default="false">
 			If [code]true[/code], this node draws behind its parent.
