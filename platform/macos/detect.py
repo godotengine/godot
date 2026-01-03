@@ -291,5 +291,5 @@ def configure(env: "SConsEnvironment"):
                 sys.exit(255)
 
     if len(extra_frameworks) > 0:
-        frameworks = [item for key in extra_frameworks for item in ["-framework", key]]
+        frameworks = [item for key in sorted(extra_frameworks) for item in ["-framework", key]]
         env.Append(LINKFLAGS=frameworks)
