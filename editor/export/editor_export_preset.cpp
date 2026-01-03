@@ -199,7 +199,7 @@ void EditorExportPreset::update_files() {
 	{
 		Vector<String> to_remove;
 		for (const String &E : selected_files) {
-			if (!FileAccess::exists(E)) {
+			if ((E.ends_with("/") && !DirAccess::exists(E)) || (!E.ends_with("/") && !FileAccess::exists(E))) {
 				to_remove.push_back(E);
 			}
 		}
