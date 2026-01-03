@@ -40,6 +40,7 @@
 			<return type="void" />
 			<description>
 				Clears the tree. This removes all items.
+				Prints an error and does not allow clearing the tree if called during mouse selection.
 			</description>
 		</method>
 		<method name="create_item">
@@ -50,6 +51,7 @@
 				Creates an item in the tree and adds it as a child of [param parent], which can be either a valid [TreeItem] or [code]null[/code].
 				If [param parent] is [code]null[/code], the root item will be the parent, or the new item will be the root itself if the tree is empty.
 				The new item will be the [param index]-th child of parent, or it will be the last child if there are not enough siblings.
+				Prints an error and returns [code]null[/code] if called during mouse selection, or if the [param parent] does not belong to this tree.
 			</description>
 		</method>
 		<method name="deselect_all">
@@ -365,6 +367,7 @@
 		</member>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">
 			The number of columns.
+			Prints an error and does not allow setting the columns during mouse selection.
 		</member>
 		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags" default="0">
 			The drop mode as an OR combination of flags. See [enum DropModeFlags] constants. Once dropping is done, reverts to [constant DROP_MODE_DISABLED]. Setting this during [method Control._can_drop_data] is recommended.
