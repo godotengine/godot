@@ -545,11 +545,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				String expression_str = data[0];
 				int frame = data[1];
 
-				ScriptInstance *breaked_instance = script_debugger->get_break_language()->debug_get_stack_level_instance(frame);
-				if (!breaked_instance) {
-					break;
-				}
-
 				PackedStringArray input_names;
 				Array input_vals;
 
@@ -601,9 +596,11 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 					input_vals.append(scr);
 				}
 
+				ScriptInstance *breaked_instance = script_lang->debug_get_stack_level_instance(frame);
+
 				Expression expression;
 				expression.parse(expression_str, input_names);
-				const Variant return_val = expression.execute(input_vals, breaked_instance->get_owner());
+				const Variant return_val = expression.execute(input_vals, breaked_instance != nullptr ? breaked_instance->get_owner() : nullptr);
 
 				DebuggerMarshalls::ScriptStackVariable stvar;
 				stvar.name = expression_str;
