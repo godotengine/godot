@@ -177,7 +177,24 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (!p_event->is_pressed() || p_event->is_echo()) {
+	if (!p_event->is_pressed()) {
+		return;
+	}
+
+	// These shortcuts allow echo events for continuous execution.
+	if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
+		_tool_selected(TOOL_DUPLICATE);
+	} else if (ED_IS_SHORTCUT("scene_tree/move_up", p_event)) {
+		_tool_selected(TOOL_MOVE_UP);
+	} else if (ED_IS_SHORTCUT("scene_tree/move_down", p_event)) {
+		_tool_selected(TOOL_MOVE_DOWN);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node", p_event)) {
+		_tool_selected(TOOL_PASTE);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_sibling", p_event)) {
+		_tool_selected(TOOL_PASTE_AS_SIBLING);
+	}
+
+	if (p_event->is_echo()) {
 		return;
 	}
 
@@ -203,22 +220,12 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_CUT);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node", p_event)) {
 		_tool_selected(TOOL_COPY);
-	} else if (ED_IS_SHORTCUT("scene_tree/paste_node", p_event)) {
-		_tool_selected(TOOL_PASTE);
-	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_sibling", p_event)) {
-		_tool_selected(TOOL_PASTE_AS_SIBLING);
 	} else if (ED_IS_SHORTCUT("scene_tree/change_node_type", p_event)) {
 		_tool_selected(TOOL_REPLACE);
-	} else if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
-		_tool_selected(TOOL_DUPLICATE);
 	} else if (ED_IS_SHORTCUT("scene_tree/attach_script", p_event)) {
 		_tool_selected(TOOL_ATTACH_SCRIPT);
 	} else if (ED_IS_SHORTCUT("scene_tree/detach_script", p_event)) {
 		_tool_selected(TOOL_DETACH_SCRIPT);
-	} else if (ED_IS_SHORTCUT("scene_tree/move_up", p_event)) {
-		_tool_selected(TOOL_MOVE_UP);
-	} else if (ED_IS_SHORTCUT("scene_tree/move_down", p_event)) {
-		_tool_selected(TOOL_MOVE_DOWN);
 	} else if (ED_IS_SHORTCUT("scene_tree/reparent", p_event)) {
 		_tool_selected(TOOL_REPARENT);
 	} else if (ED_IS_SHORTCUT("scene_tree/reparent_to_new_node", p_event)) {
