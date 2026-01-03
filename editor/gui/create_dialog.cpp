@@ -33,13 +33,15 @@
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/property_utils.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
-	_fill_type_list();
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, bool p_consider_unnamed_scripts, const String &p_current_type, const String &p_current_name) {
+	_fill_type_list(p_consider_unnamed_scripts);
 
 	icon_fallback = search_options->has_theme_icon(base_type, EditorStringName(EditorIcons)) ? base_type : "Object";
 
@@ -80,14 +82,13 @@ void CreateDialog::for_inherit() {
 	allow_abstract_scripts = true;
 }
 
-void CreateDialog::_fill_type_list() {
+void CreateDialog::_fill_type_list(bool p_consider_unnamed_scripts) {
 	LocalVector<StringName> complete_type_list;
 	ClassDB::get_class_list(complete_type_list);
 	ScriptServer::get_global_class_list(complete_type_list);
 
 	EditorData &ed = EditorNode::get_editor_data();
 	HashMap<String, DocData::ClassDoc> &class_docs_list = EditorHelp::get_doc_data()->class_list;
-
 	for (const StringName &type : complete_type_list) {
 		if (!_should_hide_type(type)) {
 			TypeInfo type_info;
@@ -120,15 +121,58 @@ void CreateDialog::_fill_type_list() {
 		}
 	}
 
+	if (p_consider_unnamed_scripts) {
+		for (const KeyValue<String, DocData::ClassDoc> &it : class_docs_list) {
+			if (it.value.is_script_doc && it.value.name.contains_char('/')) {
+				_add_unnamed_scripts(class_docs_list, it.key);
+			}
+		}
+	}
+
 	struct TypeInfoCompare {
 		StringName::AlphCompare compare;
 
 		_FORCE_INLINE_ bool operator()(const TypeInfo &l, const TypeInfo &r) const {
+			if (!l.script_type_path.is_empty() && r.script_type_path.is_empty()) {
+				return false;
+			} else if (l.script_type_path.is_empty() && !r.script_type_path.is_empty()) {
+				return true;
+			}
+
 			return compare(l.type_name, r.type_name);
 		}
 	};
 
 	type_info_list.sort_custom<TypeInfoCompare>();
+}
+
+void CreateDialog::_add_unnamed_scripts(const HashMap<String, DocData::ClassDoc> &p_class_docs_list, const String &p_name) {
+	if (p_name.is_empty()) {
+		return;
+	}
+
+	HashMap<String, DocData::ClassDoc>::ConstIterator base_script_it = p_class_docs_list.find(p_name);
+	HashMap<String, DocData::ClassDoc>::ConstIterator inherit_it = base_script_it;
+	bool should_add_script = false;
+	while (inherit_it != p_class_docs_list.end()) {
+		if (inherit_it->value.inherits.is_empty()) {
+			break;
+		}
+
+		if (inherit_it->value.inherits == base_type) {
+			should_add_script = true;
+			break;
+		}
+
+		inherit_it = p_class_docs_list.find(inherit_it->value.inherits);
+	}
+
+	if (should_add_script) {
+		TypeInfo info;
+		info.type_name = base_script_it->key;
+		info.script_type_path = base_script_it->value.script_path;
+		type_info_list.push_back(info);
+	}
 }
 
 bool CreateDialog::_is_type_preferred(const String &p_type) const {
@@ -246,7 +290,6 @@ void CreateDialog::_update_search() {
 
 	float highest_score = 0.0f;
 	StringName best_match;
-
 	for (const TypeInfo &candidate : type_info_list) {
 		String match_keyword;
 
@@ -271,7 +314,14 @@ void CreateDialog::_update_search() {
 			continue;
 		}
 
-		_add_type(candidate.type_name, ClassDB::class_exists(candidate.type_name) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE, match_keyword);
+		TypeCategory type_category = TypeCategory::OTHER_TYPE;
+		if (ClassDB::class_exists(candidate.type_name)) {
+			type_category = TypeCategory::CPP_TYPE;
+		} else if (!candidate.script_type_path.is_empty()) {
+			type_category = TypeCategory::PATH_TYPE;
+		}
+		const StringName &type = type_category == TypeCategory::PATH_TYPE ? candidate.script_type_path : candidate.type_name;
+		_add_type(type, type_category, match_keyword);
 
 		if (score > highest_score) {
 			highest_score = score;
@@ -354,14 +404,15 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	bool script_type = ScriptServer::is_global_class(p_type);
 	bool is_abstract = false;
 	bool is_custom_type = false;
+	bool is_unnamed_script = false;
 	String type_name;
 	String text;
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		type_name = p_type;
 		text = p_type;
 	} else if (p_type_category == TypeCategory::PATH_TYPE) {
-		type_name = "\"" + p_type + "\"";
-		text = "\"" + p_type + "\"";
+		type_name = p_type;
+		text = p_type;
 	} else if (script_type) {
 		is_custom_type = true;
 		type_name = p_type;
@@ -394,18 +445,25 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	}
 	r_item->set_text(0, text);
 
-	Array meta;
-	meta.append(is_custom_type);
-	meta.append(type_name);
-	r_item->set_metadata(0, meta);
-
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
 			(p_type_category == TypeCategory::OTHER_TYPE && !(!allow_abstract_scripts && is_abstract));
 	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
 
-	r_item->set_meta(SNAME("__instantiable"), instantiable);
+	if (!instantiable && p_type_category == PATH_TYPE) {
+		Ref<Script> scr = ResourceLoader::load(p_type, "Script");
+		instantiable = scr.is_valid();
+		is_unnamed_script = true;
+	}
 
+	Array meta;
+	meta.append(is_custom_type);
+	meta.append(type_name);
+	meta.append(is_unnamed_script);
+
+	r_item->set_metadata(0, meta);
+	r_item->set_meta(SNAME("__instantiable"), instantiable);
 	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type));
+
 	if (!instantiable) {
 		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	}
@@ -645,11 +703,13 @@ Variant CreateDialog::instantiate_selected() {
 	}
 
 	Array meta = selected->get_metadata(0).operator Array();
-	ERR_FAIL_COND_V(meta.size() != 2, Variant());
+	ERR_FAIL_COND_V(meta.size() != 3, Variant());
 
 	bool is_custom_type = meta[0].operator bool();
 	String type_name = meta[1].operator String();
+	bool is_unnamed_script = meta[2].operator bool();
 	Variant obj;
+
 	if (is_custom_type) {
 		if (ScriptServer::is_global_class(type_name)) {
 			obj = EditorNode::get_editor_data().script_class_instance(type_name);
@@ -659,6 +719,22 @@ Variant CreateDialog::instantiate_selected() {
 			}
 		} else {
 			obj = EditorNode::get_editor_data().instantiate_custom_type(selected->get_text(0), type_name);
+		}
+	} else if (is_unnamed_script) {
+		Ref<Script> scr_ref = ResourceLoader::load(type_name, "Script");
+		if (scr_ref.is_valid()) {
+			const StringName &base_instance_name = scr_ref->get_instance_base_type();
+			obj = ClassDB::instantiate(base_instance_name);
+			Object *op = Object::cast_to<Object>(obj);
+			if (op) {
+				PropertyUtils::assign_custom_type_script(op, scr_ref);
+				op->set_script(scr_ref);
+
+				Node *n = Object::cast_to<Node>(obj);
+				if (n) {
+					n->set_name(scr_ref->get_instance_base_type());
+				}
+			}
 		}
 	} else {
 		obj = ClassDB::instantiate(type_name);
