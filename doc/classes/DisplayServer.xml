@@ -2774,6 +2774,9 @@
 		<constant name="ROLE_TOOLTIP" value="45" enum="AccessibilityRole">
 			Tooltip element.
 		</constant>
+		<constant name="ROLE_TREE_GRID" value="46" enum="AccessibilityRole">
+			Tree grid element (tree with multiple columns).
+		</constant>
 		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType">
 			Popup menu.
 		</constant>

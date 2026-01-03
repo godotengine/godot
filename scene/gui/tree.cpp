@@ -3528,7 +3528,7 @@ void Tree::popup_select(int p_option) {
 }
 
 void Tree::_go_left() {
-	if (get_tree()->is_accessibility_enabled() && selected_button >= 0) {
+	if (selected_button >= 0) {
 		selected_button--;
 	} else if (selected_col == 0) {
 		selected_button = -1;
@@ -3562,8 +3562,22 @@ void Tree::_go_left() {
 
 void Tree::_go_right() {
 	int buttons = (selected_item && selected_col >= 0 && selected_col < columns.size()) ? selected_item->cells[selected_col].buttons.size() : 0;
-	if (get_tree()->is_accessibility_enabled() && selected_button < buttons - 1) {
+	if (selected_button >= 0 && selected_button < buttons - 1) {
+		// On a button, move to next button.
 		selected_button++;
+	} else if (selected_button == -1 && buttons > 0) {
+		// On cell with buttons, move to first button.
+		selected_button = 0;
+	} else if (selected_button == -1 && selected_item->get_first_child() != nullptr) {
+		// On cell with children but no buttons.
+		if (selected_item->is_collapsed()) {
+			// Expand collapsed item.
+			selected_item->set_collapsed(false);
+		} else if (selected_item->get_next_visible()) {
+			// Already expanded, move to first child.
+			selected_col = 0;
+			_go_down();
+		}
 	} else if (selected_col == (columns.size() - 1)) {
 		selected_button = -1;
 		if (selected_item->get_first_child() != nullptr && selected_item->is_collapsed()) {
@@ -4755,16 +4769,23 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 	// Row.
 	if ((p_item != root || !hide_root) && p_item->is_visible()) {
 		if (p_item->accessibility_row_element.is_null()) {
-			p_item->accessibility_row_element = DisplayServer::get_singleton()->accessibility_create_sub_element(accessibility_scroll_element, DisplayServer::AccessibilityRole::ROLE_TREE_ITEM);
+			p_item->accessibility_row_element = DisplayServer::get_singleton()->accessibility_create_sub_element(accessibility_scroll_element, DisplayServer::AccessibilityRole::ROLE_ROW);
 			p_item->accessibility_row_dirty = true;
 		}
 
 		DisplayServer::get_singleton()->accessibility_update_set_table_row_index(p_item->accessibility_row_element, r_row);
 		DisplayServer::get_singleton()->accessibility_update_set_list_item_level(p_item->accessibility_row_element, p_level);
-		DisplayServer::get_singleton()->accessibility_update_set_list_item_expanded(p_item->accessibility_row_element, !p_item->collapsed);
-		DisplayServer::get_singleton()->accessibility_update_set_flag(p_item->accessibility_row_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && !p_item->parent_visible_in_tree));
-		DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &Tree::_accessibility_action_collapse).bind(p_item));
-		DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &Tree::_accessibility_action_expand).bind(p_item));
+
+		// Only set expanded state on items with children (leaf nodes should not have expanded/collapsed state).
+		if (p_item->get_first_child() != nullptr) {
+			DisplayServer::get_singleton()->accessibility_update_set_list_item_expanded(p_item->accessibility_row_element, !p_item->collapsed);
+			DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &Tree::_accessibility_action_collapse).bind(p_item));
+			DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &Tree::_accessibility_action_expand).bind(p_item));
+		}
+
+		// Add focus action to row element so it shows as focusable in accessibility tree.
+		DisplayServer::get_singleton()->accessibility_update_add_action(p_item->accessibility_row_element, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Tree::_accessibility_action_focus).bind(p_item, 0));
+		DisplayServer::get_singleton()->accessibility_update_set_flag(p_item->accessibility_row_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && p_item->parent_visible_in_tree));
 
 		DisplayServer::get_singleton()->accessibility_update_set_list_item_selected(p_item->accessibility_row_element, selected_item == p_item);
 		if (p_item == root && is_root_hidden()) {
@@ -4804,7 +4825,7 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 				}
 
 				DisplayServer::get_singleton()->accessibility_update_set_text_align(cell.accessibility_cell_element, cell.text_alignment);
-				DisplayServer::get_singleton()->accessibility_update_set_flag(cell.accessibility_cell_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && !p_item->parent_visible_in_tree));
+				DisplayServer::get_singleton()->accessibility_update_set_flag(cell.accessibility_cell_element, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && p_item->parent_visible_in_tree));
 				DisplayServer::get_singleton()->accessibility_update_set_flag(cell.accessibility_cell_element, DisplayServer::AccessibilityFlags::FLAG_READONLY, !cell.editable);
 				DisplayServer::get_singleton()->accessibility_update_set_tooltip(cell.accessibility_cell_element, cell.tooltip);
 				switch (cell.mode) {
@@ -4843,7 +4864,9 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 				Vector2 ofst = Vector2(col_offset + cw, 0);
 				for (int j = cell.buttons.size() - 1; j >= 0; j--) {
 					if (cell.buttons[j].accessibility_button_element.is_null()) {
-						cell.buttons[j].accessibility_button_element = DisplayServer::get_singleton()->accessibility_create_sub_element(cell.accessibility_cell_element, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+						// Create buttons as children of the row, not the cell.
+						// This prevents screen readers from reading button names when focusing cells
+						cell.buttons[j].accessibility_button_element = DisplayServer::get_singleton()->accessibility_create_sub_element(p_item->accessibility_row_element, DisplayServer::AccessibilityRole::ROLE_BUTTON);
 					}
 
 					DisplayServer::get_singleton()->accessibility_update_add_action(cell.buttons[j].accessibility_button_element, DisplayServer::AccessibilityAction::ACTION_CLICK, callable_mp(this, &Tree::_accessibility_action_button_press).bind(p_item, i, j));
@@ -4899,7 +4922,7 @@ void Tree::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_TREE);
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_TREE_GRID);
 
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &Tree::_accessibility_action_scroll_down));
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_LEFT, callable_mp(this, &Tree::_accessibility_action_scroll_left));
@@ -4951,6 +4974,12 @@ void Tree::_notification(int p_what) {
 				_accessibility_update_item(origin, root, rows, 0);
 			}
 			DisplayServer::get_singleton()->accessibility_update_set_table_row_count(ae, rows);
+
+			// Set active descendant to the focused element so screen readers announce it.
+			RID focused = get_focused_accessibility_element();
+			if (focused.is_valid() && focused != ae) {
+				DisplayServer::get_singleton()->accessibility_update_set_active_descendant(ae, focused);
+			}
 
 		} break;
 
