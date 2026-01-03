@@ -2158,7 +2158,7 @@ void EditorNode::_save_edited_subresources(Node *scene, HashMap<Ref<Resource>, b
 	}
 }
 
-void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
+void EditorNode::_count_node_types(Node *p_node, int &count_2d, int &count_3d) {
 	if (p_node->is_class("Viewport") || (p_node != editor_data.get_edited_scene_root() && p_node->get_owner() != editor_data.get_edited_scene_root())) {
 		return;
 	}
@@ -2170,7 +2170,18 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_find_node_types(p_node->get_child(i), count_2d, count_3d);
+		_count_node_types(p_node->get_child(i), count_2d, count_3d);
+	}
+}
+
+void EditorNode::_calculate_aabb_merged(Node *p_node, AABB &aabb) {
+	if (p_node->is_class("VisualInstance3D")) {
+		VisualInstance3D *v3d = Object::cast_to<VisualInstance3D>(p_node);
+		AABB node_aabb = v3d->get_global_transform().xform(v3d->get_aabb());
+		aabb.merge_with(node_aabb);
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_calculate_aabb_merged(p_node->get_child(i), aabb);
 	}
 }
 
@@ -2183,7 +2194,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		int c2d = 0;
 		int c3d = 0;
 
-		_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
+		_count_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
 
 		save_scene_progress->step(TTR("Creating Thumbnail"), 1);
 		// Current view?
@@ -2206,7 +2217,24 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			// The preview will be generated if no feature profile is set (as the 3D editor is enabled by default).
 			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
 			if (profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
+				Camera3D *vpcam = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_camera_3d();
+				Transform3D prev_trans_3d = vpcam->get_transform();
+
+				// Move camera to fit 3d scene
+				AABB scene_aabb = AABB();
+				_calculate_aabb_merged(editor_data.get_edited_scene_root(), scene_aabb);
+				Vector3 scene_center = scene_aabb.get_center();
+				Transform3D thumbnail_cam_trans_3d = Transform3D();
+				float bound_sphere_radius = scene_aabb.get_longest_axis_size() / 2.0f;
+				float cam_distance = (bound_sphere_radius * 2.0f) / Math::tan(vpcam->get_fov() / 2.0f);
+				thumbnail_cam_trans_3d.set_origin(scene_center + Vector3(1.0f, 0.25f, 1.0f).normalized() * cam_distance);
+				thumbnail_cam_trans_3d.set_look_at(thumbnail_cam_trans_3d.origin, scene_center);
+				RenderingServer::get_singleton()->camera_set_transform(vpcam->get_camera(), thumbnail_cam_trans_3d);
+				RenderingServer::get_singleton()->draw(false); // Redraw without glitching the viewport
+
+				// Move back camera after captured image
 				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_image();
+				RenderingServer::get_singleton()->camera_set_transform(vpcam->get_camera(), prev_trans_3d);
 			}
 		}
 
@@ -2238,7 +2266,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			}
 			img->convert(Image::FORMAT_RGB8);
 
-			// Save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5.
+			// Save thumbnail directly, as thumbnailer may not update due to scene md5 checksum unchanged
 			String temp_path = EditorPaths::get_singleton()->get_cache_dir();
 			String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
 			cache_base = temp_path.path_join("resthumb-" + cache_base);
@@ -2250,7 +2278,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	}
 
 	save_scene_progress->step(TTR("Saving Scene"), 4);
-	_save_scene(p_file, p_idx);
+	_save_scene(p_file, p_idx, false);
 
 	if (!singleton->cmdline_mode) {
 		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
@@ -2357,7 +2385,7 @@ void EditorNode::_save_scene_silently() {
 	// when Save on Focus Loss kicks in.
 	Node *scene = editor_data.get_edited_scene_root();
 	if (scene && !scene->get_scene_file_path().is_empty() && DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
-		_save_scene(scene->get_scene_file_path());
+		_save_scene(scene->get_scene_file_path(), -1, false);
 		save_editor_layout_delayed();
 	}
 }
@@ -2385,18 +2413,29 @@ static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Re
 	}
 }
 
-void EditorNode::_save_scene(String p_file, int idx) {
+void EditorNode::_save_scene(String p_file, int idx, bool show_progress) {
 	ERR_FAIL_COND_MSG(!saving_scene.is_empty() && saving_scene == p_file, "Scene saved while already being saved!");
 
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
+	if (show_progress) {
+		save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 3));
+		save_scene_progress->step(TTR("Analyzing"), 0);
+	}
+
 	if (!scene) {
 		show_accept(TTR("This operation can't be done without a tree root."), TTR("OK"));
+		if (show_progress) {
+			_close_save_scene_progress();
+		}
 		return;
 	}
 
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
 		show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
+		if (show_progress) {
+			_close_save_scene_progress();
+		}
 		return;
 	}
 
@@ -2407,6 +2446,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
 	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
+
+	if (show_progress) {
+		save_scene_progress->step(TTR("Packing Scene"), 1);
+	}
 
 	Ref<PackedScene> sdata;
 
@@ -2428,7 +2471,14 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	if (err != OK) {
 		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("OK"));
+		if (show_progress) {
+			_close_save_scene_progress();
+		}
 		return;
+	}
+
+	if (show_progress) {
+		save_scene_progress->step(TTR("Saving scene"), 2);
 	}
 
 	int flg = 0;
@@ -2442,6 +2492,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	// This needs to be emitted before saving external resources.
 	emit_signal(SNAME("scene_saved"), p_file);
 	editor_data.notify_scene_saved(p_file);
+
+	if (show_progress) {
+		save_scene_progress->step(TTR("Saving external resources"), 3);
+	}
 
 	_save_external_resources();
 	saving_scene = p_file; // Some editors may save scenes of built-in resources as external data, so avoid saving this scene again.
@@ -2479,6 +2533,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);
 	_update_unsaved_cache();
+	if (show_progress) {
+		_close_save_scene_progress();
+	}
 }
 
 void EditorNode::save_all_scenes() {
@@ -3345,7 +3402,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 			if (scene && !scene->get_scene_file_path().is_empty()) {
 				if (DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
-					if (scene_idx != editor_data.get_edited_scene()) {
+					if (scene_idx != editor_data.get_edited_scene()) { // NOTE - Statement seems to never become false, and this might be redundant?
 						_save_scene_with_preview(scene->get_scene_file_path(), scene_idx);
 					} else {
 						_save_scene_with_preview(scene->get_scene_file_path());
@@ -8250,7 +8307,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_dependency_error_notify_func(&EditorNode::_dependency_error_report);
 
 	SceneState::set_instantiation_warning_notify_func([](const String &p_warning) {
-		add_io_warning(p_warning);
+		callable_mp_static(EditorNode::add_io_warning).call_deferred(p_warning);
 		callable_mp(EditorInterface::get_singleton(), &EditorInterface::mark_scene_as_unsaved).call_deferred();
 	});
 
