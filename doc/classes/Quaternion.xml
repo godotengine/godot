@@ -37,7 +37,8 @@
 			<param index="0" name="arc_from" type="Vector3" />
 			<param index="1" name="arc_to" type="Vector3" />
 			<description>
-				Constructs a [Quaternion] representing the shortest arc between [param arc_from] and [param arc_to]. These can be imagined as two points intersecting a sphere's surface, with a radius of [code]1.0[/code].
+				Constructs a [Quaternion] representing the shortest arc between [param arc_from] and [param arc_to]. These can be imagined as two points intersecting a sphere's surface, with a radius of [code]1.0[/code]. If the two vectors point in the same direction the result is [constant IDENTITY].
+				[b]Note:[/b] If the two vectors point the opposite direction there is no single shortest arc, in this case a valid arc is picked and the result might not match your expectations. To get a result that rotates around a specific axis in this case, use the axis angle constructor instead (see [method Vector3.dot] for how to detect this).
 			</description>
 		</constructor>
 		<constructor name="Quaternion">
