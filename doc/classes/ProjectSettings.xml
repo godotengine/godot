@@ -552,7 +552,7 @@
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when deprecated keywords are used.
 			[b]Note:[/b] There are currently no deprecated keywords, so this warning is never produced.
 		</member>
-		<member name="debug/gdscript/warnings/directory_rules" type="Dictionary" setter="" getter="" default="{ &quot;res://addons&quot;: 0 }">
+		<member name="debug/gdscript/warnings/directory_rules" type="Dictionary" setter="" getter="" default="{&quot;res://addons&quot;: 0}">
 			The rules for including or excluding scripts when generating warnings, as a dictionary. Each rule is an entry consisting of a directory path (key) and a decision (value). When trying to generate a warning, the GDScript parser chooses the most specific rule, i.e. the most nested directory containing the script. If the decision is [b]Exclude[/b], warnings are not generated for this script. If the decision is [b]Include[/b] or the script doesn't satisfy any of the rules, the warning configuration specified in the Project Settings is applied.
 			It is recommended to include your own addons/libraries, either project-specific or actively being developed at the moment. Third-party or project-agnostic addons/libraries should be excluded, as they may be incompatible with the project's warning configuration.
 			[b]Note:[/b] It is not recommended to remove or change the rule for [code]"res://addons"[/code] as the project's warning configuration may break third-party addons. Instead, consider including individual addons, if necessary.

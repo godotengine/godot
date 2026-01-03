@@ -1037,7 +1037,7 @@ void VariantUtilityFunctions::push_warning(const Variant **p_args, int p_arg_cou
 
 String VariantUtilityFunctions::var_to_str(const Variant &p_var) {
 	String vars;
-	VariantWriter::write_to_string(p_var, vars);
+	VariantWriter::write_to_string(p_var, vars, false);
 	return vars;
 }
 

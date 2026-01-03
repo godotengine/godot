@@ -1178,7 +1178,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 			}
 
 			String vstr;
-			VariantWriter::write_to_string(value, vstr);
+			VariantWriter::write_to_string(value, vstr, true);
 			file->store_string(F.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
