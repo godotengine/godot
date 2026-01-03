@@ -333,6 +333,12 @@ void Dictionary::sort() {
 	_p->variant_map.sort_custom<_DictionaryVariantSort>();
 }
 
+Dictionary Dictionary::sorted() const {
+	Dictionary ret = duplicate();
+	ret.sort();
+	return ret;
+}
+
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
