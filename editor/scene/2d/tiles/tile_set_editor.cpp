@@ -458,7 +458,7 @@ void TileSetEditor::_tile_set_changed() {
 
 void TileSetEditor::_tab_changed(int p_tab_changed) {
 	split_container->set_visible(p_tab_changed == 0);
-	patterns_item_list->set_visible(p_tab_changed == 1);
+	patterns_mc->set_visible(p_tab_changed == 1);
 }
 
 void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos) {
@@ -947,6 +947,12 @@ TileSetEditor::TileSetEditor() {
 	split_container_right_side->add_child(tile_set_scenes_collection_source_editor);
 	tile_set_scenes_collection_source_editor->hide();
 
+	patterns_mc = memnew(MarginContainer);
+	patterns_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patterns_mc->set_theme_type_variation("NoBorderBottomPanel");
+	main_vb->add_child(patterns_mc);
+	patterns_mc->hide();
+
 	//// Patterns ////
 	int thumbnail_size = 64;
 	patterns_item_list = memnew(ItemList);
@@ -956,11 +962,10 @@ TileSetEditor::TileSetEditor() {
 	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 	patterns_item_list->set_max_text_lines(2);
 	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
+	patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_item_list->set_theme_type_variation("ItemListSecondary");
 	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
-	main_vb->add_child(patterns_item_list);
-	patterns_item_list->hide();
+	patterns_mc->add_child(patterns_item_list);
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_focus_mode(FOCUS_ACCESSIBILITY);

@@ -93,6 +93,7 @@ private:
 	bool first_edit = true;
 
 	// Patterns.
+	MarginContainer *patterns_mc = nullptr;
 	ItemList *patterns_item_list = nullptr;
 	Label *patterns_help_label = nullptr;
 	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
