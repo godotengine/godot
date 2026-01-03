@@ -3359,6 +3359,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 		push_error(R"(Expected grouping expression.)");
 	} else {
 		consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after grouping expression.)*");
+
+		grouped->start_line = previous.start_line;
+		grouped->start_column = previous.start_column;
+		grouped->end_line = previous.end_line;
+		grouped->end_column = previous.end_column;
 	}
 	return grouped;
 }
