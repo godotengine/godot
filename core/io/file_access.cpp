@@ -82,12 +82,12 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 Ref<FileAccess> FileAccess::create_temp(ModeFlags p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep, Error *r_error) {
 	const String ERROR_COMMON_PREFIX = "Error while creating temporary file";
 
-	if (!p_prefix.is_empty() && !p_prefix.is_valid_filename()) {
+	if (!p_prefix.is_empty() && !p_prefix.strip_edges(false, true).is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
 		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
 	}
 
-	if (!p_extension.is_empty() && !p_extension.is_valid_filename()) {
+	if (!p_extension.is_empty() && !p_extension.strip_edges(true, false).is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
 		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid extension.)", ERROR_COMMON_PREFIX, p_extension));
 	}
