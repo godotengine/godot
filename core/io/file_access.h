@@ -167,6 +167,8 @@ public:
 	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) { close_fail_notify = p_cbk; }
 
 	virtual bool is_open() const = 0; ///< true when file is open
+	virtual bool is_read_end_open() const { return is_open(); }
+	virtual bool is_write_end_open() const { return is_open(); }
 
 	virtual String get_path() const { return ""; } /// returns the path for the current open file
 	virtual String get_path_absolute() const { return ""; } /// returns the absolute path for the current open file

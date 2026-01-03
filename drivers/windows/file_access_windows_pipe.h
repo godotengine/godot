@@ -40,7 +40,7 @@
 
 class FileAccessWindowsPipe : public FileAccess {
 	GDSOFTCLASS(FileAccessWindowsPipe, FileAccess);
-	HANDLE fd[2] = { nullptr, nullptr };
+	HANDLE fd[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
 
 	mutable Error last_error = OK;
 
@@ -48,12 +48,15 @@ class FileAccessWindowsPipe : public FileAccess {
 	String path_src;
 
 	void _close();
+	bool _check_handle(HANDLE p_fd, bool p_peek) const;
 
 public:
 	Error open_existing(HANDLE p_rfd, HANDLE p_wfd, bool p_blocking);
 
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
+	virtual bool is_read_end_open() const override;
+	virtual bool is_write_end_open() const override;
 
 	virtual String get_path() const override; /// returns the path for the current open file
 	virtual String get_path_absolute() const override; /// returns the absolute path for the current open file

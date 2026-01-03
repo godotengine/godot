@@ -36,6 +36,7 @@
 #include "core/string/print_string.h"
 
 #include <fcntl.h>
+#include <poll.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -127,7 +128,15 @@ void FileAccessUnixPipe::_close() {
 }
 
 bool FileAccessUnixPipe::is_open() const {
-	return (fd[0] >= 0 || fd[1] >= 0);
+	return _check_handle(fd[0], true) || _check_handle(fd[1], false);
+}
+
+bool FileAccessUnixPipe::is_read_end_open() const {
+	return _check_handle(fd[0], true);
+}
+
+bool FileAccessUnixPipe::is_write_end_open() const {
+	return _check_handle(fd[1], false);
 }
 
 String FileAccessUnixPipe::get_path() const {
@@ -138,11 +147,38 @@ String FileAccessUnixPipe::get_path_absolute() const {
 	return path_src;
 }
 
+bool FileAccessUnixPipe::_check_handle(int p_fd, bool p_peek) const {
+	if (p_fd < 0) {
+		return false;
+	}
+	int buf_rem = 0;
+	if (p_peek && ioctl(fd[0], FIONREAD, &buf_rem) != 0) {
+		return false;
+	}
+	if (p_peek && buf_rem > 0) {
+		return true;
+	}
+	struct pollfd pfd = { p_fd, POLLIN | POLLOUT, 0 };
+	if ((poll(&pfd, 1, 0) < 0) || (pfd.revents & POLLHUP) || (pfd.revents & POLLERR) || (pfd.revents & POLLNVAL)) {
+		return false;
+	}
+	return true;
+}
+
 uint64_t FileAccessUnixPipe::get_length() const {
 	ERR_FAIL_COND_V_MSG(fd[0] < 0, 0, "Pipe must be opened before use.");
 
 	int buf_rem = 0;
-	ERR_FAIL_COND_V(ioctl(fd[0], FIONREAD, &buf_rem) != 0, 0);
+	if (ioctl(fd[0], FIONREAD, &buf_rem) != 0) {
+		last_error = ERR_FILE_CANT_READ;
+	} else if (buf_rem == 0) {
+		struct pollfd pfd = { fd[0], POLLIN | POLLOUT, 0 };
+		if ((poll(&pfd, 1, 0) < 0) || (pfd.revents & POLLHUP) || (pfd.revents & POLLERR) || (pfd.revents & POLLNVAL)) {
+			last_error = ERR_FILE_CANT_READ;
+		} else {
+			last_error = OK;
+		}
+	}
 	return buf_rem;
 }
 
