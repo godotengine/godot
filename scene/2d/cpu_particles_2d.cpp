@@ -728,8 +728,8 @@ void CPUParticles2D::_update_internal() {
 		double ldelta = delta;
 		if (ldelta > 0.1) { //avoid recursive stalls if fps goes below 10
 			ldelta = 0.1;
-		} else if (ldelta <= 0.0) { //unlikely but..
-			ldelta = 0.001;
+		} else if (ldelta < 0.0) {
+			ldelta = 0.0;
 		}
 		todo = frame_remainder + ldelta;
 
