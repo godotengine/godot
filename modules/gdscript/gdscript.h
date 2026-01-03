@@ -599,6 +599,7 @@ public:
 	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
+	bool is_reserved_word(const String &p_word) const;
 	virtual Vector<String> get_reserved_words() const override;
 	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
 	virtual Vector<String> get_comment_delimiters() const override;

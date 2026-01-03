@@ -1165,6 +1165,9 @@
 		<member name="editor/naming/default_signal_callback_to_self_name" type="String" setter="" getter="" default="&quot;_on_{signal_name}&quot;">
 			The format of the default signal callback name when a signal connects to the same node that emits it (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
 		</member>
+		<member name="editor/naming/function_parameter_prefix" type="String" setter="" getter="" default="&quot;&quot;">
+			The prefix added to parameter names when generating function signatures (autocompletion of inherited methods, signal callback generation). Must be a valid identifier such as [code]p_[/code]. Otherwise, the provided prefix will not be used without an error or warning.
+		</member>
 		<member name="editor/naming/node_name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing to use in this project. This is mostly an editor setting.
 		</member>
