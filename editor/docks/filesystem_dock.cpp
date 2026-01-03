@@ -52,6 +52,7 @@
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/editor_resource_tooltip_plugins.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "editor/run/editor_run_bar.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/scene_create_dialog.h"
 #include "editor/settings/editor_command_palette.h"
@@ -2651,6 +2652,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_RUN_SCENE: {
+			if (p_selected.size() == 1) {
+				EditorRunBar::get_singleton()->play_custom_scene(p_selected[0]);
+			}
+		} break;
+
 		case EXTRA_FOCUS_PATH: {
 			focus_on_filter();
 		} break;
@@ -3358,6 +3365,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	if (all_files) {
 		if (all_files_scenes) {
 			if (filenames.size() == 1) {
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Play")), TTRC("Play Scene"), FILE_MENU_RUN_SCENE);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scene"), FILE_MENU_OPEN);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTRC("New Inherited Scene"), FILE_MENU_INHERIT);
 				if (main_scene_path != filenames[0]) {

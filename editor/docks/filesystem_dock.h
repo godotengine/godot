@@ -136,6 +136,7 @@ private:
 		FILE_MENU_NEW_SCRIPT,
 		FILE_MENU_NEW_SCENE,
 		FILE_MENU_RUN_SCRIPT,
+		FILE_MENU_RUN_SCENE,
 		FILE_MENU_MAX,
 		// Extra shortcuts that don't exist in the menu.
 		EXTRA_FOCUS_PATH,
