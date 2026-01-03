@@ -361,11 +361,11 @@ bool VariantUtilityFunctions::is_finite(double x) {
 	return Math::is_finite(x);
 }
 
-double VariantUtilityFunctions::ease(float x, float curve) {
+double VariantUtilityFunctions::ease(double x, double curve) {
 	return Math::ease(x, curve);
 }
 
-int VariantUtilityFunctions::step_decimals(float step) {
+int VariantUtilityFunctions::step_decimals(double step) {
 	return Math::step_decimals(step);
 }
 
