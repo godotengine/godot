@@ -121,10 +121,15 @@ class GDScriptAnalyzer {
 	Variant make_dictionary_reduced_value(GDScriptParser::DictionaryNode *p_dictionary, bool &is_reduced);
 	Variant make_subscript_reduced_value(GDScriptParser::SubscriptNode *p_subscript, bool &is_reduced);
 	Variant make_call_reduced_value(GDScriptParser::CallNode *p_call, bool &is_reduced);
+	Variant make_binary_op_reduced_value(GDScriptParser::BinaryOpNode *p_binary_op, bool &is_reduced);
+	Variant make_ternary_op_reduced_value(GDScriptParser::TernaryOpNode *p_ternary_op, bool &is_reduced);
+	Variant make_cast_reduced_value(GDScriptParser::CastNode *p_cast, bool &is_reduced);
+	Variant make_type_test_reduced_value(GDScriptParser::TypeTestNode *p_type_test, bool &is_reduced);
 
 	// Helpers.
 	Array make_array_from_element_datatype(const GDScriptParser::DataType &p_element_datatype, const GDScriptParser::Node *p_source_node = nullptr);
 	Dictionary make_dictionary_from_element_datatype(const GDScriptParser::DataType &p_key_element_datatype, const GDScriptParser::DataType &p_value_element_datatype, const GDScriptParser::Node *p_source_node = nullptr);
+	GDScriptParser::DataType type_from_script(const Ref<Script> &p_script, const GDScriptParser::Node *p_source, bool p_is_meta_type);
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property, bool p_is_arg = false, bool p_is_readonly = false) const;
 	GDScriptParser::DataType make_global_class_meta_type(const StringName &p_class_name, const GDScriptParser::Node *p_source);
@@ -138,6 +143,7 @@ class GDScriptAnalyzer {
 	void update_array_literal_element_type(GDScriptParser::ArrayNode *p_array, const GDScriptParser::DataType &p_element_type);
 	void update_dictionary_literal_element_type(GDScriptParser::DictionaryNode *p_dictionary, const GDScriptParser::DataType &p_key_element_type, const GDScriptParser::DataType &p_value_element_type);
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
+	bool is_type_compatible_strict_collections(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source);
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin = nullptr);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	void downgrade_node_type_source(GDScriptParser::Node *p_node);
