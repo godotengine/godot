@@ -4709,6 +4709,11 @@ int Main::start() {
 
 	GDExtensionManager::get_singleton()->startup();
 
+	if (EngineDebugger::is_active()) {
+		// Mark all of resources had been loaded, now can use debug
+		EngineDebugger::get_singleton()->mark_started();
+	}
+
 	if (minimum_time_msec) {
 		uint64_t minimum_time = 1000 * minimum_time_msec;
 		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
