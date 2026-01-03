@@ -2359,6 +2359,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				cell_rect.size.x += theme_cache.h_separation;
 			}
 
+			StringName anim_id = itos(p_item->get_instance_id());
+			StyleBox::begin_animation_group(anim_id);
 			if (i == 0 && select_mode == SELECT_ROW) {
 				if (p_item->cells[0].selected || is_row_hovered) {
 					const Rect2 content_rect = _get_content_rect();
@@ -2427,6 +2429,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					p_item->cells.write[i].focus_rect = Rect2(r.position, r.size);
 				}
 			}
+			StyleBox::end_animation_group();
 
 			if (theme_cache.draw_guides) {
 				Rect2 r = convert_rtl_rect(cell_rect);
@@ -2492,6 +2495,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				bool draw_as_hover_dim = draw_as_hover && is_cell_button_hovered;
 				cell_color = p_item->cells[i].selected && draw_as_hover ? theme_cache.font_hovered_selected_color : (p_item->cells[i].selected ? theme_cache.font_selected_color : (draw_as_hover_dim ? theme_cache.font_hovered_dimmed_color : (draw_as_hover ? theme_cache.font_hovered_color : theme_cache.font_color)));
 			}
+			cell_color = StyleBox::get_animated_value(SNAME("cell_color"), cell_color, anim_id);
 
 			Color font_outline_color = theme_cache.font_outline_color;
 			int outline_size = theme_cache.font_outline_size;
@@ -2698,6 +2702,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				ofs += item_width + buttons_width;
 			}
 
+			StyleBox::begin_animation_group("cursor");
 			if (select_mode == SELECT_MULTI && selected_item == p_item && selected_col == i) {
 				cell_rect = convert_rtl_rect(cell_rect);
 				if (has_focus(true)) {
@@ -5082,6 +5087,7 @@ void Tree::_notification(int p_what) {
 			if (root && get_size().x > 0 && get_size().y > 0) {
 				int self_height = 0; // Just to pass a reference, we don't need the root's `self_height`.
 				draw_item(Point2(), draw_ofs, draw_size, root, self_height);
+				StyleBox::end_animation_group("cursor");
 			}
 
 			if (show_column_titles) {

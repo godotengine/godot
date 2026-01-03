@@ -163,24 +163,41 @@ Rect2 StyleBoxTexture::get_draw_rect(const Rect2 &p_rect) const {
 }
 
 void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+	begin_draw(p_canvas_item, p_rect);
+	float texture_margin_animated[4] = {
+		get_animated_value(SNAME("texture_margin/left"), texture_margin[SIDE_LEFT]),
+		get_animated_value(SNAME("texture_margin/top"), texture_margin[SIDE_TOP]),
+		get_animated_value(SNAME("texture_margin/right"), texture_margin[SIDE_RIGHT]),
+		get_animated_value(SNAME("texture_margin/bottom"), texture_margin[SIDE_BOTTOM]),
+	};
+	float expand_margin_animated[4] = {
+		get_animated_value(SNAME("expand_margin/left"), expand_margin[SIDE_LEFT]),
+		get_animated_value(SNAME("expand_margin/top"), expand_margin[SIDE_TOP]),
+		get_animated_value(SNAME("expand_margin/right"), expand_margin[SIDE_RIGHT]),
+		get_animated_value(SNAME("expand_margin/bottom"), expand_margin[SIDE_BOTTOM]),
+	};
+	Rect2 region_rect_animated = get_animated_value(SNAME("region_rect"), region_rect);
+	Color modulate_animated = get_animated_value(SNAME("modulate_color"), modulate);
+
 	if (texture.is_null()) {
 		return;
 	}
 
-	Rect2 rect = p_rect;
-	Rect2 src_rect = region_rect;
+	Rect2 rect = get_animated_value(SNAME("rect"), p_rect);
+	Rect2 src_rect = region_rect_animated;
 
 	texture->get_rect_region(rect, src_rect, rect, src_rect);
 
-	rect.position.x -= expand_margin[SIDE_LEFT];
-	rect.position.y -= expand_margin[SIDE_TOP];
-	rect.size.x += expand_margin[SIDE_LEFT] + expand_margin[SIDE_RIGHT];
-	rect.size.y += expand_margin[SIDE_TOP] + expand_margin[SIDE_BOTTOM];
+	rect.position.x -= expand_margin_animated[SIDE_LEFT];
+	rect.position.y -= expand_margin_animated[SIDE_TOP];
+	rect.size.x += expand_margin_animated[SIDE_LEFT] + expand_margin_animated[SIDE_RIGHT];
+	rect.size.y += expand_margin_animated[SIDE_TOP] + expand_margin_animated[SIDE_BOTTOM];
 
-	Vector2 start_offset = Vector2(texture_margin[SIDE_LEFT], texture_margin[SIDE_TOP]);
-	Vector2 end_offset = Vector2(texture_margin[SIDE_RIGHT], texture_margin[SIDE_BOTTOM]);
+	Vector2 start_offset = Vector2(texture_margin_animated[SIDE_LEFT], texture_margin_animated[SIDE_TOP]);
+	Vector2 end_offset = Vector2(texture_margin_animated[SIDE_RIGHT], texture_margin_animated[SIDE_BOTTOM]);
 
-	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_scaled_rid(), start_offset, end_offset, RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, modulate);
+	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_scaled_rid(), start_offset, end_offset, RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, modulate_animated);
+	end_draw(p_canvas_item, p_rect);
 }
 
 void StyleBoxTexture::_bind_methods() {

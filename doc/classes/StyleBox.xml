@@ -45,6 +45,27 @@
 				The [RID] value can either be the result of [method CanvasItem.get_canvas_item] called on an existing [CanvasItem]-derived node, or directly from creating a canvas item in the [RenderingServer] with [method RenderingServer.canvas_item_create].
 			</description>
 		</method>
+		<method name="get_animation_duration">
+			<return type="float" />
+			<param index="0" name="type" type="int" enum="StyleBox.AnimationPhase" />
+			<description>
+				Returns the duration of transition animations in seconds.
+			</description>
+		</method>
+		<method name="get_animation_ease">
+			<return type="int" enum="Tween.EaseType" />
+			<param index="0" name="type" type="int" enum="StyleBox.AnimationPhase" />
+			<description>
+				Returns the ease type of transition animations.
+			</description>
+		</method>
+		<method name="get_animation_transition">
+			<return type="int" enum="Tween.TransitionType" />
+			<param index="0" name="type" type="int" enum="StyleBox.AnimationPhase" />
+			<description>
+				Returns the transition type of transition animations.
+			</description>
+		</method>
 		<method name="get_content_margin" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="margin" type="int" enum="Side" />
@@ -78,6 +99,30 @@
 				Returns the "offset" of a stylebox. This helper function returns a value equivalent to [code]Vector2(style.get_margin(MARGIN_LEFT), style.get_margin(MARGIN_TOP))[/code].
 			</description>
 		</method>
+		<method name="set_animation_duration">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="StyleBox.AnimationPhase" />
+			<param index="1" name="duration" type="float" />
+			<description>
+				Sets the duration of transition animations in seconds.
+			</description>
+		</method>
+		<method name="set_animation_ease">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="StyleBox.AnimationPhase" />
+			<param index="1" name="ease" type="int" enum="Tween.EaseType" />
+			<description>
+				Sets the ease type of transition animations.
+			</description>
+		</method>
+		<method name="set_animation_transition">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="StyleBox.AnimationPhase" />
+			<param index="1" name="transition" type="int" enum="Tween.TransitionType" />
+			<description>
+				Returns the transition type of transition animations.
+			</description>
+		</method>
 		<method name="set_content_margin">
 			<return type="void" />
 			<param index="0" name="margin" type="int" enum="Side" />
@@ -103,6 +148,46 @@
 		</method>
 	</methods>
 	<members>
+		<member name="animation/animate_rect" type="bool" setter="set_animate_rect" getter="get_animate_rect" default="true">
+			Whether or not to animate changes in draw rects.
+		</member>
+		<member name="animation/custom_id" type="StringName" setter="set_custom_id" getter="get_custom_id" default="&amp;&quot;&quot;">
+			Overrides any internally provided animation id or provides one if none exists. This is useful for enabling animated styleboxes in nodes that don't yet support them.
+			All styleboxes that should animate into each other need to share the same id.
+		</member>
+		<member name="animation/duration" type="float" setter="set_animation_duration" getter="get_animation_duration" default="0.0">
+			The duration in seconds of transition animations.
+		</member>
+		<member name="animation/ease" type="int" setter="set_animation_ease" getter="get_animation_ease" enum="Tween.EaseType" default="1">
+			The ease of transition animations.
+		</member>
+		<member name="animation/exiting/duration" type="float" setter="set_animation_duration" getter="get_animation_duration" default="0.0">
+			The duration in seconds of exit animations. Exit animations occur when no styleboxes are drawn for a given animation id. A value of 0 will skip exit animations entirely.
+		</member>
+		<member name="animation/exiting/ease" type="int" setter="set_animation_ease" getter="get_animation_ease" enum="Tween.EaseType" default="1">
+			The ease type of exit animations.
+		</member>
+		<member name="animation/exiting/modulate" type="Color" setter="set_transform_modulate" getter="get_transform_modulate" default="Color(1, 1, 1, 1)">
+			The color the stylebox should modulate to when exiting.
+		</member>
+		<member name="animation/exiting/offset" type="Vector2" setter="set_transform_offset" getter="get_transform_offset" default="Vector2(0, 0)">
+			The offset the stylebox should transform to when exiting.
+		</member>
+		<member name="animation/exiting/pivot" type="Vector2" setter="set_transform_pivot" getter="get_transform_pivot" default="Vector2(0.5, 0.5)">
+			The pivot point for scale and rotation during exit animations. Vector2(0, 0) represents the top-left of the rect, while Vector2(1, 1) represents the bottom-right.
+		</member>
+		<member name="animation/exiting/rotation" type="float" setter="set_transform_rotation" getter="get_transform_rotation" default="0.0">
+			The rotation the stylebox should transform to when exiting.
+		</member>
+		<member name="animation/exiting/scale" type="Vector2" setter="set_transform_scale" getter="get_transform_scale" default="Vector2(1, 1)">
+			The scale the stylebox should transform to when exiting.
+		</member>
+		<member name="animation/exiting/transition" type="int" setter="set_animation_transition" getter="get_animation_transition" enum="Tween.TransitionType" default="1">
+			The transition type of exit animations.
+		</member>
+		<member name="animation/transition" type="int" setter="set_animation_transition" getter="get_animation_transition" enum="Tween.TransitionType" default="1">
+			The transition type of transition animations.
+		</member>
 		<member name="content_margin_bottom" type="float" setter="set_content_margin" getter="get_content_margin" default="-1.0">
 			The bottom margin for the contents of this style box. Increasing this value reduces the space available to the contents from the bottom.
 			If this value is negative, it is ignored and a child-specific margin is used instead. For example, for [StyleBoxFlat], the border thickness (if any) is used instead.
@@ -122,4 +207,12 @@
 			Refer to [member content_margin_bottom] for extra considerations.
 		</member>
 	</members>
+	<constants>
+		<constant name="PHASE_NORMAL" value="0" enum="AnimationPhase">
+			Phase of transitioning between styleboxes.
+		</constant>
+		<constant name="PHASE_EXIT" value="1" enum="AnimationPhase">
+			Phase of transitioning to and from the exit state of a stylebox.
+		</constant>
+	</constants>
 </class>

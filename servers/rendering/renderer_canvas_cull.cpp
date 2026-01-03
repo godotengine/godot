@@ -1763,6 +1763,15 @@ void RendererCanvasCull::canvas_item_add_set_transform(RID p_item, const Transfo
 	tr->xform = p_transform;
 }
 
+void RendererCanvasCull::canvas_item_add_set_modulate(RID p_item, const Color &p_modulate) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	Item::CommandModulate *mod = canvas_item->alloc_command<Item::CommandModulate>();
+	ERR_FAIL_NULL(mod);
+	mod->modulate = p_modulate;
+}
+
 void RendererCanvasCull::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);

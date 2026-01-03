@@ -376,6 +376,14 @@
 				Draws a rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_rect].
 			</description>
 		</method>
+		<method name="canvas_item_add_set_modulate">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="modulate" type="Color" />
+			<description>
+				Sets a [Color] that will be used to modulate subsequent canvas item commands.
+			</description>
+		</method>
 		<method name="canvas_item_add_set_transform">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />

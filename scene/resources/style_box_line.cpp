@@ -92,20 +92,27 @@ float StyleBoxLine::get_grow_begin() const {
 }
 
 void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+	begin_draw(p_canvas_item, p_rect);
 	RenderingServer *vs = RenderingServer::get_singleton();
-	Rect2i r = p_rect;
+	Rect2i r = get_animated_value(SNAME("rect"), p_rect);
+
+	float grow_begin_animated = get_animated_value(SNAME("grow_begin"), grow_begin);
+	float grow_end_animated = get_animated_value(SNAME("grow_end"), grow_end);
+	real_t thickness_animated = get_animated_value(SNAME("thickness"), thickness);
+	Color color_animated = get_animated_value(SNAME("color"), color);
 
 	if (vertical) {
-		r.position.y -= grow_begin;
-		r.size.y += (grow_begin + grow_end);
-		r.size.x = thickness;
+		r.position.y -= grow_begin_animated;
+		r.size.y += (grow_begin_animated + grow_end_animated);
+		r.size.x = thickness_animated;
 	} else {
-		r.position.x -= grow_begin;
-		r.size.x += (grow_begin + grow_end);
-		r.size.y = thickness;
+		r.position.x -= grow_begin_animated;
+		r.size.x += (grow_begin_animated + grow_end_animated);
+		r.size.y = thickness_animated;
 	}
 
-	vs->canvas_item_add_rect(p_canvas_item, r, color);
+	vs->canvas_item_add_rect(p_canvas_item, r, color_animated);
+	end_draw(p_canvas_item, p_rect);
 }
 
 void StyleBoxLine::_bind_methods() {

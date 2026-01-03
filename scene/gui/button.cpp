@@ -212,14 +212,19 @@ void Button::_notification(int p_what) {
 			const Size2 size = get_size();
 
 			Ref<StyleBox> style = _get_current_stylebox();
+			StringName anim_id = SNAME("button");
 			// Draws the stylebox in the current state.
+			StyleBox::begin_animation_group(anim_id);
 			if (!flat) {
 				style->draw(ci, Rect2(Point2(), size));
 			}
+			StyleBox::end_animation_group(anim_id);
 
+			StyleBox::begin_animation_group(SNAME("focus"));
 			if (has_focus(true)) {
 				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
+			StyleBox::end_animation_group(SNAME("focus"));
 
 			Ref<Texture2D> _icon = icon;
 			if (_icon.is_null() && has_theme_icon(SNAME("icon"))) {
@@ -328,6 +333,8 @@ void Button::_notification(int p_what) {
 
 				} break;
 			}
+			font_color = StyleBox::get_animated_value(SNAME("font_color"), font_color, anim_id);
+			icon_modulate_color = StyleBox::get_animated_value(SNAME("icon_color"), icon_modulate_color, anim_id);
 
 			const bool is_clipped = clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || autowrap_mode != TextServer::AUTOWRAP_OFF;
 			const Size2 custom_element_size = drawable_size_remained;
@@ -457,6 +464,7 @@ void Button::_notification(int p_what) {
 
 				Color font_outline_color = theme_cache.font_outline_color;
 				int outline_size = theme_cache.outline_size;
+				text_ofs = StyleBox::get_animated_value(SNAME("text_ofs"), text_ofs, anim_id);
 				if (outline_size > 0 && font_outline_color.a > 0.0f) {
 					text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
 				}
