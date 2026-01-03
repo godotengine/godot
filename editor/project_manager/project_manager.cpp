@@ -1510,6 +1510,7 @@ ProjectManager::ProjectManager() {
 	{
 		local_projects_vb = memnew(VBoxContainer);
 		local_projects_vb->set_name("LocalProjectsTab");
+		local_projects_vb->add_theme_constant_override("separation", 6 * EDSCALE);
 		_add_main_view(MAIN_VIEW_PROJECTS, TTRC("Projects"), Ref<Texture2D>(), local_projects_vb);
 
 		// Project list's top bar.
@@ -1573,6 +1574,7 @@ ProjectManager::ProjectManager() {
 		// Project list and its sidebar.
 		{
 			HBoxContainer *project_list_hbox = memnew(HBoxContainer);
+			project_list_hbox->add_theme_constant_override("separation", 6 * EDSCALE);
 			local_projects_vb->add_child(project_list_hbox);
 			project_list_hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
