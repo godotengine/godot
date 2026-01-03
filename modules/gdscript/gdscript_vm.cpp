@@ -330,6 +330,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_BEGIN_VECTOR2I,                 \
 		&&OPCODE_ITERATE_BEGIN_VECTOR3,                  \
 		&&OPCODE_ITERATE_BEGIN_VECTOR3I,                 \
+		&&OPCODE_ITERATE_BEGIN_RECT2,                    \
+		&&OPCODE_ITERATE_BEGIN_RECT2I,                   \
 		&&OPCODE_ITERATE_BEGIN_STRING,                   \
 		&&OPCODE_ITERATE_BEGIN_DICTIONARY,               \
 		&&OPCODE_ITERATE_BEGIN_ARRAY,                    \
@@ -352,6 +354,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_VECTOR2I,                       \
 		&&OPCODE_ITERATE_VECTOR3,                        \
 		&&OPCODE_ITERATE_VECTOR3I,                       \
+		&&OPCODE_ITERATE_RECT2,                          \
+		&&OPCODE_ITERATE_RECT2I,                         \
 		&&OPCODE_ITERATE_STRING,                         \
 		&&OPCODE_ITERATE_DICTIONARY,                     \
 		&&OPCODE_ITERATE_ARRAY,                          \
@@ -3222,6 +3226,60 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_ITERATE_BEGIN_RECT2) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(container, 1);
+
+				Rect2 *bounds = VariantInternal::get_rect2(container);
+
+				VariantInternal::initialize(counter, Variant::VECTOR2);
+				*VariantInternal::get_vector2(counter) = bounds->position;
+
+				if (bounds->position < bounds->get_end()) {
+					GET_VARIANT_PTR(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::VECTOR2);
+					*VariantInternal::get_vector2(iterator) = bounds->position;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_BEGIN_RECT2I) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(container, 1);
+
+				Rect2i *bounds = VariantInternal::get_rect2i(container);
+
+				VariantInternal::initialize(counter, Variant::VECTOR2I);
+				*VariantInternal::get_vector2i(counter) = bounds->position;
+
+				if (bounds->position < bounds->get_end()) {
+					GET_VARIANT_PTR(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::VECTOR2I);
+					*VariantInternal::get_vector2i(iterator) = bounds->position;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ITERATE_BEGIN_STRING) {
 				CHECK_SPACE(8); // Check space for iterate instruction too.
 
@@ -3594,6 +3652,68 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				} else {
 					GET_VARIANT_PTR(iterator, 2);
 					*VariantInternal::get_int(iterator) = *count;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_RECT2) {
+				CHECK_SPACE(5);
+
+				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(container, 1);
+
+				const Rect2 *bounds = VariantInternal::get_rect2((const Variant *)container);
+				const Vector2 begin = bounds->position;
+				const Vector2 end = bounds->get_end();
+
+				Vector2 *count = VariantInternal::get_vector2(counter);
+
+				++count->x;
+				if (count->x >= end.x) {
+					count->x = begin.x;
+					++count->y;
+				}
+
+				if (count->y >= end.y) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_VARIANT_PTR(iterator, 2);
+					*VariantInternal::get_vector2(iterator) = *count;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_RECT2I) {
+				CHECK_SPACE(5);
+
+				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(container, 1);
+
+				const Rect2i *bounds = VariantInternal::get_rect2i((const Variant *)container);
+				const Vector2i begin = bounds->position;
+				const Vector2i end = bounds->get_end();
+
+				Vector2i *count = VariantInternal::get_vector2i(counter);
+
+				++count->x;
+				if (count->x >= end.x) {
+					count->x = begin.x;
+					++count->y;
+				}
+
+				if (count->y >= end.y) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_VARIANT_PTR(iterator, 2);
+					*VariantInternal::get_vector2i(iterator) = *count;
 
 					ip += 5; // Loop again.
 				}

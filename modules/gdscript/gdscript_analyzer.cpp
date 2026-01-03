@@ -2305,6 +2305,14 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			variable_type.type_source = list_type.type_source;
 			variable_type.kind = GDScriptParser::DataType::BUILTIN;
 			variable_type.builtin_type = Variant::FLOAT;
+		} else if (list_type.builtin_type == Variant::RECT2) {
+			variable_type.type_source = list_type.type_source;
+			variable_type.kind = GDScriptParser::DataType::BUILTIN;
+			variable_type.builtin_type = Variant::VECTOR2;
+		} else if (list_type.builtin_type == Variant::RECT2I) {
+			variable_type.type_source = list_type.type_source;
+			variable_type.kind = GDScriptParser::DataType::BUILTIN;
+			variable_type.builtin_type = Variant::VECTOR2I;
 		} else if (list_type.builtin_type == Variant::OBJECT) {
 			GDScriptParser::DataType return_type;
 			List<GDScriptParser::DataType> par_types;
