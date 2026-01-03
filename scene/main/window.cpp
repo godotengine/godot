@@ -1316,6 +1316,11 @@ void Window::_update_viewport_size() {
 		}
 	}
 
+	if (embedder) {
+		Size2 scale = embedder->stretch_transform.get_scale();
+		final_size = Size2(final_size * scale).ceil();
+	}
+
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
 	_set_size(final_size, final_size_override, allocate);
 
@@ -1328,11 +1333,6 @@ void Window::_update_viewport_size() {
 	notification(NOTIFICATION_WM_SIZE_CHANGED);
 
 	if (embedder) {
-		float scale = MIN(embedder->stretch_transform.get_scale().width, embedder->stretch_transform.get_scale().height);
-		Viewport::set_oversampling_override(scale);
-		Size2 s = Size2(final_size.width * scale, final_size.height * scale).ceil();
-		RS::get_singleton()->viewport_set_global_canvas_transform(get_viewport_rid(), global_canvas_transform * scale * content_scale_factor);
-		RS::get_singleton()->viewport_set_size(get_viewport_rid(), s.width, s.height);
 		embedder->_sub_window_update(this);
 	}
 }
