@@ -38,6 +38,7 @@
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/storage/ltc_lut.gen.h"
 
 #define PRELOAD_PIPELINES_ON_SURFACE_CACHE_CONSTRUCTION 1
 
@@ -103,6 +104,21 @@ void RenderForwardMobile::fill_push_constant_instance_indices(SceneState::Instan
 		if (forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT].last_pass[p_instance->spot_lights[i]] == current_frame) {
 			p_instance_data->spot_lights[ofs] &= mask;
 			p_instance_data->spot_lights[ofs] |= uint32_t(forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT].map[p_instance->spot_lights[i]]) << shift;
+			idx++;
+		}
+	}
+
+	p_instance_data->area_lights[0] = 0xFFFFFFFF;
+	p_instance_data->area_lights[1] = 0xFFFFFFFF;
+
+	idx = 0;
+	for (uint32_t i = 0; i < p_instance->area_light_count; i++) {
+		uint32_t ofs = idx < 4 ? 0 : 1;
+		uint32_t shift = (idx & 0x3) << 3;
+		uint32_t mask = ~(0xFF << shift);
+		if (forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_AREA_LIGHT].last_pass[p_instance->area_lights[i]] == current_frame) {
+			p_instance_data->area_lights[ofs] &= mask;
+			p_instance_data->area_lights[ofs] |= uint32_t(forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_AREA_LIGHT].map[p_instance->area_lights[i]]) << shift;
 			idx++;
 		}
 	}
@@ -1513,6 +1529,16 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 			render_fb = light_storage->shadow_atlas_get_fb(p_shadow_atlas);
 
 			flip_y = true;
+		} else if (light_storage->light_get_type(base) == RS::LIGHT_AREA) {
+			Vector2 area_size = light_storage->light_area_get_size(base);
+			zfar = light_storage->light_get_param(base, RS::LIGHT_PARAM_RANGE) + area_size.length() / 2.0;
+
+			light_transform = light_storage->light_instance_get_shadow_transform(p_light, 0);
+			light_projection = light_storage->light_instance_get_shadow_camera(p_light, 0);
+
+			render_fb = light_storage->shadow_atlas_get_fb(p_shadow_atlas);
+			flip_y = true;
+			using_dual_paraboloid = true;
 		}
 	}
 
@@ -1859,38 +1885,45 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			u.append_id(RendererRD::LightStorage::get_singleton()->get_spot_light_buffer());
 			uniforms.push_back(u);
 		}
-
 		{
 			RD::Uniform u;
 			u.binding = 5;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.append_id(RendererRD::LightStorage::get_singleton()->get_area_light_buffer());
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.binding = 6;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.append_id(RendererRD::LightStorage::get_singleton()->get_reflection_probe_buffer());
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.binding = 6;
+			u.binding = 7;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.append_id(RendererRD::LightStorage::get_singleton()->get_directional_light_buffer());
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.binding = 7;
+			u.binding = 8;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.append_id(scene_state.lightmap_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.binding = 8;
+			u.binding = 9;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.append_id(scene_state.lightmap_capture_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.binding = 9;
+			u.binding = 10;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture();
 			u.append_id(decal_atlas);
@@ -1898,7 +1931,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 		}
 		{
 			RD::Uniform u;
-			u.binding = 10;
+			u.binding = 11;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture_srgb();
 			u.append_id(decal_atlas);
@@ -1906,7 +1939,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 		}
 		{
 			RD::Uniform u;
-			u.binding = 11;
+			u.binding = 12;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.append_id(RendererRD::TextureStorage::get_singleton()->get_decal_buffer());
 			uniforms.push_back(u);
@@ -1915,16 +1948,72 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 12;
+			u.binding = 13;
 			u.append_id(RendererRD::MaterialStorage::get_singleton()->global_shader_uniforms_get_storage_buffer());
 			uniforms.push_back(u);
 		}
 
 		{
 			RD::Uniform u;
-			u.binding = 13;
+			u.binding = 14;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.append_id(RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			uniforms.push_back(u);
+		}
+
+		{ // Lookup-table for Area Lights - Linearly transformed cosines (LTC)
+			if (ltc.lut1_texture.is_null() || ltc.lut2_texture.is_null()) {
+				Ref<Image> lut1_image;
+				int dimensions = LTC_LUT_DIMENSIONS;
+				int lut1_bytes = 4 * dimensions * dimensions;
+				size_t lut1_size = lut1_bytes * 4; // float
+
+				Vector<uint8_t> lut1_data;
+				lut1_data.resize(lut1_size);
+
+				memcpy(lut1_data.ptrw(), LTC_LUT1, lut1_size);
+				lut1_image = Image::create_from_data(dimensions, dimensions, false, Image::FORMAT_RGBAF, lut1_data);
+
+				ltc.lut1_texture = RS::get_singleton()->texture_2d_create(lut1_image);
+
+				int lut2_bytes = 3 * dimensions * dimensions;
+				size_t lut2_size = lut2_bytes * 4;
+
+				Ref<Image> lut2_image;
+				Vector<uint8_t> lut2_data;
+				lut2_data.resize(lut2_size);
+
+				memcpy(lut2_data.ptrw(), LTC_LUT2, lut2_size);
+				lut2_image = Image::create_from_data(dimensions, dimensions, false, Image::FORMAT_RGBF, lut2_data);
+
+				ltc.lut2_texture = RS::get_singleton()->texture_2d_create(lut2_image);
+			}
+		}
+
+		{
+			RD::Uniform u;
+			u.binding = 15;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+			u.append_id(RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			u.append_id(RendererRD::TextureStorage::get_singleton()->texture_get_rd_texture(ltc.lut1_texture));
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.binding = 16;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+			u.append_id(RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			u.append_id(RendererRD::TextureStorage::get_singleton()->texture_get_rd_texture(ltc.lut2_texture));
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.binding = 17;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			RID decal_atlas = RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture();
+			u.append_id(decal_atlas);
 			uniforms.push_back(u);
 		}
 
@@ -2350,6 +2439,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			pipeline_specialization.use_light_soft_shadows = inst->use_soft_shadow;
 			pipeline_specialization.omni_lights = SceneShaderForwardMobile::shader_count_for(inst->omni_light_count);
 			pipeline_specialization.spot_lights = SceneShaderForwardMobile::shader_count_for(inst->spot_light_count);
+			pipeline_specialization.area_lights = SceneShaderForwardMobile::shader_count_for(inst->area_light_count);
 			pipeline_specialization.reflection_probes = SceneShaderForwardMobile::shader_count_for(inst->reflection_probe_count);
 			pipeline_specialization.decals = inst->decals_count > 0;
 
@@ -2640,6 +2730,7 @@ uint32_t RenderForwardMobile::geometry_instance_get_pair_mask() {
 void RenderForwardMobile::GeometryInstanceForwardMobile::pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) {
 	omni_light_count = 0;
 	spot_light_count = 0;
+	area_light_count = 0;
 
 	for (uint32_t i = 0; i < p_light_instance_count; i++) {
 		RS::LightType type = RendererRD::LightStorage::get_singleton()->light_instance_get_type(p_light_instances[i]);
@@ -2654,6 +2745,12 @@ void RenderForwardMobile::GeometryInstanceForwardMobile::pair_light_instances(co
 				if (spot_light_count < (uint32_t)MAX_RDL_CULL) {
 					spot_lights[spot_light_count] = RendererRD::LightStorage::get_singleton()->light_instance_get_forward_id(p_light_instances[i]);
 					spot_light_count++;
+				}
+			} break;
+			case RS::LIGHT_AREA: {
+				if (area_light_count < (uint32_t)MAX_RDL_CULL) {
+					area_lights[area_light_count] = RendererRD::LightStorage::get_singleton()->light_instance_get_forward_id(p_light_instances[i]);
+					area_light_count++;
 				}
 			} break;
 			default:
@@ -3457,6 +3554,13 @@ RenderForwardMobile::RenderForwardMobile() {
 
 RenderForwardMobile::~RenderForwardMobile() {
 	RSG::light_storage->directional_shadow_atlas_set_size(0);
+
+	if (ltc.lut1_texture.is_valid()) {
+		RS::get_singleton()->free_rid(ltc.lut1_texture);
+	}
+	if (ltc.lut2_texture.is_valid()) {
+		RS::get_singleton()->free_rid(ltc.lut2_texture);
+	}
 
 	{
 		scene_state.uniform_buffers.uninit();

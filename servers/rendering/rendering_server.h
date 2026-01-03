@@ -535,7 +535,8 @@ public:
 	enum LightType {
 		LIGHT_DIRECTIONAL,
 		LIGHT_OMNI,
-		LIGHT_SPOT
+		LIGHT_SPOT,
+		LIGHT_AREA,
 	};
 
 	enum LightParam {
@@ -566,6 +567,7 @@ public:
 	virtual RID directional_light_create() = 0;
 	virtual RID omni_light_create() = 0;
 	virtual RID spot_light_create() = 0;
+	virtual RID area_light_create() = 0;
 
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;
 	virtual void light_set_param(RID p_light, LightParam p_param, float p_value) = 0;
@@ -610,6 +612,10 @@ public:
 	virtual void light_directional_set_shadow_mode(RID p_light, LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 	virtual void light_directional_set_sky_mode(RID p_light, LightDirectionalSkyMode p_mode) = 0;
+
+	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) = 0;
+	virtual void light_area_set_normalize_energy(RID p_light, bool p_enabled) = 0;
+	virtual void light_area_set_texture(RID p_light, RID texture) = 0;
 
 	// Shadow atlas
 
@@ -1152,6 +1158,8 @@ public:
 		VIEWPORT_DEBUG_DRAW_OCCLUDERS,
 		VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
 		VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER,
+		VIEWPORT_DEBUG_DRAW_CLUSTER_AREA_LIGHTS,
+		VIEWPORT_DEBUG_DRAW_AREA_LIGHT_ATLAS,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
@@ -1528,6 +1536,7 @@ public:
 	};
 
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
+	virtual PackedByteArray bake_render_area_light_atlas(const TypedArray<RID> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) = 0;
 
 	/* CANVAS (2D) */
 

@@ -846,11 +846,19 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
 		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 5;
+			u.append_id(p_settings.area_light_buffer);
+			uniforms.push_back(u);
+			copy_uniforms.push_back(u);
+		}
 
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.binding = 5;
+			u.binding = 6;
 			u.append_id(p_settings.directional_light_buffer);
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -859,7 +867,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 6;
+			u.binding = 7;
 			u.append_id(p_settings.cluster_builder->get_cluster_buffer());
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -868,7 +876,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 7;
+			u.binding = 8;
 			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -877,7 +885,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 8;
+			u.binding = 9;
 			u.append_id(fog->light_density_map);
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -886,7 +894,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 9;
+			u.binding = 10;
 			u.append_id(fog->fog_map);
 			uniforms.push_back(u);
 		}
@@ -894,7 +902,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 9;
+			u.binding = 10;
 			u.append_id(fog->prev_light_density_map);
 			copy_uniforms.push_back(u);
 		}
@@ -902,7 +910,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 10;
+			u.binding = 11;
 			u.append_id(p_settings.shadow_sampler);
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -911,7 +919,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.binding = 11;
+			u.binding = 12;
 			u.append_id(p_settings.voxel_gi_buffer);
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -920,7 +928,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 12;
+			u.binding = 13;
 			for (int i = 0; i < RendererRD::GI::MAX_VOXEL_GI_INSTANCES; i++) {
 				u.append_id(p_settings.rbgi->voxel_gi_textures[i]);
 			}
@@ -930,7 +938,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 13;
+			u.binding = 14;
 			u.append_id(material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -938,7 +946,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.binding = 14;
+			u.binding = 15;
 			u.append_id(volumetric_fog.params_ubo);
 			uniforms.push_back(u);
 			copy_uniforms.push_back(u);
@@ -946,21 +954,21 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 15;
+			u.binding = 16;
 			u.append_id(fog->prev_light_density_map);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = fog->atomic_type;
-			u.binding = 16;
+			u.binding = 17;
 			u.append_id(fog->density_map);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = fog->atomic_type;
-			u.binding = 17;
+			u.binding = 18;
 			u.append_id(fog->light_map);
 			uniforms.push_back(u);
 		}
@@ -968,7 +976,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = fog->atomic_type;
-			u.binding = 18;
+			u.binding = 19;
 			u.append_id(fog->emissive_map);
 			uniforms.push_back(u);
 		}
@@ -976,11 +984,25 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 19;
+			u.binding = 20;
 			RID radiance_texture = texture_storage->texture_rd_get_default(p_settings.is_using_radiance_octmap_array ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 			RID sky_texture = RendererSceneRenderRD::get_singleton()->environment_get_sky(p_settings.env).is_valid() ? p_settings.sky->sky_get_radiance_texture_rd(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_settings.env)) : RID();
 			u.append_id(sky_texture.is_valid() ? sky_texture : radiance_texture);
 			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 21;
+			if (p_settings.area_light_atlas.is_null()) {
+				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK));
+			} else {
+				u.append_id(p_settings.area_light_atlas);
+			}
+
+			uniforms.push_back(u);
+			copy_uniforms.push_back(u);
 		}
 
 		if (fog->copy_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(fog->copy_uniform_set)) {
@@ -991,16 +1013,16 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		if (!gi_dependent_sets_valid) {
 			fog->gi_dependent_sets.process_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG)), 0);
 
-			RID aux7 = uniforms.write[7].get_id(0);
 			RID aux8 = uniforms.write[8].get_id(0);
+			RID aux9 = uniforms.write[9].get_id(0);
 
-			uniforms.write[7].set_id(0, aux8);
-			uniforms.write[8].set_id(0, aux7);
+			uniforms.write[8].set_id(0, aux9);
+			uniforms.write[9].set_id(0, aux8);
 
 			fog->gi_dependent_sets.process_uniform_set2 = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG)), 0);
 
-			uniforms.remove_at(8);
-			uniforms.write[7].set_id(0, aux7);
+			uniforms.remove_at(9);
+			uniforms.write[8].set_id(0, aux8);
 			fog->gi_dependent_sets.process_uniform_set_density = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY)), 0);
 		}
 	}

@@ -116,6 +116,24 @@ bool LightStorage::free(RID p_rid) {
 
 /* LIGHT */
 
+ForwardIDType LightStorage::_light_type_to_forward_id_type(RS::LightType p_type) {
+	switch (p_type) {
+		case RS::LIGHT_OMNI: {
+			return FORWARD_ID_TYPE_OMNI_LIGHT;
+		} break;
+		case RS::LIGHT_SPOT: {
+			return FORWARD_ID_TYPE_SPOT_LIGHT;
+		} break;
+		case RS::LIGHT_AREA: {
+			return FORWARD_ID_TYPE_AREA_LIGHT;
+		} break;
+		default: {
+			CRASH_NOW_MSG("Supplied LightType has no equivalent forward type.");
+		} break;
+	}
+	return FORWARD_ID_TYPE_OMNI_LIGHT; // unreachable
+}
+
 void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 	Light light;
 	light.type = p_type;
@@ -169,8 +187,17 @@ void LightStorage::spot_light_initialize(RID p_light) {
 	_light_initialize(p_light, RS::LIGHT_SPOT);
 }
 
+RID LightStorage::area_light_allocate() {
+	return light_owner.allocate_rid();
+}
+
+void LightStorage::area_light_initialize(RID p_rid) {
+	_light_initialize(p_rid, RS::LIGHT_AREA);
+}
+
 void LightStorage::light_free(RID p_rid) {
 	light_set_projector(p_rid, RID()); //clear projector
+	light_area_set_texture(p_rid, RID()); //clear area texture
 
 	// delete the texture
 	Light *light = light_owner.get_or_null(p_rid);
@@ -397,6 +424,55 @@ RS::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(R
 	return light->directional_shadow_mode;
 }
 
+void LightStorage::light_area_set_size(RID p_light, const Vector2 &p_size) {
+	Light *light = light_owner.get_or_null(p_light);
+	light->area_size = p_size.maxf(0.0f);
+	// The range in which objects are illuminated change, so the z-range of the shadow map needs to adjust accordingly.
+	light->version++;
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+}
+Vector2 LightStorage::light_area_get_size(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	return light->area_size;
+}
+
+void LightStorage::light_area_set_normalize_energy(RID p_light, bool p_enabled) {
+	Light *light = light_owner.get_or_null(p_light);
+	light->area_normalize_energy = p_enabled;
+}
+bool LightStorage::light_area_get_normalize_energy(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	return light->area_normalize_energy;
+}
+
+void LightStorage::light_area_set_texture(RID p_light, RID p_texture) {
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	if (light->area_texture == p_texture) {
+		return;
+	}
+
+	ERR_FAIL_COND(p_texture.is_valid() && !texture_storage->owns_texture(p_texture));
+
+	if (light->area_texture.is_valid()) {
+		texture_storage->texture_remove_from_area_light_atlas(light->area_texture);
+	}
+
+	light->area_texture = p_texture;
+
+	if (light->area_texture.is_valid()) {
+		texture_storage->texture_add_to_area_light_atlas(light->area_texture);
+	}
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+}
+
+RID LightStorage::light_area_get_texture(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	return light->area_texture;
+}
+
 uint32_t LightStorage::light_get_max_sdfgi_cascade(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL_V(light, 0);
@@ -446,6 +522,12 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 			float r = light->param[RS::LIGHT_PARAM_RANGE];
 			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
 		};
+		case RS::LIGHT_AREA: {
+			float len = light->param[RS::LIGHT_PARAM_RANGE];
+			float width = light->area_size.x / 2.0 + len;
+			float height = light->area_size.y / 2.0 + len;
+			return AABB(-Vector3(width, height, 0), Vector3(width * 2, height * 2, -len));
+		};
 		case RS::LIGHT_DIRECTIONAL: {
 			return AABB();
 		};
@@ -472,7 +554,8 @@ RID LightStorage::light_instance_create(RID p_light) {
 	light_instance->light = p_light;
 	light_instance->light_type = light_get_type(p_light);
 	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
-		light_instance->forward_id = ForwardIDStorage::get_singleton()->allocate_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT);
+		ForwardIDType forward_id_type = _light_type_to_forward_id_type(light_instance->light_type);
+		light_instance->forward_id = ForwardIDStorage::get_singleton()->allocate_forward_id(forward_id_type);
 	}
 
 	return li;
@@ -500,7 +583,8 @@ void LightStorage::light_instance_free(RID p_light) {
 	}
 
 	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
-		ForwardIDStorage::get_singleton()->free_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id);
+		ForwardIDType forward_id_type = _light_type_to_forward_id_type(light_instance->light_type);
+		ForwardIDStorage::get_singleton()->free_forward_id(forward_id_type, light_instance->forward_id);
 	}
 	light_instance_owner.free(p_light);
 }
@@ -560,6 +644,11 @@ void LightStorage::free_light_data() {
 		spot_light_buffer = RID();
 	}
 
+	if (area_light_buffer.is_valid()) {
+		RD::get_singleton()->free_rid(area_light_buffer);
+		area_light_buffer = RID();
+	}
+
 	if (directional_lights != nullptr) {
 		memdelete_arr(directional_lights);
 		directional_lights = nullptr;
@@ -575,6 +664,11 @@ void LightStorage::free_light_data() {
 		spot_lights = nullptr;
 	}
 
+	if (area_lights != nullptr) {
+		memdelete_arr(area_lights);
+		area_lights = nullptr;
+	}
+
 	if (omni_light_sort != nullptr) {
 		memdelete_arr(omni_light_sort);
 		omni_light_sort = nullptr;
@@ -583,6 +677,11 @@ void LightStorage::free_light_data() {
 	if (spot_light_sort != nullptr) {
 		memdelete_arr(spot_light_sort);
 		spot_light_sort = nullptr;
+	}
+
+	if (area_light_sort != nullptr) {
+		memdelete_arr(area_light_sort);
+		area_light_sort = nullptr;
 	}
 }
 
@@ -597,6 +696,10 @@ void LightStorage::set_max_lights(const uint32_t p_max_lights) {
 	spot_light_buffer = RD::get_singleton()->storage_buffer_create(light_buffer_size);
 	spot_light_sort = memnew_arr(LightInstanceDepthSort, max_lights);
 	//defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(max_lights) + "\n";
+
+	area_lights = memnew_arr(LightData, max_lights);
+	area_light_buffer = RD::get_singleton()->storage_buffer_create(light_buffer_size);
+	area_light_sort = memnew_arr(LightInstanceDepthSort, max_lights);
 
 	max_directional_lights = RendererSceneRender::MAX_DIRECTIONAL_LIGHTS;
 	uint32_t directional_light_buffer_size = max_directional_lights * sizeof(DirectionalLightData);
@@ -615,6 +718,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 	omni_light_count = 0;
 	spot_light_count = 0;
+	area_light_count = 0;
 
 	r_directional_light_soft_shadows = false;
 
@@ -806,6 +910,31 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				spot_light_sort[spot_light_count].depth = distance;
 				spot_light_count++;
 			} break;
+			case RS::LIGHT_AREA: {
+				if (area_light_count >= max_lights) {
+					continue;
+				}
+
+				Transform3D light_transform = light_instance->transform;
+				const real_t distance = p_camera_transform.origin.distance_to(light_transform.origin);
+
+				if (light->distance_fade) {
+					const float fade_begin = light->distance_fade_begin;
+					const float fade_length = light->distance_fade_length;
+
+					if (distance > fade_begin) {
+						if (distance > fade_begin + fade_length) {
+							// Out of range, don't draw this light, to improve performance.
+							continue;
+						}
+					}
+				}
+
+				area_light_sort[area_light_count].light_instance = light_instance;
+				area_light_sort[area_light_count].light = light;
+				area_light_sort[area_light_count].depth = distance;
+				area_light_count++;
+			}
 		}
 
 		light_instance->last_pass = RSG::rasterizer->get_frame_number();
@@ -821,20 +950,50 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		sorter.sort(spot_light_sort, spot_light_count);
 	}
 
+	if (area_light_count) {
+		SortArray<LightInstanceDepthSort> sorter;
+		sorter.sort(area_light_sort, area_light_count);
+	}
+
 	bool using_forward_ids = forward_id_storage->uses_forward_ids();
 
-	for (uint32_t i = 0; i < (omni_light_count + spot_light_count); i++) {
-		uint32_t index = (i < omni_light_count) ? i : i - (omni_light_count);
-		LightData &light_data = (i < omni_light_count) ? omni_lights[index] : spot_lights[index];
-		RS::LightType type = (i < omni_light_count) ? RS::LIGHT_OMNI : RS::LIGHT_SPOT;
-		LightInstance *light_instance = (i < omni_light_count) ? omni_light_sort[index].light_instance : spot_light_sort[index].light_instance;
-		Light *light = (i < omni_light_count) ? omni_light_sort[index].light : spot_light_sort[index].light;
-		real_t distance = (i < omni_light_count) ? omni_light_sort[index].depth : spot_light_sort[index].depth;
+	for (uint32_t i = 0; i < (omni_light_count + spot_light_count + area_light_count); i++) {
+		uint32_t index;
+		LightData *light_data_ptr;
+		RS::LightType type;
+		LightInstance *light_instance;
+		Light *light;
+		real_t distance;
 
-		if (using_forward_ids) {
-			forward_id_storage->map_forward_id(type == RS::LIGHT_OMNI ? RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT : RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id, index, light_instance->last_pass);
+		if (i >= omni_light_count + spot_light_count) {
+			index = i - (omni_light_count + spot_light_count);
+			light_data_ptr = &area_lights[index];
+			type = RS::LIGHT_AREA;
+			light_instance = area_light_sort[index].light_instance;
+			light = area_light_sort[index].light;
+			distance = area_light_sort[index].depth;
+		} else if (i >= omni_light_count) {
+			index = i - (omni_light_count);
+			light_data_ptr = &spot_lights[index];
+			type = RS::LIGHT_SPOT;
+			light_instance = spot_light_sort[index].light_instance;
+			light = spot_light_sort[index].light;
+			distance = spot_light_sort[index].depth;
+		} else {
+			index = i;
+			light_data_ptr = &omni_lights[index];
+			type = RS::LIGHT_OMNI;
+			light_instance = omni_light_sort[index].light_instance;
+			light = omni_light_sort[index].light;
+			distance = omni_light_sort[index].depth;
 		}
 
+		if (using_forward_ids) {
+			ForwardIDType forward_id_type = _light_type_to_forward_id_type(light_instance->light_type);
+			forward_id_storage->map_forward_id(forward_id_type, light_instance->forward_id, index, light_instance->last_pass);
+		}
+
+		LightData &light_data = *light_data_ptr;
 		Transform3D light_transform = light_instance->transform;
 
 		float sign = light->negative ? -1 : 1;
@@ -872,6 +1031,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			// Convert from Luminous Power to Luminous Intensity
 			if (type == RS::LIGHT_OMNI) {
 				energy *= 1.0 / (Math::PI * 4.0);
+			} else if (type == RS::LIGHT_AREA) {
+				energy *= 1.0 / (Math::PI * 2.0);
 			} else {
 				// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 				// We make this assumption to keep them easy to control.
@@ -894,9 +1055,11 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 		float radius = MAX(0.001, light->param[RS::LIGHT_PARAM_RANGE]);
 		light_data.inv_radius = 1.0 / radius;
-
+		Vector2 area_size = light->area_size;
 		Vector3 pos = inverse_transform.xform(light_transform.origin);
-
+		if (type == RS::LIGHT_AREA) {
+			pos = inverse_transform.xform(light_transform.xform(Vector3(-area_size.x / 2.0, -area_size.y / 2.0, 0.0)));
+		}
 		light_data.position[0] = pos.x;
 		light_data.position[1] = pos.y;
 		light_data.position[2] = pos.z;
@@ -914,7 +1077,27 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		light_data.inv_spot_attenuation = 1.0f / light->param[RS::LIGHT_PARAM_SPOT_ATTENUATION];
 		float spot_angle = light->param[RS::LIGHT_PARAM_SPOT_ANGLE];
 		light_data.cos_spot_angle = Math::cos(Math::deg_to_rad(spot_angle));
+		if (type == RS::LIGHT_AREA) {
+			Vector3 area_vec_a = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(1, 0, 0))).normalized() * area_size.x;
+			Vector3 area_vec_b = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(0, 1, 0))).normalized() * area_size.y;
 
+			light_data.area_width[0] = area_vec_a.x;
+			light_data.area_width[1] = area_vec_a.y;
+			light_data.area_width[2] = area_vec_a.z;
+
+			light_data.area_height[0] = area_vec_b.x;
+			light_data.area_height[1] = area_vec_b.y;
+			light_data.area_height[2] = area_vec_b.z;
+			light_data.inv_spot_attenuation = 1.0 / (radius + area_size.length() / 2.0); // center range
+
+			if (light->area_normalize_energy) {
+				// normalization to make larger lights output same amount of light as smaller lights with same energy
+				float surface_area = area_size.x * area_size.y;
+				light_data.color[0] /= surface_area;
+				light_data.color[1] /= surface_area;
+				light_data.color[2] /= surface_area;
+			}
+		}
 		light_data.mask = light->cull_mask;
 
 		light_data.atlas_rect[0] = 0;
@@ -945,6 +1128,17 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			light_data.projector_rect[3] = 0;
 		}
 
+		RID area_texture = light->area_texture;
+		if (area_texture.is_valid() && type == RS::LIGHT_AREA) {
+			Rect2 rect = texture_storage->area_light_atlas_get_texture_rect(area_texture);
+			light_data.projector_rect[0] = rect.position.x;
+			light_data.projector_rect[1] = rect.position.y;
+			light_data.projector_rect[2] = rect.size.width;
+			light_data.projector_rect[3] = rect.size.height;
+			Size2i texture_size = (rect.size * texture_storage->area_light_atlas_get_size()).ceil();
+			light_data.cos_spot_angle = MIN(Math::floor(Math::log2(MAX(MIN(texture_size.x, texture_size.y), 1.0f))), texture_storage->area_light_atlas_get_mipmaps()) - 1.0f; // max mipmaps
+		}
+
 		const bool needs_shadow =
 				p_using_shadows &&
 				owns_shadow_atlas(p_shadow_atlas) &&
@@ -969,7 +1163,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 			if (type == RS::LIGHT_SPOT) {
 				light_data.shadow_bias = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0;
-			} else { //omni
+			} else { //omni or area
 				light_data.shadow_bias = light->param[RS::LIGHT_PARAM_SHADOW_BIAS];
 			}
 
@@ -1001,6 +1195,19 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 				light_data.direction[0] = omni_offset.x * float(rect.size.width);
 				light_data.direction[1] = omni_offset.y * float(rect.size.height);
+			} else if (type == RS::LIGHT_AREA) {
+				Transform3D proj = (inverse_transform * light_transform).inverse();
+
+				RendererRD::MaterialStorage::store_transform(proj, light_data.shadow_matrix);
+
+				if (light_data.size > 0.0 && light_data.soft_shadow_scale > 0.0) {
+					// Only enable PCSS-like soft shadows if blurring is enabled.
+					// Otherwise, performance would decrease with no visual difference.
+					light_data.soft_shadow_size = light_data.size;
+				} else {
+					light_data.soft_shadow_size = 0.0;
+					light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->shadows_quality_radius_get(); // Only use quality radius for PCF
+				}
 			} else if (type == RS::LIGHT_SPOT) {
 				Transform3D modelview = (inverse_transform * light_transform).inverse();
 				Projection bias;
@@ -1030,7 +1237,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		light_instance->cull_mask = light->cull_mask;
 
 		// hook for subclass to do further processing.
-		RendererSceneRenderRD::get_singleton()->setup_added_light(type, light_transform, radius, spot_angle);
+		RendererSceneRenderRD::get_singleton()->setup_added_light(type, light_transform, radius, spot_angle, area_size);
 
 		r_positional_light_count++;
 	}
@@ -1042,6 +1249,10 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 	if (spot_light_count) {
 		RD::get_singleton()->buffer_update(spot_light_buffer, 0, sizeof(LightData) * spot_light_count, spot_lights);
+	}
+
+	if (area_light_count) {
+		RD::get_singleton()->buffer_update(area_light_buffer, 0, sizeof(LightData) * area_light_count, area_lights);
 	}
 
 	if (r_directional_light_count) {

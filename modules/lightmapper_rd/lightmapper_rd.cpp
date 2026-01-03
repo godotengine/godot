@@ -110,7 +110,7 @@ void LightmapperRD::add_omni_light(const String &p_name, bool p_static, const Ve
 	light_metadata.push_back(md);
 }
 
-void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) {
+void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_SPOT;
 	l.position[0] = p_position.x;
@@ -137,6 +137,50 @@ void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Ve
 	md.name = p_name;
 	md.type = LIGHT_TYPE_SPOT;
 	light_metadata.push_back(md);
+}
+
+void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur, const Rect2 &p_texture_rect, float p_max_mipmap) {
+	Light l;
+	l.type = LIGHT_TYPE_AREA;
+	l.position[0] = p_position.x;
+	l.position[1] = p_position.y;
+	l.position[2] = p_position.z;
+	l.direction[0] = p_direction.x;
+	l.direction[1] = p_direction.y;
+	l.direction[2] = p_direction.z;
+	l.area_width[0] = p_area_width.x;
+	l.area_width[1] = p_area_width.y;
+	l.area_width[2] = p_area_width.z;
+	l.area_height[0] = p_area_height.x;
+	l.area_height[1] = p_area_height.y;
+	l.area_height[2] = p_area_height.z;
+	l.range = p_range;
+	l.attenuation = p_attenuation;
+	l.color[0] = p_color.r;
+	l.color[1] = p_color.g;
+	l.color[2] = p_color.b;
+	l.energy = p_energy;
+	l.indirect_energy = p_indirect_energy;
+	l.static_bake = p_static;
+	l.size = p_size;
+	l.shadow_blur = p_shadow_blur;
+	l.area_texture_rect[0] = p_texture_rect.position.x;
+	l.area_texture_rect[1] = p_texture_rect.position.y;
+	l.area_texture_rect[2] = p_texture_rect.size.x;
+	l.area_texture_rect[3] = p_texture_rect.size.y;
+	l.cos_spot_angle = p_max_mipmap;
+	lights.push_back(l);
+
+	LightMetadata md;
+	md.name = p_name;
+	md.type = LIGHT_TYPE_AREA;
+	light_metadata.push_back(md);
+}
+
+void LightmapperRD::add_area_light_atlas(const Vector2i &p_size, int p_mipmap_count, const PackedByteArray &p_atlas_data) {
+	area_light_atlas.mipmap_count = p_mipmap_count;
+	area_light_atlas.size = p_size;
+	area_light_atlas.atlas_data = p_atlas_data;
 }
 
 void LightmapperRD::add_probe(const Vector3 &p_position) {
@@ -1117,6 +1161,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		albedo_images[i]->save_png("res://0_albedo_" + itos(i) + ".png");
 		emission_images[i]->save_png("res://0_emission_" + itos(i) + ".png");
 	}
+	if (area_light_atlas.mipmap_count > 1) {
+		int64_t mip0size = 4 * area_light_atlas.size.width * area_light_atlas.size.height;
+		int64_t start = 0;
+		int64_t end = mip0size;
+		for (int m = 0; m < area_light_atlas.mipmap_count; m++) {
+			Ref<Image> img = Image::create_from_data(area_light_atlas.size.width / pow(2, m), area_light_atlas.size.height / pow(2, m), false, Image::FORMAT_RGBA8, area_light_atlas.atlas_data.slice(start, end));
+			img->save_png("res://0_area_light_atlas_m" + itos(m) + ".png");
+			start += mip0size / pow(4, m);
+			end += mip0size / pow(4, m + 1);
+		}
+	}
 #endif
 
 	// Attempt to create a local device by requesting it from rendering server first.
@@ -1165,6 +1220,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID light_accum_tex;
 	RID light_accum_tex2;
 	RID light_environment_tex;
+	RID area_light_atlas_tex;
 	RID shadowmask_tex;
 	RID shadowmask_tex2;
 
@@ -1178,6 +1234,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free_rid(light_accum_tex2);      \
 	rd->free_rid(light_accum_tex);       \
 	rd->free_rid(light_environment_tex); \
+	rd->free_rid(area_light_atlas_tex);  \
 	if (p_bake_shadowmask) {             \
 		rd->free_rid(shadowmask_tex);    \
 		rd->free_rid(shadowmask_tex2);   \
@@ -1266,6 +1323,21 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 #ifdef DEBUG_TEXTURES
 			panorama_tex->save_exr("res://0_panorama.exr", false);
 #endif
+		}
+
+		// area lights
+		{
+			RD::TextureFormat tformat;
+			tformat.width = area_light_atlas.size.width;
+			tformat.height = area_light_atlas.size.height;
+			tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+			tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			tformat.mipmaps = area_light_atlas.mipmap_count;
+
+			// now fill mipmap with data from Vector<Ref<Image>> area_light_atlas.images
+			Vector<Vector<uint8_t>> tdata;
+			tdata.push_back(area_light_atlas.atlas_data);
+			area_light_atlas_tex = rd->texture_create(tformat, RD::TextureView(), tdata);
 		}
 	}
 
@@ -1406,6 +1478,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		sampler = rd->sampler_create(s);
 	}
 
+	RID area_light_atlas_sampler;
+	{
+		RD::SamplerState s;
+		s.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+		s.min_filter = RD::SAMPLER_FILTER_LINEAR;
+		s.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		s.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+
+		area_light_atlas_sampler = rd->sampler_create(s);
+	}
+
 	Vector<RD::Uniform> base_uniforms;
 	{
 		{
@@ -1487,15 +1570,22 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 		{
 			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 11;
-			u.append_id(cluster_indices_buffer);
+			u.append_id(area_light_atlas_sampler);
 			base_uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 12;
+			u.append_id(cluster_indices_buffer);
+			base_uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 13;
 			u.append_id(cluster_aabbs_buffer);
 			base_uniforms.push_back(u);
 		}
@@ -1536,9 +1626,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-#define FREE_RASTER_RESOURCES       \
-	rd->free_rid(rasterize_shader); \
-	rd->free_rid(sampler);          \
+#define FREE_RASTER_RESOURCES               \
+	rd->free_rid(rasterize_shader);         \
+	rd->free_rid(sampler);                  \
+	rd->free_rid(area_light_atlas_sampler); \
 	rd->free_rid(raster_depth_buffer);
 
 	/* Plot direct light */
@@ -1751,6 +1842,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.append_id(shadowmask_tex);
 				uniforms.push_back(u);
 			}
+
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 6;
+				u.append_id(area_light_atlas_tex);
+				uniforms.push_back(u);
+			}
 		}
 
 		RID light_uniform_set = rd->uniform_set_create(uniforms, compute_shader_primary, 1);
@@ -1866,6 +1965,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 5;
 				u.append_id(light_environment_tex);
+				uniforms.push_back(u);
+			}
+
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 6;
+				u.append_id(area_light_atlas_tex);
 				uniforms.push_back(u);
 			}
 		}
@@ -1989,6 +2096,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 2;
 				u.append_id(light_environment_tex);
+				uniforms.push_back(u);
+			}
+
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 6;
+				u.append_id(area_light_atlas_tex);
 				uniforms.push_back(u);
 			}
 		}

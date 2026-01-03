@@ -607,6 +607,10 @@ public:
 	void texture_atlas_mark_dirty_on_texture(RID p_texture);
 	void texture_atlas_remove_texture(RID p_texture);
 
+	/* AREA LIGHT ATLAS API */
+	virtual void texture_add_to_area_light_atlas(RID p_texture) override {}
+	virtual void texture_remove_from_area_light_atlas(RID p_texture) override {}
+
 	/* DECAL API */
 
 	virtual RID decal_allocate() override;
