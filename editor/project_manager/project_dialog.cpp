@@ -961,11 +961,11 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 
 		auto_dir = "";
 		last_custom_target_dir = "";
-		_update_target_auto_dir();
 		if (create_dir->is_pressed()) {
 			// Append `auto_dir` to target path.
 			_create_dir_toggled(true);
 		}
+		_update_target_auto_dir();
 	}
 
 	_validate_path();
