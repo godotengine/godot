@@ -7056,6 +7056,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 									"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
 									"You can enable the OpenGL 3 driver by starting the engine from the\n"
 									"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
+                                    "Keep in mind that using the OpenGL 3 driver without it being supported may cause visual artifacts or other issues.\n"
 									"If you recently updated your video card drivers, try rebooting.",
 									executable_name),
 							"Unable to initialize Vulkan video driver");
