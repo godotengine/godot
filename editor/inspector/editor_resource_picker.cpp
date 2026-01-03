@@ -488,11 +488,14 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			if (edited_resource.is_null()) {
 				return;
 			}
-			Ref<Resource> unique_resource = edited_resource->duplicate();
-			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
+			int selected_nodes_size = EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size();
+			for (int i = 0; i < selected_nodes_size; i++) {
+				Ref<Resource> unique_resource = edited_resource->duplicate();
+				ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 
-			edited_resource = unique_resource;
-			_resource_changed();
+				edited_resource = unique_resource;
+				_resource_changed();
+			}
 		} break;
 
 		case OBJ_MENU_MAKE_UNIQUE_RECURSIVE: {
@@ -1334,63 +1337,75 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 }
 
 void EditorResourcePicker::_duplicate_selected_resources() {
-	for (TreeItem *item = duplicate_resources_tree->get_root(); item; item = item->get_next_in_tree()) {
-		if (!item->is_checked(0)) {
-			continue;
-		}
+	int selected_nodes_size = EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size();
 
-		Array meta = item->get_metadata(0);
-		Ref<Resource> res = meta[0];
-		Ref<Resource> unique_resource = res->duplicate();
-		ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
-		meta[0] = unique_resource;
-
-		if (meta.size() == 1) { // Root.
-			edited_resource = unique_resource;
-			continue;
-		}
-		Array parent_meta = item->get_parent()->get_metadata(0);
-		Ref<Resource> parent = parent_meta[0];
-		Variant::Type property_type = parent->get(meta[1]).get_type();
-
-		if (property_type == Variant::OBJECT) {
-			parent->set(meta[1], unique_resource);
-			continue;
-		}
-
-		Variant property = parent->get(meta[1]);
-
-		if (!parent_meta.has(property)) {
-			property = property.duplicate();
-			parent->set(meta[1], property);
-			parent_meta.push_back(property); // Append Duplicated Type so we can check if it's already been duplicated.
-		}
-
-		if (property_type == Variant::ARRAY) {
-			Array arr = property;
-			arr[meta[2]] = unique_resource;
-			continue;
-		}
-
-		Dictionary dict = property;
-		LocalVector<Variant> keys = dict.get_key_list();
-
-		if (meta[2].get_type() == Variant::OBJECT) {
-			if (keys.has(meta[2])) {
-				//It's a key.
-				dict[unique_resource] = dict[meta[2]];
-				dict.erase(meta[2]);
-				parent_meta.push_back(unique_resource);
-			} else {
-				// If key has been erased, use last appended Resource key instead.
-				Variant key = keys.has(meta[3]) ? meta[3] : parent_meta.back();
-				dict[key] = unique_resource;
+	for (int i = 0; i < selected_nodes_size; i++) {
+		Dictionary parent_meta_table;
+		for (TreeItem *item = duplicate_resources_tree->get_root(); item; item = item->get_next_in_tree()) {
+			if (!item->is_checked(0)) {
+				continue;
 			}
-		} else {
-			dict[meta[2]] = unique_resource;
+			Array meta = item->get_metadata(0).duplicate();
+			Ref<Resource> res = meta[0];
+			Ref<Resource> unique_resource = res->duplicate();
+			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
+			meta[0] = unique_resource;
+
+			if (item->get_child_count() > 0) {
+				parent_meta_table[item] = meta;
+			}
+			if (meta.size() == 1) { // Root.
+				edited_resource = unique_resource;
+				continue;
+			}
+			Variant *parent_meta_ptr = parent_meta_table.getptr(item->get_parent());
+			if (parent_meta_ptr == nullptr) {
+				// If Parent Resource has not been duplicated, it makes SubResource duplication redundant. It also crashes if 'selected_nodes_size' > 1
+				ERR_FAIL_MSG(vformat("In order to make the Resource found in '%s' unique, mark its parent Resource '%s' for duplication as well.", item->get_text(1), item->get_parent()->get_text(0)));
+			}
+			Array parent_meta = *parent_meta_ptr;
+			Ref<Resource> parent = parent_meta[0];
+			Variant::Type property_type = parent->get(meta[1]).get_type();
+
+			if (property_type == Variant::OBJECT) {
+				parent->set(meta[1], unique_resource);
+				continue;
+			}
+
+			Variant property = parent->get(meta[1]);
+
+			if (!parent_meta.has(property)) {
+				property = property.duplicate();
+				parent->set(meta[1], property);
+				parent_meta.push_back(property); // Append Duplicated Type so we can check if it's already been duplicated.
+			}
+
+			if (property_type == Variant::ARRAY) {
+				Array arr = property;
+				arr[meta[2]] = unique_resource;
+				continue;
+			}
+
+			Dictionary dict = property;
+			LocalVector<Variant> keys = dict.get_key_list();
+
+			if (meta[2].get_type() == Variant::OBJECT) {
+				if (keys.has(meta[2])) {
+					//It's a key.
+					dict[unique_resource] = dict[meta[2]];
+					dict.erase(meta[2]);
+					parent_meta.push_back(unique_resource);
+				} else {
+					// If key has been erased, use last appended Resource key instead.
+					Variant key = keys.has(meta[3]) ? meta[3] : parent_meta.back();
+					dict[key] = unique_resource;
+				}
+			} else {
+				dict[meta[2]] = unique_resource;
+			}
 		}
+		_resource_changed();
 	}
-	_resource_changed();
 }
 
 bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
@@ -1400,12 +1415,6 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 	Ref<Resource> parent_resource = _has_parent_resource();
 	EditorNode *en = EditorNode::get_singleton();
 	bool internal_to_scene = en->is_resource_internal_to_scene(edited_resource);
-	List<Node *> node_list = en->get_editor_selection()->get_full_selected_node_list();
-
-	// Todo: Implement a more elegant solution for multiple selected Nodes. This should suffice for the time being.
-	if (node_list.size() > 1 && !p_check_recursive) {
-		return node_list.size() != EditorNode::get_singleton()->get_resource_count(edited_resource) || !internal_to_scene;
-	}
 
 	if (!internal_to_scene) {
 		if (parent_resource.is_valid() && (!EditorNode::get_singleton()->is_resource_internal_to_scene(parent_resource) || en->get_resource_count(parent_resource) > 1)) {
