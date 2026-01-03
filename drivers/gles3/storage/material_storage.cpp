@@ -1501,6 +1501,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["COLOR"] = "color";
 		actions.renames["ALPHA"] = "alpha";
 		actions.renames["EYEDIR"] = "cube_normal";
+		actions.renames["ORIENTATION"] = "orientation";
 		actions.renames["POSITION"] = "position";
 		actions.renames["SKY_COORDS"] = "panorama_coords";
 		actions.renames["SCREEN_UV"] = "uv";

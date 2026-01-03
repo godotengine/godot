@@ -102,8 +102,7 @@ layout(std140) uniform MaterialUniforms{ //ubo:3
 #define AT_QUARTER_RES_PASS false
 #endif
 
-// mat4 is a waste of space, but we don't have an easy way to set a mat3 uniform for now
-uniform mat4 orientation;
+uniform mat3 orientation;
 uniform vec4 projection;
 uniform vec3 position;
 uniform float time;

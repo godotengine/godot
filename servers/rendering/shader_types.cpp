@@ -456,6 +456,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SKY].functions["constants"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["constants"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["constants"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["ORIENTATION"] = constt(ShaderLanguage::TYPE_MAT3);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["POSITION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["RADIANCE"] = constt(ShaderLanguage::TYPE_SAMPLERCUBE);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["AT_HALF_RES_PASS"] = constt(ShaderLanguage::TYPE_BOOL);
