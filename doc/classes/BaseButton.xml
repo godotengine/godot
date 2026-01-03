@@ -81,6 +81,9 @@
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" default="false">
 			If [code]true[/code], the button is in toggle mode. Makes the button flip state between pressed and unpressed each time its area is clicked.
 		</member>
+		<member name="touchscreen_only" type="bool" setter="set_touchscreen_only" getter="is_touchscreen_only" default="false">
+			If [code]true[/code], the button will only be visible and respond if a touchscreen is available.
+		</member>
 	</members>
 	<signals>
 		<signal name="button_down">
