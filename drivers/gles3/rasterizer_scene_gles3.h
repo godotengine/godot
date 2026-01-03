@@ -787,8 +787,8 @@ protected:
 		RID shader_default_version;
 		RID default_material;
 		RID default_shader;
-		RID fog_material;
-		RID fog_shader;
+		RID clear_color_material;
+		RID clear_color_shader;
 		GLuint screen_triangle = 0;
 		GLuint screen_triangle_array = 0;
 		uint32_t max_directional_lights = 4;
