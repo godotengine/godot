@@ -78,6 +78,7 @@ class SpinBox : public Range {
 	String last_text_value;
 	double custom_arrow_step = 0.0;
 	bool custom_arrow_round = false;
+	int minimum_character_count = -1;
 
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
@@ -102,6 +103,7 @@ class SpinBox : public Range {
 
 	inline void _compute_sizes();
 	inline int _get_widest_button_icon_width();
+	void _adjust_character_count();
 
 	struct ThemeCache {
 		Ref<Texture2D> up_icon;
@@ -171,6 +173,9 @@ public:
 
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+
+	void set_minimum_character_count(int p_count);
+	int get_minimum_character_count() const;
 
 	void set_update_on_text_changed(bool p_enabled);
 	bool get_update_on_text_changed() const;
