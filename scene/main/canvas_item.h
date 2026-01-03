@@ -371,7 +371,9 @@ public:
 	bool is_block_transform_notify_enabled() const;
 
 	Transform2D get_canvas_transform() const;
+#ifndef DISABLE_DEPRECATED
 	Transform2D get_viewport_transform() const;
+#endif // DISABLE_DEPRECATED
 	Rect2 get_viewport_rect() const;
 	RID get_viewport_rid() const;
 	RID get_canvas() const;
