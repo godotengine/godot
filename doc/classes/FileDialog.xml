@@ -4,7 +4,7 @@
 		A dialog for selecting files or directories in the filesystem.
 	</brief_description>
 	<description>
-		[FileDialog] is a preset dialog used to choose files and directories in the filesystem. It supports filter masks. [FileDialog] automatically sets its window title according to the [member file_mode]. If you want to use a custom title, disable this by setting [member mode_overrides_title] to [code]false[/code].
+		[FileDialog] is a preset dialog used to choose files and directories in the filesystem. It supports filter masks. [FileDialog] automatically sets its window title according to the [member file_mode], if [member Window.title] is empty.
 		[b]Note:[/b] [FileDialog] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 	</description>
 	<tutorials>
@@ -252,8 +252,8 @@
 		<member name="layout_toggle_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
 			If [code]true[/code], shows the layout switch buttons (list/thumbnails).
 		</member>
-		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title" default="true">
-			If [code]true[/code], changing the [member file_mode] property will set the window title accordingly (e.g. setting [member file_mode] to [constant FILE_MODE_OPEN_FILE] will change the window title to "Open a File").
+		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title" default="true" deprecated="Title is automatically overridden when empty.">
+			Deprecated property. Has no effect and always equals to [code]true[/code].
 		</member>
 		<member name="option_count" type="int" setter="set_option_count" getter="get_option_count" default="0">
 			The number of additional [OptionButton]s and [CheckBox]es in the dialog.
@@ -273,7 +273,6 @@
 			[b]Note:[/b] This property is ignored by native file dialogs on Android and Linux.
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" overrides="Window" default="Vector2i(640, 360)" />
-		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 		<member name="use_native_dialog" type="bool" setter="set_use_native_dialog" getter="get_use_native_dialog" default="false">
 			If [code]true[/code], and if supported by the current [DisplayServer], OS native dialog will be used instead of custom one.
 			[b]Note:[/b] On Android, it is only supported for Android 10+ devices and when using [constant ACCESS_FILESYSTEM]. For access mode [constant ACCESS_RESOURCES] and [constant ACCESS_USERDATA], the system will fall back to custom FileDialog.

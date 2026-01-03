@@ -496,7 +496,7 @@ AcceptDialog::AcceptDialog() {
 
 	ok_button->connect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_ok_pressed));
 
-	set_title(ETR("Alert!"));
+	set_default_title(ETR("Alert!"));
 }
 
 AcceptDialog::~AcceptDialog() {
@@ -527,7 +527,7 @@ Button *ConfirmationDialog::get_cancel_button() {
 }
 
 ConfirmationDialog::ConfirmationDialog() {
-	set_title(ETR("Please Confirm..."));
+	set_default_title(ETR("Please Confirm..."));
 	set_min_size(Size2(200, 70));
 
 	cancel = add_cancel_button();

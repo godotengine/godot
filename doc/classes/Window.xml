@@ -723,7 +723,7 @@
 			The name of a theme type variation used by this [Window] to look up its own theme items. See [member Control.theme_type_variation] for more details.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
-			The window's title. If the [Window] is native, title styles set in [Theme] will have no effect.
+			The window's title. If the [Window] is native, title styles set in [Theme] will have no effect. If empty, some dialogs may use a default title.
 		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
 			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. The transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
