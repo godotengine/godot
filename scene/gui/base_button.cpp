@@ -289,11 +289,11 @@ void BaseButton::set_pressed(bool p_pressed) {
 		return;
 	}
 
-	if (p_pressed) {
-		_unpress_group();
-		if (button_group.is_valid()) {
-			button_group->emit_signal(SceneStringName(pressed), this);
+	if (button_group.is_valid()) {
+		if (p_pressed) {
+			_unpress_group();
 		}
+		button_group->emit_signal(SceneStringName(pressed), this);
 	}
 	_toggled(status.pressed);
 }
