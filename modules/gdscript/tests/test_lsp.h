@@ -44,10 +44,7 @@
 #include "../language_server/godot_lsp.h"
 
 #include "core/io/dir_access.h"
-#include "core/io/file_access_pack.h"
-#include "core/os/os.h"
-#include "editor/doc/editor_help.h"
-#include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 
 #include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/regex/regex.h"

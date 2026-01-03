@@ -147,6 +147,9 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 	clients.erase(p_client_id);
+	if (clients.size() == 0) {
+		scene_cache.clear();
+	}
 	EditorNode::get_log()->add_message("[LSP] Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 
@@ -269,6 +272,8 @@ void GDScriptLanguageProtocol::poll(int p_limit_usec) {
 		on_client_connected();
 	}
 
+	scene_cache.poll();
+
 	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
 	while (E != clients.end()) {
 		Ref<LSPeer> peer = E->value;
@@ -315,6 +320,7 @@ void GDScriptLanguageProtocol::stop() {
 		peer->connection->disconnect_from_host();
 	}
 
+	scene_cache.clear();
 	server->stop();
 }
 
@@ -446,6 +452,8 @@ void GDScriptLanguageProtocol::lsp_did_open(const Dictionary &p_params) {
 
 	client->managed_files[path] = document;
 	client->parse_script(path);
+
+	scene_cache.request_load(path);
 }
 
 void GDScriptLanguageProtocol::lsp_did_change(const Dictionary &p_params) {
@@ -491,6 +499,8 @@ void GDScriptLanguageProtocol::lsp_did_close(const Dictionary &p_params) {
 
 	/// A close notification requires a previous open notification to be sent.
 	ERR_FAIL_COND_MSG(!was_opened, "LSP: Client is closing file without opening it.");
+
+	scene_cache.unload(path);
 }
 
 void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPositionParams &p_doc_pos, List<const LSP::DocumentSymbol *> &r_list) {
