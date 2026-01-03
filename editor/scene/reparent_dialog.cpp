@@ -34,27 +34,23 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 
-void ReparentDialog::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			connect(SceneStringName(confirmed), callable_mp(this, &ReparentDialog::_reparent));
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			disconnect(SceneStringName(confirmed), callable_mp(this, &ReparentDialog::_reparent));
-		} break;
-	}
-}
-
-void ReparentDialog::_cancel() {
-	hide();
+void ReparentDialog::_node_selected() {
+	get_ok_button()->set_disabled(false);
 }
 
 void ReparentDialog::_reparent() {
-	if (tree->get_selected()) {
-		emit_signal(SNAME("reparent"), tree->get_selected()->get_path(), keep_transform->is_pressed());
-		hide();
-	}
+	ERR_FAIL_COND(!tree->get_selected());
+	emit_signal(SNAME("reparent"), tree->get_selected()->get_path(), keep_transform->is_pressed());
+	hide();
+}
+
+void ReparentDialog::_pre_popup() {
+	tree->get_scene_tree()->deselect_all();
+	get_ok_button()->set_disabled(true);
+}
+
+void ReparentDialog::ok_pressed() {
+	_reparent();
 }
 
 void ReparentDialog::set_current(const HashSet<Node *> &p_selection) {
@@ -63,13 +59,12 @@ void ReparentDialog::set_current(const HashSet<Node *> &p_selection) {
 }
 
 void ReparentDialog::_bind_methods() {
-	ClassDB::bind_method("_cancel", &ReparentDialog::_cancel);
-
 	ADD_SIGNAL(MethodInfo("reparent", PropertyInfo(Variant::NODE_PATH, "path"), PropertyInfo(Variant::BOOL, "keep_global_xform")));
 }
 
 ReparentDialog::ReparentDialog() {
-	set_title(TTR("Reparent Node"));
+	set_title(TTRC("Reparent Node"));
+	set_ok_button_text(TTRC("Reparent"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
@@ -77,13 +72,12 @@ ReparentDialog::ReparentDialog() {
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_update_when_invisible(false);
 	tree->set_show_enabled_subscene(true);
+	tree->get_scene_tree()->connect("item_selected", callable_mp(this, &ReparentDialog::_node_selected));
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ReparentDialog::_reparent));
-	vbc->add_margin_child(TTR("Select new parent:"), tree, true);
+	vbc->add_margin_child(TTRC("Select new parent:"), tree, true);
 
 	keep_transform = memnew(CheckBox);
-	keep_transform->set_text(TTR("Keep Global Transform"));
+	keep_transform->set_text(TTRC("Keep Global Transform"));
 	keep_transform->set_pressed(true);
 	vbc->add_child(keep_transform);
-
-	set_ok_button_text(TTR("Reparent"));
 }
