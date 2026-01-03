@@ -53,6 +53,8 @@
 //uncomment this if you want to see textures from all the process saved
 //#define DEBUG_TEXTURES
 
+static constexpr float BOUNDS_GROW = 0.1f;
+
 void LightmapperRD::add_mesh(const MeshData &p_mesh) {
 	ERR_FAIL_COND(p_mesh.albedo_on_uv2.is_null() || p_mesh.albedo_on_uv2->is_empty());
 	ERR_FAIL_COND(p_mesh.emission_on_uv2.is_null() || p_mesh.emission_on_uv2->is_empty());
@@ -512,7 +514,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		Vector3 pp(p_probe_positions[i].position[0], p_probe_positions[i].position[1], p_probe_positions[i].position[2]);
 		bounds.expand_to(pp);
 	}
-	bounds.grow_by(0.1); //grow a bit to avoid numerical error
+	bounds.grow_by(BOUNDS_GROW); //grow a bit to avoid numerical error
 
 	triangles.sort(); //sort by slice
 	seams.sort();
@@ -1058,7 +1060,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	return BAKE_OK;
 }
 
-LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_denoiser_range, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_bake_shadowmask, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization, float p_supersampling_factor) {
+LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_denoiser_range, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_bake_shadowmask, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization, float p_supersampling_factor, bool p_interior) {
 	int denoiser = GLOBAL_GET("rendering/lightmapping/denoising/denoiser");
 	String oidn_path = EDITOR_GET("filesystem/tools/oidn/oidn_denoise_path");
 
@@ -2329,10 +2331,38 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 
 	if (probe_positions.size() > 0) {
-		probe_values.resize(probe_positions.size() * 9);
+		// 9 colors are stored per probe for spherical harmonics.
+		constexpr int PROBE_COLOR_SIZE = 9;
+		probe_values.resize(probe_positions.size() * PROBE_COLOR_SIZE);
 		Vector<uint8_t> probe_data = rd->buffer_get_data(light_probe_buffer);
 		memcpy(probe_values.ptrw(), probe_data.ptr(), probe_data.size());
 		rd->free_rid(light_probe_buffer);
+
+		if (p_interior) {
+			// If baking lightmaps with Interior enabled, black out probes that are located near the bounds.
+			// This applies to the 8 bounds that are always generated, as well as the probes added by Generate Probes Subdiv
+			// (some of which are located on the edge of the AABB).
+			// This ensures environment lighting doesn't leak out to dynamic objects and make them too bright compared to the lightmap.
+			const Vector3 start = bounds.get_position();
+			const Vector3 end = bounds.get_end();
+
+			for (int i = 0; i < probe_values.size(); i += PROBE_COLOR_SIZE) {
+				constexpr float THRESHOLD = BOUNDS_GROW + CMP_EPSILON;
+				const Vector3 position = Vector3(
+						probe_positions[i / PROBE_COLOR_SIZE].position[0],
+						probe_positions[i / PROBE_COLOR_SIZE].position[1],
+						probe_positions[i / PROBE_COLOR_SIZE].position[2]);
+
+				if (Math::abs(position.x - start.x) <= THRESHOLD || Math::abs(position.x - end.x) <= THRESHOLD ||
+						Math::abs(position.y - start.y) <= THRESHOLD || Math::abs(position.y - end.y) <= THRESHOLD ||
+						Math::abs(position.z - start.z) <= THRESHOLD || Math::abs(position.z - end.z) <= THRESHOLD) {
+					// Black out the probe if it's located near the AABB's edge.
+					for (int j = 0; j < PROBE_COLOR_SIZE; j++) {
+						probe_values.write[i + j] = Color(0, 0, 0);
+					}
+				}
+			}
+		}
 
 #ifdef DEBUG_TEXTURES
 		{
