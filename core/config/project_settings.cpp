@@ -1720,6 +1720,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), 0);
 
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
+	// Prevent window resizing by default when recording a movie, as it can cause unexpected resolution changes
+	// during recording (which are not supported by all formats).
+	GLOBAL_DEF_BASIC("display/window/size/resizable.movie", false);
 	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
 	GLOBAL_DEF("display/window/size/always_on_top", false);
 	GLOBAL_DEF("display/window/size/transparent", false);
