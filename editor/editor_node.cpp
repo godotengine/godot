@@ -4467,7 +4467,10 @@ void EditorNode::set_edited_scene_root(Node *p_scene, bool p_auto_add) {
 
 String EditorNode::get_preview_locale() const {
 	const Ref<TranslationDomain> &main_domain = TranslationServer::get_singleton()->get_main_domain();
-	return main_domain->is_enabled() ? main_domain->get_locale_override() : String();
+	if (main_domain->is_enabled()) {
+		return main_domain->get_locale_override();
+	}
+	return String();
 }
 
 void EditorNode::set_preview_locale(const String &p_locale) {

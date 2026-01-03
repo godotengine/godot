@@ -290,7 +290,10 @@ int MultiplayerSpawner::find_spawnable_scene_index_from_object(const ObjectID &p
 
 const Variant MultiplayerSpawner::get_spawn_argument(const ObjectID &p_id) const {
 	const SpawnInfo *info = tracked_nodes.getptr(p_id);
-	return info ? info->args : Variant();
+	if (info) {
+		return info->args;
+	}
+	return Variant();
 }
 
 Node *MultiplayerSpawner::instantiate_scene(int p_id) {

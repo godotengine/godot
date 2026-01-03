@@ -457,17 +457,26 @@ EditorBuildProfile::BuildOptionCategory EditorBuildProfile::get_build_option_cat
 
 LocalVector<EditorBuildProfile::BuildOption> EditorBuildProfile::get_build_option_dependencies(BuildOption p_build_option) {
 	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, LocalVector<EditorBuildProfile::BuildOption>());
-	return build_option_dependencies.has(p_build_option) ? build_option_dependencies[p_build_option] : LocalVector<EditorBuildProfile::BuildOption>();
+	if (build_option_dependencies.has(p_build_option)) {
+		return LocalVector<EditorBuildProfile::BuildOption>(build_option_dependencies[p_build_option]);
+	}
+	return LocalVector<EditorBuildProfile::BuildOption>();
 }
 
 HashMap<String, LocalVector<Variant>> EditorBuildProfile::get_build_option_settings(BuildOption p_build_option) {
 	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, (HashMap<String, LocalVector<Variant>>()));
-	return build_option_settings.has(p_build_option) ? build_option_settings[p_build_option] : HashMap<String, LocalVector<Variant>>();
+	if (build_option_settings.has(p_build_option)) {
+		return HashMap<String, LocalVector<Variant>>(build_option_settings[p_build_option]);
+	}
+	return HashMap<String, LocalVector<Variant>>();
 }
 
 LocalVector<String> EditorBuildProfile::get_build_option_classes(BuildOption p_build_option) {
 	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, LocalVector<String>());
-	return build_option_classes.has(p_build_option) ? build_option_classes[p_build_option] : LocalVector<String>();
+	if (build_option_classes.has(p_build_option)) {
+		return LocalVector<String>(build_option_classes[p_build_option]);
+	}
+	return LocalVector<String>();
 }
 
 String EditorBuildProfile::get_build_option_category_name(BuildOptionCategory p_build_option_category) {

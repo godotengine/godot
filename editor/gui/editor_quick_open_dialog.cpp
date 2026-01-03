@@ -940,8 +940,11 @@ QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const V
 }
 
 String _get_uid_string(const String &p_filepath) {
-	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_filepath);
-	return id == ResourceUID::INVALID_ID ? p_filepath : ResourceUID::get_singleton()->id_to_text(id);
+	const ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_filepath);
+	if (id == ResourceUID::INVALID_ID) {
+		return p_filepath;
+	}
+	return ResourceUID::get_singleton()->id_to_text(id);
 }
 
 bool QuickOpenResultContainer::is_instant_preview_enabled() const {

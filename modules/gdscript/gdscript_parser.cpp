@@ -4571,7 +4571,10 @@ static StringName _find_narrowest_native_or_global_class(const GDScriptParser::D
 			}
 
 			if (p_type.is_meta_type) {
-				return script.is_valid() ? script->get_class_name() : Script::get_class_static();
+				if (script.is_valid()) {
+					return script->get_class_name();
+				}
+				return Script::get_class_static();
 			}
 			if (script.is_null()) {
 				return p_type.native_type;
