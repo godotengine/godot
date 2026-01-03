@@ -1377,9 +1377,6 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 		ERR_FAIL_INDEX(p_layer, tex->layers);
 	}
 
-#ifdef TOOLS_ENABLED
-	tex->image_cache_2d.unref();
-#endif
 	TextureToRDFormat f;
 	Ref<Image> validated = _validate_texture_format(p_image, f);
 
@@ -1495,11 +1492,6 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL_V(tex, Ref<Image>());
 
-#ifdef TOOLS_ENABLED
-	if (tex->image_cache_2d.is_valid() && !tex->is_render_target) {
-		return tex->image_cache_2d;
-	}
-#endif
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
 	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 	Ref<Image> image;
@@ -1538,12 +1530,6 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	if (tex->format != tex->validated_format) {
 		image->convert(tex->format);
 	}
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && !tex->is_render_target) {
-		tex->image_cache_2d = image;
-	}
-#endif
 
 	return image;
 }
