@@ -36,7 +36,7 @@
 		<method name="_setup_local_to_scene" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Override this method to customize the newly duplicated resource created from [method PackedScene.instantiate], if the original's [member resource_local_to_scene] is set to [code]true[/code].
+				Override this method to customize the newly duplicated resource created from [method PackedScene.instantiate]. This method is automatically called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance, only when the [member resource_local_to_scene] property is enabled for this resource and all its ancestor resources. If the [member resource_local_to_scene] property is not enabled for any of these resources, this method will not be called automatically.
 				[b]Example:[/b] Set a random [code]damage[/code] value to every local resource from an instantiated scene:
 				[codeblock]
 				extends Resource
@@ -140,7 +140,7 @@
 		<method name="setup_local_to_scene" deprecated="This method should only be called internally.">
 			<return type="void" />
 			<description>
-				Calls [method _setup_local_to_scene]. If [member resource_local_to_scene] is set to [code]true[/code], this method is automatically called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance.
+				Calls [method _setup_local_to_scene]. This method is automatically called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance, only when the [member resource_local_to_scene] property is enabled for this resource and all its ancestor resources. If the [member resource_local_to_scene] property is not enabled for any of these resources, this method will not be called automatically, and calling this method manually may not work.
 			</description>
 		</method>
 		<method name="take_over_path">
