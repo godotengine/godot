@@ -340,6 +340,7 @@ class ScriptEditor : public PanelContainer {
 	ItemList *script_list = nullptr;
 	HSplitContainer *script_split = nullptr;
 	ItemList *members_overview = nullptr;
+	int members_overview_selected_index = -1;
 	LineEdit *filter_scripts = nullptr;
 	LineEdit *filter_methods = nullptr;
 	VBoxContainer *scripts_vbox = nullptr;
@@ -615,6 +616,9 @@ public:
 	void trigger_live_script_reload(const String &p_script_path);
 
 	VSplitContainer *get_left_list_split() { return list_split; }
+
+	void update_members_overview_current(int p_line);
+	void mark_members_overview_dirty();
 
 	void set_live_auto_reload_running_scripts(bool p_enabled);
 
