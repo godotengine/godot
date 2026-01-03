@@ -158,12 +158,20 @@ bool AudioStreamPlayer::is_autoplay_enabled() const {
 	return internal->autoplay;
 }
 
-void AudioStreamPlayer::set_mix_target(MixTarget p_target) {
-	mix_target = p_target;
+void AudioStreamPlayer::set_output_channels(BitField<AudioStreamPlayer::ChannelFlags> p_channels) {
+	output_channels = p_channels;
 }
 
-AudioStreamPlayer::MixTarget AudioStreamPlayer::get_mix_target() const {
-	return mix_target;
+BitField<AudioStreamPlayer::ChannelFlags> AudioStreamPlayer::get_output_channels() const {
+	return output_channels;
+}
+
+void AudioStreamPlayer::set_downmix(bool p_enable) {
+	downmix = p_enable;
+}
+
+bool AudioStreamPlayer::is_downmix_enabled() const {
+	return downmix;
 }
 
 void AudioStreamPlayer::_set_playing(bool p_enable) {
@@ -189,29 +197,76 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 	}
 
 	float volume_linear = Math::db_to_linear(internal->volume_db);
+	const int speaker_mode = AudioServer::get_singleton()->get_speaker_mode();
 
-	// Set the volume vector up according to the speaker mode and mix target.
-	// TODO do we need to scale the volume down when we output to more channels?
-	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
-		volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
-	} else {
-		switch (mix_target) {
-			case MIX_TARGET_STEREO: {
-				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
-			} break;
-			case MIX_TARGET_SURROUND: {
-				// TODO Make sure this is right.
-				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
-				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
-				volume_vector.write[2] = AudioFrame(volume_linear, volume_linear);
-				volume_vector.write[3] = AudioFrame(volume_linear, volume_linear);
-			} break;
-			case MIX_TARGET_CENTER: {
-				// TODO Make sure this is right.
-				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
-			} break;
+	float left = output_channels.has_flag(AUDIO_CHANNEL_LEFT) * volume_linear;
+	float right = output_channels.has_flag(AUDIO_CHANNEL_RIGHT) * volume_linear;
+	float center = output_channels.has_flag(AUDIO_CHANNEL_CENTER) * volume_linear;
+	float lfe = output_channels.has_flag(AUDIO_CHANNEL_LFE) * volume_linear;
+	float rear_left = output_channels.has_flag(AUDIO_CHANNEL_REAR_LEFT) * volume_linear;
+	float rear_right = output_channels.has_flag(AUDIO_CHANNEL_REAR_RIGHT) * volume_linear;
+	float side_left = output_channels.has_flag(AUDIO_CHANNEL_SIDE_LEFT) * volume_linear;
+	float side_right = output_channels.has_flag(AUDIO_CHANNEL_SIDE_RIGHT) * volume_linear;
+
+	if (downmix) {
+		//Adjust the channel volumes based on the speaker mode.
+		switch (speaker_mode) {
+			case AudioServer::SPEAKER_MODE_STEREO:
+				left += 0.707 * center + // Center contributes equally to both front channels.
+						0.5 * lfe + // LFE contributes equally to both front channels, and is attenuated to prevent overpowering the mix.
+						0.707 * side_left + // Side contributes partially to the front channel.
+						0.5 * rear_left; // Rear contributes less to the front channel.
+
+				right += 0.707 * center +
+						0.5 * lfe +
+						0.707 * side_right +
+						0.5 * rear_right;
+				break;
+
+			case AudioServer::SPEAKER_SURROUND_31:
+				left += 0.707 * side_left + // Side contributes partially to the front channel.
+						0.5 * rear_left; // Rear contributes less to the front channel.
+
+				right += 0.707 * side_right +
+						0.5 * rear_right;
+				break;
+
+			case AudioServer::SPEAKER_SURROUND_51:
+				left += 0.707 * side_left; // Side contributes partially to the front channel.
+				rear_left += 0.707 * side_left; // Side also contributes to the rear channel.
+
+				right += 0.707 * side_right;
+				rear_right += 0.707 * side_right;
+				break;
+
+			default:
+				break;
 		}
+
+		// Clamp all channels to prevent clipping.
+		left = CLAMP(left, 0.0f, volume_linear);
+		right = CLAMP(right, 0.0f, volume_linear);
+		center = CLAMP(center, 0.0f, volume_linear);
+		lfe = CLAMP(lfe, 0.0f, volume_linear);
+		rear_left = CLAMP(rear_left, 0.0f, volume_linear);
+		rear_right = CLAMP(rear_right, 0.0f, volume_linear);
 	}
+
+	// Set the volume vector up according to the speaker mode.
+	volume_vector.write[0] = AudioFrame(left, right);
+
+	if (speaker_mode >= AudioServer::SPEAKER_SURROUND_31) {
+		volume_vector.write[1] = AudioFrame(center, lfe);
+	}
+
+	if (speaker_mode >= AudioServer::SPEAKER_SURROUND_51) {
+		volume_vector.write[2] = AudioFrame(rear_left, rear_right);
+	}
+
+	if (speaker_mode >= AudioServer::SPEAKER_SURROUND_71) {
+		volume_vector.write[3] = AudioFrame(side_left, side_right);
+	}
+
 	return volume_vector;
 }
 
@@ -261,8 +316,11 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer::set_autoplay);
 	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer::is_autoplay_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_mix_target", "mix_target"), &AudioStreamPlayer::set_mix_target);
-	ClassDB::bind_method(D_METHOD("get_mix_target"), &AudioStreamPlayer::get_mix_target);
+	ClassDB::bind_method(D_METHOD("set_output_channels", "output_channels"), &AudioStreamPlayer::set_output_channels);
+	ClassDB::bind_method(D_METHOD("get_output_channels"), &AudioStreamPlayer::get_output_channels);
+
+	ClassDB::bind_method(D_METHOD("set_downmix", "enable"), &AudioStreamPlayer::set_downmix);
+	ClassDB::bind_method(D_METHOD("is_downmix_enabled"), &AudioStreamPlayer::is_downmix_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_playing", "enable"), &AudioStreamPlayer::_set_playing);
 
@@ -285,16 +343,22 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_channels", PROPERTY_HINT_FLAGS, "Front Left,Front Right,Front Center,Low Frequency,Rear Left,Rear Right,Side Left,Side Right"), "set_output_channels", "get_output_channels");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "downmix", PROPERTY_HINT_NONE, ""), "set_downmix", "is_downmix_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
-	BIND_ENUM_CONSTANT(MIX_TARGET_STEREO);
-	BIND_ENUM_CONSTANT(MIX_TARGET_SURROUND);
-	BIND_ENUM_CONSTANT(MIX_TARGET_CENTER);
+	BIND_BITFIELD_FLAG(AUDIO_CHANNEL_LEFT);
+	BIND_BITFIELD_FLAG(AUDIO_CHANNEL_RIGHT);
+	BIND_BITFIELD_FLAG(AUDIO_CHANNEL_CENTER);
+	BIND_BITFIELD_FLAG(AUDIO_CHANNEL_LFE);
+	BIND_BITFIELD_FLAG(AUDIO_CHANNEL_REAR_LEFT);
+	BIND_BITFIELD_FLAG(AUDIO_CHANNEL_REAR_RIGHT);
+	BIND_BITFIELD_FLAG(AUDIO_CHANNEL_SIDE_LEFT);
+	BIND_BITFIELD_FLAG(AUDIO_CHANNEL_SIDE_RIGHT);
 }
 
 AudioStreamPlayer::AudioStreamPlayer() {
