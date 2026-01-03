@@ -2510,8 +2510,8 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	}
 
 	if (p_func) {
-		// If no `return` statement, then return type is `void`, not `Variant`.
-		if (p_func->body->has_return) {
+		// If no `return` statement and no explicitly `return` declaration, then return type is `void`, not `Variant`.
+		if (p_func->body->has_return || p_func->return_type) {
 			gd_function->return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
 			method_info.return_val = p_func->get_datatype().to_property_info(String());
 		} else {

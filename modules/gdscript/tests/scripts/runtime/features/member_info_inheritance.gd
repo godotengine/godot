@@ -5,6 +5,8 @@
 @abstract class A:
 	@abstract func test_abstract_func_1()
 	@abstract func test_abstract_func_2()
+	@abstract func test_abstract_func_with_return() -> Node
+	@abstract func test_abstract_func_with_return_void() -> void
 	func test_override_func_1(): pass
 	func test_override_func_2(): pass
 
@@ -17,6 +19,8 @@ class B extends A:
 	static func test_static_func_b2(): pass
 	func test_abstract_func_1(): pass
 	func test_abstract_func_2(): pass
+	func test_abstract_func_with_return() -> Node: return null
+	func test_abstract_func_with_return_void(): pass
 	func test_override_func_1(): pass
 	func test_override_func_2(): pass
 	func test_func_b1(): pass
