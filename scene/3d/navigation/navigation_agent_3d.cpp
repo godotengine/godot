@@ -319,9 +319,6 @@ void NavigationAgent3D::_notification(int p_what) {
 					velocity_submitted = false;
 					if (avoidance_enabled) {
 						if (!use_3d_avoidance) {
-							if (keep_y_velocity) {
-								stored_y_velocity = velocity.y;
-							}
 							velocity.y = 0.0;
 						}
 						NavigationServer3D::get_singleton()->agent_set_velocity(agent, velocity);
@@ -776,6 +773,9 @@ void NavigationAgent3D::set_velocity_forced(Vector3 p_velocity) {
 void NavigationAgent3D::set_velocity(const Vector3 p_velocity) {
 	velocity = p_velocity;
 	velocity_submitted = true;
+	if (!use_3d_avoidance && keep_y_velocity) {
+		stored_y_velocity = velocity.y;
+	}
 }
 
 void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
@@ -989,7 +989,9 @@ void NavigationAgent3D::_transition_to_navigation_finished() {
 		NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
 		NavigationServer3D::get_singleton()->agent_set_velocity(agent, Vector3(0.0, 0.0, 0.0));
 		NavigationServer3D::get_singleton()->agent_set_velocity_forced(agent, Vector3(0.0, 0.0, 0.0));
-		stored_y_velocity = 0.0;
+		if (use_3d_avoidance) {
+			stored_y_velocity = 0.0;
+		}
 	}
 
 	emit_signal(SNAME("navigation_finished"));
