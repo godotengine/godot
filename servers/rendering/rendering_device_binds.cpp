@@ -41,7 +41,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	Vector<String> lines = p_text.split("\n");
 
 	bool reading_versions = false;
-	bool stage_found[RD::SHADER_STAGE_MAX] = { false, false, false, false, false };
+	bool stage_found[RD::SHADER_STAGE_MAX] = {};
 	RD::ShaderStage stage = RD::SHADER_STAGE_MAX;
 	static const char *stage_str[RD::SHADER_STAGE_MAX] = {
 		"vertex",
@@ -49,6 +49,11 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		"tesselation_control",
 		"tesselation_evaluation",
 		"compute",
+		"raygen",
+		"any_hit",
+		"closest_hit",
+		"miss",
+		"intersection",
 	};
 	String stage_code[RD::SHADER_STAGE_MAX];
 	int stages_found = 0;
@@ -193,7 +198,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				code = code.replace("VERSION_DEFINES", E.value);
 				String error;
 #ifdef MODULE_GLSLANG_ENABLED
-				Vector<uint8_t> spirv = compile_glslang_shader(RD::ShaderStage(i), ShaderIncludeDB::parse_include_files(code), RD::SHADER_LANGUAGE_VULKAN_VERSION_1_1, RD::SHADER_SPIRV_VERSION_1_3, &error);
+				Vector<uint8_t> spirv = compile_glslang_shader(RD::ShaderStage(i), ShaderIncludeDB::parse_include_files(code), RD::SHADER_LANGUAGE_VULKAN_VERSION_1_1, RD::SHADER_SPIRV_VERSION_1_4, &error);
 				bytecode->set_stage_bytecode(RD::ShaderStage(i), spirv);
 #else
 				error = "Shader compilation is not supported because glslang was not enabled.";
