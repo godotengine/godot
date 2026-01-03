@@ -352,10 +352,12 @@ public:
 		StringName fragment;
 		StringName vertex;
 		StringName light;
+		StringName compose;
 		VaryingFunctionNames() {
 			fragment = "fragment";
 			vertex = "vertex";
 			light = "light";
+			compose = "compose";
 		}
 	};
 

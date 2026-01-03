@@ -2919,6 +2919,12 @@ void fragment_shader(in SceneData scene_data) {
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
 #else
 
+#ifndef FOG_DISABLED
+	//restore fog
+	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+#endif //!FOG_DISABLED
+
+#ifndef COMPOSE_CODE_USED
 	// multiply by albedo
 	diffuse_light *= albedo; // ambient must be multiplied by albedo at the end
 
@@ -2929,11 +2935,6 @@ void fragment_shader(in SceneData scene_data) {
 	// apply metallic
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
-
-#ifndef FOG_DISABLED
-	//restore fog
-	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
-#endif //!FOG_DISABLED
 
 #ifdef MODE_SEPARATE_SPECULAR
 
@@ -2975,6 +2976,42 @@ void fragment_shader(in SceneData scene_data) {
 #endif //PREMUL_ALPHA_USED
 
 #endif //MODE_SEPARATE_SPECULAR
+
+#else //COMPOSE_CODE_USED
+	{
+		// output variables, init to 0 when using compose()
+		vec3 diffuse_color = vec3(0.0);
+		vec3 specular_color = vec3(0.0);
+		// fix the names for compose() code
+		vec3 diffuse_light_highp = diffuse_light;
+		vec3 specular_light_highp = direct_specular_light;
+		// reassign surface properties so that effects of decals, etc. are accessible in compose()
+		vec3 albedo_highp = albedo;
+		float metallic_highp = metallic;
+		float roughness_highp = roughness;
+		float alpha_highp = alpha;
+#ifdef NORMAL_USED
+		vec3 normal_highp = normal;
+#endif
+
+#ifdef FOG_DISABLED
+		vec4 fog = vec4(0.0);
+#else
+		// maintain compatibility with other renderers in compose()
+		fog.a = 1.0 - fog.a;
+		fog.rgb /= max(1e-5, fog.a);
+#endif
+
+#CODE : COMPOSE
+
+#ifdef MODE_SEPARATE_SPECULAR
+		diffuse_buffer = vec4(diffuse_color, sss_strength);
+		specular_buffer = vec4(specular_color, metallic);
+#else
+		frag_color = vec4(diffuse_color + specular_color, alpha_highp);
+#endif
+	}
+#endif //COMPOSE_CODE_USED
 
 #endif //MODE_RENDER_DEPTH
 #ifdef MOTION_VECTORS
