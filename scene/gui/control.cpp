@@ -459,50 +459,56 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+Vector<StringName> Control::get_all_type_variation_names() const {
+	List<StringName> names;
+
+	ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
+
+	// Iterate to find all themes.
+	Control *tmp_control = Object::cast_to<Control>(get_parent());
+	Window *tmp_window = Object::cast_to<Window>(get_parent());
+	while (tmp_control || tmp_window) {
+		// We go up and any non Control/Window will break the chain.
+		if (tmp_control) {
+			if (tmp_control->get_theme().is_valid()) {
+				tmp_control->get_theme()->get_type_variation_list(get_class_name(), &names);
+			}
+			tmp_window = Object::cast_to<Window>(tmp_control->get_parent());
+			tmp_control = Object::cast_to<Control>(tmp_control->get_parent());
+		} else { // Window.
+			if (tmp_window->get_theme().is_valid()) {
+				tmp_window->get_theme()->get_type_variation_list(get_class_name(), &names);
+			}
+			tmp_control = Object::cast_to<Control>(tmp_window->get_parent());
+			tmp_window = Object::cast_to<Window>(tmp_window->get_parent());
+		}
+	}
+	if (get_theme().is_valid()) {
+		get_theme()->get_type_variation_list(get_class_name(), &names);
+	}
+	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+		ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
+	}
+	names.sort_custom<StringName::AlphCompare>();
+
+	Vector<StringName> unique_names;
+	for (const StringName &E : names) {
+		// Skip duplicate values.
+		if (unique_names.has(E)) {
+			continue;
+		}
+		unique_names.append(E);
+	}
+	return unique_names;
+}
+
 void Control::_validate_property(PropertyInfo &p_property) const {
 	// Update theme type variation options.
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "theme_type_variation") {
-		List<StringName> names;
-
-		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
-
-		// Iterate to find all themes.
-		Control *tmp_control = Object::cast_to<Control>(get_parent());
-		Window *tmp_window = Object::cast_to<Window>(get_parent());
-		while (tmp_control || tmp_window) {
-			// We go up and any non Control/Window will break the chain.
-			if (tmp_control) {
-				if (tmp_control->get_theme().is_valid()) {
-					tmp_control->get_theme()->get_type_variation_list(get_class_name(), &names);
-				}
-				tmp_window = Object::cast_to<Window>(tmp_control->get_parent());
-				tmp_control = Object::cast_to<Control>(tmp_control->get_parent());
-			} else { // Window.
-				if (tmp_window->get_theme().is_valid()) {
-					tmp_window->get_theme()->get_type_variation_list(get_class_name(), &names);
-				}
-				tmp_control = Object::cast_to<Control>(tmp_window->get_parent());
-				tmp_window = Object::cast_to<Window>(tmp_window->get_parent());
-			}
-		}
-		if (get_theme().is_valid()) {
-			get_theme()->get_type_variation_list(get_class_name(), &names);
-		}
-		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
-		}
-		names.sort_custom<StringName::AlphCompare>();
-
-		Vector<StringName> unique_names;
+		Vector<StringName> unique_names = get_all_type_variation_names();
 		String hint_string;
-		for (const StringName &E : names) {
-			// Skip duplicate values.
-			if (unique_names.has(E)) {
-				continue;
-			}
-
+		for (const StringName &E : unique_names) {
 			hint_string += String(E) + ",";
-			unique_names.append(E);
 		}
 
 		p_property.hint_string = hint_string;
@@ -3015,6 +3021,7 @@ void Control::set_theme_type_variation(const StringName &p_theme_type) {
 	if (is_inside_tree()) {
 		notification(NOTIFICATION_THEME_CHANGED);
 	}
+	notify_property_list_changed();
 }
 
 StringName Control::get_theme_type_variation() const {

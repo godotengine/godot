@@ -670,6 +670,7 @@ public:
 
 	void set_theme_type_variation(const StringName &p_theme_type);
 	StringName get_theme_type_variation() const;
+	Vector<StringName> get_all_type_variation_names() const;
 
 	void begin_bulk_theme_override();
 	void end_bulk_theme_override();

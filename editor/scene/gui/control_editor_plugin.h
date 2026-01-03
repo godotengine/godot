@@ -30,17 +30,21 @@
 
 #pragma once
 
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
 
 class CheckBox;
 class CheckButton;
+class ConfirmationDialog;
 class EditorSelection;
 class GridContainer;
 class Label;
+class LineEdit;
 class OptionButton;
 class PanelContainer;
 class PopupPanel;
@@ -124,16 +128,47 @@ public:
 	EditorPropertySizeFlags();
 };
 
+class PushOverridesToTypeVariationDialog : public ConfirmationDialog {
+	GDCLASS(PushOverridesToTypeVariationDialog, ConfirmationDialog);
+
+	Control *current_control = nullptr;
+	Vector<Ref<Theme>> candidate_themes;
+
+	LineEdit *name_line_edit = nullptr;
+	OptionButton *theme_option_button = nullptr;
+	EditorValidationPanel *validation_panel = nullptr;
+
+	void _on_theme_selected(int p_index);
+	void _on_name_changed(const String &p_new_text);
+	void _update_validation_panel();
+
+public:
+	void setup(Control *p_control);
+	Ref<Theme> get_target_theme() const;
+	String get_target_type_variation() const;
+	PushOverridesToTypeVariationDialog();
+};
+
 class EditorInspectorPluginControl : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginControl, EditorInspectorPlugin);
 
+	PushOverridesToTypeVariationDialog *create_new_variation_dialog = nullptr;
 	bool inside_control_category = false;
+
+	Ref<Theme> theme;
+	Control *current_control = nullptr;
+	void _on_create_variation_confirmed();
+	void _on_convert_theme_overrides_to_variation(Control *p_control);
+	void _create_variation_from_overrides(Ref<Theme> p_theme, const StringName &p_base_name, const StringName &p_variation_name) const;
+	void _on_create_variation_name_changed(const String &p_new_text);
+	void _update_create_variation_dialog();
 
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_category(Object *p_object, const String &p_category) override;
 	virtual void parse_group(Object *p_object, const String &p_group) override;
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
+	EditorInspectorPluginControl();
 };
 
 // Toolbar controls.

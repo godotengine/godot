@@ -32,17 +32,21 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector/editor_properties.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/theme/theme_db.h"
 
 // Inspector controls.
 
@@ -444,6 +448,133 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	flag_expand->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertySizeFlags::_expand_toggled));
 }
 
+PushOverridesToTypeVariationDialog::PushOverridesToTypeVariationDialog() {
+	set_title(TTRC("Push Overrides to Type Variation"));
+	set_min_size(Size2(256, 64) * EDSCALE);
+
+	GridContainer *gc = memnew(GridContainer);
+	gc->set_columns(2);
+
+	Label *l1 = memnew(Label);
+	l1->set_text("Theme:");
+	gc->add_child(l1);
+
+	theme_option_button = memnew(OptionButton);
+	theme_option_button->connect(SceneStringName(item_selected), callable_mp(this, &PushOverridesToTypeVariationDialog::_on_theme_selected));
+	gc->add_child(theme_option_button);
+
+	Label *l2 = memnew(Label);
+	l2->set_text("Type Variation:");
+	gc->add_child(l2);
+
+	name_line_edit = memnew(LineEdit);
+	name_line_edit->set_select_all_on_focus(true);
+	name_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &PushOverridesToTypeVariationDialog::_on_name_changed));
+	register_text_enter(name_line_edit);
+	gc->add_child(name_line_edit);
+
+	validation_panel = memnew(EditorValidationPanel);
+	validation_panel->add_line(0, TTR("Type Variation name is valid."));
+	validation_panel->add_line(1, TTR("Will create a new Type Variation."));
+	validation_panel->set_update_callback(callable_mp(this, &PushOverridesToTypeVariationDialog::_update_validation_panel));
+	validation_panel->set_accept_button(get_ok_button());
+
+	VBoxContainer *c = memnew(VBoxContainer);
+	c->add_child(gc);
+	c->add_child(validation_panel);
+	add_child(c);
+}
+
+void PushOverridesToTypeVariationDialog::_on_theme_selected(int p_index) {
+	validation_panel->update();
+}
+
+void PushOverridesToTypeVariationDialog::_on_name_changed(const String &p_new_text) {
+	validation_panel->update();
+}
+
+void PushOverridesToTypeVariationDialog::setup(Control *p_control) {
+	current_control = p_control;
+
+	theme_option_button->clear();
+	// Find all of the potential themes.
+	// First, we go up the scene tree and find all of the themes there.
+	Node *found_control = current_control;
+	candidate_themes.clear();
+	bool nearest_found = false;
+	Ref<Texture2D> theme_icon = theme_option_button->get_editor_theme_icon(SNAME("Theme"));
+	while (true) {
+		Control *as_control = Object::cast_to<Control>(found_control);
+		if (as_control == nullptr) {
+			break;
+		}
+
+		if (as_control->get_theme().is_valid()) {
+			String label = as_control->get_theme()->get_path();
+			if (!nearest_found) {
+				nearest_found = true;
+				label += TTRC(" (Nearest)");
+			}
+			theme_option_button->add_icon_item(theme_icon, label);
+			candidate_themes.append(as_control->get_theme());
+		}
+
+		found_control = found_control->get_parent();
+	}
+
+	// Project and default themes.
+	Ref<Theme> project_theme = ThemeDB::get_singleton()->get_project_theme();
+	if (project_theme.is_valid()) {
+		String label = vformat(TTRC("%s (Project)"), project_theme->get_path());
+		theme_option_button->add_icon_item(theme_icon, label);
+		candidate_themes.append(project_theme);
+	}
+
+	name_line_edit->set_text(current_control->get_theme_type_variation());
+	reset_size();
+	popup_centered();
+	name_line_edit->grab_focus();
+
+	validation_panel->update();
+}
+
+Ref<Theme> PushOverridesToTypeVariationDialog::get_target_theme() const {
+	return candidate_themes[theme_option_button->get_selected()];
+}
+
+String PushOverridesToTypeVariationDialog::get_target_type_variation() const {
+	return name_line_edit->get_text();
+}
+
+void PushOverridesToTypeVariationDialog::_update_validation_panel() {
+	const Ref<Theme> theme = get_target_theme();
+	const String type_variation_name = get_target_type_variation();
+
+	if (type_variation_name == StringName()) {
+		validation_panel->set_message(0, TTR("Type Variation name is empty."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(1, "", EditorValidationPanel::MSG_INFO);
+	} else if (!Theme::is_valid_type_name(type_variation_name)) {
+		validation_panel->set_message(0, TTR("Type Variation name is invalid."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(1, "", EditorValidationPanel::MSG_INFO);
+	} else {
+		validation_panel->set_message(0, TTR("Type Variation name is valid."), EditorValidationPanel::MSG_OK);
+
+		if (theme->is_type_variation(type_variation_name, current_control->get_class_name())) {
+			validation_panel->set_message(1, TTR("Will modify an existing Type Variation."), EditorValidationPanel::MSG_OK);
+		} else {
+			validation_panel->set_message(1, TTR("Will create a new Type Variation."), EditorValidationPanel::MSG_OK);
+		}
+	}
+}
+
+EditorInspectorPluginControl::EditorInspectorPluginControl() {
+	create_new_variation_dialog = memnew(PushOverridesToTypeVariationDialog);
+	create_new_variation_dialog->set_title(TTRC("Create Theme Variation"));
+	create_new_variation_dialog->set_min_size(Size2(256, 64) * EDSCALE);
+	EditorNode::get_singleton()->add_child(create_new_variation_dialog);
+	create_new_variation_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorInspectorPluginControl::_on_create_variation_confirmed));
+}
+
 bool EditorInspectorPluginControl::can_handle(Object *p_object) {
 	return Object::cast_to<Control>(p_object) != nullptr;
 }
@@ -458,13 +589,149 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 	}
 
 	Control *control = Object::cast_to<Control>(p_object);
-	if (!control || p_group != "Layout") {
+	if (!control) {
 		return;
 	}
 
-	ControlPositioningWarning *pos_warning = memnew(ControlPositioningWarning);
-	pos_warning->set_control(control);
-	add_custom_control(pos_warning);
+	if (p_group == "Layout") {
+		ControlPositioningWarning *pos_warning = memnew(ControlPositioningWarning);
+		pos_warning->set_control(control);
+		add_custom_control(pos_warning);
+	}
+}
+
+void EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation(Control *p_control) {
+	current_control = p_control;
+	create_new_variation_dialog->setup(current_control);
+}
+
+void EditorInspectorPluginControl::_on_create_variation_confirmed() {
+	Ref<Theme> target_theme = create_new_variation_dialog->get_target_theme();
+	StringName variation_name = create_new_variation_dialog->get_target_type_variation();
+	_create_variation_from_overrides(target_theme, current_control->get_class_name(), variation_name);
+	current_control->notify_property_list_changed();
+}
+
+/// Pushing Theme Overrides to Type Variations.
+void EditorInspectorPluginControl::_create_variation_from_overrides(Ref<Theme> p_theme, const StringName &p_base_name, const StringName &p_variation_name) const {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+
+	ur->create_action(vformat(TTRC("Push Overrides to Type Variation \"%s\""), p_variation_name), UndoRedo::MERGE_DISABLE, *p_theme);
+
+	// If this type variation doesn't already exist on this theme, then add it.
+	if (!p_theme->is_type_variation(p_variation_name, p_base_name)) {
+		ur->add_do_method(*p_theme, "set_type_variation", p_variation_name, p_base_name);
+		ur->add_undo_method(*p_theme, "clear_type_variation", p_variation_name);
+
+		ur->force_fixed_history();
+		ur->add_do_method(current_control, "set_theme_type_variation", p_variation_name);
+
+		ur->force_fixed_history();
+		ur->add_undo_method(current_control, "set_theme_type_variation", "");
+	}
+
+	List<ThemeDB::ThemeItemBind> theme_items;
+	ThemeDB::get_singleton()->get_class_items(p_base_name, &theme_items, true);
+
+	for (const ThemeDB::ThemeItemBind &item : theme_items) {
+		switch (item.data_type) {
+			case Theme::DATA_TYPE_COLOR:
+				if (current_control->has_theme_color_override(item.item_name)) {
+					ur->add_do_method(*p_theme, "set_color", item.item_name, p_variation_name, current_control->get_theme_color(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(current_control, "remove_theme_color_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(current_control, "add_theme_color_override", item.item_name, current_control->get_theme_color(item.item_name));
+					if (p_theme->has_color(item.item_name, p_variation_name)) {
+						ur->add_undo_method(*p_theme, "set_color", item.item_name, p_variation_name, p_theme->get_color(item.item_name, p_variation_name));
+					} else {
+						ur->add_undo_method(*p_theme, "clear_color", item.item_name, p_variation_name);
+					}
+				}
+				break;
+			case Theme::DATA_TYPE_CONSTANT:
+				if (current_control->has_theme_constant_override(item.item_name)) {
+					ur->add_do_method(*p_theme, "set_constant", item.item_name, p_variation_name, current_control->get_theme_constant(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(current_control, "remove_theme_constant_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(current_control, "add_theme_constant_override", item.item_name, current_control->get_theme_constant(item.item_name));
+					if (p_theme->has_constant(item.item_name, p_variation_name)) {
+						ur->add_undo_method(*p_theme, "set_constant", item.item_name, p_variation_name, p_theme->get_constant(item.item_name, p_variation_name));
+					} else {
+						ur->add_undo_method(*p_theme, "clear_constant", item.item_name, p_variation_name);
+					}
+				}
+				break;
+			case Theme::DATA_TYPE_FONT:
+				if (current_control->has_theme_font_override(item.item_name)) {
+					ur->add_do_method(*p_theme, "set_font", item.item_name, p_variation_name, current_control->get_theme_font(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(current_control, "remove_theme_font_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(current_control, "add_theme_font_override", item.item_name, current_control->get_theme_font(item.item_name));
+					if (p_theme->has_font(item.item_name, p_variation_name)) {
+						ur->add_undo_method(*p_theme, "set_font", item.item_name, p_variation_name, p_theme->get_font(item.item_name, p_variation_name));
+					} else {
+						ur->add_undo_method(*p_theme, "clear_font", item.item_name, p_variation_name);
+					}
+				}
+				break;
+			case Theme::DATA_TYPE_FONT_SIZE:
+				if (current_control->has_theme_font_size_override(item.item_name)) {
+					ur->add_do_method(*p_theme, "set_font_size", item.item_name, p_variation_name, current_control->get_theme_font_size(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(current_control, "remove_theme_font_size_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(current_control, "add_theme_font_size_override", item.item_name, current_control->get_theme_font_size(item.item_name));
+					if (p_theme->has_font_size(item.item_name, p_variation_name)) {
+						ur->add_undo_method(*p_theme, "set_font_size", item.item_name, p_variation_name, p_theme->get_font_size(item.item_name, p_variation_name));
+					} else {
+						ur->add_undo_method(*p_theme, "clear_font_size", item.item_name, p_variation_name);
+					}
+				}
+				break;
+			case Theme::DATA_TYPE_ICON:
+				if (current_control->has_theme_icon_override(item.item_name)) {
+					ur->add_do_method(*p_theme, "set_icon", item.item_name, p_variation_name, current_control->get_theme_icon(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(current_control, "remove_theme_icon_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(current_control, "add_theme_icon_override", item.item_name, current_control->get_theme_icon(item.item_name));
+					if (p_theme->has_icon(item.item_name, p_variation_name)) {
+						ur->add_undo_method(*p_theme, "set_icon", item.item_name, p_variation_name, p_theme->get_icon(item.item_name, p_variation_name));
+					} else {
+						ur->add_undo_method(*p_theme, "clear_icon", item.item_name, p_variation_name);
+					}
+				}
+				break;
+			case Theme::DATA_TYPE_STYLEBOX:
+				if (current_control->has_theme_stylebox_override(item.item_name)) {
+					ur->add_do_method(*p_theme, "set_stylebox", item.item_name, p_variation_name, current_control->get_theme_stylebox(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(current_control, "remove_theme_stylebox_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(current_control, "add_theme_stylebox_override", item.item_name, current_control->get_theme_stylebox(item.item_name));
+					if (p_theme->has_stylebox(item.item_name, p_variation_name)) {
+						ur->add_undo_method(*p_theme, "set_stylebox", item.item_name, p_variation_name, p_theme->get_stylebox(item.item_name, p_variation_name));
+					} else {
+						ur->add_undo_method(*p_theme, "clear_stylebox", item.item_name, p_variation_name);
+					}
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	ur->commit_action();
 }
 
 bool EditorInspectorPluginControl::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
@@ -490,6 +757,50 @@ bool EditorInspectorPluginControl::parse_property(Object *p_object, const Varian
 		}
 		prop_editor->setup(options, p_path == "size_flags_vertical");
 		add_property_editor(p_path, prop_editor);
+
+		return true;
+	}
+
+	if (p_path == "theme_type_variation") {
+		EditorPropertyTextEnum *prop_editor = memnew(EditorPropertyTextEnum);
+		PackedStringArray arr;
+		for (const StringName &s : control->get_all_type_variation_names()) {
+			arr.append(s);
+		}
+		prop_editor->setup(arr, arr, true, true);
+		add_property_editor(p_path, prop_editor);
+
+		String hint_text = TTRC("Push Overrides to Type Variation...");
+		String hint_icon = TTRC("Theme");
+		EditorInspectorActionButton *convert_button = memnew(EditorInspectorActionButton(hint_text, hint_icon));
+		convert_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation).bind(control));
+		add_custom_control(convert_button);
+
+		// Confirm that there are themes we could push to.
+		Node *found_control = current_control;
+		Vector<Ref<Theme>> candidate_themes;
+		bool theme_found = false;
+		while (true) {
+			Control *as_control = Object::cast_to<Control>(found_control);
+			if (as_control == nullptr) {
+				break;
+			}
+
+			if (as_control->get_theme().is_valid()) {
+				theme_found = true;
+				break;
+			}
+
+			found_control = found_control->get_parent();
+		}
+
+		// Project and default themes.
+		Ref<Theme> project_theme = ThemeDB::get_singleton()->get_project_theme();
+		if (project_theme.is_valid()) {
+			theme_found = true;
+		}
+
+		convert_button->set_disabled(!theme_found);
 
 		return true;
 	}
