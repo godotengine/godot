@@ -39,6 +39,10 @@
 
 #define ENABLE_SHADER_CACHE 1
 
+#ifdef DEV_ENABLED
+#include "core/config/project_settings.h"
+#endif
+
 void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 	Vector<String> lines = String(p_code).split("\n");
 
@@ -131,8 +135,135 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 	}
 }
 
+typedef enum {
+	Vertex,
+	Fragment,
+	Compute
+} ShaderSection;
+
+struct RDHeader {
+	Vector<String> vertex_lines;
+	Vector<String> fragment_lines;
+	Vector<String> compute_lines;
+
+	Vector<String> vertex_included_files;
+	Vector<String> fragment_included_files;
+	Vector<String> compute_included_files;
+
+	ShaderSection reading = ShaderSection::Vertex;
+};
+
+#ifdef DEV_ENABLED
+
+Error include_file_in_rd_header(String &filename, RDHeader &header_data, int depth = 0) {
+	Ref<FileAccess> f = FileAccess::open(filename, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(!f.is_valid(), ERR_FILE_CANT_OPEN, "Failed to open file " + filename);
+
+	bool is_eof = false;
+	while (!is_eof) {
+		String line = f->get_line();
+		is_eof = f->eof_reached();
+		if (is_eof && line.is_empty()) {
+			// last line and empty, to match glsl_builders.py output
+			break;
+		}
+
+		int idx = line.find("//");
+		if (idx != -1) {
+			line = line.substr(0, idx);
+		}
+
+		if (line.find("#[vertex]") != -1) {
+			header_data.reading = ShaderSection::Vertex;
+			continue;
+		} else if (line.find("#[fragment]") != -1) {
+			header_data.reading = ShaderSection::Fragment;
+			continue;
+		} else if (line.find("#[compute]") != -1) {
+			header_data.reading = ShaderSection::Compute;
+			continue;
+		}
+
+		while (line.find("#include ") != -1) {
+			line = line.replace("#include ", "").strip_edges();
+			String include_line = line.substr(1, line.length() - 2);
+
+			String included_file;
+			if (include_line.begins_with("thirdparty/")) {
+				included_file = Engine::get_singleton()->godot_source_root().path_join(include_line);
+			} else {
+				included_file = filename.get_base_dir().path_join(include_line);
+			}
+
+			if (!header_data.vertex_included_files.has(included_file) && header_data.reading == ShaderSection::Vertex) {
+				header_data.vertex_included_files.push_back(included_file);
+				Error res = include_file_in_rd_header(included_file, header_data, depth + 1);
+				ERR_FAIL_COND_V(res != OK, res);
+			} else if (!header_data.fragment_included_files.has(included_file) && header_data.reading == ShaderSection::Fragment) {
+				header_data.fragment_included_files.push_back(included_file);
+				Error res = include_file_in_rd_header(included_file, header_data, depth + 1);
+				ERR_FAIL_COND_V(res != OK, res);
+			} else if (!header_data.compute_included_files.has(included_file) && header_data.reading == ShaderSection::Compute) {
+				header_data.compute_included_files.push_back(included_file);
+				Error res = include_file_in_rd_header(included_file, header_data, depth + 1);
+				ERR_FAIL_COND_V(res != OK, res);
+			}
+
+			line = f->get_line();
+		}
+
+		if (header_data.reading == ShaderSection::Vertex) {
+			header_data.vertex_lines.push_back(line);
+		} else if (header_data.reading == ShaderSection::Fragment) {
+			header_data.fragment_lines.push_back(line);
+		} else if (header_data.reading == ShaderSection::Compute) {
+			header_data.compute_lines.push_back(line);
+		}
+	}
+
+	return OK;
+}
+
+#endif
+
 void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name) {
 	name = p_name;
+
+#ifdef DEV_ENABLED
+	CharString compute_code, vertex_code, fragment_code;
+	const String &source_root = Engine::get_singleton()->godot_source_root();
+	bool dynamic_load_enabled = !source_root.is_empty();
+	if (dynamic_load_enabled) {
+		// Define a global boolean property using the shader name, which can be enabled / disabled
+		// adhoc.
+		GLOBAL_DEF("rendering/shaders/load_from_file/" + String(p_name), false);
+		bool load_from_file = GLOBAL_GET("rendering/shaders/load_from_file/" + String(p_name));
+		if (load_from_file && strlen(rel_shader_path()) > 0) {
+			String shader_path = source_root.path_join(rel_shader_path());
+
+			RDHeader header_data;
+			Error res = include_file_in_rd_header(shader_path, header_data);
+			if (res == OK) {
+				if (!header_data.compute_lines.is_empty()) {
+					String code = String("\n").join(header_data.compute_lines) + String("\n");
+					compute_code = code.utf8();
+					p_compute_code = compute_code.get_data();
+				} else {
+					String code = String("\n").join(header_data.vertex_lines) + String("\n");
+					vertex_code = code.utf8();
+					p_vertex_code = vertex_code.get_data();
+
+					code = String("\n").join(header_data.fragment_lines) + String("\n");
+					fragment_code = code.utf8();
+					p_fragment_code = fragment_code.get_data();
+				}
+			} else {
+				// If it can't be parsed, print an error and use the default.
+				ERR_PRINT("Error parsing shader file: " + shader_path);
+			}
+		}
+	}
+#endif
 
 	if (p_compute_code) {
 		_add_stage(p_compute_code, STAGE_TYPE_COMPUTE);

@@ -35,4 +35,9 @@ void main() {
 		static const char *_compute_code = nullptr;
 		setup(_vertex_code, _fragment_code, _compute_code, "VertexFragmentShaderRD");
 	}
+
+protected:
+#ifdef DEV_ENABLED
+	const char *rel_shader_path() const override { return "tests/python_build/fixtures/rd_glsl/vertex_fragment.glsl"; }
+#endif
 };

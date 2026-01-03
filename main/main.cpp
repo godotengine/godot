@@ -649,6 +649,7 @@ void Main::print_help(const char *p_binary) {
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n");
 	print_help_option("--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.\n");
+	print_help_option("--source-root", "Specify the path to Godot's source for enabling shader dynamic loading of core shaders.");
 #endif
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	print_help_option("--remote-debug <uri>", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
@@ -1315,6 +1316,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			Engine::singleton->extra_gpu_memory_tracking = true;
 		} else if (arg == "--accurate-breadcrumbs") {
 			Engine::singleton->accurate_breadcrumbs = true;
+		} else if (arg == "--source-root") {
+			if (N) {
+				Engine::singleton->_godot_source_root = N->get();
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing path for source-root argument, aborting.\n");
+				goto error;
+			}
+			// Test the existence of a well-known file, to verify the path is valid.
+			String shader_path = Engine::singleton->_godot_source_root.path_join("SConstruct");
+			if (!FileAccess::exists(shader_path)) {
+				OS::get_singleton()->print("Invalid Godot source root path.");
+				goto error;
+			}
 #endif
 		} else if (arg == "--tablet-driver") {
 			if (N) {
