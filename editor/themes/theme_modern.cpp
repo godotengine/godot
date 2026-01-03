@@ -763,6 +763,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		Ref<StyleBoxFlat> style_tab_selected = p_config.base_style->duplicate();
 		style_tab_selected->set_content_margin_individual(p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 2.1 * EDSCALE, p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 2.1 * EDSCALE);
 		style_tab_selected->set_corner_radius_individual(p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE, 0, 0);
+		style_tab_selected->set_border_width(SIDE_TOP, Math::ceil(EDSCALE));
+		Color tab_highlight = p_config.dark_color_2.lerp(p_config.accent_color, 0.75);
+		style_tab_selected->set_border_color(tab_highlight);
 
 		Ref<StyleBoxFlat> style_tab_focus = style_tab_selected->duplicate();
 		style_tab_focus->set_bg_color(p_config.base_color);
