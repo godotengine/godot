@@ -679,7 +679,7 @@ bool NavigationAgent2D::is_target_reachable() {
 }
 
 bool NavigationAgent2D::_is_target_reachable() const {
-	return target_desired_distance >= _get_final_position().distance_to(target_position);
+	return _is_within_target_distance(_get_final_position());
 }
 
 bool NavigationAgent2D::is_navigation_finished() {
@@ -849,7 +849,7 @@ bool NavigationAgent2D::_is_within_waypoint_distance(const Vector2 &p_origin) co
 }
 
 bool NavigationAgent2D::_is_within_target_distance(const Vector2 &p_origin) const {
-	return p_origin.distance_to(target_position) < target_desired_distance;
+	return p_origin.distance_to(target_position) <= target_desired_distance;
 }
 
 void NavigationAgent2D::_trigger_waypoint_reached() {
