@@ -440,6 +440,10 @@ double Tween::get_total_time() const {
 	return total_time;
 }
 
+int Tween::get_step_count() const {
+	return (int)tweeners.size();
+}
+
 real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
 	if (p_duration == 0) {
 		// Special case to avoid dividing by 0 in equations.
@@ -481,6 +485,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("play"), &Tween::play);
 	ClassDB::bind_method(D_METHOD("kill"), &Tween::kill);
 	ClassDB::bind_method(D_METHOD("get_total_elapsed_time"), &Tween::get_total_time);
+	ClassDB::bind_method(D_METHOD("get_step_count"), &Tween::get_step_count);
 
 	ClassDB::bind_method(D_METHOD("is_running"), &Tween::is_running);
 	ClassDB::bind_method(D_METHOD("is_valid"), &Tween::is_valid);
