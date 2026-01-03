@@ -100,6 +100,7 @@ public:
 	virtual AABB light_get_aabb(RID p_light) const override { return AABB(); }
 	virtual float light_get_param(RID p_light, RS::LightParam p_param) override { return 0.0; }
 	virtual Color light_get_color(RID p_light) override { return Color(); }
+	virtual bool light_is_negative(RID p_light) const override { return false; }
 	virtual bool light_get_reverse_cull_face_mode(RID p_light) const override { return false; }
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override { return RS::LIGHT_BAKE_DISABLED; }
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override { return 0; }
