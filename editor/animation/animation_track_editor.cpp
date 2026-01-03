@@ -1289,61 +1289,63 @@ void AnimationMultiTrackKeyEdit::set_use_fps(bool p_enable) {
 }
 
 void AnimationTimelineEdit::_zoom_changed(double) {
-	double zoom_pivot = 0; // Point on timeline to stay fixed.
-	double zoom_pivot_delta = 0; // Delta seconds from left-most point on timeline to zoom pivot.
+	if (!scroll_zoom_change) {
+		double zoom_pivot = 0; // Point on timeline to stay fixed.
+		double zoom_pivot_delta = 0; // Delta seconds from left-most point on timeline to zoom pivot.
 
-	int timeline_width_pixels = get_size().width - get_buttons_width() - get_name_limit();
-	double timeline_width_seconds = timeline_width_pixels / last_zoom_scale; // Length (in seconds) of visible part of timeline before zoom.
-	double updated_timeline_width_seconds = timeline_width_pixels / get_zoom_scale(); // Length after zoom.
-	double updated_timeline_half_width = updated_timeline_width_seconds / 2.0;
-	bool zooming = updated_timeline_width_seconds < timeline_width_seconds;
+		int timeline_width_pixels = get_size().width - get_buttons_width() - get_name_limit();
+		double timeline_width_seconds = timeline_width_pixels / last_zoom_scale; // Length (in seconds) of visible part of timeline before zoom.
+		double updated_timeline_width_seconds = timeline_width_pixels / get_zoom_scale(); // Length after zoom.
+		double updated_timeline_half_width = updated_timeline_width_seconds / 2.0;
+		bool zooming = updated_timeline_width_seconds < timeline_width_seconds;
 
-	double timeline_left = get_value();
-	double timeline_right = timeline_left + timeline_width_seconds;
-	double timeline_center = timeline_left + timeline_width_seconds / 2.0;
+		double timeline_left = get_value();
+		double timeline_right = timeline_left + timeline_width_seconds;
+		double timeline_center = timeline_left + timeline_width_seconds / 2.0;
 
-	if (zoom_callback_occurred) { // Zooming with scroll wheel will focus on the position of the mouse.
-		double zoom_scroll_origin_norm = (zoom_scroll_origin.x - get_name_limit()) / timeline_width_pixels;
-		zoom_scroll_origin_norm = MAX(zoom_scroll_origin_norm, 0);
-		zoom_pivot = timeline_left + timeline_width_seconds * zoom_scroll_origin_norm;
-		zoom_pivot_delta = updated_timeline_width_seconds * zoom_scroll_origin_norm;
-		zoom_callback_occurred = false;
-	} else { // Zooming with slider will depend on the current play position.
-		// If the play position is not in range, or exactly in the center, zoom in on the center.
-		if (get_play_position() < timeline_left || get_play_position() > timeline_left + timeline_width_seconds || get_play_position() == timeline_center) {
-			zoom_pivot = timeline_center;
-			zoom_pivot_delta = updated_timeline_half_width;
+		if (zoom_callback_occurred) { // Zooming with scroll wheel will focus on the position of the mouse.
+			double zoom_scroll_origin_norm = (zoom_scroll_origin.x - get_name_limit()) / timeline_width_pixels;
+			zoom_scroll_origin_norm = MAX(zoom_scroll_origin_norm, 0);
+			zoom_pivot = timeline_left + timeline_width_seconds * zoom_scroll_origin_norm;
+			zoom_pivot_delta = updated_timeline_width_seconds * zoom_scroll_origin_norm;
+			zoom_callback_occurred = false;
+		} else { // Zooming with slider will depend on the current play position.
+			// If the play position is not in range, or exactly in the center, zoom in on the center.
+			if (get_play_position() < timeline_left || get_play_position() > timeline_left + timeline_width_seconds || get_play_position() == timeline_center) {
+				zoom_pivot = timeline_center;
+				zoom_pivot_delta = updated_timeline_half_width;
+			}
+			// Zoom from right if play position is right of center,
+			// and shrink from right if play position is left of center.
+			else if ((get_play_position() > timeline_center) == zooming) {
+				// If play position crosses to other side of center, center it.
+				bool center_passed = (get_play_position() < timeline_right - updated_timeline_half_width) == zooming;
+				zoom_pivot = center_passed ? get_play_position() : timeline_right;
+				double center_offset = CMP_EPSILON * (zooming ? 1 : -1); // Small offset to prevent crossover.
+				zoom_pivot_delta = center_passed ? updated_timeline_half_width + center_offset : updated_timeline_width_seconds;
+			}
+			// Zoom from left if play position is left of center,
+			// and shrink from left if play position is right of center.
+			else if ((get_play_position() <= timeline_center) == zooming) {
+				// If play position crosses to other side of center, center it.
+				bool center_passed = (get_play_position() > timeline_left + updated_timeline_half_width) == zooming;
+				zoom_pivot = center_passed ? get_play_position() : timeline_left;
+				double center_offset = CMP_EPSILON * (zooming ? -1 : 1); // Small offset to prevent crossover.
+				zoom_pivot_delta = center_passed ? updated_timeline_half_width + center_offset : 0;
+			}
 		}
-		// Zoom from right if play position is right of center,
-		// and shrink from right if play position is left of center.
-		else if ((get_play_position() > timeline_center) == zooming) {
-			// If play position crosses to other side of center, center it.
-			bool center_passed = (get_play_position() < timeline_right - updated_timeline_half_width) == zooming;
-			zoom_pivot = center_passed ? get_play_position() : timeline_right;
-			double center_offset = CMP_EPSILON * (zooming ? 1 : -1); // Small offset to prevent crossover.
-			zoom_pivot_delta = center_passed ? updated_timeline_half_width + center_offset : updated_timeline_width_seconds;
-		}
-		// Zoom from left if play position is left of center,
-		// and shrink from left if play position is right of center.
-		else if ((get_play_position() <= timeline_center) == zooming) {
-			// If play position crosses to other side of center, center it.
-			bool center_passed = (get_play_position() > timeline_left + updated_timeline_half_width) == zooming;
-			zoom_pivot = center_passed ? get_play_position() : timeline_left;
-			double center_offset = CMP_EPSILON * (zooming ? -1 : 1); // Small offset to prevent crossover.
-			zoom_pivot_delta = center_passed ? updated_timeline_half_width + center_offset : 0;
-		}
+
+		double hscroll_pos = zoom_pivot - zoom_pivot_delta;
+		hscroll_pos = CLAMP(hscroll_pos, hscroll->get_min(), hscroll->get_max());
+
+		hscroll->set_value(hscroll_pos);
+		hscroll_on_zoom_buffer = hscroll_pos; // In case of page update.
+		last_zoom_scale = get_zoom_scale();
+
+		queue_redraw();
+		play_position->queue_redraw();
+		emit_signal(SNAME("zoom_changed"));
 	}
-
-	double hscroll_pos = zoom_pivot - zoom_pivot_delta;
-	hscroll_pos = CLAMP(hscroll_pos, hscroll->get_min(), hscroll->get_max());
-
-	hscroll->set_value(hscroll_pos);
-	hscroll_on_zoom_buffer = hscroll_pos; // In case of page update.
-	last_zoom_scale = get_zoom_scale();
-
-	queue_redraw();
-	play_position->queue_redraw();
-	emit_signal(SNAME("zoom_changed"));
 }
 
 float AnimationTimelineEdit::get_zoom_scale() const {
@@ -1572,21 +1574,25 @@ void AnimationTimelineEdit::_notification(int p_what) {
 					}
 				}
 
-				float extra = (zoomw / scale) * 0.5;
+				float extra = animation->get_length() * 0.2;
 
 				time_max += extra;
 				set_min(time_min);
 				set_max(time_max);
-
-				if (zoomw / scale < (time_max - time_min)) {
-					hscroll->show();
-
-				} else {
-					hscroll->hide();
-				}
 			}
 
 			set_page(zoomw / scale);
+
+			if (scroll_zoom_change) {
+				if (hscroll->is_min_handle_being_dragged()) {
+					hscroll->set_value(hscroll->get_start_page_at_drag());
+				} else if (hscroll->is_max_handle_being_dragged()) {
+					hscroll->set_value(hscroll->get_start_page());
+				}
+				hscroll->set_min(get_min());
+				hscroll->set_max(get_max());
+				scroll_zoom_change = false;
+			}
 
 			if (hscroll->is_visible() && hscroll_on_zoom_buffer >= 0) {
 				hscroll->set_value(hscroll_on_zoom_buffer);
@@ -2042,8 +2048,59 @@ bool AnimationTimelineEdit::is_using_fps() const {
 	return use_fps;
 }
 
-void AnimationTimelineEdit::set_hscroll(HScrollBar *p_hscroll) {
+void AnimationTimelineEdit::set_hscroll(HResizableScrollBar *p_hscroll) {
 	hscroll = p_hscroll;
+	hscroll->connect(SNAME("change_zoom"), callable_mp(this, &AnimationTimelineEdit::_zoom_changed_scroll));
+}
+
+void AnimationTimelineEdit::_zoom_changed_scroll() {
+	double page;
+	// calculate new page size
+	if (hscroll->is_min_handle_being_dragged()) {
+		if (hscroll->get_end_page() >= get_max()) {
+			float time_max = animation->get_length();
+			for (int i = 0; i < animation->get_track_count(); i++) {
+				if (animation->track_get_key_count(i) > 0) {
+					float end = animation->track_get_key_time(i, animation->track_get_key_count(i) - 1);
+
+					if (end > time_max) {
+						time_max = end;
+					}
+				}
+			}
+			page = (time_max - hscroll->get_start_page_at_drag()) * 2;
+		} else {
+			page = hscroll->get_end_page() - hscroll->get_start_page_at_drag();
+		}
+	} else {
+		page = hscroll->get_end_page_at_drag() - hscroll->get_start_page();
+	}
+	// calculate zoom value to change in the slider
+	if (page > 0) {
+		int key_range = get_size().width - get_buttons_width() - get_name_limit();
+		double scale = key_range / page;
+		double zoom_value;
+		if (scale > _get_zoom_scale(zoom->get_max())) {
+			zoom_value = zoom->get_max();
+		} else {
+			zoom_value = _scale_to_zoom(scale);
+			scroll_zoom_change = true;
+			zoom->set_value(zoom_value);
+		}
+
+		queue_redraw();
+		play_position->queue_redraw();
+		emit_signal(SNAME("zoom_changed"));
+	}
+}
+
+double AnimationTimelineEdit::_scale_to_zoom(double scale) {
+	float val = scale / 100.0f;
+	if (val >= 1.0f) {
+		return pow(val, 1.0f / 8.0f);
+	} else {
+		return 2.0f - pow(1.0f / val, 1.0f / 8.0f);
+	}
 }
 
 void AnimationTimelineEdit::_track_added(int p_track) {
@@ -8132,7 +8189,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	timeline_vbox->set_custom_minimum_size(Size2(0, 150) * EDSCALE);
 
-	hscroll = memnew(HScrollBar);
+	hscroll = memnew(HResizableScrollBar);
 	hscroll->share(timeline);
 	hscroll->hide();
 	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_update_scroll));
@@ -8297,7 +8354,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	zoom_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	zoom_hb->add_child(zoom_icon);
 	zoom = memnew(HSlider);
-	zoom->set_step(0.01);
+	zoom->set_step(0.000001);
 	zoom->set_min(0.0);
 	zoom->set_max(2.0);
 	zoom->set_value(1.0);
