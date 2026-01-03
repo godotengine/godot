@@ -103,6 +103,9 @@ private:
 
 	void _update_playback_instances();
 
+protected:
+	static void _bind_methods();
+
 public:
 	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
@@ -111,6 +114,7 @@ public:
 	virtual double get_playback_position() const override;
 	virtual void seek(double p_time) override;
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
+	Ref<AudioStreamPlayback> get_playback(int p_index);
 
 	virtual void tag_used_streams() override;
 
