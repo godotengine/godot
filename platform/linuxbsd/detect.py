@@ -139,8 +139,8 @@ def configure(env: "SConsEnvironment"):
             env.Append(LINKFLAGS=["-fuse-ld=%s" % env["linker"]])
 
     if env["use_coverage"]:
-        env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
-        env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
+        env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs", "-fprofile-update=prefer-atomic"])
+        env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs", "-fprofile-update=prefer-atomic"])
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
