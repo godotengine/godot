@@ -50,6 +50,12 @@
 #include "drivers/metal/rendering_context_driver_metal.h"
 #endif
 
+#include "modules/modules_enabled.gen.h" // For Betsy.
+
+#ifdef MODULE_BETSY_ENABLED
+#include "modules/betsy/image_compress_betsy.h"
+#endif
+
 //uncomment this if you want to see textures from all the process saved
 //#define DEBUG_TEXTURES
 
@@ -1184,10 +1190,43 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 
 	{ // create all textures
-
 		Vector<Vector<uint8_t>> albedo_data;
 		Vector<Vector<uint8_t>> emission_data;
+
+#ifdef MODULE_BETSY_ENABLED
+		const bool compress_albedo = rd->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC3_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT);
+		const bool compress_emission = rd->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC6H_UFLOAT_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT);
+
+		BetsyCompressor *betsy = BetsyCompressor::get_singleton();
+#else
+		const bool compress_albedo = false;
+		const bool compress_emission = false;
+#endif
+
+		bool has_signed_emission = false;
+
+#ifdef MODULE_BETSY_ENABLED
+		if (compress_emission) {
+			for (int i = 0; i < atlas_slices; i++) {
+				if (emission_images[i]->detect_signed()) {
+					has_signed_emission = true;
+					break;
+				}
+			}
+		}
+#endif
+
 		for (int i = 0; i < atlas_slices; i++) {
+#ifdef MODULE_BETSY_ENABLED
+			if (compress_albedo) {
+				betsy->compress(BetsyFormat::BETSY_FORMAT_BC3, albedo_images.write[i].ptr());
+			}
+
+			if (compress_emission) {
+				betsy->compress(has_signed_emission ? BetsyFormat::BETSY_FORMAT_BC6_SIGNED : BetsyFormat::BETSY_FORMAT_BC6_UNSIGNED, emission_images.write[i].ptr());
+			}
+#endif
+
 			albedo_data.push_back(albedo_images[i]->get_data());
 			emission_data.push_back(emission_images[i]->get_data());
 		}
@@ -1198,13 +1237,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		tf.array_layers = atlas_slices;
 		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 
+		tf.format = compress_albedo ? RD::DATA_FORMAT_BC3_UNORM_BLOCK : RD::DATA_FORMAT_R8G8B8A8_UNORM;
 		albedo_array_tex = rd->texture_create(tf, RD::TextureView(), albedo_data);
 
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-
+		tf.format = compress_emission ? (has_signed_emission ? RD::DATA_FORMAT_BC6H_SFLOAT_BLOCK : RD::DATA_FORMAT_BC6H_UFLOAT_BLOCK) : RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 		emission_array_tex = rd->texture_create(tf, RD::TextureView(), emission_data);
+
+		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 
 		//this will be rastered to
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
