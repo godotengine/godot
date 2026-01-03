@@ -55,6 +55,8 @@ layout(push_constant, std430) uniform Params {
 	uint pad0;
 
 	vec2 msdf;
+	vec2 msdf_outline;
+	vec2 pad1;
 	vec2 color_texture_pixel_size;
 #ifdef USE_ATTRIBUTES
 	// Particles and meshes

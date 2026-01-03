@@ -385,8 +385,11 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t pad0;
 
 		float msdf[2];
+		float msdf_outline[2];
+		float pad1[2];
 		float color_texture_pixel_size[2];
 	};
+	static_assert(sizeof(PushConstant) == 48, "2D push constant data struct size must be 48 bytes");
 
 	struct PushConstantAttributes {
 		PushConstant base;
@@ -401,6 +404,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			return base;
 		}
 	};
+	static_assert(sizeof(PushConstantAttributes) == 112, "2D push constant attributes data struct size must be 112 bytes");
 
 	// TextureState is used to determine when a new batch is required due to a change of texture state.
 	struct TextureState {
@@ -527,6 +531,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 		float msdf_pix_range = 0.0;
 		float msdf_outline = 0.0;
+		float msdf_rounded_outline = 0.0;
 
 		Item *clip = nullptr;
 
@@ -558,7 +563,11 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			pc.pad0 = 0;
 
 			pc.msdf[0] = msdf_pix_range;
-			pc.msdf[1] = msdf_outline;
+			pc.msdf[1] = 0.0;
+			pc.msdf_outline[0] = msdf_outline;
+			pc.msdf_outline[1] = msdf_rounded_outline;
+			pc.pad1[0] = 0.0;
+			pc.pad1[1] = 0.0;
 			pc.color_texture_pixel_size[0] = tex_info->texpixel_size.x;
 			pc.color_texture_pixel_size[1] = tex_info->texpixel_size.y;
 			return pc;

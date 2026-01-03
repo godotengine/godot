@@ -295,6 +295,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_baseline_offset", "font_rid", "baseline_offset"), &TextServer::font_set_baseline_offset);
 	ClassDB::bind_method(D_METHOD("font_get_baseline_offset", "font_rid"), &TextServer::font_get_baseline_offset);
 
+	ClassDB::bind_method(D_METHOD("font_set_msdf_rounded_outline", "font_rid", "msdf_rounded_outline"), &TextServer::font_set_msdf_rounded_outline);
+	ClassDB::bind_method(D_METHOD("font_get_msdf_rounded_outline", "font_rid"), &TextServer::font_get_msdf_rounded_outline);
+
 	ClassDB::bind_method(D_METHOD("font_set_transform", "font_rid", "transform"), &TextServer::font_set_transform);
 	ClassDB::bind_method(D_METHOD("font_get_transform", "font_rid"), &TextServer::font_get_transform);
 

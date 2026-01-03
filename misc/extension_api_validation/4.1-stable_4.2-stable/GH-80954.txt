@@ -1,5 +1,5 @@
 GH-80954
 --------
-Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 4 to 9.
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 4 to 10.
 
 Added optional arguments. Compatibility method registered.

@@ -1695,6 +1695,37 @@ double TextServerFallback::_font_get_baseline_offset(const RID &p_font_rid) cons
 	}
 }
 
+void TextServerFallback::_font_set_msdf_rounded_outline(const RID &p_font_rid, double p_msdf_rounded_outline) {
+	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		if (fdv->msdf_rounded_outline != p_msdf_rounded_outline) {
+			fdv->msdf_rounded_outline = p_msdf_rounded_outline;
+		}
+	} else {
+		FontFallback *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL(fd);
+
+		MutexLock lock(fd->mutex);
+		if (fd->msdf_rounded_outline != p_msdf_rounded_outline) {
+			_font_clear_cache(fd);
+			fd->msdf_rounded_outline = p_msdf_rounded_outline;
+		}
+	}
+}
+
+double TextServerFallback::_font_get_msdf_rounded_outline(const RID &p_font_rid) const {
+	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		return fdv->msdf_rounded_outline;
+	} else {
+		FontFallback *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL_V(fd, 0.0);
+
+		MutexLock lock(fd->mutex);
+		return fd->msdf_rounded_outline;
+	}
+}
+
 void TextServerFallback::_font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -2956,7 +2987,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					Point2 cpos = p_pos;
 					cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
 					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size, _font_get_msdf_rounded_outline(p_font_rid));
 				} else {
 					Point2 cpos = p_pos;
 					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
@@ -3098,7 +3129,7 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 					Point2 cpos = p_pos;
 					cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
 					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size, _font_get_msdf_rounded_outline(p_font_rid));
 				} else {
 					Point2 cpos = p_pos;
 					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;

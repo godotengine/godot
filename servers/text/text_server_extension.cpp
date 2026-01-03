@@ -131,6 +131,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_baseline_offset, "font_rid", "baseline_offset");
 	GDVIRTUAL_BIND(_font_get_baseline_offset, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_msdf_rounded_outline, "font_rid", "msdf_rounded_outline");
+	GDVIRTUAL_BIND(_font_get_msdf_rounded_outline, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_transform, "font_rid", "transform");
 	GDVIRTUAL_BIND(_font_get_transform, "font_rid");
 
@@ -744,6 +747,16 @@ void TextServerExtension::font_set_baseline_offset(const RID &p_font_rid, double
 double TextServerExtension::font_get_baseline_offset(const RID &p_font_rid) const {
 	double ret = 0.0;
 	GDVIRTUAL_CALL(_font_get_baseline_offset, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_msdf_rounded_outline(const RID &p_font_rid, double p_msdf_rounded_outline) {
+	GDVIRTUAL_CALL(_font_set_msdf_rounded_outline, p_font_rid, p_msdf_rounded_outline);
+}
+
+double TextServerExtension::font_get_msdf_rounded_outline(const RID &p_font_rid) const {
+	double ret = 1.0;
+	GDVIRTUAL_CALL(_font_get_msdf_rounded_outline, p_font_rid, ret);
 	return ret;
 }
 

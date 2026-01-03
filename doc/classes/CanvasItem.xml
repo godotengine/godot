@@ -206,6 +206,7 @@
 			<param index="4" name="outline" type="float" default="0.0" />
 			<param index="5" name="pixel_range" type="float" default="4.0" />
 			<param index="6" name="scale" type="float" default="1.0" />
+			<param index="7" name="msdf_rounded_outline" type="float" default="1.0" />
 			<description>
 				Draws a textured rectangle region of the multichannel signed distance field texture at a given position, optionally modulated by a color. The [param rect] is defined in local space. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
 				If [param outline] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [param outline] radius.

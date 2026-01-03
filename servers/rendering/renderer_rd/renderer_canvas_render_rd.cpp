@@ -2446,10 +2446,11 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					_prepare_batch_texture_info(rect->texture, tex_state, tex_info);
 				}
 
-				if (has_msdf != r_current_batch->use_msdf || rect->px_range != r_current_batch->msdf_pix_range || rect->outline != r_current_batch->msdf_outline) {
+				if (has_msdf != r_current_batch->use_msdf || rect->px_range != r_current_batch->msdf_pix_range || rect->outline != r_current_batch->msdf_outline || rect->msdf_rounded_outline != r_current_batch->msdf_rounded_outline) {
 					r_current_batch = _new_batch(r_batch_broken);
 					r_current_batch->use_msdf = has_msdf;
 					r_current_batch->msdf_pix_range = rect->px_range;
+					r_current_batch->msdf_rounded_outline = rect->msdf_rounded_outline;
 					r_current_batch->msdf_outline = rect->outline;
 				}
 

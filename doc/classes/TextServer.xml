@@ -371,6 +371,13 @@
 				Returns the width of the range around the shape between the minimum and maximum representable signed distance.
 			</description>
 		</method>
+		<method name="font_get_msdf_rounded_outline" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns the MSDF outline rounding factor.
+			</description>
+		</method>
 		<method name="font_get_msdf_size" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
@@ -893,6 +900,14 @@
 			<param index="1" name="msdf_pixel_range" type="int" />
 			<description>
 				Sets the width of the range around the shape between the minimum and maximum representable signed distance.
+			</description>
+		</method>
+		<method name="font_set_msdf_rounded_outline">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="msdf_rounded_outline" type="float" />
+			<description>
+				Sets the MSDF outline rounding factor. [code]0.0[/code] is a sharp outline, while [code]1.0[/code] is a rounded outline. Values between result in a slightly rounded outline.
 			</description>
 		</method>
 		<method name="font_set_msdf_size">
