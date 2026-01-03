@@ -4617,6 +4617,26 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
 				return OK;
 			}
+
+			if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
+				const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(p_symbol);
+				if (autoload.is_singleton) {
+					String scr_path = autoload.path;
+					if (!scr_path.ends_with(".gd")) {
+						// Not a script, try find the script anyway, may have some success.
+						scr_path = scr_path.get_basename() + ".gd";
+					}
+
+					if (FileAccess::exists(scr_path)) {
+						r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
+						r_result.class_name = p_symbol;
+						r_result.script = ResourceLoader::load(scr_path);
+						r_result.script_path = scr_path;
+						r_result.location = 0;
+						return OK;
+					}
+				}
+			}
 		} break;
 		case GDScriptParser::COMPLETION_ANNOTATION: {
 			const String annotation_symbol = "@" + p_symbol;
