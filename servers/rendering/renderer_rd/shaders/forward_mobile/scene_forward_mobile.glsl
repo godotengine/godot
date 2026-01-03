@@ -211,7 +211,7 @@ void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position
 #endif
 		out vec3 r_vertex) {
 
-	r_vertex = p_vertex_in.xyz * p_compressed_aabb_size + p_compressed_aabb_position;
+	r_vertex = (p_compressed_aabb_size.x < 0.0) ? p_vertex_in.xyz : (p_vertex_in.xyz * p_compressed_aabb_size + p_compressed_aabb_position);
 #ifdef NORMAL_USED
 	r_normal = oct_to_vec3(p_normal_in.xy * 2.0 - 1.0);
 #endif

@@ -584,7 +584,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 #endif
 		vec4 uv_scale_input,
 		out vec4 clip_position_output) {
-	highp vec3 vertex = vertex_angle_attrib_input.xyz * compressed_aabb_size_input + compressed_aabb_position_input;
+	highp vec3 vertex = (compressed_aabb_size_input.x < 0.0) ? vertex_angle_attrib_input.xyz : (vertex_angle_attrib_input.xyz * compressed_aabb_size_input + compressed_aabb_position_input);
 
 	highp mat4 model_matrix = world_transform_input;
 #ifdef USE_INSTANCING

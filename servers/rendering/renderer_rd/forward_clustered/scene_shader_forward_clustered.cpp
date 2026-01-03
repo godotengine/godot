@@ -778,6 +778,8 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
+		actions.renames["AABB_POS"] = "instances.data[instance_index].compressed_aabb_position_pad.xyz";
+		actions.renames["AABB_SIZE"] = "abs(instances.data[instance_index].compressed_aabb_size_pad.xyz)";
 
 		actions.renames["NODE_POSITION_WORLD"] = "read_model_matrix[3].xyz";
 		actions.renames["CAMERA_POSITION_WORLD"] = "inv_view_matrix[3].xyz";
