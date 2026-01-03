@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -393,5 +395,15 @@ namespace Godot.SourceGenerators
         public static int StartLine(this Location location)
             => location.SourceTree?.GetLineSpan(location.SourceSpan).StartLinePosition.Line
                ?? location.GetLineSpan().StartLinePosition.Line;
+
+        public static string? UnderscoreToCamelCaseIdentifierName(this string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return name;
+
+            var result = Regex.Replace(name, @"_(\w)", m => m.Groups[1].Value.ToUpperInvariant());
+            if (char.IsUpper(result[0]))
+                result = $"{char.ToLowerInvariant(result[0])}{result.Substring(1)}";
+            return result;
+        }
     }
 }
