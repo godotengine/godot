@@ -65,7 +65,11 @@ static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
 	"transform_2d",
 	"transform",
 	"sampler2D",
+	"usampler2D",
+	"isampler2D",
 	"sampler2DArray",
+	"usampler2DArray",
+	"isampler2DArray",
 	"sampler3D",
 	"samplerCube",
 	"samplerExternalOES",
@@ -221,7 +225,27 @@ protected:
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					pinfo.hint_string = "Texture2D";
 				} break;
+				case RS::GLOBAL_VAR_TYPE_USAMPLER2D: {
+					pinfo.type = Variant::OBJECT;
+					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					pinfo.hint_string = "Texture2D";
+				} break;
+				case RS::GLOBAL_VAR_TYPE_ISAMPLER2D: {
+					pinfo.type = Variant::OBJECT;
+					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					pinfo.hint_string = "Texture2D";
+				} break;
 				case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
+					pinfo.type = Variant::OBJECT;
+					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					pinfo.hint_string = "Texture2DArray,CompressedTexture2DArray";
+				} break;
+				case RS::GLOBAL_VAR_TYPE_USAMPLER2DARRAY: {
+					pinfo.type = Variant::OBJECT;
+					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					pinfo.hint_string = "Texture2DArray,CompressedTexture2DArray";
+				} break;
+				case RS::GLOBAL_VAR_TYPE_ISAMPLER2DARRAY: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					pinfo.hint_string = "Texture2DArray,CompressedTexture2DArray";
@@ -337,6 +361,9 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Projection();
 		}
 		case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
+			return "";
+		}
+		case RS::GLOBAL_VAR_TYPE_USAMPLER2D: {
 			return "";
 		}
 		case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {

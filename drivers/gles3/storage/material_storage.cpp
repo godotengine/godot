@@ -2002,7 +2002,11 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 				"transform_2d",
 				"transform",
 				"sampler2D",
+				"usampler2D",
+				"isampler2D",
 				"sampler2DArray",
+				"usampler2DArray",
+				"isampler2DArray",
 				"sampler3D",
 				"samplerCube",
 				"samplerExternalOES"
