@@ -36,6 +36,11 @@
 #include "core/string/print_string.h"
 #include "core/variant/variant.h"
 
+#ifdef __OpenBSD__
+// quick_exit not available
+#define quick_exit _exit
+#endif
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>

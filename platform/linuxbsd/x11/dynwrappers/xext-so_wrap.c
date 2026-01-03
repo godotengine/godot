@@ -46,7 +46,11 @@ XRectangle *(*XShapeGetRectangles_dylibloader_wrapper_xext)(Display *, Window, i
 int initialize_xext(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  handle = dlopen("libXext.so", RTLD_LAZY);
+#else
   handle = dlopen("libXext.so.6", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

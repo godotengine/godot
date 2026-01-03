@@ -113,7 +113,11 @@ void (*XIFreeDeviceInfo_dylibloader_wrapper_xinput2)(XIDeviceInfo *);
 int initialize_xinput2(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  handle = dlopen("libXi.so", RTLD_LAZY);
+#else
   handle = dlopen("libXi.so.6", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

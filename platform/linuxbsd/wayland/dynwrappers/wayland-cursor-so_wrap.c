@@ -29,7 +29,11 @@ int (*wl_cursor_frame_and_duration_dylibloader_wrapper_wayland_cursor)(struct wl
 int initialize_wayland_cursor(int verbose) {
   void *handle;
   char *error;
+#if defined(__OpenBSD__) || defined(__NetBSD)
+  handle = dlopen("libwayland-cursor.so", RTLD_LAZY);
+#else
   handle = dlopen("libwayland-cursor.so.0", RTLD_LAZY);
+#endif
   if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());

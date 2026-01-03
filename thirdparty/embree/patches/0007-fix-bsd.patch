@@ -1,0 +1,138 @@
+diff --git a/thirdparty/embree/common/math/emath.h b/thirdparty/embree/common/math/emath.h
+index 22a89a7669..fd99b6fa1a 100644
+--- a/thirdparty/embree/common/math/emath.h
++++ b/thirdparty/embree/common/math/emath.h
+@@ -253,7 +253,7 @@ namespace embree
+ #if defined(__64BIT__) || defined(__EMSCRIPTEN__)
+   __forceinline   size_t min(size_t   a, size_t   b) { return a<b ? a:b; }
+ #endif
+-#if defined(__EMSCRIPTEN__)
++#if defined(__EMSCRIPTEN__) || defined(__OPENBSD__)
+   __forceinline   long   min(long     a, long     b) { return a<b ? a:b; }
+ #endif
+ 
+@@ -273,7 +273,7 @@ namespace embree
+ #if defined(__64BIT__) || defined(__EMSCRIPTEN__)
+   __forceinline   size_t max(size_t   a, size_t   b) { return a<b ? b:a; }
+ #endif
+-#if defined(__EMSCRIPTEN__)
++#if defined(__EMSCRIPTEN__) || defined(__OPENBSD__)
+   __forceinline   long   max(long     a, long     b) { return a<b ? b:a; }
+ #endif
+ 
+diff --git a/thirdparty/embree/common/sys/platform.h b/thirdparty/embree/common/sys/platform.h
+index 1e5b02550e..4c8db7addd 100644
+--- a/thirdparty/embree/common/sys/platform.h
++++ b/thirdparty/embree/common/sys/platform.h
+@@ -82,6 +82,26 @@
+ #  endif
+ #endif
+ 
++/* detect OpenBSD platform */
++#if defined(__OpenBSD__) || defined(__OPENBSD__)
++#  if !defined(__OPENBSD__)
++#     define __OPENBSD__
++#  endif
++#  if !defined(__UNIX__)
++#     define __UNIX__
++#  endif
++#endif
++
++/* detect NetBSD platform */
++#if defined(__NetBSD__) || defined(__NETBSD__)
++#  if !defined(__NETBSD__)
++#     define __NETBSD__
++#  endif
++#  if !defined(__UNIX__)
++#     define __UNIX__
++#  endif
++#endif
++
+ /* detect Windows 95/98/NT/2000/XP/Vista/7/8/10 platform */
+ #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)) && !defined(__CYGWIN__)
+ #  if !defined(__WIN32__)
+diff --git a/thirdparty/embree/common/sys/sysinfo.cpp b/thirdparty/embree/common/sys/sysinfo.cpp
+index f3046d89f2..c5e98faae8 100644
+--- a/thirdparty/embree/common/sys/sysinfo.cpp
++++ b/thirdparty/embree/common/sys/sysinfo.cpp
+@@ -39,6 +39,14 @@ namespace embree
+     return "FreeBSD (32bit)";
+ #elif defined(__FREEBSD__) && defined(__64BIT__)
+     return "FreeBSD (64bit)";
++#elif defined(__OPENBSD__) && !defined(__64BIT__)
++    return "OpenBSD (32bit)";
++#elif defined(__OPENBSD__) && defined(__64BIT__)
++    return "OpenBSD (64bit)";
++#elif defined(__NETBSD__) && !defined(__64BIT__)
++    return "NetBSD (32bit)";
++#elif defined(__NETBSD__) && defined(__64BIT__)
++    return "NetBSD (64bit)";
+ #elif defined(__CYGWIN__) && !defined(__64BIT__)
+     return "Cygwin (32bit)";
+ #elif defined(__CYGWIN__) && defined(__64BIT__)
+@@ -616,6 +624,56 @@ namespace embree
+ 
+ #endif
+ 
++////////////////////////////////////////////////////////////////////////////////
++/// OpenBSD Platform
++////////////////////////////////////////////////////////////////////////////////
++
++#if defined (__OPENBSD__)
++
++namespace embree
++{
++  std::string getExecutableFileName()
++  {
++    // Only possible using argv[0]
++    return "";
++  }
++
++  size_t getVirtualMemoryBytes() {
++    return 0;
++  }
++
++  size_t getResidentMemoryBytes() {
++    return 0;
++  }
++}
++
++#endif
++
++////////////////////////////////////////////////////////////////////////////////
++/// NetBSD Platform
++////////////////////////////////////////////////////////////////////////////////
++
++#if defined (__NETBSD__)
++
++namespace embree
++{
++  std::string getExecutableFileName()
++  {
++    // Haven't looked into it.
++    return "";
++  }
++
++  size_t getVirtualMemoryBytes() {
++    return 0;
++  }
++
++  size_t getResidentMemoryBytes() {
++    return 0;
++  }
++}
++
++#endif
++
+ ////////////////////////////////////////////////////////////////////////////////
+ /// Mac OS X Platform
+ ////////////////////////////////////////////////////////////////////////////////
+@@ -672,7 +730,7 @@ namespace embree
+     static int nThreads = -1;
+     if (nThreads != -1) return nThreads;
+ 
+-#if defined(__MACOSX__) || defined(__ANDROID__)
++#if defined(__MACOSX__) || defined(__ANDROID__) || defined(__OPENBSD__) || defined(__NETBSD__)
+     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
+     assert(nThreads);
+ #elif defined(__EMSCRIPTEN__)

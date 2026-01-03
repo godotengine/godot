@@ -82,6 +82,26 @@
 #  endif
 #endif
 
+/* detect OpenBSD platform */
+#if defined(__OpenBSD__) || defined(__OPENBSD__)
+#  if !defined(__OPENBSD__)
+#     define __OPENBSD__
+#  endif
+#  if !defined(__UNIX__)
+#     define __UNIX__
+#  endif
+#endif
+
+/* detect NetBSD platform */
+#if defined(__NetBSD__) || defined(__NETBSD__)
+#  if !defined(__NETBSD__)
+#     define __NETBSD__
+#  endif
+#  if !defined(__UNIX__)
+#     define __UNIX__
+#  endif
+#endif
+
 /* detect Windows 95/98/NT/2000/XP/Vista/7/8/10 platform */
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)) && !defined(__CYGWIN__)
 #  if !defined(__WIN32__)
