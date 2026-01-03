@@ -825,6 +825,7 @@ protected:
 public:
 	MODBIND1RC(bool, has_feature, Feature);
 	MODBIND0RC(String, get_name);
+	MODBIND0RC(String, get_short_name);
 	MODBIND0RC(int64_t, get_features);
 
 	MODBIND1(free_rid, const RID &);

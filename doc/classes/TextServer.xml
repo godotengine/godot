@@ -1111,6 +1111,12 @@
 				Returns the name of the server interface.
 			</description>
 		</method>
+		<method name="get_short_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the short name of the server interface. This short name can be used as a value for the [code]--text-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] (the full name is also supported for compatibility, but it must be quoted if it contains spaces).
+			</description>
+		</method>
 		<method name="get_support_data" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>

@@ -111,6 +111,10 @@ String TextServerFallback::_get_name() const {
 #endif
 }
 
+String TextServerFallback::_get_short_name() const {
+	return "fallback";
+}
+
 int64_t TextServerFallback::_get_features() const {
 	int64_t interface_features = FEATURE_SIMPLE_LAYOUT | FEATURE_FONT_BITMAP;
 #ifdef MODULE_FREETYPE_ENABLED

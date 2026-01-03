@@ -47,9 +47,11 @@ protected:
 public:
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+	virtual String get_short_name() const override;
 	virtual int64_t get_features() const override;
 	GDVIRTUAL1RC_REQUIRED(bool, _has_feature, Feature);
 	GDVIRTUAL0RC_REQUIRED(String, _get_name);
+	GDVIRTUAL0RC(String, _get_short_name);
 	GDVIRTUAL0RC_REQUIRED(int64_t, _get_features);
 
 	virtual void free_rid(const RID &p_rid) override;

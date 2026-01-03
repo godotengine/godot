@@ -1090,6 +1090,12 @@
 				Returns the name of the server interface.
 			</description>
 		</method>
+		<method name="_get_short_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Returns the short name of the server interface. By convention, this should return a lowercase string that follows the [code]snake_case[/code] naming scheme.
+			</description>
+		</method>
 		<method name="_get_support_data" qualifiers="virtual const">
 			<return type="PackedByteArray" />
 			<description>

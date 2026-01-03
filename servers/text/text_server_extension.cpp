@@ -33,6 +33,7 @@
 void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_has_feature, "feature");
 	GDVIRTUAL_BIND(_get_name);
+	GDVIRTUAL_BIND(_get_short_name);
 	GDVIRTUAL_BIND(_get_features);
 
 	GDVIRTUAL_BIND(_free_rid, "rid");
@@ -400,6 +401,16 @@ bool TextServerExtension::has_feature(Feature p_feature) const {
 String TextServerExtension::get_name() const {
 	String ret = "Unknown";
 	GDVIRTUAL_CALL(_get_name, ret);
+	return ret;
+}
+
+String TextServerExtension::get_short_name() const {
+	String ret = "unknown";
+	GDVIRTUAL_CALL(_get_short_name, ret);
+	if (ret == "unknown") {
+		// Fall back to a simplified version of the full name if not overridden.
+		ret = get_name().to_lower().replace_char(' ', '_');
+	}
 	return ret;
 }
 
