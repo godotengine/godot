@@ -69,7 +69,7 @@ void ObjectDBProfilerPanel::_request_object_snapshot() {
 	}
 }
 
-void ObjectDBProfilerPanel::_on_debug_breaked(bool p_reallydid, bool p_can_debug, const String &p_reason, bool p_has_stackdump) {
+void ObjectDBProfilerPanel::_on_debug_breaked(bool p_reallydid, bool p_can_debug, const String &p_reason, bool p_has_stackdump, int p_thread_id) {
 	if (p_reallydid && awaiting_debug_break) {
 		awaiting_debug_break = false;
 		_begin_object_snapshot();

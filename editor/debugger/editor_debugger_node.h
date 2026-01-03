@@ -132,7 +132,7 @@ protected:
 	void _debugger_stopped(int p_id);
 	void _debugger_wants_stop(int p_id);
 	void _debugger_changed(int p_tab);
-	void _debug_data(const String &p_msg, const Array &p_data, int p_debugger);
+	void _debug_data(const String &p_msg, const Array &p_data, int p_thread_id, int p_debugger);
 	void _remote_tree_select_requested(const TypedArray<int64_t> &p_ids, int p_debugger);
 	void _remote_tree_clear_selection_requested(int p_debugger);
 	void _remote_tree_updated(int p_debugger);
@@ -154,7 +154,7 @@ protected:
 	void _text_editor_stack_clear(const ScriptEditorDebugger *p_debugger);
 	void _stack_frame_selected(int p_debugger);
 	void _error_selected(const String &p_file, int p_line, int p_debugger);
-	void _breaked(bool p_breaked, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_debugger);
+	void _breaked(bool p_breaked, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_thread_id, int p_debugger);
 	void _paused();
 	void _break_state_changed();
 	void _menu_option(int p_id);

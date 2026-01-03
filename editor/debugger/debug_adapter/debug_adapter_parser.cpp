@@ -109,6 +109,10 @@ Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params
 			error = "missing_device";
 			error_desc = "There's no connected device with specified id.";
 			break;
+		case DAP::ErrorType::MALFORMED_REQUEST:
+			error = "malformed_request";
+			error_desc = "The request is malformed ({details}).";
+			break;
 		case DAP::ErrorType::UNKNOWN:
 		default:
 			error = "unknown";
@@ -123,6 +127,12 @@ Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params
 	body["error"] = message.to_json();
 
 	return response;
+}
+
+Dictionary DebugAdapterParser::prepare_malformed_error_response(const Dictionary &p_params, const String &p_error) const {
+	Dictionary variables;
+	variables["details"] = p_error;
+	return prepare_error_response(p_params, DAP::ErrorType::MALFORMED_REQUEST, variables);
 }
 
 Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const {
@@ -292,16 +302,12 @@ Dictionary DebugAdapterParser::req_pause(const Dictionary &p_params) const {
 	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(true);
 	EditorDebuggerNode::get_singleton()->_paused();
 
-	DebugAdapterProtocol::get_singleton()->notify_stopped_paused();
-
 	return prepare_success_response(p_params);
 }
 
 Dictionary DebugAdapterParser::req_continue(const Dictionary &p_params) const {
 	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
 	EditorDebuggerNode::get_singleton()->_paused();
-
-	DebugAdapterProtocol::get_singleton()->notify_continued();
 
 	return prepare_success_response(p_params);
 }
@@ -310,18 +316,25 @@ Dictionary DebugAdapterParser::req_threads(const Dictionary &p_params) const {
 	Dictionary response = prepare_success_response(p_params), body;
 	response["body"] = body;
 
-	DAP::Thread thread;
+	Array threads;
+	for (const KeyValue<Thread::ID, Ref<DebugAdapterProtocol::ThreadData>> &thread_data : DebugAdapterProtocol::get_singleton()->thread_data_list) {
+		DAP::Thread thread;
+		thread.id = thread_data.key;
+		thread.name = thread_data.value->name;
+		threads.push_back(thread.to_json());
+	}
 
-	thread.id = 1; // Hardcoded because Godot only supports debugging one thread at the moment
-	thread.name = "Main";
-	Array arr = { thread.to_json() };
-	body["threads"] = arr;
-
+	body["threads"] = threads;
 	return response;
 }
 
 Dictionary DebugAdapterParser::req_stackTrace(const Dictionary &p_params) const {
-	if (DebugAdapterProtocol::get_singleton()->_processing_stackdump) {
+	Dictionary args = p_params["arguments"];
+	Thread::ID thread_id = args["threadId"];
+	ERR_FAIL_COND_V(!DebugAdapterProtocol::get_singleton()->thread_data_list.has(thread_id), prepare_malformed_error_response(p_params, vformat("Unknown thread id: %d", thread_id)));
+	const Ref<DebugAdapterProtocol::ThreadData> &thread = DebugAdapterProtocol::get_singleton()->thread_data_list[thread_id];
+
+	if (thread->processing_stackdump) {
 		return Dictionary();
 	}
 
@@ -332,16 +345,8 @@ Dictionary DebugAdapterParser::req_stackTrace(const Dictionary &p_params) const 
 	bool columns_at_one = DebugAdapterProtocol::get_singleton()->get_current_peer()->columnsStartAt1;
 
 	Array arr;
-	DebugAdapterProtocol *dap = DebugAdapterProtocol::get_singleton();
-	for (DAP::StackFrame sf : dap->stackframe_list) {
-		if (!lines_at_one) {
-			sf.line--;
-		}
-		if (!columns_at_one) {
-			sf.column--;
-		}
-
-		arr.push_back(sf.to_json());
+	for (const DAP::StackFrame &sf : thread->stackframe_list) {
+		arr.push_back(sf.to_json(lines_at_one, columns_at_one));
 	}
 
 	body["stackFrames"] = arr;
@@ -404,16 +409,21 @@ Dictionary DebugAdapterParser::req_breakpointLocations(const Dictionary &p_param
 }
 
 Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
+	using DAPRemoteID = DebugAdapterProtocol::DAPRemoteID;
+	Dictionary args = p_params["arguments"];
+	DAPRemoteID frame_id = args["frameId"];
+
+	ERR_FAIL_COND_V(!DebugAdapterProtocol::get_singleton()->thread_remote_data_lookup.has(frame_id), prepare_malformed_error_response(p_params, vformat("Unknown frame id: %d", frame_id)));
+	const Ref<DebugAdapterProtocol::ThreadData> &thread = DebugAdapterProtocol::get_singleton()->thread_remote_data_lookup[frame_id];
+	ERR_FAIL_COND_V(!thread->godot_stackframe_ids.has(frame_id), prepare_malformed_error_response(p_params, vformat("Unknown frame id: %d", frame_id)));
+
 	Dictionary response = prepare_success_response(p_params), body;
 	response["body"] = body;
 
-	Dictionary args = p_params["arguments"];
-	int frame_id = args["frameId"];
 	Array scope_list;
-
-	HashMap<DebugAdapterProtocol::DAPStackFrameID, Vector<int>>::Iterator E = DebugAdapterProtocol::get_singleton()->scope_list.find(frame_id);
+	HashMap<DAPRemoteID, Vector<DAPRemoteID>>::Iterator E = DebugAdapterProtocol::get_singleton()->scope_list.find(frame_id);
 	if (E) {
-		const Vector<int> &scope_ids = E->value;
+		const Vector<DAPRemoteID> &scope_ids = E->value;
 		ERR_FAIL_COND_V(scope_ids.size() != 3, prepare_error_response(p_params, DAP::ErrorType::UNKNOWN));
 		for (int i = 0; i < 3; ++i) {
 			DAP::Scope scope;
@@ -436,21 +446,25 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 		}
 	}
 
-	EditorDebuggerNode::get_singleton()->get_default_debugger()->request_stack_dump(frame_id);
-	DebugAdapterProtocol::get_singleton()->_current_frame = frame_id;
+	int godot_frame_id = thread->godot_stackframe_ids[frame_id];
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->request_stack_dump(godot_frame_id);
+	thread->current_frame = frame_id;
 
 	body["scopes"] = scope_list;
 	return response;
 }
 
 Dictionary DebugAdapterParser::req_variables(const Dictionary &p_params) const {
+	Dictionary args = p_params["arguments"];
+	DebugAdapterProtocol::DAPRemoteID variable_id = args["variablesReference"];
+
+	ERR_FAIL_COND_V(!DebugAdapterProtocol::get_singleton()->thread_remote_data_lookup.has(variable_id), prepare_malformed_error_response(p_params, vformat("Unknown variable id: %d", variable_id)));
+	const Ref<DebugAdapterProtocol::ThreadData> &thread = DebugAdapterProtocol::get_singleton()->thread_remote_data_lookup[variable_id];
+
 	// If _remaining_vars > 0, the debuggee is still sending a stack dump to the editor.
-	if (DebugAdapterProtocol::get_singleton()->_remaining_vars > 0) {
+	if (thread->remaining_vars > 0) {
 		return Dictionary();
 	}
-
-	Dictionary args = p_params["arguments"];
-	int variable_id = args["variablesReference"];
 
 	if (HashMap<int, Array>::Iterator E = DebugAdapterProtocol::get_singleton()->variable_list.find(variable_id); E) {
 		Dictionary response = prepare_success_response(p_params);
@@ -458,13 +472,12 @@ Dictionary DebugAdapterParser::req_variables(const Dictionary &p_params) const {
 		response["body"] = body;
 
 		if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->supportsVariableType) {
-			for (int i = 0; i < E->value.size(); i++) {
-				Dictionary variable = E->value[i];
+			for (Dictionary variable : E->value) {
 				variable.erase("type");
 			}
 		}
 
-		body["variables"] = E ? E->value : Array();
+		body["variables"] = E->value;
 		return response;
 	} else {
 		// If the requested variable is an object, it needs to be requested from the debuggee.
@@ -474,21 +487,35 @@ Dictionary DebugAdapterParser::req_variables(const Dictionary &p_params) const {
 			return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN);
 		}
 
-		DebugAdapterProtocol::get_singleton()->request_remote_object(object_id);
+		DebugAdapterProtocol::get_singleton()->request_remote_object(object_id, *thread);
 	}
 	return Dictionary();
 }
 
 Dictionary DebugAdapterParser::req_next(const Dictionary &p_params) const {
+	Dictionary args = p_params["arguments"];
+
+	Thread::ID thread_id = args["threadId"];
+	ERR_FAIL_COND_V(!DebugAdapterProtocol::get_singleton()->thread_data_list.has(thread_id), prepare_malformed_error_response(p_params, vformat("Unknown thread id: %d", thread_id)));
+	const Ref<DebugAdapterProtocol::ThreadData> &thread = DebugAdapterProtocol::get_singleton()->thread_data_list[thread_id];
+
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->debug_select_thread(thread_id);
 	EditorDebuggerNode::get_singleton()->get_default_debugger()->debug_next();
-	DebugAdapterProtocol::get_singleton()->_stepping = true;
+	thread->stepping = true;
 
 	return prepare_success_response(p_params);
 }
 
 Dictionary DebugAdapterParser::req_stepIn(const Dictionary &p_params) const {
+	Dictionary args = p_params["arguments"];
+
+	Thread::ID thread_id = args["threadId"];
+	ERR_FAIL_COND_V(!DebugAdapterProtocol::get_singleton()->thread_data_list.has(thread_id), prepare_malformed_error_response(p_params, vformat("Unknown thread id: %d", thread_id)));
+	const Ref<DebugAdapterProtocol::ThreadData> &thread = DebugAdapterProtocol::get_singleton()->thread_data_list[thread_id];
+
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->debug_select_thread(thread_id);
 	EditorDebuggerNode::get_singleton()->get_default_debugger()->debug_step();
-	DebugAdapterProtocol::get_singleton()->_stepping = true;
+	thread->stepping = true;
 
 	return prepare_success_response(p_params);
 }
@@ -496,7 +523,17 @@ Dictionary DebugAdapterParser::req_stepIn(const Dictionary &p_params) const {
 Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
 	Dictionary args = p_params["arguments"];
 	String expression = args["expression"];
-	int frame_id = args.has("frameId") ? static_cast<int>(args["frameId"]) : DebugAdapterProtocol::get_singleton()->_current_frame;
+
+	// By default we evaluate the top stack (0 in Godot), unless a frameId is given.
+	int godot_frame_id = 0;
+	if (args.has("frameId")) {
+		DebugAdapterProtocol::DAPRemoteID frame_id = static_cast<int>(args["frameId"]);
+
+		ERR_FAIL_COND_V(!DebugAdapterProtocol::get_singleton()->thread_remote_data_lookup.has(frame_id), prepare_malformed_error_response(p_params, vformat("Unknown frame id: %d", frame_id)));
+		const Ref<DebugAdapterProtocol::ThreadData> &thread = DebugAdapterProtocol::get_singleton()->thread_remote_data_lookup[frame_id];
+		ERR_FAIL_COND_V(!thread->godot_stackframe_ids.has(frame_id), prepare_malformed_error_response(p_params, vformat("Unknown frame id: %d", frame_id)));
+		godot_frame_id = thread->godot_stackframe_ids[frame_id];
+	}
 
 	if (HashMap<String, DAP::Variable>::Iterator E = DebugAdapterProtocol::get_singleton()->eval_list.find(expression); E) {
 		Dictionary response = prepare_success_response(p_params);
@@ -512,7 +549,7 @@ Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
 		DebugAdapterProtocol::get_singleton()->eval_list.erase(E->key);
 		return response;
 	} else {
-		DebugAdapterProtocol::get_singleton()->request_remote_evaluate(expression, frame_id);
+		DebugAdapterProtocol::get_singleton()->request_remote_evaluate(expression, godot_frame_id);
 	}
 	return Dictionary();
 }
@@ -553,7 +590,7 @@ Dictionary DebugAdapterParser::ev_terminated() const {
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_exited(const int &p_exitcode) const {
+Dictionary DebugAdapterParser::ev_exited(int p_exitcode) const {
 	Dictionary event = prepare_base_event(), body;
 	event["event"] = "exited";
 	event["body"] = body;
@@ -563,18 +600,18 @@ Dictionary DebugAdapterParser::ev_exited(const int &p_exitcode) const {
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_stopped() const {
+Dictionary DebugAdapterParser::ev_stopped(Thread::ID p_thread_id) const {
 	Dictionary event = prepare_base_event(), body;
 	event["event"] = "stopped";
 	event["body"] = body;
 
-	body["threadId"] = 1;
+	body["threadId"] = p_thread_id;
 
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_stopped_paused() const {
-	Dictionary event = ev_stopped();
+Dictionary DebugAdapterParser::ev_stopped_paused(Thread::ID thread_id) const {
+	Dictionary event = ev_stopped(thread_id);
 	Dictionary body = event["body"];
 
 	body["reason"] = "paused";
@@ -583,8 +620,8 @@ Dictionary DebugAdapterParser::ev_stopped_paused() const {
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_stopped_exception(const String &p_error) const {
-	Dictionary event = ev_stopped();
+Dictionary DebugAdapterParser::ev_stopped_exception(const String &p_error, Thread::ID p_thread_id) const {
+	Dictionary event = ev_stopped(p_thread_id);
 	Dictionary body = event["body"];
 
 	body["reason"] = "exception";
@@ -594,8 +631,8 @@ Dictionary DebugAdapterParser::ev_stopped_exception(const String &p_error) const
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_stopped_breakpoint(const int &p_id) const {
-	Dictionary event = ev_stopped();
+Dictionary DebugAdapterParser::ev_stopped_breakpoint(int p_id, Thread::ID p_thread_id) const {
+	Dictionary event = ev_stopped(p_thread_id);
 	Dictionary body = event["body"];
 
 	body["reason"] = "breakpoint";
@@ -607,8 +644,8 @@ Dictionary DebugAdapterParser::ev_stopped_breakpoint(const int &p_id) const {
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_stopped_step() const {
-	Dictionary event = ev_stopped();
+Dictionary DebugAdapterParser::ev_stopped_step(Thread::ID p_thread_id) const {
+	Dictionary event = ev_stopped(p_thread_id);
 	Dictionary body = event["body"];
 
 	body["reason"] = "step";
@@ -617,12 +654,12 @@ Dictionary DebugAdapterParser::ev_stopped_step() const {
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_continued() const {
+Dictionary DebugAdapterParser::ev_continued(Thread::ID p_thread_id) const {
 	Dictionary event = prepare_base_event(), body;
 	event["event"] = "continued";
 	event["body"] = body;
 
-	body["threadId"] = 1;
+	body["threadId"] = p_thread_id;
 
 	return event;
 }
@@ -638,7 +675,7 @@ Dictionary DebugAdapterParser::ev_output(const String &p_message, RemoteDebugger
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) const {
+Dictionary DebugAdapterParser::ev_breakpoint(const DAP::Breakpoint &p_breakpoint, bool p_enabled) const {
 	Dictionary event = prepare_base_event(), body;
 	event["event"] = "breakpoint";
 	event["body"] = body;
