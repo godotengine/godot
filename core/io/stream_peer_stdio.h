@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_language_server.h                                            */
+/*  stream_peer_stdio.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,35 +30,22 @@
 
 #pragma once
 
-#include "gdscript_language_protocol.h"
+#include "core/io/stream_peer.h"
 
-#include "editor/plugins/editor_plugin.h"
-
-class GDScriptLanguageServer : public EditorPlugin {
-	GDCLASS(GDScriptLanguageServer, EditorPlugin);
-
-	GDScriptLanguageProtocol protocol;
-
-	Thread thread;
-	bool thread_running = false;
-	// There is no notification when the editor is initialized. We need to poll till we attempted to start the server.
-	bool start_attempted = false;
-	bool started = false;
-	bool use_thread = false;
-	String host = "127.0.0.1";
-	int port = 6005;
-	int poll_limit_usec = 100000;
-	static void thread_main(void *p_userdata);
+class StreamPeerStdio : public StreamPeer {
+	GDCLASS(StreamPeerStdio, StreamPeer);
 
 private:
-	void _notification(int p_what);
+	int stdin_fileno = 0;
+	int stdout_fileno = 1;
 
 public:
-	static int port_override;
-	static bool use_stdio;
-	GDScriptLanguageServer();
-	void start();
-	void stop();
-};
+	Error put_data(const uint8_t *p_data, int p_bytes) override;
+	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
+	Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
+	int get_available_bytes() const override;
 
-void register_lsp_types();
+	StreamPeerStdio();
+	virtual ~StreamPeerStdio();
+};
