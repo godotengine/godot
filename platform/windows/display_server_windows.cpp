@@ -45,6 +45,12 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
+#include "modules/modules_enabled.gen.h" // For svg.
+#ifdef MODULE_SVG_ENABLED
+#include "cursors.gen.h"
+#include "modules/svg/image_loader_svg.h"
+#endif
+
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
 #endif
@@ -2986,6 +2992,111 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 	ImmReleaseContext(wd.hWnd, himc);
 }
 
+bool DisplayServerWindows::_load_and_set_svg_cursor(CursorShape p_shape) {
+#ifdef MODULE_SVG_ENABLED
+	if (!sys_cursor_svg.has(p_shape)) {
+		return false;
+	}
+	if (sys_cursor_cache[p_shape]) {
+		DestroyIcon(sys_cursor_cache[p_shape]);
+	}
+	float cursor_size = 32.0;
+	int cursor_type = 2;
+	Color cursor_color = Color(1, 1, 1);
+	{
+		HKEY hkey;
+		DWORD size = sizeof(DWORD);
+		DWORD data;
+		if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Cursors", 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+			if (RegQueryValueExW(hkey, L"CursorBaseSize", nullptr, nullptr, (PBYTE)&data, &size) == ERROR_SUCCESS) {
+				cursor_size = data;
+			}
+			RegCloseKey(hkey);
+		}
+		if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Accessibility", 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+			if (RegQueryValueExW(hkey, L"CursorType", nullptr, nullptr, (PBYTE)&data, &size) == ERROR_SUCCESS) {
+				cursor_type = data;
+			}
+			RegCloseKey(hkey);
+		}
+		if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Accessibility", 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+			if (RegQueryValueExW(hkey, L"CursorColor", nullptr, nullptr, (PBYTE)&data, &size) == ERROR_SUCCESS) {
+				cursor_color = Color((data & 0xFF) / 255.f, ((data & 0xFF00) >> 8) / 255.f, ((data & 0xFF0000) >> 16) / 255.f, ((data & 0xFF000000) >> 24) / 255.f);
+			}
+			RegCloseKey(hkey);
+		}
+	}
+	const Color bg_color = Color::html("#e0e0e0");
+	const Color fg_color = Color::html("#0f0f0f");
+	HashMap<Color, Color> remap;
+	if (cursor_type == 6) { // Color cursor.
+		remap[fg_color] = Color(0, 0, 0);
+		remap[bg_color] = cursor_color;
+	} else if (cursor_type == 4) { // Dark cursor.
+		remap[fg_color] = Color(1, 1, 1);
+		remap[bg_color] = Color(0, 0, 0);
+	} else {
+		remap[fg_color] = Color(0, 0, 0);
+		remap[bg_color] = Color(1, 1, 1);
+	}
+	Ref<Image> image;
+	image.instantiate();
+
+	ImageLoaderSVG::create_image_from_string(image, sys_cursor_svg[p_shape], cursor_size / 128.0, true, remap);
+
+	Vector2i texture_size = image->get_size();
+
+	UINT image_size = texture_size.width * texture_size.height;
+
+	// Create the BITMAP with alpha channel.
+	COLORREF *buffer = nullptr;
+
+	BITMAPV5HEADER bi;
+	ZeroMemory(&bi, sizeof(bi));
+	bi.bV5Size = sizeof(bi);
+	bi.bV5Width = texture_size.width;
+	bi.bV5Height = -texture_size.height;
+	bi.bV5Planes = 1;
+	bi.bV5BitCount = 32;
+	bi.bV5Compression = BI_BITFIELDS;
+	bi.bV5RedMask = 0x00ff0000;
+	bi.bV5GreenMask = 0x0000ff00;
+	bi.bV5BlueMask = 0x000000ff;
+	bi.bV5AlphaMask = 0xff000000;
+
+	HDC dc = GetDC(nullptr);
+	HBITMAP bitmap = CreateDIBSection(dc, reinterpret_cast<BITMAPINFO *>(&bi), DIB_RGB_COLORS, reinterpret_cast<void **>(&buffer), nullptr, 0);
+	HBITMAP mask = CreateBitmap(texture_size.width, texture_size.height, 1, 1, nullptr);
+
+	for (UINT index = 0; index < image_size; index++) {
+		int row_index = index / texture_size.width;
+		int column_index = index % texture_size.width;
+
+		const Color &c = image->get_pixel(column_index, row_index);
+		*(buffer + index) = c.to_argb32();
+	}
+
+	ICONINFO iconinfo;
+	iconinfo.fIcon = FALSE;
+	iconinfo.xHotspot = texture_size.width / 2;
+	iconinfo.yHotspot = texture_size.height / 2;
+	iconinfo.hbmMask = mask;
+	iconinfo.hbmColor = bitmap;
+	HCURSOR hc = CreateIconIndirect(&iconinfo);
+
+	sys_cursor_cache[p_shape] = hc;
+	SetCursor(hc);
+
+	DeleteObject(mask);
+	DeleteObject(bitmap);
+	ReleaseDC(nullptr, dc);
+
+	return true;
+#else
+	return false;
+#endif
+}
+
 void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 	_THREAD_SAFE_METHOD_
 
@@ -3023,7 +3134,13 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 	if (cursors_cache.has(p_shape)) {
 		SetCursor(cursors[p_shape]);
 	} else {
-		SetCursor(LoadCursor(hInstance, win_cursors[p_shape]));
+		if (p_shape == CURSOR_DRAG || p_shape == CURSOR_CAN_DROP) {
+			if (!_load_and_set_svg_cursor(p_shape)) {
+				SetCursor(LoadCursor(hInstance, win_cursors[p_shape]));
+			}
+		} else {
+			SetCursor(LoadCursor(hInstance, win_cursors[p_shape]));
+		}
 	}
 
 	cursor_shape = p_shape;
@@ -3078,8 +3195,8 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 
 		bool fully_transparent = true;
 		for (UINT index = 0; index < image_size; index++) {
-			int row_index = std::floor(index / texture_size.width);
-			int column_index = index % int(texture_size.width);
+			int row_index = index / texture_size.width;
+			int column_index = index % texture_size.width;
 
 			const Color &c = image->get_pixel(column_index, row_index);
 			fully_transparent = fully_transparent && (c.a == 0.f);
@@ -6971,6 +7088,16 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	old_invalid = true;
 	mouse_mode = MOUSE_MODE_VISIBLE;
 
+#ifdef MODULE_SVG_ENABLED
+	for (int i = 0; i < cursor_count; i++) {
+		if (String(cursor_names[i]) == "hand1") {
+			sys_cursor_svg[CURSOR_CAN_DROP] = cursor_sources[i];
+		} else if (String(cursor_names[i]) == "hand2") {
+			sys_cursor_svg[CURSOR_DRAG] = cursor_sources[i];
+		}
+	}
+#endif
+
 	rendering_driver = p_rendering_driver;
 
 	// Init TTS
@@ -7643,6 +7770,13 @@ DisplayServerWindows::~DisplayServerWindows() {
 	touch_state.clear();
 
 	cursors_cache.clear();
+#ifdef MODULE_SVG_ENABLED
+	for (int i = 0; i < CURSOR_MAX; i++) {
+		if (sys_cursor_cache[i]) {
+			DestroyIcon(sys_cursor_cache[i]);
+		}
+	}
+#endif
 
 	// Destroy all status indicators.
 	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E; ++E) {
