@@ -746,6 +746,8 @@ void Viewport::_notification(int p_what) {
 	}
 }
 
+constexpr char const *const LEGACY_INPUT_SETTING = "physics/legacy_picking_input_processing";
+
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 void Viewport::_process_picking() {
 	if (!is_inside_tree()) {
@@ -754,9 +756,12 @@ void Viewport::_process_picking() {
 	if (!physics_object_picking) {
 		return;
 	}
-	if (Object::cast_to<Window>(this) && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	const bool is_captured = Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED;
+	if (is_captured && ps->has_setting(LEGACY_INPUT_SETTING) && ps->get_setting(LEGACY_INPUT_SETTING).is_one() && Object::cast_to<Window>(this)) {
 		return;
 	}
+
 	if (!gui.mouse_in_viewport || gui.subwindow_over) {
 		// Clear picking events if the mouse has left the viewport or is over an embedded window.
 		// These are locations, that are expected to not trigger physics picking.
@@ -3575,13 +3580,15 @@ void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 	}
 
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	const bool is_captured = Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED;
+	if (is_captured && ps->has_setting(LEGACY_INPUT_SETTING) && ps->get_setting(LEGACY_INPUT_SETTING).is_one()) {
+		return;
+	}
 	if (physics_object_picking && !is_input_handled()) {
-		if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED &&
-				(Object::cast_to<InputEventMouse>(*p_event) ||
-						Object::cast_to<InputEventScreenDrag>(*p_event) ||
-						Object::cast_to<InputEventScreenTouch>(*p_event)
-
-								)) {
+		if (Object::cast_to<InputEventMouse>(*p_event) ||
+				Object::cast_to<InputEventScreenDrag>(*p_event) ||
+				Object::cast_to<InputEventScreenTouch>(*p_event)) {
 			physics_picking_events.push_back(p_event);
 			set_input_as_handled();
 		}
