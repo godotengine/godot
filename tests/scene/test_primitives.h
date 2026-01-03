@@ -551,7 +551,7 @@ TEST_CASE("[SceneTree][Primitive][Sphere] Sphere Primitive") {
 		real_t radius = 1.1f;
 		int radial_segments = 8;
 		int rings = 5;
-		SphereMesh::create_mesh_array(data, radius, 2 * radius, radial_segments, rings);
+		SphereMesh::create_mesh_array(SphereMesh::Shape::SPHEROID, data, radius, 2 * radius, 0, 0, radial_segments, rings);
 		Vector<Vector3> points = data[RS::ARRAY_VERTEX];
 		Vector<Vector3> normals = data[RS::ARRAY_NORMAL];
 
