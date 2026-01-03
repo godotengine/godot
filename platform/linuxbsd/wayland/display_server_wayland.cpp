@@ -181,6 +181,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
+		case FEATURE_TOUCHSCREEN:
 		case FEATURE_MOUSE:
 		case FEATURE_MOUSE_WARP:
 		case FEATURE_CLIPBOARD:
@@ -674,6 +675,12 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
 	return wayland_thread.screen_get_data(p_screen).refresh_rate;
+}
+
+bool DisplayServerWayland::is_touchscreen_available() const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	return wayland_thread.input_has_touch() || (Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse());
 }
 
 void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
@@ -1763,43 +1770,58 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandThread::InputEventMessage> inputev_msg = msg;
 		if (inputev_msg.is_valid()) {
+			bool process_popups = false;
+			Point2 position;
+			WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
+
 			Ref<InputEventMouseButton> mb = inputev_msg->event;
+			if (mb.is_valid()) {
+				process_popups = (mb->is_pressed() && mb->get_button_mask() != last_mouse_monitor_mask);
+				position = mb->get_position();
+				window_id = mb->get_window_id();
+
+				last_mouse_monitor_mask = mb->get_button_mask();
+			}
+
+			Ref<InputEventScreenTouch> st = inputev_msg->event;
+			if (st.is_valid()) {
+				process_popups = st->is_pressed() && (st->is_pressed() != last_touch_monitor_pressed);
+				position = st->get_position();
+				window_id = st->get_window_id();
+
+				last_touch_monitor_pressed = st->is_pressed();
+			}
 
 			bool handled = false;
-			if (!popup_menu_list.is_empty() && mb.is_valid()) {
-				// Popup menu handling.
+			if (!popup_menu_list.is_empty() && process_popups) {
+				List<WindowID>::Element *E = popup_menu_list.back();
+				List<WindowID>::Element *C = nullptr;
 
-				BitField<MouseButtonMask> mouse_mask = mb->get_button_mask();
-				if (mouse_mask != last_mouse_monitor_mask && mb->is_pressed()) {
-					List<WindowID>::Element *E = popup_menu_list.back();
-					List<WindowID>::Element *C = nullptr;
+				Point2 global_pos = position + window_get_position(window_id);
 
-					// Looking for the oldest popup to close.
-					while (E) {
-						WindowData &wd = windows[E->get()];
-						Point2 global_pos = mb->get_position() + window_get_position(mb->get_window_id());
-						if (wd.rect.has_point(global_pos)) {
-							break;
-						} else if (wd.safe_rect.has_point(global_pos)) {
-							break;
-						}
-
-						C = E;
-						E = E->prev();
+				// Looking for the oldest popup to close.
+				while (E) {
+					WindowData &wd = windows[E->get()];
+					if (wd.rect.has_point(global_pos)) {
+						break;
+					} else if (wd.safe_rect.has_point(global_pos)) {
+						break;
 					}
 
-					if (C) {
-						handled = true;
-						_send_window_event(WINDOW_EVENT_CLOSE_REQUEST, C->get());
-					}
+					C = E;
+					E = E->prev();
 				}
 
-				last_mouse_monitor_mask = mouse_mask;
+				if (C) {
+					handled = true;
+					_send_window_event(WINDOW_EVENT_CLOSE_REQUEST, C->get());
+				}
 			}
 
 			if (!handled) {
 				Input::get_singleton()->parse_input_event(inputev_msg->event);
 			}
+
 			continue;
 		}
 

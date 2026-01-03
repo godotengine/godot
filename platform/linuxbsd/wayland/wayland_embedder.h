@@ -227,6 +227,7 @@ class WaylandEmbedder {
 	struct WaylandSeatInstanceData : WaylandObjectData {
 		uint32_t wl_keyboard_id = INVALID_ID;
 		uint32_t wl_pointer_id = INVALID_ID;
+		uint32_t wl_touch_id = INVALID_ID;
 	};
 
 	struct WaylandSeatGlobalData : WaylandObjectData {
@@ -242,6 +243,11 @@ class WaylandEmbedder {
 
 	struct WaylandPointerData : WaylandObjectData {
 		uint32_t wl_seat_id = INVALID_ID;
+	};
+
+	struct WaylandTouchData : WaylandObjectData {
+		uint32_t wl_seat_id = INVALID_ID;
+		int touch_point_count = 0;
 	};
 
 	struct WaylandSurfaceData : WaylandObjectData {
@@ -327,7 +333,7 @@ class WaylandEmbedder {
 		&wl_subcompositor_interface,
 		&wl_subsurface_interface,
 		&wl_surface_interface,
-		//&wl_touch_interface, // Unused (at the moment).
+		&wl_touch_interface,
 
 		// xdg-shell
 		&xdg_wm_base_interface,
