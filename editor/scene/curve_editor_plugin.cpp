@@ -1087,8 +1087,8 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 		v = (curve->sample_baked(t) - curve->get_min_value()) / curve->get_value_range();
 		y = CLAMP(im.get_height() - v * im.get_height(), 0, im.get_height() - 1);
 
-		Vector<Point2i> points = Geometry2D::bresenham_line(Point2i(x - 1, prev_y), Point2i(x, y));
-		for (Point2i point : points) {
+		Iterable<Geometry2D::BresenhamIterator> bresenham = Geometry2D::bresenham_iter(Point2i(x - 1, prev_y), Point2i(x, y));
+		for (const Point2i &point : bresenham) {
 			im.set_pixelv(point, line_color);
 		}
 		prev_y = y;
