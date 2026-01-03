@@ -121,7 +121,7 @@ void TreeItem::_change_tree(Tree *p_tree) {
 			tree->root = nullptr;
 		}
 
-		if (tree->popup_edited_item == this) {
+		if (tree->popup_edited_item == this || tree->popup_pressing_edited_item == this) {
 			tree->popup_edited_item = nullptr;
 			tree->popup_pressing_edited_item = nullptr;
 			tree->pressing_for_editor = false;
