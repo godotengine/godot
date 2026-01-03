@@ -1272,6 +1272,10 @@ void GDScriptTokenizerText::check_indent() {
 				indent_stack.pop_back();
 				pending_indents--;
 			}
+			// If we are in a lambda, the next indentation doesn't need to match the lambda body's indentation.
+			if (indent_stack_stack.size() > 0) {
+				return;
+			}
 			if ((indent_level() > 0 && indent_stack.back()->get() != indent_count) || (indent_level() == 0 && indent_count != 0)) {
 				// Mismatched indentation alignment.
 				Token error = make_error("Unindent doesn't match the previous indentation level.");
