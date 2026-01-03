@@ -53,9 +53,17 @@ protected:
 	static void _bind_methods();
 
 public:
-	typedef Error (*EditorExportSaveFunction)(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
-	typedef Error (*EditorExportRemoveFunction)(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path);
-	typedef Error (*EditorExportSaveSharedObject)(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
+	struct SaveFileInfo {
+		String path;
+		String source_path;
+		int file_index = 0;
+		int file_count = 0;
+		bool delta = false;
+	};
+
+	typedef Error (*SaveFileFunction)(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
+	typedef Error (*RemoveFileFunction)(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path);
+	typedef Error (*SaveSharedObjectFunction)(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
 	enum DebugFlags {
 		DEBUG_FLAG_DUMB_CLIENT = 1,
@@ -103,8 +111,9 @@ public:
 
 	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs);
 	static bool _encrypt_and_store_directory(Ref<FileAccess> p_fd, PackData &p_pack_data, const Vector<uint8_t> &p_key, uint64_t p_seed, uint64_t p_file_base);
-	static Error _encrypt_and_store_data(Ref<FileAccess> p_fd, const String &p_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool &r_encrypt);
-	String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const;
+	static Error _encrypt_and_store_data(Ref<FileAccess> p_fd, const Ref<EditorExportPreset> &p_preset, const String &p_path, const Vector<uint8_t> &p_data, bool &r_encrypt);
+	static String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset);
+	static Vector<uint8_t> _get_encryption_key(const Ref<EditorExportPreset> &p_preset);
 
 private:
 	struct ZipData {
@@ -120,14 +129,14 @@ private:
 	void _export_find_customized_resources(const Ref<EditorExportPreset> &p_preset, EditorFileSystemDirectory *p_dir, EditorExportPreset::FileExportMode p_mode, HashSet<String> &p_paths);
 	void _export_find_dependencies(const String &p_path, HashSet<String> &p_paths);
 
-	static Error _save_pack_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
-	static Error _save_pack_patch_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
+	static Error _save_pack_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
+	static Error _save_pack_patch_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
 	static Error _pack_add_shared_object(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
 	static Error _remove_pack_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path);
 
-	static Error _save_zip_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
-	static Error _save_zip_patch_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
+	static Error _save_zip_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
+	static Error _save_zip_patch_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
 	static Error _zip_add_shared_object(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
 	struct ScriptCallbackData {
@@ -135,7 +144,7 @@ private:
 		Callable so_cb;
 	};
 
-	static Error _script_save_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
+	static Error _script_save_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
 	static Error _script_add_shared_object(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
 	void _edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, HashSet<String> &r_list, bool exclude);
@@ -309,7 +318,7 @@ public:
 	Array get_current_presets() const;
 
 	Error _export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, const Callable &p_save_func, const Callable &p_so_func);
-	Error export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_save_func, EditorExportRemoveFunction p_remove_func, void *p_udata, EditorExportSaveSharedObject p_so_func = nullptr);
+	Error export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, SaveFileFunction p_save_func, RemoveFileFunction p_remove_func, void *p_udata, SaveSharedObjectFunction p_so_func = nullptr);
 
 	Dictionary _save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, bool p_embed = false);
 	Dictionary _save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
@@ -317,8 +326,8 @@ public:
 	Dictionary _save_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
 	Dictionary _save_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
 
-	Error save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, EditorExportSaveFunction p_save_func = nullptr, EditorExportRemoveFunction p_remove_func = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
-	Error save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, EditorExportSaveFunction p_save_func = nullptr);
+	Error save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, SaveFileFunction p_save_func = nullptr, RemoveFileFunction p_remove_func = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
+	Error save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, SaveFileFunction p_save_func = nullptr);
 
 	Error save_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
 	Error save_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr);
