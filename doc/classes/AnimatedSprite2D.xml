@@ -11,6 +11,36 @@
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
 	</tutorials>
 	<methods>
+		<method name="get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns a [Rect2] representing the AnimatedSprite2D's boundary in local coordinates.
+				[b]Example:[/b] Detect if the AnimatedSprite2D was clicked:
+				[codeblocks]
+				[gdscript]
+				func _input(event):
+				    if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+				        if get_rect().has_point(to_local(event.position)):
+				            print("A click!")
+				[/gdscript]
+				[csharp]
+				public override void _Input(InputEvent @event)
+				{
+				    if (@event is InputEventMouseButton inputEventMouse)
+				    {
+				        if (inputEventMouse.Pressed &amp;&amp; inputEventMouse.ButtonIndex == MouseButton.Left)
+				        {
+				            if (GetRect().HasPoint(ToLocal(inputEventMouse.Position)))
+				            {
+				                GD.Print("A click!");
+				            }
+				        }
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_playing_speed" qualifiers="const">
 			<return type="float" />
 			<description>
