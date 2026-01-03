@@ -318,9 +318,11 @@ uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
 	return RSG::utilities->get_rendering_info(p_info);
 }
 
+#ifdef RD_ENABLED
 RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() const {
 	return RSG::utilities->get_video_adapter_type();
 }
+#endif // RD_ENABLED
 
 void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {
 	RSG::utilities->capturing_timestamps = p_enable;
@@ -394,11 +396,13 @@ void RenderingServerDefault::_assign_mt_ids(WorkerThreadPool::TaskID p_pump_task
 	server_thread = Thread::get_caller_id();
 	server_task_id = p_pump_task_id;
 
+#ifdef RD_ENABLED
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (rd) {
 		// This is needed because the main RD is created on the main thread.
 		rd->make_current();
 	}
+#endif // RD_ENABLED
 }
 
 void RenderingServerDefault::_thread_exit() {

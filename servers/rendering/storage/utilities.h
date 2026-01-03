@@ -180,7 +180,9 @@ public:
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
+#ifdef RD_ENABLED
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
+#endif // RD_ENABLED
 	virtual String get_video_adapter_api_version() const = 0;
 
 	virtual Size2i get_maximum_viewport_size() const = 0;

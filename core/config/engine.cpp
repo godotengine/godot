@@ -34,9 +34,12 @@
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/object/ref_counted.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
+#ifdef RD_ENABLED
 #include "servers/rendering/rendering_device.h"
+#endif // RD_ENABLED
 
 void Engine::_update_time_scale() {
 	_time_scale = _user_time_scale * _game_time_scale;
@@ -86,10 +89,12 @@ double Engine::get_physics_jitter_fix() const {
 void Engine::set_max_fps(int p_fps) {
 	_max_fps = p_fps > 0 ? p_fps : 0;
 
+#ifdef RD_ENABLED
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (rd) {
 		rd->_set_max_fps(_max_fps);
 	}
+#endif // RD_ENABLED
 }
 
 int Engine::get_max_fps() const {

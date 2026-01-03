@@ -156,7 +156,7 @@ def configure(env: "SConsEnvironment"):
         env["metal"] = False
 
     if env["metal"]:
-        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED"])
         env.Prepend(
             CPPPATH=[
                 "$APPLE_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
@@ -171,7 +171,7 @@ def configure(env: "SConsEnvironment"):
         env["vulkan"] = False
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])

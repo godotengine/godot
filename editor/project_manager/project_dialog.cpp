@@ -481,7 +481,9 @@ void ProjectDialog::_reset_name() {
 }
 
 void ProjectDialog::_renderer_selected() {
-	ERR_FAIL_NULL(renderer_button_group->get_pressed_button());
+	if (!renderer_button_group->get_pressed_button()) {
+		return;
+	}
 
 	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
 
@@ -1111,8 +1113,9 @@ ProjectDialog::ProjectDialog() {
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Forward+"));
 	rs_button->set_accessibility_name(TTRC("Renderer:"));
-#ifndef RD_ENABLED
+#if !defined(RD_ENABLED) || !defined(FORWARD_RD_ENABLED)
 	rs_button->set_disabled(true);
+	rs_button->set_tooltip_text(TTRC("Either RenderingDevice or the Forward+ rendering method was disabled at compile time."));
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
 	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
@@ -1124,8 +1127,9 @@ ProjectDialog::ProjectDialog() {
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Mobile"));
 	rs_button->set_accessibility_name(TTRC("Renderer:"));
-#ifndef RD_ENABLED
+#if !defined(RD_ENABLED) || !defined(MOBILE_RD_ENABLED)
 	rs_button->set_disabled(true);
+	rs_button->set_tooltip_text(TTRC("Either RenderingDevice or the Mobile rendering method was disabled at compile time."));
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "mobile");
 	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
