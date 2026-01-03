@@ -44,33 +44,35 @@ void ThemeOwner::set_owner_node(Node *p_node) {
 void ThemeOwner::set_owner_context(ThemeContext *p_context, bool p_propagate) {
 	ThemeContext *default_context = ThemeDB::get_singleton()->get_default_theme_context();
 
-	if (owner_context && owner_context->is_connected(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed))) {
-		owner_context->disconnect(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed));
-	} else if (default_context->is_connected(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed))) {
-		default_context->disconnect(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed));
+	Callable callback = callable_mp_static_with_subject(holder, &ThemeOwner::_owner_context_changed);
+
+	if (owner_context && owner_context->is_connected(CoreStringName(changed), callback)) {
+		owner_context->disconnect(CoreStringName(changed), callback);
+	} else if (default_context->is_connected(CoreStringName(changed), callback)) {
+		default_context->disconnect(CoreStringName(changed), callback);
 	}
 
 	owner_context = p_context;
 
 	if (owner_context) {
-		owner_context->connect(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed));
+		owner_context->connect(CoreStringName(changed), callback);
 	} else {
-		default_context->connect(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed));
+		default_context->connect(CoreStringName(changed), callback);
 	}
 
 	if (p_propagate) {
-		_owner_context_changed();
+		_owner_context_changed(holder);
 	}
 }
 
-void ThemeOwner::_owner_context_changed() {
-	if (!holder->is_inside_tree()) {
+void ThemeOwner::_owner_context_changed(Node *p_node) {
+	if (!p_node->is_inside_tree()) {
 		// We ignore theme changes outside of tree, because NOTIFICATION_ENTER_TREE covers everything.
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(holder);
-	Window *w = c == nullptr ? Object::cast_to<Window>(holder) : nullptr;
+	Control *c = Object::cast_to<Control>(p_node);
+	Window *w = c == nullptr ? Object::cast_to<Window>(p_node) : nullptr;
 
 	if (c) {
 		c->notification(Control::NOTIFICATION_THEME_CHANGED);
@@ -224,7 +226,7 @@ void ThemeOwner::get_theme_type_dependencies(const Node *p_for_node, const Strin
 	ThemeDB::get_singleton()->get_native_type_dependencies(p_theme_type, r_result);
 }
 
-Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const Vector<StringName> &p_theme_types) {
+Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const Vector<StringName> &p_theme_types) const {
 	ERR_FAIL_COND_V_MSG(p_theme_types.is_empty(), Variant(), "At least one theme type must be specified.");
 
 	// First, look through each control or window node in the branch, until no valid parent can be found.
@@ -260,7 +262,7 @@ Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const S
 	return global_context->get_fallback_theme()->get_theme_item(p_data_type, p_name, StringName());
 }
 
-bool ThemeOwner::has_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const Vector<StringName> &p_theme_types) {
+bool ThemeOwner::has_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const Vector<StringName> &p_theme_types) const {
 	ERR_FAIL_COND_V_MSG(p_theme_types.is_empty(), false, "At least one theme type must be specified.");
 
 	// First, look through each control or window node in the branch, until no valid parent can be found.
@@ -296,7 +298,7 @@ bool ThemeOwner::has_theme_item_in_types(Theme::DataType p_data_type, const Stri
 	return false;
 }
 
-float ThemeOwner::get_theme_default_base_scale() {
+float ThemeOwner::get_theme_default_base_scale() const {
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.
@@ -326,7 +328,7 @@ float ThemeOwner::get_theme_default_base_scale() {
 	return ThemeDB::get_singleton()->get_fallback_base_scale();
 }
 
-Ref<Font> ThemeOwner::get_theme_default_font() {
+Ref<Font> ThemeOwner::get_theme_default_font() const {
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.
@@ -356,7 +358,7 @@ Ref<Font> ThemeOwner::get_theme_default_font() {
 	return ThemeDB::get_singleton()->get_fallback_font();
 }
 
-int ThemeOwner::get_theme_default_font_size() {
+int ThemeOwner::get_theme_default_font_size() const {
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.
