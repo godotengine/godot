@@ -37,6 +37,9 @@
 		<member name="html/focus_canvas_on_start" type="bool" setter="" getter="">
 			If [code]true[/code], the canvas will be focused as soon as the application is loaded, if the browser window is already in focus.
 		</member>
+		<member name="html/force_gzip" type="bool" setter="" getter="">
+			If [code]true[/code], the project pack and wasm files will be gzip compressed and loaded in a way that bypasses server side compression.
+		</member>
 		<member name="html/head_include" type="String" setter="" getter="">
 			Additional HTML tags to include inside the [code]&lt;head&gt;[/code], such as [code]&lt;meta&gt;[/code] tags.
 			[b]Note:[/b] You do not need to add a [code]&lt;title&gt;[/code] tag, as it is automatically included based on the project's name.
