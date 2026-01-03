@@ -1203,15 +1203,10 @@ void FileDialog::update_customization() {
 
 void FileDialog::clear_filename_filter() {
 	set_filename_filter("");
-	update_filename_filter_gui();
-	invalidate();
 }
 
 void FileDialog::update_filename_filter_gui() {
 	filename_filter_box->set_visible(show_filename_filter);
-	if (!show_filename_filter) {
-		file_name_filter.clear();
-	}
 	if (filename_filter->get_text() == file_name_filter) {
 		return;
 	}
@@ -1258,9 +1253,14 @@ void FileDialog::set_filename_filter(const String &p_filename_filter) {
 		return;
 	}
 	file_name_filter = p_filename_filter;
-	update_filename_filter_gui();
+
+	if (!file_name_filter.is_empty() && !show_filename_filter) {
+		show_filename_filter_button->set_pressed(true);
+	} else {
+		update_filename_filter_gui();
+		invalidate();
+	}
 	emit_signal(SNAME("filename_filter_changed"), filter);
-	invalidate();
 }
 
 Vector<String> FileDialog::get_filters() const {
@@ -2209,6 +2209,7 @@ void FileDialog::set_show_filename_filter(bool p_show) {
 	if (p_show) {
 		filename_filter->grab_focus();
 	} else {
+		file_name_filter.clear();
 		if (filename_filter->has_focus()) {
 			callable_mp((Control *)file_list, &Control::grab_focus).call_deferred(false);
 		}
