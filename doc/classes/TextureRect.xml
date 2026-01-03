@@ -22,6 +22,7 @@
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="TextureRect.StretchMode" default="0">
 			Controls the texture's behavior when resizing the node's bounding rectangle.
+			[b]Note:[/b] [constant STRETCH_TILE] mode is not supported for [member texture] set to an [AtlasTexture] with non-zero [member AtlasTexture.margin].
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The node's [Texture2D] resource.
