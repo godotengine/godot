@@ -316,6 +316,9 @@ bool Object::_predelete() {
 }
 
 void Object::cancel_free() {
+	if (_predelete_ok) {
+		_is_queued_for_deletion = false;
+	}
 	_predelete_ok = false;
 }
 
