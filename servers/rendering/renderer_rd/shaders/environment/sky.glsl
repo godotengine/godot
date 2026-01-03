@@ -276,7 +276,7 @@ void main() {
 	// Apply environment 'brightness' setting separately before fog to ensure consistent luminance.
 	frag_color.rgb = frag_color.rgb * params.brightness_multiplier;
 
-#if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
+#if !defined(DISABLE_FOG)
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	if (sky_scene_data.fog_enabled) {
@@ -284,11 +284,13 @@ void main() {
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a * sky_scene_data.fog_sky_affect);
 	}
 
+#if !defined(USE_CUBEMAP_PASS)
 	if (sky_scene_data.volumetric_fog_enabled) {
 		vec4 fog = volumetric_fog_process(uv);
 		fog.rgb = frag_color.rgb * fog.a + fog.rgb;
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, sky_scene_data.volumetric_fog_sky_affect);
 	}
+#endif // USE_CUBEMAP_PASS
 
 	if (custom_fog.a > 0.0) {
 		frag_color.rgb = mix(frag_color.rgb, custom_fog.rgb, custom_fog.a);
