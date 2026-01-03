@@ -5580,7 +5580,7 @@ void SubViewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size_2d_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_2d_override", "get_size_2d_override");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_2d_override_stretch"), "set_size_2d_override_stretch", "is_size_2d_override_stretch_enabled");
 	ADD_GROUP("Render Target", "render_target_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Once"), "set_clear_mode", "get_clear_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,When Parent Visible,Always"), "set_update_mode", "get_update_mode");
 
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ALWAYS);
