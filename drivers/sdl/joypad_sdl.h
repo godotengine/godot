@@ -56,10 +56,14 @@ private:
 		SDL_JoystickID sdl_instance_idx;
 
 		bool supports_force_feedback = false;
+		bool supports_sensors = false;
 		uint64_t ff_effect_timestamp = 0;
 
 		virtual bool has_joy_light() const override;
 		virtual bool set_joy_light(const Color &p_color) override;
+
+		virtual bool has_joy_sensors() const override;
+		virtual bool set_joy_sensors_enabled(bool p_enable) override;
 
 		SDL_Joystick *get_sdl_joystick() const;
 		SDL_Gamepad *get_sdl_gamepad() const;

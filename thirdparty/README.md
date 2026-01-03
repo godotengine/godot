@@ -368,6 +368,21 @@ Files extracted from upstream source:
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
 
+## gamepadmotionhelpers
+
+- Upstream: https://github.com/JibbSmart/GamepadMotionHelpers
+- Version: 39b578aacf34c3a1c584d8f7f194adc776f88055, 2023
+- License: MIT
+
+Files extracted from upstream source:
+
+- `GamepadMotion.hpp`
+- `LICENSE.TXT`
+
+Patches:
+
+- `0001-fix-warnings.patch` ([GH-111679](https://github.com/godotengine/godot/pull/111679))
+
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
