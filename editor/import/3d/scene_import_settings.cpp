@@ -462,9 +462,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 	AnimationPlayer *anim_node = Object::cast_to<AnimationPlayer>(p_node);
 	if (anim_node) {
 		Vector<String> animation_list;
-		List<StringName> animations;
-		anim_node->get_animation_list(&animations);
-		for (const StringName &E : animations) {
+		for (const StringName &E : anim_node->get_sorted_animation_list()) {
 			_fill_animation(scene_tree, anim_node->get_animation(E), E, item);
 			animation_list.append(E);
 		}

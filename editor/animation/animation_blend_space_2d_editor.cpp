@@ -126,9 +126,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
-			List<StringName> names;
-			tree->get_animation_list(&names);
-			for (const StringName &E : names) {
+			for (const StringName &E : tree->get_sorted_animation_list()) {
 				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
 				animations_to_add.push_back(E);
 			}

@@ -282,20 +282,20 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 		}
 		return;
 	}
-	List<List<Blend>::Element *> to_erase;
-	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
-		Blend &b = E->get();
+	LocalVector<int> to_erase;
+	for (uint32_t i = 0; i < c.blend.size(); i++) {
+		Blend &b = c.blend[i];
 		b.blend_left = MAX(0, b.blend_left - Math::abs(speed_scale * p_delta) / b.blend_time);
 		if (Animation::is_less_or_equal_approx(b.blend_left, 0)) {
-			to_erase.push_back(E);
+			to_erase.push_back(i);
 			b.blend_left = CMP_EPSILON; // May want to play last frame.
 		}
 		// Note: There may be issues if an animation event triggers an animation change while this blend is active,
 		// so it is best to use "deferred" calls instead of "immediate" for animation events that can trigger new animations.
 		_process_playback_data(b.data, p_delta, b.blend_left, false, false, false);
 	}
-	for (List<Blend>::Element *&E : to_erase) {
-		c.blend.erase(E);
+	for (int i = to_erase.size() - 1; i >= 0; i--) {
+		c.blend.remove_at(to_erase[i]);
 	}
 }
 
@@ -338,9 +338,9 @@ void AnimationPlayer::_blend_post_process() {
 				if (!finished_anim.is_empty()) {
 					emit_signal(SceneStringName(animation_finished), finished_anim);
 				}
-				String old = playback.assigned;
+				const StringName old = playback.assigned;
 				play(playback_queue.front()->get());
-				String new_name = playback.assigned;
+				const StringName &new_name = playback.assigned;
 				playback_queue.pop_front();
 				if (end_notify) {
 					emit_signal(SceneStringName(animation_changed), old, new_name);
@@ -419,9 +419,10 @@ void AnimationPlayer::play_section_with_markers(const StringName &p_name, const 
 		name = playback.assigned;
 	}
 
-	ERR_FAIL_COND_MSG(!animation_set.has(name), vformat("Animation not found: %s.", name));
+	AnimationData *ad = animation_set.getptr(name);
+	ERR_FAIL_NULL_MSG(ad, vformat("Animation not found: %s.", name));
 
-	Ref<Animation> animation = animation_set[name].animation;
+	const Ref<Animation> &animation = ad->animation;
 
 	ERR_FAIL_COND_MSG(p_start_marker == p_end_marker && p_start_marker, vformat("Start marker and end marker cannot be the same marker: %s.", p_start_marker));
 	ERR_FAIL_COND_MSG(p_start_marker && !animation->has_marker(p_start_marker), vformat("Marker %s not found in animation: %s.", p_start_marker, name));
@@ -467,12 +468,12 @@ void AnimationPlayer::play_section(const StringName &p_name, double p_start_time
 		} else if (blend_times.has(bk)) {
 			blend_time = blend_times[bk];
 		} else {
-			bk.from = "*";
+			bk.from = SNAME("*");
 			if (blend_times.has(bk)) {
 				blend_time = blend_times[bk];
 			} else {
 				bk.from = c.current.from->name;
-				bk.to = "*";
+				bk.to = SNAME("*");
 
 				if (blend_times.has(bk)) {
 					blend_time = blend_times[bk];
@@ -660,8 +661,9 @@ void AnimationPlayer::seek_internal(double p_time, bool p_update, bool p_update_
 	playback.current.pos = p_time;
 	if (!playback.current.from) {
 		if (playback.assigned) {
-			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
-			playback.current.from = &animation_set[playback.assigned];
+			AnimationData *ad = animation_set.getptr(playback.assigned);
+			ERR_FAIL_NULL_MSG(ad, vformat("Animation not found: %s.", playback.assigned));
+			playback.current.from = ad;
 		}
 		if (!playback.current.from) {
 			return; // There is no animation.
@@ -804,10 +806,11 @@ void AnimationPlayer::animation_set_next(const StringName &p_animation, const St
 }
 
 StringName AnimationPlayer::animation_get_next(const StringName &p_animation) const {
-	if (!animation_next_set.has(p_animation)) {
+	const StringName *next = animation_next_set.getptr(p_animation);
+	if (!next) {
 		return StringName();
 	}
-	return animation_next_set[p_animation];
+	return *next;
 }
 
 void AnimationPlayer::set_default_blend_time(double p_default) {
@@ -838,8 +841,8 @@ double AnimationPlayer::get_blend_time(const StringName &p_animation1, const Str
 	bk.from = p_animation1;
 	bk.to = p_animation2;
 
-	if (blend_times.has(bk)) {
-		return blend_times[bk];
+	if (const double *blend_time = blend_times.getptr(bk)) {
+		return *blend_time;
 	} else {
 		return 0;
 	}
@@ -882,9 +885,7 @@ Tween::EaseType AnimationPlayer::get_auto_capture_ease_type() const {
 void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0 && (pf == "play" || pf == "play_backwards" || pf == "has_animation" || pf == "queue")) {
-		List<StringName> al;
-		get_animation_list(&al);
-		for (const StringName &name : al) {
+		for (const StringName &name : get_sorted_animation_list()) {
 			r_options->push_back(String(name).quote());
 		}
 	}
@@ -895,7 +896,7 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 void AnimationPlayer::_animation_removed(const StringName &p_name, const StringName &p_library) {
 	AnimationMixer::_animation_removed(p_name, p_library);
 
-	StringName name = p_library == StringName() ? p_name : StringName(String(p_library) + "/" + String(p_name));
+	const StringName &name = p_library == StringName() ? p_name : StringName(String(p_library) + "/" + String(p_name));
 
 	if (!animation_set.has(name)) {
 		return; // No need to update because not the one from the library being used.
@@ -904,17 +905,16 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 	_animation_set_cache_update();
 
 	// Erase blends if needed
-	List<BlendKey> to_erase;
+	LocalVector<BlendKey> to_erase;
 	for (const KeyValue<BlendKey, double> &E : blend_times) {
-		BlendKey bk = E.key;
+		const BlendKey &bk = E.key;
 		if (bk.from == name || bk.to == name) {
 			to_erase.push_back(bk);
 		}
 	}
 
-	while (to_erase.size()) {
-		blend_times.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	for (const BlendKey &bk : to_erase) {
+		blend_times.erase(bk);
 	}
 }
 
@@ -922,7 +922,7 @@ void AnimationPlayer::_rename_animation(const StringName &p_from_name, const Str
 	AnimationMixer::_rename_animation(p_from_name, p_to_name);
 
 	// Rename autoplay or blends if needed.
-	List<BlendKey> to_erase;
+	LocalVector<BlendKey> to_erase;
 	HashMap<BlendKey, double, BlendKey> to_insert;
 	for (const KeyValue<BlendKey, double> &E : blend_times) {
 		BlendKey bk = E.key;
@@ -943,9 +943,8 @@ void AnimationPlayer::_rename_animation(const StringName &p_from_name, const Str
 		}
 	}
 
-	while (to_erase.size()) {
-		blend_times.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	for (const BlendKey &bk : to_erase) {
+		blend_times.erase(bk);
 	}
 
 	while (to_insert.size()) {
