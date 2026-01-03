@@ -282,6 +282,9 @@ public:
 	static PackedByteArray _get_file_as_bytes(const String &p_path) { return get_file_as_bytes(p_path, &last_file_open_error); }
 	static String _get_file_as_string(const String &p_path) { return get_file_as_string(p_path, &last_file_open_error); }
 
+	static Error store_buffer_as_file(const Vector<uint8_t> &p_buffer, const String &p_path);
+	static Error store_string_as_file(const String &p_string, const String &p_path);
+
 	template <typename T>
 	static void make_default(AccessType p_access) {
 		create_func[p_access] = _create_builtin<T>;

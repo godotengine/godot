@@ -966,6 +966,19 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 	return ret;
 }
 
+Error FileAccess::store_buffer_as_file(const Vector<uint8_t> &p_buffer, const String &p_path) {
+	Error err;
+	Ref<FileAccess> f = FileAccess::open(p_path, WRITE, &err);
+	if (f.is_null()) {
+		ERR_FAIL_V_MSG(err, vformat("Can't open file from path '%s'.", p_path));
+	}
+	return f->store_buffer(p_buffer) ? OK : ERR_FILE_CANT_WRITE;
+}
+
+Error FileAccess::store_string_as_file(const String &p_string, const String &p_path) {
+	return store_buffer_as_file(p_string.to_utf8_buffer(), p_path);
+}
+
 String FileAccess::get_md5(const String &p_file) {
 	Ref<FileAccess> f = FileAccess::open(p_file, READ);
 	if (f.is_null()) {
@@ -1057,6 +1070,8 @@ void FileAccess::_bind_methods() {
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_bytes", "path"), &FileAccess::_get_file_as_bytes);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_string", "path"), &FileAccess::_get_file_as_string);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("store_buffer_as_file", "buffer", "path"), &FileAccess::store_buffer_as_file);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("store_string_as_file", "string", "path"), &FileAccess::store_string_as_file);
 
 	ClassDB::bind_method(D_METHOD("resize", "length"), &FileAccess::resize);
 	ClassDB::bind_method(D_METHOD("flush"), &FileAccess::flush);
