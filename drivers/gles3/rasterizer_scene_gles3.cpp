@@ -3266,7 +3266,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						} break;
 						case GLES3::SceneShaderData::BLEND_MODE_SUB: {
 							glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-							glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+							if (p_render_data->transparent_bg) {
+								glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE);
+							} else {
+								glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
+							}
 
 						} break;
 						case GLES3::SceneShaderData::BLEND_MODE_MUL: {
