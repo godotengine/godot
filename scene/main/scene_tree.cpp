@@ -147,6 +147,9 @@ void SceneTree::tree_changed() {
 
 void SceneTree::node_added(Node *p_node) {
 	emit_signal(node_added_name, p_node);
+	if (nodes_removed_on_group_call_lock) {
+		nodes_removed_on_group_call.erase(p_node);
+	}
 }
 
 void SceneTree::node_removed(Node *p_node) {
