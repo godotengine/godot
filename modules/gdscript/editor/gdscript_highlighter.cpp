@@ -76,6 +76,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	int in_declaration_param_dicts = 0; // The number of opened `{` inside func params.
 	int in_type_params = 0; // The number of opened `[` after type name.
 
+	int bracket_level_round = 0; // for ().
+	int bracket_level_curly = 0; // for {}.
+	int bracket_level_square = 0; // for [].
+
 	Color keyword_color;
 	Color color;
 
@@ -93,6 +97,24 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			get_line_syntax_highlighting(p_line - 1);
 		}
 		in_region = color_region_cache[p_line - 1];
+
+		if (bracket_pair_colors.size() > 0) {
+			if (!bracket_level_cache.has(p_line - 1)) {
+				int prev_line = p_line - 1;
+				while (prev_line > 0 && !bracket_level_cache.has(prev_line)) {
+					prev_line--;
+				}
+
+				for (int i = prev_line; i < p_line; i++) {
+					get_line_syntax_highlighting(i);
+				}
+			}
+
+			Vector<int> prev_levels = bracket_level_cache[p_line - 1];
+			bracket_level_square = prev_levels[SQUARE];
+			bracket_level_round = prev_levels[ROUND];
+			bracket_level_curly = prev_levels[CURLY];
+		}
 	}
 
 	const String &str = text_edit->get_line_with_ime(p_line);
@@ -704,6 +726,59 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			next_type = IDENTIFIER;
 		}
 
+		// Bracket pair colorization.
+		if (bracket_pair_colors.size() > 0) {
+			bool is_bracket = false;
+			Color bracket_color;
+
+			int *level_ptr = nullptr;
+			bool is_opening_bracket = false;
+
+			switch (str[j]) {
+				case '(':
+					level_ptr = &bracket_level_round;
+					is_opening_bracket = true;
+					break;
+				case ')':
+					level_ptr = &bracket_level_round;
+					is_opening_bracket = false;
+					break;
+
+				case '[':
+					level_ptr = &bracket_level_square;
+					is_opening_bracket = true;
+					break;
+				case ']':
+					level_ptr = &bracket_level_square;
+					is_opening_bracket = false;
+					break;
+
+				case '{':
+					level_ptr = &bracket_level_curly;
+					is_opening_bracket = true;
+					break;
+				case '}':
+					level_ptr = &bracket_level_curly;
+					is_opening_bracket = false;
+					break;
+			}
+
+			if (level_ptr != nullptr) {
+				if (is_opening_bracket) {
+					bracket_color = bracket_pair_colors[*level_ptr % bracket_pair_colors.size()];
+					(*level_ptr)++;
+				} else {
+					*level_ptr = MAX(0, *level_ptr - 1);
+					bracket_color = bracket_pair_colors[*level_ptr % bracket_pair_colors.size()];
+				}
+				is_bracket = true;
+			}
+
+			if (is_bracket) {
+				color = bracket_color;
+			}
+		}
+
 		if (next_type != current_type) {
 			if (current_type == NONE) {
 				current_type = next_type;
@@ -737,6 +812,14 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			color_map[j] = highlighter_info;
 		}
 	}
+
+	Vector<int> final_levels;
+	final_levels.resize(3);
+	final_levels.set(SQUARE, bracket_level_square);
+	final_levels.set(ROUND, bracket_level_round);
+	final_levels.set(CURLY, bracket_level_curly);
+	bracket_level_cache[p_line] = final_levels;
+
 	return color_map;
 }
 
@@ -960,6 +1043,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	annotation_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/annotation_color");
 	string_name_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/string_name_color");
 	type_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
+	bracket_pair_colors = EDITOR_GET("text_editor/theme/highlighting/gdscript/bracket_pair_colors");
 	comment_marker_colors[COMMENT_MARKER_CRITICAL] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/critical_color");
 	comment_marker_colors[COMMENT_MARKER_WARNING] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/warning_color");
 	comment_marker_colors[COMMENT_MARKER_NOTICE] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/notice_color");
@@ -1008,6 +1092,10 @@ void GDScriptSyntaxHighlighter::add_color_region(ColorRegion::Type p_type, const
 	color_region.is_comment = p_type == ColorRegion::TYPE_COMMENT || p_type == ColorRegion::TYPE_CODE_REGION;
 	color_regions.insert(at, color_region);
 	clear_highlighting_cache();
+}
+
+void GDScriptSyntaxHighlighter::_clear_highlighting_cache() {
+	bracket_level_cache.clear();
 }
 
 Ref<EditorSyntaxHighlighter> GDScriptSyntaxHighlighter::_create() const {
