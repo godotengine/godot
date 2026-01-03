@@ -29,16 +29,21 @@ repos:
         types_or: [text]
         args: [-style=file:misc/utility/clang_format_glsl.yml]
 
+  # Not automatically triggered (because it requires compile_commands.json to be up-to-date).
+  # Invoke it manually via `pre-commit run --hook-stage manual clang-tidy`
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
       - id: clang-tidy
-        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
-        args: [--fix, --quiet, --use-color]
+        # TODO .inc ignored for now because they don't include their parent header.
+        # TODO Platform-specific subfolders currently fail, we should try to include them
+        files: ^(core|main|scene)/.*\.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|java)$
+        # No unknown warning suppression used for easier compatibility with gcc
+        args: [--fix, --quiet, --use-color, -p=compile_commands.json, -extra-arg=-Wno-unknown-warning-option]
         types_or: [text]
         additional_dependencies: [clang-tidy==21.1.6]
         require_serial: true
-        stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
+        stages: [manual]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.7
