@@ -3909,8 +3909,8 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 	// these are only used if we have 1 view, else we use the projections in our scene data
 	push_constant.proj_info[0] = -2.0f / (internal_size.x * p_projections[0].columns[0][0]);
 	push_constant.proj_info[1] = -2.0f / (internal_size.y * p_projections[0].columns[1][1]);
-	push_constant.proj_info[2] = (1.0f - p_projections[0].columns[0][2]) / p_projections[0].columns[0][0];
-	push_constant.proj_info[3] = (1.0f + p_projections[0].columns[1][2]) / p_projections[0].columns[1][1];
+	push_constant.proj_info[2] = (1.0f - p_projections[0].columns[2][0]) / p_projections[0].columns[0][0];
+	push_constant.proj_info[3] = (1.0f + p_projections[0].columns[2][1]) / p_projections[0].columns[1][1];
 
 	bool use_sdfgi = p_render_buffers->has_custom_data(RB_SCOPE_SDFGI);
 	bool use_voxel_gi_instances = push_constant.max_voxel_gi_instances > 0;
