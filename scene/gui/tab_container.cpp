@@ -218,9 +218,9 @@ void TabContainer::_notification(int p_what) {
 				_refresh_tab_names();
 			}
 
-			if (setup_current_tab >= -1) {
+			if (setup_current_tab != INVALID_CURRENT_TAB) {
 				set_current_tab(setup_current_tab);
-				setup_current_tab = -2;
+				setup_current_tab = INVALID_CURRENT_TAB;
 			}
 		} break;
 
@@ -286,7 +286,7 @@ void TabContainer::_notification(int p_what) {
 			// beat it to the punch and make sure that the correct node is the only one visible first.
 			// Otherwise, it can prevent a tab change done right before this container was made visible.
 			Vector<Control *> controls = _get_tab_controls();
-			int current = setup_current_tab > -2 ? setup_current_tab : get_current_tab();
+			int current = get_current_tab();
 			for (int i = 0; i < controls.size(); i++) {
 				controls[i]->set_visible(i == current);
 			}
@@ -748,7 +748,7 @@ void TabContainer::set_current_tab(int p_current) {
 }
 
 int TabContainer::get_current_tab() const {
-	return tab_bar->get_current_tab();
+	return setup_current_tab != INVALID_CURRENT_TAB ? setup_current_tab : tab_bar->get_current_tab();
 }
 
 int TabContainer::get_previous_tab() const {
