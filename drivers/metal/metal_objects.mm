@@ -1203,6 +1203,7 @@ void MDCommandBuffer::render_next_subpass() {
 		}
 	}
 
+	desc.rasterizationRateMap = fb.rasterization_rate_map;
 	desc.renderTargetWidth = MAX((NSUInteger)MIN(render.render_area.position.x + render.render_area.size.width, fb.size.width), 1u);
 	desc.renderTargetHeight = MAX((NSUInteger)MIN(render.render_area.position.y + render.render_area.size.height, fb.size.height), 1u);
 

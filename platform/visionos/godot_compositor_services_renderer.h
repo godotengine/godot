@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  godot_compositor_services_renderer.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,11 +30,14 @@
 
 #pragma once
 
-#import "godot_renderer.h"
-#import <UIKit/UIKit.h>
+#import "drivers/apple_embedded/godot_renderer.h"
+#import <CompositorServices/CompositorServices.h>
 
-@interface GDTViewRenderer : GDTRenderer
+@interface GDTCompositorServicesRenderer : GDTRenderer
 
-- (void)renderOnView:(UIView *)view;
+- (instancetype)initWithLayerRenderer:(cp_layer_renderer_t)layer_renderer;
+- (void)startRenderLoop;
+- (void)renderFrame;
+- (void)worldRecentered;
 
 @end

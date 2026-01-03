@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  godot_renderer.mm                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,13 +28,81 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
-
 #import "godot_renderer.h"
-#import <UIKit/UIKit.h>
 
-@interface GDTViewRenderer : GDTRenderer
+#import "display_server_apple_embedded.h"
+#import "os_apple_embedded.h"
 
-- (void)renderOnView:(UIView *)view;
+#include "core/config/project_settings.h"
+#include "main/main.h"
+
+@interface GDTRenderer ()
+
+@property(assign, nonatomic) BOOL hasCalledProjectDataSetUp;
+@property(assign, nonatomic) BOOL hasStartedMain;
+@property(assign, nonatomic) BOOL hasFinishedSetUp;
+
+@end
+
+@implementation GDTRenderer
+
+- (BOOL)setUp {
+	if (self.hasFinishedSetUp) {
+		return NO;
+	}
+
+	if (!OS::get_singleton()) {
+		exit(0);
+	}
+
+	if (!self.hasCalledProjectDataSetUp) {
+		[self setUpProjectData];
+	}
+
+	if (!self.hasStartedMain) {
+		[self startMain];
+	}
+
+	self.hasFinishedSetUp = YES;
+
+	return NO;
+}
+
+- (void)setUpProjectData {
+	self.hasCalledProjectDataSetUp = YES;
+	safeDispatchSyncToMain(^{
+		Main::setup2();
+
+		// this might be necessary before here
+		NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
+		for (NSString *key in dict) {
+			NSObject *value = [dict objectForKey:key];
+			String ukey = String::utf8([key UTF8String]);
+
+			// we need a NSObject to Variant conversor
+
+			if ([value isKindOfClass:[NSString class]]) {
+				NSString *str = (NSString *)value;
+				String uval = String::utf8([str UTF8String]);
+
+				ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
+
+			} else if ([value isKindOfClass:[NSNumber class]]) {
+				NSNumber *n = (NSNumber *)value;
+				double dval = [n doubleValue];
+
+				ProjectSettings::get_singleton()->set("Info.plist/" + ukey, dval);
+			}
+			// do stuff
+		}
+	});
+}
+
+- (void)startMain {
+	self.hasStartedMain = YES;
+	safeDispatchSyncToMain(^{
+		OS_AppleEmbedded::get_singleton()->start();
+	});
+}
 
 @end

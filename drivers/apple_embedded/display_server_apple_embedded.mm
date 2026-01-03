@@ -30,8 +30,8 @@
 
 #import "display_server_apple_embedded.h"
 
-#import "app_delegate_service.h"
 #import "apple_embedded.h"
+#import "godot_app_delegate_service_apple_embedded.h"
 #import "godot_keyboard_input_view.h"
 #import "godot_view_apple_embedded.h"
 #import "godot_view_controller.h"

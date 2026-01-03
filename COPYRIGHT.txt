@@ -140,6 +140,34 @@ Comment: ProcessPhoenix
 Copyright: 2015, Jake Wharton
 License: Apache-2.0
 
+Files: drivers/apple_embedded/*
+ editor/export/editor_export_platform_apple_embedded.*
+Comment: Apple embedded platform
+Copyright: 2025, Apple Inc.
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
+Files: metal/metal_objects.*
+ metal/rendering_context_driver.*
+ metal/rendering_device_driver.*
+ platform/ios/*
+ servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.*
+ servers/rendering/rendering_device.*
+ servers/rendering/rendering_device_driver.*
+ servers/rendering/rendering_device_graph.*
+Comment: Other files modified by Apple to improve platform support
+Copyright: 2025, Apple Inc.
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
+Files: platform/visionos/*
+ modules/visionos_xr/*
+Comment: visionOS platform
+Copyright: 2025, Apple Inc.
+License: Expat
+
 Files: scene/animation/easing_equations.h
 Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner

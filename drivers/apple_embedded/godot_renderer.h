@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  godot_renderer.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,11 +30,20 @@
 
 #pragma once
 
-#import "godot_renderer.h"
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
-@interface GDTViewRenderer : GDTRenderer
+inline void safeDispatchSyncToMain(void (^block)(void)) {
+	if ([NSThread isMainThread]) {
+		block();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), block);
+	}
+}
 
-- (void)renderOnView:(UIView *)view;
+@interface GDTRenderer : NSObject
+
+@property(assign, readonly, nonatomic) BOOL hasFinishedSetup;
+
+- (BOOL)setUp;
 
 @end

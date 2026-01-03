@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  godot_app_delegate_ios.mm                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#import "godot_app_delegate_ios.h"
 
-#import "godot_renderer.h"
-#import <UIKit/UIKit.h>
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 
-@interface GDTViewRenderer : GDTRenderer
+@implementation GDTAppDelegateIOS
 
-- (void)renderOnView:(UIView *)view;
++ (void)load {
+	[self addService:[GDTAppDelegateService new]];
+}
 
 @end

@@ -847,6 +847,7 @@ public:
 	virtual const RenderingShaderContainerFormat &get_shader_container_format() const = 0;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
+	virtual bool is_rasterization_rate_map_supported() const { return false; }
 
 	/******************/
 

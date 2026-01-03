@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_renderer.h                                                 */
+/*  godot_app_delegate_ios.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,11 +30,8 @@
 
 #pragma once
 
-#import "godot_renderer.h"
-#import <UIKit/UIKit.h>
+#include "drivers/apple_embedded/godot_app_delegate_apple_embedded.h"
 
-@interface GDTViewRenderer : GDTRenderer
-
-- (void)renderOnView:(UIView *)view;
+@interface GDTAppDelegateIOS : GDTAppDelegate
 
 @end

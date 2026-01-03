@@ -105,37 +105,37 @@ protected:
 	static RendererCompositorRD *singleton;
 
 public:
-	RendererUtilities *get_utilities() { return utilities; }
-	RendererLightStorage *get_light_storage() { return light_storage; }
-	RendererMaterialStorage *get_material_storage() { return material_storage; }
-	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
-	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
-	RendererTextureStorage *get_texture_storage() { return texture_storage; }
-	RendererGI *get_gi() {
+	RendererUtilities *get_utilities() override { return utilities; }
+	RendererLightStorage *get_light_storage() override { return light_storage; }
+	RendererMaterialStorage *get_material_storage() override { return material_storage; }
+	RendererMeshStorage *get_mesh_storage() override { return mesh_storage; }
+	RendererParticlesStorage *get_particles_storage() override { return particles_storage; }
+	RendererTextureStorage *get_texture_storage() override { return texture_storage; }
+	RendererGI *get_gi() override {
 		ERR_FAIL_NULL_V(scene, nullptr);
 		return scene->get_gi();
 	}
-	RendererFog *get_fog() { return fog; }
-	RendererCanvasRender *get_canvas() { return canvas; }
-	RendererSceneRender *get_scene() { return scene; }
+	RendererFog *get_fog() override { return fog; }
+	RendererCanvasRender *get_canvas() override { return canvas; }
+	RendererSceneRender *get_scene() override { return scene; }
 
-	void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter);
+	void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) override;
 
-	void initialize();
-	void begin_frame(double frame_step);
-	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
+	void initialize() override;
+	void begin_frame(double frame_step) override;
+	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) override;
 
-	bool is_opengl() { return false; }
-	void gl_end_frame(bool p_swap_buffers) {}
-	void end_frame(bool p_present);
-	void finalize();
+	bool is_opengl() override { return false; }
+	void gl_end_frame(bool p_swap_buffers) override {}
+	void end_frame(bool p_present) override;
+	void finalize() override;
 
-	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
-	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
-	_ALWAYS_INLINE_ double get_total_time() const { return time; }
-	_ALWAYS_INLINE_ bool can_create_resources_async() const { return true; }
+	_ALWAYS_INLINE_ uint64_t get_frame_number() const override { return frame; }
+	_ALWAYS_INLINE_ double get_frame_delta_time() const override { return delta; }
+	_ALWAYS_INLINE_ double get_total_time() const override { return time; }
+	_ALWAYS_INLINE_ bool can_create_resources_async() const override { return true; }
 
-	virtual bool is_xr_enabled() const { return RendererCompositor::is_xr_enabled(); }
+	virtual bool is_xr_enabled() const override { return RendererCompositor::is_xr_enabled(); }
 
 	static Error is_viable() {
 		return OK;

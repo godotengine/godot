@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  app_delegate_service.mm                                               */
+/*  godot_app_delegate_service_apple_embedded.mm                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "app_delegate_service.h"
+#import "godot_app_delegate_service_apple_embedded.h"
 
 #import "godot_view_apple_embedded.h"
 #import "godot_view_controller.h"
@@ -59,14 +59,14 @@ enum {
 	SESSION_CATEGORY_SOLO_AMBIENT
 };
 
-static GDTViewController *mainViewController = nil;
+static __weak GDTViewController *_viewController = nil;
 
 + (GDTViewController *)viewController {
-	return mainViewController;
+	return _viewController;
 }
 
 + (void)setViewController:(GDTViewController *)viewController {
-	mainViewController = viewController;
+	_viewController = viewController;
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
