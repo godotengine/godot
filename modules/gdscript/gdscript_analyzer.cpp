@@ -2904,6 +2904,38 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		return;
 	}
 
+	{
+		auto check_immutable_assignment = [&](const GDScriptParser::IdentifierNode *id, bool allow_reference_types) {
+			const GDScriptParser::DataType &id_type = id->datatype;
+			if (allow_reference_types && (id_type.kind == GDScriptParser::DataType::CLASS || id_type.builtin_type == Variant::ARRAY || id_type.builtin_type == Variant::DICTIONARY || id_type.builtin_type == Variant::OBJECT)) {
+				return;
+			}
+			using Src = GDScriptParser::IdentifierNode::Source;
+			if ((id->source == Src::LOCAL_VARIABLE || id->source == Src::MEMBER_VARIABLE || id->source == Src::STATIC_VARIABLE || id->source == Src::INHERITED_VARIABLE) && id->variable_source && id->variable_source->is_immutable) {
+				push_error(vformat(R"(The immutable variable "%s" can only be assigned inline.)", id->name), p_assignment->assignee);
+			} else if (id->source == Src::FUNCTION_PARAMETER && id->parameter_source && id->parameter_source->is_immutable) {
+				push_error(vformat(R"(Cannot assign to immutable function parameter "%s". Remove the "let" to make it mutable.)", id->name), p_assignment->assignee);
+			}
+		};
+
+		if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
+			check_immutable_assignment(static_cast<const GDScriptParser::IdentifierNode *>(p_assignment->assignee), false);
+		} else if (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT) {
+			GDScriptParser::SubscriptNode *sub = static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee);
+			if (sub->is_attribute) {
+				check_immutable_assignment(sub->attribute, false);
+			}
+			if (sub->base->type == GDScriptParser::Node::IDENTIFIER) {
+				check_immutable_assignment(static_cast<const GDScriptParser::IdentifierNode *>(sub->base), true);
+			} else if (sub->base->type == GDScriptParser::Node::SUBSCRIPT) {
+				const GDScriptParser::SubscriptNode *base = static_cast<const GDScriptParser::SubscriptNode *>(sub->base);
+				if (base->is_attribute) {
+					check_immutable_assignment(base->attribute, true);
+				}
+			}
+		}
+	}
+
 	GDScriptParser::DataType assignee_type = p_assignment->assignee->get_datatype();
 
 	if (assignee_type.is_constant) {
@@ -3707,6 +3739,43 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			}
 		}
 #endif // DEBUG_ENABLED
+
+		// Check for attempts to use .set() or .set_deferred() on read-only variables.
+		if ((p_call->function_name == SNAME("set") || p_call->function_name == SNAME("set_deferred")) && !p_call->arguments.is_empty()) {
+			const GDScriptParser::ExpressionNode *property_arg = p_call->arguments[0];
+			if (property_arg) {
+				StringName property_name;
+				bool has_property_name = false;
+
+				if (property_arg->is_constant && property_arg->reduced_value.get_type() == Variant::STRING) {
+					property_name = property_arg->reduced_value;
+					has_property_name = true;
+				} else if (property_arg->type == GDScriptParser::Node::LITERAL) {
+					const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(property_arg);
+					if (literal->value.get_type() == Variant::STRING) {
+						property_name = literal->value;
+						has_property_name = true;
+					}
+				}
+
+				if (has_property_name && base_type.kind == GDScriptParser::DataType::CLASS && base_type.class_type != nullptr) {
+					List<GDScriptParser::ClassNode *> script_classes;
+					get_class_node_current_scope_classes(base_type.class_type, &script_classes, p_call);
+
+					for (GDScriptParser::ClassNode *script_class : script_classes) {
+						if (script_class->has_member(property_name)) {
+							resolve_class_member(script_class, property_name, p_call);
+							const GDScriptParser::ClassNode::Member &member = script_class->get_member(property_name);
+
+							if (member.type == GDScriptParser::ClassNode::Member::VARIABLE && member.variable && member.variable->is_immutable) {
+								push_error(vformat(R"*(Cannot use "%s()" to modify immutable variable "%s".)*", p_call->function_name, property_name), p_call);
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
 
 		call_type = return_type;
 	} else {

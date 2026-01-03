@@ -983,6 +983,7 @@ public:
 	};
 
 	struct ParameterNode : public AssignableNode {
+		bool is_immutable = false;
 		ParameterNode() {
 			type = PARAMETER;
 		}
@@ -1263,6 +1264,7 @@ public:
 		PropertyInfo export_info;
 		int assignments = 0;
 		bool is_static = false;
+		bool is_immutable = false;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -1563,7 +1565,8 @@ private:
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable(bool p_is_static);
-	VariableNode *parse_variable(bool p_is_static, bool p_allow_property);
+	VariableNode *parse_immutable_variable(bool p_is_static);
+	VariableNode *parse_variable(bool p_is_static, bool p_allow_property, bool p_is_immutable);
 	VariableNode *parse_property(VariableNode *p_variable, bool p_need_indent);
 	void parse_property_getter(VariableNode *p_variable);
 	void parse_property_setter(VariableNode *p_variable);
