@@ -492,6 +492,8 @@ private:
 
 	bool unfocused_low_processor_usage_mode_enabled = true;
 
+	String build_profile_path;
+
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
 	static int build_callback_count;
@@ -973,6 +975,8 @@ public:
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch, const Vector<String> &p_patches);
 	bool is_project_exporting() const;
+
+	void generate_build_profile(const String &p_path);
 
 	Control *get_gui_base() { return gui_base; }
 

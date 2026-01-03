@@ -4739,7 +4739,10 @@ void RenderForwardClustered::_update_dirty_geometry_pipelines() {
 		while (geometry_surface_compilation_dirty_list.first() != nullptr) {
 			GeometryInstanceSurfaceDataCache *surface_cache = geometry_surface_compilation_dirty_list.first()->self();
 			_mesh_generate_all_pipelines_for_surface_cache(surface_cache, global_pipeline_data_compiled);
-			surface_cache->compilation_dirty_element.remove_from_list();
+
+			if (surface_cache->compilation_dirty_element.in_list()) {
+				surface_cache->compilation_dirty_element.remove_from_list();
+			}
 		}
 	}
 }

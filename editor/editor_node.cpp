@@ -1254,94 +1254,101 @@ void EditorNode::_fs_changed() {
 	String export_error;
 	Error err = OK;
 	// It's important to wait for the first scan to finish; otherwise, scripts or resources might not be imported.
-	if (!export_defer.preset.is_empty() && !EditorFileSystem::get_singleton()->is_scanning()) {
-		String preset_name = export_defer.preset;
-		// Ensures export_project does not loop infinitely, because notifications may
-		// come during the export.
-		export_defer.preset = "";
-		Ref<EditorExportPreset> export_preset;
-		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
-			export_preset = EditorExport::get_singleton()->get_export_preset(i);
-			if (export_preset->get_name() == preset_name) {
-				break;
+	if (!EditorFileSystem::get_singleton()->is_scanning()) {
+		if (!export_defer.preset.is_empty()) {
+			String preset_name = export_defer.preset;
+			// Ensures export_project does not loop infinitely, because notifications may
+			// come during the export.
+			export_defer.preset = "";
+			Ref<EditorExportPreset> export_preset;
+			for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
+				export_preset = EditorExport::get_singleton()->get_export_preset(i);
+				if (export_preset->get_name() == preset_name) {
+					break;
+				}
+				export_preset.unref();
 			}
-			export_preset.unref();
-		}
 
-		if (export_preset.is_null()) {
-			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-			if (da->file_exists("res://export_presets.cfg")) {
-				err = FAILED;
-				export_error = vformat(
-						"Invalid export preset name: %s.\nThe following presets were detected in this project's `export_presets.cfg`:\n\n",
-						preset_name);
-				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
-					// Write the preset name between double quotes since it needs to be written between quotes on the command line if it contains spaces.
-					export_error += vformat("        \"%s\"\n", EditorExport::get_singleton()->get_export_preset(i)->get_name());
+			if (export_preset.is_null()) {
+				Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+				if (da->file_exists("res://export_presets.cfg")) {
+					err = FAILED;
+					export_error = vformat(
+							"Invalid export preset name: %s.\nThe following presets were detected in this project's `export_presets.cfg`:\n\n",
+							preset_name);
+					for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
+						// Write the preset name between double quotes since it needs to be written between quotes on the command line if it contains spaces.
+						export_error += vformat("        \"%s\"\n", EditorExport::get_singleton()->get_export_preset(i)->get_name());
+					}
+				} else {
+					err = FAILED;
+					export_error = "This project doesn't have an `export_presets.cfg` file at its root.\nCreate an export preset from the \"Project > Export\" dialog and try again.";
 				}
 			} else {
-				err = FAILED;
-				export_error = "This project doesn't have an `export_presets.cfg` file at its root.\nCreate an export preset from the \"Project > Export\" dialog and try again.";
-			}
-		} else {
-			Ref<EditorExportPlatform> platform = export_preset->get_platform();
-			const String export_path = export_defer.path.is_empty() ? export_preset->get_export_path() : export_defer.path;
-			if (export_path.is_empty()) {
-				err = FAILED;
-				export_error = vformat("Export preset \"%s\" doesn't have a default export path, and none was specified.", preset_name);
-			} else if (platform.is_null()) {
-				err = FAILED;
-				export_error = vformat("Export preset \"%s\" doesn't have a matching platform.", preset_name);
-			} else {
-				export_preset->update_value_overrides();
-				if (export_defer.pack_only) { // Only export .pck or .zip data pack.
-					if (export_path.ends_with(".zip")) {
-						if (export_defer.patch) {
-							err = platform->export_zip_patch(export_preset, export_defer.debug, export_path, export_defer.patches);
+				Ref<EditorExportPlatform> platform = export_preset->get_platform();
+				const String export_path = export_defer.path.is_empty() ? export_preset->get_export_path() : export_defer.path;
+				if (export_path.is_empty()) {
+					err = FAILED;
+					export_error = vformat("Export preset \"%s\" doesn't have a default export path, and none was specified.", preset_name);
+				} else if (platform.is_null()) {
+					err = FAILED;
+					export_error = vformat("Export preset \"%s\" doesn't have a matching platform.", preset_name);
+				} else {
+					export_preset->update_value_overrides();
+					if (export_defer.pack_only) { // Only export .pck or .zip data pack.
+						if (export_path.ends_with(".zip")) {
+							if (export_defer.patch) {
+								err = platform->export_zip_patch(export_preset, export_defer.debug, export_path, export_defer.patches);
+							} else {
+								err = platform->export_zip(export_preset, export_defer.debug, export_path);
+							}
+						} else if (export_path.ends_with(".pck")) {
+							if (export_defer.patch) {
+								err = platform->export_pack_patch(export_preset, export_defer.debug, export_path, export_defer.patches);
+							} else {
+								err = platform->export_pack(export_preset, export_defer.debug, export_path);
+							}
 						} else {
-							err = platform->export_zip(export_preset, export_defer.debug, export_path);
+							ERR_PRINT(vformat("Export path \"%s\" doesn't end with a supported extension.", export_path));
+							err = FAILED;
 						}
-					} else if (export_path.ends_with(".pck")) {
-						if (export_defer.patch) {
-							err = platform->export_pack_patch(export_preset, export_defer.debug, export_path, export_defer.patches);
+					} else { // Normal project export.
+						String config_error;
+						bool missing_templates;
+						if (export_defer.android_build_template) {
+							export_template_manager->install_android_template(export_preset);
+						}
+						if (!platform->can_export(export_preset, config_error, missing_templates, export_defer.debug)) {
+							ERR_PRINT(vformat("Cannot export project with preset \"%s\" due to configuration errors:\n%s", preset_name, config_error));
+							err = missing_templates ? ERR_FILE_NOT_FOUND : ERR_UNCONFIGURED;
 						} else {
-							err = platform->export_pack(export_preset, export_defer.debug, export_path);
+							platform->clear_messages();
+							err = platform->export_project(export_preset, export_defer.debug, export_path);
 						}
-					} else {
-						ERR_PRINT(vformat("Export path \"%s\" doesn't end with a supported extension.", export_path));
-						err = FAILED;
 					}
-				} else { // Normal project export.
-					String config_error;
-					bool missing_templates;
-					if (export_defer.android_build_template) {
-						export_template_manager->install_android_template(export_preset);
-					}
-					if (!platform->can_export(export_preset, config_error, missing_templates, export_defer.debug)) {
-						ERR_PRINT(vformat("Cannot export project with preset \"%s\" due to configuration errors:\n%s", preset_name, config_error));
-						err = missing_templates ? ERR_FILE_NOT_FOUND : ERR_UNCONFIGURED;
-					} else {
-						platform->clear_messages();
-						err = platform->export_project(export_preset, export_defer.debug, export_path);
+					if (err != OK) {
+						export_error = vformat("Project export for preset \"%s\" failed.", preset_name);
+					} else if (platform->get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
+						export_error = vformat("Project export for preset \"%s\" completed with warnings.", preset_name);
 					}
 				}
-				if (err != OK) {
-					export_error = vformat("Project export for preset \"%s\" failed.", preset_name);
-				} else if (platform->get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
-					export_error = vformat("Project export for preset \"%s\" completed with warnings.", preset_name);
-				}
 			}
+
+			if (err != OK) {
+				ERR_PRINT(export_error);
+				_exit_editor(EXIT_FAILURE);
+				return;
+			}
+			if (!export_error.is_empty()) {
+				WARN_PRINT(export_error);
+			}
+			_exit_editor(EXIT_SUCCESS);
 		}
 
-		if (err != OK) {
-			ERR_PRINT(export_error);
-			_exit_editor(EXIT_FAILURE);
-			return;
+		if (!build_profile_path.is_empty()) {
+			err = build_profile_manager->generate_build_profile_from_project(build_profile_path);
+			_exit_editor(err == OK ? EXIT_SUCCESS : EXIT_FAILURE);
 		}
-		if (!export_error.is_empty()) {
-			WARN_PRINT(export_error);
-		}
-		_exit_editor(EXIT_SUCCESS);
 	}
 }
 
@@ -6005,6 +6012,11 @@ Error EditorNode::export_preset(const String &p_preset, const String &p_path, bo
 
 bool EditorNode::is_project_exporting() const {
 	return project_export && project_export->is_exporting();
+}
+
+void EditorNode::generate_build_profile(const String &p_path) {
+	build_profile_path = p_path;
+	cmdline_mode = true;
 }
 
 void EditorNode::show_accept(const String &p_text, const String &p_title) {
