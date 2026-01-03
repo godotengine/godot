@@ -32,13 +32,21 @@
 
 #include <turbojpeg.h>
 
-Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
+Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len, bool p_strict) {
 	tjhandle tj_instance = tj3Init(TJINIT_DECOMPRESS);
 	if (tj_instance == NULL) {
 		return FAILED;
 	}
 
+	if (!p_strict) {
+		// Allow partial/corrupt JPEG decoding for streaming sources like cameras.
+		tj3Set(tj_instance, TJPARAM_STOPONWARNING, 0);
+	}
+
 	if (tj3DecompressHeader(tj_instance, p_buffer, p_buffer_len) < 0) {
+		if (p_strict) {
+			print_verbose(vformat("libjpeg-turbo header error: %s", tj3GetErrorStr(tj_instance)));
+		}
 		tj3Destroy(tj_instance);
 		return ERR_FILE_CORRUPT;
 	}
@@ -68,6 +76,9 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	data.resize(width * height * tjPixelSize[tj_pixel_format]);
 
 	if (tj3Decompress8(tj_instance, p_buffer, p_buffer_len, data.ptrw(), 0, tj_pixel_format) < 0) {
+		if (p_strict) {
+			print_verbose(vformat("libjpeg-turbo decompress error: %s", tj3GetErrorStr(tj_instance)));
+		}
 		tj3Destroy(tj_instance);
 		return ERR_FILE_CORRUPT;
 	}
@@ -87,7 +98,7 @@ Error ImageLoaderLibJPEGTurbo::load_image(Ref<Image> p_image, Ref<FileAccess> f,
 
 	f->get_buffer(&w[0], src_image_len);
 
-	Error err = jpeg_turbo_load_image_from_buffer(p_image.ptr(), w, src_image_len);
+	Error err = jpeg_turbo_load_image_from_buffer(p_image.ptr(), w, src_image_len, true);
 
 	return err;
 }
@@ -100,7 +111,7 @@ void ImageLoaderLibJPEGTurbo::get_recognized_extensions(List<String> *p_extensio
 static Ref<Image> _jpeg_turbo_mem_loader_func(const uint8_t *p_data, int p_size) {
 	Ref<Image> img;
 	img.instantiate();
-	Error err = jpeg_turbo_load_image_from_buffer(img.ptr(), p_data, p_size);
+	Error err = jpeg_turbo_load_image_from_buffer(img.ptr(), p_data, p_size, true);
 	ERR_FAIL_COND_V(err, Ref<Image>());
 	return img;
 }
@@ -184,6 +195,7 @@ static Error _jpeg_turbo_save_func(const String &p_path, const Ref<Image> &p_img
 
 ImageLoaderLibJPEGTurbo::ImageLoaderLibJPEGTurbo() {
 	Image::_jpg_mem_loader_func = _jpeg_turbo_mem_loader_func;
+	Image::_jpg_mem_loader_func_ex = jpeg_turbo_load_image_from_buffer;
 	Image::save_jpg_func = _jpeg_turbo_save_func;
 	Image::save_jpg_buffer_func = _jpeg_turbo_buffer_save_func;
 }

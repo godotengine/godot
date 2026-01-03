@@ -199,7 +199,9 @@ void CameraFeedLinux::_read_frame() {
 		return;
 	}
 
-	buffer_decoder->decode(buffers[buffer.index]);
+	StreamingBuffer streaming_buffer = buffers[buffer.index];
+	streaming_buffer.bytes_used = buffer.bytesused;
+	buffer_decoder->decode(streaming_buffer);
 
 	if (ioctl(file_descriptor, VIDIOC_QBUF, &buffer) == -1) {
 		print_error(vformat("ioctl(VIDIOC_QBUF) error: %d.", errno));
