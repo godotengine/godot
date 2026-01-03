@@ -1226,6 +1226,9 @@
 		<member name="interface/theme/style" type="String" setter="" getter="">
 			The editor theme style to use.
 		</member>
+		<member name="interface/theme/use_monospace_font_for_editor_symbols" type="bool" setter="" getter="">
+			If [code]true[/code], use the monospace font for some labels in the editor that display code symbols, such as signals, properties and methods.
+		</member>
 		<member name="interface/theme/use_system_accent_color" type="bool" setter="" getter="">
 			If [code]true[/code], set accent color based on system settings.
 			[b]Note:[/b] This setting is only effective on Windows, MacOS, and Android.

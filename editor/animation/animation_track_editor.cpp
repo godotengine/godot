@@ -2199,7 +2199,9 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 
 			const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+			const Ref<Font> source_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
 			const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+			const int source_font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
 			const Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 
 			const Color dc = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
@@ -2207,6 +2209,9 @@ void AnimationTrackEdit::_notification(int p_what) {
 			// Names and icons.
 
 			{
+				Ref<Font> font_to_use = font;
+				int font_size_to_use = font_size;
+
 				Ref<Texture2D> check = animation->track_is_enabled(track) ? get_theme_icon(SNAME("checked"), SNAME("CheckBox")) : get_theme_icon(SNAME("unchecked"), SNAME("CheckBox"));
 
 				int ofs = in_group ? outer_margin : 0;
@@ -2241,6 +2246,13 @@ void AnimationTrackEdit::_notification(int p_what) {
 					} else {
 						text += anim_path.get_concatenated_subnames();
 					}
+
+					bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+					if (animation->track_get_type(track) == Animation::TYPE_VALUE && use_monospace_font) {
+						font_to_use = source_font;
+						font_size_to_use = source_font_size;
+					}
+
 					text_color.a *= 0.7;
 				} else if (node) {
 					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node);
@@ -2264,9 +2276,9 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				path_rect = Rect2(ofs, 0, limit - ofs - h_separation, get_size().height);
 
-				Vector2 string_pos = Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size));
+				Vector2 string_pos = Point2(ofs, (get_size().height - font_to_use->get_height(font_size_to_use)) / 2 + font_to_use->get_ascent(font_size_to_use));
 				string_pos = string_pos.floor();
-				draw_string(font, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - h_separation, font_size, text_color);
+				draw_string(font_to_use, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - h_separation, font_size_to_use, text_color);
 
 				draw_line(Point2(limit, 0), Point2(limit, get_size().height), h_line_color, Math::round(EDSCALE));
 			}
@@ -2643,8 +2655,15 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 	Vector2 ofs(p_x - icon_to_draw->get_width() / 2, (get_size().height - icon_to_draw->get_height()) / 2);
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-		const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-		const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+		bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+
+		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+		if (use_monospace_font) {
+			font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+			font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
+		}
+
 		Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 		color.a = 0.5;
 
