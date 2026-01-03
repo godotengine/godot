@@ -200,6 +200,14 @@
 				By default, the deadzone is automatically calculated from the average of the action deadzones. However, you can override the deadzone to be whatever you want (on the range of 0 to 1).
 			</description>
 		</method>
+		<method name="has_joy_adaptive_triggers" qualifiers="const" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns [code]true[/code] if the specified joypad supports adaptive triggers. See also [method joy_adaptive_triggers_off], [method joy_adaptive_triggers_weapon], etc.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="has_joy_light" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="device" type="int" />
@@ -320,6 +328,119 @@
 				[b]Note:[/b] Due to keyboard ghosting, [method is_physical_key_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>
 		</method>
+		<method name="joy_adaptive_triggers_feedback" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<param index="2" name="position" type="int" />
+			<param index="3" name="strength" type="int" />
+			<description>
+				Starts the "Feedback" adaptive trigger effect on the specified joypad. This method will fail if the joypad does not support adaptive triggers.
+				The trigger specified by [param axis] will resist with [param strength] when pressed as least as far as [param position]; when pressed less, the trigger will not resist.
+				[param axis] should be [constant JOY_AXIS_TRIGGER_LEFT] for the left trigger, [constant JOY_AXIS_TRIGGER_RIGHT] for the right trigger, or [code]JOY_AXIS_TRIGGER_LEFT + JOY_AXIS_TRIGGER_RIGHT[/code] for both triggers at once.
+				[param position] should be in the range from [code]0[/code] to [code]9[/code] (inclusive), with [code]0[/code] representing the trigger being 0% pressed and [code]9[/code] being 90% pressed.
+				[param strength] should be in the range from [code]0[/code] to [code]8[/code] (inclusive), with [code]0[/code] representing no resistance and [code]8[/code] representing maximum resistance.
+				This method returns [code]true[/code] if the effect request was sent successfully. If it was unsuccessful (including if the joypad does not support adaptive triggers), this method returns [code]false[/code].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="joy_adaptive_triggers_multi_feedback" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<param index="2" name="strengths" type="PackedInt32Array" />
+			<description>
+				Starts the "Multi Feedback" adaptive trigger effect on the specified joypad. This method will fail if the joypad does not support adaptive triggers.
+				The trigger specified by [param axis] will resist with the value in [param strengths] corresponding to the position closest to the trigger. Unlike [method joy_adaptive_triggers_feedback], this method allows multiple resistances to be felt when the trigger is pressed to different positions.
+				[param axis] should be [constant JOY_AXIS_TRIGGER_LEFT] for the left trigger, [constant JOY_AXIS_TRIGGER_RIGHT] for the right trigger, or [code]JOY_AXIS_TRIGGER_LEFT + JOY_AXIS_TRIGGER_RIGHT[/code] for both triggers at once.
+				[param strengths] should be an array with exactly 10 elements, and each in the range from [code]0[/code] to [code]8[/code] (inclusive).
+				This method returns [code]true[/code] if the effect request was sent successfully. If it was unsuccessful (including if the joypad does not support adaptive triggers), this method returns [code]false[/code].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="joy_adaptive_triggers_multi_vibration" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<param index="2" name="frequency" type="int" />
+			<param index="3" name="amplitudes" type="PackedInt32Array" />
+			<description>
+				Starts the "Multi Vibration" adaptive trigger effect on the specified joypad. This method will fail if the joypad does not support adaptive triggers.
+				The trigger specified by [param axis] will vibrate with [param frequency] and the amplitude given by the value in [param amplitudes] corresponding to the position closest to the trigger. Unlike [method joy_adaptive_triggers_vibration], this method allows multiple amplitudes to be felt when the trigger is pressed to different positions.
+				[param axis] should be [constant JOY_AXIS_TRIGGER_LEFT] for the left trigger, [constant JOY_AXIS_TRIGGER_RIGHT] for the right trigger, or [code]JOY_AXIS_TRIGGER_LEFT + JOY_AXIS_TRIGGER_RIGHT[/code] for both triggers at once.
+				[param frequency] should be in the range from [code]0[/code] to [code]255[/code] (inclusive).
+				[param amplitudes] should be an array with exactly 10 elements, and each in the range from [code]0[/code] to [code]8[/code] (inclusive).
+				This method returns [code]true[/code] if the effect request was sent successfully. If it was unsuccessful (including if the joypad does not support adaptive triggers), this method returns [code]false[/code].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="joy_adaptive_triggers_off" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<description>
+				Stops adaptive triggers effect on the specified joypad. This method will fail if the joypad does not support adaptive triggers.
+				[param axis] should be [constant JOY_AXIS_TRIGGER_LEFT] for the left trigger, [constant JOY_AXIS_TRIGGER_RIGHT] for the right trigger, or [code]JOY_AXIS_TRIGGER_LEFT + JOY_AXIS_TRIGGER_RIGHT[/code] for both triggers at once.
+				This method returns [code]true[/code] if the effect request was sent successfully. If it was unsuccessful (including if the joypad does not support adaptive triggers), this method returns [code]false[/code].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="joy_adaptive_triggers_slope_feedback" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<param index="2" name="start_position" type="int" />
+			<param index="3" name="end_position" type="int" />
+			<param index="4" name="start_strength" type="int" />
+			<param index="5" name="end_strength" type="int" />
+			<description>
+				Starts the "Slope Feedback" adaptive trigger effect on the specified joypad. This method will fail if the joypad does not support adaptive triggers.
+				The trigger specified by [param axis] will start providing the resistance [param start_strength] when pressed in to [param start_position]. The resistance will increase as the trigger is pressed further; it will reach [param end_strength] once the trigger is pressed to [param end_position], and will maintain that resistance past that point.
+				[param axis] should be [constant JOY_AXIS_TRIGGER_LEFT] for the left trigger, [constant JOY_AXIS_TRIGGER_RIGHT] for the right trigger, or [code]JOY_AXIS_TRIGGER_LEFT + JOY_AXIS_TRIGGER_RIGHT[/code] for both triggers at once.
+				[param start_position] should be in the range from [code]0[/code] to [param end_position] (inclusive).
+				[param end_position] should be in the range from [code]start_position + 1[/code] to [code]9[/code] (inclusive).
+				[param start_strength] should be in the range from [code]1[/code] to [code]8[/code] (inclusive).
+				[param end_strength] should be in the range from [code]1[/code] to [code]8[/code] (inclusive).
+				This method returns [code]true[/code] if the effect request was sent successfully. If it was unsuccessful (including if the joypad does not support adaptive triggers), this method returns [code]false[/code].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="joy_adaptive_triggers_vibration" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<param index="2" name="position" type="int" />
+			<param index="3" name="frequency" type="int" />
+			<param index="4" name="amplitude" type="int" />
+			<description>
+				Starts the "Vibration" adaptive trigger effect on the specified joypad. This method will fail if the joypad does not support adaptive triggers.
+				The trigger specified by [param axis] will vibrate with [param frequency] and [param amplitude] when pressed at least as far as [param position]; when pressed less, the trigger will not vibrate.
+				[param axis] should be [constant JOY_AXIS_TRIGGER_LEFT] for the left trigger, [constant JOY_AXIS_TRIGGER_RIGHT] for the right trigger, or [code]JOY_AXIS_TRIGGER_LEFT + JOY_AXIS_TRIGGER_RIGHT[/code] for both triggers at once.
+				[param position] should be in the range from [code]0[/code] to [code]9[/code] (inclusive).
+				[param amplitude] should be in the range from [code]0[/code] to [code]8[/code] (inclusive).
+				[param frequency] should be in the range from [code]0[/code] to [code]255[/code] (inclusive).
+				This method returns [code]true[/code] if the effect request was sent successfully. If it was unsuccessful (including if the joypad does not support adaptive triggers), this method returns [code]false[/code].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="joy_adaptive_triggers_weapon" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<param index="2" name="start_position" type="int" />
+			<param index="3" name="end_position" type="int" />
+			<param index="4" name="strength" type="int" />
+			<description>
+				Starts the "Weapon" adaptive trigger effect on the specified joypad. This method will fail if the joypad does not support adaptive triggers.
+				The trigger specified by [param axis] will resist with [param strength] while pressed to within [param start_position] and [param end_position]; outside of this range, it will not resist.
+				[param axis] should be [constant JOY_AXIS_TRIGGER_LEFT] for the left trigger, [constant JOY_AXIS_TRIGGER_RIGHT] for the right trigger, or [code]JOY_AXIS_TRIGGER_LEFT + JOY_AXIS_TRIGGER_RIGHT[/code] for both triggers at once.
+				[param start_position] should be in the range from [code]2[/code] to [code]7[/code] (inclusive).
+				[param end_position] should be in the range from [code]start_position + 1[/code] to [code]8[/code] (inclusive).
+				[param strength] should be in the range from [code]0[/code] to [code]8[/code] (inclusive).
+				This method returns [code]true[/code] if the effect request was sent successfully. If it was unsuccessful (including if the joypad does not support adaptive triggers), this method returns [code]false[/code].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="parse_input_event">
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
@@ -348,6 +469,15 @@
 			<description>
 				Removes all mappings from the internal database that match the given GUID. All currently connected joypads that use this GUID will become unmapped.
 				On Android, Godot will map to an internal fallback mapping.
+			</description>
+		</method>
+		<method name="send_joy_packet" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="packet" type="PackedByteArray" />
+			<description>
+				Sends a custom controller-specific data packet to the specified joypad, if supported. Returns [code]true[/code] on success and [code]false[/code] on failure.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
 		</method>
 		<method name="set_accelerometer">
