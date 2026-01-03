@@ -565,11 +565,10 @@ Error SkinTool::_create_skeletons(
 		Vector<Ref<GLTFSkeleton>> &skeletons,
 		HashMap<GLTFNodeIndex, Node *> &scene_nodes,
 		int p_naming_version) {
-	// This is the syntax to duplicate a Godot HashSet.
-	HashSet<String> unique_node_names(unique_names);
+	HashSet<String> unique_node_names = unique_names.duplicate();
 	for (SkinSkeletonIndex skel_i = 0; skel_i < skeletons.size(); ++skel_i) {
 		Ref<GLTFSkeleton> gltf_skeleton = skeletons.write[skel_i];
-		HashSet<String> skel_unique_names(unique_node_names);
+		HashSet<String> skel_unique_names = unique_node_names.duplicate();
 
 		Skeleton3D *skeleton = memnew(Skeleton3D);
 		gltf_skeleton->godot_skeleton = skeleton;
