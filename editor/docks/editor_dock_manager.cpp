@@ -323,12 +323,12 @@ void EditorDockManager::update_docks_menu() {
 	docks_menu->clear();
 	docks_menu->reset_size();
 
-	const Ref<Texture2D> default_icon = docks_menu->get_editor_theme_icon(SNAME("Window"));
+	const Ref<Texture2D> default_icon = get_editor_theme_icon(SNAME("Window"));
 	const Color closed_icon_color_mod = Color(1, 1, 1, 0.5);
 
 	bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
 	bool dark_mode = DisplayServer::get_singleton()->is_dark_mode_supported() && DisplayServer::get_singleton()->is_dark_mode();
-	int icon_max_width = EditorNode::get_singleton()->get_editor_theme()->get_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+	int icon_max_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 	// Add docks.
 	docks_menu_docks.clear();
@@ -409,7 +409,7 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 	wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR(p_dock->get_display_title())));
 	wrapper->set_margins_enabled(true);
 
-	EditorNode::get_singleton()->get_gui_base()->add_child(wrapper);
+	add_child(wrapper);
 
 	_move_dock(p_dock, nullptr);
 	p_dock->update_layout(EditorDock::DOCK_LAYOUT_FLOATING);
@@ -423,11 +423,11 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 	dock_windows.push_back(wrapper);
 
 	if (p_show_window) {
-		wrapper->restore_window(Rect2i(dock_screen_pos, dock_size), EditorNode::get_singleton()->get_gui_base()->get_window()->get_current_screen());
+		wrapper->restore_window(Rect2i(dock_screen_pos, dock_size), get_window()->get_current_screen());
 		_update_layout();
 		if (p_reset_size) {
 			// Use a default size of one third the current window size.
-			Size2i popup_size = EditorNode::get_singleton()->get_window()->get_size() / 3.0;
+			Size2i popup_size = get_window()->get_size() / 3.0;
 			p_dock->get_window()->set_size(popup_size);
 			p_dock->get_window()->move_to_center();
 		}
@@ -560,7 +560,7 @@ void EditorDockManager::_update_tab_style(EditorDock *p_dock) {
 			? (TabStyle)EDITOR_GET("interface/editor/bottom_dock_tab_style").operator int()
 			: (TabStyle)EDITOR_GET("interface/editor/dock_tab_style").operator int();
 
-	const Ref<Texture2D> icon = _get_dock_icon(p_dock, callable_mp((Control *)tab_container, &Control::get_editor_theme_icon));
+	const Ref<Texture2D> icon = _get_dock_icon(p_dock, callable_mp((Control *)this, &Control::get_editor_theme_icon));
 	bool assign_icon = p_dock->force_show_icon;
 	String tooltip;
 	switch (style) {
@@ -587,6 +587,35 @@ void EditorDockManager::_update_tab_style(EditorDock *p_dock) {
 		tab_container->set_tab_icon(index, icon);
 	} else {
 		tab_container->set_tab_icon(index, Ref<Texture2D>());
+	}
+}
+
+void EditorDockManager::_notification(int p_notification) {
+	switch (p_notification) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
+			update_docks_menu();
+			update_tab_styles();
+		} break;
+	}
+}
+
+void EditorDockManager::shortcut_input(const Ref<InputEvent> &p_event) {
+	if (p_event.is_null() || !p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+
+	for (EditorDock *dock : all_docks) {
+		const Ref<Shortcut> &dock_shortcut = dock->get_dock_shortcut();
+		if (dock_shortcut.is_valid() && dock_shortcut->matches_event(p_event)) {
+			if (dock->is_visible() && dock->get_parent() == EditorNode::get_bottom_panel()) {
+				EditorNode::get_bottom_panel()->hide_bottom_panel();
+			} else if (!dock->transient || dock->is_open) {
+				focus_dock(dock);
+			}
+			accept_event();
+			break;
+		}
 	}
 }
 
@@ -1041,19 +1070,16 @@ PopupMenu *EditorDockManager::get_docks_menu() {
 
 EditorDockManager::EditorDockManager() {
 	singleton = this;
-
-	closed_dock_parent = memnew(Control);
-	closed_dock_parent->hide();
-	EditorNode::get_singleton()->get_gui_base()->add_child(closed_dock_parent);
+	closed_dock_parent = this;
+	hide();
+	set_process_shortcut_input(true);
 
 	dock_context_popup = memnew(DockContextPopup);
-	EditorNode::get_singleton()->get_gui_base()->add_child(dock_context_popup);
-	EditorNode::get_singleton()->add_child(memnew(DockShortcutHandler));
+	add_child(dock_context_popup);
 
 	docks_menu = memnew(PopupMenu);
 	docks_menu->set_hide_on_item_selection(false);
 	docks_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDockManager::_docks_menu_option));
-	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorDockManager::update_docks_menu));
 }
 
 ////////////////////////////////////////////////
@@ -1366,23 +1392,4 @@ DockContextPopup::DockContextPopup() {
 	close_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	close_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_close_dock));
 	dock_select_popup_vb->add_child(close_button);
-}
-
-void DockShortcutHandler::shortcut_input(const Ref<InputEvent> &p_event) {
-	if (p_event.is_null() || !p_event->is_pressed() || p_event->is_echo()) {
-		return;
-	}
-
-	for (EditorDock *dock : EditorDockManager::get_singleton()->all_docks) {
-		const Ref<Shortcut> &dock_shortcut = dock->get_dock_shortcut();
-		if (dock_shortcut.is_valid() && dock_shortcut->matches_event(p_event)) {
-			if (dock->is_visible() && dock->get_parent() == EditorNode::get_bottom_panel()) {
-				EditorNode::get_bottom_panel()->hide_bottom_panel();
-			} else if (!dock->transient || dock->is_open) {
-				EditorDockManager::get_singleton()->focus_dock(dock);
-			}
-			get_viewport()->set_input_as_handled();
-			break;
-		}
-	}
 }
