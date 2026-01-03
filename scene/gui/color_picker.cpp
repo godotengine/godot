@@ -1593,6 +1593,7 @@ void ColorPicker::_pick_button_pressed() {
 	set_process_internal(true);
 
 	picker_window->popup();
+	Input::get_singleton()->set_default_cursor_shape(Input::CURSOR_CROSS);
 }
 
 void ColorPicker::_target_gui_input(const Ref<InputEvent> &p_event) {
@@ -1641,6 +1642,7 @@ void ColorPicker::_pick_finished() {
 	is_picking_color = false;
 	set_process_internal(false);
 	picker_window->hide();
+	Input::get_singleton()->set_default_cursor_shape(Input::CURSOR_ARROW);
 }
 
 void ColorPicker::_update_menu_items() {
@@ -1833,6 +1835,8 @@ void ColorPicker::_pick_button_pressed_legacy() {
 
 	picker_window->set_size(screen_rect.size);
 	picker_window->popup();
+
+	Input::get_singleton()->set_default_cursor_shape(Input::CURSOR_CROSS);
 }
 
 void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
