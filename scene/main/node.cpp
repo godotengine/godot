@@ -2772,6 +2772,9 @@ void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
 }
 
 Ref<SceneState> Node::get_scene_instance_state() const {
+#ifndef TOOLS_ENABLED
+	ERR_FAIL_V_MSG(Ref<SceneState>(), "Scene instance state is only available in editor builds.");
+#endif
 	return data.instance_state;
 }
 
@@ -3862,6 +3865,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_DEFAULT));
 	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("get_scene_instance_state"), &Node::get_scene_instance_state);
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("set_editable_instance", "node", "is_editable"), &Node::set_editable_instance);
