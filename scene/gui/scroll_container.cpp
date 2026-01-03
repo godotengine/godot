@@ -489,7 +489,7 @@ void ScrollContainer::_notification(int p_what) {
 			if (scroll_on_drag_hover && get_viewport()->gui_is_dragging()) {
 				Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
 				Transform2D xform = get_transform();
-				if (Rect2(Point2(), xform.get_scale() * get_size()).grow(scroll_border).has_point(mouse_position)) {
+				if (Rect2(Point2(), xform.get_scale() * get_size()).grow(scroll_border).has_point(mouse_position) && can_drop_data(mouse_position, get_viewport()->gui_get_drag_data())) {
 					Point2 point;
 
 					if ((Math::abs(mouse_position.x) < Math::abs(mouse_position.x - get_size().width)) && (Math::abs(mouse_position.x) < scroll_border)) {

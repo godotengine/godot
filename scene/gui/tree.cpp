@@ -5035,7 +5035,7 @@ void Tree::_notification(int p_what) {
 			}
 
 			Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
-			if (scrolling && get_rect().grow(theme_cache.scroll_border).has_point(mouse_position)) {
+			if (scrolling && get_rect().grow(theme_cache.scroll_border).has_point(mouse_position) && can_drop_data(mouse_position, get_viewport()->gui_get_drag_data())) {
 				Point2 point;
 
 				if ((Math::abs(mouse_position.x) < Math::abs(mouse_position.x - get_size().width)) && (Math::abs(mouse_position.x) < theme_cache.scroll_border)) {
