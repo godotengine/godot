@@ -111,6 +111,7 @@ class SpriteFramesEditor : public EditorDock {
 	Ref<Texture2D> pause_icon;
 	Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
+	SplitContainer *main_split = nullptr;
 	HBoxContainer *playback_container = nullptr;
 	Button *stop = nullptr;
 	Button *play = nullptr;
@@ -301,6 +302,7 @@ class SpriteFramesEditor : public EditorDock {
 	void _rename_node_animation(EditorUndoRedoManager *undo_redo, bool is_undo, const String &p_filter, const String &p_new_animation, const String &p_new_autoplay);
 
 protected:
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();

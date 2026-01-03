@@ -738,6 +738,9 @@ void SpriteFramesEditor::_notification(int p_what) {
 			_update_show_settings();
 			anim_speed->set_suffix(TTR("FPS"));
 
+			const int max_char_count = anim_speed->get_suffix().length() + String::num_real(anim_speed->get_max() + anim_speed->get_step(), true).length() + 1;
+			anim_speed->get_line_edit()->set_max_length(max_char_count);
+
 			// Similar to `_update_library_impl()`, but only updates text for "empty" items.
 			if (frames.is_valid()) {
 				for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
@@ -2117,85 +2120,92 @@ void SpriteFramesEditor::_node_removed(Node *p_node) {
 	}
 }
 
+void SpriteFramesEditor::update_layout(EditorDock::DockLayout p_layout) {
+	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
+	main_split->set_vertical(is_vertical);
+}
+
 SpriteFramesEditor::SpriteFramesEditor() {
 	set_name(TTRC("SpriteFrames"));
 	set_icon_name("SpriteFrames");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Open SpriteFrames Dock")));
 	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
-	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_global(false);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_ALL);
 	set_transient(true);
 
-	HSplitContainer *main_split = memnew(HSplitContainer);
+	main_split = memnew(SplitContainer);
 	add_child(main_split);
 
 	VBoxContainer *vbc_animlist = memnew(VBoxContainer);
 	main_split->add_child(vbc_animlist);
-	vbc_animlist->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
+	main_split->set_split_offset(150 * EDSCALE);
 
 	VBoxContainer *sub_vb = memnew(VBoxContainer);
 	vbc_animlist->add_margin_child(TTRC("Animations:"), sub_vb, true);
 	sub_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	HBoxContainer *hbc_animlist = memnew(HBoxContainer);
-	sub_vb->add_child(hbc_animlist);
+	FlowContainer *fc_animlist = memnew(FlowContainer);
+	sub_vb->add_child(fc_animlist);
 
 	add_anim = memnew(Button);
 	add_anim->set_theme_type_variation(SceneStringName(FlatButton));
 	add_anim->set_accessibility_name(TTRC("Add Animation"));
-	hbc_animlist->add_child(add_anim);
+	fc_animlist->add_child(add_anim);
 	add_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_add));
 
 	duplicate_anim = memnew(Button);
 	duplicate_anim->set_theme_type_variation(SceneStringName(FlatButton));
 	duplicate_anim->set_accessibility_name(TTRC("Duplicate Animation"));
-	hbc_animlist->add_child(duplicate_anim);
+	fc_animlist->add_child(duplicate_anim);
 	duplicate_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
 	duplicate_anim->set_visible(false);
 
 	cut_anim = memnew(Button);
 	cut_anim->set_theme_type_variation(SceneStringName(FlatButton));
 	cut_anim->set_accessibility_name(TTRC("Cut Animation"));
-	hbc_animlist->add_child(cut_anim);
+	fc_animlist->add_child(cut_anim);
 	cut_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_cut));
 
 	copy_anim = memnew(Button);
 	copy_anim->set_theme_type_variation(SceneStringName(FlatButton));
 	copy_anim->set_accessibility_name(TTRC("Copy Animation"));
-	hbc_animlist->add_child(copy_anim);
+	fc_animlist->add_child(copy_anim);
 	copy_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_copy));
 
 	paste_anim = memnew(Button);
 	paste_anim->set_theme_type_variation(SceneStringName(FlatButton));
 	paste_anim->set_accessibility_name(TTRC("Paste Animation"));
-	hbc_animlist->add_child(paste_anim);
+	fc_animlist->add_child(paste_anim);
 	paste_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_paste));
 
 	delete_anim = memnew(Button);
 	delete_anim->set_theme_type_variation(SceneStringName(FlatButton));
 	delete_anim->set_accessibility_name(TTRC("Delete Animation"));
-	hbc_animlist->add_child(delete_anim);
+	fc_animlist->add_child(delete_anim);
 	delete_anim->set_disabled(true);
 	delete_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_remove));
 
-	autoplay_container = memnew(HBoxContainer);
-	hbc_animlist->add_child(autoplay_container);
+	fc_animlist->add_child(memnew(VSeparator));
 
-	autoplay_container->add_child(memnew(VSeparator));
+	autoplay_container = memnew(HBoxContainer);
+	fc_animlist->add_child(autoplay_container);
 
 	autoplay = memnew(Button);
 	autoplay->set_theme_type_variation(SceneStringName(FlatButton));
 	autoplay->set_tooltip_text(TTRC("Autoplay on Load"));
+	autoplay->set_toggle_mode(true);
+	autoplay->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_autoplay_pressed));
 	autoplay_container->add_child(autoplay);
 
-	hbc_animlist->add_child(memnew(VSeparator));
+	autoplay_container->add_child(memnew(VSeparator));
 
 	anim_loop = memnew(Button);
 	anim_loop->set_toggle_mode(true);
 	anim_loop->set_theme_type_variation(SceneStringName(FlatButton));
 	anim_loop->set_tooltip_text(TTRC("Animation Looping"));
 	anim_loop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
-	hbc_animlist->add_child(anim_loop);
+	fc_animlist->add_child(anim_loop);
 
 	anim_speed = memnew(SpinBox);
 	anim_speed->set_suffix(TTR("FPS"));
@@ -2207,7 +2217,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_speed->get_line_edit()->set_expand_to_text_length_enabled(true);
 	anim_speed->get_line_edit()->connect(SceneStringName(resized), callable_mp(this, &SpriteFramesEditor::_animation_speed_resized));
 	anim_speed->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
-	hbc_animlist->add_child(anim_speed);
+	fc_animlist->add_child(anim_speed);
 
 	anim_search_box = memnew(LineEdit);
 	sub_vb->add_child(anim_search_box);
@@ -2221,6 +2231,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->set_v_size_flags(SIZE_EXPAND_FILL);
 	animations->set_hide_root(true);
 	animations->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	animations->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
 	// HACK: The cell_selected signal is emitted before the FPS spinbox loses focus and applies the change.
 	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected), CONNECT_DEFERRED);
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
@@ -2243,6 +2254,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	missing_anim_label = memnew(Label);
 	missing_anim_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	missing_anim_label->set_text(TTRC("This resource does not have any animations."));
+	missing_anim_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	missing_anim_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	missing_anim_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	missing_anim_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	missing_anim_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -2267,89 +2280,95 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
+	play_bw_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_from_pressed));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
+	play_bw->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_pressed));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation(SceneStringName(FlatButton));
+	stop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_stop_pressed));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
 	play->set_theme_type_variation(SceneStringName(FlatButton));
+	play->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_pressed));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
+	play_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_from_pressed));
 	playback_container->add_child(play_from);
 
-	hfc->add_child(memnew(VSeparator));
+	playback_container->add_child(memnew(VSeparator));
 
-	autoplay->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_autoplay_pressed));
-	autoplay->set_toggle_mode(true);
-	play->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_pressed));
-	play_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_from_pressed));
-	play_bw->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_pressed));
-	play_bw_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_from_pressed));
-	stop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_stop_pressed));
-
-	HBoxContainer *hbc_actions = memnew(HBoxContainer);
-	hfc->add_child(hbc_actions);
+	HBoxContainer *hbc_load_frames = memnew(HBoxContainer);
+	hfc->add_child(hbc_load_frames);
 
 	load = memnew(Button);
 	load->set_accessibility_name(TTRC("Load"));
 	load->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(load);
+	hbc_load_frames->add_child(load);
 
 	load_sheet = memnew(Button);
 	load_sheet->set_accessibility_name(TTRC("Load Sheet"));
 	load_sheet->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(load_sheet);
+	hbc_load_frames->add_child(load_sheet);
 
-	hbc_actions->add_child(memnew(VSeparator));
+	hbc_load_frames->add_child(memnew(VSeparator));
+
+	HBoxContainer *hbc_actions_copy_paste = memnew(HBoxContainer);
+	hfc->add_child(hbc_actions_copy_paste);
 
 	copy = memnew(Button);
 	copy->set_accessibility_name(TTRC("Copy"));
 	copy->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(copy);
+	hbc_actions_copy_paste->add_child(copy);
 
 	paste = memnew(Button);
 	paste->set_accessibility_name(TTRC("Paste"));
 	paste->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(paste);
+	hbc_actions_copy_paste->add_child(paste);
 
-	hbc_actions->add_child(memnew(VSeparator));
+	hbc_actions_copy_paste->add_child(memnew(VSeparator));
+
+	HBoxContainer *hbc_actions_insert = memnew(HBoxContainer);
+	hfc->add_child(hbc_actions_insert);
 
 	empty_before = memnew(Button);
 	empty_before->set_accessibility_name(TTRC("Empty Before"));
 	empty_before->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(empty_before);
+	hbc_actions_insert->add_child(empty_before);
 
 	empty_after = memnew(Button);
 	empty_after->set_accessibility_name(TTRC("Empty After"));
 	empty_after->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(empty_after);
+	hbc_actions_insert->add_child(empty_after);
 
-	hbc_actions->add_child(memnew(VSeparator));
+	hbc_actions_insert->add_child(memnew(VSeparator));
+
+	HBoxContainer *hbc_actions_move_delete = memnew(HBoxContainer);
+	hfc->add_child(hbc_actions_move_delete);
 
 	move_up = memnew(Button);
 	move_up->set_accessibility_name(TTRC("Move Up"));
 	move_up->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(move_up);
+	hbc_actions_move_delete->add_child(move_up);
 
 	move_down = memnew(Button);
 	move_down->set_accessibility_name(TTRC("Move Down"));
 	move_down->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(move_down);
+	hbc_actions_move_delete->add_child(move_down);
 
 	delete_frame = memnew(Button);
 	delete_frame->set_accessibility_name(TTRC("Delete Frame"));
 	delete_frame->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(delete_frame);
+	hbc_actions_move_delete->add_child(delete_frame);
 
-	hbc_actions->add_child(memnew(VSeparator));
+	hbc_actions_move_delete->add_child(memnew(VSeparator));
 
 	HBoxContainer *hbc_frame_duration = memnew(HBoxContainer);
 	hfc->add_child(hbc_frame_duration);
@@ -2370,13 +2389,9 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_duration->set_accessibility_name(TTRC("Frame Duration:"));
 	hbc_frame_duration->add_child(frame_duration);
 
-	// Wide empty separation control. (like BoxContainer::add_spacer())
-	Control *c = memnew(Control);
-	c->set_mouse_filter(MOUSE_FILTER_PASS);
-	c->set_h_size_flags(SIZE_EXPAND_FILL);
-	hfc->add_child(c);
-
 	HBoxContainer *hbc_zoom = memnew(HBoxContainer);
+	hbc_zoom->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc_zoom->set_alignment(BoxContainer::ALIGNMENT_END);
 	hfc->add_child(hbc_zoom);
 
 	zoom_out = memnew(Button);
@@ -2404,6 +2419,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list = memnew(ItemList);
 	frame_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	frame_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	frame_list->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
 	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	frame_list->set_select_mode(ItemList::SELECT_MULTI);
@@ -2789,7 +2805,6 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 
 SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor = memnew(SpriteFramesEditor);
-	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	EditorDockManager::get_singleton()->add_dock(frames_editor);
 	frames_editor->close();
 }
