@@ -200,6 +200,7 @@ void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 			set_disabled(false);
 			set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_POLITE);
 			set_tooltip_text(TTR("Click to open download page."));
+			emit_signal("update_available");
 		} break;
 
 		default: {
@@ -276,6 +277,7 @@ void EngineUpdateLabel::_notification(int p_what) {
 
 void EngineUpdateLabel::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("offline_clicked"));
+	ADD_SIGNAL(MethodInfo("update_available"));
 }
 
 void EngineUpdateLabel::pressed() {
