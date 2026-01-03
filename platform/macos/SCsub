@@ -28,6 +28,7 @@ files = [
     "rendering_context_driver_vulkan_macos.mm",
     "gl_manager_macos_angle.mm",
     "gl_manager_macos_legacy.mm",
+    "godot_progress_view.mm",
 ]
 
 if env.editor_build:
