@@ -1741,7 +1741,7 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_stylebox("tabbar_background", "BottomPanel", style_bottom_panel_tabbar);
 		p_theme->set_stylebox("tab_selected", "BottomPanel", style_bottom_tab_selected);
 		p_theme->set_stylebox("tab_hovered", "BottomPanel", style_bottom_tab_hover);
-		p_theme->set_stylebox("tab_focus", "BottomPanel", menu_transparent_style);
+		p_theme->set_stylebox("tab_focus", "BottomPanel", p_config.button_style_focus);
 		p_theme->set_stylebox("tab_unselected", "BottomPanel", style_bottom_tab);
 		p_theme->set_color("font_unselected_color", "BottomPanel", p_config.font_color);
 		p_theme->set_color("font_hovered_color", "BottomPanel", p_config.font_hover_color);
