@@ -411,6 +411,10 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		case MSG_TYPE_ERROR: {
 			log->push_color(theme_cache.error_color);
 			Ref<Texture2D> icon = theme_cache.error_icon;
+			if (icon.is_null()) {
+				fprintf(stderr, "Couldn't retrieve theme icons for editor log error/warning messages.\n");
+				break;
+			}
 			log->add_image(icon);
 			log->push_bold();
 			log->add_text(" ERROR: ");
@@ -420,6 +424,10 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		case MSG_TYPE_WARNING: {
 			log->push_color(theme_cache.warning_color);
 			Ref<Texture2D> icon = theme_cache.warning_icon;
+			if (icon.is_null()) {
+				fprintf(stderr, "Couldn't retrieve theme icons for editor log error/warning messages.\n");
+				break;
+			}
 			log->add_image(icon);
 			log->push_bold();
 			log->add_text(" WARNING: ");
