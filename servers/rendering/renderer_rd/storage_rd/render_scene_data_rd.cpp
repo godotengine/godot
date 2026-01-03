@@ -45,6 +45,17 @@ Projection RenderSceneDataRD::get_cam_projection() const {
 	return correction * cam_projection;
 }
 
+Transform3D RenderSceneDataRD::get_prev_cam_transform() const {
+	return prev_cam_transform;
+}
+
+Projection RenderSceneDataRD::get_prev_cam_projection() const {
+	Projection prev_correction;
+	prev_correction.set_depth_correction(flip_y);
+	prev_correction.add_jitter_offset(prev_taa_jitter);
+	return prev_correction * prev_cam_projection;
+}
+
 uint32_t RenderSceneDataRD::get_view_count() const {
 	return view_count;
 }
@@ -63,6 +74,16 @@ Projection RenderSceneDataRD::get_view_projection(uint32_t p_view) const {
 	correction.add_jitter_offset(taa_jitter);
 
 	return correction * view_projection[p_view];
+}
+
+Projection RenderSceneDataRD::get_prev_view_projection(uint32_t p_view) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, view_count, Projection());
+
+	Projection prev_correction;
+	prev_correction.set_depth_correction(flip_y);
+	prev_correction.add_jitter_offset(prev_taa_jitter);
+
+	return prev_correction * prev_view_projection[p_view];
 }
 
 RID RenderSceneDataRD::create_uniform_buffer() {
