@@ -44,6 +44,55 @@
 
 HashMap<NativeMenu::SystemMenus, PopupMenu *> PopupMenu::system_menus;
 
+struct _SymbolAlias {
+	const String keycode;
+	const String alias;
+};
+
+static const _SymbolAlias _shortcut_symbols[] = {
+	/* clang-format off */
+	{keycode_get_string(Key::KP_MULTIPLY), String("Kp *")},
+	{keycode_get_string(Key::KP_DIVIDE), String("Kp /")},
+	{keycode_get_string(Key::KP_SUBTRACT), String("Kp -")},
+	{keycode_get_string(Key::KP_PERIOD), String("Kp .")},
+	{keycode_get_string(Key::KP_ADD), String("Kp +")},
+	{keycode_get_string(Key::EXCLAM), String("!")},
+	{keycode_get_string(Key::QUOTEDBL), String("\"")},
+	{keycode_get_string(Key::NUMBERSIGN), String("#")},
+	{keycode_get_string(Key::DOLLAR), String("$")},
+	{keycode_get_string(Key::PERCENT), String("%")},
+	{keycode_get_string(Key::AMPERSAND), String("&")},
+	{keycode_get_string(Key::APOSTROPHE), String("\'")},
+	{keycode_get_string(Key::PARENLEFT), String("(")},
+	{keycode_get_string(Key::PARENRIGHT), String(")")},
+	{keycode_get_string(Key::ASTERISK), String("*")},
+	{keycode_get_string(Key::PLUS), String("+")},
+	{keycode_get_string(Key::COMMA), String(",")},
+	{keycode_get_string(Key::MINUS), String("-")},
+	{keycode_get_string(Key::PERIOD), String(".")},
+	{keycode_get_string(Key::BACKSLASH), String("\\")}, // Has to precede forward slash because of name collision.
+	{keycode_get_string(Key::SLASH), String("/")},
+	{keycode_get_string(Key::COLON), String(":")},
+	{keycode_get_string(Key::SEMICOLON), String(";")},
+	{keycode_get_string(Key::LESS), String("<")},
+	{keycode_get_string(Key::EQUAL), String("=")},
+	{keycode_get_string(Key::GREATER), String(">")},
+	{keycode_get_string(Key::QUESTION), String("\?")},
+	{keycode_get_string(Key::AT), String("@")},
+	{keycode_get_string(Key::BRACKETLEFT), String("[")},
+	{keycode_get_string(Key::BRACKETRIGHT), String("]")},
+	{keycode_get_string(Key::ASCIICIRCUM), String("^")},
+	{keycode_get_string(Key::UNDERSCORE), String("_")},
+	{keycode_get_string(Key::QUOTELEFT), String("`")},
+	{keycode_get_string(Key::BRACELEFT), String("{")},
+	{keycode_get_string(Key::BAR), String("|")},
+	{keycode_get_string(Key::BRACERIGHT), String("}")},
+	{keycode_get_string(Key::ASCIITILDE), String("~")},
+	{keycode_get_string(Key::YEN), String::utf8("\u00A5")},
+	{keycode_get_string(Key::SECTION), String::utf8("\u00A7")},
+	/* clang-format on */
+};
+
 bool PopupMenu::_set_item_accelerator(int p_index, const Ref<InputEventKey> &p_ie) {
 	NativeMenu *nmenu = NativeMenu::get_singleton();
 	if (p_ie->get_physical_keycode() == Key::NONE && p_ie->get_keycode() == Key::NONE && p_ie->get_key_label() != Key::NONE) {
@@ -198,11 +247,19 @@ NativeMenu::SystemMenus PopupMenu::get_system_menu() const {
 
 String PopupMenu::_get_accel_text(const Item &p_item) const {
 	if (p_item.shortcut.is_valid()) {
-		return p_item.shortcut->get_as_text();
+		return _accel_text_to_symbols(p_item.shortcut->get_as_text());
 	} else if (p_item.accel != Key::NONE) {
 		return keycode_get_string(p_item.accel);
 	}
 	return String();
+}
+
+String PopupMenu::_accel_text_to_symbols(const String &p_accel_text) const {
+	String result = p_accel_text;
+	for (_SymbolAlias symbol : _shortcut_symbols) {
+		result = result.replace(symbol.keycode, symbol.alias);
+	}
+	return result;
 }
 
 Size2 PopupMenu::_get_item_icon_size(int p_idx) const {
