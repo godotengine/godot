@@ -132,8 +132,31 @@ void ResourceImporterTexture::update_imports() {
 
 			String compress_string;
 			if (compress_to == 1) {
+				// In practice, either (or both) of these values will always be `true`,
+				// since every platform has a preferred texture format.
+				const bool import_s3tc_bptc = GLOBAL_GET("rendering/textures/vram_compression/import_s3tc_bptc") || OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
+				const bool import_etc2_astc = GLOBAL_GET("rendering/textures/vram_compression/import_etc2_astc") || OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_ETC2_ASTC;
+
+				compress_string = "VRAM Compressed";
+				if (bool(cf->get_value("params", "compress/high_quality"))) {
+					if (import_s3tc_bptc && import_etc2_astc) {
+						compress_string += " (BPTC/ASTC)";
+					} else if (import_s3tc_bptc) {
+						compress_string += " (BPTC)";
+					} else if (import_etc2_astc) {
+						compress_string += " (ASTC)";
+					}
+				} else {
+					if (import_s3tc_bptc && import_etc2_astc) {
+						compress_string += " (S3TC/ETC2)";
+					} else if (import_s3tc_bptc) {
+						compress_string += " (S3TC)";
+					} else if (import_etc2_astc) {
+						compress_string += " (ETC2)";
+					}
+				}
+
 				cf->set_value("params", "compress/mode", COMPRESS_VRAM_COMPRESSED);
-				compress_string = "VRAM Compressed (S3TC/ETC/BPTC)";
 
 			} else if (compress_to == 2) {
 				cf->set_value("params", "compress/mode", COMPRESS_BASIS_UNIVERSAL);
