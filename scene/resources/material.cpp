@@ -455,6 +455,18 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 	} else {
 		Variant *v = param_cache.getptr(p_param);
 		if (!v) {
+#ifdef TOOLS_ENABLED
+			bool missing = true;
+			if (param_cache.is_empty()) {
+				// Build parameter cache.
+				List<PropertyInfo> l;
+				_get_property_list(&l);
+				missing = !param_cache.has(p_param);
+			}
+			if (missing) {
+				WARN_PRINT(vformat("Shader parameter \"%s\" not found in Shader.", p_param));
+			}
+#endif
 			// Never assigned, also update the remap cache.
 			remap_cache["shader_parameter/" + p_param.operator String()] = p_param;
 			param_cache.insert(p_param, p_value);
