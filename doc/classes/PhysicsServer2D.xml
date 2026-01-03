@@ -903,7 +903,7 @@
 		<method name="separation_ray_shape_create">
 			<return type="RID" />
 			<description>
-				Creates a 2D separation ray shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's [code]length[/code] and [code]slide_on_slope[/code] properties.
+				Creates a 2D separation ray shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's [member SeparationRayShape2D.length], [member SeparationRayShape2D.stops_motion], and [member SeparationRayShape2D.separate_along_ray] properties.
 			</description>
 		</method>
 		<method name="set_active">
@@ -934,7 +934,7 @@
 			<description>
 				Sets the shape data that defines the configuration of the shape. The [param data] to be passed depends on the shape's type (see [method shape_get_type]):
 				- [constant SHAPE_WORLD_BOUNDARY]: an array of length two containing a [Vector2] [code]normal[/code] direction and a [float] distance [code]d[/code],
-				- [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key [code]length[/code] with a [float] value and the key [code]slide_on_slope[/code] with a [bool] value,
+				- [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key [code]length[/code] with a [float] value, a key [code]stops_motion[/code] with a [bool] value, and the key [code]separate_along_ray[/code] with a [bool] value,
 				- [constant SHAPE_SEGMENT]: a [Rect2] [code]rect[/code] containing the first point of the segment in [code]rect.position[/code] and the second point of the segment in [code]rect.size[/code],
 				- [constant SHAPE_CIRCLE]: a [float] [code]radius[/code],
 				- [constant SHAPE_RECTANGLE]: a [Vector2] [code]half_extents[/code],

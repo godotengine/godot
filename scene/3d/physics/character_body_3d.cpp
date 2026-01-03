@@ -464,7 +464,7 @@ void CharacterBody3D::apply_floor_snap() {
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
 	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
-	parameters.collide_separation_ray = true;
+	parameters.separation_rays_stop_motion = true;
 
 	PhysicsServer3D::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {
@@ -508,7 +508,7 @@ bool CharacterBody3D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
 	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
-	parameters.collide_separation_ray = true;
+	parameters.separation_rays_stop_motion = true;
 
 	PhysicsServer3D::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {

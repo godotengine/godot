@@ -55,10 +55,10 @@ class JoltMotionFilter3D final
 	const JoltSpace3D &space;
 	const HashSet<RID> &excluded_bodies;
 	const HashSet<ObjectID> &excluded_objects;
-	bool collide_separation_ray = false;
+	bool separation_rays_stop_motion = false;
 
 public:
-	explicit JoltMotionFilter3D(const JoltBody3D &p_body, const HashSet<RID> &p_excluded_bodies, const HashSet<ObjectID> &p_excluded_objects, bool p_collide_separation_ray = true);
+	explicit JoltMotionFilter3D(const JoltBody3D &p_body, const HashSet<RID> &p_excluded_bodies, const HashSet<ObjectID> &p_excluded_objects, bool p_separation_rays_stop_motion = true);
 
 	virtual bool ShouldCollide(JPH::BroadPhaseLayer p_broad_phase_layer) const override;
 	virtual bool ShouldCollide(JPH::ObjectLayer p_object_layer) const override;

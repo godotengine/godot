@@ -37,7 +37,8 @@ class ArrayMesh;
 class SeparationRayShape3D : public Shape3D {
 	GDCLASS(SeparationRayShape3D, Shape3D);
 	float length = 1.0;
-	bool slide_on_slope = false;
+	bool stops_motion = false;
+	bool separate_along_ray = true;
 
 protected:
 	static void _bind_methods();
@@ -47,8 +48,11 @@ public:
 	void set_length(float p_length);
 	float get_length() const;
 
-	void set_slide_on_slope(bool p_active);
-	bool get_slide_on_slope() const;
+	void set_stops_motion(bool p_active);
+	bool get_stops_motion() const;
+
+	void set_separate_along_ray(bool p_active);
+	bool get_separate_along_ray() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;

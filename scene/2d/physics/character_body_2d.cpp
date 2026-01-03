@@ -346,7 +346,7 @@ void CharacterBody2D::_apply_floor_snap(bool p_wall_as_floor) {
 
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
-	parameters.collide_separation_ray = true;
+	parameters.separation_rays_stop_motion = true;
 
 	PhysicsServer2D::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {
@@ -390,7 +390,7 @@ bool CharacterBody2D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
-	parameters.collide_separation_ray = true;
+	parameters.separation_rays_stop_motion = true;
 
 	PhysicsServer2D::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {

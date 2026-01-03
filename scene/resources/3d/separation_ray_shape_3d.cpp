@@ -53,7 +53,8 @@ real_t SeparationRayShape3D::get_enclosing_radius() const {
 void SeparationRayShape3D::_update_shape() {
 	Dictionary d;
 	d["length"] = length;
-	d["slide_on_slope"] = slide_on_slope;
+	d["stops_motion"] = stops_motion;
+	d["separate_along_ray"] = separate_along_ray;
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
@@ -68,25 +69,39 @@ float SeparationRayShape3D::get_length() const {
 	return length;
 }
 
-void SeparationRayShape3D::set_slide_on_slope(bool p_active) {
-	slide_on_slope = p_active;
+void SeparationRayShape3D::set_stops_motion(bool p_active) {
+	stops_motion = p_active;
 	_update_shape();
 	emit_changed();
 }
 
-bool SeparationRayShape3D::get_slide_on_slope() const {
-	return slide_on_slope;
+bool SeparationRayShape3D::get_stops_motion() const {
+	return stops_motion;
+}
+
+void SeparationRayShape3D::set_separate_along_ray(bool p_active) {
+	separate_along_ray = p_active;
+	_update_shape();
+	emit_changed();
+}
+
+bool SeparationRayShape3D::get_separate_along_ray() const {
+	return separate_along_ray;
 }
 
 void SeparationRayShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &SeparationRayShape3D::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &SeparationRayShape3D::get_length);
 
-	ClassDB::bind_method(D_METHOD("set_slide_on_slope", "active"), &SeparationRayShape3D::set_slide_on_slope);
-	ClassDB::bind_method(D_METHOD("get_slide_on_slope"), &SeparationRayShape3D::get_slide_on_slope);
+	ClassDB::bind_method(D_METHOD("set_stops_motion", "active"), &SeparationRayShape3D::set_stops_motion);
+	ClassDB::bind_method(D_METHOD("get_stops_motion"), &SeparationRayShape3D::get_stops_motion);
+
+	ClassDB::bind_method(D_METHOD("set_separate_along_ray", "active"), &SeparationRayShape3D::set_separate_along_ray);
+	ClassDB::bind_method(D_METHOD("get_separate_along_ray"), &SeparationRayShape3D::get_separate_along_ray);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_slope"), "set_slide_on_slope", "get_slide_on_slope");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stops_motion"), "set_stops_motion", "get_stops_motion");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "separate_along_ray"), "set_separate_along_ray", "get_separate_along_ray");
 }
 
 SeparationRayShape3D::SeparationRayShape3D() :
