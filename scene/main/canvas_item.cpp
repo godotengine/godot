@@ -327,20 +327,7 @@ void CanvasItem::_notification(int p_what) {
 					if (cl) {
 						parent_visible_in_tree = cl->is_visible();
 					} else {
-						// Look for a window.
-						Viewport *viewport = nullptr;
-
-						while (parent) {
-							viewport = Object::cast_to<Viewport>(parent);
-							if (viewport) {
-								break;
-							}
-							parent = parent->get_parent();
-						}
-
-						ERR_FAIL_NULL(viewport);
-
-						window = Object::cast_to<Window>(viewport);
+						window = Object::cast_to<Window>(get_viewport());
 						if (window) {
 							window->connect(SceneStringName(visibility_changed), callable_mp(this, &CanvasItem::_window_visibility_changed));
 							parent_visible_in_tree = window->is_visible();
