@@ -80,6 +80,8 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool load_enabled = true;
 	int default_language;
 	bool re_check_path = false;
+	bool missing_base_dir = false;
+	String missing_base_dir_path;
 
 	Control *path_controls[2];
 	Control *name_controls[2];
