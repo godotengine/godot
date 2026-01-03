@@ -186,6 +186,8 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorScriptPicker);
 	GDREGISTER_ABSTRACT_CLASS(EditorUndoRedoManager);
 	GDREGISTER_CLASS(EditorContextMenuPlugin);
+	GDREGISTER_CLASS(EditorRangeDial);
+	GDREGISTER_CLASS(EditorRangeDialPopup);
 
 	GDREGISTER_ABSTRACT_CLASS(FileSystemDock);
 	GDREGISTER_VIRTUAL_CLASS(EditorFileSystemImportFormatSupportQuery);
